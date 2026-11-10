@@ -24,6 +24,12 @@ public class BitFileInputClassStyles
     public string? DropZoneIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitFileInput (its ErrorMessage or ErrorMessageTemplate),
+    /// rendered under the browse button. The message of each invalid file item is styled by <see cref="ErrorMessage"/>.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the description (hint) of the BitFileInput.
     /// </summary>
     public string? Description { get; set; }
@@ -66,6 +72,7 @@ public class BitFileInputClassStyles
 
     /// <summary>
     /// Custom CSS classes/styles for the validation error message of each invalid file item of the BitFileInput.
+    /// The error message of the BitFileInput itself is styled by <see cref="ErrorMessageContainer"/>.
     /// </summary>
     public string? ErrorMessage { get; set; }
 

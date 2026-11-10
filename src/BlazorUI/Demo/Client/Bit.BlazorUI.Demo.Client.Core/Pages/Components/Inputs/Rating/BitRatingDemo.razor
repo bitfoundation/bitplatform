@@ -395,6 +395,36 @@
                 <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
             }
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error look and
+            <b>aria-invalid</b> on a value something else refused - a server, a rule spanning two fields - and
+            <b>ErrorMessage</b> adds the line that says why, right under the items and ahead of the
+            <b>Description</b>. A message implies <b>Invalid</b>, so the flag on its own is for marking a rating
+            whose explanation lives somewhere else. The rating is described by the line, and a live region of its
+            own, apart from the one that announces the value, says it the moment it appears.
+            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no text a screen reader
+            can be handed, so it is announced as a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b> says
+            what it shows.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitRating Label="Overall"
+                       Description="Pick five stars to see the message."
+                       @bind-Value="reviewRating"
+                       ErrorMessage="@(reviewRating == 5 ? "Five stars need a written review." : null)" />
+            <br />
+            <BitRating Label="Marked invalid, explained elsewhere" DefaultValue="2" Invalid />
+            <br />
+            <BitRating Label="Delivery"
+                       DefaultValue="1"
+                       ErrorMessageAriaLabel="Low scores need a reason before they are published.">
+                <ErrorMessageTemplate>
+                    Low scores need a reason before they are published.
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">Add one</BitLink>
+                </ErrorMessageTemplate>
+            </BitRating>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">

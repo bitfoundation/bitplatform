@@ -9,10 +9,6 @@
 
     "ResxPaths": [ "/src/Shared/**/*.resx", "/src/Server/**/*.resx", "/src/Client/**/*.resx", "/src/Workbench/**/*.resx" ],
 
-    "ChatOptions": {
-        "Temperature": "0"
-    },
-
     "OpenAI": {
         "Model": "gpt-5.6-luna",
         "Endpoint": "https://api.openai.com/v1",

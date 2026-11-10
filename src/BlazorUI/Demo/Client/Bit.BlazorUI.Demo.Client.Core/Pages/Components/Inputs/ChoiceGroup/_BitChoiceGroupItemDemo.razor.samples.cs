@@ -391,7 +391,25 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     </div>
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+</EditForm>
+
+
+<BitChoiceGroup Label=""Shipping""
+                Items=""shippingItems""
+                @bind-Value=""shippingValue""
+                ErrorMessage=""@(shippingValue == ""Express"" ? ""Express shipping is not available to your address."" : null)"" />
+
+<BitChoiceGroup Label=""Marked invalid, explained elsewhere"" Items=""basicItems"" DefaultValue=""basicItems[0].Value"" Invalid />
+
+<BitChoiceGroup Label=""Plan""
+                Items=""basicItems""
+                DefaultValue=""basicItems[2].Value""
+                ErrorMessageAriaLabel=""This plan is not available in your region."">
+    <ErrorMessageTemplate>
+        This plan is not available in your
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">region</BitLink>.
+    </ErrorMessageTemplate>
+</BitChoiceGroup>";
     private readonly string example9CsharpCode = @"
 public class ChoiceGroupValidationModel
 {
@@ -410,6 +428,16 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     new() { Text = ""Item B"", Value = ""B"" },
     new() { Text = ""Item C"", Value = ""C"" },
     new() { Text = ""Item D"", Value = ""D"" }
+];
+
+
+private string? shippingValue = ""Express"";
+
+private readonly List<BitChoiceGroupItem<string>> shippingItems =
+[
+    new() { Text = ""Standard"", Value = ""Standard"" },
+    new() { Text = ""Express"", Value = ""Express"" },
+    new() { Text = ""Pickup"", Value = ""Pickup"" }
 ];";
 
     private readonly string example10RazorCode = @"

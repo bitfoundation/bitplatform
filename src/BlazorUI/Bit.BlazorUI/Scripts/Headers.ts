@@ -41,6 +41,11 @@
             const element = document.getElementById(id);
             if (!element) return;
 
+            // What keeps a revealed header on the screen is a focus the keyboard put inside it (see evaluate).
+            if (reveal) {
+                Utils.watchFocusOrigin();
+            }
+
             // An explicitly named scroller wins over the walk up the tree, which is what a header that
             // does not sit inside the box it reacts to (an app shell whose header and content are
             // siblings) needs. A selector that matches nothing falls back to the walk rather than
@@ -142,9 +147,9 @@
                 hidden = next;
 
                 // The reference is disposed before the listeners are, so a flip of the very last frame can
-                // land on a dead reference. The rejection is consumed here rather than left to surface as an
-                // unhandled one in the console of an application that did nothing wrong.
-                dotnetObj.invokeMethodAsync('OnRevealChange', hidden).catch(() => { });
+                // land on a dead reference, and a scroll or a focus as Firefox leaves the page calls over a
+                // connection that is already closed. Neither is an error of the application (Utils.notifyDotNet).
+                Utils.notifyDotNet(dotnetObj, 'OnRevealChange', hidden);
             };
 
             const applyScrolled = (next: boolean) => {
@@ -152,7 +157,7 @@
 
                 scrolled = next;
 
-                dotnetObj.invokeMethodAsync('OnScrollChange', scrolled).catch(() => { });
+                Utils.notifyDotNet(dotnetObj, 'OnScrollChange', scrolled);
             };
 
             const evaluate = () => {
@@ -181,9 +186,10 @@
                 // Revealing the header when the focus enters it is not enough on its own: a keyboard user
                 // who scrolls the page (the arrow keys and the space bar scroll it from a focused button)
                 // would roll the focused control out of the view right after (WCAG 2.4.11). The header
-                // stays revealed while it holds the keyboard focus. A focus left behind by a click does not
-                // count, or a mouse user who clicked a button in the bar could never scroll it away again.
-                if (next && Headers.hasKeyboardFocus(element)) {
+                // stays revealed while it holds the keyboard focus. A focus left behind by a click - a text
+                // field's included - does not count, or a mouse user who clicked into the bar could never
+                // scroll it away again (see Utils.hasKeyboardFocus).
+                if (next && Utils.hasKeyboardFocus(element)) {
                     next = false;
                 }
 
@@ -324,20 +330,6 @@
             }
 
             return window;
-        }
-
-        private static hasKeyboardFocus(element: HTMLElement): boolean {
-            const active = document.activeElement;
-
-            if (!active || !element.contains(active)) return false;
-
-            // An engine that does not know the selector throws on it rather than answering false, and
-            // then the focus is kept either way: a control hidden under the edge is the worse outcome.
-            try {
-                return active.matches(':focus-visible');
-            } catch {
-                return true;
-            }
         }
 
         private static scrollTop(target: HTMLElement | Window): number {

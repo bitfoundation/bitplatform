@@ -1,0 +1,84 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.groups {
+    gap: 1.25rem 1.5rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.group {
+    gap: 0.5rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+// The layers drawn as a staircase of cards, the lowest at the back and the top.
+.stack {
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.layer {
+    padding: 0.375rem 0.75rem;
+    box-shadow: $bit-box-shadow-card;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+    // Each card gets its step in the staircase from the markup.
+    margin-inline-start: calc(var(--wb-layer) * 0.75rem);
+}
+
+.breakpoint {
+    gap: 0.75rem;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+}
+
+.breakpoint-name {
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.opacity-sample {
+    padding: 0.375rem 1rem;
+    color: $bit-color-primary-text;
+    border-radius: $bit-shape-radius-button;
+    background-color: $bit-color-primary;
+}
+
+.opacity-sample.faded {
+    opacity: $bit-opacity-disabled;
+}
+
+.dialog-mock {
+    gap: 0.5rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    box-shadow: $bit-box-shadow-dialog;
+    border-radius: $bit-shape-radius-dialog;
+    background-color: $bit-color-background-primary;
+    text-align: $bit-layout-dialog-text-align;
+}
+
+.dialog-title {
+    font-size: var(--bit-tpg-dialog-title-font-size);
+    font-weight: var(--bit-tpg-dialog-title-font-weight);
+}
+
+.dialog-text {
+    font-size: $bit-typography-fs-sm;
+    color: $bit-color-foreground-secondary;
+}
+
+.dialog-actions {
+    gap: 0.5rem;
+    display: flex;
+    padding-top: 0.5rem;
+    flex-direction: $bit-layout-dialog-actions-direction;
+    justify-content: $bit-layout-dialog-actions-justify;
+    align-items: $bit-layout-dialog-actions-align;
+}

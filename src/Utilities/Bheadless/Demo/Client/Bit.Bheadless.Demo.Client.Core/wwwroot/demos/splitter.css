@@ -1,0 +1,116 @@
+﻿/* splitter demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Root: a size (inline: display: flex, along its orientation) ---------- */
+.splitter {
+    width: 100%;
+    height: 14rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* A splitter inside a panel fills it, and draws no second frame. */
+.splitter .splitter {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+}
+
+/* Keep the resize cursor while a drag runs past the handle. */
+.splitter[data-orientation="horizontal"][data-dragging] { cursor: col-resize; }
+.splitter[data-orientation="vertical"][data-dragging]   { cursor: row-resize; }
+
+/* ---- Panels (inline: flex: <size> 1 0px; overflow: hidden) ---------------- */
+.splitter-panel {
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
+}
+
+.splitter-panel[data-collapsed] { padding-inline: 0; }
+
+.splitter-panel-title { margin: 0; font-size: 0.875rem; font-weight: 600; }
+.splitter-panel-text  { margin: 0; font-size: 0.8125rem; color: var(--color-muted); }
+
+.splitter-panel-muted { background: var(--color-subtle); }
+
+/* A panel that holds a nested splitter gives it all of its space. */
+.splitter-panel-host { display: block; padding: 0; }
+
+/* ---- Handle: a 24px hit area with a 1px line and a grip drawn inside ------ */
+.splitter-handle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+.splitter-handle[data-orientation="horizontal"] { width: 1.5rem; margin-inline: -0.75rem; z-index: 1; cursor: col-resize; }
+.splitter-handle[data-orientation="vertical"]   { height: 1.5rem; margin-block: -0.75rem; z-index: 1; cursor: row-resize; }
+
+/* The line between the panels */
+.splitter-handle::before {
+    content: "";
+    position: absolute;
+    background: var(--color-border);
+}
+
+.splitter-handle[data-orientation="horizontal"]::before { inset: 0 auto; left: calc(50% - 0.5px); width: 1px; }
+.splitter-handle[data-orientation="vertical"]::before   { inset: auto 0; top: calc(50% - 0.5px); height: 1px; }
+
+/* The grip */
+.splitter-handle::after {
+    content: "";
+    position: relative;
+    border: 1px solid var(--color-border-control);
+    border-radius: 999px;
+    background: var(--color-surface);
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.splitter-handle[data-orientation="horizontal"]::after { width: 0.5rem; height: 1.75rem; }
+.splitter-handle[data-orientation="vertical"]::after   { width: 1.75rem; height: 0.5rem; }
+
+.splitter-handle[data-hover]::after,
+.splitter-handle[data-dragging]::after {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+}
+
+.splitter-handle[data-hover]::before,
+.splitter-handle[data-dragging]::before { background: var(--color-primary); }
+
+.splitter-handle:focus-visible::after {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.splitter-handle[data-disabled] { cursor: default; }
+.splitter-handle[data-disabled]::after { display: none; }
+
+/* ---- Toolbar and output ----------------------------------------------------- */
+.splitter-demo { display: grid; gap: 0.75rem; width: 100%; }
+
+.splitter-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.splitter-button {
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 0.375rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.splitter-button:hover { background: var(--color-fill); }
+.splitter-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.splitter-output { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.splitter-output strong { color: var(--color-text); font-weight: 600; font-variant-numeric: tabular-nums; }

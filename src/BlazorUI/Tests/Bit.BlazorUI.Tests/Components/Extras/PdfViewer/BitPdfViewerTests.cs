@@ -3033,6 +3033,46 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerShouldIgnoreWhatItsScriptReportsOnceItIsDisposed()
+    {
+        int pageChanges = 0, zoomChanges = 0;
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(5)));
+            parameters.Add(p => p.OnPageChanged, EventCallback.Factory.Create<int>(this, _ => pageChanges++));
+            parameters.Add(p => p.OnZoomChanged, EventCallback.Factory.Create<double>(this, _ => zoomChanges++));
+        });
+
+        component.WaitForPages(5);
+        double zoom = component.Instance.Zoom;
+
+        string[] measuring = ["BitBlazorUI.PdfViewer.getViewport", "BitBlazorUI.PdfViewer.stashViewAnchor",
+                              "BitBlazorUI.PdfViewer.scrollToPage", "BitBlazorUI.PdfViewer.scrollThumbIntoView"];
+        int Measured() => measuring.Sum(identifier => Context.InvocationsOf(identifier).Count);
+
+        await component.InvokeAsync(async () => await component.Instance.DisposeAsync());
+        int measured = Measured();
+
+        // The spies report until their teardown reaches the script, so a report sent before it - or one queued behind
+        // the disposal of a circuit that is going down, where the measurement it would make throws - arrives at a viewer
+        // that is gone: it moves no page, raises no event and makes no round trip.
+        await component.InvokeAsync(() => component.Instance.OnPageVisible(3));
+        await component.InvokeAsync(() => component.Instance.OnLinkNavigate(4, null));
+        await component.InvokeAsync(() => component.Instance.OnViewportResized());
+        await component.InvokeAsync(() => component.Instance.OnWheelZoom(-1));
+        await component.InvokeAsync(() => component.Instance.OnShortcut("next"));
+        await component.InvokeAsync(() => component.Instance.OnFullscreenChanged(true));
+        await component.InvokeAsync(() => component.Instance.EnsurePagesRendered([4, 5]));
+        await component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([4, 5]));
+
+        Assert.AreEqual(1, component.Instance.CurrentPage);
+        Assert.AreEqual(zoom, component.Instance.Zoom, 0.0001);
+        Assert.AreEqual(0, pageChanges);
+        Assert.AreEqual(0, zoomChanges);
+        Assert.AreEqual(measured, Measured());
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldKeepAFitModeWhenTheHostEchoesTheZoom()
     {
         SetupViewport(800, 600);

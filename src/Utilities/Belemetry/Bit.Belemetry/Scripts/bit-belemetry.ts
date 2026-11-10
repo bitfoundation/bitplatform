@@ -20,6 +20,7 @@ import { installPageViews, resetPageViewState, trackPageView as trackPageViewCor
 import { installResources } from './instrumentations/resources';
 import { installWebVitals, resetWebVitalsState } from './instrumentations/web-vitals';
 import { installXhr } from './instrumentations/xhr';
+import { DiagnosticRecorder, type DiagnosticEvent, type DiagnosticsSnapshot } from './diagnostics';
 import { onHidden } from './lifecycle';
 import { debug, setDebug } from './log';
 import { Severity, type Attributes, type TelemetryRecord } from './model';
@@ -76,6 +77,8 @@ interface State {
     ctx: InstrumentationContext;
     installed: Record<string, Uninstall>;
     disposers: (() => void)[];
+    /** The diagnostic timeline, when diagnostics are enabled. */
+    diagnostics: DiagnosticRecorder | null;
 }
 
 type Installer = [key: string, features: number, enabled: (config: ResolvedConfig) => boolean, install: (ctx: InstrumentationContext) => Uninstall];
@@ -200,6 +203,11 @@ function syncContext(): void {
 
 function onConsentChanged(s: State, previous: number, next: number, released: TelemetryRecord[]): void {
     s.pipeline.purge(previous & ~next);
+    if (s.diagnostics) {
+        s.diagnostics.purge(previous & ~next);
+        // Undecided records were held in case they were granted: the decision drops what was not.
+        if (s.consent.decided) s.diagnostics.purge(Features.All & ~next & ~(previous & ~next));
+    }
     applyGrant(s);
     for (const record of released) {
         if (s.config.features & record.feature) s.pipeline.enqueue(record);
@@ -213,6 +221,11 @@ function onConsentChanged(s: State, previous: number, next: number, released: Te
 function onPageHidden(s: State, unloading: boolean): void {
     // Everything here must start its requests synchronously: nothing async is guaranteed to run after pagehide.
     s.pipeline.flush(true);
+    const diagnostics = s.diagnostics;
+    if (diagnostics) {
+        if (s.consent.collectable() & Features.PageViews) diagnostics.add('browser', unloading ? 'page.unload' : 'page.hidden', Features.PageViews, 9);
+        if (diagnostics.config.persist && (effective(s) & Features.Persistence)) diagnostics.persist(s.consent.granted());
+    }
     if (bridge && bridge.unloadDrain) {
         try {
             // Synchronous JS -> .NET call, only available in WebAssembly; it throws elsewhere.
@@ -245,6 +258,11 @@ function init(input: BelemetryConfig | null | undefined): State {
     const pipeline = new Pipeline(config, consent, session, buildResource(config));
     pipeline.processors = processors;
     pipeline.attributes = globalAttributes;
+    const diagnostics = config.diagnostics && config.diagnostics.enabled ? new DiagnosticRecorder(config.diagnostics) : null;
+    if (diagnostics) {
+        pipeline.onRecord = record => diagnostics.record(record);
+        pipeline.onFiltered = record => diagnostics.forget(record);
+    }
     s = {
         config,
         consent,
@@ -259,8 +277,67 @@ function init(input: BelemetryConfig | null | undefined): State {
         },
         installed: {},
         disposers: [],
+        diagnostics,
     };
     return s;
+}
+
+// A JS error offered to .NET as a capture trigger at most this often; .NET applies its own cooldown per failure too.
+const TRIGGER_INTERVAL_MS = 10000;
+let lastTrigger = 0;
+
+/** The Blazor-specific signals only the diagnostic timeline records: reconnection and the back/forward cache. */
+function installDiagnostics(s: State, diagnostics: DiagnosticRecorder): void {
+    if (diagnostics.config.persist && (effective(s) & Features.Persistence)) diagnostics.restore();
+
+    diagnostics.onException = record => {
+        if (!diagnostics.config.triggerBrowserErrors || !bridge) return;
+        // Once the app's processors had their say: they run at export, after the record reached the timeline, and an error
+        // one of them drops is neither exported nor evidence, so it starts no capture either. Deferred, so a processor the
+        // app adds right after start still sees it, as the export would.
+        setTimeout(() => {
+            try {
+                if (!bridge || state !== s || !s.pipeline.keeps(record) || !diagnostics.has(record)) return;
+                const time = Date.now();
+                if (time - lastTrigger < TRIGGER_INTERVAL_MS) return;
+                lastTrigger = time;
+                const type = record.attributes['exception.type'];
+                const message = record.attributes['exception.message'];
+                const error = {
+                    type: (typeof type === 'string' && type ? type : 'Error').slice(0, 256),
+                    message: (typeof message === 'string' ? message : '').slice(0, 1024),
+                };
+                bridge.ref.invokeMethodAsync(DotNetCallbacks.diagnosticTrigger, error).catch(e => debug('diagnostic trigger failed', e));
+            } catch (e) {
+                debug('diagnostic trigger failed', e);
+            }
+        }, 0);
+    };
+
+    // Blazor dispatches it on the reconnect dialog (#components-reconnect-modal) without bubbling: a capturing listener on
+    // the document sees it whatever element it targets. Only an app with a reconnect UI of its own gets it.
+    const onReconnect = (event: Event) => {
+        try {
+            if (!(s.consent.collectable() & Features.Errors)) return;
+            const detail = (event as CustomEvent).detail || {};
+            const state = String(detail.state || 'unknown').slice(0, 32);
+            const failed = state === 'failed' || state === 'rejected' || state === 'resume-failed';
+            const attrs: Record<string, string | number | boolean> = { 'reconnect.state': state };
+            if (typeof detail.currentAttempt === 'number') attrs['reconnect.attempt'] = detail.currentAttempt;
+            diagnostics.add('circuit', 'reconnect.' + state, Features.Errors, failed ? 17 : state === 'hide' ? 9 : 13, failed ? 'failure' : undefined, attrs);
+        } catch (e) {
+            debug('diagnostics: reconnect event failed', e);
+        }
+    };
+    const onShow = (event: PageTransitionEvent) => {
+        if (event.persisted && (s.consent.collectable() & Features.PageViews)) diagnostics.add('browser', 'page.restored', Features.PageViews, 9);
+    };
+    document.addEventListener('components-reconnect-state-changed', onReconnect, true);
+    addEventListener('pageshow', onShow);
+    s.disposers.push(() => {
+        document.removeEventListener('components-reconnect-state-changed', onReconnect, true);
+        removeEventListener('pageshow', onShow);
+    });
 }
 
 /** Idempotent start. A second call only updates the consent settings and the transport (bridge). */
@@ -277,12 +354,23 @@ export function start(config?: BelemetryConfig | null): void {
             // fetch, to URLs only it knows.
             const ignore = s.config.dependencies.ignoreUrls;
             for (const url of next.dependencies.ignoreUrls || []) if (ignore.indexOf(url) < 0) ignore.push(url);
+            // Its routes may be its own (configured on the client only). A new list, so the compiled routes are rebuilt.
+            const routes = Array.isArray(s.config.pageViews.routes) ? s.config.pageViews.routes : [];
+            const known = routes.map(r => String(r).toLowerCase());
+            const added: string[] = [];
+            for (const route of Array.isArray(next.pageViews.routes) ? next.pageViews.routes : []) {
+                if (typeof route !== 'string' || known.indexOf(route.toLowerCase()) >= 0) continue;
+                known.push(route.toLowerCase());
+                added.push(route);
+            }
+            if (added.length) s.config.pageViews.routes = routes.concat(added);
             return;
         }
         const s = state = init(config);
         applyGrant(s);
         updateSink(s);
         s.consent.onChange((previous, next, released) => onConsentChanged(s, previous, next, released));
+        if (s.diagnostics && typeof document !== 'undefined') installDiagnostics(s, s.diagnostics);
         s.session.onChange = syncContext;
         s.disposers.push(onHidden(unloading => onPageHidden(s, unloading), 'last'));
         const onOnline = () => s.transport.resendPersisted();
@@ -307,6 +395,14 @@ export function start(config?: BelemetryConfig | null): void {
     } catch (e) {
         debug('start failed', e);
     }
+}
+
+/**
+ * Whether the script has started: a repeated `start` only updates consent and transport and adds to the ignored URLs and
+ * the routes, so .NET leaves out the discovered routes (the page has its own server's).
+ */
+export function isStarted(): boolean {
+    return state !== null;
 }
 
 /** Records the user's consent decision (a bit mask of Features). */
@@ -423,6 +519,87 @@ export function getStats(): BelemetryStats {
     return { ...snapshot, queued: state ? state.pipeline.size : 0, pending: state ? state.consent.pendingCount : 0 };
 }
 
+/**
+ * The diagnostic timeline (production diagnostics), as the user's grant allows now; null when diagnostics are off.
+ * Read by .NET when it makes a capture: it never leaves the page otherwise.
+ */
+export function getDiagnostics(): DiagnosticsSnapshot | null {
+    try {
+        if (!state || !state.diagnostics) return null;
+        // The app's processors may still drop or change queued records: run them first, as the export will.
+        state.pipeline.processQueued();
+        return state.diagnostics.snapshot(state.consent.granted(), state.pipeline.resource);
+    } catch (e) {
+        debug('getDiagnostics failed', e);
+        return null;
+    }
+}
+
+/**
+ * `getDiagnostics()` as a Blob, for a Blazor Server circuit, whose messages from the page are capped: .NET asks for it as
+ * an `IJSStreamReference`, and Blazor turns the returned Blob into one itself (returning a stream reference made here
+ * would be wrapped twice and refused). Null when diagnostics are off.
+ */
+export function getDiagnosticsStream(): Blob | null {
+    const snapshot = getDiagnostics();
+    return snapshot ? fitDiagnostics(snapshot) : null;
+}
+
+// What .NET reads of the stream at most (C# BelemetryJsBridge.MaxDiagnosticsBytes), with room to spare.
+const MAX_DIAGNOSTICS_BYTES = 4 * 1024 * 1024 - 64 * 1024;
+
+/**
+ * The timeline as a Blob .NET accepts: past its read limit the whole stream would be refused, so the oldest activity
+ * goes first, then the oldest failures (as the capture's own limit does), counted as `size_limit`.
+ */
+function fitDiagnostics(snapshot: DiagnosticsSnapshot): Blob {
+    let blob = new Blob([JSON.stringify(snapshot)], { type: 'application/json' });
+    for (let pass = 0; blob.size > MAX_DIAGNOSTICS_BYTES && snapshot.events.length && pass < 8; pass++) {
+        // Characters, not bytes: an underestimate for non-ASCII text, which the next pass makes up for.
+        let excess = blob.size - MAX_DIAGNOSTICS_BYTES;
+        const removed = new Set<DiagnosticEvent>();
+        for (const failures of [false, true]) {
+            for (const event of snapshot.events) {
+                if (excess <= 0) break;
+                if ((event.outcome === 'failure' || !!event.exc) !== failures) continue;
+                removed.add(event);
+                excess -= JSON.stringify(event).length + 1;
+            }
+        }
+        snapshot.events = snapshot.events.filter(event => !removed.has(event));
+        snapshot.dropped.size_limit = (snapshot.dropped.size_limit || 0) + removed.size;
+        blob = new Blob([JSON.stringify(snapshot)], { type: 'application/json' });
+    }
+    return blob;
+}
+
+/** Forgets the diagnostic timeline (and its copy kept for the next load). */
+export function clearDiagnostics(): void {
+    if (state && state.diagnostics) state.diagnostics.clear();
+}
+
+/**
+ * Saves a file .NET produced (a support bundle) as a download: `content` is bytes (WebAssembly, Hybrid) or a .NET stream
+ * reference (Server). The name is reduced to a safe file name.
+ */
+export async function downloadFile(fileName: string, content: unknown): Promise<void> {
+    let data: ArrayBuffer | Uint8Array;
+    const streamRef = content as { arrayBuffer?: () => Promise<ArrayBuffer> } | null;
+    if (streamRef && typeof streamRef.arrayBuffer === 'function') data = await streamRef.arrayBuffer();
+    else if (content instanceof Uint8Array || content instanceof ArrayBuffer) data = content;
+    else return;
+    const name = String(fileName || 'diagnostics.zip').replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 120) || 'diagnostics.zip';
+    const url = URL.createObjectURL(new Blob([data as BlobPart], { type: 'application/zip' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = name;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
 export function getContext(): BelemetryContext {
     if (!state) return { consent: 0, decided: false, sessionId: null, pseudoId: null, userId: null };
     const s = state;
@@ -510,6 +687,7 @@ export function _reset(): void {
     resetPageViewState();
     resetDocumentLoadState();
     resetWebVitalsState();
+    lastTrigger = 0;
 }
 
 /** The internal state (tests only). */
@@ -518,8 +696,8 @@ export function _getState(): State | null {
 }
 
 const api = {
-    start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
-    getStats, attachDotNet, sendRequests, Features,
+    start, isStarted, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
+    getStats, attachDotNet, sendRequests, getDiagnostics, getDiagnosticsStream, clearDiagnostics, downloadFile, Features,
 };
 
 if (typeof window !== 'undefined') {

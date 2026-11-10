@@ -19,6 +19,32 @@ public sealed class BelemetryBrowserOptions
     /// </summary>
     public bool TrackPageVisitTime { get; set; }
 
+    /// <summary>
+    /// Route templates (<c>/orders/{id:int}</c>, relative to the app's base path) that page views are matched against, as
+    /// the Blazor router matches them, besides the ones <see cref="DiscoverPageRoutes"/> finds. A page view carries the
+    /// template of the route its path matches as <c>url.template</c> - or, when none matches, its path with the segments
+    /// that look like ids replaced (<c>/orders/{n}</c>) - so the views of one page share one name. Defaults to none.
+    /// </summary>
+    public List<string> PageRoutes { get; } = [];
+
+    /// <summary>
+    /// Whether the <c>@page</c> routes of the app's components are added to <see cref="PageRoutes"/>: those of the
+    /// <see cref="PageRouteAssemblies"/>, or without any, of the entry assembly and of the component libraries it
+    /// references (a server's client project, a shared page library). Found once, by reflection, as the Blazor router
+    /// finds them. Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool DiscoverPageRoutes { get; set; } = true;
+
+    /// <summary>
+    /// The assemblies whose <c>@page</c> routes <see cref="DiscoverPageRoutes"/> reads, exactly - the router's
+    /// <c>AppAssembly</c> and <c>AdditionalAssemblies</c> (and a server's <c>AddAdditionalAssemblies</c>). Without any
+    /// (the default), discovery starts from the entry assembly and follows its references to component libraries: close
+    /// to the router's list, but a library's own pages count even when the router was not given it, and an app without
+    /// an entry assembly (.NET for Android) starts from its loaded assemblies instead. Code only: not bound from
+    /// configuration.
+    /// </summary>
+    public List<System.Reflection.Assembly> PageRouteAssemblies { get; } = [];
+
     /// <summary>The DOM events recorded as interactions. Defaults to <c>click</c>.</summary>
     public List<string> InteractionEvents { get; } = ["click"];
 

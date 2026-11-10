@@ -62,6 +62,9 @@ public static class HarnessCollectorEndpoints
             return Results.Json(new { headers = echo.Headers });
         }).RequireCors(CrossOriginPolicy);
 
+        // A request that fails: the diagnostic timeline records it as a failed request (the page's fetch span).
+        endpoints.MapGet("/test-api/fail", () => Results.Problem("The harness endpoint failed on purpose.", statusCode: 500));
+
         endpoints.MapGet("/test-api/server-telemetry", ([FromQuery] string? marker, ILoggerFactory loggers) =>
         {
             marker ??= string.Empty;

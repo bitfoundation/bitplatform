@@ -26,8 +26,8 @@
 //   --bit-FileInput-drop-zone-border-style    rule style of the drop zone panel                (default: dashed)
 //   --bit-FileInput-drop-zone-icon-size       glyph size inside the drop zone panel            (default: spacing(4))
 //   --bit-FileInput-description-color         color of the hint under the browse button        (default: $clr-fg-sec)
-//   --bit-FileInput-description-font-size     text size of that hint, of the file size and
-//                                             of the folder beside it                          (default: $tg-fs-xs)
+//   --bit-FileInput-description-font-size     text size of that hint, of the error message, of
+//                                             the file size and of the folder beside it        (default: $tg-fs-xs)
 //   --bit-FileInput-drop-color                rule and text of the drop indicator              (default: the text color)
 //   --bit-FileInput-drop-background           fill of the drop indicator                       (default: the hover color)
 //   --bit-FileInput-drop-border-style         border style of the drop indicator               (default: dashed)
@@ -44,7 +44,8 @@
 //   --bit-FileInput-file-size-color           color of the file size and of the folder         (default: $clr-fg-sec)
 //   --bit-FileInput-error-color               message and border of an invalid file item       (default: $clr-err)
 //   --bit-FileInput-invalid-color             role color, and focus ring, of the browse button
-//                                             while the value fails the form's validation      (default: $clr-err / $clr-err-focus)
+//                                             while the value is invalid, and the error message
+//                                             under it                       (default: $clr-err / $clr-err-focus / $clr-err-fg)
 //   --bit-FileInput-invalid-background        background of an invalid file item               (default: the item background)
 //   --bit-FileInput-preview-size              side of the thumbnail and of the type glyph      (default: spacing(5))
 //   --bit-FileInput-preview-radius            corner radius of the thumbnail                   (default: $shp-radius-sm)
@@ -325,6 +326,16 @@ $fin-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     outline-color: var(--bit-fin-clr, var(--bit-FileInput-drop-color, var(--bit-fin-c)));
 }
 
+// The rejection of the selection as a whole is colored like the browse button it turns to the error role, so the two
+// follow one variable - read as text on the page, hence the role's foreground. It is sized like the hint it sits
+// above, and it keeps its color while the file input is disabled: a message gone grey stops reading as the reason.
+.bit-fin-erm {
+    margin-top: spacing(0.5);
+    overflow-wrap: break-word;
+    color: var(--bit-FileInput-invalid-color, #{$clr-err-fg});
+    font-size: var(--bit-fin-fs-fontsize, var(--bit-FileInput-description-font-size, #{$tg-fs-xs}));
+}
+
 .bit-fin-dsc {
     margin-top: spacing(0.5);
     color: var(--bit-FileInput-description-color, #{$clr-fg-sec});
@@ -567,6 +578,11 @@ $fin-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 }
 
 .bit-fin-lvr {
+    @include visually-hidden;
+}
+
+// The live region of the error and the text an error template is described by: read, never seen.
+.bit-fin-vhd {
     @include visually-hidden;
 }
 

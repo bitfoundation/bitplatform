@@ -2450,8 +2450,20 @@ public class BitDataGridTests : BunitTestContext
         var single = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Single));
         Assert.IsNull(single.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
 
-        var multiple = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
+        var multiple = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.CellNavigation, true);
+        });
         Assert.AreEqual("true", multiple.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+
+        // A table may not carry it: without cell navigation the grid is one, and its rows tell the selection through
+        // aria-selected and their checkboxes.
+        var table = RenderGrid(configure: parameters => parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
+        Assert.AreEqual("table", table.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.IsNull(table.Find(".bit-dtg-table").GetAttribute("aria-multiselectable"));
+        Assert.AreEqual("false", table.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-selected"));
+        Assert.IsNotNull(table.Find(".bit-dtg-body .bit-dtg-cell-select input[type=checkbox]"));
     }
 
     // ------------------------------------------------------------ Clipboard
@@ -3268,6 +3280,111 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the press of a double click starts no drag");
     }
 
+    // Over a fast link the overlay of the first press can reach the browser before that press is released, and it goes
+    // away only a round trip after the release: the second press then lands on the overlay rather than on the handle -
+    // on the overlay the grid has already taken down by the time that press reaches it, through the handler it had.
+    [TestMethod]
+    public async Task AutoFitRunsOnTheSecondPressOfADoubleClickThatLandsOnTheDragOverlay()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+        var overlayPress = OverlayMouseDown(component);
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+
+        // The pointer shakes a pixel between the two presses, which is still a double click, and the release of the first
+        // press lands on the overlay, which the grid takes down.
+        component.Find(".bit-dtg-resize-overlay").PointerMove(new PointerEventArgs { ClientX = 101 });
+        component.Find(".bit-dtg-resize-overlay").PointerUp();
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count);
+
+        await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
+
+        Assert.AreEqual(1, measures());
+        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the double click leaves no drag behind");
+    }
+
+    // A column whose handle is gone by the time the second press reaches the overlay - the grid turned off resizing in
+    // between - is fitted by no press, as the press of its handle could not have reached it either.
+    [TestMethod]
+    public async Task AutoFitIgnoresADoubleClickOnTheDragOverlayOfAColumnNoLongerResizable()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+        var overlayPress = OverlayMouseDown(component);
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+        component.Find(".bit-dtg-resize-overlay").PointerUp();
+
+        component.Render(parameters => parameters.Add(p => p.Resizable, false));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resizer").Count);
+
+        await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
+
+        Assert.AreEqual(0, measures());
+    }
+
+    // The handler of the drag overlay's mousedown, which a press on an overlay the grid has already taken down still
+    // reaches (the browser holds the handler until the render that removed it has arrived) and bUnit no longer can.
+    private static Func<MouseEventArgs, Task> OverlayMouseDown(IRenderedComponent<BitDataGrid<TestRow>> component)
+    {
+        return typeof(BitDataGrid<TestRow>).GetMethod("OnResizeOverlayMouseDownAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                                           .CreateDelegate<Func<MouseEventArgs, Task>>(component.Instance);
+    }
+
+    // A double click that starts on the overlay - a cell double-clicked under an overlay a slow link keeps up after a
+    // click on a handle - pairs its presses with each other, not with the handle's.
+    [TestMethod]
+    public void AutoFitIgnoresADoubleClickWhoseFirstPressLandsOnTheDragOverlay()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+
+        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
+
+        Assert.AreEqual(0, measures());
+    }
+
+    // A press that has dragged the edge is no first press of a double click: a double click under the overlay the drag
+    // leaves up for a round trip fits nothing.
+    [TestMethod]
+    public void AutoFitIgnoresADoubleClickOnTheDragOverlayAfterADrag()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+
+        component.Find(".bit-dtg-resize-overlay").PointerMove(new PointerEventArgs { ClientX = 160 });
+        component.Find(".bit-dtg-resize-overlay").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
+
+        Assert.AreEqual(0, measures());
+    }
+
     [TestMethod]
     public async Task AutoFitStaysWithinTheColumnsWidthBounds()
     {
@@ -3405,12 +3522,116 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void FlatGridStaysAGridWithNoRowLevels()
+    public void FlatGridIsNoTreegridAndHasNoRowLevels()
     {
-        var component = RenderGrid();
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
 
         Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-level"));
+
+        var table = RenderGrid();
+
+        Assert.AreEqual("table", table.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.IsNull(table.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-level"));
+    }
+
+    // ------------------------------------------------------- Table or grid
+
+    // The grid role promises the keyboard of the ARIA grid pattern, a cell that takes the focus and arrow keys that move
+    // it; a grid none of whose cells can be focused is a table, whose rows, headers and cells a screen reader walks with
+    // its own table commands.
+    [TestMethod]
+    public void AGridNoCellOfWhichTakesTheFocusIsATable()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+            parameters.Add(p => p.ShowRowNumbers, true);
+            parameters.Add(p => p.Filterable, true);
+        });
+        component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[1].Click();
+
+        var table = component.Find(".bit-dtg-table");
+        Assert.AreEqual("table", table.GetAttribute("role"));
+        Assert.AreEqual("7", table.GetAttribute("aria-rowcount"), "a header row, a filter row and five data rows");
+        Assert.IsNotNull(table.GetAttribute("aria-colcount"));
+        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count, "no cell of a table is a grid cell");
+        Assert.AreEqual(0, component.FindAll("[tabindex='0'][role=cell], [tabindex='-1'][role=cell]").Count, "and none takes the focus");
+
+        var headers = component.FindAll(".bit-dtg-header-row > [role=columnheader]");
+        Assert.IsTrue(headers.Count > 0);
+        Assert.AreEqual(1, headers.Count(h => h.GetAttribute("aria-sort") == "ascending"), "a table's column header carries its sort as well");
+
+        var firstRow = component.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsTrue(firstRow.QuerySelectorAll(":scope > [aria-colindex]").All(c => c.GetAttribute("role") == "cell"),
+            "the row number, the checkbox and every data cell of a row");
+        var filterCells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
+        Assert.IsTrue(filterCells.Count > 0 && filterCells.All(c => c.GetAttribute("role") == "cell"));
+    }
+
+    [TestMethod]
+    [DataRow("CellNavigation")]
+    [DataRow("Single selection")]
+    [DataRow("Cell editing")]
+    public void AGridWhoseCellsTakeTheFocusStaysAGrid(string by)
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            switch (by)
+            {
+                case "CellNavigation":
+                    parameters.Add(p => p.CellNavigation, true);
+                    break;
+                case "Single selection":
+                    parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+                    break;
+                case "Cell editing":
+                    parameters.Add(p => p.Editable, true);
+                    parameters.Add(p => p.EditMode, BitDataGridEditMode.Cell);
+                    break;
+            }
+        });
+
+        Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
+        Assert.AreEqual(1, component.FindAll("[role=gridcell][tabindex='0']").Count, "one cell is the grid's tab stop");
+    }
+
+    // A detail row is no reason for the grid role: the toggle column's button says whether the detail is open, and a row
+    // that opens it on a click is no cell taking the focus either.
+    [TestMethod]
+    public void AGridWithDetailRowsIsATableToo()
+    {
+        var toggled = RenderGrid(configure: parameters =>
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}"))));
+
+        Assert.AreEqual("table", toggled.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual("cell", toggled.Find(".bit-dtg-body .bit-dtg-cell-detail").GetAttribute("role"));
+        Assert.AreEqual("false", toggled.Find(".bit-dtg-body .bit-dtg-cell-detail button").GetAttribute("aria-expanded"));
+
+        var rowClick = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+
+        Assert.AreEqual("table", rowClick.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, rowClick.FindAll("[role=gridcell]").Count);
+    }
+
+    [TestMethod]
+    public void TheRoleFollowsCellNavigationAsItChanges()
+    {
+        var component = RenderGrid();
+        Assert.AreEqual("table", component.Find(".bit-dtg-table").GetAttribute("role"));
+
+        component.Render(parameters => parameters.Add(p => p.CellNavigation, true));
+        Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
+
+        component.Render(parameters => parameters.Add(p => p.CellNavigation, false));
+        Assert.AreEqual("table", component.Find(".bit-dtg-table").GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count);
     }
 
     // -------------------------------------------------------- Multi-sorting
@@ -4664,7 +4885,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
     private static IElement DataCell(IRenderedComponent<BitDataGrid<TestRow>> component, int rowIndex, int colIndex)
-        => component.FindAll(".bit-dtg-body > .bit-dtg-row")[rowIndex].QuerySelectorAll("[role=gridcell][aria-colindex]")
+        => component.FindAll(".bit-dtg-body > .bit-dtg-row")[rowIndex].QuerySelectorAll("[role=gridcell][aria-colindex], [role=cell][aria-colindex]")
             .Where(c => !c.ClassList.Contains("bit-dtg-cell-command")).ElementAt(colIndex);
 
     [TestMethod]

@@ -252,7 +252,49 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Accessibility" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <div>
+        The BitBreadcrumb follows the WAI-ARIA breadcrumb pattern: a <code>nav</code> landmark named by <b>AriaLabel</b>
+        ("Breadcrumb" by default) holds an ordered list of the steps, the dividers and the icons are hidden from screen
+        readers, and the current page (<b>IsSelected</b>) carries <code>aria-current="page"</code>, also when
+        <b>SelectedItemAsText</b> renders it as plain text. A step with an <b>Href</b> is a link, one without it that has
+        something to run on click is a button, and any other is plain text, so Tab walks the links and the buttons, each
+        drawing a focus ring. A disabled step (<b>IsDisabled</b>, or every step and the overflow button under
+        <b>Disabled</b>) is announced as unavailable and leaves the tab order: a link keeps its role with
+        <code>aria-disabled="true"</code> but drops its address, and a button gets the <code>disabled</code> attribute.
+        An icon-only step needs an <b>AriaLabel</b>, and a link opening a new tab says so ("(opens in a new tab)"), in
+        the words of <b>NewTabHint</b>, or not at all with <b>NoNewTabHint</b>.
+    </div>
+    <br />
+    <div>
+        The overflow button is named by <b>OverflowAriaLabel</b> ("More items" by default) and announces its menu with
+        <code>aria-haspopup="menu"</code> and <code>aria-expanded</code>. Enter, Space or Arrow Down open the menu on its
+        first item and Arrow Up on its last. In the menu the arrow keys move between the items, wrapping around, Home and
+        End jump to the first and the last, a letter jumps to the next item starting with it, and disabled items are
+        skipped. Escape or Tab closes the menu and puts the focus back on the overflow button, and so does choosing an
+        item. With <b>ExpandOverflow</b> the button is a plain button instead, which moves the focus to the first link or
+        button it reveals.
+    </div>
+    <br />
+    <div>
+        In Windows High Contrast the disabled steps are drawn in the system's disabled color and the menu gets a border,
+        and with reduced motion turned on the menu appears without its entrance animation.
+    </div>
+    <br />
+    <div class="example-box">
+        <div>
+            <div>Tab to the overflow button and press Enter, move with the arrow keys, Home, End or the letters P, E and C, then press Escape</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithCategories"
+                           NameSelectors="nameSelectors"
+                           AriaLabel="Product categories"
+                           OverflowAriaLabel="Show the hidden categories"
+                           MaxDisplayedItems="3"
+                           OverflowIndex="1" />
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>The color role of the items, the dividers and the focus ring.</div>
     <br />
     <div class="example-box">
@@ -291,7 +333,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -324,7 +366,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Sizes the text, the glyphs and the overflow menu together.</div>
     <br />
     <div class="example-box">
@@ -343,7 +385,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         <b>Style</b>/<b>Class</b> reach the root, the mapped <b>Style</b>/<b>Class</b> of an item reach that item, and
         <b>Styles</b>/<b>Classes</b> reach every part by name. The <BitLink Href="#css-variables-section">CSS variables</BitLink>
@@ -391,7 +433,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">

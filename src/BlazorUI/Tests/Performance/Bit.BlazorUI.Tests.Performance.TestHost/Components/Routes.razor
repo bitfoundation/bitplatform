@@ -1,4 +1,5 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@* The host's pages and the performance pages of the client project, where they run on the server. *@
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="[typeof(ClientRoutes).Assembly]">
     <Found Context="routeData">
         <RouteView RouteData="routeData" />
     </Found>

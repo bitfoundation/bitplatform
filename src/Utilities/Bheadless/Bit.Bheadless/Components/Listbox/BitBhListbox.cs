@@ -377,6 +377,23 @@ public class BitBhListbox<TValue> : BitBhComponentBase, IDisposable
         StateHasChanged();
     }
 
+    /// <summary>Selects every enabled option of a multi-select listbox, or none when all of them are selected.</summary>
+    public async Task SelectAllAsync()
+    {
+        if (IsDisabled || !Multiple) return;
+        var enabled = Enumerable.Range(0, State.Count).Where(i => !State.DisabledAt(i)).Select(State.ValueAt).ToList();
+        var all = enabled.All(v => CurrentValues.Contains(v, EffectiveComparer));
+        // Disabled options keep their state either way.
+        var kept = CurrentValues.Where(v => !enabled.Contains(v, EffectiveComparer));
+        var list = all ? kept.ToList() : kept.Concat(enabled).ToList();
+        if (!IsProvided(nameof(Values))) _values = list;
+        await ValuesChanged.InvokeAsync(list);
+        await OnValuesChange.InvokeAsync(list);
+        _binding?.NotifyChanged();
+        _binding?.ReportTo(FieldContext);
+        StateHasChanged();
+    }
+
     // ── Keyboard (focus stays on the button) ─────────────────────────────────
 
     internal async Task HandleKeyDownAsync(KeyboardEventArgs e)
@@ -416,6 +433,25 @@ public class BitBhListbox<TValue> : BitBhComponentBase, IDisposable
         if (e.Key == " " && State.Typeahead.IsActive)
         {
             State.Search(" ");
+            return;
+        }
+
+        // Multi-select listbox (APG): Ctrl+A selects every option (or none, when all are), Shift+arrows move and
+        // toggle the option moved to.
+        if (Multiple && (e.CtrlKey || e.MetaKey) && e.Key is "a" or "A")
+        {
+            await SelectAllAsync();
+            return;
+        }
+        if (Multiple && e.ShiftKey && !e.AltKey && e.Key is "ArrowDown" or "ArrowUp")
+        {
+            var from = State.ActiveIndex;
+            var to = State.Step(from, e.Key == "ArrowDown" ? +1 : -1, loop: false);
+            if (to != from && to >= 0)
+            {
+                State.SetActiveIndex(to);
+                if (!e.Repeat || !State.IsSelected(State.ValueAt(to))) await SelectAsync(State.ValueAt(to));
+            }
             return;
         }
 

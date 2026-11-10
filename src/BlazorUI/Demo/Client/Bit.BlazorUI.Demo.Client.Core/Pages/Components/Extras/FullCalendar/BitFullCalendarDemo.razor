@@ -387,7 +387,9 @@
             <div>
                 <b>AriaLabel</b> names the calendar and makes it a page region. Tab reaches each grid once - a multi-day event
                 once per week row - and the arrow keys walk it, on into the next month (Home/End; PageUp/PageDown turn the
-                month, Shift the year). Enter or Space on a day or slot adds an event; Alt+Arrow moves and Shift+Arrow resizes
+                month, Shift the year). Enter or Space on a day or slot adds an event. In a month nobody can add to (ReadOnly,
+                or AllowAdd off) the day numbers are the stop the arrows walk, each read with its full date, and Enter selects
+                the day - or opens it, with NavLinks. Alt+Arrow moves and Shift+Arrow resizes
                 a focused event. Escape closes any dialog, and the focus returns to the event even when a keyboard edit or a
                 save redrew it. Dialog errors are tied to their fields; refusals, ranges and search results are announced.
             </div>

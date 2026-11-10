@@ -1,0 +1,64 @@
+﻿@page "/tw/pagination"
+
+<PageTitle>Pagination (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Pagination</h1>
+    <p class="bb-subtitle">A navigation landmark with a page range that keeps the ends and the neighbours of the current page, as buttons or as links.</p>
+</div>
+
+<SectionSwitcher Slug="pagination" />
+
+<TwDemoBlock Title="Buttons" Code="@_basicCode">
+    <Description>
+        The current page has <code>aria-current="page"</code> (styled with <code>aria-[current=page]:</code>); Previous / Next
+        get <code>data-disabled</code> at the ends.
+    </Description>
+    <LiveContent>
+        <BitBhPagination @bind-Page="currentPage" TotalItems="230" PageSize="10" class="flex flex-wrap items-center gap-1">
+            <Template Context="p">
+                <BitBhPaginationPrevious class="inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-sm text-zinc-700 hover:bg-zinc-100 data-disabled:cursor-not-allowed data-disabled:opacity-50">‹</BitBhPaginationPrevious>
+                @foreach (var entry in p.Entries)
+                {
+                    if (entry.IsEllipsis)
+                    {
+                        <BitBhPaginationEllipsis @key="entry.Key" class="min-w-6 text-center text-zinc-500" />
+                    }
+                    else
+                    {
+                        <BitBhPaginationItem @key="entry.Key" Page="entry.Page" class="inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-sm tabular-nums text-zinc-700 hover:bg-zinc-100 aria-[current=page]:border-blue-600 aria-[current=page]:bg-blue-600 aria-[current=page]:text-white">@entry.Page</BitBhPaginationItem>
+                    }
+                }
+                <BitBhPaginationNext class="inline-flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-sm text-zinc-700 hover:bg-zinc-100 data-disabled:cursor-not-allowed data-disabled:opacity-50">›</BitBhPaginationNext>
+            </Template>
+        </BitBhPagination>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private int currentPage = 7;
+
+    private const string _basicCode = """
+<BitBhPagination @bind-Page="currentPage" TotalItems="230" PageSize="10" class="flex flex-wrap items-center gap-1">
+    <Template Context="p">
+        <BitBhPaginationPrevious class="h-9 min-w-9 rounded-lg border border-zinc-200 bg-white px-2 text-sm
+                                        hover:bg-zinc-100 data-disabled:opacity-50">‹</BitBhPaginationPrevious>
+        @foreach (var entry in p.Entries)
+        {
+            if (entry.IsEllipsis)
+            {
+                <BitBhPaginationEllipsis @key="entry.Key" class="min-w-6 text-center text-zinc-500" />
+            }
+            else
+            {
+                <BitBhPaginationItem @key="entry.Key" Page="entry.Page"
+                                     class="h-9 min-w-9 rounded-lg border border-zinc-200 bg-white px-2 text-sm hover:bg-zinc-100
+                                            aria-[current=page]:bg-blue-600 aria-[current=page]:text-white">@entry.Page</BitBhPaginationItem>
+            }
+        }
+        <BitBhPaginationNext class="h-9 min-w-9 rounded-lg border border-zinc-200 bg-white px-2 text-sm
+                                    hover:bg-zinc-100 data-disabled:opacity-50">›</BitBhPaginationNext>
+    </Template>
+</BitBhPagination>
+""";
+}

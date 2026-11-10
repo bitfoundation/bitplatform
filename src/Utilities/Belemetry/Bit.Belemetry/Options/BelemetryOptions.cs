@@ -50,7 +50,10 @@ public sealed class BelemetryOptions
     /// <summary>Data minimization.</summary>
     public BelemetryPrivacyOptions Privacy { get; } = new();
 
-    /// <summary>Protection against error floods (duplicates and a per-minute cap), on both sides.</summary>
+    /// <summary>
+    /// The .NET exceptions nothing caught (unhandled and unobserved task exceptions), and protection against error
+    /// floods (duplicates and a per-minute cap), on both sides.
+    /// </summary>
     public BelemetryErrorOptions Errors { get; } = new();
 
     /// <summary>
@@ -61,6 +64,9 @@ public sealed class BelemetryOptions
     /// Defaults to 32768; zero or less keeps strings whole.
     /// </summary>
     public int MaxValueLength { get; set; } = 32768;
+
+    /// <summary>Production diagnostics: the diagnostic timeline, exception grouping and support bundles. Off by default.</summary>
+    public BelemetryDiagnosticsOptions Diagnostics { get; } = new();
 
     /// <summary>The browser script.</summary>
     public BelemetryBrowserOptions Browser { get; } = new();

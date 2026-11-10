@@ -1,0 +1,50 @@
+﻿@page "/tw/color-picker"
+
+<PageTitle>Color Picker (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Color Picker</h1>
+    <p class="bb-subtitle">A color area, channel sliders, swatches and a hex field around one immutable color value.</p>
+</div>
+
+<SectionSwitcher Slug="color-picker" />
+
+<TwDemoBlock Title="Area and hue" Code="@_code">
+    <Description>
+        Arbitrary values read the CSS variables the parts expose: <code>--bit-bh-color-area-hue</code>,
+        <code>--bit-bh-color-slider-gradient</code> and <code>--bit-bh-color</code>.
+    </Description>
+    <LiveContent>
+        <div class="grid w-64 gap-3">
+            <BitBhColorArea @bind-Value="color" class="h-40 cursor-crosshair rounded-lg bg-[linear-gradient(to_top,#000,transparent),linear-gradient(to_right,#fff,var(--bit-bh-color-area-hue))]">
+                <BitBhColorAreaThumb aria-label="Color" class="h-4 w-4 rounded-full border-2 border-white bg-[var(--bit-bh-color)] shadow ring-1 ring-black/40 focus-visible:outline-2 focus-visible:outline-blue-600" />
+            </BitBhColorArea>
+            <BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Hue" class="relative flex h-6 touch-none items-center">
+                <BitBhSliderTrack class="relative h-3 flex-1 rounded-full bg-[image:var(--bit-bh-color-slider-gradient)]" />
+                <BitBhSliderThumb aria-label="Hue" class="h-4 w-4 rounded-full border-2 border-white bg-[var(--bit-bh-color)] shadow ring-1 ring-black/40 focus-visible:outline-2 focus-visible:outline-blue-600" />
+            </BitBhColorSlider>
+            <div class="flex items-center gap-2">
+                <BitBhColorSwatch Color="color" class="inline-block h-8 w-8 rounded-md ring-1 ring-black/15" />
+                <span class="font-mono text-sm text-zinc-700">@color.ToHex()</span>
+            </div>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private BitBhColor color = BitBhColor.Parse("#16a34a");
+
+    private const string _code = """
+<BitBhColorArea @bind-Value="color"
+                class="h-40 rounded-lg bg-[linear-gradient(to_top,#000,transparent),linear-gradient(to_right,#fff,var(--bit-bh-color-area-hue))]">
+    <BitBhColorAreaThumb aria-label="Color" class="h-4 w-4 rounded-full border-2 border-white bg-[var(--bit-bh-color)]" />
+</BitBhColorArea>
+
+<BitBhColorSlider @bind-Value="color" Channel="BitBhColorChannel.Hue" class="relative flex h-6 touch-none items-center">
+    <BitBhSliderTrack class="relative h-3 flex-1 rounded-full bg-[image:var(--bit-bh-color-slider-gradient)]" />
+    <BitBhSliderThumb aria-label="Hue" class="h-4 w-4 rounded-full border-2 border-white bg-[var(--bit-bh-color)]" />
+</BitBhColorSlider>
+
+<BitBhColorSwatch Color="color" class="h-8 w-8 rounded-md" />
+""";
+}

@@ -1,0 +1,27 @@
+@inherits WorkbenchComponentBase
+
+@* The overlays open from their controls, or from the overlay page switch for links and screenshots. *@
+<ThemeSection @ref="section" Id="overlays" Title="@Localizer[nameof(WorkbenchStrings.ThemeOverlays)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeOverlaysHint)]">
+    <div class="grid">
+        <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" @bind-IsOpen="isDropdownOpen" />
+        <BitDatePicker Label="@BirthDateLabel" Value="sampleDate" @bind-IsOpen="isDatePickerOpen" />
+    </div>
+    <div class="row">
+        <BitMenuButton Text="@Localizer[nameof(WorkbenchStrings.ThemeActions)]" Items="menuItems" @bind-IsOpen="isMenuOpen" />
+        <BitCallout @bind-IsOpen="isCalloutOpen" ShowArrow>
+            <Anchor>
+                <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Info">@Localizer[nameof(WorkbenchStrings.ThemeOverlayCallout)]</BitButton>
+            </Anchor>
+            <Content>
+                <div class="callout-body">
+                    <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysDeliveryTimes)]</BitText>
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysOrdersBefore1000Arrive)]</BitText>
+                </div>
+            </Content>
+        </BitCallout>
+        <BitButton Variant="BitVariant.Outline" OnClick="OnDialog">@Localizer[nameof(WorkbenchStrings.ThemeOverlayDialog)]</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="OnModal">@Localizer[nameof(WorkbenchStrings.ThemeOverlayModal)]</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="OnPanel">@Localizer[nameof(WorkbenchStrings.ThemeOverlayPanel)]</BitButton>
+        <BitButton Variant="BitVariant.Outline" OnClick="OnSnackBars">@Localizer[nameof(WorkbenchStrings.ThemeOverlaySnackBar)]</BitButton>
+    </div>
+</ThemeSection>

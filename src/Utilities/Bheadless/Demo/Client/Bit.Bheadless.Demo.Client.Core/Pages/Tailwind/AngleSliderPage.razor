@@ -1,0 +1,110 @@
+﻿@page "/tw/angle-slider"
+
+<PageTitle>Angle slider (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Angle slider</h1>
+    <p class="bb-subtitle">A dial that picks an angle - a rotation, a direction - by pointer or keyboard, with optional marks around it.</p>
+</div>
+
+<SectionSwitcher Slug="angle-slider" />
+
+<TwDemoBlock Title="Rotation" Code="@_basicCode">
+    <Description>
+        A press or drag anywhere on the dial points the value at the pointer. The thumb is the focusable
+        <code>role="slider"</code> ("90 degrees"): → / ↑ add a degree, ← / ↓ take one away and wrap past 0, Page Up / Page Down
+        and Shift + arrows move 15°, Home / End go to 0° and 359°. The thumb and markers fill the dial rotated to their angle, so
+        a needle or tick drawn at their top center points at it.
+    </Description>
+    <LiveContent>
+        <div class="flex flex-wrap items-center gap-6">
+            <BitBhAngleSlider @bind-Value="rotation" class="@DialClass">
+                @foreach (var mark in _quarters)
+                {
+                    <BitBhAngleSliderMarker Value="mark" class="@TickClass" />
+                }
+                <BitBhAngleSliderThumb aria-label="Rotation" class="@ThumbClass">
+                    <span class="@KnobClass"></span>
+                </BitBhAngleSliderThumb>
+            </BitBhAngleSlider>
+            <span class="text-sm text-zinc-600">Rotation: <strong class="font-semibold tabular-nums text-zinc-900">@rotation°</strong></span>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Compass in a field" Code="@_compassCode">
+    <Description>
+        <code>Step="45"</code> snaps to the eight compass points; a <code>BitBhField</code>'s label names the thumb and
+        <code>ValueText</code> says "90°, east". Each marker exposes <code>--bit-bh-marker-angle</code>, which turns its label
+        upright.
+    </Description>
+    <LiveContent>
+        <BitBhField class="grid justify-items-start gap-2">
+            <BitBhLabel class="text-sm font-medium text-zinc-900">Wind direction</BitBhLabel>
+            <BitBhAngleSlider @bind-Value="wind" Step="45" LargeStep="90" ValueText="@(v => $"{v}°, {Point(v)}")"
+                              class="@("m-7 " + DialClass)">
+                @foreach (var (angle, name) in _points)
+                {
+                    <BitBhAngleSliderMarker Value="angle" class="group">
+                        <span class="@LabelClass">@name</span>
+                    </BitBhAngleSliderMarker>
+                }
+                <BitBhAngleSliderThumb class="@ThumbClass">
+                    <span class="@KnobClass"></span>
+                </BitBhAngleSliderThumb>
+            </BitBhAngleSlider>
+        </BitBhField>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private double rotation = 90;
+    private double wind = 225;
+    private static readonly double[] _quarters = [0, 90, 180, 270];
+    private static readonly (double Angle, string Name)[] _points =
+        [(0, "N"), (45, "NE"), (90, "E"), (135, "SE"), (180, "S"), (225, "SW"), (270, "W"), (315, "NW")];
+    private static readonly string[] _names = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+
+    private static string Point(double angle) => _names[(int)Math.Round(angle / 45) % 8];
+
+    private const string DialClass = "size-32 cursor-pointer rounded-full border border-zinc-300 bg-white after:absolute after:left-1/2 after:top-1/2 after:size-2.5 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-blue-600 after:content-[''] data-dragging:cursor-grabbing";
+    private const string TickClass = "before:absolute before:left-[calc(50%-1px)] before:top-0.5 before:h-1.5 before:w-0.5 before:bg-zinc-400 before:content-['']";
+    private const string ThumbClass = "group rounded-full outline-none before:absolute before:left-[calc(50%-1.5px)] before:top-3 before:h-[calc(50%-0.75rem)] before:w-[3px] before:rounded-sm before:bg-blue-600 before:content-['']";
+    private const string KnobClass = "absolute left-1/2 top-1 size-4 -translate-x-1/2 rounded-full border-2 border-blue-600 bg-white group-data-focus-visible:ring-4 group-data-focus-visible:ring-blue-600/35";
+    private const string LabelClass = "absolute -top-6 left-1/2 -ml-3 w-6 rotate-[calc(-1*var(--bit-bh-marker-angle))] text-center text-xs text-zinc-600 group-data-[state=at-value]:font-semibold group-data-[state=at-value]:text-zinc-900";
+
+    private const string _basicCode = """
+<BitBhAngleSlider @bind-Value="rotation"
+                  class="size-32 cursor-pointer rounded-full border border-zinc-300 bg-white after:absolute after:left-1/2 after:top-1/2 after:size-2.5 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded-full after:bg-blue-600 after:content-[''] data-dragging:cursor-grabbing">
+    @foreach (var mark in new double[] { 0, 90, 180, 270 })
+    {
+        @* Markers and the thumb fill the dial, rotated: draw at the top center. *@
+        <BitBhAngleSliderMarker Value="mark"
+                                class="before:absolute before:left-[calc(50%-1px)] before:top-0.5 before:h-1.5 before:w-0.5 before:bg-zinc-400 before:content-['']" />
+    }
+    <BitBhAngleSliderThumb aria-label="Rotation"
+                           class="group rounded-full outline-none before:absolute before:left-[calc(50%-1.5px)] before:top-3 before:h-[calc(50%-0.75rem)] before:w-[3px] before:rounded-sm before:bg-blue-600 before:content-['']">
+        <span class="absolute left-1/2 top-1 size-4 -translate-x-1/2 rounded-full border-2 border-blue-600 bg-white group-data-focus-visible:ring-4 group-data-focus-visible:ring-blue-600/35"></span>
+    </BitBhAngleSliderThumb>
+</BitBhAngleSlider>
+""";
+
+    private const string _compassCode = """
+<BitBhField class="grid justify-items-start gap-2">
+    <BitBhLabel class="text-sm font-medium text-zinc-900">Wind direction</BitBhLabel>
+    <BitBhAngleSlider @bind-Value="wind" Step="45" LargeStep="90" ValueText="@(v => $"{v}°, {Point(v)}")"
+                      class="m-7 size-32 cursor-pointer rounded-full border border-zinc-300 bg-white ...">
+        @foreach (var (angle, name) in points)
+        {
+            <BitBhAngleSliderMarker Value="angle" class="group">
+                @* --bit-bh-marker-angle turns the label upright. *@
+                <span class="absolute -top-6 left-1/2 -ml-3 w-6 rotate-[calc(-1*var(--bit-bh-marker-angle))] text-center text-xs text-zinc-600 group-data-[state=at-value]:font-semibold group-data-[state=at-value]:text-zinc-900">@name</span>
+            </BitBhAngleSliderMarker>
+        }
+        <BitBhAngleSliderThumb class="group rounded-full outline-none ...">
+            <span class="absolute left-1/2 top-1 size-4 -translate-x-1/2 rounded-full border-2 border-blue-600 bg-white group-data-focus-visible:ring-4 group-data-focus-visible:ring-blue-600/35"></span>
+        </BitBhAngleSliderThumb>
+    </BitBhAngleSlider>
+</BitBhField>
+""";
+}

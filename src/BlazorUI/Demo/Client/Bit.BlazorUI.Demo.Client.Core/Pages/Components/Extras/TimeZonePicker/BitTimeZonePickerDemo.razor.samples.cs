@@ -254,6 +254,10 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
 ];";
 
     private readonly string example19RazorCode = @"
+<BitTimeZonePicker TValue=""string"" AriaLabel=""Meeting time zone"" Placeholder=""Named by AriaLabel alone"" />
+<BitTimeZonePicker TValue=""string"" Label=""Type-ahead"" NoSearchBox Placeholder=""Focus me and type a city"" />";
+
+    private readonly string example20RazorCode = @"
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.Primary"" Placeholder=""Primary"" />
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.Secondary"" Placeholder=""Secondary"" />
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.Tertiary"" Placeholder=""Tertiary"" />
@@ -265,7 +269,7 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.PrimaryForeground"" Placeholder=""PrimaryForeground"" />
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.TertiaryBorder"" Placeholder=""TertiaryBorder"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTimeZonePicker TValue=""string""
@@ -274,12 +278,12 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
                    ResponsiveCloseIcon=""@BitIconInfo.Css(""fa-solid fa-xmark"")""
                    Placeholder=""Select a time zone"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitTimeZonePicker Size=""BitSize.Small"" DefaultValue=""@(""America/Chicago"")"" />
 <BitTimeZonePicker Size=""BitSize.Medium"" DefaultValue=""@(""America/Chicago"")"" />
 <BitTimeZonePicker Size=""BitSize.Large"" DefaultValue=""@(""America/Chicago"")"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitTimeZonePicker DefaultValue=""@(""Europe/Amsterdam"")""
                    Style=""--bit-TimeZonePicker-radius: 1.5rem;
                           --bit-TimeZonePicker-focus-color: #7c4dff;
@@ -297,7 +301,7 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
                    Class=""custom-class""
                    Styles=""@(new() { Field = ""border-color: blueviolet;"", ItemName = ""color: blueviolet;"" })""
                    Classes=""@(new() { Text = ""custom-text"" })"" />";
-    private const string example22ScssCode = @"
+    private const string example23ScssCode = @"
 // The public custom properties are inherited, so one scope re-skins every picker inside it, and the
 // time zone list each one opens, without a rule naming a part of the component.
 .tzp-brand-scope {
@@ -322,16 +326,16 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
     color: blueviolet;
     font-weight: bold;
 }";
-    private readonly DemoCodeFile[] example22CodeFiles =
+    private readonly DemoCodeFile[] example23CodeFiles =
     [
-        new("BitTimeZonePickerDemo.razor.scss", example22ScssCode),
+        new("BitTimeZonePickerDemo.razor.scss", example23ScssCode),
     ];
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <div dir=""rtl"">
     <BitTimeZonePicker TValue=""string"" Dir=""BitDir.Rtl"" TimeZones=""persianTimeZones"" Label=""منطقه زمانی"" Placeholder=""یک منطقه زمانی انتخاب کنید"" />
 </div>";
-    private readonly string example23CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private readonly List<BitTimeZone> persianTimeZones =
 [
     new(""Asia/Tehran"", ""تهران"", ""IR"", ""Iran Standard Time"", ""ایران""),

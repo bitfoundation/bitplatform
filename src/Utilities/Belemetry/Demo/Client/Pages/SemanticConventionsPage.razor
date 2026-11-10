@@ -74,13 +74,13 @@
             <tbody>
                 <tr>
                     <td>Page view</td>
-                    <td>Log record, <code>eventName = "browser.page_view"</code>. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>/<code>restore</code> - <code>restore</code> is a return from the back/forward cache, which fires no history event)</td>
+                    <td>Log record, <code>eventName = "browser.page_view"</code>, named (in its body) after the name given to <code>trackPageView</code>, else the page title, else its route template. Attributes: <code>url.full</code>, <code>url.path</code>, <code>url.template</code> (the route the path matches, else the path with its ids replaced), <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>/<code>restore</code> - <code>restore</code> is a return from the back/forward cache, which fires no history event)</td>
                     <td><code>bit.belemetry.page_views</code></td>
                     <td>PageViews</td>
                 </tr>
                 <tr>
                     <td>Page visit time</td>
-                    <td>Log record, <code>eventName = "browser.page_visit_time"</code>, only with <code>TrackPageVisitTime</code>: emitted for the previous page when the next page view starts, and for the current page when it is hidden. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.visit.duration</code> (ms)</td>
+                    <td>Log record, <code>eventName = "browser.page_visit_time"</code>, only with <code>TrackPageVisitTime</code>: emitted for the previous page when the next page view starts, and for the current page when it is hidden. Attributes: <code>url.full</code>, <code>url.path</code>, <code>url.template</code>, <code>page.title</code>, <code>page.visit.duration</code> (ms)</td>
                     <td><code>bit.belemetry.page_views</code></td>
                     <td>PageViews</td>
                 </tr>
@@ -340,7 +340,7 @@
           ],
           "features": 4095,                                      // instrumentations switched on by configuration
           "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-          "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
+          "pageViews": { "trackHashChanges": false, "trackVisitTime": false, "routes": [ "/", "/orders/{id:int}" ] },
           "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
           "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
           "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },

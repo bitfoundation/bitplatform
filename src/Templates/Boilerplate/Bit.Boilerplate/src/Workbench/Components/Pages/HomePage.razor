@@ -119,42 +119,47 @@
             <h2>@Localizer[nameof(WorkbenchStrings.HomePagesTitle)]</h2>
             <p>@Localizer[nameof(WorkbenchStrings.HomePagesSubtitle)]</p>
         </div>
-        @* One card per catalog page, with its review status and open comments once the review document is open. *@
+        @* The catalog's pages under their categories, as the Pages pane lists them; one card per page, with its review status and open comments once the review document is open. *@
         <div class="catalog">
-            @foreach (var entry in WorkbenchPageCatalog.Pages)
+            @foreach (var group in PageGroups)
             {
-                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
-                    <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
-                        <span class="thumbnail">
-                            <img class="light-only" data-thumbnail="@($"api/thumbnails/{entry.Key}")" alt="" />
-                            <img class="dark-only" data-thumbnail="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="" />
-                        </span>
-                        <span class="page-body">
-                            <span class="page-category"><BitIcon IconName="@entry.IconName" Size="BitSize.Small" /> @Localizer[entry.CategoryKey]</span>
-                            <span class="page-title">@Localizer[entry.TitleKey]</span>
-                            <span class="page-description">@Localizer[entry.DescriptionKey]</span>
-                            <span class="page-tags">
-                                @foreach (var tag in entry.Showcases)
-                                {
-                                    <span class="tag">@tag</span>
-                                }
-                            </span>
-                            @if (reviewSession.PageOf(entry.Key) is { } pageReview || OpenCount(entry.Key) > 0)
-                            {
-                                <span class="page-review">
-                                    @if (reviewSession.PageOf(entry.Key) is { } status)
+                <div class="catalog-group @SpanClass(group.Count())">
+                    <h3 class="catalog-group-title">@Localizer[group.Key]</h3>
+                    @foreach (var entry in group)
+                    {
+                        <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
+                            <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
+                                <span class="thumbnail">
+                                    <img class="light-only" data-thumbnail="@($"api/thumbnails/{entry.Key}")" alt="" />
+                                    <img class="dark-only" data-thumbnail="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="" />
+                                </span>
+                                <span class="page-body">
+                                    <span class="page-title"><BitIcon IconName="@entry.IconName" Color="BitColor.Primary" /> @Localizer[entry.TitleKey]</span>
+                                    <span class="page-description">@Localizer[entry.DescriptionKey]</span>
+                                    <span class="page-tags">
+                                        @foreach (var tag in entry.Showcases)
+                                        {
+                                            <span class="tag">@tag</span>
+                                        }
+                                    </span>
+                                    @if (reviewSession.PageOf(entry.Key) is { } pageReview || OpenCount(entry.Key) > 0)
                                     {
-                                        <span class="review-status status-@status.Status.ToString().ToLowerInvariant()">@Localizer[$"PageStatus{status.Status}"]</span>
-                                    }
-                                    @if (OpenCount(entry.Key) is > 0 and var open)
-                                    {
-                                        <span class="review-count"><BitIcon IconName="@BitIconName.Comment" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.OpenCommentsCount), open]</span>
+                                        <span class="page-review">
+                                            @if (reviewSession.PageOf(entry.Key) is { } status)
+                                            {
+                                                <span class="review-status status-@status.Status.ToString().ToLowerInvariant()">@Localizer[$"PageStatus{status.Status}"]</span>
+                                            }
+                                            @if (OpenCount(entry.Key) is > 0 and var open)
+                                            {
+                                                <span class="review-count"><BitIcon IconName="@BitIconName.Comment" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.OpenCommentsCount), open]</span>
+                                            }
+                                        </span>
                                     }
                                 </span>
-                            }
-                        </span>
-                    </a>
-                </Bmotion>
+                            </a>
+                        </Bmotion>
+                    }
+                </div>
             }
         </div>
     </section>

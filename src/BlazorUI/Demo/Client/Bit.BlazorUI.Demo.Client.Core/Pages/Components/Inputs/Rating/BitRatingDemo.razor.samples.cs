@@ -263,7 +263,24 @@ private void HandleOnChanging(BitRatingChangeArgs args)
     <ValidationMessage id=""rating-validation-message"" For=""@(() => ValidationModel.Value)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+</EditForm>
+
+
+<BitRating Label=""Overall""
+           Description=""Pick five stars to see the message.""
+           @bind-Value=""reviewRating""
+           ErrorMessage=""@(reviewRating == 5 ? ""Five stars need a written review."" : null)"" />
+
+<BitRating Label=""Marked invalid, explained elsewhere"" DefaultValue=""2"" Invalid />
+
+<BitRating Label=""Delivery""
+           DefaultValue=""1""
+           ErrorMessageAriaLabel=""Low scores need a reason before they are published."">
+    <ErrorMessageTemplate>
+        Low scores need a reason before they are published.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Add one</BitLink>
+    </ErrorMessageTemplate>
+</BitRating>";
     private readonly string example13CsharpCode = @"
 public class BitRatingDemoFormModel
 {
@@ -274,7 +291,10 @@ public class BitRatingDemoFormModel
 public BitRatingDemoFormModel ValidationModel = new();
 
 private void HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
+private void HandleInvalidSubmit() { }
+
+
+private double reviewRating = 5;";
     private const string example13ScssCode = @"
 .validation-message {
     color: $bit-color-error;

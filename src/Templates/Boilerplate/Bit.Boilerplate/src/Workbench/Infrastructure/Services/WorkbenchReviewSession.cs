@@ -4,8 +4,9 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// One circuit's copy of the review document, synced through the relay: the threads, page statuses, flows and the agent.
-/// Comments can always be written: on this machine they go into the document for the agent that connects, and from elsewhere
-/// they stay in the circuit. Everything else writes only in dev mode, for requests made on this machine.
+/// Comments can always be written: on this machine, or from a browser an invite link was opened in (WorkbenchReviewers), they
+/// go into the document for the agent that connects, and from anywhere else they stay in the circuit. Everything else writes
+/// only in dev mode, for requests made on this machine.
 /// </summary>
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
@@ -16,7 +17,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private IStringLocalizer<WorkbenchStrings> localizer = default!;
 
     private WorkbenchFlow[]? sampleFlows;
-    private (bool CanWrite, bool SavesComments)? access;
+    private (bool CanWrite, bool IsLocal, string? InviteCookie)? access;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
     private Timer? agentGoneTimer;
@@ -31,13 +32,22 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// <summary>Whether this circuit may write: in dev mode, with its request from this machine, decided once per circuit.</summary>
     public bool CanWrite => Access.CanWrite;
 
-    /// <summary>Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev mode.</summary>
-    public bool SavesComments => Access.SavesComments;
+    /// <summary>
+    /// Whether this circuit's comments go into the document, where an agent finds them: on this machine, with or without dev
+    /// mode, or from a reviewer elsewhere who opened an invite link.
+    /// </summary>
+    public bool SavesComments => Access.IsLocal || IsInvitedReviewer;
+
+    /// <summary>
+    /// Whether this circuit is a reviewer elsewhere who opened an invite link: their comments reach the agent, nothing else
+    /// they do is saved. Checked against the current key each time, so deleting its file revokes an open circuit too.
+    /// </summary>
+    public bool IsInvitedReviewer => Access is { IsLocal: false, InviteCookie: { } cookie } && WorkbenchReviewers.IsInvited(cookie, configuration);
 
     // Read together, as the request is only there when the circuit starts.
-    private (bool CanWrite, bool SavesComments) Access => access ??= httpContextAccessor.HttpContext is { } context
-        ? (WorkbenchLocalRequests.CanChange(context, configuration), WorkbenchLocalRequests.IsLocal(context))
-        : (false, false);
+    private (bool CanWrite, bool IsLocal, string? InviteCookie) Access => access ??= httpContextAccessor.HttpContext is { } context
+        ? (WorkbenchLocalRequests.CanChange(context, configuration), WorkbenchLocalRequests.IsLocal(context), context.Request.Cookies[WorkbenchReviewers.CookieName])
+        : (false, false, null);
 
     public bool IsOpen => document is not null;
 
@@ -61,6 +71,34 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         var id = Guid.NewGuid().ToString("N")[..16];
 
         document.Transact(_ => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, name, [], []), null);
+
+        return id;
+    }
+
+    /// <summary>
+    /// Makes the review's own copy of a sample flow: its screens with their page states and places, and its arrows, under the
+    /// same ids, so what was open on the sample can open again on the copy. Returns its id, or null when this circuit can't
+    /// write. The sample stays as it is, for everyone.
+    /// </summary>
+    public async Task<string?> CopySample(string sampleId)
+    {
+        if (document is null || CanWrite is false || AllFlows.FirstOrDefault(f => f.Id == sampleId) is not { IsSample: true } sample)
+            return null;
+
+        var id = Guid.NewGuid().ToString("N")[..16];
+        List<WorkbenchFlowScreen> screens = [];
+
+        foreach (var screen in sample.Screens)
+        {
+            var hasState = screen.HasState && await attachments.SaveState($"{id}{screen.Id}", await attachments.ReadState($"{sample.Id}{screen.Id}"));
+
+            screens.Add(screen with { HasState = hasState });
+        }
+
+        document.Transact(_ => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, localizer[nameof(WorkbenchStrings.FlowCopyName), sample.Name], screens, sample.Links), null);
+
+        // Read at once, as the board opens the copy right after.
+        Refresh();
 
         return id;
     }

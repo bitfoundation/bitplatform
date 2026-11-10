@@ -33,7 +33,11 @@ internal sealed class BelemetryHttpRequest
     /// <summary>When the request was created, in Unix milliseconds (persisted requests expire by it).</summary>
     public long Time { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-    /// <summary>The number of records (spans, log records or metric data points) it carries, for the self-telemetry; 0 when unknown.</summary>
+    /// <summary>
+    /// The number of items it carries, for the self-telemetry; 0 when unknown. For OTLP the records (spans, log records or
+    /// metric data points); for Azure Monitor the envelopes, the items a 206 response indexes - an event of a span is one
+    /// of its own, and a metric point with nothing new is none (<see cref="IBelemetryHttpExporter.CountItems"/>).
+    /// </summary>
     public int Count { get; set; }
 
     /// <summary>

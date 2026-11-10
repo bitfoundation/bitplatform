@@ -117,6 +117,23 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
     public string? Description { get; set; }
 
     /// <summary>
+    /// A line under the checkbox saying why its state was rejected, which marks it invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every checkbox the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// checkboxes announce it too. A reason that fits one checkbox alone belongs on that checkbox.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Stretches the checkbox across the full available width, pushing the box and the label to opposite edges.
     /// </summary>
     public bool? FullWidth { get; set; }
@@ -137,6 +154,12 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
     /// The name of the built-in icon to render in the indeterminate state, replacing the default filled square.
     /// </summary>
     public string? IndeterminateIconName { get; set; }
+
+    /// <summary>
+    /// Marks the state of the checkbox as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// Descriptive label for the checkbox.
@@ -302,6 +325,16 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(Description), Description, static c => c.Description, static (c, v) => c.Description = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitCheckbox.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static c => c.ErrorMessage, static (c, v) => c.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitCheckbox.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static c => c.ErrorMessageAriaLabel, static (c, v) => c.ErrorMessageAriaLabel = v);
+        }
+
         if (FullWidth.HasValue)
         {
             bitCheckbox.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
@@ -321,6 +354,11 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
         if (IndeterminateIconName.HasValue())
         {
             bitCheckbox.TakeFromCascade(nameof(IndeterminateIconName), IndeterminateIconName, static c => c.IndeterminateIconName, static (c, v) => c.IndeterminateIconName = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitCheckbox.TakeFromCascade(nameof(Invalid), Invalid.Value, static c => c.Invalid, static (c, v) => c.Invalid = v);
         }
 
         if (Label.HasValue())

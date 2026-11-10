@@ -29,6 +29,7 @@ internal sealed class BelemetryHttpSender : IDisposable
 
     private readonly HttpClient _client;
     private readonly bool _ownsClient;
+    // Both name a request's URL without its user info (BelemetryUserInfo): their messages go to every log sink.
     private readonly Action<Exception?, string> _diagnostic;
     private readonly Action<Exception?, string> _warning;
     private HttpClient? _grpcClient;
@@ -130,11 +131,11 @@ internal sealed class BelemetryHttpSender : IDisposable
 
                     if (grpcStatus is null || _retryableGrpc.Contains(grpcStatus.Value))
                     {
-                        _diagnostic(null, $"{exporter.Name}: {request.Url} answered grpc-status {grpcStatus?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "(none)"}; will retry.");
+                        _diagnostic(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} answered grpc-status {grpcStatus?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "(none)"}; will retry.");
                     }
                     else
                     {
-                        _warning(null, $"{exporter.Name}: {request.Url} rejected the request with grpc-status {grpcStatus} ({GetGrpcMessage(response)}); it is dropped.");
+                        _warning(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} rejected the request with grpc-status {grpcStatus} ({GetGrpcMessage(response)}); it is dropped.");
                         return new(BelemetrySendOutcome.Rejected, request, delivered, rejected + request.Count);
                     }
                 }
@@ -147,7 +148,7 @@ internal sealed class BelemetryHttpSender : IDisposable
                     refused = Math.Clamp(refused, 0, request.Count > 0 ? request.Count : int.MaxValue);
                     if (refused > 0)
                     {
-                        _warning(null, $"{exporter.Name}: {request.Url} accepted the request but rejected {refused.ToString(CultureInfo.InvariantCulture)} of its items for good; they are dropped.");
+                        _warning(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} accepted the request but rejected {refused.ToString(CultureInfo.InvariantCulture)} of its items for good; they are dropped.");
                     }
 
                     if (partial is not null)
@@ -174,13 +175,13 @@ internal sealed class BelemetryHttpSender : IDisposable
                 else if (exporter.IsRetryable(status) is false)
                 {
                     // Data loss with a cause the app's owner can fix (a key, an endpoint, a quota): a warning.
-                    _warning(null, $"{exporter.Name}: {request.Url} rejected the request with {status}; it is dropped.");
+                    _warning(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} rejected the request with {status}; it is dropped.");
                     return new(BelemetrySendOutcome.Rejected, request, delivered, rejected + request.Count);
                 }
                 else
                 {
                     retryAfter = GetRetryAfter(response);
-                    _diagnostic(null, $"{exporter.Name}: {request.Url} answered {status}; will retry.");
+                    _diagnostic(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} answered {status}; will retry.");
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -190,7 +191,7 @@ internal sealed class BelemetryHttpSender : IDisposable
             catch (Exception ex)
             {
                 // Network failure, DNS, CORS (in the browser), or timeout: all transient from our point of view.
-                _diagnostic(ex, $"{exporter.Name}: sending to {request.Url} failed.");
+                _diagnostic(ex, $"{exporter.Name}: sending to {BelemetryUserInfo.Remove(request.Url)} failed.");
             }
 
             if (attempt + 1 < attempts)
@@ -411,7 +412,7 @@ internal sealed class BelemetryHttpSender : IDisposable
         try
         {
             if (body is null || exporter.DescribePartialSuccess(mediaType, body, out var rejected) is not { } rejection) return 0;
-            _warning(null, $"{exporter.Name}: {request.Url} accepted the request but {rejection}.");
+            _warning(null, $"{exporter.Name}: {BelemetryUserInfo.Remove(request.Url)} accepted the request but {rejection}.");
             return (int)Math.Clamp(rejected, 0, request.Count > 0 ? request.Count : int.MaxValue);
         }
         catch

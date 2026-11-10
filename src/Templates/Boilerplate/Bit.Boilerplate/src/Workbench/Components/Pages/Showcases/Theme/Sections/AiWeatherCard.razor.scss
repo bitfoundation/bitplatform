@@ -1,0 +1,41 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.weather {
+    gap: 0.75rem;
+    display: flex;
+    min-width: 0;
+    max-width: 22rem;
+    padding: 0.875rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: $bit-shape-border-width solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-secondary;
+}
+
+.weather-now {
+    gap: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.weather-place {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-temperature {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: $bit-color-foreground-primary;
+}
+
+.weather-facts {
+    gap: 0.25rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: $bit-color-foreground-secondary;
+}

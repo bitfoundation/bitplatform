@@ -782,8 +782,7 @@ public class BitAppShellE2ETests : E2ETestBase
 
         Assert.IsNotNull(await Page.EvaluateAsync<string?>("() => sessionStorage.getItem('bit-appshell-scrolls')"));
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(Page.Locator("#nav-page")).ToHaveTextAsync("B");
         await Expect(Main("ash-nav")).ToHaveJSPropertyAsync("scrollTop", 200);
     }

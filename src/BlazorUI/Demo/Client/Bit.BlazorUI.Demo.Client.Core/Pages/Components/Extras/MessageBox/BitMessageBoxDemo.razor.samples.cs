@@ -384,6 +384,43 @@ private readonly BitMessageBoxParams[] messageBoxParams =
 ];";
 
     private readonly string example14RazorCode = @"
+<BitButton OnClick=""ShowAccessibleQuestion"">Ask a question</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowAccessibleNotice"">Show a notice</BitButton>
+
+<div>Last answer: <b>@accessibilityResult</b></div>";
+    private readonly string example14CsharpCode = @"
+[AutoInject] private BitMessageBoxService messageBoxService { get; set; } = default!;
+
+private BitMessageBoxResult accessibilityResult;
+
+private async Task ShowAccessibleQuestion()
+{
+    // A question is an alertdialog, and the focus starts on Stay - the harmless answer.
+    accessibilityResult = await messageBoxService.Show(new()
+    {
+        Title = ""Leave the page?"",
+        Body = ""Your draft is kept for 7 days."",
+        Buttons = BitMessageBoxButtons.YesNo,
+        YesText = ""Leave"",
+        NoText = ""Stay"",
+        DefaultButton = BitMessageBoxResult.No,
+        CloseButtonTitle = ""Close the question""
+    });
+}
+
+private async Task ShowAccessibleNotice()
+{
+    // A notice is a plain dialog, and IconAriaLabel has its glyph announced.
+    accessibilityResult = await messageBoxService.Show(new()
+    {
+        Title = ""Saved"",
+        Body = ""Your changes are saved."",
+        Color = BitColor.Success,
+        IconAriaLabel = ""Success""
+    });
+}";
+
+    private readonly string example15RazorCode = @"
 <BitMessageBox Color=""BitColor.Info"" Title=""Info"" Body=""Something worth knowing."" />
 
 <BitMessageBox Color=""BitColor.Success"" Title=""Success"" Body=""Something went well."" />
@@ -398,7 +435,7 @@ private readonly BitMessageBoxParams[] messageBoxParams =
 
 <BitMessageBox Color=""BitColor.Error"" HideIcon Title=""HideIcon"" Body=""An Error without its glyph."" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -413,14 +450,14 @@ private readonly BitMessageBoxParams[] messageBoxParams =
                Title=""Bootstrap Icons""
                Body=""The glyph and the close icon come from Bootstrap Icons."" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitMessageBox Size=""BitSize.Small"" Color=""BitColor.Info"" Title=""Small"" Body=""The small size."" />
 
 <BitMessageBox Size=""BitSize.Medium"" Color=""BitColor.Info"" Title=""Medium"" Body=""The medium size."" />
 
 <BitMessageBox Size=""BitSize.Large"" Color=""BitColor.Info"" Title=""Large"" Body=""The large size."" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-msg {
         background: linear-gradient(180deg, #3e0f0f, transparent) #000;
@@ -470,14 +507,14 @@ private readonly BitMessageBoxParams[] messageBoxParams =
                Color=""BitColor.Success""
                Buttons=""BitMessageBoxButtons.OkCancel""
                Style=""@cssVariablesStyle"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private const string cssVariablesStyle = ""--bit-MessageBox-text-align:center;"" +
                                          ""--bit-MessageBox-actions-justify:center;"" +
                                          ""--bit-MessageBox-icon-size:2rem;"" +
                                          ""--bit-MessageBox-title-color:var(--bit-clr-suc);"" +
                                          ""--bit-MessageBox-padding:2rem;"";";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitMessageBox Dir=""BitDir.Rtl""
                Color=""BitColor.Warning""
                Title=""عنوان پیام""

@@ -24,6 +24,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         nameof(BitCheckbox.CascadingParameters),
         nameof(BitCheckbox.ChildContent),
         nameof(BitCheckbox.DescriptionTemplate),
+        nameof(BitCheckbox.ErrorMessageTemplate),
         nameof(BitCheckbox.LabelTemplate),
         nameof(BitCheckbox.OnBlur),
         nameof(BitCheckbox.OnChanging),
@@ -165,10 +166,13 @@ public class BitCheckboxParamsTests : BunitTestContext
             Color = BitColor.Warning,
             DefaultIndeterminate = true,
             Description = "Test description line",
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             FullWidth = true,
             Indeterminate = true,
             IndeterminateIcon = BitIconInfo.Fa("solid minus"),
             IndeterminateIconName = "Remove",
+            Invalid = true,
             Label = "Test Label",
             LabelPlacement = BitPlacement.Top,
             Loading = true,
@@ -204,10 +208,13 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.AreEqual(BitColor.Warning, instance.Color);
         Assert.IsTrue(instance.DefaultIndeterminate);
         Assert.AreEqual("Test description line", instance.Description);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
         Assert.IsTrue(instance.FullWidth);
         Assert.IsTrue(instance.Indeterminate);
         Assert.AreEqual(@params.IndeterminateIcon, instance.IndeterminateIcon);
         Assert.AreEqual("Remove", instance.IndeterminateIconName);
+        Assert.IsTrue(instance.Invalid);
         Assert.AreEqual("Test Label", instance.Label);
         Assert.AreEqual(BitPlacement.Top, instance.LabelPlacement);
         Assert.IsTrue(instance.Loading);
@@ -222,6 +229,45 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.AreEqual("Test Aria Label", instance.AriaLabel);
         Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var component = RenderWithParams(new BitCheckboxParams { ErrorMessage = "Not available on the free plan." });
+
+        Assert.AreEqual("Not available on the free plan.", component.Find(".bit-chb-erm").TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-inv"));
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-her"));
+        Assert.AreEqual("Not available on the free plan.", component.Find("[role=status]").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// A cascaded ErrorMessageAriaLabel is not written by the markup, yet it is announced the moment Invalid turns on,
+    /// so the live region is on the page before that - a region that arrives with its text already in it is missed.
+    /// </summary>
+    [TestMethod]
+    public void BitCheckboxShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitCheckboxParams { ErrorMessageAriaLabel = "Refused by the server." } });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCheckbox>(0);
+                builder.AddAttribute(1, nameof(BitCheckbox.Invalid), invalid);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        Assert.AreEqual("Refused by the server.", component.Find("[role=status]").TextContent.Trim());
     }
 
     [TestMethod]

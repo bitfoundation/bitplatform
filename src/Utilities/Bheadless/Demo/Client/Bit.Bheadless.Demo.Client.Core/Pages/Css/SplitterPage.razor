@@ -1,0 +1,409 @@
+﻿@page "/splitter"
+
+<PageTitle>Splitter · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Splitter</h1>
+    <p class="bb-subtitle">Resizable panels with handles between them, following the WAI-ARIA Window Splitter pattern: every handle is a focusable separator you drag or move with the keyboard. Sizes are percentages you can bind, constrain, collapse, nest and save.</p>
+</div>
+
+<SectionSwitcher Slug="splitter" />
+
+<DemoBlock Title="Two panels"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Each <code>BitBhSplitterHandle</code> is a <code>role="separator"</code> with <code>aria-valuenow</code> - the size in
+        percent of the panel before it, which it names in <code>aria-controls</code> - and the range it can give that panel in
+        <code>aria-valuemin</code> / <code>aria-valuemax</code>. Drag it, or focus it and press <kbd>←</kbd> / <kbd>→</kbd>
+        (5 points; <kbd>Shift</kbd>: 20), <kbd>Home</kbd> / <kbd>End</kbd>. The panels get <code>flex: &lt;size&gt; 1 0px</code>
+        inline, so the handle's own width doesn't count: this one draws a 1px line and a grip inside a 24px hit area that
+        overlaps the panels.
+    </Description>
+    <LiveContent>
+        <div class="splitter-demo">
+            <BitBhSplitter OnSizesChange="s => basicSizes = s" class="splitter">
+                <BitBhSplitterPanel DefaultSize="30" MinSize="20" class="splitter-panel splitter-panel-muted">
+                    <p class="splitter-panel-title">Navigation</p>
+                    <p class="splitter-panel-text">At least 20%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize navigation" class="splitter-handle" />
+                <BitBhSplitterPanel MinSize="30" class="splitter-panel">
+                    <p class="splitter-panel-title">Content</p>
+                    <p class="splitter-panel-text">At least 30%.</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="splitter-output">Sizes: <strong>@Format(basicSizes)</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Three panels, collapsible"
+           Code="@_collapseCode"
+           Css="@_collapseCss">
+    <Description>
+        <code>MinSize</code> and <code>MaxSize</code> bound a panel; when a resize reaches a panel's minimum, the next panel
+        gives way. A <code>Collapsible</code> panel collapses to its <code>CollapsedSize</code> when dragged past half its
+        minimum, with <kbd>Home</kbd>, with a second arrow step at its minimum, or with <kbd>Enter</kbd> on a handle next to
+        it - and <kbd>Enter</kbd> again restores it. A panel collapsed to nothing is <code>inert</code>; style it with
+        <code>[data-collapsed]</code> / <code>data-state="collapsed"</code>, and follow it with <code>OnCollapsedChange</code>.
+    </Description>
+    <LiveContent>
+        <div class="splitter-demo">
+            <BitBhSplitter class="splitter">
+                <BitBhSplitterPanel DefaultSize="22" MinSize="15" Collapsible="true" OnCollapsedChange="@(c => explorer = c ? "collapsed" : "open")"
+                                    class="splitter-panel splitter-panel-muted">
+                    <p class="splitter-panel-title">Explorer</p>
+                    <p class="splitter-panel-text">Collapsible, at least 15%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize explorer" class="splitter-handle" />
+                <BitBhSplitterPanel MinSize="30" class="splitter-panel">
+                    <p class="splitter-panel-title">Editor</p>
+                    <p class="splitter-panel-text">At least 30%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize outline" class="splitter-handle" />
+                <BitBhSplitterPanel DefaultSize="22" MinSize="12" MaxSize="35" Collapsible="true" OnCollapsedChange="@(c => outline = c ? "collapsed" : "open")"
+                                    class="splitter-panel splitter-panel-muted">
+                    <p class="splitter-panel-title">Outline</p>
+                    <p class="splitter-panel-text">Collapsible, 12% to 35%.</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="splitter-output">Explorer: <strong>@explorer</strong> · Outline: <strong>@outline</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Vertical and nested"
+           Code="@_nestedCode"
+           Css="@_nestedCss">
+    <Description>
+        <code>Orientation="BitBhOrientation.Vertical"</code> stacks the panels: the handle is a horizontal bar
+        (<code>aria-orientation="horizontal"</code>) moved with <kbd>↑</kbd> / <kbd>↓</kbd>. A splitter nests in a panel
+        of another; each handle belongs to its own splitter. In a right-to-left page (<code>Dir</code> or a
+        <code>BitBhDirectionProvider</code>) the first panel is on the right and <kbd>←</kbd> / <kbd>→</kbd> mirror.
+    </Description>
+    <LiveContent>
+        <BitBhSplitter class="splitter">
+            <BitBhSplitterPanel DefaultSize="28" MinSize="15" class="splitter-panel splitter-panel-muted">
+                <p class="splitter-panel-title">Files</p>
+                <p class="splitter-panel-text">Program.cs, App.razor, appsettings.json</p>
+            </BitBhSplitterPanel>
+            <BitBhSplitterHandle aria-label="Resize files" class="splitter-handle" />
+            <BitBhSplitterPanel class="splitter-panel splitter-panel-host">
+                <BitBhSplitter Orientation="BitBhOrientation.Vertical" class="splitter">
+                    <BitBhSplitterPanel DefaultSize="65" MinSize="25" class="splitter-panel">
+                        <p class="splitter-panel-title">Editor</p>
+                        <p class="splitter-panel-text">Press ↑ / ↓ on the bar below.</p>
+                    </BitBhSplitterPanel>
+                    <BitBhSplitterHandle aria-label="Resize terminal" class="splitter-handle" />
+                    <BitBhSplitterPanel MinSize="20" class="splitter-panel splitter-panel-muted">
+                        <p class="splitter-panel-title">Terminal</p>
+                        <p class="splitter-panel-text">dotnet watch</p>
+                    </BitBhSplitterPanel>
+                </BitBhSplitter>
+            </BitBhSplitterPanel>
+        </BitBhSplitter>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Bound, saved and driven from code"
+           Code="@_boundCode"
+           Css="@_boundCss">
+    <Description>
+        <code>@@bind-Sizes</code> takes one percentage per panel; <code>OnSizesCommit</code> fires once a drag ends or a key
+        resizes - the place to save. <code>AutoSaveId</code> saves the layout in <code>localStorage</code> on every commit and
+        restores it when the page comes back (resize, then reload). Panels also take commands:
+        <code>CollapseAsync</code>, <code>ExpandAsync</code> and <code>ResizeAsync</code>.
+    </Description>
+    <LiveContent>
+        <div class="splitter-demo">
+            <div class="splitter-actions">
+                <button type="button" class="splitter-button" @onclick="Reset">Reset</button>
+                <button type="button" class="splitter-button" @onclick="ToggleSidebar">@(sidebarCollapsed ? "Show sidebar" : "Hide sidebar")</button>
+                <button type="button" class="splitter-button" @onclick="() => preview!.ResizeAsync(40)">Preview at 40%</button>
+            </div>
+            <BitBhSplitter @bind-Sizes="boundSizes" OnSizesCommit="_ => commits++" AutoSaveId="bheadless-demo" class="splitter">
+                <BitBhSplitterPanel @ref="sidebar" Key="sidebar" MinSize="15" Collapsible="true" OnCollapsedChange="c => sidebarCollapsed = c"
+                        class="splitter-panel splitter-panel-muted">
+                    <p class="splitter-panel-title">Sidebar</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize sidebar" class="splitter-handle" />
+                <BitBhSplitterPanel Key="document" MinSize="25" class="splitter-panel">
+                    <p class="splitter-panel-title">Document</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize preview" class="splitter-handle" />
+                <BitBhSplitterPanel @ref="preview" Key="preview" MinSize="15" class="splitter-panel splitter-panel-muted">
+                    <p class="splitter-panel-title">Preview</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="splitter-output">Sizes: <strong>@Format(boundSizes)</strong> · Commits: <strong>@commits</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private IReadOnlyList<double> basicSizes = [30, 70];
+    private string explorer = "open";
+    private string outline = "open";
+    private IReadOnlyList<double> boundSizes = [25, 50, 25];
+    private int commits;
+    private BitBhSplitterPanel? sidebar;
+    private BitBhSplitterPanel? preview;
+
+    private bool sidebarCollapsed;
+
+    // A layout set from here is no collapse the panel reports: the flag follows it.
+    private void Reset()
+    {
+        boundSizes = [25, 50, 25];
+        sidebarCollapsed = false;
+    }
+
+    private Task ToggleSidebar() => sidebar is null ? Task.CompletedTask
+        : sidebarCollapsed ? sidebar.ExpandAsync() : sidebar.CollapseAsync();
+
+    private static string Format(IReadOnlyList<double> sizes) => string.Join(" / ", sizes.Select(s => $"{s:0}%"));
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhSplitter OnSizesChange="s => basicSizes = s" class="splitter">
+    <BitBhSplitterPanel DefaultSize="30" MinSize="20" class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Navigation</p>
+        <p class="splitter-panel-text">At least 20%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize navigation" class="splitter-handle" />
+    <BitBhSplitterPanel MinSize="30" class="splitter-panel">
+        <p class="splitter-panel-title">Content</p>
+        <p class="splitter-panel-text">At least 30%.</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="splitter-output">Sizes: <strong>@string.Join(" / ", basicSizes.Select(s => $"{s:0}%"))</strong></p>
+
+@code {
+    private IReadOnlyList<double> basicSizes = [30, 70];
+}
+""";
+
+    private const string _collapseCode = """
+<BitBhSplitter class="splitter">
+    <BitBhSplitterPanel DefaultSize="22" MinSize="15" Collapsible="true" OnCollapsedChange="@(c => explorer = c ? "collapsed" : "open")"
+                        class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Explorer</p>
+        <p class="splitter-panel-text">Collapsible, at least 15%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize explorer" class="splitter-handle" />
+    <BitBhSplitterPanel MinSize="30" class="splitter-panel">
+        <p class="splitter-panel-title">Editor</p>
+        <p class="splitter-panel-text">At least 30%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize outline" class="splitter-handle" />
+    <BitBhSplitterPanel DefaultSize="22" MinSize="12" MaxSize="35" Collapsible="true" OnCollapsedChange="@(c => outline = c ? "collapsed" : "open")"
+                        class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Outline</p>
+        <p class="splitter-panel-text">Collapsible, 12% to 35%.</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="splitter-output">Explorer: <strong>@explorer</strong> · Outline: <strong>@outline</strong></p>
+
+@code {
+    private string explorer = "open";
+    private string outline = "open";
+}
+""";
+
+    private const string _nestedCode = """
+<BitBhSplitter class="splitter">
+    <BitBhSplitterPanel DefaultSize="28" MinSize="15" class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Files</p>
+        <p class="splitter-panel-text">Program.cs, App.razor, appsettings.json</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize files" class="splitter-handle" />
+    <BitBhSplitterPanel class="splitter-panel splitter-panel-host">
+        <BitBhSplitter Orientation="BitBhOrientation.Vertical" class="splitter">
+            <BitBhSplitterPanel DefaultSize="65" MinSize="25" class="splitter-panel">
+                <p class="splitter-panel-title">Editor</p>
+                <p class="splitter-panel-text">Press ↑ / ↓ on the bar below.</p>
+            </BitBhSplitterPanel>
+            <BitBhSplitterHandle aria-label="Resize terminal" class="splitter-handle" />
+            <BitBhSplitterPanel MinSize="20" class="splitter-panel splitter-panel-muted">
+                <p class="splitter-panel-title">Terminal</p>
+                <p class="splitter-panel-text">dotnet watch</p>
+            </BitBhSplitterPanel>
+        </BitBhSplitter>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+""";
+
+    private const string _boundCode = """
+<button type="button" class="splitter-button" @onclick="Reset">Reset</button>
+<button type="button" class="splitter-button" @onclick="ToggleSidebar">@(sidebarCollapsed ? "Show sidebar" : "Hide sidebar")</button>
+<button type="button" class="splitter-button" @onclick="() => preview!.ResizeAsync(40)">Preview at 40%</button>
+
+<BitBhSplitter @bind-Sizes="boundSizes" OnSizesCommit="_ => commits++" AutoSaveId="bheadless-demo" class="splitter">
+    <BitBhSplitterPanel @ref="sidebar" Key="sidebar" MinSize="15" Collapsible="true" OnCollapsedChange="c => sidebarCollapsed = c"
+                        class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Sidebar</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize sidebar" class="splitter-handle" />
+    <BitBhSplitterPanel Key="document" MinSize="25" class="splitter-panel">
+        <p class="splitter-panel-title">Document</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize preview" class="splitter-handle" />
+    <BitBhSplitterPanel @ref="preview" Key="preview" MinSize="15" class="splitter-panel splitter-panel-muted">
+        <p class="splitter-panel-title">Preview</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="splitter-output">Commits: <strong>@commits</strong></p>
+
+@code {
+    private IReadOnlyList<double> boundSizes = [25, 50, 25];
+    private int commits;
+    private BitBhSplitterPanel? sidebar;
+    private BitBhSplitterPanel? preview;
+
+    private bool sidebarCollapsed;
+
+    // A layout set from here is no collapse the panel reports: the flag follows it.
+    private void Reset()
+    {
+        boundSizes = [25, 50, 25];
+        sidebarCollapsed = false;
+    }
+
+    private Task ToggleSidebar() => sidebar is null ? Task.CompletedTask
+        : sidebarCollapsed ? sidebar.ExpandAsync() : sidebar.CollapseAsync();
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/splitter.css) ────────────────────────────────
+
+    private const string _baseCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+
+/* Root: a size (inline: display: flex, along its orientation) */
+.splitter {
+    width: 100%;
+    height: 14rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* Keep the resize cursor while a drag runs past the handle. */
+.splitter[data-orientation="horizontal"][data-dragging] { cursor: col-resize; }
+.splitter[data-orientation="vertical"][data-dragging]   { cursor: row-resize; }
+
+/* Panels (inline: flex: <size> 1 0px; overflow: hidden) */
+.splitter-panel {
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
+}
+
+.splitter-panel-title { margin: 0; font-size: 0.875rem; font-weight: 600; }
+.splitter-panel-text  { margin: 0; font-size: 0.8125rem; color: var(--color-muted); }
+.splitter-panel-muted { background: var(--color-subtle); }
+
+/* Handle: a 24px hit area overlapping the panels, with a 1px line and a grip drawn inside */
+.splitter-handle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+.splitter-handle[data-orientation="horizontal"] { width: 1.5rem; margin-inline: -0.75rem; z-index: 1; cursor: col-resize; }
+.splitter-handle[data-orientation="vertical"]   { height: 1.5rem; margin-block: -0.75rem; z-index: 1; cursor: row-resize; }
+
+.splitter-handle::before {
+    content: "";
+    position: absolute;
+    background: var(--color-border);
+}
+
+.splitter-handle[data-orientation="horizontal"]::before { inset: 0 auto; left: calc(50% - 0.5px); width: 1px; }
+.splitter-handle[data-orientation="vertical"]::before   { inset: auto 0; top: calc(50% - 0.5px); height: 1px; }
+
+.splitter-handle::after {
+    content: "";
+    position: relative;
+    border: 1px solid var(--color-border-control);
+    border-radius: 999px;
+    background: var(--color-surface);
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.splitter-handle[data-orientation="horizontal"]::after { width: 0.5rem; height: 1.75rem; }
+.splitter-handle[data-orientation="vertical"]::after   { width: 1.75rem; height: 0.5rem; }
+
+/* data-hover comes from the runtime; data-dragging while the handle is dragged */
+.splitter-handle[data-hover]::after,
+.splitter-handle[data-dragging]::after { border-color: var(--color-primary); background: var(--color-primary); }
+.splitter-handle[data-hover]::before,
+.splitter-handle[data-dragging]::before { background: var(--color-primary); }
+
+.splitter-handle:focus-visible::after { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+""";
+
+    private const string _outputCss = """
+
+
+.splitter-demo { display: grid; gap: 0.75rem; width: 100%; }
+.splitter-output { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.splitter-output strong { color: var(--color-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+""";
+
+    private const string _basicCss = _baseCss + _outputCss;
+
+    private const string _collapseCss = _baseCss + """
+
+
+/* A collapsed panel: data-collapsed / data-state="collapsed" (and inert at size 0) */
+.splitter-panel[data-collapsed] { padding-inline: 0; }
+""" + _outputCss;
+
+    private const string _nestedCss = _baseCss + """
+
+
+/* A splitter inside a panel fills it, and draws no second frame. */
+.splitter .splitter {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+}
+
+/* The panel that holds it gives it all of its space. */
+.splitter-panel-host { display: block; padding: 0; }
+""";
+
+    private const string _boundCss = _baseCss + """
+
+
+.splitter-panel[data-collapsed] { padding-inline: 0; }
+
+.splitter-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.splitter-button {
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 0.375rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.splitter-button:hover { background: var(--color-fill); }
+.splitter-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+""" + _outputCss;
+}

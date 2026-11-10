@@ -15,7 +15,8 @@ namespace Bit.BlazorUI.Tests.Performance;
 ///   2. OnValueChanged event handler is now unsubscribed in DisposeAsync.
 ///
 /// Memory is measured server-side (managed heap) via the /api/gc-info endpoint so
-/// the results are accurate regardless of whether JS heap metrics are available.
+/// the results are accurate regardless of whether JS heap metrics are available -
+/// and so only in the server render mode (PERF_RENDER_MODE).
 /// </summary>
 [TestClass]
 [TestCategory("Performance")]
@@ -62,16 +63,15 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
     private async Task TestInitialRender(int count, double threshold)
     {
-        await Page.GotoAsync($"{BaseUrl}/perf/dropdown/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/dropdown/{count}");
 
-        await Page.Locator("#btn-render").ClickAsync();
-        await WaitForRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-render"), "Rendered");
 
         var renderTime     = await GetRenderTime();
         var componentCount = await GetComponentCount();
 
-        Console.WriteLine($"InitialRender – {count} components: {renderTime:F2} ms");
+        Console.WriteLine($"InitialRender – {count} components: {renderTime:F2} ms (browser {browser.Duration:F2} ms)");
+        RecordInteraction("render", count, renderTime, browser);
 
         Assert.AreEqual(count, componentCount, $"Expected {count} rendered dropdowns, got {componentCount}");
         AssertWithinThreshold(renderTime, threshold, $"Initial render time for {count} components");
@@ -106,18 +106,17 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
     private async Task TestReRender(int count, double threshold)
     {
-        await Page.GotoAsync($"{BaseUrl}/perf/dropdown/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        await OpenPerformancePageAsync($"/perf/dropdown/{count}");
 
         await Page.Locator("#btn-render").ClickAsync();
         await WaitForRenderComplete();
 
-        await Page.Locator("#btn-rerender").ClickAsync();
-        await WaitForReRenderComplete();
+        var browser = await MeasureInBrowserAsync(Page.Locator("#btn-rerender"), "Re-rendered");
 
         var reRenderTime = await GetReRenderTime();
 
-        Console.WriteLine($"ReRender – {count} components: {reRenderTime:F2} ms");
+        Console.WriteLine($"ReRender – {count} components: {reRenderTime:F2} ms (browser {browser.Duration:F2} ms)");
+        RecordInteraction("rerender", count, reRenderTime, browser);
 
         AssertWithinThreshold(reRenderTime, threshold, $"Re-render time for {count} components");
     }
@@ -175,8 +174,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         const int count = 30;
         const int warmupCycles = 5;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/dropdown/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        RequireServerRenderMode();
+        await OpenPerformancePageAsync($"/perf/dropdown/{count}");
 
         // Warm up to reach a steady-state heap before measuring.
         for (int i = 0; i < warmupCycles; i++)
@@ -203,6 +202,7 @@ public class BitDropdownBrowserTests : PerformanceTestBase
             samples.Add((checkpoint, heapNow));
             Console.WriteLine(
                 $"After {checkpoint} cycles – heap: {heapNow:F2} MB, growth: {(heapNow - baseline):F2} MB");
+            Record("serverHeapGrowth", heapNow - baseline, "MB", checkpoint);
         }
 
         // Per-cycle growth in the first 5 cycles vs. the last 20 (cycles 21..40).
@@ -245,8 +245,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
         // real leaks (which would produce 15-30+ MB growth in the late window).
         const double maxLateGrowthAbsoluteMB = 10.0;
 
-        await Page.GotoAsync($"{BaseUrl}/perf/dropdown/{count}");
-        await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+        RequireServerRenderMode();
+        await OpenPerformancePageAsync($"/perf/dropdown/{count}");
 
         if (responsive)
         {
@@ -289,6 +289,8 @@ public class BitDropdownBrowserTests : PerformanceTestBase
 
         Console.WriteLine($"[responsive={responsive}] heap MB - afterWarmup={afterWarmupMB:F2}, afterEarly={afterEarlyMB:F2}, afterGap={afterGapMB:F2}, afterLate={afterLateMB:F2}");
         Console.WriteLine($"[responsive={responsive}] growth - early {earlyWindowSize} cycles: {earlyGrowth:F2} MB | late {lateWindowSize} cycles: {lateGrowth:F2} MB");
+        Record("serverHeapGrowth.early", earlyGrowth, "MB", earlyWindowSize);
+        Record("serverHeapGrowth.late", lateGrowth, "MB", lateWindowSize);
 
         // Strategy: The GC endpoint reports the ENTIRE server heap, which includes
         // allocations from all concurrent test circuits when running in parallel.
@@ -309,6 +311,16 @@ public class BitDropdownBrowserTests : PerformanceTestBase
             $"Late window grew {lateGrowth:F2} MB over {lateWindowSize} cycles of {count} " +
             $"BitDropdown components (responsive={responsive}), exceeding the " +
             $"{maxLateGrowthAbsoluteMB} MB ceiling. This indicates a memory leak.");
+    }
+
+    // The heap the memory-leak tests read is the server's (/api/gc-info). In wasm mode the components live in the browser,
+    // so the server's heap would pass them whatever the components leaked: they are left out instead.
+    private static void RequireServerRenderMode()
+    {
+        if (RenderMode == "wasm")
+        {
+            Assert.Inconclusive("This test measures the server's heap, and PERF_RENDER_MODE=wasm runs the components in the browser.");
+        }
     }
 
     /// <summary>Renders the current count of dropdowns and then clears them.</summary>

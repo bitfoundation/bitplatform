@@ -1,0 +1,91 @@
+﻿@page "/rating"
+
+<PageTitle>Rating · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Rating</h1>
+    <p class="bb-subtitle">A star rating: one focusable slider over decorative stars, with half values, hover preview and clearing.</p>
+</div>
+
+<SectionSwitcher Slug="rating" />
+
+<DemoBlock Title="Half stars" Code="@_basicCode" Css="@_css">
+    <Description>
+        The rating is a single <code>role="slider"</code> (like Bits UI's RatingGroup) named by its <code>aria-label</code> and
+        announced as "3.5 stars". ← / → step by a half with <code>AllowHalf</code>, digits set the value, Home / End go to 0 and
+        the maximum. Hovering previews (<code>data-highlighted</code>); the left half of a star picks a half value; clicking the
+        current value clears it.
+    </Description>
+    <LiveContent>
+        <BitBhRating @bind-Value="rating" AllowHalf="true" aria-label="Rating" class="rating">
+            @for (var i = 0; i < 5; i++)
+            {
+                <BitBhRatingItem Index="i" class="star">★</BitBhRatingItem>
+            }
+        </BitBhRating>
+        <span class="demo-output">Value: <strong>@rating</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Read-only" Code="@_readOnlyCode" Css="@_css">
+    <Description>
+        <code>ReadOnly</code> shows and announces a score that can't be changed (<code>aria-readonly</code>).
+    </Description>
+    <LiveContent>
+        <BitBhRating Value="4.5" AllowHalf="true" ReadOnly="true" aria-label="Average rating" class="rating">
+            @for (var i = 0; i < 5; i++)
+            {
+                <BitBhRatingItem Index="i" class="star">★</BitBhRatingItem>
+            }
+        </BitBhRating>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private double rating = 3.5;
+
+    private const string _basicCode = """
+<BitBhRating @bind-Value="rating" AllowHalf="true" aria-label="Rating" class="rating">
+    @for (var i = 0; i < 5; i++)
+    {
+        <BitBhRatingItem Index="i" class="star">★</BitBhRatingItem>
+    }
+</BitBhRating>
+
+@code {
+    private double rating = 3.5;
+}
+""";
+
+    private const string _readOnlyCode = """
+<BitBhRating Value="4.5" AllowHalf="true" ReadOnly="true" aria-label="Average rating" class="rating">
+    @for (var i = 0; i < 5; i++)
+    {
+        <BitBhRatingItem Index="i" class="star">★</BitBhRatingItem>
+    }
+</BitBhRating>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.rating { display: inline-flex; gap: 0.15rem; border-radius: 0.375rem; cursor: pointer; }
+.rating:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.rating[data-readonly] { cursor: default; }
+
+.star { position: relative; display: inline-block; width: 1.6rem; font-size: 1.6rem; line-height: 1; color: var(--color-border-control); }
+
+/* data-state="full|half|empty" follows the value - or the hovered one, with data-highlighted */
+.star[data-state="full"] { color: light-dark(#b45309, #fbbf24); }
+.star[data-highlighted] { color: light-dark(#d97706, #fcd34d); }
+
+/* A half star: the filled glyph clipped to its first half */
+.star[data-state="half"]::after {
+    content: "★";
+    position: absolute;
+    inset: 0;
+    width: 50%;
+    overflow: hidden;
+    color: light-dark(#b45309, #fbbf24);
+}
+""";
+}

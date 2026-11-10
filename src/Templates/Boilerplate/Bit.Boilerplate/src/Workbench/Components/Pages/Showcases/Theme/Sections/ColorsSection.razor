@@ -1,0 +1,19 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="colors" Title="@Localizer[nameof(WorkbenchStrings.ThemeColors)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeColorsEveryColorOfTheTheme)]">
+    @foreach (var (title, tokens) in families)
+    {
+        <div class="family">
+            <BitText Typography="BitTypography.Subtitle2" Element="h3">@title</BitText>
+            <div class="swatches">
+                @foreach (var token in tokens)
+                {
+                    <div class="swatch-cell">
+                        <span class="swatch" style="--wb-token:@token.Css"></span>
+                        <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</ThemeSection>

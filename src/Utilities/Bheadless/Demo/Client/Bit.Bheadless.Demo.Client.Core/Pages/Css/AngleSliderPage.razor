@@ -1,0 +1,173 @@
+﻿@page "/angle-slider"
+
+<PageTitle>Angle slider · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Angle slider</h1>
+    <p class="bb-subtitle">A dial that picks an angle - a rotation, a direction - by pointer or keyboard, with optional marks around it.</p>
+</div>
+
+<SectionSwitcher Slug="angle-slider" />
+
+<DemoBlock Title="Rotation" Code="@_basicCode" Css="@_css">
+    <Description>
+        A press or drag anywhere on the dial points the value at the pointer. The thumb is the focusable
+        <code>role="slider"</code> ("90 degrees"): → / ↑ add a degree, ← / ↓ take one away and wrap past 0, Page Up / Page Down
+        and Shift + arrows move 15°, Home / End go to 0° and 359°. The thumb and markers fill the dial rotated to their angle, so
+        a needle or tick drawn at their top center points at it; the root carries <code>--bit-bh-angle</code> for anything else.
+    </Description>
+    <LiveContent>
+        <BitBhAngleSlider @bind-Value="rotation" class="dial">
+            @foreach (var mark in _quarters)
+            {
+                <BitBhAngleSliderMarker Value="mark" class="dial-mark" />
+            }
+            <BitBhAngleSliderThumb aria-label="Rotation" class="dial-thumb" />
+        </BitBhAngleSlider>
+        <span class="demo-output">Rotation: <strong>@rotation°</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Compass in a field" Code="@_compassCode" Css="@_css">
+    <Description>
+        <code>Step="45"</code> snaps to the eight compass points; a <code>BitBhField</code>'s label names the thumb and
+        <code>ValueText</code> says "90°, east". Each marker exposes <code>--bit-bh-marker-angle</code>, which turns its label
+        upright. <code>OnValueCommit</code> fires once per key press or on pointer up.
+    </Description>
+    <LiveContent>
+        <BitBhField class="dial-field">
+            <BitBhLabel class="dial-label">Wind direction</BitBhLabel>
+            <BitBhAngleSlider @bind-Value="wind" Step="45" LargeStep="90" ValueText="@(v => $"{v}°, {Point(v)}")"
+                              OnValueCommit="v => committed = v" class="dial">
+                @foreach (var (angle, name) in _points)
+                {
+                    <BitBhAngleSliderMarker Value="angle" class="dial-mark dial-mark-labelled">
+                        <span class="dial-mark-label">@name</span>
+                    </BitBhAngleSliderMarker>
+                }
+                <BitBhAngleSliderThumb class="dial-thumb" />
+            </BitBhAngleSlider>
+        </BitBhField>
+        <span class="demo-output">Wind: <strong>@Point(wind)</strong> · Committed: <strong>@committed°</strong></span>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private double rotation = 90;
+    private double wind = 225;
+    private double committed = 225;
+    private static readonly double[] _quarters = [0, 90, 180, 270];
+    private static readonly (double Angle, string Name)[] _points =
+        [(0, "N"), (45, "NE"), (90, "E"), (135, "SE"), (180, "S"), (225, "SW"), (270, "W"), (315, "NW")];
+    private static readonly string[] _names = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+
+    private static string Point(double angle) => _names[(int)Math.Round(angle / 45) % 8];
+
+    private const string _basicCode = """
+<BitBhAngleSlider @bind-Value="rotation" class="dial">
+    @foreach (var mark in new double[] { 0, 90, 180, 270 })
+    {
+        <BitBhAngleSliderMarker Value="mark" class="dial-mark" />
+    }
+    <BitBhAngleSliderThumb aria-label="Rotation" class="dial-thumb" />
+</BitBhAngleSlider>
+
+@code {
+    private double rotation = 90;
+}
+""";
+
+    private const string _compassCode = """
+<BitBhField class="dial-field">
+    <BitBhLabel class="dial-label">Wind direction</BitBhLabel>
+    <BitBhAngleSlider @bind-Value="wind" Step="45" LargeStep="90" ValueText="@(v => $"{v}°, {Point(v)}")"
+                      OnValueCommit="v => committed = v" class="dial">
+        @foreach (var (angle, name) in points)
+        {
+            <BitBhAngleSliderMarker Value="angle" class="dial-mark dial-mark-labelled">
+                <span class="dial-mark-label">@name</span>
+            </BitBhAngleSliderMarker>
+        }
+        <BitBhAngleSliderThumb class="dial-thumb" />
+    </BitBhAngleSlider>
+</BitBhField>
+""";
+
+    private const string _css = """
+/* The dial (inline: position: relative; touch-action: none; user-select: none; --bit-bh-angle) */
+.dial {
+    width: 8rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 50%;
+    background: var(--color-surface);
+    cursor: pointer;
+}
+.dial::after {                       /* the hub */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    transform: translate(-50%, -50%);
+}
+.dial[data-dragging] { cursor: grabbing; }
+.dial[data-disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* Thumb and markers (inline: position: absolute; inset: 0; transform: rotate(angle)): draw at the top center. */
+.dial-thumb { border-radius: 50%; outline: none; }
+.dial-thumb::before {                /* the needle */
+    content: "";
+    position: absolute;
+    left: calc(50% - 1.5px);
+    top: 0.75rem;
+    width: 3px;
+    height: calc(50% - 0.75rem);
+    border-radius: 2px;
+    background: var(--color-primary);
+}
+.dial-thumb::after {                 /* the knob */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    background: #fff;
+    transform: translateX(-50%);
+}
+.dial-thumb[data-focus-visible]::after { box-shadow: 0 0 0 3px var(--color-focus); }
+
+.dial-mark::before {                 /* the tick */
+    content: "";
+    position: absolute;
+    left: calc(50% - 1px);
+    top: 2px;
+    width: 2px;
+    height: 0.375rem;
+    background: var(--color-border-strong);
+}
+.dial-mark-labelled::before { display: none; }
+.dial-mark-label {                   /* turned upright */
+    position: absolute;
+    left: 50%;
+    top: -1.375rem;
+    width: 1.5rem;
+    margin-left: -0.75rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    transform: rotate(calc(-1 * var(--bit-bh-marker-angle)));
+}
+.dial-mark-labelled[data-state="at-value"] .dial-mark-label { color: var(--color-text); font-weight: 600; }
+
+.dial-field { display: grid; justify-items: start; gap: 0.5rem; }
+.dial-field .dial { margin: 1.75rem; }
+.dial-label { font-size: 0.875rem; font-weight: 500; }
+""";
+}

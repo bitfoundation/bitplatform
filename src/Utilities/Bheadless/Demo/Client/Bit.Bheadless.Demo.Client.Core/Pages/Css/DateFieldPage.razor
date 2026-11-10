@@ -1,0 +1,285 @@
+﻿@page "/date-field"
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+
+<PageTitle>Date Field / Time Field · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Date Field / Time Field</h1>
+    <p class="bb-subtitle">Segmented date and time inputs: each part is a spinbutton, in the order and with the separators the reader's culture writes them.</p>
+</div>
+
+<SectionSwitcher Slug="date-field" />
+
+<DemoBlock Title="Date field" Code="@_dateCode" Css="@_css">
+    <Description>
+        The month, day and year are each a <code>role="spinbutton"</code> named by their part, inside a
+        <code>role="group"</code> the field's label names. Type digits: a segment moves on once no other digit could follow
+        (a <kbd>4</kbd> in the month, two digits in the day), and typing the separator moves on too. ↑ / ↓ step a segment
+        (an empty one starts from today), ← / → move between segments, <kbd>Backspace</kbd> deletes a digit, then moves back.
+        <code>@@bind-Value</code> is a <code>DateOnly?</code>, set once every segment is filled.
+    </Description>
+    <LiveContent>
+        <div class="date-field-demo">
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Birth date</BitBhLabel>
+                <BitBhDateField @bind-Value="birthDate" Culture="DemoDateCultures.EnUs" class="date-field" />
+                <BitBhDescription class="date-field-description">As on your passport.</BitBhDescription>
+            </BitBhField>
+            <p class="date-field-value">Value: <strong>@(birthDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "null")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Time field" Code="@_timeCode" Css="@_css">
+    <Description>
+        <code>BitBhTimeField</code> edits a <code>TimeOnly?</code> the same way. The English clock has an AM / PM segment
+        (↑ / ↓ toggle it, <kbd>A</kbd> / <kbd>P</kbd> set it); <code>HourCycle</code> picks a 12- or 24-hour clock whatever the
+        culture, and <code>Granularity</code> adds seconds or keeps to hours.
+    </Description>
+    <LiveContent>
+        <div class="date-field-demo">
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Meeting starts</BitBhLabel>
+                <BitBhTimeField @bind-Value="start" Culture="DemoDateCultures.EnUs" class="date-field" />
+            </BitBhField>
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Lap time (24-hour, seconds)</BitBhLabel>
+                <BitBhTimeField @bind-Value="lap" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                                Culture="DemoDateCultures.EnUs" class="date-field" />
+            </BitBhField>
+            <p class="date-field-value">
+                Start: <strong>@(start?.ToString("HH:mm", CultureInfo.InvariantCulture) ?? "null")</strong> ·
+                Lap: <strong>@(lap?.ToString("HH:mm:ss", CultureInfo.InvariantCulture) ?? "null")</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Cultures" Code="@_cultureCode" Css="@_css">
+    <Description>
+        <code>Culture</code> orders the segments and picks the separators from its short date and time patterns: German writes
+        <code>dd.MM.yyyy</code> and a 24-hour clock. A Persian culture edits the Persian calendar's year, month and day — the
+        value is still a <code>DateOnly</code>, and with <code>Dir</code> right to left ← / → follow the segments as they are laid out. (This WebAssembly demo runs without ICU, where the Persian calendar isn't
+        available.)
+    </Description>
+    <LiveContent>
+        <div class="date-field-demo">
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Datum</BitBhLabel>
+                <BitBhDateField @bind-Value="cultureDate" Culture="DemoDateCultures.DeDe" class="date-field" />
+            </BitBhField>
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Uhrzeit</BitBhLabel>
+                <BitBhTimeField @bind-Value="cultureTime" Culture="DemoDateCultures.DeDe" class="date-field" />
+            </BitBhField>
+            @if (DemoDateCultures.FaIr is { } persian)
+            {
+                <div dir="rtl" lang="fa">
+                    <BitBhField>
+                        <BitBhLabel class="date-field-label">تاریخ</BitBhLabel>
+                        <BitBhDateField @bind-Value="cultureDate" Culture="persian" Dir="BitBhDirection.Rtl" class="date-field" />
+                    </BitBhField>
+                </div>
+            }
+            <p class="date-field-value">Value: <strong>@(cultureDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "null")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Limits and validation" Code="@_formCode" Css="@_css">
+    <Description>
+        A value outside <code>Min</code> / <code>Max</code> is kept and marks the field invalid (<code>data-invalid</code> on
+        the group, <code>aria-invalid</code> on the segments). In an <code>EditForm</code> the field joins validation,
+        <code>BitBhErrorMessage</code> describes the segments once invalid, and <code>Name</code> posts a hidden
+        <code>yyyy-MM-dd</code> input.
+    </Description>
+    <LiveContent>
+        <EditForm Model="trip" OnValidSubmit="() => saved = true">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel class="date-field-label">Departure (this year)</BitBhLabel>
+                <BitBhDateField @bind-Value="trip.Departure" Min="firstDay" Max="lastDay" Name="departure"
+                                Culture="DemoDateCultures.EnUs" class="date-field" />
+                <BitBhErrorMessage class="date-field-error" />
+            </BitBhField>
+            <button type="submit" class="date-field-submit">Save</button>
+            @if (saved)
+            {
+                <p class="date-field-value">Saved: <strong>@trip.Departure?.ToString("D", DemoDateCultures.EnUs)</strong></p>
+            }
+        </EditForm>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private static readonly DateOnly firstDay = new(DateTime.Today.Year, 1, 1);
+    private static readonly DateOnly lastDay = new(DateTime.Today.Year, 12, 31);
+    private DateOnly? birthDate;
+    private TimeOnly? start = new(9, 30);
+    private TimeOnly? lap;
+    private DateOnly? cultureDate = DateOnly.FromDateTime(DateTime.Today);
+    private TimeOnly? cultureTime = new(14, 5);
+    private readonly Trip trip = new();
+    private bool saved;
+
+    private sealed class Trip
+    {
+        [Required(ErrorMessage = "Enter a departure date.")]
+        public DateOnly? Departure { get; set; }
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _dateCode = """
+<BitBhField>
+    <BitBhLabel class="date-field-label">Birth date</BitBhLabel>
+    <BitBhDateField @bind-Value="birthDate" class="date-field" />
+    <BitBhDescription class="date-field-description">As on your passport.</BitBhDescription>
+</BitBhField>
+
+@code {
+    private DateOnly? birthDate;
+}
+""";
+
+    private const string _timeCode = """
+<BitBhField>
+    <BitBhLabel class="date-field-label">Meeting starts</BitBhLabel>
+    <BitBhTimeField @bind-Value="start" class="date-field" />
+</BitBhField>
+
+<BitBhField>
+    <BitBhLabel class="date-field-label">Lap time (24-hour, seconds)</BitBhLabel>
+    <BitBhTimeField @bind-Value="lap" HourCycle="BitBhHourCycle.H24" Granularity="BitBhTimeGranularity.Second"
+                    class="date-field" />
+</BitBhField>
+
+@code {
+    private TimeOnly? start = new(9, 30);
+    private TimeOnly? lap;
+}
+""";
+
+    private const string _cultureCode = """
+<BitBhField>
+    <BitBhLabel class="date-field-label">Datum</BitBhLabel>
+    <BitBhDateField @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" class="date-field" />
+</BitBhField>
+
+<BitBhField>
+    <BitBhLabel class="date-field-label">Uhrzeit</BitBhLabel>
+    <BitBhTimeField @bind-Value="time" Culture="@(CultureInfo.GetCultureInfo("de-DE"))" class="date-field" />
+</BitBhField>
+
+<div dir="rtl" lang="fa">
+    <BitBhField>
+        <BitBhLabel class="date-field-label">تاریخ</BitBhLabel>
+        <BitBhDateField @bind-Value="date" Culture="@(CultureInfo.GetCultureInfo("fa-IR"))" Dir="BitBhDirection.Rtl" class="date-field" />
+    </BitBhField>
+</div>
+
+@code {
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Today);
+    private TimeOnly? time = new(14, 5);
+}
+""";
+
+    private const string _formCode = """
+<EditForm Model="trip" OnValidSubmit="() => saved = true">
+    <DataAnnotationsValidator />
+    <BitBhField>
+        <BitBhLabel class="date-field-label">Departure (this year)</BitBhLabel>
+        <BitBhDateField @bind-Value="trip.Departure" Min="firstDay" Max="lastDay" Name="departure" class="date-field" />
+        <BitBhErrorMessage class="date-field-error" />
+    </BitBhField>
+    <button type="submit" class="date-field-submit">Save</button>
+</EditForm>
+
+@code {
+    private static readonly DateOnly firstDay = new(DateTime.Today.Year, 1, 1);
+    private static readonly DateOnly lastDay = new(DateTime.Today.Year, 12, 31);
+    private readonly Trip trip = new();
+    private bool saved;
+
+    private sealed class Trip
+    {
+        [Required(ErrorMessage = "Enter a departure date.")]
+        public DateOnly? Departure { get; set; }
+    }
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/date-field.css) ─────────────────────────────
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+
+/* The field: its root is the role="group" */
+.date-field {
+    display: inline-flex;
+    align-items: center;
+    min-width: 10rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+    cursor: text;
+}
+
+.date-field:hover { border-color: var(--color-border-control-hover); }
+/* data-focused while a segment has focus */
+.date-field[data-focused] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.date-field[data-invalid] { border-color: var(--color-danger); }
+.date-field[data-disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* Segments: data-type, data-placeholder */
+.date-field [data-type] {
+    padding: 0.1rem 0.15rem;
+    border-radius: 0.25rem;
+}
+
+/* At least 24 x 24 px: each segment is a pointer target of its own. */
+.date-field [role="spinbutton"] {
+    display: inline-block;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    outline: none;
+}
+.date-field [role="spinbutton"]:focus { background: var(--color-primary); color: #fff; }
+.date-field [data-placeholder] { color: var(--color-muted); }
+.date-field [data-placeholder]:focus { color: #fff; }
+.date-field [data-type="literal"] { padding: 0; color: var(--color-muted); }
+.date-field[data-invalid] [role="spinbutton"]:not(:focus) { color: var(--color-danger-text); }
+
+/* Field parts */
+.date-field-label { display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 600; color: var(--color-text); }
+.date-field-description { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-muted); }
+.date-field-error { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--color-danger-text); }
+
+/* Demo layout */
+.date-field-demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.5rem; }
+.date-field-value { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.date-field-value strong { color: var(--color-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.date-field-submit {
+    margin-top: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.date-field-submit:hover { background: var(--color-primary-hover); }
+.date-field-submit:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+""";
+}

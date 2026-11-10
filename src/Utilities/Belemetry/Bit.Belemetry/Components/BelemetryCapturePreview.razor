@@ -1,0 +1,259 @@
+﻿@namespace Bit.Belemetry
+@using Microsoft.AspNetCore.Components.Web
+
+@*
+    The preview a user (or a support agent) sees before a support bundle leaves the app: what each section holds, the
+    report's findings, every event with a way to remove it, the missing evidence and the report as it will be exported -
+    then an explicit confirmation. Unstyled on purpose (the app's own styles apply); every element carries a
+    bit-belemetry-preview-* class to style it by. Every value is rendered as text.
+*@
+
+<section class="bit-belemetry-preview" aria-labelledby="@_titleId">
+    @if (Capture.Succeeded is false)
+    {
+        <h2 id="@_titleId" class="bit-belemetry-preview-title">The report could not be prepared</h2>
+        <p class="bit-belemetry-preview-error" role="alert">@Capture.Error</p>
+        <div class="bit-belemetry-preview-actions">
+            <button type="button" class="bit-belemetry-preview-cancel" @onclick="CancelAsync">Close</button>
+        </div>
+    }
+    else
+    {
+        <h2 id="@_titleId" class="bit-belemetry-preview-title">@Capture.Report.Title</h2>
+        <p class="bit-belemetry-preview-summary">@Capture.Report.Summary</p>
+        <p class="bit-belemetry-preview-notice">
+            Nothing is sent until you confirm. The report holds technical details of what the app did - not what you
+            typed or saw - and you can remove anything below.
+        </p>
+
+        <fieldset class="bit-belemetry-preview-sections">
+            <legend>What the report includes</legend>
+            @foreach (var section in Capture.Sections)
+            {
+                var name = section.Section;
+                <label class="bit-belemetry-preview-section">
+                    <input type="checkbox" checked="@(IsUnavailable(section) is false && Capture.IncludedSections.HasFlag(name))"
+                           disabled="@(IsUnavailable(section))"
+                           @onchange="e => Toggle(name, e.Value is true)" />
+                    @SectionName(name): @section.Items.ToString(System.Globalization.CultureInfo.InvariantCulture) item(s)
+                    @if (section.Note is not null)
+                    {
+                        <span class="bit-belemetry-preview-note"> - @section.Note</span>
+                    }
+                </label>
+            }
+        </fieldset>
+
+        @if (AllowDescription)
+        {
+            <label class="bit-belemetry-preview-description">
+                What happened? (optional)
+                <textarea maxlength="4000" rows="3" @bind="_description" @bind:event="oninput" @onblur="ApplyDescription"></textarea>
+            </label>
+        }
+
+        <details class="bit-belemetry-preview-findings" open>
+            <summary>Findings (@Capture.Report.Findings.Count)</summary>
+            <ul>
+                @foreach (var finding in Capture.Report.Findings)
+                {
+                    <li><strong>@KindName(finding.Kind):</strong> @finding.Text</li>
+                }
+            </ul>
+        </details>
+
+        @if (ShowEvents)
+        {
+            var events = Capture.Events;
+            <details class="bit-belemetry-preview-events">
+                <summary>Events (@events.Count)</summary>
+                <table>
+                    <thead>
+                        <tr><th scope="col">Time (UTC)</th><th scope="col">Kind</th><th scope="col">What</th><th scope="col"><span class="bit-belemetry-preview-sr">Remove</span></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in MaxEventsShown > 0 ? events.TakeLast(MaxEventsShown) : events)
+                        {
+                            <tr class="@(e.IsFailure ? "bit-belemetry-preview-failure" : null)">
+                                <td>@BelemetryTime.ToDateTime(e.TimeUnixNano).ToString("HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                <td>@BelemetryDiagnosticJson.CategoryName(e.Category) (@BelemetryDiagnosticJson.SourceName(e.Source))</td>
+                                <td>@Describe(Capture, e)</td>
+                                <td><button type="button" class="bit-belemetry-preview-remove" aria-label="@($"Remove event {BelemetryDiagnosticJson.EventId(e)}")" @onclick="() => Exclude(e)">Remove</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @if (MaxEventsShown > 0 && events.Count > MaxEventsShown)
+                {
+                    <p class="bit-belemetry-preview-note">
+                        @((events.Count - MaxEventsShown).ToString(System.Globalization.CultureInfo.InvariantCulture)) earlier event(s) are not listed here but are
+                        in the report: untick their section above to leave them out.
+                    </p>
+                }
+            </details>
+        }
+
+        @if (Capture.ExceptionGroups is { Count: > 0 } groups)
+        {
+            <details class="bit-belemetry-preview-groups">
+                <summary>Errors (@groups.Count)</summary>
+                <ul>
+                    @foreach (var g in groups)
+                    {
+                        <li>@g.ExceptionType @(g.MessageTemplate is null ? "" : "- " + g.MessageTemplate) (@g.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)x)</li>
+                    }
+                </ul>
+            </details>
+        }
+
+        @if (Capture.MissingEvidence.Count > 0)
+        {
+            <details class="bit-belemetry-preview-missing">
+                <summary>What the report cannot show (@Capture.MissingEvidence.Count)</summary>
+                <ul>
+                    @foreach (var line in Capture.MissingEvidence)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
+            </details>
+        }
+
+        <details class="bit-belemetry-preview-markdown">
+            <summary>The report, as it will be sent</summary>
+            <pre>@Capture.ToMarkdown()</pre>
+        </details>
+
+        <p class="bit-belemetry-preview-status" role="status" aria-live="polite">@_status</p>
+
+        <div class="bit-belemetry-preview-actions">
+            <button type="button" class="bit-belemetry-preview-confirm" disabled="@_busy" @onclick="ConfirmAsync">@ConfirmText</button>
+            <button type="button" class="bit-belemetry-preview-cancel" disabled="@_busy" @onclick="CancelAsync">Cancel</button>
+        </div>
+    }
+</section>
+
+@code {
+    private readonly string _titleId = "bit-belemetry-preview-" + Guid.NewGuid().ToString("N")[..8];
+    private string? _description;
+    private string? _status;
+    private bool _busy;
+    private BelemetryDiagnosticCapture? _bound;
+
+    [Inject] private IBelemetryDiagnostics Diagnostics { get; set; } = default!;
+
+    /// <summary>The capture to preview.</summary>
+    [Parameter, EditorRequired] public BelemetryDiagnosticCapture Capture { get; set; } = default!;
+
+    /// <summary>
+    /// Whether confirming downloads the bundle in the browser (<see cref="IBelemetryDiagnostics.DownloadAsync"/>).
+    /// Off, confirming only raises <see cref="OnConfirmed"/>, for an app that hands the bundle to its own support
+    /// integration (<see cref="BelemetryDiagnosticCapture.ExportAsync(Stream, CancellationToken)"/>). Defaults to true.
+    /// </summary>
+    [Parameter] public bool Download { get; set; } = true;
+
+    /// <summary>Whether the user may describe what happened. Defaults to true.</summary>
+    [Parameter] public bool AllowDescription { get; set; } = true;
+
+    /// <summary>Whether every event is listed with a way to remove it. Defaults to true.</summary>
+    [Parameter] public bool ShowEvents { get; set; } = true;
+
+    /// <summary>
+    /// The most events listed (the latest), with a note saying how many are not; zero or less lists them all. Defaults to
+    /// zero: the user confirms what they could see.
+    /// </summary>
+    [Parameter] public int MaxEventsShown { get; set; }
+
+    /// <summary>The confirm button's text.</summary>
+    [Parameter] public string ConfirmText { get; set; } = "Confirm and download";
+
+    /// <summary>
+    /// Raised once the user confirmed (and, with <see cref="Download"/>, after the download started - not when it could not
+    /// start); the capture is confirmed then.
+    /// </summary>
+    [Parameter] public EventCallback<BelemetryDiagnosticCapture> OnConfirmed { get; set; }
+
+    /// <summary>Raised when the user cancels.</summary>
+    [Parameter] public EventCallback OnCancelled { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_bound, Capture)) return;
+        _bound = Capture;
+        _description = Capture.Succeeded ? Capture.Description : null;
+        _status = null;
+    }
+
+    private static bool IsUnavailable(BelemetryBundleSection section) => section.Status == "unavailable" || (section.Status == "excluded" && section.Note == "not requested");
+
+    private void Toggle(BelemetryBundleSections section, bool include)
+    {
+        if (include) Capture.IncludeSection(section);
+        else Capture.ExcludeSection(section);
+    }
+
+    private void Exclude(BelemetryDiagnosticEvent e) => Capture.ExcludeEvent(e);
+
+    private void ApplyDescription() => Capture.SetDescription(_description);
+
+    private async Task ConfirmAsync()
+    {
+        _busy = true;
+        try
+        {
+            ApplyDescription();
+            Capture.Confirm();
+            if (Download)
+            {
+                // A download that did not start is not a confirmation the app may act on (dismiss the capture, say it was sent).
+                if (await Diagnostics.DownloadAsync(Capture) is false)
+                {
+                    _status = "The report could not be saved here.";
+                    return;
+                }
+                _status = "The report was saved.";
+            }
+            await OnConfirmed.InvokeAsync(Capture);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _status = "The report could not be exported: " + ex.GetType().Name;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task CancelAsync() => OnCancelled.InvokeAsync();
+
+    private static string SectionName(BelemetryBundleSections section) => section switch
+    {
+        BelemetryBundleSections.Release => "App version and environment",
+        BelemetryBundleSections.Exceptions => "Errors",
+        BelemetryBundleSections.Timeline => "App activity",
+        BelemetryBundleSections.Browser => "Browser activity",
+        BelemetryBundleSections.Components => "Components involved",
+        BelemetryBundleSections.Snapshots => "App state snapshots",
+        BelemetryBundleSections.Description => "Your description",
+        _ => section.ToString(),
+    };
+
+    private static string KindName(BelemetryIssueFindingKind kind) => kind switch
+    {
+        BelemetryIssueFindingKind.Observed => "Observed",
+        BelemetryIssueFindingKind.Inferred => "Inferred",
+        _ => "You said",
+    };
+
+    private static string Describe(BelemetryDiagnosticCapture capture, BelemetryDiagnosticEvent e)
+    {
+        var text = e.Exception is { } x ? $"{x.Type}{(x.Message is null ? string.Empty : ": " + x.Message)}"
+                 : capture.Attribute(e, "url.template") is { } url ? $"{e.Name} {url}"
+                 : e.Route is not null ? $"{e.Name} {e.Route}"
+                 : e.ComponentType is not null ? $"{e.Name} {e.ComponentType}"
+                 : e.Message ?? e.Name;
+        return text.Length > 300 ? text[..300] + "…" : text;
+    }
+}

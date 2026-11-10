@@ -57,6 +57,7 @@ public class BitBhDialogBackdrop : BitBhComponentBase
 
         // Decorative: hidden from assistive tech.
         attrs["aria-hidden"] = "true";
+        if (DialogContext is { } dialog) BitBhDialog.AddNestingAttributes(attrs, dialog.IsNested, dialog.NestedDialogs);
 
         // The runtime's outside-press dismissal leaves the backdrop alone: its own click handler is
         // the one dismissal a press on it makes (both would ask twice per press), and a backdrop that

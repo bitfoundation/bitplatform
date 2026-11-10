@@ -512,7 +512,11 @@ public class BitCardE2ETests : E2ETestBase
         var body = await BoxAsync(El("crd-link-body"));
         Assert.AreEqual("bit-crd-lnk", await Page.EvaluateAsync<string>("([x, y]) => document.elementFromPoint(x, y).className.trim()", new[] { body.X + 5, body.Y + body.Height / 2 }));
         await Page.Mouse.ClickAsync((float)(body.X + 5), (float)(body.Y + body.Height / 2));
-        await Page.WaitForURLAsync(new Regex("navigated=1"));
+
+        // The router takes the click in the page (history.pushState), so no new document loads: the address is read until
+        // it changes, as everywhere else in the suite. WaitForURL compares the address and only then starts listening for
+        // a navigation, so a same-document navigation that lands in between is missed and the wait runs into its timeout.
+        await Expect(Page).ToHaveURLAsync(new Regex("navigated=1"));
     }
 
     [TestMethod]

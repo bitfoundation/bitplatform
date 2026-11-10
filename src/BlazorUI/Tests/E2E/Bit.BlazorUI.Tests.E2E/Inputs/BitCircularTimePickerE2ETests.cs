@@ -231,6 +231,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
 
         await HourButton(callout).ClickAsync();
         await Expect(HourButton(callout)).ToHaveAttributeAsync("aria-pressed", "true");
+        // The hand of 15 comes to rest right across the 03 of the inner ring, and lets the press through to it.
         await Number(callout, "03").ClickAsync();
         await Expect(Out("basic-value")).ToHaveTextAsync("03:45:00");
 

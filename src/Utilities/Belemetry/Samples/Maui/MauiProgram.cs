@@ -18,7 +18,24 @@ public static class MauiProgram
 #endif
 
         // There is no server to fetch from: the "fetch" button requests a file of this app's wwwroot.
-        builder.Services.AddCoreServices(settings => settings.FetchUrl = "sample-data.json");
+        builder.Services.AddCoreServices(settings =>
+        {
+            settings.FetchUrl = "sample-data.json";
+            settings.FailUrl = "missing-data.json";
+
+            // Android's WebView and WKWebView ignore a download: the support bundle is written to the app's data folder
+            // (share it from there with Share.RequestAsync). WebView2 on Windows saves downloads itself.
+            if (OperatingSystem.IsWindows() is false)
+            {
+                settings.SaveBundle = async capture =>
+                {
+                    var path = Path.Combine(FileSystem.AppDataDirectory, capture.SuggestedFileName);
+                    await using var file = File.Create(path);
+                    await capture.ExportAsync(file);
+                    return path;
+                };
+            }
+        });
 
         builder.Services.AddBitBelemetryServices(o =>
         {
@@ -44,7 +61,19 @@ public static class MauiProgram
             o.Metrics.Meters.Add(SampleTelemetry.Name);
         });
 
-        return builder.Build();
+        var app = builder.Build();
+
+        // Belemetry records what reaches AppDomain.UnhandledException itself (iOS and Mac Catalyst raise it for a crash),
+        // and saves it for the next launch to send. These platforms may report a crash only through an event of their own:
+        // forwarded, it is recorded and saved the same way, and one both events report is recorded once.
+#if ANDROID
+        Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#elif WINDOWS
+        // WinUI reports an exception on its UI thread here; it ends the app unless a handler sets e.Handled.
+        Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#endif
+
+        return app;
     }
 
     // The Android emulator reaches the development machine's localhost at 10.0.2.2.

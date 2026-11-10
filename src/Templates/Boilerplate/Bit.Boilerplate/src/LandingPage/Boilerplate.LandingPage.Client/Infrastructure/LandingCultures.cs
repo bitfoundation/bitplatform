@@ -51,6 +51,8 @@ public static class LandingCultures
 
     public static string Localize(string path, CultureInfo culture)
     {
+        if (string.IsNullOrEmpty(path)) path = "/";
+
         if (culture.Name == Default.Name) return path;
 
         return path == "/" ? $"/{culture.Name}" : $"/{culture.Name}{path}";

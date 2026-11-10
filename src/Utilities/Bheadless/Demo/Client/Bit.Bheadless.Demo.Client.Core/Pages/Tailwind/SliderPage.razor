@@ -59,6 +59,32 @@
     </LiveContent>
 </TwDemoBlock>
 
+<TwDemoBlock Title="Tick marks" Code="@_marksCode">
+    <Description>
+        <code>BitBhSliderMarker</code> puts a tick - with an optional label - at a <code>Value</code> along the track,
+        positioned like a thumb and hidden from screen readers (the thumb announces the value). It carries
+        <code>data-in-range</code> inside the filled range and <code>data-state="under-value"</code>,
+        <code>"at-value"</code> or <code>"over-value"</code>.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-4">
+            <BitBhSlider @bind-Value="zoom" Step="25" ValueText="@(v => $"{v}%")"
+                      class="relative mb-7 flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+                <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+                    <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+                    @foreach (var mark in marks)
+                    {
+                        <BitBhSliderMarker Value="mark"
+                                        class="top-full mt-2 whitespace-nowrap text-xs text-zinc-600 before:absolute before:bottom-[calc(100%+2px)] before:left-1/2 before:h-1.5 before:w-px before:bg-zinc-400 before:content-[''] data-in-range:text-zinc-900 data-[state=at-value]:font-semibold">@mark%</BitBhSliderMarker>
+                    }
+                </BitBhSliderTrack>
+                <BitBhSliderThumb aria-label="Zoom"
+                               class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-[#fff] shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+            </BitBhSlider>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
 <TwDemoBlock Title="Step, LargeStep and a thumb Template" Code="@_stepCode">
     <Description>
         <code>Step="0.5"</code> snaps values to half degrees; <code>LargeStep="5"</code> sets the
@@ -181,6 +207,8 @@
 @code {
     private double volume = 50;
     private IReadOnlyList<double> price = [200, 600];
+    private double zoom = 50;
+    private readonly double[] marks = [0, 25, 50, 75, 100];
     private double temperature = 21.5;
     private readonly (string Name, double Gain)[] bands = [("Bass", 4), ("Mid", -2), ("Treble", 6)];
     private double brightness = 70;
@@ -202,6 +230,23 @@
 @code {
     private double volume = 50;
 }
+""";
+
+    private const string _marksCode = """
+<BitBhSlider @bind-Value="zoom" Step="25" ValueText="@(v => $"{v}%")"
+          class="relative mb-7 flex h-5 w-full max-w-xs cursor-pointer touch-none select-none items-center">
+    <BitBhSliderTrack class="h-1.5 rounded-full bg-zinc-200">
+        <BitBhSliderRange class="inset-0 rounded-full bg-blue-600" />
+        @foreach (var mark in new double[] { 0, 25, 50, 75, 100 })
+        {
+            @* Positioned like a thumb; the ::before is the tick. *@
+            <BitBhSliderMarker Value="mark"
+                            class="top-full mt-2 whitespace-nowrap text-xs text-zinc-600 before:absolute before:bottom-[calc(100%+2px)] before:left-1/2 before:h-1.5 before:w-px before:bg-zinc-400 before:content-[''] data-in-range:text-zinc-900 data-[state=at-value]:font-semibold">@mark%</BitBhSliderMarker>
+        }
+    </BitBhSliderTrack>
+    <BitBhSliderThumb aria-label="Zoom"
+                   class="top-1/2 -mt-2.5 block size-5 cursor-grab rounded-full border-2 border-blue-600 bg-[#fff] shadow outline-none transition-shadow hover:ring-4 hover:ring-blue-600/15 focus-visible:ring-4 focus-visible:ring-blue-600/35 data-dragging:cursor-grabbing data-dragging:ring-[6px] data-dragging:ring-blue-600/20" />
+</BitBhSlider>
 """;
 
     private const string _rangeCode = """

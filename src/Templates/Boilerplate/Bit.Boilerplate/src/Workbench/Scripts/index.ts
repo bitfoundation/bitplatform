@@ -520,7 +520,10 @@ if (isPreview) {
 /** How many thumbnails load at once, as each can take seconds and holds one of the few connections a browser opens to a server. */
 const maxThumbnailsAtOnce = 2;
 
-/** Loads the home page's thumbnails as they come into sight; one of a hidden theme has no box, so it waits until its theme shows. */
+/**
+ * Loads the home page's thumbnails as they come into sight; one of a hidden theme has no box, so it waits until its theme shows.
+ * Each is marked once it has loaded or failed (data-thumbnail-state), which ends the shimmer it shows while it waits.
+ */
 function loadThumbnails() {
     const waiting: HTMLImageElement[] = [];
     let loading = 0;
@@ -528,7 +531,8 @@ function loadThumbnails() {
     const loadNext = () => {
         while (loading < maxThumbnailsAtOnce && waiting.length > 0) {
             const image = waiting.shift()!;
-            const onDone = () => {
+            const onDone = (event: Event) => {
+                image.dataset.thumbnailState = event.type === 'load' ? 'loaded' : 'failed';
                 loading--;
                 loadNext();
             };
@@ -751,25 +755,65 @@ host.workbench = {
         cancelSpotPick();
     },
 
-    /** Each theme token's resolved color as hex, with its opacity when it isn't opaque. */
-    readTokens(names: string[]) {
+    /**
+     * Each theme token's value as the page resolves it inside the element with the id, so a theme set on that element
+     * counts: a color as hex with its opacity when it isn't opaque, a length in pixels, anything else as written.
+     */
+    readTokenValues(requests: { name: string; kind: 'color' | 'length' | 'raw'; value: string }[], scopeId: string) {
         const probe = document.createElement('span');
-        probe.style.display = 'none';
-        document.body.appendChild(probe);
+        probe.setAttribute('aria-hidden', 'true');
+        probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;inset-block-start:0;inset-inline-start:0';
+        (document.getElementById(scopeId) ?? document.body).appendChild(probe);
 
         const values: Record<string, string> = {};
 
-        names.forEach(name => {
-            probe.style.color = '';
-            probe.style.color = `var(${name})`;
-            const color = parseColor(getComputedStyle(probe).color);
-            const hex = color?.slice(0, 3).map(part => Math.min(255, Math.max(0, Math.round(part * 255))).toString(16).padStart(2, '0')).join('');
-            values[name] = color ? `#${hex}${color[3] < 1 ? ` · ${Math.round(color[3] * 100)}%` : ''}` : '';
+        requests.forEach(request => {
+            if (request.kind === 'color') {
+                probe.style.color = '';
+                probe.style.color = request.value;
+                const color = parseColor(getComputedStyle(probe).color);
+                const hex = color?.slice(0, 3).map(part => Math.min(255, Math.max(0, Math.round(part * 255))).toString(16).padStart(2, '0')).join('');
+                values[request.name] = color ? `#${hex}${color[3] < 1 ? ` · ${Math.round(color[3] * 100)}%` : ''}` : '';
+            } else if (request.kind === 'length') {
+                probe.style.width = '';
+                probe.style.width = request.value;
+                const style = getComputedStyle(probe);
+                // A width that resolves to nothing falls back to auto, which reads as 0px, so the token or its steps must be declared.
+                const declared = (style.getPropertyValue(request.name) || style.getPropertyValue(`${request.name}-steps`)).trim();
+                const width = probe.style.width && declared ? parseFloat(style.width) : NaN;
+                values[request.name] = Number.isFinite(width) ? `${Math.round(width * 100) / 100}px` : '';
+            } else {
+                values[request.name] = getComputedStyle(probe).getPropertyValue(request.name).trim();
+            }
         });
 
         probe.remove();
 
         return values;
+    },
+
+    /**
+     * Resolves once nothing on the page has scrolled for a quarter of a second, or after the limit: an open callout closes
+     * when the page scrolls, as when a tab bar slides its selected tab into view.
+     */
+    whenStill(limitMs = 2000): Promise<void> {
+        return new Promise(resolve => {
+            let quiet = 0;
+            const done = () => {
+                removeEventListener('scroll', onScroll, true);
+                clearTimeout(quiet);
+                clearTimeout(limit);
+                resolve();
+            };
+            const onScroll = () => {
+                clearTimeout(quiet);
+                quiet = window.setTimeout(done, 250);
+            };
+            const limit = window.setTimeout(done, limitMs);
+
+            addEventListener('scroll', onScroll, true);
+            onScroll();
+        });
     },
 
     /** The theme's breakpoints, read from bit BlazorUI's --bit-bp-* variables. */

@@ -1,0 +1,309 @@
+﻿@page "/tw/splitter"
+
+<PageTitle>Splitter (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Splitter</h1>
+    <p class="bb-subtitle">Resizable panels with handles between them, following the WAI-ARIA Window Splitter pattern: every handle is a focusable separator you drag or move with the keyboard. Sizes are percentages you can bind, constrain, collapse, nest and save.</p>
+</div>
+
+<SectionSwitcher Slug="splitter" />
+
+<TwDemoBlock Title="Two panels" Code="@_basicCode">
+    <Description>
+        Each <code>BitBhSplitterHandle</code> is a <code>role="separator"</code> whose <code>aria-valuenow</code> is the size in
+        percent of the panel before it. Drag it, or focus it and press <kbd>←</kbd> / <kbd>→</kbd> (5 points; <kbd>Shift</kbd>:
+        20), <kbd>Home</kbd> / <kbd>End</kbd>. The handle here is a 24px hit area (<code>w-6 -mx-3</code>, so it overlaps the
+        panels instead of taking space) with a 1px line and a grip inside, styled through <code>group-data-hover:</code>,
+        <code>group-data-dragging:</code> and <code>group-focus-visible:</code>.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-3">
+            <BitBhSplitter OnSizesChange="s => basicSizes = s" class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+                <BitBhSplitterPanel DefaultSize="30" MinSize="20" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+                    <p class="m-0 text-sm font-semibold">Navigation</p>
+                    <p class="m-0 text-[0.8125rem] text-zinc-600">At least 20%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize navigation" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                    <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                    <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                </BitBhSplitterHandle>
+                <BitBhSplitterPanel MinSize="30" class="grid content-start gap-1.5 px-4 py-3">
+                    <p class="m-0 text-sm font-semibold">Content</p>
+                    <p class="m-0 text-[0.8125rem] text-zinc-600">At least 30%.</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="m-0 text-sm text-zinc-500">Sizes: <strong class="font-semibold tabular-nums text-zinc-900">@Format(basicSizes)</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Three panels, collapsible" Code="@_collapseCode">
+    <Description>
+        <code>MinSize</code> / <code>MaxSize</code> bound a panel; a resize that reaches a panel's minimum moves on to the next.
+        A <code>Collapsible</code> panel collapses when dragged past half its minimum, with <kbd>Home</kbd>, with a second
+        arrow step at its minimum, or with <kbd>Enter</kbd> on a handle next to it (<kbd>Enter</kbd> again restores it).
+        Collapsed panels get <code>data-collapsed</code> - <code>data-collapsed:px-0</code> drops their padding.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-3">
+            <BitBhSplitter class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+                <BitBhSplitterPanel DefaultSize="22" MinSize="15" Collapsible="true" OnCollapsedChange="@(c => explorer = c ? "collapsed" : "open")"
+                                    class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+                    <p class="m-0 text-sm font-semibold">Explorer</p>
+                    <p class="m-0 text-[0.8125rem] text-zinc-600">Collapsible, at least 15%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize explorer" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                    <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                    <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                </BitBhSplitterHandle>
+                <BitBhSplitterPanel MinSize="30" class="grid content-start gap-1.5 px-4 py-3">
+                    <p class="m-0 text-sm font-semibold">Editor</p>
+                    <p class="m-0 text-[0.8125rem] text-zinc-600">At least 30%.</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize outline" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                    <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                    <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                </BitBhSplitterHandle>
+                <BitBhSplitterPanel DefaultSize="22" MinSize="12" MaxSize="35" Collapsible="true" OnCollapsedChange="@(c => outline = c ? "collapsed" : "open")"
+                                    class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+                    <p class="m-0 text-sm font-semibold">Outline</p>
+                    <p class="m-0 text-[0.8125rem] text-zinc-600">Collapsible, 12% to 35%.</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="m-0 text-sm text-zinc-500">Explorer: <strong class="font-semibold text-zinc-900">@explorer</strong> · Outline: <strong class="font-semibold text-zinc-900">@outline</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Vertical and nested" Code="@_nestedCode">
+    <Description>
+        <code>Orientation="BitBhOrientation.Vertical"</code> stacks the panels; its handle is a horizontal bar moved with
+        <kbd>↑</kbd> / <kbd>↓</kbd> (<code>h-6 -my-3</code>). A splitter nests in a panel of another (<code>h-full</code>);
+        each handle belongs to its own splitter.
+    </Description>
+    <LiveContent>
+        <BitBhSplitter class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+            <BitBhSplitterPanel DefaultSize="28" MinSize="15" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+                <p class="m-0 text-sm font-semibold">Files</p>
+                <p class="m-0 text-[0.8125rem] text-zinc-600">Program.cs, App.razor, appsettings.json</p>
+            </BitBhSplitterPanel>
+            <BitBhSplitterHandle aria-label="Resize files" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+            </BitBhSplitterHandle>
+            <BitBhSplitterPanel>
+                <BitBhSplitter Orientation="BitBhOrientation.Vertical" class="h-full">
+                    <BitBhSplitterPanel DefaultSize="65" MinSize="25" class="grid content-start gap-1.5 px-4 py-3">
+                        <p class="m-0 text-sm font-semibold">Editor</p>
+                        <p class="m-0 text-[0.8125rem] text-zinc-600">Press ↑ / ↓ on the bar below.</p>
+                    </BitBhSplitterPanel>
+                    <BitBhSplitterHandle aria-label="Resize terminal" class="group relative z-[1] -my-3 flex h-6 cursor-row-resize items-center justify-center outline-none">
+                        <span class="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                        <span class="relative h-2 w-7 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                    </BitBhSplitterHandle>
+                    <BitBhSplitterPanel MinSize="20" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+                        <p class="m-0 text-sm font-semibold">Terminal</p>
+                        <p class="m-0 text-[0.8125rem] text-zinc-600">dotnet watch</p>
+                    </BitBhSplitterPanel>
+                </BitBhSplitter>
+            </BitBhSplitterPanel>
+        </BitBhSplitter>
+    </LiveContent>
+</TwDemoBlock>
+
+<TwDemoBlock Title="Bound, saved and driven from code" Code="@_boundCode">
+    <Description>
+        <code>@@bind-Sizes</code> takes one percentage per panel; <code>OnSizesCommit</code> fires once a drag ends or a key
+        resizes. <code>AutoSaveId</code> keeps the layout in <code>localStorage</code> (resize, then reload). Panels take
+        commands: <code>CollapseAsync</code>, <code>ExpandAsync</code>, <code>ResizeAsync</code>.
+    </Description>
+    <LiveContent>
+        <div class="grid w-full gap-3">
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="Reset">Reset</button>
+                <button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="ToggleSidebar">@(sidebarCollapsed ? "Show sidebar" : "Hide sidebar")</button>
+                <button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="() => preview!.ResizeAsync(40)">Preview at 40%</button>
+            </div>
+            <BitBhSplitter @bind-Sizes="boundSizes" OnSizesCommit="_ => commits++" AutoSaveId="bheadless-demo-tw"
+                           class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+                <BitBhSplitterPanel @ref="sidebar" Key="sidebar" MinSize="15" Collapsible="true" OnCollapsedChange="c => sidebarCollapsed = c"
+                                    class="bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+                    <p class="m-0 text-sm font-semibold">Sidebar</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize sidebar" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                    <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                    <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                </BitBhSplitterHandle>
+                <BitBhSplitterPanel Key="document" MinSize="25" class="px-4 py-3">
+                    <p class="m-0 text-sm font-semibold">Document</p>
+                </BitBhSplitterPanel>
+                <BitBhSplitterHandle aria-label="Resize preview" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+                    <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                    <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+                </BitBhSplitterHandle>
+                <BitBhSplitterPanel @ref="preview" Key="preview" MinSize="15" class="bg-zinc-50 px-4 py-3">
+                    <p class="m-0 text-sm font-semibold">Preview</p>
+                </BitBhSplitterPanel>
+            </BitBhSplitter>
+            <p class="m-0 text-sm text-zinc-500">Sizes: <strong class="font-semibold tabular-nums text-zinc-900">@Format(boundSizes)</strong> · Commits: <strong class="font-semibold text-zinc-900">@commits</strong></p>
+        </div>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private IReadOnlyList<double> basicSizes = [30, 70];
+    private string explorer = "open";
+    private string outline = "open";
+    private IReadOnlyList<double> boundSizes = [25, 50, 25];
+    private int commits;
+    private bool sidebarCollapsed;
+    private BitBhSplitterPanel? sidebar;
+    private BitBhSplitterPanel? preview;
+
+    // A layout set from here is no collapse the panel reports: the flag follows it.
+    private void Reset()
+    {
+        boundSizes = [25, 50, 25];
+        sidebarCollapsed = false;
+    }
+
+    private Task ToggleSidebar() => sidebar is null ? Task.CompletedTask
+        : sidebarCollapsed ? sidebar.ExpandAsync() : sidebar.CollapseAsync();
+
+    private static string Format(IReadOnlyList<double> sizes) => string.Join(" / ", sizes.Select(s => $"{s:0}%"));
+
+    private const string _basicCode = """
+<BitBhSplitter OnSizesChange="s => basicSizes = s" class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+    <BitBhSplitterPanel DefaultSize="30" MinSize="20" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Navigation</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">At least 20%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize navigation" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel MinSize="30" class="grid content-start gap-1.5 px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Content</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">At least 30%.</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="m-0 text-sm text-zinc-500">Sizes: <strong class="font-semibold tabular-nums text-zinc-900">@string.Join(" / ", basicSizes.Select(s => $"{s:0}%"))</strong></p>
+
+@code {
+    private IReadOnlyList<double> basicSizes = [30, 70];
+}
+""";
+
+    private const string _collapseCode = """
+<BitBhSplitter class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+    <BitBhSplitterPanel DefaultSize="22" MinSize="15" Collapsible="true" OnCollapsedChange="@(c => explorer = c ? "collapsed" : "open")"
+                        class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+        <p class="m-0 text-sm font-semibold">Explorer</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">Collapsible, at least 15%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize explorer" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel MinSize="30" class="grid content-start gap-1.5 px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Editor</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">At least 30%.</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize outline" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel DefaultSize="22" MinSize="12" MaxSize="35" Collapsible="true" OnCollapsedChange="@(c => outline = c ? "collapsed" : "open")"
+                        class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+        <p class="m-0 text-sm font-semibold">Outline</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">Collapsible, 12% to 35%.</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="m-0 text-sm text-zinc-500">Explorer: <strong class="font-semibold text-zinc-900">@explorer</strong> · Outline: <strong class="font-semibold text-zinc-900">@outline</strong></p>
+
+@code {
+    private string explorer = "open";
+    private string outline = "open";
+}
+""";
+
+    private const string _nestedCode = """
+<BitBhSplitter class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900">
+    <BitBhSplitterPanel DefaultSize="28" MinSize="15" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Files</p>
+        <p class="m-0 text-[0.8125rem] text-zinc-600">Program.cs, App.razor, appsettings.json</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize files" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel>
+        <BitBhSplitter Orientation="BitBhOrientation.Vertical" class="h-full">
+            <BitBhSplitterPanel DefaultSize="65" MinSize="25" class="grid content-start gap-1.5 px-4 py-3">
+                <p class="m-0 text-sm font-semibold">Editor</p>
+                <p class="m-0 text-[0.8125rem] text-zinc-600">Press ↑ / ↓ on the bar below.</p>
+            </BitBhSplitterPanel>
+            <BitBhSplitterHandle aria-label="Resize terminal" class="group relative z-[1] -my-3 flex h-6 cursor-row-resize items-center justify-center outline-none">
+                <span class="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+                <span class="relative h-2 w-7 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+            </BitBhSplitterHandle>
+            <BitBhSplitterPanel MinSize="20" class="grid content-start gap-1.5 bg-zinc-50 px-4 py-3">
+                <p class="m-0 text-sm font-semibold">Terminal</p>
+                <p class="m-0 text-[0.8125rem] text-zinc-600">dotnet watch</p>
+            </BitBhSplitterPanel>
+        </BitBhSplitter>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+""";
+
+    private const string _boundCode = """
+<button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="Reset">Reset</button>
+<button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="ToggleSidebar">@(sidebarCollapsed ? "Show sidebar" : "Hide sidebar")</button>
+<button type="button" class="min-h-8 cursor-pointer rounded-md border border-zinc-500 bg-white px-3.5 text-[0.8125rem] text-zinc-900 hover:bg-zinc-100" @onclick="() => preview!.ResizeAsync(40)">Preview at 40%</button>
+
+<BitBhSplitter @bind-Sizes="boundSizes" OnSizesCommit="_ => commits++" AutoSaveId="bheadless-demo-tw"
+               class="h-56 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-900 data-dragging:cursor-col-resize">
+    <BitBhSplitterPanel @ref="sidebar" Key="sidebar" MinSize="15" Collapsible="true" OnCollapsedChange="c => sidebarCollapsed = c"
+                        class="bg-zinc-50 px-4 py-3 data-collapsed:px-0">
+        <p class="m-0 text-sm font-semibold">Sidebar</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize sidebar" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel Key="document" MinSize="25" class="px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Document</p>
+    </BitBhSplitterPanel>
+    <BitBhSplitterHandle aria-label="Resize preview" class="group relative z-[1] -mx-3 flex w-6 cursor-col-resize items-center justify-center outline-none">
+        <span class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-200 group-data-hover:bg-blue-600 group-data-dragging:bg-blue-600"></span>
+        <span class="relative h-7 w-2 rounded-full border border-zinc-500 bg-white group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-blue-600 group-data-hover:border-blue-600 group-data-hover:bg-blue-600 group-data-dragging:border-blue-600 group-data-dragging:bg-blue-600"></span>
+    </BitBhSplitterHandle>
+    <BitBhSplitterPanel @ref="preview" Key="preview" MinSize="15" class="bg-zinc-50 px-4 py-3">
+        <p class="m-0 text-sm font-semibold">Preview</p>
+    </BitBhSplitterPanel>
+</BitBhSplitter>
+
+<p class="m-0 text-sm text-zinc-500">Commits: <strong class="font-semibold text-zinc-900">@commits</strong></p>
+
+@code {
+    private IReadOnlyList<double> boundSizes = [25, 50, 25];
+    private int commits;
+    private bool sidebarCollapsed;
+    private BitBhSplitterPanel? sidebar;
+    private BitBhSplitterPanel? preview;
+
+    // A layout set from here is no collapse the panel reports: the flag follows it.
+    private void Reset()
+    {
+        boundSizes = [25, 50, 25];
+        sidebarCollapsed = false;
+    }
+
+    private Task ToggleSidebar() => sidebar is null ? Task.CompletedTask
+        : sidebarCollapsed ? sidebar.ExpandAsync() : sidebar.CollapseAsync();
+}
+""";
+}

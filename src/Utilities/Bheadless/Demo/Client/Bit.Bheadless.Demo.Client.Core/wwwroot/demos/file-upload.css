@@ -1,0 +1,57 @@
+﻿/* file-upload demo styles — plain CSS section. The library ships zero CSS. */
+
+.upload { display: grid; gap: 0.75rem; width: min(30rem, 100%); }
+
+.dropzone {
+    display: grid;
+    place-items: center;
+    gap: 0.25rem;
+    padding: 1.5rem;
+    border: 2px dashed var(--color-border-strong);
+    border-radius: 0.75rem;
+    background: var(--color-subtle);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.dropzone:hover { border-color: var(--color-border-hover); }
+.dropzone:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* data-dragging while files are dragged over the zone */
+.dropzone[data-dragging] { border-color: var(--color-primary); background: var(--color-accent-subtle); color: var(--color-accent-text); }
+.dropzone[data-disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.dropzone-hint { color: var(--color-muted); font-size: 0.8rem; }
+
+.upload-list { display: grid; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+
+.upload-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    font-size: 0.875rem;
+}
+
+.upload-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-text); }
+.upload-item-size { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+.upload-remove {
+    all: unset;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.375rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.upload-remove:hover { background: var(--color-fill); }
+.upload-remove:focus-visible { outline: 2px solid var(--color-focus); }
+
+.upload-error { margin: 0; color: var(--color-danger-text); font-size: 0.8rem; }

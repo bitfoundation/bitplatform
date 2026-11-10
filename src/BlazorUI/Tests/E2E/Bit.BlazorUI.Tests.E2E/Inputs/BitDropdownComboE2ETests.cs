@@ -342,14 +342,26 @@ public class BitDropdownComboE2ETests : BitDropdownE2ETestBase
         await OpenAsync(Url);
 
         var input = ComboInput("dd-combo-tokens");
+        var triggerId = await Trigger("dd-combo-tokens").GetAttributeAsync("id");
+        var callout = await CalloutAsync("dd-combo-tokens");
 
+        await input.FocusAsync();
         await input.FillAsync("Apple, Mango; Banana");
 
         await Expect(Page.Locator("#tokens-values")).ToHaveTextAsync("f-app,dyn-mango,f-ban");
         await Expect(Page.Locator("#dd-combo-tokens .bit-drp-chp")).ToHaveTextAsync(["Apple", "Mango", "Banana"]);
         await Expect(input).ToHaveValueAsync("");
 
+        // The separator is typed once the term has reached the list - the term opens it, on the item it names - the way
+        // CommitAsync waits for a term before its Enter: typed while the opening the term started is still on its way,
+        // the separator raced that opening for the term it is meant to commit. A multi-select list marks the item a
+        // commit takes through its id (and the field's active descendant), the bit-drp-ctg class going on the item's
+        // wrapper rather than on the option.
         await input.FillAsync("carrot");
+        await Expect(input).ToHaveValueAsync("carrot");
+        await Expect(callout).ToBeVisibleAsync();
+        await Expect(Option(callout, "Carrot")).ToHaveAttributeAsync("id", $"{triggerId}-ctg");
+        await Expect(input).ToHaveAttributeAsync("aria-activedescendant", $"{triggerId}-ctg");
         await input.PressAsync(";");
 
         await Expect(Page.Locator("#tokens-values")).ToHaveTextAsync("f-app,dyn-mango,f-ban,v-car");

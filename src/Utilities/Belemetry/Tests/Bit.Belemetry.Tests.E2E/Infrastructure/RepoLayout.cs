@@ -19,6 +19,19 @@ public static class RepoLayout
     public static string HybridHostExecutable(string configuration) =>
         Path.Combine(Path.GetDirectoryName(HybridHostProject())!, "bin", configuration, "net11.0-windows", $"{HybridHostName}.exe");
 
+    public const string MauiSampleName = "Bit.Belemetry.Samples.Maui";
+
+    public static string MauiSampleProject() => FindUpward(Path.Combine("Samples", "Maui", $"{MauiSampleName}.csproj"));
+
+    /// <summary>The MAUI sample's Windows executable, under its runtime identifier's folder, or null when it is not built.</summary>
+    public static string? MauiSampleExecutable(string configuration)
+    {
+        var output = Path.Combine(Path.GetDirectoryName(MauiSampleProject())!, "bin", configuration, MauiSampleApp.TargetFramework);
+        return Directory.Exists(output)
+            ? Directory.EnumerateFiles(output, $"{MauiSampleName}.exe", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
     private static string FindUpward(string relativePath)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

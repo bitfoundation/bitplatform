@@ -75,6 +75,14 @@ public sealed class BitBhDialogContext : IBitBhCloseContext
     /// <summary>Requests dismissal (respects <c>DismissOnEscape</c> and <c>OnDismissRequest</c>).</summary>
     public Task DismissAsync(BitBhDismissReason reason) => _dismissAsync(reason);
 
+    /// <summary>Whether the dialog was opened from another dialog (it renders inside that one's content).</summary>
+    public bool IsNested { get; internal init; }
+
+    /// <summary>The number of dialogs open in front of this one.</summary>
+    public int NestedDialogs { get; internal init; }
+
+    internal BitBhDialog? Owner { get; init; }
+
     internal void RegisterTitle(bool present) => _registerTitle(present);
     internal void RegisterDescription(bool present) => _registerDescription(present);
     internal void RegisterPanel(Func<ElementReference>? initialFocus, bool dismissOnEscape) => _registerPanel(initialFocus, dismissOnEscape);

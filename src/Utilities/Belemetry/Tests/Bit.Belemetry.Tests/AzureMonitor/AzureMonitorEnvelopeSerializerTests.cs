@@ -175,6 +175,196 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void Exception_FromSpanExceptionEvent()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", "/orders/{id}").Set("session.id", "s-1").Set("user.id", "u-1");
+        span.Events.Add(new BelemetrySpanEvent { Name = "retry", TimeUnixNano = Records.Start, Attributes = new BelemetryAttributes().Set("attempt", 2) });
+        span.Events.Add(new BelemetrySpanEvent
+        {
+            Name = "exception",
+            TimeUnixNano = Records.Start + 1_000_000_000,
+            Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException").Set("exception.message", "slow").Set("exception.stacktrace", "at Y()")
+                .Set("exception.escaped", true).Set("order", 7),
+        });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", TimeUnixNano = Records.Start, Attributes = new BelemetryAttributes().Set("other", 1) });
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span]), true, out var count);
+
+        Assert.HasCount(3, envelopes, "The exception and the other event are items of their own; an exception event without exception.* is not.");
+        Assert.AreEqual(3, count, "The count is the envelopes', the items a 206 response indexes.");
+        AssertEnvelope(envelopes[0], "Request");
+        Assert.AreEqual("Microsoft.ApplicationInsights.Message", envelopes[1].GetProperty("name").GetString());
+
+        var e = envelopes[2];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", e.GetProperty("name").GetString());
+        Assert.AreEqual("2023-11-14T22:13:21.1234567Z", e.GetProperty("time").GetString(), "At the event's time, not the span's.");
+        Assert.AreEqual(IKey, e.GetProperty("iKey").GetString());
+        Assert.AreEqual("ExceptionData", e.GetProperty("data").GetProperty("baseType").GetString());
+        var data = BaseData(e);
+        var ex = data.GetProperty("exceptions")[0];
+        Assert.AreEqual(1, ex.GetProperty("id").GetInt32());
+        Assert.AreEqual(0, ex.GetProperty("outerId").GetInt32());
+        Assert.AreEqual("System.TimeoutException", ex.GetProperty("typeName").GetString());
+        Assert.AreEqual("slow", ex.GetProperty("message").GetString());
+        Assert.IsTrue(ex.GetProperty("hasFullStack").GetBoolean());
+        Assert.AreEqual("at Y()", ex.GetProperty("stack").GetString());
+        Assert.AreEqual(3, data.GetProperty("severityLevel").GetInt32());
+
+        var tags = Tags(e);
+        Assert.AreEqual("[shop]/checkout", tags.GetProperty("ai.cloud.role").GetString());
+        Assert.AreEqual(Records.TraceId, tags.GetProperty("ai.operation.id").GetString());
+        Assert.AreEqual(Records.SpanId, tags.GetProperty("ai.operation.parentId").GetString(), "Its parent is the span it was recorded on.");
+        Assert.AreEqual("GET /orders/{id}", tags.GetProperty("ai.operation.name").GetString(), "A request's exception carries the request's operation name.");
+        Assert.AreEqual("s-1", tags.GetProperty("ai.session.id").GetString(), "The ids come from the span's attributes.");
+        Assert.AreEqual("u-1", tags.GetProperty("ai.user.authUserId").GetString());
+
+        Assert.AreEqual("7", Prop(e, "order"));
+        Assert.IsNull(Prop(e, "exception.escaped"));
+        Assert.IsNull(Prop(e, "http.route"), "The span's attributes stay on the span's envelope.");
+        Assert.IsNull(Prop(e, "session.id"));
+    }
+
+    [TestMethod]
+    public void Exception_FromActivityAddException()
+    {
+        using var activity = new Activity("charge").SetIdFormat(ActivityIdFormat.W3C);
+        activity.Start();
+        try
+        {
+            throw new InvalidOperationException("declined");
+        }
+        catch (InvalidOperationException thrown)
+        {
+            activity.AddException(thrown);
+        }
+        activity.Stop();
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [BelemetryActivityCollector.Convert(activity, new BelemetryTracingOptions())]));
+
+        Assert.HasCount(2, envelopes);
+        Assert.AreEqual("Microsoft.ApplicationInsights.RemoteDependency", envelopes[0].GetProperty("name").GetString());
+        var e = envelopes[1];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Exception", e.GetProperty("name").GetString());
+        var ex = BaseData(e).GetProperty("exceptions")[0];
+        Assert.AreEqual("System.InvalidOperationException", ex.GetProperty("typeName").GetString());
+        Assert.AreEqual("declined", ex.GetProperty("message").GetString());
+        Assert.IsTrue(ex.GetProperty("hasFullStack").GetBoolean());
+        Assert.IsTrue(ex.GetProperty("stack").GetString()!.Contains(nameof(Exception_FromActivityAddException), StringComparison.Ordinal));
+        Assert.AreEqual(activity.TraceId.ToHexString(), Tags(e).GetProperty("ai.operation.id").GetString());
+        Assert.AreEqual(activity.SpanId.ToHexString(), Tags(e).GetProperty("ai.operation.parentId").GetString());
+        Assert.IsFalse(Tags(e).TryGetProperty("ai.operation.name", out _), "Only a request's exceptions name the operation.");
+    }
+
+    [TestMethod]
+    public void Message_FromAnyOtherSpanEvent()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", "/orders/{id}").Set("session.id", "s-1");
+        span.Events.Add(new BelemetrySpanEvent
+        {
+            Name = "retry",
+            TimeUnixNano = Records.Start + 1_000_000_000,
+            Attributes = new BelemetryAttributes().Set("attempt", 2).Set("session.id", "other"),
+        });
+        var dependency = Records.Span();
+        dependency.Events.Add(new BelemetrySpanEvent { Name = "domInteractive", TimeUnixNano = Records.Start });
+        dependency.Events.Add(new BelemetrySpanEvent { Name = string.Empty, TimeUnixNano = Records.Start });
+
+        var envelopes = Serialize(new BelemetryBatch(Records.Resource(), [span, dependency]), true, out var count);
+
+        Assert.HasCount(4, envelopes, "An event with no name is not an item.");
+        Assert.AreEqual(4, count);
+        var e = envelopes[1];
+        Assert.AreEqual("Microsoft.ApplicationInsights.Message", e.GetProperty("name").GetString());
+        Assert.AreEqual("2023-11-14T22:13:21.1234567Z", e.GetProperty("time").GetString(), "At the event's time, not the span's.");
+        Assert.AreEqual("MessageData", e.GetProperty("data").GetProperty("baseType").GetString());
+        var data = BaseData(e);
+        Assert.AreEqual("retry", data.GetProperty("message").GetString(), "The event's name is the message, as the Azure Monitor exporter writes it.");
+        Assert.IsFalse(data.TryGetProperty("severityLevel", out _), "An event is not a log level.");
+        Assert.AreEqual("2", Prop(e, "attempt"));
+        Assert.IsNull(Prop(e, "http.route"), "The span's attributes stay on the span's envelope.");
+        Assert.AreEqual(Records.SpanId, Tags(e).GetProperty("ai.operation.parentId").GetString());
+        Assert.AreEqual("GET /orders/{id}", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("s-1", Tags(e).GetProperty("ai.session.id").GetString(), "The ids come from the span's attributes.");
+
+        Assert.AreEqual("Microsoft.ApplicationInsights.RemoteDependency", envelopes[2].GetProperty("name").GetString());
+        Assert.AreEqual("domInteractive", BaseData(envelopes[3]).GetProperty("message").GetString());
+        Assert.IsFalse(Tags(envelopes[3]).TryGetProperty("ai.operation.name", out _));
+    }
+
+    [TestMethod]
+    public void SpanException_LoggedUnderTheSpan_IsTheLogsItemAlone()
+    {
+        static BelemetrySpan Span(BelemetrySeverity severity, bool isEvent = false, bool limited = false, bool dropped = false)
+        {
+            var logged = limited ? null : new BelemetryLoggedException("System.TimeoutException", "slow", "at Y()", severity, isEvent);
+            if (dropped) logged!.Drop();
+
+            var span = Records.Span();
+            span.Events.Add(new BelemetrySpanEvent
+            {
+                Name = "exception",
+                TimeUnixNano = Records.Start,
+                Attributes = new BelemetryAttributes().Set("exception.type", "System.TimeoutException").Set("exception.message", "slow"),
+                LoggedAs = logged,
+                Limited = limited,
+            });
+            return span;
+        }
+
+        static int Items(BelemetrySpan span, AzureMonitorEnvelopeSerializer.Context context)
+        {
+            var batch = new BelemetryBatch(Records.Resource(), [span]);
+            AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+            Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context), "Count says what Serialize writes.");
+            return count;
+        }
+
+        var all = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), all), "The log record's Exception stands for it.");
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error, limited: true), all), "The error limits dropped it as an item of its own.");
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error, dropped: true), all), "A log record dropped before the export stands for nothing.");
+
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error), all with { Logs = false }), "An exporter that sends no logs sends it from the span.");
+        var errorsOnly = all with { MinimumSeverity = BelemetrySeverity.Error };
+        Assert.AreEqual(2, Items(Span(BelemetrySeverity.Warn), errorsOnly), "So does one whose minimum level keeps the log record out.");
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), errorsOnly));
+        Assert.AreEqual(1, Items(Span(BelemetrySeverity.Info, isEvent: true), all with { MinimumSeverity = BelemetrySeverity.Fatal }), "TrackException passes any level.");
+    }
+
+    [TestMethod]
+    public void Count_IsTheEnvelopesSerializeWrites()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server);
+        span.Events.Add(new BelemetrySpanEvent { Name = "retry" });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception", Attributes = new BelemetryAttributes().Set("exception.message", "x") });
+        span.Events.Add(new BelemetrySpanEvent { Name = "exception" });
+        var counter = new BelemetryMetric { Name = "orders", Type = BelemetryMetricType.Sum, Points = [new() { DeltaLongValue = 2, IsInteger = true }, new()] };
+        var histogram = new BelemetryMetric { Name = "latency", Type = BelemetryMetricType.Histogram, Points = [new() { DeltaCount = 1, DeltaSum = 3 }, new()] };
+        var gauge = new BelemetryMetric { Name = "queue", Type = BelemetryMetricType.Gauge, Points = [new() { Value = 1 }] };
+        var batch = new BelemetryBatch(Records.Resource(), [span, Records.Span()], [Records.Log(), Records.Log()], [counter, histogram, gauge]);
+        var context = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+
+        AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+
+        Assert.AreEqual(9, count, "2 spans and 2 of their events, 2 logs, and the 3 metric points with something new.");
+        Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context));
+    }
+
+    [TestMethod]
+    public void Request_WithAnEmptyRoute_IsNamedAfterTheSpan()
+    {
+        var span = Records.Span(BelemetrySpanKind.Server, "GET");
+        span.Attributes.Set("http.request.method", "GET").Set("http.route", string.Empty);
+
+        var e = Single(span);
+
+        Assert.AreEqual("GET", BaseData(e).GetProperty("name").GetString(), "As in TS: an empty route is not known.");
+        Assert.AreEqual("GET", Tags(e).GetProperty("ai.operation.name").GetString());
+    }
+
+    [TestMethod]
     public void PageView()
     {
         var log = Records.Log(null, "browser.page_view");
@@ -199,6 +389,46 @@ public class AzureMonitorEnvelopeSerializerTests
         var u = BaseData(Single(untitled));
         Assert.AreEqual("/about", u.GetProperty("name").GetString());
         Assert.AreEqual(16, u.GetProperty("id").GetString()!.Length, "A page view without a span id gets a random one.");
+    }
+
+    [TestMethod]
+    public void AnUntitledPageView_IsNamedByItsRouteTemplate_WhichStaysAProperty()
+    {
+        var log = Records.Log(null, "browser.page_view");
+        log.Attributes.Set("url.full", "https://app.test/orders/42").Set("url.path", "/orders/42").Set("url.template", "/orders/{id:int}").Set("page.title", "");
+
+        var e = Single(log);
+        Assert.AreEqual("/orders/{id:int}", BaseData(e).GetProperty("name").GetString());
+        Assert.AreEqual("/orders/{id:int}", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("/orders/{id:int}", Prop(e, "url.template"));
+        Assert.AreEqual("/orders/42", Prop(e, "url.path"));
+
+        var titled = Records.Log(null, "browser.page_view");
+        titled.Attributes.Set("url.template", "/orders/{id:int}").Set("page.title", "Order");
+        Assert.AreEqual("Order", BaseData(Single(titled)).GetProperty("name").GetString());
+
+        var visit = Records.Log(null, "browser.page_visit_time");
+        visit.Attributes.Set("url.path", "/orders/42").Set("url.template", "/orders/{id:int}").Set("page.visit.duration", 10);
+        var v = Single(visit);
+        Assert.AreEqual("/orders/{id:int}", Prop(v, "PageName"));
+        Assert.AreEqual("/orders/{id:int}", Prop(v, "url.template"));
+    }
+
+    [TestMethod]
+    public void APageView_IsNamedByItsBody_TheNameGivenToTrackPageView()
+    {
+        // The script's body (relayed records) and .NET's TrackPageView: the name given, else the title, else the template.
+        var log = Records.Log("Wizard step 2", "browser.page_view");
+        log.Attributes.Set("url.full", "https://app.test/checkout/2").Set("url.template", "/checkout/{n}").Set("page.title", "Checkout");
+
+        var e = Single(log);
+        Assert.AreEqual("Wizard step 2", BaseData(e).GetProperty("name").GetString());
+        Assert.AreEqual("Wizard step 2", Tags(e).GetProperty("ai.operation.name").GetString());
+        Assert.AreEqual("/checkout/{n}", Prop(e, "url.template"));
+
+        var visit = Records.Log("Wizard step 2", "browser.page_visit_time");
+        visit.Attributes.Set("url.template", "/checkout/{n}").Set("page.title", "Checkout").Set("page.visit.duration", 10);
+        Assert.AreEqual("Wizard step 2", Prop(Single(visit), "PageName"));
     }
 
     [TestMethod]
@@ -343,6 +573,15 @@ public class AzureMonitorEnvelopeSerializerTests
         Assert.AreEqual("[1,2]", Prop(e, "array"));
         Assert.AreEqual("true", Prop(e, "flag"));
         Assert.AreEqual("0.25", Prop(e, "d"));
+    }
+
+    [TestMethod]
+    public void AProperty_IsNotCutInsideASurrogatePair()
+    {
+        var log = Records.Log();
+        log.Attributes.Set("emoji", new string('v', 8191) + "\U0001F600");
+
+        Assert.AreEqual(new string('v', 8191), Prop(Single(log), "emoji"), "The writer refuses a lone surrogate: the batch would not serialize.");
     }
 
     [TestMethod]

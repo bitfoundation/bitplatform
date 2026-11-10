@@ -51,6 +51,13 @@ public static class HarnessServiceCollectionExtensions
             o.Persistence.Enabled = false;
 
             o.Server.CollectDotnetTelemetry = collectServerTelemetry;
+
+            // Production diagnostics: the timeline is local until a capture is exported, so it changes nothing the
+            // receiver sees; the /diagnostics page drives it.
+            o.Diagnostics.Enabled = true;
+            // The harness has no tracer of its own that a framework activity could change the sampling of: Belemetry may
+            // create them, so the server modes name the component and handler of a failure too.
+            o.Diagnostics.CreateFrameworkActivities = true;
             // The request logs of every export would otherwise be exported by the next one.
             o.Logs.ExcludedCategories.Add("Microsoft.AspNetCore");
             o.AddProcessor(new HarnessCollectorFilter());

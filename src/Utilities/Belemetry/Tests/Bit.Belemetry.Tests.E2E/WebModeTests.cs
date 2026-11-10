@@ -138,10 +138,16 @@ public abstract partial class WebModeTests : HarnessTest
 
         var second = await Collector.WaitForAsync(t => PageView(t, "/second"), "the page view of /second", session);
         Assert.AreEqual("push", second.Attributes.GetValueOrDefault("browser.navigation.type"));
+        Assert.AreEqual("/second", second.Attributes.GetValueOrDefault("url.template"));
 
         var third = await Collector.WaitForAsync(t => PageView(t, "/third"), "the page view of /third", session);
         Assert.AreEqual("push", third.Attributes.GetValueOrDefault("browser.navigation.type"));
         Assert.AreEqual(BaseUrl + "/second", third.Attributes.GetValueOrDefault("page.referrer"));
+
+        // A page with a route parameter: its views carry the route the host found, not the path.
+        await Page.EvaluateAsync("() => Blazor.navigateTo('/third/7')");
+        var parameterized = await Collector.WaitForAsync(t => PageView(t, "/third/7"), "the page view of /third/7", session);
+        Assert.AreEqual("/third/{N:int}", parameterized.Attributes.GetValueOrDefault("url.template"));
 
         // Each navigation counts once, however many history calls and enhanced loads it took.
         var all = await Collector.ReceivedAsync(session);
@@ -322,6 +328,70 @@ public abstract partial class WebModeTests : HarnessTest
 public abstract class InteractiveWebModeTests : WebModeTests
 {
     protected override bool IsInteractive => true;
+
+    [TestMethod]
+    public async Task A_support_bundle_explains_a_failure_with_its_component_and_the_pages_evidence()
+    {
+        AllowConsoleError("Harness JS error");
+        AllowConsoleError("500");
+        AllowConsoleError("Harness handler failed");
+        await OpenAsync("/diagnostics?consent=all");
+        var session = await SessionIdAsync();
+
+        await Page.Locator("#diag-fetch-fail").ClickAsync();
+        await Expect(Page.Locator("#fetch-fail-result")).ToHaveAttributeAsync("data-status", "500");
+        await Page.Locator("#diag-js-error").ClickAsync();
+        await Page.WaitForFunctionAsync("() => window.BitBelemetry.getDiagnostics().events.some(e => e.cat === 'exception')");
+        await Page.Locator("#diag-fail-handler").ClickAsync();
+        await Expect(Page.Locator("#diag-state")).ToHaveAttributeAsync("data-handled", "1");
+
+        await Page.Locator("#diag-capture").ClickAsync();
+        var state = Page.Locator("#diag-state");
+        await Expect(state).ToHaveAttributeAsync("data-succeeded", "true");
+        Assert.AreEqual("System.InvalidOperationException", await state.GetAttributeAsync("data-subject"));
+        Assert.AreEqual("true", await state.GetAttributeAsync("data-browser-available"),
+            $"The page's own timeline was read. Browser section: {await state.GetAttributeAsync("data-browser-section")}; missing: {await state.GetAttributeAsync("data-missing")}");
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await state.GetAttributeAsync("data-http-failures"))!), "The failed fetch is evidence.");
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await state.GetAttributeAsync("data-js-errors"))!), "The JS error is evidence.");
+
+        // The framework's HandleEvent activity: the failure happened in this handler's trace, observed rather than guessed.
+        Assert.AreEqual("onclick on Bit.Belemetry.Tests.Harness.Pages.DiagnosticsPage.FailInHandler", await state.GetAttributeAsync("data-triggering-action"));
+        StringAssert.Contains(await state.GetAttributeAsync("data-components"), "Bit.Belemetry.Tests.Harness.Pages.DiagnosticsPage:trace");
+
+        // Exported through the library's preview, as a download.
+        var download = await Page.RunAndWaitForDownloadAsync(() => Page.Locator(".bit-belemetry-preview-confirm").ClickAsync());
+        StringAssert.EndsWith(download.SuggestedFilename, ".zip");
+        StringAssert.StartsWith(download.SuggestedFilename, "belemetry-harness-diagnostics-");
+        var path = Path.Combine(Path.GetTempPath(), "belemetry-e2e-" + Guid.NewGuid().ToString("N") + ".zip");
+        await download.SaveAsAsync(path);
+        try
+        {
+            var files = SupportBundleFiles.Read(path);
+            SupportBundleFiles.AssertValid(files);
+
+            using var report = JsonDocument.Parse(files["report.json"]);
+            Assert.AreEqual("System.InvalidOperationException", report.RootElement.GetProperty("exception").GetProperty("type").GetString());
+            Assert.AreEqual("1.0.0", report.RootElement.GetProperty("release").GetProperty("version").GetString());
+
+            using var timeline = JsonDocument.Parse(files["timeline.json"]);
+            var events = timeline.RootElement.GetProperty("events").EnumerateArray().ToList();
+            Assert.IsTrue(events.Any(e => e.GetProperty("source").GetString() == "browser" && e.GetProperty("category").GetString() == "http"
+                && e.GetProperty("outcome").GetString() == "failure" && e.GetProperty("attributes").GetProperty("url.template").GetString()!.EndsWith("/test-api/fail", StringComparison.Ordinal)),
+                "The page's failed request is in the timeline, as a URL template.");
+            Assert.IsTrue(events.Any(e => e.GetProperty("source").GetString() == "browser" && e.TryGetProperty("exception", out var x) && x.GetProperty("type").GetString() == "Error"));
+            Assert.IsTrue(events.Any(e => e.GetProperty("name").GetString() == "handle_event"));
+
+            // The bundle is about the failure, not the user: no session id, no rendered values.
+            var all = string.Concat(files.Values);
+            Assert.DoesNotContain(session, all);
+            Assert.DoesNotContain("handler failed for order 10423", all, "Log messages are kept as their template.");
+            await Expect(state).ToHaveAttributeAsync("data-confirmed", new Regex("^[0-9a-f]{16}$"));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
 
     /// <summary>
     /// <c>telemetry.sdk.language</c> of a C# <c>TrackEvent</c>'s record: "webjs" where it is routed through the browser

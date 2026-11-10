@@ -396,16 +396,79 @@ public class BitSwipeTrapE2ETests : E2ETestBase
         var (x, y) = await StartPointAsync("#stp-throttle");
         await Page.Mouse.MoveAsync(x, y);
         await Page.Mouse.DownAsync();
+
+        // The moves are timed where the trap hears them. Playwright sends them one at a time, and a loaded runner can
+        // spread the 20 of them over more than one 200ms window - each of which rightly lets one more through - so the
+        // limit is worked out from the time they actually took rather than assumed to be one window.
+        await Page.Locator("#stp-throttle").EvaluateAsync(@"el => {
+            const heard = window.__e2eThrottleMoves = { count: 0, first: 0, last: 0 };
+            el.addEventListener('pointermove', () => {
+                const now = performance.now();
+                if (heard.count++ === 0) heard.first = now;
+                heard.last = now;
+            }, { capture: true });
+        }");
         await Page.Mouse.MoveAsync(x + 60, y, new() { Steps = 20 });
 
         // The first move goes at once; the latest one of the window arrives once it closes.
         await Expect(Page.Locator("#throttle-move")).ToHaveTextAsync(new Regex(@"\|60,0\|"));
         var moves = int.Parse((await Page.Locator("#throttle-moves").TextContentAsync())!);
-        Assert.IsTrue(moves is >= 1 and <= 3, $"20 moves inside one 200ms window reached .NET {moves} times.");
+        var heard = await Page.EvaluateAsync<double[]>("() => [window.__e2eThrottleMoves.count, window.__e2eThrottleMoves.last - window.__e2eThrottleMoves.first]");
+
+        // Each call opens a 200ms window that lets nothing through until it closes, and the call that closes it carries
+        // a move made inside it: so the calls stand at least 200ms apart, and all but the last start no later than the
+        // last move. Over moves spread across a span that is two calls plus one for each whole 200ms of it - and one
+        // more is allowed for a timer that fires a little early.
+        var allowed = 3 + (int)(heard[1] / 200);
+        Assert.IsTrue(moves >= 1 && moves <= allowed,
+            $"{heard[0]} moves over {heard[1]:0}ms reached .NET {moves} times, where a 200ms throttle lets {allowed} through at most.");
 
         await Page.Mouse.UpAsync();
         await Expect(Page.Locator("#throttle-ends")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#throttle-end")).ToHaveTextAsync(new Regex(@"\|60,0\|"));
+    }
+
+    // The test above allows a call per throttle window the moves were spread over, which a loaded runner can spread over
+    // as many windows as there were moves. A burst the page raises within one task is inside one window whatever the
+    // load: the first move of it goes at once and the latest is held for when the window closes, so of all of them two
+    // reach .NET.
+    [TestMethod]
+    public async Task Throttle_ABurstOfMovesInOneWindow_ReachesDotNetFewerTimesThanItWasMoved()
+    {
+        const int burst = 20;
+
+        await OpenAsync(Route);
+
+        var (x, y) = await StartPointAsync("#stp-throttle");
+        await Page.Locator("#stp-throttle").EvaluateAsync(@"el => {
+            window.__e2eThrottlePointer = -1;
+            el.addEventListener('pointerdown', e => window.__e2eThrottlePointer = e.pointerId, { capture: true, once: true });
+        }");
+        await Page.Mouse.MoveAsync(x, y);
+        await Page.Mouse.DownAsync();
+
+        // The moves of the pointer that is down, raised one after another in a single task, so no timer of the throttle
+        // can run between them.
+        await Page.Locator("#stp-throttle").EvaluateAsync(@"(el, [x, y, burst]) => {
+            const pointerId = window.__e2eThrottlePointer;
+            if (pointerId < 0) throw new Error('The trap heard no press.');
+            for (let i = 1; i <= burst; i++) {
+                el.dispatchEvent(new PointerEvent('pointermove', {
+                    pointerId, pointerType: 'mouse', isPrimary: true, buttons: 1,
+                    clientX: x + i * 3, clientY: y, bubbles: true, cancelable: true, composed: true
+                }));
+            }
+        }", new object[] { (double)x, (double)y, burst });
+
+        // The latest move of the burst is the one the window closes on.
+        await Expect(Page.Locator("#throttle-move")).ToHaveTextAsync(new Regex($@"\|{burst * 3},0\|"));
+
+        var moves = int.Parse((await Page.Locator("#throttle-moves").TextContentAsync())!);
+        Assert.IsTrue(moves < burst, $"{moves} of {burst} moves made inside one 200ms throttle window reached .NET.");
+        Assert.AreEqual(2, moves, "The first move of the window goes at once and the latest when it closes, and no other.");
+
+        await Page.Mouse.UpAsync();
+        await Expect(Page.Locator("#throttle-ends")).ToHaveTextAsync("1");
     }
 
     [TestMethod]

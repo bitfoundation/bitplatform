@@ -245,6 +245,10 @@ public class BitCountryPickerE2ETests : E2ETestBase
         var search = callout.Locator(".bit-cnp-srch");
         await search.PressSequentiallyAsync("united");
         var options = callout.Locator("[role=option]");
+        // The first option is the active one before anything is typed too, so the list is first seen filtered by the
+        // term: the arrows below walk the matches, not the whole list.
+        await Expect(search).ToHaveValueAsync("united");
+        await Expect(options.First).ToHaveAttributeAsync("title", new Regex("^United "));
         await Expect(options.First).ToHaveClassAsync(HasClass("bit-cnp-act"));
 
         await Page.Keyboard.PressAsync("ArrowDown");
@@ -680,6 +684,9 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("ArrowDown");
         await Expect(Page.Locator("#ev-open")).ToHaveTextAsync("1");
         var callout = await CalloutAsync("cnp-events");
+        // The open moves the focus into the search box once the list is shown; typed before that, the letters would
+        // go to the field and reach the search from there instead of being typed into the box.
+        await Expect(callout.Locator(".bit-cnp-srch")).ToBeFocusedAsync();
         await callout.Locator(".bit-cnp-srch").PressSequentiallyAsync("ita");
         await Expect(Page.Locator("#ev-search")).ToHaveTextAsync("ita");
         await Expect(Page.Locator("#ev-search-count")).ToHaveTextAsync("3");

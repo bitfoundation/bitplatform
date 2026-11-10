@@ -216,7 +216,7 @@ public sealed class TranslationRun(CliServices cli, Func<ResxTranslatorSettings,
         if (output.Translations.Count != values.Count)
             throw new InvalidOperationException($"Asked for {values.Count} translations and got {output.Translations.Count}.");
 
-        return output.Translations;
+        return [.. output.Translations.Select(ResxCatalog.RemoveInvalidXmlCharacters)];
     }
 
     private static Exception LastTry(Exception exception) => exception is AggregateException { InnerExceptions: [.., var last] } ? last : exception;

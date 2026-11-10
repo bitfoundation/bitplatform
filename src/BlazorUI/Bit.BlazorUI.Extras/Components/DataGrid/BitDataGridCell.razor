@@ -10,7 +10,7 @@
    data-bit-dtg-contextmenu has the script suppress the browser's context menu while the grid raises OnCellContextMenu,
    for a right-click on the cell itself only: a @oncontextmenu:preventDefault would also take the menu of a link or
    a field of the cell's template away from it (see BitDataGrid.ts, reportCellControlClick). *@
-<div @ref="_el" class="@CssClass" role="@(Column.RowHeader ? "rowheader" : "gridcell")" style="@Style" tabindex="@TabIndex" title="@Title"
+<div @ref="_el" class="@CssClass" role="@(Column.RowHeader ? "rowheader" : Grid.CellRole)" style="@Style" tabindex="@TabIndex" title="@Title"
      aria-colindex="@Grid.AriaColIndex(ColIndex)"
      aria-colspan="@(ColSpan > 1 ? ColSpan : (int?)null)"
      data-bit-dtg-edit="@(ShowsEditor ? Column.Id : null)"

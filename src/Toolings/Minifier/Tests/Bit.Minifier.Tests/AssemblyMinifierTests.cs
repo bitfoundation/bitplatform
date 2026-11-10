@@ -195,6 +195,15 @@ public class AssemblyMinifierTests
     }
 
     [TestMethod]
+    public void AFullyMinifiedPatternTakesWhatItMatchesButWhatItExcludes()
+    {
+        var results = Minify(Level.Default, own: [Library, Friend], full: ["Bit.Minifier.Tests.*", "!*.Friend"]);
+
+        Assert.IsTrue(results.Single(r => r.Name == Library).RenamedMembers > 0);
+        Assert.AreEqual(0, results.Single(r => r.Name == Friend).RenamedMembers);
+    }
+
+    [TestMethod]
     [DataRow(Level.Default)]
     [DataRow(Level.Aggressive)]
     public void TheMapReadsAMinifiedStackTraceBack(Level level)

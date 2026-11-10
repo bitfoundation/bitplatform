@@ -316,4 +316,33 @@
         Assert.IsEmpty(chosen);
         Assert.AreEqual("false", cut.Find("[role=combobox]").GetAttribute("aria-expanded"));
     }
+
+    [TestMethod]
+    public void Multi_select_listbox_selects_all_and_extends_with_shift()
+    {
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<BitBhListbox TValue="string" Multiple="true" ValuesChanged="v => values = v">
+                <BitBhListboxButton TValue="string" aria-label="Colours">Pick</BitBhListboxButton>
+                <BitBhListboxOptions TValue="string">
+                    <BitBhListboxOption TValue="string" Value="@("red")">Red</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("green")" Disabled="true">Green</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("blue")">Blue</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("cyan")">Cyan</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.Contains("Ctrl+a", cut.Find("[role=combobox]").GetAttribute("data-bit-bh-keys")!);
+        cut.Find("[role=combobox]").Press("a", ctrl: true);
+        CollectionAssert.AreEquivalent(new[] { "red", "blue", "cyan" }, values!.ToArray());
+        cut.Find("[role=combobox]").Press("a", ctrl: true);
+        Assert.IsEmpty(values!);
+
+        // Shift+Down moves past the disabled option and selects what it lands on.
+        cut.Find("[role=combobox]").Press("ArrowDown", shift: true);
+        CollectionAssert.AreEqual(new[] { "blue" }, values!.ToArray());
+        cut.Find("[role=combobox]").Press("ArrowDown", shift: true);
+        CollectionAssert.AreEquivalent(new[] { "blue", "cyan" }, values!.ToArray());
+    }
 }

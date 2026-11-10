@@ -82,6 +82,23 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
     public string? Description { get; set; }
 
     /// <summary>
+    /// A line under the items saying why the value was rejected, which marks the rating invalid in the same way
+    /// <see cref="Invalid"/> does and is announced the moment it shows up.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
+    /// </summary>
+    /// <remarks>
+    /// It reaches every rating the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// ratings announce it too. A reason that fits one rating alone belongs on that rating.
+    /// </remarks>
+    public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
     /// Names the rating as a whole from its current value and the max, which arrive as the first and the
     /// second argument. It is used whenever the AriaLabel is not set, and like that label it wins over the
     /// visible <see cref="Label"/>.
@@ -105,6 +122,12 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
     /// turning the rating into a scale of standalone choices rather than a cumulative one.
     /// </summary>
     public bool? HighlightSelectedOnly { get; set; }
+
+    /// <summary>
+    /// Marks the value of the rating as invalid, giving it the same look and the same <c>aria-invalid</c>
+    /// attribute that a failing data annotation gives it.
+    /// </summary>
+    public bool? Invalid { get; set; }
 
     /// <summary>
     /// The native tooltips of the rating items, in order, shown when hovering over each one, and used as the
@@ -246,6 +269,16 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.TakeFromCascade(nameof(Description), Description, static r => r.Description, static (r, v) => r.Description = v);
         }
 
+        if (ErrorMessage.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static r => r.ErrorMessage, static (r, v) => r.ErrorMessage = v);
+        }
+
+        if (ErrorMessageAriaLabel.HasValue())
+        {
+            bitRating.TakeFromCascade(nameof(ErrorMessageAriaLabel), ErrorMessageAriaLabel, static r => r.ErrorMessageAriaLabel, static (r, v) => r.ErrorMessageAriaLabel = v);
+        }
+
         if (GetAriaLabel is not null)
         {
             bitRating.TakeFromCascade(nameof(GetAriaLabel), GetAriaLabel, static r => r.GetAriaLabel, static (r, v) => r.GetAriaLabel = v);
@@ -264,6 +297,11 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
         if (HighlightSelectedOnly.HasValue)
         {
             bitRating.TakeFromCascade(nameof(HighlightSelectedOnly), HighlightSelectedOnly.Value, static r => r.HighlightSelectedOnly, static (r, v) => r.HighlightSelectedOnly = v);
+        }
+
+        if (Invalid.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(Invalid), Invalid.Value, static r => r.Invalid, static (r, v) => r.Invalid = v);
         }
 
         if (ItemTitles is not null)

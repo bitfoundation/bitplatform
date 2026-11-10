@@ -1,5 +1,10 @@
 ﻿@page "/third"
+@page "/third/{N:int}"
 
 <h1 id="page-third">third</h1>
 
-<p>A third route, so a test can tell two navigations apart.</p>
+<p>A third route, so a test can tell two navigations apart, and one with a parameter, whose page views carry its template.</p>
+
+@code {
+    [Parameter] public int N { get; set; }
+}

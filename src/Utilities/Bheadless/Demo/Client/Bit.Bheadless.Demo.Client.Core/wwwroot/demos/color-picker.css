@@ -1,0 +1,64 @@
+﻿/* color-picker demo styles — plain CSS section. The library ships zero CSS. */
+
+.picker { display: grid; gap: 0.75rem; width: min(16rem, 100%); }
+
+/* BitBhColorArea: --bit-bh-color-area-hue is the pure hue of the color */
+.color-area {
+    height: 10rem;
+    border-radius: 0.5rem;
+    background:
+        linear-gradient(to top, #000, transparent),
+        linear-gradient(to right, #fff, var(--bit-bh-color-area-hue));
+    cursor: crosshair;
+}
+
+.color-thumb {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4), inset 0 0 0 1px rgb(0 0 0 / 0.2);
+    background: var(--bit-bh-color);
+}
+
+.color-thumb:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* BitBhColorSlider: --bit-bh-color-slider-gradient runs through the channel's range */
+.color-slider { position: relative; display: flex; align-items: center; height: 1.5rem; touch-action: none; }
+
+.color-slider-track {
+    position: relative;
+    flex: 1;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--bit-bh-color-slider-gradient);
+}
+
+/* Transparency shows on a checkerboard */
+.color-slider[data-channel="alpha"] .color-slider-track {
+    background: var(--bit-bh-color-slider-gradient), repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 0 0 / 0.5rem 0.5rem;
+}
+
+.picker-row { display: flex; align-items: center; gap: 0.6rem; }
+
+.color-swatch {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+}
+
+.color-field {
+    box-sizing: border-box;
+    width: 8rem;
+    height: 2.25rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: ui-monospace, monospace;
+}
+
+.color-field:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }

@@ -234,6 +234,14 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
     /// <summary>Clicks the element (keyboard activation of link-like items).</summary>
     public ValueTask ClickAsync(string id) => InvokeVoidAsync("dom.click", id);
 
+    /// <summary>Submits the form the element is in, as its submit button would (validation and submit events included).</summary>
+    public ValueTask RequestSubmitAsync(string id) => InvokeVoidAsync("dom.requestSubmit", id);
+
+    internal ValueTask KeepFilesAsync(string id, int[] indices) => InvokeVoidAsync("dom.keepFiles", id, indices);
+
+    /// <summary>Copies <paramref name="text"/> to the clipboard. Returns whether the browser allowed it.</summary>
+    public ValueTask<bool> CopyToClipboardAsync(string text) => InvokeAsync<bool>("dom.copy", text);
+
     /// <summary>Returns the bounding client rect of an element.</summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitBhRect))]
     public ValueTask<BitBhRect?> GetRectAsync(string id) => InvokeAsync<BitBhRect?>("dom.rect", id);
@@ -302,6 +310,130 @@ public sealed class BitBhInterop : IAsyncDisposable, IDisposable
 
     internal ValueTask SliderDetachAsync(int handle)
         => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("slider.detach", handle);
+
+    // ── Selection indicators ─────────────────────────────────────────────────
+
+    internal ValueTask<int> IndicatorAttachAsync(string indicatorId, string selector)
+        => InvokeAsync<int>("indicator.attach", indicatorId, selector);
+
+    internal ValueTask IndicatorUpdateAsync(int handle, string selector)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("indicator.update", handle, selector);
+
+    internal ValueTask IndicatorDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("indicator.detach", handle);
+
+    // ── Column resizers ──────────────────────────────────────────────────────
+
+    internal ValueTask<int> ResizerAttachAsync(object dotNetRef, string elementId, bool rtl)
+        => InvokeAsync<int>("resizer.attach", dotNetRef, elementId, rtl);
+
+    internal ValueTask ResizerDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("resizer.detach", handle);
+
+    // ── Two-dimensional areas ────────────────────────────────────────────────
+
+    internal ValueTask<int> AreaAttachAsync(object dotNetRef, string elementId)
+        => InvokeAsync<int>("area.attach", dotNetRef, elementId);
+
+    internal ValueTask AreaDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("area.detach", handle);
+
+    // ── Landmarks / scroll spy ───────────────────────────────────────────────
+
+    internal ValueTask LandmarksEnableAsync() => InvokeVoidAsync("landmarks.enable");
+
+    internal ValueTask LandmarksDisableAsync() => InvokeVoidAsync("landmarks.disable");
+
+    internal ValueTask<int> ScrollSpyAttachAsync(object dotNetRef, string[] ids, IDictionary<string, object?> options)
+        => InvokeAsync<int>("scrollSpy.attach", dotNetRef, ids, options);
+
+    internal ValueTask ScrollSpyDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("scrollSpy.detach", handle);
+
+    // ── Carousel ─────────────────────────────────────────────────────────────
+
+    internal ValueTask<int> CarouselAttachAsync(object dotNetRef, string slidesId, bool vertical)
+        => InvokeAsync<int>("carousel.attach", dotNetRef, slidesId, vertical);
+
+    internal ValueTask CarouselDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("carousel.detach", handle);
+
+    // ── Toasts ───────────────────────────────────────────────────────────────
+
+    internal ValueTask<int> ToastsAttachAsync(object dotNetRef, string listId, IDictionary<string, object?> options)
+        => InvokeAsync<int>("toasts.attach", dotNetRef, listId, options);
+
+    internal ValueTask ToastsUpdateAsync(int handle, IDictionary<string, object?> options)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("toasts.update", handle, options);
+
+    internal ValueTask ToastsDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("toasts.detach", handle);
+
+    // ── Rating ───────────────────────────────────────────────────────────────
+
+    internal ValueTask<int> RatingAttachAsync(object dotNetRef, string rootId)
+        => InvokeAsync<int>("rating.attach", dotNetRef, rootId);
+
+    internal ValueTask RatingDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("rating.detach", handle);
+
+    // ── Scrub areas ──────────────────────────────────────────────────────────
+
+    internal ValueTask<int> ScrubAttachAsync(object dotNetRef, string elementId, IDictionary<string, object?> options)
+        => InvokeAsync<int>("scrub.attach", dotNetRef, elementId, options);
+
+    internal ValueTask ScrubDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("scrub.detach", handle);
+
+    // ── Navigation menus ─────────────────────────────────────────────────────
+
+    /// <summary>Sizes a navigation menu's viewport after <paramref name="contentId"/> and follows it (null: stops following).</summary>
+    internal ValueTask NavigationMenuMeasureAsync(string viewportId, string? contentId)
+        => InvokeVoidAsync("navigationMenu.measure", viewportId, contentId);
+
+    /// <summary>Stops following for a viewport that is going away.</summary>
+    internal ValueTask NavigationMenuReleaseAsync(string viewportId)
+        => InvokeVoidAsync("navigationMenu.release", viewportId);
+
+    // ── Drawers ──────────────────────────────────────────────────────────────
+
+    internal ValueTask<int> DrawerAttachAsync(object dotNetRef, string panelId, IDictionary<string, object?> options)
+        => InvokeAsync<int>("drawer.attach", dotNetRef, panelId, options);
+
+    internal ValueTask DrawerUpdateAsync(int handle, IDictionary<string, object?> options)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("drawer.update", handle, options);
+
+    internal ValueTask DrawerDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("drawer.detach", handle);
+
+    // ── Scroll areas ─────────────────────────────────────────────────────────
+
+    internal ValueTask<int> ScrollAreaAttachAsync(string rootId, IDictionary<string, object?> options)
+        => InvokeAsync<int>("scrollArea.attach", rootId, options);
+
+    internal ValueTask ScrollAreaUpdateAsync(int handle, IDictionary<string, object?> options)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("scrollArea.update", handle, options);
+
+    internal ValueTask ScrollAreaDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("scrollArea.detach", handle);
+
+    // ── Splitters ────────────────────────────────────────────────────────────
+
+    internal ValueTask<int> SplitterAttachAsync(object dotNetRef, string rootId, IDictionary<string, object?> options)
+        => InvokeAsync<int>("splitter.attach", dotNetRef, rootId, options);
+
+    internal ValueTask SplitterUpdateAsync(int handle, IDictionary<string, object?> options)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("splitter.update", handle, options);
+
+    internal ValueTask SplitterDetachAsync(int handle)
+        => handle <= 0 ? ValueTask.CompletedTask : InvokeVoidAsync("splitter.detach", handle);
+
+    /// <summary>The sizes saved under <paramref name="key"/> in <c>localStorage</c>, or null.</summary>
+    internal ValueTask<double[]?> SplitterLoadAsync(string key)
+        => InvokeAsync<double[]?>("splitter.load", key);
+
+    internal ValueTask SplitterSaveAsync(string key, double[] sizes)
+        => InvokeVoidAsync("splitter.save", key, sizes);
 
     /// <inheritdoc />
     public void Dispose()

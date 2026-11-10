@@ -26,6 +26,8 @@ namespace Bit.Bheadless;
 public class BitBhPopover : BitBhComponentBase, IDisposable
 {
     private bool _open;
+    private bool _openedByHover;
+    private BitBhDelayedAction? _hoverTimer;
 
     [CascadingParameter]
     private BitBhPopoverGroupContext? GroupContext { get; set; }
@@ -57,6 +59,23 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
     [Parameter]
     public bool Modal { get; set; }
 
+    /// <summary>
+    /// Opens the popover when the pointer rests on its button (after <see cref="HoverOpenDelay"/>) and closes it when the
+    /// pointer has left both the button and the panel (after <see cref="HoverCloseDelay"/>) - Base UI's <c>openOnHover</c>.
+    /// A hover-opened popover leaves the focus where it is; a click on the button keeps it open until it is dismissed.
+    /// The keyboard opens it with the button as always.
+    /// </summary>
+    [Parameter]
+    public bool OpenOnHover { get; set; }
+
+    /// <summary>How long the pointer rests on the button before a hover opens the popover (ms). Default: 300.</summary>
+    [Parameter]
+    public int HoverOpenDelay { get; set; } = 300;
+
+    /// <summary>How long after the pointer left the button and the panel a hover-opened popover closes (ms). Default: 150.</summary>
+    [Parameter]
+    public int HoverCloseDelay { get; set; } = 150;
+
     /// <summary>Child content. Should contain an <see cref="BitBhPopoverButton"/> and an <see cref="BitBhPopoverPanel"/>.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -71,7 +90,36 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
         GroupContext?.Register(this);
     }
 
-    public void Dispose() => GroupContext?.Unregister(this);
+    public void Dispose()
+    {
+        _hoverTimer?.Dispose();
+        GroupContext?.Unregister(this);
+    }
+
+    /// <summary>Whether the popover is open because of a hover (not pinned by a click).</summary>
+    internal bool OpenedByHover => IsOpen && _openedByHover;
+
+    private BitBhDelayedAction HoverTimer => _hoverTimer ??= new BitBhDelayedAction(a => InvokeAsync(a));
+
+    internal void HoverEnter()
+    {
+        if (!OpenOnHover) return;
+        HoverTimer.Cancel();
+        if (IsOpen) return;
+        HoverTimer.Schedule(Math.Max(0, HoverOpenDelay), async () =>
+        {
+            if (IsOpen) return;
+            _openedByHover = true;
+            await OpenAsync();
+        });
+    }
+
+    internal void HoverLeave()
+    {
+        if (!OpenOnHover) return;
+        HoverTimer.Cancel();
+        if (OpenedByHover) HoverTimer.Schedule(Math.Max(0, HoverCloseDelay), () => OpenedByHover ? CloseAsync() : Task.CompletedTask);
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -113,7 +161,10 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
         closeAsync: CloseAsync,
         toggleAsync: ToggleAsync,
         dismissAsync: DismissAsync,
-        registerButton: RegisterButton);
+        registerButton: RegisterButton)
+    {
+        Owner = this,
+    };
 
     private bool _hasButton;
 
@@ -136,7 +187,18 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
     /// <summary>Closes the popover.</summary>
     public Task CloseAsync() => IsOpen ? SetOpenAsync(false) : Task.CompletedTask;
 
-    private Task ToggleAsync() => IsOpen ? CloseAsync() : OpenAsync();
+    private Task ToggleAsync()
+    {
+        _hoverTimer?.Cancel();
+        // A click on the button of a hover-opened popover keeps it open (it no longer closes when the pointer leaves).
+        if (OpenedByHover)
+        {
+            _openedByHover = false;
+            StateHasChanged();
+            return Task.CompletedTask;
+        }
+        return IsOpen ? CloseAsync() : OpenAsync();
+    }
 
     internal Task CloseFromGroupAsync() => CloseAsync();
 
@@ -155,6 +217,7 @@ public class BitBhPopover : BitBhComponentBase, IDisposable
 
     private async Task SetOpenAsync(bool value)
     {
+        if (!value) _openedByHover = false;
         if (!IsProvided(nameof(Open)))
             _open = value;
         await OpenChanged.InvokeAsync(value);

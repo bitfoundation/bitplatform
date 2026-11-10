@@ -75,6 +75,27 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the items saying why the choice was rejected - by a server, a rule spanning two fields - which marks the group invalid in the same way Invalid does. The group is described by it, and a live region announces it the moment it shows up. A ChoiceGroup inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage."
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection with no text of its own: an ErrorMessageTemplate, in place of the default \"Invalid input\", or the forced Invalid state, which is only announced when this is set. The group references it through its aria-describedby as well. A plain ErrorMessage is its own text and never uses it."
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the group invalid in the same way. It is announced through ErrorMessageAriaLabel, or as \"Invalid input\" when that is not set."
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -100,6 +121,13 @@ public partial class BitChoiceGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the icons and images in a single line with the items in the ChoiceGroup."
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the choice as invalid, giving a choice rejected by something other than the cascading EditContext the same look and the same aria-invalid, on the group and on each of its radios, that a failing data annotation gives it. Pair it with ErrorMessage to say what is wrong; a message on its own already implies this state."
         },
         new()
         {
@@ -299,7 +327,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "--bit-ChoiceGroup-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "Circle and card border while the group is invalid. The focus ring keeps its own error color.",
+            Description = "Circle, card border and error message while the group is invalid. The focus ring keeps its own error color.",
         },
         new()
         {
@@ -353,7 +381,7 @@ public partial class BitChoiceGroupDemo
         {
             Name = "--bit-ChoiceGroup-description-font-size",
             DefaultValue = "--bit-tpg-fs-xs",
-            Description = "Text size of the helper text of the group. The Size parameter wins over it.",
+            Description = "Text size of the helper text and of the error message of the group. The Size parameter wins over it.",
         },
         new()
         {
@@ -1074,6 +1102,20 @@ public partial class BitChoiceGroupDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the description (helper text) of the BitChoiceGroup.",
+               },
+               new()
+               {
+                   Name = "ErrorMessageContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message container of the BitChoiceGroup.",
+               },
+               new()
+               {
+                   Name = "ErrorMessage",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the error message text of the BitChoiceGroup.",
                },
                new()
                {

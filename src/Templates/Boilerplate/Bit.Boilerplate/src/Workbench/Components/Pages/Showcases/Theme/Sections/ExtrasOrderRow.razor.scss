@@ -1,0 +1,60 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.order-row {
+    gap: 0.75rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+
+    // A virtualized row has the item size the list gives it.
+    &.fixed {
+        height: 100%;
+        padding-block: 0;
+        box-sizing: border-box;
+    }
+}
+
+.order-icon {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    flex-shrink: 0;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
+}
+
+.order-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.order-title,
+.order-meta {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.order-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.order-meta {
+    font-size: 12px;
+    color: $bit-color-foreground-secondary;
+}
+
+.order-amount {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}

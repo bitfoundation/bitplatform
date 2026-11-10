@@ -1,0 +1,291 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="inputs" Title="@Localizer[nameof(WorkbenchStrings.ThemeInputs)]">
+    @* A calendar sets its own width, its month and time pickers beside its days, so each takes the room it needs; a phone
+       has no room beside the days, so there the pickers open over them. *@
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" NoWrapper OnChange="OnPhoneChanged" />
+    <ComponentStates Name="BitCalendar" Flow>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitCalendar AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeAiDeliveryDate)]" Value="ThemeSamples.Today" Today="ThemeSamples.Today" HighlightedDates="highlightedDates" ShowMonthPickerAsOverlay="isPhone" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWeekNumbersTime)]">
+            <BitCalendar AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeAiDeliveryDate)]" Value="ThemeSamples.Today" Today="ThemeSamples.Today" ShowWeekNumbers ShowTimePicker ShowMonthPickerAsOverlay="isPhone" ShowTimePickerAsOverlay="isPhone" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitCalendar AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeAiDeliveryDate)]" Value="ThemeSamples.Today" Today="ThemeSamples.Today" Disabled ShowMonthPickerAsOverlay="isPhone" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitCheckbox">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateUnchecked)">
+            <BitCheckbox Label="@OptionLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateChecked)">
+            <BitCheckbox Label="@OptionLabel" Value="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateIndeterminate)">
+            <BitCheckbox Label="@OptionLabel" Indeterminate="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitCheckbox Label="@OptionLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitCheckbox Label="@OptionLabel" Value="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitCheckbox Label="@OptionLabel" Disabled />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDisabledChecked)">
+            <BitCheckbox Label="@OptionLabel" Value="true" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWithADescription)]">
+            <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsEmailMeReceipts)]" Description="@Localizer[nameof(WorkbenchStrings.ThemeInputsOneAMonthNeverMore)]" Value="true" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitChoiceGroup" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="input[type=radio]" Index="2">
+            <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" Disabled />
+        </StateSample>
+        <StateSample Name="@($"{BitVariant.Outline}, {Localizer[nameof(WorkbenchStrings.ThemeInputsHorizontal)]}")">
+            <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("2")" Variant="BitVariant.Outline" Horizontal />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWithIcons)]">
+            <BitChoiceGroup Items="deliveries" Label="@Localizer[nameof(WorkbenchStrings.ThemeExtrasDelivery)]" DefaultValue="@("bike")" Variant="BitVariant.Fill" Horizontal />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitDropdown" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeChoiceError)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" Disabled />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiple)">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" MultiSelect Values="multipleValues" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsChips)]">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" MultiSelect Chips Values="multipleValues" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitFileInput" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsDropZone)]">
+            <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" ShowDropZone Multiple Accept=".pdf,.png,.jpg" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitFileInput Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsAttachTheInvoice)]" ShowDropZone Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitFileUpload" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWithFiles)]">
+            <BitFileUpload Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsUploadPhotos)]" Multiple ShowDropArea PreloadedFiles="uploadedFiles" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitFileUpload Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsUploadPhotos)]" Multiple ShowDropArea />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitFileUpload Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsUploadPhotos)]" ShowDropArea Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitNumberField" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitNumberField TValue="int" Label="@QuantityLabel" Value="0" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeQuantityError)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsPrefixSuffixSteps)]">
+            <BitNumberField TValue="decimal" Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsPrice)]" Value="12.50m" Step="0.25m" Min="0m" Prefix="€" Suffix="@Localizer[nameof(WorkbenchStrings.ThemeInputsPerKg)]" />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitOtpInput" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitOtpInput Length="6" Label="@CodeLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitOtpInput Length="6" Label="@CodeLabel" Value="@("482916")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitOtpInput Length="6" Label="@CodeLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitOtpInput Length="6" Label="@CodeLabel" Value="@("48291")" Invalid />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitOtpInput Length="6" Label="@CodeLabel" Value="@("482916")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitRating">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitRating AriaLabel="@RatingLabel" Value="3" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="[role=radio], input, label" Index="4">
+            <BitRating AriaLabel="@RatingLabel" Value="3" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitRating AriaLabel="@RatingLabel" Value="3" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsHalfStars)]">
+            <BitRating AriaLabel="@RatingLabel" Value="3.5" Precision="0.5" Color="BitColor.Warning" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitRating AriaLabel="@RatingLabel" Value="4" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitRating AriaLabel="@RatingLabel" Value="2" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSearchBox" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Amsterdam")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Amsterdam")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWithASearchButton)]">
+            <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Utrecht")" ShowSearchButton Underlined />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSlider" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsRangeWithMarks)]">
+            <BitSlider Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsPriceRange)]" Min="0" Max="100" Step="10" IsRanged DefaultLowerValue="20" DefaultUpperValue="70" ShowMarks ShowValue />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTagsInput" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+            <BitTagsInput Label="@TagsLabel" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeInputsTypeATagAndPress)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitTagsInput Label="@TagsLabel" Value="tags" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitTagsInput Label="@TagsLabel" Value="tags" />
+        </StateSample>
+        <StateSample Name="@BitVariant.Outline.ToString()">
+            <BitTagsInput Label="@TagsLabel" Value="tags" TagVariant="BitVariant.Outline" ShowClearButton ShowCounter MaxTags="5" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTagsInput Label="@TagsLabel" Value="tags" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitTextField" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+            <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+            <BitTextField Label="@NameLabel" Value="@SampleName" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitTextField Label="@NameLabel" Value="@SampleName" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+            <BitTextField Label="@NameLabel" Value="@("S")" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeNameError)]" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateRequired)">
+            <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" Required />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+            <BitTextField Label="@NameLabel" Value="@SampleName" ReadOnly />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitTextField Label="@NameLabel" Value="@SampleName" Disabled />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePassword)">
+            <BitTextField Label="@AppLocalizer[nameof(AppStrings.Password)]" Type="BitInputType.Password" CanRevealPassword Value="@("correct-horse")" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiline)">
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeNotes)]" Multiline Rows="3" Value="@SampleText" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsIconPrefixClearAndCount)]">
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsWebsite)]" IconName="@BitIconName.Globe" Prefix="https://" Value="@("bitplatform.dev")" ShowClearButton ShowCount MaxLength="40" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsUnderlined)]">
+            <BitTextField Label="@NameLabel" Value="@SampleName" Underlined />
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitToggle">
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOff)">
+            <BitToggle Label="@ToggleLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOn)">
+            <BitToggle Label="@ToggleLabel" Value="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+            <BitToggle Label="@ToggleLabel" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+            <BitToggle Label="@ToggleLabel" Value="true" />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitToggle Label="@ToggleLabel" Disabled />
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDisabledOn)">
+            <BitToggle Label="@ToggleLabel" Value="true" Disabled />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeInputsWithOnAndOffText)]">
+            <BitToggle Label="@Localizer[nameof(WorkbenchStrings.ThemeInputsDarkMap)]" OnText="@Localizer[nameof(WorkbenchStrings.ThemeStateOn)]" OffText="@Localizer[nameof(WorkbenchStrings.ThemeStateOff)]" Value="true" />
+        </StateSample>
+    </ComponentStates>
+</ThemeSection>

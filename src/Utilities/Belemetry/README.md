@@ -19,6 +19,10 @@ exports to:
   events and metrics land in their usual tables, with Live Metrics on top.
 - **Console**, **in-memory**, or your own `IBelemetryExporter`.
 
+When a user reports a problem, **production diagnostics** turn what the app did - routes, components, event
+handlers, failed requests, browser errors, circuit transitions, grouped exceptions, release and trace ids - into a
+support bundle the user previews and confirms before anything leaves the app.
+
 And it is **GDPR-ready**: nothing is sent before the user consents (by default), and every part - errors, page views,
 interactions, performance, dependencies, sessions, user tracking, logs, traces, metrics, offline persistence, custom
 events - can be granted and revoked independently, at runtime.
@@ -44,6 +48,7 @@ semantic-convention and Azure-mapping references.
 - [Browser instrumentation](#browser-instrumentation)
 - [Privacy](#privacy)
 - [Processors](#processors)
+- [Production diagnostics and support bundles](#production-diagnostics-and-support-bundles)
 - [Offline persistence](#offline-persistence)
 - [The server pipeline](#the-server-pipeline)
 - [Transport: Direct and Relay](#transport-direct-and-relay)
@@ -322,6 +327,13 @@ on the device, so the script sends `Headers` too (with `BrowserHeaders` on top):
 exporter. For vendors that need a secret key, use a collector in between, or the
 [Relay transport](#transport-direct-and-relay).
 
+**User info in an endpoint.** The page never gets an endpoint's user info, on any host: `https://user:token@collector.example.com`,
+set in code or through `OTEL_EXPORTER_OTLP_ENDPOINT`, reaches the browser script as `https://collector.example.com/`,
+and a server warns at startup about an exporter whose page now exports without it. Belemetry's own warnings and
+diagnostics name every endpoint without it too.
+User info authenticates no export anyway - neither .NET's `HttpClient` nor the browser sends it - so put the
+credential in `Headers` (an `Authorization` header) instead.
+
 ### Azure Monitor (Application Insights)
 
 ```csharp
@@ -340,8 +352,31 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
 Belemetry takes no dependency on Azure.Identity - the token provider is a plain delegate. An exporter with a token
 provider is never handed to the browser script.
 
-> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature. In a Hybrid app it
-> streams only while the user grants `Metrics`, and it follows the service's endpoint redirects over HTTPS only.
+> Live Metrics follows the Application Insights QuickPulse protocol (API version `2024-04-01-preview`); treat it as a
+> preview feature. In a Hybrid app it streams only while the user grants `Metrics`, and it follows the service's
+> endpoint redirects over HTTPS only.
+>
+> Besides the request, dependency and exception rates and the process CPU and memory, it applies what the portal
+> configures:
+>
+> - **Sample telemetry.** Each stream's filters pick the requests, dependencies, exceptions, custom events and traces
+>   (log messages, and the named events of spans) it shows. A stream takes up to 3 samples of a type at once and earns one more every 2 seconds, saving up to 30,
+>   unless the service sets other quotas.
+> - **Custom charts.** A chart's filters, projection (`Count()`, `Duration`, `CustomDimensions.{key}`) and
+>   aggregation are computed for every data point.
+>
+> Filters compare text case-sensitively, except `Contains` and `DoesNotContain`. A sample carries the properties of
+> the Application Insights item it stands for - the record's attributes after privacy and processors, without the user
+> and session ids or the attributes the item's own fields hold, plus what the item adds (a page visit's `PageName`, an
+> event's `message`, ...) - and `CustomDimensions.{key}` filters and charts read the same. Samples and custom charts
+> only take what the exporter itself sends, as its `Signals` and `MinimumLogLevel` allow; the built-in request,
+> dependency and exception rates count every span and exception the pipeline accepts, whatever these settings. A sample
+> waiting for the next data point is not sent once the user revokes its feature, even if they grant it again first.
+> When the portal changes the configuration, the streams and charts it leaves as they were keep their quotas and the
+> values they gathered. What Belemetry cannot apply (performance counters, custom metrics, an unknown field, filters
+> that are not a list) is left out and reported back to the portal as a configuration error; a configuration it cannot
+> read at all is reported too, and nothing is sampled until the portal sends another. The stream goes through a
+> registered `BelemetryHttpMessageHandlerProvider`, like the rest of the export traffic.
 
 ### Console, in-memory and custom exporters
 
@@ -378,7 +413,7 @@ feature the configuration switched off records nothing - so a feature you enable
 
 | Feature | Covers |
 | --- | --- |
-| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException` |
+| `Errors` | JS errors and unhandled rejections; .NET logs at Error/Critical or with an exception; `TrackException`; unhandled .NET exceptions and unobserved task exceptions; exceptions recorded on spans (`Activity.AddException`) - without `Errors` they are taken off the span, which is still sent |
 | `PageViews` | Page views (navigation, `TrackPageView`) |
 | `Interactions` | Clicks and other interactions |
 | `Performance` | Web vitals, document load, resource timing, long tasks |
@@ -486,6 +521,75 @@ Belemetry's own diagnostics are logged under the category `Bit.Belemetry`, which
 would otherwise be exported by the pipeline it describes). Every other category is collected, including your own
 types in `Bit.Belemetry.*` namespaces; `Logs.ExcludedCategories` drops more by prefix.
 
+### Unhandled exceptions
+
+An exception nothing caught reaches no `ILogger`, so the .NET pipeline listens for them itself
+(`Errors.CaptureUnhandledExceptions`, on by default):
+
+- `AppDomain.UnhandledException` - the crash of a MAUI, WPF or WinForms app, or a background thread of a server that
+  threw. The record is a FATAL `exception` event (`Critical` in Application Insights) with the body `An unhandled
+  exception ended the process.`.
+- `TaskScheduler.UnobservedTaskException` - a faulted task that was never awaited, raised when the garbage collector
+  finds it. The record is an ERROR `exception` event with the body `A faulted task's exception was never observed.`;
+  the task's own exception is reported rather than its `AggregateException` when it is the only one. The event is not
+  marked observed: that stays the app's choice.
+
+Both carry `exception.type`, `exception.message`, `exception.stacktrace` and the trace context of `Activity.Current`
+where they are reported, under the scope `Bit.Belemetry.UnhandledExceptions`. For `AppDomain.UnhandledException` that
+is the thread that threw, so the span it threw in; an unobserved task exception is reported by the finalizer thread,
+long after the task ran, and carries no trace context of the task's. They are `Errors` records: consent and the
+[error limits](#error-floods-and-runaway-values) apply as to any other, and production diagnostics count them as
+unhandled exceptions (the `UnhandledExceptions` trigger).
+
+The process ends right after `AppDomain.UnhandledException`, before anything async completes. So Belemetry writes the
+crash record, with everything still queued before it, to the [offline store](#offline-persistence) synchronously,
+and the next launch sends it with the rest of the store (its first resend pass is 10 s after start). That needs
+`Persistence`: granted by the user on a client, in `Server.Features` on a server (off by default there; see
+[The server pipeline](#the-server-pipeline)). Without it nothing is written to disk - the user did not allow it - and
+the record is lost with the process. Records held for a consent decision are never written either. In WebAssembly
+the page outlives the .NET runtime, so the queue is handed to the script instead, which sends it as it sends the
+unload flush. The queue is saved in requests of at most `Batch.MaxBatchSize` records each, newest first: when the
+store's `Persistence.MaxBytes` cannot hold them all, older files make room, then the oldest of these, never the crash
+record. Only the HTTP exporters (OTLP, Azure Monitor) are saved, as only their requests can be stored; custom
+exporters and the console exporter get the records only if the process goes on. Nothing waits on the network as the
+process goes down: a crash never takes longer because of telemetry.
+
+#### Crashes reported elsewhere
+
+Some platforms report a crash through an event of their own rather than `AppDomain.UnhandledException`. Forward it
+with `TrackBitBelemetryUnhandledException`, on the app's root service provider, and it is recorded and saved for the
+next launch the same way. An exception object it already recorded is not recorded again, so forwarding a crash that
+also reaches `AppDomain.UnhandledException` is one record. It records even with `CaptureUnhandledExceptions` off.
+
+```csharp
+// MauiProgram.cs
+var app = builder.Build();
+#if ANDROID
+// .NET for Android may not raise AppDomain.UnhandledException for a crash (dotnet/runtime#44526).
+Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#elif WINDOWS
+// WinUI reports an exception on its UI thread here; it ends the app unless a handler sets e.Handled.
+Microsoft.UI.Xaml.Application.Current.UnhandledException += (_, e) => app.Services.TrackBitBelemetryUnhandledException(e.Exception);
+#endif
+return app;
+```
+
+iOS and Mac Catalyst raise `AppDomain.UnhandledException` for a crash; nothing to forward. On Windows desktop:
+
+- **WinForms** shows its own dialog for an exception on the UI thread (`Application.ThreadException`) and goes on.
+  Either let such exceptions crash the app, so they reach `AppDomain.UnhandledException`, or forward them from your
+  handler as handled:
+
+  ```csharp
+  // Program.cs, before Application.Run
+  Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+  // or
+  Application.ThreadException += (_, e) => provider.TrackBitBelemetryUnhandledException(e.Exception, terminating: false);
+  ```
+
+- **WPF** crashes on an exception `Dispatcher.UnhandledException` leaves unhandled, through
+  `AppDomain.UnhandledException`. A handler that sets `e.Handled = true` forwards it with `terminating: false`.
+
 ### Traces
 
 Activities of the sources in `Traces.Sources` (default `System.Net.Http`, `Microsoft.AspNetCore.Components*` and
@@ -493,6 +597,11 @@ Activities of the sources in `Traces.Sources` (default `System.Net.Http`, `Micro
 parent-based with `Traces.SamplingRatio` for new traces, compatible with the OpenTelemetry `TraceIdRatioBased`
 sampler. Names in `Traces.IgnoredActivityNames` are never created at all - their children attach to the parent - which
 is the cheapest way to drop a chatty source, such as Blazor's per-event spans.
+
+Blazor's component spans (`Navigate`, `HandleEvent`) exist on a server; in WebAssembly and Hybrid only with
+`Diagnostics.Enabled` (Belemetry registers the framework's component source for diagnostics). With diagnostics on, they
+are exported there too when `Traces.Sources` matches `Microsoft.AspNetCore.Components` (the default), and the HttpClient
+spans a click or navigation starts are their children.
 
 ```csharp
 options.Traces.Sources.Add("MyApp*");
@@ -540,7 +649,7 @@ options.Metrics.Meters.Add("Bit.Belemetry");
 | Instrument | Attributes | Counts |
 | --- | --- | --- |
 | `belemetry.records.dropped` | `belemetry.reason`, `belemetry.signal` (`traces`/`logs`) | records dropped before export: `queue_full`, `pending_full` (the hold before a consent decision), `not_consented`, `consent_revoked`, `error_limit`, `relay_limit`, `filtered` (a processor returned false) |
-| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
+| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter - for Azure Monitor the items it sends, so a span event sent as an item of its own counts and a metric point with nothing new does not: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
 
 In the browser, `BitBelemetry.getStats()` gives the script's counterpart: `{ dropped: { <reason>: n }, requests:
 { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since the page loaded (with `sampled_out` among the
@@ -602,6 +711,9 @@ services.AddHangfire(configuration => configuration
 | `Enabled` | `true` | the script at all |
 | `TrackHashChanges` | `false` | fragment-only changes count as page views |
 | `TrackPageVisitTime` | `false` | how long each page was visited, as a `browser.page_visit_time` event (Application Insights: `PageVisitTime`) |
+| `PageRoutes` | none | route templates (`/orders/{id:int}`) page paths are matched against, besides the discovered ones - see [Page route templates](#page-route-templates) |
+| `DiscoverPageRoutes` | `true` | add the `@page` routes of the app's components to `PageRoutes` |
+| `PageRouteAssemblies` | none | (code only) the assemblies discovery reads, exactly: your router's `AppAssembly` and `AdditionalAssemblies` |
 | `InteractionEvents` | `click` | DOM events recorded as interactions |
 | `CaptureInteractionText` | `false` | record the clicked element's text (may contain personal data) |
 | `TrackRageClicks` | `true` | three clicks on one element within a second also emit one `browser.rage_click` event per burst - the frustration signal of a user who expected something to happen |
@@ -618,6 +730,51 @@ services.AddHangfire(configuration => configuration
 | `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
 
+### Page route templates
+
+A page view carries `url.template`: the route of the page, not its address, so that `/orders/42` and `/orders/43`
+are both `/orders/{id:int}` - one page in per-page charts, alerts and the Application Insights `pageViews` table, not
+one per order. Every page view the script records has one. A `TrackPageView` .NET records itself (WebAssembly, Hybrid,
+a server with no page connected) has one when it has a URL: the one you pass (a relative one is below the base path),
+else the current page's (`NavigationManager.Uri`); only where there is neither - no URL passed, outside a page - it has
+none. It is, in this order:
+
+1. the `url.template` you pass to `TrackPageView` (a dialog or a wizard step has no route of its own);
+2. the first of the app's routes that matches the path, as the Blazor router picks it (literal segments before
+   constrained parameters, before parameters, before catch-alls; case-insensitive; constraints such as `int`, `guid`
+   or `length(3)` checked; a segment of several parts, `{name}.{ext}`, split from the right), relative to the
+   `<base href>` and written after it (`/shop/orders/{id:int}` under `<base href="/shop/" />`);
+3. otherwise the path with the segments that look like ids replaced: numbers by `{n}`, GUIDs by `{guid}`, long
+   hexadecimal or mixed letters-and-digits tokens by `{hex}` or `{id}` (`/orders/{n}`). A slug or a user name stays.
+
+.NET runs the same rules, with the framework's own parsers for the constraints; the script approximates those (a
+`datetime` value, for one, is a numeric date, a time, or a date with a month name - as .NET's invariant culture reads
+them). A `regex` constraint that could take exponential time on a crafted path - a repeated group holding a quantifier
+or an alternation, such as `(a+)+`, or a backreference - is not run in the browser, which cannot stop it (.NET gives
+it a timeout): the parameter takes any value there, as a constraint of the app's own does on both sides.
+
+The app's routes are found once per process: the `@page` (`[Route]`) templates of the components in the entry
+assembly and in the component libraries it references (a server's `.Client` project, a shared page library for MAUI) -
+close to the assemblies an app hands its router, but not exactly: a referenced library's own pages count even if the
+router was not given it. For the router's exact list, set `Browser.PageRouteAssemblies` to its `AppAssembly` and
+`AdditionalAssemblies`:
+
+```csharp
+options.Browser.PageRouteAssemblies.AddRange([typeof(App).Assembly, typeof(Client._Imports).Assembly]);
+```
+
+An app without an entry assembly (.NET for Android) is searched from its loaded assemblies instead, and an app whose
+search finds no route at all logs a warning under `Bit.Belemetry`: set `PageRouteAssemblies` there. The routes are
+written into the browser config only when page views are recorded. A page whose script was started already - an Auto
+app's WebAssembly client in the page its server rendered - keeps the routes its server found and adds those configured
+in the client (`PageRoutes` and the `PageRouteAssemblies`' routes), without a second search. Add routes discovery
+cannot see (a lazy-loaded WebAssembly assembly's) to `Browser.PageRoutes`, or switch discovery off with
+`Browser.DiscoverPageRoutes = false` and list them yourself.
+
+A page view is named after the name you give `TrackPageView`, else its page's title (`<PageTitle>`), else its template
+(it was its path) - in its log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the
+`PageName` of its `PageVisitTime` - on every host, whether the script or .NET records it.
+
 ### Error floods and runaway values
 
 An error thrown in a loop - a timer, a render loop, a retry - would fill the queue, evict every other record, and cost
@@ -627,6 +784,9 @@ Hybrid app apply `options.Errors`:
 - `DuplicateWindow` (5 s): an error identical to one just recorded - same scope (logger category), type, message and
   first stack frame - is suppressed for this long, so a loop is recorded once per window.
 - `MaxPerMinute` (100): at most this many error records per minute, with a burst of as many; the excess is dropped.
+
+An exception recorded on a span (`Activity.AddException`) is an error record too. One the rules drop stays on its
+span (an OTLP span still shows it) but is not sent to Azure Monitor as an item of its own.
 
 The server pipeline serves every user at once and is not capped. Zero switches either rule off.
 
@@ -725,6 +885,305 @@ The record is the browser record model: a span has `traceId`, `spanId`, `name`, 
 `status` and `events`; a log record has `time`, `severityNumber`, `body` and `eventName`; both have `attributes`,
 `scope` and `feature`. Processors must be fast and synchronous: while the page unloads nothing else runs.
 
+## Production diagnostics and support bundles
+
+Telemetry tells you *that* something failed. When a user reports a problem, you need to know **what the Blazor app was
+doing**: which route and component, which event handler, which requests failed before it, what the page reported, how
+the circuit behaved, which release - and the trace ids to look the rest up in your backend. Production diagnostics
+keep exactly that, in memory and bounded, and turn it into a **support bundle** the user (or a support agent) previews,
+narrows and confirms before anything leaves the app.
+
+What it is not: no session replay, no screenshots, no DOM contents, keystrokes, form values or clipboard; no
+arbitrary object or memory dumps; no hosted service. A bundle is a ZIP of JSON documents and a Markdown report that
+you download or hand to your own support integration.
+
+### Turn it on
+
+```csharp
+builder.Services.AddBitBelemetryServices(o =>
+{
+    o.Diagnostics.Enabled = true;                                          // off by default
+
+    // Optional: capture automatically (for review, never sent on its own) on unhandled exceptions, circuit failures and
+    // exceptions a classifier marks critical.
+    o.Diagnostics.AutoCaptureTriggers = BelemetryDiagnosticTriggers.Default;
+
+    // Optional release markers, attached to every capture.
+    o.Diagnostics.Release.Commit = Environment.GetEnvironmentVariable("GIT_COMMIT");
+    o.Diagnostics.Release.Metadata["ring"] = "canary";
+});
+```
+
+```json
+{ "Belemetry": { "Diagnostics": { "Enabled": true, "AutoCaptureTriggers": "Default", "Release": { "Commit": "4f2a91c" } } } }
+```
+
+Call it in every project that hosts Blazor, as for the rest of Belemetry. It needs **no exporter**: an app can use
+support bundles without sending any telemetry. Without one, though, Belemetry does not collect .NET spans, so the
+timeline has no `HttpClient` or server request spans and none of the app's own `ActivitySource`s (the `Http` and `Trace`
+categories hold the browser's requests only) - even when another tracer, such as an OpenTelemetry SDK, records them.
+Logs, exceptions, the framework's navigation and UI events and the browser's evidence are there either way. Keep
+`<BelemetryInitializer />` in `Routes.razor` (it registers a Blazor Server circuit's timeline and connects the browser's).
+
+The defaults are the production-safe ones:
+
+| Option | Default | What it bounds |
+| --- | --- | --- |
+| `MaxEvents` / `MaxFailureEvents` | 300 / 50 | The activity and failure rings (failures have their own, so chatter cannot evict the error being diagnosed). Per circuit on a server |
+| `MaxMemoryBytes` | 1 MiB | Estimated memory of one timeline; the oldest activity is evicted first |
+| `MinimumLogLevel` | `Warning` | `ILogger` entries recorded (independent of the export's level) |
+| `IncludeSuccessfulActivity` | `true` | Successful navigations, UI events and requests kept as context |
+| `IncludeLogMessages` / `IncludeExceptionMessages` | `false` / `true` | Log entries keep their template (`Order {OrderId} failed`), not the rendered message (and always their template when the message renders a redacted key such as a circuit id); exceptions keep their scrubbed message - off, neither the message nor its template is kept, and the stack text keeps its frames only (grouping still uses the message, hashed) |
+| `CreateFrameworkActivities` | null: yes on WebAssembly and Hybrid, no on a server | Whether Belemetry makes the framework create its `Navigate`/`HandleEvent` activities when its own traces do not cover them (see below) |
+| `BrowserMaxEvents` | 200 | The browser script's own timeline |
+| `MaxBundleBytes` | 4 MiB | A bundle's JSON, snapshots, groups and components included; past it the oldest activity is left out, then the oldest failures (never the subject) - and the oldest snapshots first when they alone do not fit - and the manifest says how much |
+| `MaxExceptionGroups` | 50 | Groups remembered (least recently seen forgotten first) |
+| `PostTriggerWindow` / `AutoCaptureCooldown` | 2 s / 10 min | What follows a trigger is included; one automatic capture per failure per cooldown |
+| `MaxPendingCaptures` / `CaptureRetention` | 3 / 30 min | Automatic captures waiting for review (a new one replaces the oldest) |
+| `Snapshots.*` | depth 6, 50 items, 1024 chars, 32 KiB, 2 s | One snapshot provider's output |
+
+### Report a problem: capture, preview, confirm, export
+
+```razor
+@inject IBelemetryDiagnostics Diagnostics
+
+<button @onclick="ReportAsync">Report a problem</button>
+
+@if (_capture is not null)
+{
+    @* Sections with a checkbox each, the findings, every event with a Remove button, what is missing, the report as it
+       will be sent - then "Confirm and download" or "Cancel". Unstyled: style the bit-belemetry-preview-* classes. *@
+    <BelemetryCapturePreview Capture="_capture" OnConfirmed="_ => _capture = null" OnCancelled="() => _capture = null" />
+}
+
+@code {
+    private BelemetryDiagnosticCapture? _capture;
+
+    private async Task ReportAsync() =>
+        _capture = await Diagnostics.CaptureAsync(new() { Reason = "user-report", IncludeSnapshots = true });
+}
+```
+
+Without the component, the same flow in code - for example to send the bundle to your own support API:
+
+```csharp
+var capture = await diagnostics.CaptureAsync(new() { Reason = "support-ticket", Exception = errorBoundaryException });
+if (capture.Succeeded is false) return;                       // capture.Error says why (diagnostics off, ...)
+
+// Preview: capture.Sections, capture.Report (findings), capture.Events, capture.MissingEvidence, capture.ToMarkdown()
+capture.ExcludeSection(BelemetryBundleSections.Snapshots);   // each change withdraws a previous confirmation
+capture.RedactAttribute("tenant");
+capture.SetDescription(userText);                            // user-provided, through the privacy patterns
+
+capture.Confirm();                                           // the user agreed to share what they saw
+await using var body = new MemoryStream();
+await capture.ExportAsync(body);                             // throws unless confirmed
+// ... POST body to your support endpoint, or: await diagnostics.DownloadAsync(capture);
+```
+
+`DownloadAsync` saves `capture.SuggestedFileName` in the browser (WebAssembly and Server; on Server the bundle is
+streamed over the circuit), and in WebView2 on Windows. It returns false in a Hybrid app on Android, iOS or Mac Catalyst,
+whose web view ignores downloads: write `ExportAsync` to a file or a share sheet there (the MAUI sample's
+`SampleSettings.SaveBundle`), and pass `Download="false"` to `<BelemetryCapturePreview>`.
+
+An `ErrorBoundary` is the natural place to offer it: pass its `CurrentException` as `Exception`, and the report is
+about that failure. With `AutoCaptureTriggers`, `IBelemetryDiagnostics.CaptureAvailable` fires when an automatic
+capture is ready (raised outside any render: use `InvokeAsync(StateHasChanged)`), and `PendingCaptures` holds them;
+`Dismiss` one once it was handled.
+
+### What a capture holds
+
+| Section | Content |
+| --- | --- |
+| Release | `service.name`, version, environment, commit, build id, configuration version, metadata, host kind, runtime, OS family, architecture, browser brands/platform/language |
+| Exceptions | Groups by fingerprint: type, message template, anchor frame, classification, count, first/last seen, releases, and the occurrences (at most the last five) of the events the bundle holds - an older failure the timeline no longer holds counts, but its message, trace and route are not exported |
+| Timeline (.NET) | Navigation (route templates from the router), component UI events (`HandleEvent`: component type, method, event attribute), exceptions (type, scrubbed message, stack without file paths, inner exceptions, origin), logs (category, template), HTTP client and server spans (method, status, URL template, error type), framework circuit activities, the app's own events and recorded snapshots |
+| Browser | Page views (route template), fetch/XHR (method, status, URL template, trace ids), JS errors and rejections (type, message, stack), clicks (event type and element only), long tasks, reconnection transitions, page hide/restore |
+| Components | The component types the timeline names, ranked by association - `trace` (the failure happened in that component's event-handler trace), `stack` (inferred from the first application frame), `framework` - with render statistics when measured, and ancestry when a component-context provider (BevTools) knows it |
+| Snapshots | The app's snapshot providers' sanitized output, only when the capture asks for them |
+| Report | The issue report: title, summary, exception, release, route, triggering action, navigation, failed requests, interop failures, circuit transitions, components, trace ids, prerequisites, missing evidence, and every finding marked **observed**, **inferred** or **user-provided** |
+
+Observed facts come straight from the evidence (an exception logged inside a `HandleEvent` activity *is* that
+handler's failure). Inferred ones say so: a request that failed two seconds before the exception "may be the cause"; a
+route templated from the page's URL is marked as such; a component named by a stack frame is an inference. Missing
+evidence is listed, never filled in: an unreachable browser, events left out for consent or size, a hierarchy nobody
+provided.
+
+### Where the evidence comes from
+
+| Source | WebAssembly | Server | Hybrid |
+| --- | --- | --- | --- |
+| `ILogger` (≥ `MinimumLogLevel`), exceptions (renderer, `ErrorBoundary`, circuit, app) | yes | the circuit's own | yes |
+| `Navigate` / `HandleEvent` framework activities (.NET 10+; registered by `AddBitBelemetryServices`) | yes | the circuit's own, when something creates them (below) | yes |
+| .NET `HttpClient` spans | as browser fetch spans | with traces collected (`Server.CollectDotnetTelemetry`) | with `Traces` |
+| The browser timeline (fetch/XHR, JS errors, page views, clicks, reconnection) | yes | yes, the user's tab | yes (the WebView) |
+| Server request spans and errors of the page's own requests, by trace id | other process: trace ids | yes | - |
+| Render statistics (`ComponentRenderStatistics`; the framework's lifecycle meter) | call `AddComponentsMetrics()` | yes | call `AddComponentsMetrics()` |
+
+**The framework's component activities.** They name the component, the event handler and the route of a failure. An
+activity that exists becomes the parent of the spans started under it, and an unsampled parent makes a parent-based
+sampler - OpenTelemetry's default - drop them. So Belemetry makes the framework create them only where that changes
+nothing for the app's traces: when its own exported traces cover `Microsoft.AspNetCore.Components` (then they decide,
+and a name in `Traces.IgnoredActivityNames` is never created), or, without them, on WebAssembly and Hybrid, where
+Belemetry is the app's tracer. On a server with an OpenTelemetry setup of its own, either have that setup listen to
+`Microsoft.AspNetCore.Components` (Belemetry observes what exists), or set `Diagnostics.CreateFrameworkActivities = true`
+knowing that spans under a UI event then follow its (unsampled) flag.
+
+**Blazor Server: one timeline per circuit.** The server serves everyone, so each circuit records only what is
+attributable to it: code that ran on its renderer's synchronization context, or under one of its UI events or
+navigations *while that event still runs* (work that left the renderer with `ConfigureAwait(false)` still carries the
+event's activity). Anything else - a background job, another user's request, a timer a click handler started that
+keeps running after it - is never put on any user's timeline. Every scope of a circuit (an `OwningComponentBase`'s
+included) shares its timeline. The browser half comes from
+that user's own tab over the circuit. A server error logged while one of the page's own requests ran is added by the
+trace id the page generated and propagated. Record circuit transitions with a scoped `CircuitHandler`:
+
+```csharp
+public sealed class CircuitDiagnostics(IBelemetryDiagnostics diagnostics) : CircuitHandler
+{
+    public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
+    {
+        diagnostics.Record("circuit.connection_down", severity: BelemetrySeverity.Warn, category: BelemetryDiagnosticCategories.Circuit);
+        return Task.CompletedTask;
+    }
+}
+
+builder.Services.AddScoped<CircuitHandler, CircuitDiagnostics>();
+```
+
+Never record the circuit id: it is a bearer secret (the sanitizer redacts `CircuitId` keys anyway). The browser
+script also records the reconnect dialog's transitions (`components-reconnect-state-changed`), when the app has a
+reconnect UI of its own (`#components-reconnect-modal`, as the .NET 10 template's).
+
+**Prerendering and render-mode changes.** The browser timeline lives in the page from its first load (the script
+starts from `<BelemetryScript />`), so a prerendered page that turns interactive keeps one browser timeline. The .NET
+side of a prerendering request is its own short-lived timeline.
+
+### Exception grouping and releases
+
+`BelemetryExceptionFingerprint` groups deterministically, independent of any backend: the exception type, the
+message template (`Order {n} not found` - GUIDs, timestamps, long hex, quoted values, numbers of four digits or more
+and URL path ids replaced; short numbers stay, a 404 is not a 500) and up to three meaningful frames (application
+frames, without file paths, line numbers, arguments or compiler-generated names; JavaScript frames as
+`function@file.js`). The algorithm is versioned (`BelemetryExceptionFingerprint.Version`), and every exported group
+says which version made it. Groups span releases by default; `GroupAcrossReleases = false` keeps each release's
+occurrences apart. Every occurrence keeps its release, time, trace id, route and component.
+
+Classify exceptions of your own domain with an `IBelemetryExceptionClassifier` (a singleton): a category, a grouping
+override, `Critical` (an automatic capture trigger), or `Ignore` for an expected, noisy failure.
+
+```csharp
+public sealed class PaymentsClassifier : IBelemetryExceptionClassifier
+{
+    public BelemetryExceptionClassification? Classify(BelemetryDiagnosticException exception) =>
+        exception.Type == "MyApp.PaymentDeclinedException" ? new() { Category = "payments", Critical = true } : null;
+}
+
+builder.Services.AddSingleton<IBelemetryExceptionClassifier, PaymentsClassifier>();
+```
+
+### Snapshots of application state
+
+Belemetry never serializes components, services or arbitrary objects. A snapshot provider describes what support
+needs, as plain values, when a capture asks for it (`IncludeSnapshots = true`) - and it is sanitized, bounded and
+isolated (one that throws or exceeds its timeout is reported, and the others still run):
+
+```csharp
+public sealed class CartSnapshot(Cart cart) : IBelemetrySnapshotProvider
+{
+    public string Name => "cart";
+
+    public ValueTask<IReadOnlyDictionary<string, object?>?> CaptureAsync(BelemetrySnapshotContext context, CancellationToken cancellationToken) =>
+        ValueTask.FromResult<IReadOnlyDictionary<string, object?>?>(new Dictionary<string, object?>
+        {
+            ["itemCount"] = cart.Items.Count,
+            ["currency"] = cart.Currency,
+            ["step"] = cart.CheckoutStep,                     // enums, dates, numbers, strings, nested dictionaries and lists
+        });
+}
+
+builder.Services.AddBitBelemetrySnapshotProvider<CartSnapshot>();    // scoped: per circuit on Blazor Server
+```
+
+`await diagnostics.RecordSnapshotAsync("before-checkout")` keeps the providers' snapshots on the timeline, so a later
+capture shows the state before an operation next to the state at the end. A snapshot is a description, not a
+restorable state.
+
+### Privacy, consent and security
+
+- **Consent applies as for telemetry.** The timeline holds what the pipeline accepted for a feature the user granted
+  (or has not decided on yet - then it is held, and dropped if not granted); a capture includes granted features only,
+  checked again when it is previewed and exported; a revoke purges the timeline and discards pending captures (one
+  being built across the revoke too). `ClearAsync` forgets the .NET timeline and the page's, with its stored copy. On a server, the server's own records answer to
+  `Server.Features`, as the server pipeline does. Consent your banner asks for covers the timeline: it never leaves
+  the device unless the user confirms a bundle.
+- **One sanitizer for everything**, applied when a value is recorded and again at export: blocked and redacted keys
+  (the privacy options' lists, `Diagnostics.RedactedKeys`, and any key that *contains* `password`, `secret`, `token`,
+  `apikey`, `authorization`, `cookie`, `credential`, `connectionstring`, `signature`, card names), your
+  `IBelemetryDiagnosticSanitizer`s (a singleton; one that throws excludes the value), pattern scrubbing (e-mail,
+  bearer, JWT, card, IPv4 - **always on here**, whatever `Privacy.ScrubPatterns` says for export), and size limits.
+- **The export's rules first.** The timeline taps each record after the privacy rules and the app's processors: an
+  exception message the export blocks or a processor rewrites is blocked or rewritten here too, in the browser as in
+  .NET (a session sampled out of the export still runs the processors before its timeline keeps a record).
+- **What the user removes stays removed.** Excluding an event or a section in the preview takes its exception
+  occurrences out of `exceptions.json` too, and a redacted key is redacted in the report as well as in the timeline.
+- **Metadata, not values.** Events keep the attributes their category needs (method, status, route template,
+  component type, ...) plus `AllowedAttributes`. URLs become templates (`/orders/{n}`) with only
+  `AllowedQueryParameters`, no fragment, no credentials. Never request or response bodies, headers, cookies, user ids,
+  session ids or DOM text.
+- **A bundle is data.** JSON (with HTML-sensitive characters escaped) and Markdown whose values are code spans or
+  escaped text - no HTML, links, scripts or serialized objects - and a manifest with every file's SHA-256.
+- **A browser is untrusted input on a server.** The page's timeline is bounded and sanitized again in .NET, trace ids
+  are validated, and a page can trigger at most what the capture limits allow.
+
+### Correlating with your backend
+
+Trace ids are the link. The report lists the subject's trace and those of failed requests and failures; the timeline
+carries trace, span and parent span ids (never invented: an event without a real parent has none). Look them up in
+the OTLP backend Belemetry - or your own OpenTelemetry setup - exports to: the browser's fetch spans propagate
+`traceparent` to the origins in `PropagateTraceContextTo` (same origin by default), so a page's request and the
+server's span share one trace. A session id is neither a trace id nor a user id, and none of them is in a bundle.
+
+### BevTools
+
+[BevTools](../BevTools/) is the interactive side. The `Bit.BevTools.Belemetry` package
+(`builder.Services.AddBitBevToolsBelemetry()`) adds a **Support** panel that lists this session's timeline and exception
+groups, opens the component tree at the component a failure is associated with, filters the timeline to a trace,
+previews and exports bundles and validates imported ones - and gives captures the component hierarchy and render counts
+BevTools observes (`IBelemetryComponentContextProvider`). BevTools' own UI events (its panels' buttons and tabs) stay off
+the timeline (`IBelemetryDiagnosticComponentFilter`, which any tool rendered in the app can implement). Belemetry works
+without it: BevTools is a development tool, and in production a capture names the component types the framework
+reported and says the hierarchy is unavailable.
+
+### The bundle format
+
+A ZIP (deterministic: sorted keys, fixed entry times) holding:
+
+| File | Content |
+| --- | --- |
+| `manifest.json` | `format` (`bit-belemetry-support-bundle`), `schemaVersion` (1), generator, capture id and time, host, trigger, ordering note, fingerprint version, sections (status, items, omitted, note), every file's size and SHA-256, privacy summary (redactions, the user's preview changes, consent), limits, dropped evidence by reason, missing evidence |
+| `report.md` / `report.json` | The issue report, human- and machine-readable |
+| `release.json`, `exceptions.json`, `timeline.json`, `components.json`, `snapshots.json` | The sections, when included |
+
+Events are ordered by time, then by sequence; sequences count per source (browser events are prefixed `b` in
+references), and `elapsedMs` is each source's monotonic clock. `BelemetrySupportBundle.ReadAsync` reads and validates
+a bundle - format, version (a newer one is refused), checksums (a listed file without one is an error, and is not read) -
+with bounded decompression and no extraction to disk, ignoring files the format does not define.
+
+### Troubleshooting incomplete captures
+
+- **Empty timeline:** `Diagnostics.Enabled`, consent (the timeline follows it), `MinimumLogLevel`, `Categories`.
+- **"Browser evidence: the browser script was not reachable":** the capture ran during prerendering or after the
+  circuit dropped, the script did not load, or the page's config predates `Diagnostics.Enabled` (reload).
+- **No components:** the framework reports `HandleEvent`/`Navigate` from .NET 10 in interactive render modes only;
+  static SSR has none. On a server they exist only when something creates them (`CreateFrameworkActivities`, or a
+  tracer listening to `Microsoft.AspNetCore.Components`). No hierarchy without a component-context provider (BevTools).
+- **A server event missing from a circuit's capture:** it ran neither on the circuit's renderer nor under one of its
+  UI events (a background service, a `Task.Run` started outside an event). That is the isolation working; record it
+  explicitly with `IBelemetryDiagnostics.Record` from the circuit's scope when it matters.
+- **Events "left out at the bundle size limit" or "evicted":** raise `MaxBundleBytes`, `MaxEvents` or
+  `MaxMemoryBytes`, or capture closer to the failure (`Lookback`).
+
 ---
 
 ## Offline persistence
@@ -752,6 +1211,9 @@ headers are added when a stored request is sent, so a rotated key applies to the
 request stored by the browser is resent with the headers of the browser exporter posting to the same URL.) A request
 stored for an endpoint the exporter no longer posts to is dropped, so the current key never goes to an old address.
 
+A .NET process that ends with an unhandled exception saves its queue to the store as it goes down, and the next
+launch sends it - see [Unhandled exceptions](#unhandled-exceptions).
+
 ---
 
 ## The server pipeline
@@ -771,6 +1233,19 @@ had - the database check behind `/health` - is still exported, with a parent tha
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
 any one user's consent. User consent keeps governing the browser script and the `IBelemetry` calls of each circuit.
+
+`Persistence` is not in the default `Server.Features`, so a server keeps nothing on disk: neither the exports that
+failed nor the queue of a process that crashed ([Unhandled exceptions](#unhandled-exceptions)). Add it to keep both
+for the next start:
+
+```csharp
+options.Server.Features |= BelemetryFeatures.Persistence;
+```
+
+The store is `{LocalApplicationData}/bit-belemetry/{service.name}` by default. Instances of one service on one machine
+(several worker processes, replicas sharing a volume) share it and would resend each other's requests, so give each
+its own `Persistence.Directory` - a stable one, which its next start finds again (a container's local disk does not
+outlive the container).
 A host without Blazor at all - an API, a worker - works the same way: it has no JS runtime, so `IBelemetry` goes
 straight to the server pipeline.
 
@@ -844,8 +1319,8 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 
 | Record | Shape |
 | --- | --- |
-| Page view | log record, event `browser.page_view`: `url.full`, `url.path`, `page.title`, `page.referrer`, `browser.navigation.type` (`initial`, `push`, `replace`, `pop`, `hash`, `manual`, or `restore` - the page came back from the back/forward cache, which fires no history event) |
-| Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms) |
+| Page view | log record, event `browser.page_view`, named (in its body) after the name given to `trackPageView`, else the page title, else its route template: `url.full`, `url.path`, `url.template` (the route, see [Page route templates](#page-route-templates)), `page.title`, `page.referrer`, `browser.navigation.type` (`initial`, `push`, `replace`, `pop`, `hash`, `manual`, or `restore` - the page came back from the back/forward cache, which fires no history event) |
+| Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `url.template`, `page.title`, `page.visit.duration` (ms) |
 | Interaction | log record, event `browser.user_interaction`: `event.type`, `target.element`, `target.id`, `target.name`, `target.xpath` |
 | Rage click | log record, event `browser.rage_click` (with `Browser.TrackRageClicks`): the target attributes, `event.type = rage_click`, `interaction.click_count` |
 | Web vital | log record, event `browser.web_vital`: `web_vital.name`, `web_vital.value`, `web_vital.delta`, `web_vital.rating`, `web_vital.id`, `web_vital.navigation_type`. A back/forward-cache restore starts a new generation under new ids, as Google's web-vitals library does: FCP and LCP measured from the restore to the next painted frame, CLS and INP from zero, navigation type `back-forward-cache` |
@@ -866,9 +1341,11 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Server/consumer span | `requests` |
 | Other spans | `dependencies` (`Ajax` from the browser, `HTTP`, the database system, `InProc`) |
 | Log with an exception | `exceptions` |
-| `browser.page_view` | `pageViews` |
+| Exception recorded on a span (`Activity.AddException`, an `exception` span event) | `exceptions`, under the span, as the Azure Monitor OpenTelemetry exporter writes it - but once only when the same exception (type, message and stack trace) is also logged under the span (`LogError(ex)` plus `AddException(ex)`): the log's item stands for both, unless this exporter does not send that log (`Signals`, `MinimumLogLevel`, or the log was dropped before the export) |
+| Any other span event | `traces`, under the span, with the event name as the message - as the Azure Monitor OpenTelemetry exporter writes it |
+| `browser.page_view` | `pageViews`, named after its body (the name given to `TrackPageView`), else `page.title`, else `url.template` (with `url.template` among the custom dimensions) |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
-| `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName`/`PageUrl` properties - the Application Insights JS SDK's shape |
+| `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName` (the page view's name)/`PageUrl` properties - the Application Insights JS SDK's shape |
 | Other events | `customEvents` |
 | Other logs | `traces` |
 | Metrics | `customMetrics` (deltas; histograms with count, min, max) |
@@ -876,7 +1353,7 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 Tags: `ai.cloud.role` (`[service.namespace]/service.name`, or `service.name` alone - as the Azure Monitor
 OpenTelemetry exporter writes it), `ai.cloud.roleInstance`, `ai.application.ver` (`service.version`), `ai.user.agent`
 and `ai.device.locale` (browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
-`ai.operation.name` (requests: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
+`ai.operation.name` (requests and their events: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
 `ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
 `ai.internal.sdkVersion`.
 
@@ -955,6 +1432,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   Auto, an OTLP exporter's `Headers` (and `OTEL_EXPORTER_OTLP_HEADERS`) stay on the server; the browser script exports
   without them, and a startup warning names the exporter. Move a key that is meant to be public to `BrowserHeaders`,
   or switch to the Relay transport. WebAssembly and Hybrid are unchanged.
+- **The page never gets an OTLP endpoint's user info.** `https://user:token@...` reaches the browser script without
+  `user:token@`, on every host, and a server warns at startup. Neither `HttpClient` nor the browser ever sent it: put
+  the credential in `Headers` (an `Authorization` header).
 - **Every string attribute is scrubbed on the .NET side too**, as the browser script always did: structured log
   values and event attributes lose e-mail addresses, tokens, card numbers and IPv4 addresses. `client.address` becomes
   `[ip]`. Turn pattern scrubbing off with `Privacy.ScrubPatterns = false`.
@@ -982,12 +1462,47 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
 - **Errors are deduplicated and capped** on client hosts: an identical error within `Errors.DuplicateWindow` (5 s) is
   suppressed, and at most `Errors.MaxPerMinute` (100) are recorded per minute. `TimeSpan.Zero` / `0` switch them off.
 - **`Script error.` is ignored by default** (`Browser.IgnoreErrorMessages`).
+- **Azure Monitor gets the events of a span:** an exception recorded on it (`Activity.AddException`) as an `exceptions`
+  item, any other event (the document-load span's timings, for one) as a `traces` item - as the Azure Monitor
+  OpenTelemetry exporter sends them; they were dropped. Expect more items. An exception also logged under its span
+  is still one item, and `belemetry.records.exported` counts them for Azure Monitor.
+- **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
+  span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
+  browser as well, to an exception an app processor adds to a span.
 - **Strings longer than `MaxValueLength` (32768) are cut.** `0` keeps them whole.
 - **An aborted fetch/XHR is not an error span** (it keeps `error.type = AbortError`); unknown HTTP methods are
   `_OTHER`.
 - **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new
   web-vitals generation after a back/forward-cache restore.
+- **Unhandled .NET exceptions are recorded** (`AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`)
+  as `Errors` events, and a crashing process saves its queue for the next launch (with `Persistence`). Switch it off
+  with `Errors.CaptureUnhandledExceptions = false`, e.g. when the app records them itself. Forward the crashes Android,
+  WinUI and WinForms report elsewhere with `TrackBitBelemetryUnhandledException`. See
+  [Unhandled exceptions](#unhandled-exceptions).
+- **Page views carry `url.template`, and an untitled one is named after it** (`/orders/{id:int}`, was `/orders/42`):
+  in the log record's body, the Application Insights `pageViews` name and `ai.operation.name`, and the `PageName` of
+  `PageVisitTime`. Group by `url.path` for the old breakdown. See [Page route templates](#page-route-templates).
+- **A page view is named after the name given to `TrackPageView` on every host**, before its page's title: in
+  Application Insights the name was the title (or the path) when the script recorded it (Server), and a
+  `PageVisitTime`'s `PageName` follows. A .NET `TrackPageView` without a URL takes the current page's
+  (`NavigationManager.Uri`), as the script takes `location.href`.
 - **`OTEL_SDK_DISABLED=true` turns Belemetry off**, overriding code.
+
+**Production diagnostics** (opt-in, `BelemetryOptions.Diagnostics`; see
+[Production diagnostics and support bundles](#production-diagnostics-and-support-bundles))
+
+- **`AddBitBelemetryServices` registers the framework's component `ActivitySource`** (`AddComponentsTracing`, public
+  and idempotent) in WebAssembly and Hybrid too, as the server already did. With `Traces` collected, the
+  `Microsoft.AspNetCore.Components.Navigate` and `HandleEvent` spans (in the default `Microsoft.AspNetCore.Components*`
+  sources) are now exported from those hosts, and logs written inside an event handler carry its trace id. Drop them
+  with `Traces.IgnoredActivityNames`.
+- **A browser session sampled out of the export** (`SessionSampleRatio`) still keeps its local diagnostic timeline when
+  diagnostics are on; nothing more is exported.
+- **New APIs:** `IBelemetryDiagnostics`, `BelemetryDiagnosticsOptions`, `BelemetryDiagnosticCapture`,
+  `<BelemetryCapturePreview>`, `BelemetrySupportBundle`, `BelemetryIssueReport`, `BelemetryExceptionFingerprint`,
+  `IBelemetrySnapshotProvider` (`AddBitBelemetrySnapshotProvider<T>()`), `IBelemetryExceptionClassifier`,
+  `IBelemetryDiagnosticSanitizer`, `IBelemetryComponentContextProvider`, `IBelemetryDiagnosticComponentFilter`; in the
+  script `getDiagnostics`, `getDiagnosticsStream`, `clearDiagnostics` and `downloadFile`.
 
 **New APIs:** `BelemetryOtlpExporterOptions.BrowserHeaders`, `BelemetryOptions.Errors`, `BelemetryOptions.MaxValueLength`,
 `BelemetryPrivacyOptions.RedactedAttributes`, `BelemetryBrowserOptions.TrackRageClicks`, the `Bit.Belemetry` meter, and

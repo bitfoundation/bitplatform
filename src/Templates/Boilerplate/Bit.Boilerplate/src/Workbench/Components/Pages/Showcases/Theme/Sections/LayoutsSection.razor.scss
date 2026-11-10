@@ -1,0 +1,46 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.cell {
+    padding: 0.5rem;
+    text-align: center;
+    font-size: $bit-typography-fs-xs;
+    border-radius: $bit-shape-radius-sm;
+    color: $bit-color-primary-foreground;
+    background-color: $bit-color-primary-tint;
+}
+
+// The layout fills a box of its own, not the page.
+.layout-stage {
+    height: 14rem;
+    overflow: hidden;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.layout-part {
+    height: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: $bit-typography-fs-sm;
+    background-color: $bit-color-background-secondary;
+}
+
+.layout-part.nav {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.bar {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.5rem 0.75rem;
+    align-items: center;
+    border-radius: $bit-shape-radius-surface;
+    background-color: $bit-color-background-secondary;
+}
+
+.stack-stage {
+    padding: 0.75rem;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px dashed $bit-color-border-secondary;
+}

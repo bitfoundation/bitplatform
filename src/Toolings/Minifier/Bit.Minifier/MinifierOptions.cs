@@ -1,16 +1,42 @@
-﻿namespace Bit.Minifier;
+﻿using System.IO.Enumeration;
+
+namespace Bit.Minifier;
 
 internal sealed class MinifierOptions
 {
-    /// <summary>The bit libraries: packages an app installs, wherever this repository builds them from source.</summary>
+    /// <summary>
+    /// The bit libraries: packages an app installs, wherever this repository builds them from source. Patterns
+    /// (see <see cref="Matches"/>), so a new package is one without anything to add here: every Bit.B* assembly -
+    /// bit names each of its products Bit.B-something, which an app of its own named Bit.Acme.Client is not - but
+    /// the ones this repository publishes as an app's own code - its demos, samples, tests and websites.
+    /// </summary>
     public static readonly IReadOnlyList<string> BitAssemblies =
     [
-        "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Assets", "Bit.BlazorUI.Icons", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI", "Bit.Butil", "Bit.Bswup", "Bit.Brouter",
-        "Bit.Balette", "Bit.BbScanner", "Bit.BbScanner.Maui", "Bit.Bcrdt", "Bit.Bcrdt.Server", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Testing", "Bit.Bdnd", "Bit.Belemetry",
-        "Bit.Belemetry.EntityFrameworkCore", "Bit.Belemetry.Hangfire", "Bit.BevTools", "Bit.BevTools.Blex", "Bit.BevTools.Loader", "Bit.BevTools.Server", "Bit.Bheadless",
-        "Bit.Bheadless.Testing", "Bit.Bink", "Bit.BlazeDb", "Bit.BlazeDb.EntityFrameworkCore", "Bit.Blex", "Bit.Blex.Maui", "Bit.Blex.Testing", "Bit.Blow",
-        "Bit.Bmage", "Bit.Bmage.Blazor", "Bit.Bmotion", "Bit.Bonboarding", "Bit.Borm", "Bit.Borm.FluentValidation", "Bit.Bortable", "Bit.Bsqlite", "Bit.Bsqlite.Testing"
+        "Bit.B*",
+        "!*.Demo", "!*.Demo.*", "!*Sample", "!*Sample.*", "!*Samples", "!*Samples.*", "!*.Tests", "!*.Tests.*", "!*.TestKit", "!*.Benchmarks", "!Bit.Websites.*"
     ];
+
+    /// <summary>
+    /// Whether <paramref name="name"/> is one of <paramref name="patterns"/>, ignoring case. A pattern is an assembly
+    /// name that may have * for any run of characters and ? for any one; one that starts with ! takes back what the
+    /// others match, whatever their order.
+    /// </summary>
+    public static bool Matches(IReadOnlyList<string> patterns, string name)
+    {
+        var included = false;
+        foreach (var pattern in patterns)
+        {
+            if (pattern.StartsWith('!'))
+            {
+                if (FileSystemName.MatchesSimpleExpression(pattern.AsSpan(1), name)) return false;
+            }
+            else
+            {
+                included = included || FileSystemName.MatchesSimpleExpression(pattern, name);
+            }
+        }
+        return included;
+    }
 
     /// <summary>The folder holding the trimmed assemblies (ILLink's output) and everything they reference.</summary>
     public required string Directory { get; init; }
@@ -21,7 +47,7 @@ internal sealed class MinifierOptions
     /// <summary>
     /// Libraries an app consumes rather than writes, whatever <see cref="OwnAssemblies"/> says: built from
     /// their own source tree they are still the packages this app installs, so they are minified like any
-    /// other library.
+    /// other library. Patterns, as <see cref="Matches"/> reads them.
     /// </summary>
     public IReadOnlyList<string> FullyMinified { get; init; } = BitAssemblies;
 

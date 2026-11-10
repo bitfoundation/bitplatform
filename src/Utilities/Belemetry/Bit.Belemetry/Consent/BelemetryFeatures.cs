@@ -14,7 +14,10 @@ public enum BelemetryFeatures
     /// <summary>Nothing.</summary>
     None = 0,
 
-    /// <summary>JS errors and unhandled rejections, .NET logs at Error/Critical or carrying an exception, and <c>TrackException</c>.</summary>
+    /// <summary>
+    /// JS errors and unhandled rejections, .NET logs at Error/Critical or carrying an exception, <c>TrackException</c>, and
+    /// the exceptions recorded on spans (<c>Activity.AddException</c>): without it they are taken off the span.
+    /// </summary>
     Errors = 1,
 
     /// <summary>Page views - history and enhanced navigation, and <c>TrackPageView</c>.</summary>

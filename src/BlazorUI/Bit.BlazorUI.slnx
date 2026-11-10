@@ -45,6 +45,7 @@
     <File Path="Tests/Performance/README.md" />
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.PdfPerformance/Bit.BlazorUI.Tests.PdfPerformance.csproj" />
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost/Bit.BlazorUI.Tests.Performance.TestHost.csproj" />
+    <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost.Client/Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj" />
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
   </Folder>
   <Project Path="Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj" />

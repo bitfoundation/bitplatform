@@ -1,0 +1,41 @@
+﻿@page "/tw/rating"
+
+<PageTitle>Rating (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Rating</h1>
+    <p class="bb-subtitle">A star rating: one focusable slider over decorative stars, with half values, hover preview and clearing.</p>
+</div>
+
+<SectionSwitcher Slug="rating" />
+
+<TwDemoBlock Title="Whole stars" Code="@_basicCode">
+    <Description>
+        Each item gets <code>data-state="full|half|empty"</code> - styled with <code>data-[state=full]:</code> - and
+        <code>data-highlighted</code> while the pointer previews a value. Arrows and digits change the value.
+    </Description>
+    <LiveContent>
+        <BitBhRating @bind-Value="rating" aria-label="Rating" class="inline-flex cursor-pointer gap-0.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+            @for (var i = 0; i < 5; i++)
+            {
+                <BitBhRatingItem Index="i" class="text-2xl leading-none text-zinc-500 data-[state=full]:text-amber-700 data-highlighted:text-amber-600">★</BitBhRatingItem>
+            }
+        </BitBhRating>
+        <span class="text-sm text-zinc-500">Value: <strong class="text-zinc-900">@rating</strong></span>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private double rating = 4;
+
+    private const string _basicCode = """
+<BitBhRating @bind-Value="rating" aria-label="Rating"
+             class="inline-flex gap-0.5 rounded-md focus-visible:outline-2 focus-visible:outline-blue-600">
+    @for (var i = 0; i < 5; i++)
+    {
+        <BitBhRatingItem Index="i" class="text-2xl text-zinc-500 data-[state=full]:text-amber-700
+                                          data-highlighted:text-amber-600">★</BitBhRatingItem>
+    }
+</BitBhRating>
+""";
+}

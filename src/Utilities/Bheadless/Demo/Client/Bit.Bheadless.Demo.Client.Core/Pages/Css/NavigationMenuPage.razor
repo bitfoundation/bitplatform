@@ -1,0 +1,500 @@
+﻿@page "/navigation-menu"
+
+<PageTitle>Navigation Menu · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Navigation Menu</h1>
+    <p class="bb-subtitle">Site navigation made of links and disclosure buttons that open panels of links - on hover with intent, on click and from the keyboard - with an optional shared viewport, an indicator and directional motion.</p>
+</div>
+
+<SectionSwitcher Slug="navigation-menu" />
+
+<DemoBlock Title="Basic" Code="@_basicCode" Css="@_css">
+    <Description>
+        A <code>&lt;nav&gt;</code> of disclosure buttons (<code>aria-expanded</code>, <code>aria-controls</code>) and links - not a
+        <code>role="menu"</code>, which is for application menus. Hover a trigger and its content opens after
+        <code>DelayDuration</code> (200 ms); while one is open the next opens at once. Click, Enter or Space toggles;
+        <kbd>↓</kbd> opens and moves into the content, where every arrow key moves between the links; <kbd>Tab</kbd> from an open
+        trigger enters it; <kbd>Escape</kbd> closes it and returns to the trigger; <kbd>←</kbd> / <kbd>→</kbd>, <kbd>Home</kbd> and
+        <kbd>End</kbd> move between the top-level items, which are all tab stops too. Pressing outside, focus leaving the menu or
+        choosing a link closes it.
+    </Description>
+    <LiveContent>
+        <div class="navigation-menu-demo">
+            <BitBhNavigationMenu aria-label="Products (example)" class="navigation-menu">
+                <BitBhNavigationMenuList class="navigation-menu-list">
+                    <BitBhNavigationMenuItem Value="products" class="navigation-menu-item">
+                        <BitBhNavigationMenuTrigger class="navigation-menu-trigger">
+                            Products
+                            <svg class="navigation-menu-chevron" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                        </BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent class="navigation-menu-content">
+                            <ul class="navigation-menu-links">
+                                @foreach (var (title, text) in products)
+                                {
+                                    <li>
+                                        <BitBhNavigationMenuLink href="@($"navigation-menu#{title.ToLowerInvariant()}")" OnSelect="() => chosen = title" class="navigation-menu-link">
+                                            <span class="navigation-menu-link-title">@title</span>
+                                            <span class="navigation-menu-link-text">@text</span>
+                                        </BitBhNavigationMenuLink>
+                                    </li>
+                                }
+                            </ul>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem Value="resources" class="navigation-menu-item">
+                        <BitBhNavigationMenuTrigger class="navigation-menu-trigger">
+                            Resources
+                            <svg class="navigation-menu-chevron" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+                        </BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent class="navigation-menu-content">
+                            <ul class="navigation-menu-links navigation-menu-links-stack">
+                                @foreach (var title in resources)
+                                {
+                                    <li>
+                                        <BitBhNavigationMenuLink href="@($"navigation-menu#{title.ToLowerInvariant()}")" OnSelect="() => chosen = title" class="navigation-menu-link">
+                                            <span class="navigation-menu-link-title">@title</span>
+                                        </BitBhNavigationMenuLink>
+                                    </li>
+                                }
+                            </ul>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem class="navigation-menu-item">
+                        <BitBhNavigationMenuLink href="navigation-menu#pricing" Active="true" OnSelect="@(() => chosen = "Pricing")" class="navigation-menu-top-link">Pricing</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuItem>
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>
+            <p class="demo-output">Last chosen: <strong>@(chosen ?? "nothing yet")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Viewport, indicator and motion" Code="@_viewportCode" Css="@_css">
+    <Description>
+        With a <code>BitBhNavigationMenuViewport</code> the open content is moved into one shared panel, which takes its size
+        through <code>--bit-bh-navigation-menu-viewport-width</code> / <code>-height</code> and so animates between contents; the
+        Tab order and the reading order stay those of a content that follows its trigger. Contents get
+        <code>data-motion="from-start|from-end|to-start|to-end"</code> by where the newly open item is relative to the previous
+        one, so they slide in from the side they come from. <code>BitBhNavigationMenuIndicator</code> follows the open trigger
+        through <code>--bit-bh-indicator-left</code> / <code>-width</code>.
+    </Description>
+    <LiveContent>
+        <div class="navigation-menu-demo">
+            <BitBhNavigationMenu aria-label="Site (viewport example)" class="navigation-menu">
+                <BitBhNavigationMenuList class="navigation-menu-list">
+                    <BitBhNavigationMenuItem Value="learn" class="navigation-menu-item">
+                        <BitBhNavigationMenuTrigger class="navigation-menu-trigger">Learn</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent class="navigation-menu-panel">
+                            <ul class="navigation-menu-links">
+                                @foreach (var (title, text) in learn)
+                                {
+                                    <li>
+                                        <BitBhNavigationMenuLink href="@($"navigation-menu#{title.ToLowerInvariant().Replace(' ', '-')}")" class="navigation-menu-link">
+                                            <span class="navigation-menu-link-title">@title</span>
+                                            <span class="navigation-menu-link-text">@text</span>
+                                        </BitBhNavigationMenuLink>
+                                    </li>
+                                }
+                            </ul>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem Value="overview" class="navigation-menu-item">
+                        <BitBhNavigationMenuTrigger class="navigation-menu-trigger">Overview</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent class="navigation-menu-panel">
+                            <ul class="navigation-menu-links navigation-menu-links-stack">
+                                @foreach (var title in overview)
+                                {
+                                    <li>
+                                        <BitBhNavigationMenuLink href="@($"navigation-menu#{title.ToLowerInvariant().Replace(' ', '-')}")" class="navigation-menu-link">
+                                            <span class="navigation-menu-link-title">@title</span>
+                                        </BitBhNavigationMenuLink>
+                                    </li>
+                                }
+                            </ul>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem class="navigation-menu-item">
+                        <BitBhNavigationMenuLink href="navigation-menu#github" class="navigation-menu-top-link">GitHub</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuIndicator class="navigation-menu-indicator" />
+                </BitBhNavigationMenuList>
+                <div class="navigation-menu-viewport-position">
+                    <BitBhNavigationMenuViewport class="navigation-menu-viewport" />
+                </div>
+            </BitBhNavigationMenu>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Vertical and bound" Code="@_verticalCode" Css="@_css">
+    <Description>
+        <code>Orientation="BitBhOrientation.Vertical"</code> makes <kbd>↑</kbd> / <kbd>↓</kbd> move between the items and
+        <kbd>→</kbd> (<kbd>←</kbd> in right-to-left) open the content and move into it. <code>@@bind-Value</code> holds the open
+        item's value - null when the menu is closed - so code can open and close it too.
+    </Description>
+    <LiveContent>
+        <div class="navigation-menu-demo navigation-menu-sidebar">
+            <BitBhNavigationMenu aria-label="Docs (vertical example)" Orientation="BitBhOrientation.Vertical" @bind-Value="openSection">
+                <BitBhNavigationMenuList class="navigation-menu-list">
+                    @foreach (var (section, pages) in docs)
+                    {
+                        <BitBhNavigationMenuItem Value="@section" class="navigation-menu-item">
+                            <BitBhNavigationMenuTrigger class="navigation-menu-trigger">@section</BitBhNavigationMenuTrigger>
+                            <BitBhNavigationMenuContent class="navigation-menu-content">
+                                <ul class="navigation-menu-links navigation-menu-links-stack">
+                                    @foreach (var title in pages)
+                                    {
+                                        <li>
+                                            <BitBhNavigationMenuLink href="@($"navigation-menu#{title.ToLowerInvariant().Replace(' ', '-')}")" class="navigation-menu-link">
+                                                <span class="navigation-menu-link-title">@title</span>
+                                            </BitBhNavigationMenuLink>
+                                        </li>
+                                    }
+                                </ul>
+                            </BitBhNavigationMenuContent>
+                        </BitBhNavigationMenuItem>
+                    }
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>
+        </div>
+        <div class="demo-row">
+            <span class="demo-output">Open: <strong>@(openSection ?? "none")</strong></span>
+            <button type="button" class="btn" @onclick="@(() => openSection = "Components")">Open “Components”</button>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private string? chosen;
+    private string? openSection;
+
+    private readonly (string Title, string Text)[] products =
+    [
+        ("Analytics", "See how visitors find and use your site."),
+        ("Automation", "Run the busywork on a schedule."),
+        ("Security", "Keep accounts and data safe."),
+        ("Integrations", "Connect the tools you already use."),
+    ];
+
+    private readonly string[] resources = ["Guides", "Changelog", "Community"];
+
+    private readonly (string Title, string Text)[] learn =
+    [
+        ("Introduction", "Unstyled, accessible components for Blazor."),
+        ("Getting started", "Install the package and register the services."),
+        ("Styling", "Style every state with data attributes."),
+        ("Testing", "Audit accessibility in your unit tests."),
+    ];
+
+    private readonly string[] overview = ["Accessibility", "Releases", "Roadmap"];
+
+    private readonly (string Section, string[] Pages)[] docs =
+    [
+        ("Guides", ["Installation", "Forms", "Theming"]),
+        ("Components", ["Dialog", "Drawer", "Navigation Menu"]),
+        ("Testing", ["Audits", "Keyboard helpers"]),
+    ];
+
+    private const string _basicCode = """
+<BitBhNavigationMenu aria-label="Main" class="navigation-menu">
+    <BitBhNavigationMenuList class="navigation-menu-list">
+        <BitBhNavigationMenuItem Value="products" class="navigation-menu-item">
+            <BitBhNavigationMenuTrigger class="navigation-menu-trigger">
+                Products <svg class="navigation-menu-chevron" aria-hidden="true">…</svg>
+            </BitBhNavigationMenuTrigger>
+            <BitBhNavigationMenuContent class="navigation-menu-content">
+                <ul class="navigation-menu-links">
+                    <li>
+                        <BitBhNavigationMenuLink href="/analytics" class="navigation-menu-link">
+                            <span class="navigation-menu-link-title">Analytics</span>
+                            <span class="navigation-menu-link-text">See how visitors find and use your site.</span>
+                        </BitBhNavigationMenuLink>
+                    </li>
+                    …
+                </ul>
+            </BitBhNavigationMenuContent>
+        </BitBhNavigationMenuItem>
+        <BitBhNavigationMenuItem Value="resources" class="navigation-menu-item">
+            …
+        </BitBhNavigationMenuItem>
+        <BitBhNavigationMenuItem class="navigation-menu-item">
+            <BitBhNavigationMenuLink href="/pricing" Active="true" class="navigation-menu-top-link">Pricing</BitBhNavigationMenuLink>
+        </BitBhNavigationMenuItem>
+    </BitBhNavigationMenuList>
+</BitBhNavigationMenu>
+""";
+
+    private const string _viewportCode = """
+<BitBhNavigationMenu aria-label="Site" class="navigation-menu">
+    <BitBhNavigationMenuList class="navigation-menu-list">
+        <BitBhNavigationMenuItem Value="learn" class="navigation-menu-item">
+            <BitBhNavigationMenuTrigger class="navigation-menu-trigger">Learn</BitBhNavigationMenuTrigger>
+            <BitBhNavigationMenuContent class="navigation-menu-panel">
+                <ul class="navigation-menu-links">…</ul>
+            </BitBhNavigationMenuContent>
+        </BitBhNavigationMenuItem>
+        <BitBhNavigationMenuItem Value="overview" class="navigation-menu-item">
+            <BitBhNavigationMenuTrigger class="navigation-menu-trigger">Overview</BitBhNavigationMenuTrigger>
+            <BitBhNavigationMenuContent class="navigation-menu-panel">
+                <ul class="navigation-menu-links navigation-menu-links-stack">…</ul>
+            </BitBhNavigationMenuContent>
+        </BitBhNavigationMenuItem>
+        <BitBhNavigationMenuItem class="navigation-menu-item">
+            <BitBhNavigationMenuLink href="https://github.com/bitfoundation/bitplatform" class="navigation-menu-top-link">GitHub</BitBhNavigationMenuLink>
+        </BitBhNavigationMenuItem>
+        @* An <li> inside the list: follows the open trigger. *@
+        <BitBhNavigationMenuIndicator class="navigation-menu-indicator" />
+    </BitBhNavigationMenuList>
+    <div class="navigation-menu-viewport-position">
+        @* The open content is moved in here and sizes it. *@
+        <BitBhNavigationMenuViewport class="navigation-menu-viewport" />
+    </div>
+</BitBhNavigationMenu>
+""";
+
+    private const string _verticalCode = """
+<BitBhNavigationMenu aria-label="Docs" Orientation="BitBhOrientation.Vertical" @bind-Value="openSection">
+    <BitBhNavigationMenuList class="navigation-menu-list">
+        @foreach (var (section, pages) in docs)
+        {
+            <BitBhNavigationMenuItem Value="@section" class="navigation-menu-item">
+                <BitBhNavigationMenuTrigger class="navigation-menu-trigger">@section</BitBhNavigationMenuTrigger>
+                <BitBhNavigationMenuContent class="navigation-menu-content">
+                    <ul class="navigation-menu-links navigation-menu-links-stack">
+                        @foreach (var title in pages)
+                        {
+                            <li><BitBhNavigationMenuLink href="@Href(title)" class="navigation-menu-link">@title</BitBhNavigationMenuLink></li>
+                        }
+                    </ul>
+                </BitBhNavigationMenuContent>
+            </BitBhNavigationMenuItem>
+        }
+    </BitBhNavigationMenuList>
+</BitBhNavigationMenu>
+
+<p>Open: @(openSection ?? "none")</p>
+<button type="button" @onclick="@(() => openSection = "Components")">Open “Components”</button>
+
+@code {
+    private string? openSection;
+}
+""";
+
+    // ── CSS (mirrors wwwroot/demos/navigation-menu.css) ─────────────────────────
+
+    private const string _css = """
+/* navigation-menu demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Room for the open panels inside the example frame ---------------- */
+.navigation-menu-demo { width: 100%; min-height: 19rem; }
+
+/* ---- Root and list ---------------------------------------------------- */
+.navigation-menu {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.navigation-menu-list {
+    position: relative;
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+}
+
+.navigation-menu-item { position: relative; }
+
+/* ---- Triggers and top-level links (at least 24 × 24 px targets) ------- */
+.navigation-menu-trigger,
+.navigation-menu-top-link {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.navigation-menu-trigger:hover,
+.navigation-menu-top-link:hover { background: var(--color-fill); }
+
+.navigation-menu-trigger:focus-visible,
+.navigation-menu-top-link:focus-visible,
+.navigation-menu-link:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.navigation-menu-trigger[data-state="open"] { background: var(--color-accent-subtle); color: var(--color-accent-text); }
+
+/* aria-current="page" / data-active on the link of the current page */
+.navigation-menu-top-link[data-active] { color: var(--color-primary-text); text-decoration: underline; text-underline-offset: 4px; }
+
+.navigation-menu-chevron { transition: transform 200ms ease; }
+.navigation-menu-trigger[data-state="open"] .navigation-menu-chevron { transform: rotate(180deg); }
+
+/* ---- Content (in place: under its trigger) ---------------------------- */
+.navigation-menu-content {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    z-index: 10;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(30rem, calc(100vw - 2rem));
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.3);
+}
+
+.navigation-menu-content[data-state="open"]   { animation: navigation-menu-fade-in 160ms ease-out; }
+.navigation-menu-content[data-state="closed"] { animation: navigation-menu-fade-out 120ms ease-in; }
+
+.navigation-menu-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(12rem, 1fr));
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.navigation-menu-links-stack { grid-template-columns: minmax(11rem, 1fr); }
+
+.navigation-menu-link {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.navigation-menu-link:hover { background: var(--color-fill); }
+.navigation-menu-link[data-active] { background: var(--color-accent-subtle); }
+
+.navigation-menu-link-title { display: block; font-size: 0.9rem; font-weight: 600; }
+.navigation-menu-link-text  { display: block; margin-top: 0.15rem; font-size: 0.8rem; color: var(--color-muted); line-height: 1.35; }
+
+/* ---- Viewport: one shared panel the open content moves into ------------ */
+.navigation-menu-viewport-position {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    perspective: 2000px;
+    z-index: 10;
+}
+
+.navigation-menu-viewport {
+    position: relative;
+    overflow: hidden;
+    width: var(--bit-bh-navigation-menu-viewport-width);
+    height: var(--bit-bh-navigation-menu-viewport-height);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.3);
+    transform-origin: top center;
+    transition: width 250ms ease, height 250ms ease;
+}
+
+.navigation-menu-viewport[data-state="open"]   { animation: navigation-menu-scale-in 200ms ease; }
+.navigation-menu-viewport[data-state="closed"] { animation: navigation-menu-scale-out 200ms ease; }
+
+/* Contents in the viewport lie on top of one another; the viewport takes the open one's size. */
+.navigation-menu-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    padding: 0.5rem;
+}
+
+/* data-motion: where the open item is relative to the one open before it */
+.navigation-menu-panel[data-motion="from-start"] { animation: navigation-menu-enter-from-left 250ms ease; }
+.navigation-menu-panel[data-motion="from-end"]   { animation: navigation-menu-enter-from-right 250ms ease; }
+.navigation-menu-panel[data-motion="to-start"]   { animation: navigation-menu-exit-to-left 250ms ease; }
+.navigation-menu-panel[data-motion="to-end"]     { animation: navigation-menu-exit-to-right 250ms ease; }
+/* Closing with the whole menu: fade with the viewport. */
+.navigation-menu-panel[data-state="closed"]:not([data-motion]) { animation: navigation-menu-fade-out 200ms ease; }
+
+/* ---- Indicator: an arrow under the open trigger ------------------------ */
+.navigation-menu-indicator {
+    position: absolute;
+    top: 100%;
+    left: var(--bit-bh-indicator-left, 0);
+    width: var(--bit-bh-indicator-width, 0);
+    height: 0.65rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 11;
+    transition: left 250ms ease, width 250ms ease, opacity 200ms ease;
+}
+
+.navigation-menu-indicator:not([data-measured]) { transition: none; }
+.navigation-menu-indicator[data-state="hidden"] { opacity: 0; }
+
+.navigation-menu-indicator::after {
+    content: "";
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-bottom: -0.4rem;
+    transform: rotate(45deg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+/* ---- Vertical ----------------------------------------------------------- */
+.navigation-menu-sidebar { display: flex; width: 100%; }
+
+.navigation-menu-list[data-orientation="vertical"] {
+    flex-direction: column;
+    align-items: stretch;
+    width: 12rem;
+}
+
+.navigation-menu-content[data-orientation="vertical"] {
+    top: 0;
+    left: calc(100% + 0.6rem);
+}
+
+[dir="rtl"] .navigation-menu-content[data-orientation="vertical"] { left: auto; right: calc(100% + 0.6rem); }
+
+/* ---- Motion ------------------------------------------------------------- */
+@keyframes navigation-menu-fade-in  { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes navigation-menu-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes navigation-menu-scale-in  { from { opacity: 0; transform: rotateX(-25deg) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes navigation-menu-scale-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: rotateX(-10deg) scale(0.95); } }
+@keyframes navigation-menu-enter-from-right { from { opacity: 0; transform: translateX(12rem); } to { opacity: 1; transform: none; } }
+@keyframes navigation-menu-enter-from-left  { from { opacity: 0; transform: translateX(-12rem); } to { opacity: 1; transform: none; } }
+@keyframes navigation-menu-exit-to-right { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(12rem); } }
+@keyframes navigation-menu-exit-to-left  { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-12rem); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-menu-content,
+    .navigation-menu-panel,
+    .navigation-menu-viewport,
+    .navigation-menu-indicator { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+""";
+}

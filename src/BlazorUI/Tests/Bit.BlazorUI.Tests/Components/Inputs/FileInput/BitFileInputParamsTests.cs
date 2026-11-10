@@ -23,6 +23,7 @@ public class BitFileInputParamsTests : BunitTestContext
     [
         nameof(BitFileInput.CascadingParameters),
         nameof(BitFileInput.DescriptionTemplate),
+        nameof(BitFileInput.ErrorMessageTemplate),
         nameof(BitFileInput.FileViewTemplate),
         nameof(BitFileInput.LabelTemplate),
         nameof(BitFileInput.OnFilesChange),
@@ -261,12 +262,15 @@ public class BitFileInputParamsTests : BunitTestContext
             DropZoneIcon = BitIconInfo.Bi("cloud"),
             DropZoneIconName = "CloudUpload",
             DuplicateErrorMessage = "duplicate",
+            ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             FileIconSelector = selectIcon,
             FileListAriaLabel = "Cascaded list",
             FileSizeFormatter = format,
             FileValidator = validate,
             HideFileList = true,
             HideLabel = true,
+            Invalid = true,
             Label = "Cascaded label",
             MaxCount = 3,
             MaxCountErrorMessage = "too many",
@@ -315,12 +319,15 @@ public class BitFileInputParamsTests : BunitTestContext
         Assert.AreEqual(@params.DropZoneIcon, instance.DropZoneIcon);
         Assert.AreEqual("CloudUpload", instance.DropZoneIconName);
         Assert.AreEqual("duplicate", instance.DuplicateErrorMessage);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessage);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
         Assert.AreEqual((Func<BitFileInputInfo, BitIconInfo?>)selectIcon, instance.FileIconSelector);
         Assert.AreEqual("Cascaded list", instance.FileListAriaLabel);
         Assert.AreEqual((Func<long, string>)format, instance.FileSizeFormatter);
         Assert.AreEqual((Func<BitFileInputInfo, string?>)validate, instance.FileValidator);
         Assert.IsTrue(instance.HideFileList);
         Assert.IsTrue(instance.HideLabel);
+        Assert.IsTrue(instance.Invalid);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(3, instance.MaxCount);
         Assert.AreEqual("too many", instance.MaxCountErrorMessage);
@@ -404,6 +411,43 @@ public class BitFileInputParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-fin-fil"));
         Assert.AreEqual("Browse", component.Find(".bit-fin-lbl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldShowAndAnnounceACascadedErrorMessage()
+    {
+        var component = RenderWithParams(new BitFileInputParams { ErrorMessage = "Uploads are paused." });
+
+        var button = component.Find(".bit-fin-lbl");
+        var error = component.Find(".bit-fin-erm");
+
+        Assert.AreEqual("Uploads are paused.", error.TextContent.Trim());
+        Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
+        Assert.AreEqual(error.Id, button.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Uploads are paused.", component.Find(".bit-fin > [role=status].bit-fin-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderWithParams(new BitFileInputParams { ErrorMessageAriaLabel = "Refused by the server." },
+                                         builder => builder.AddAttribute(1, nameof(BitFileInput.Invalid), invalid));
+
+        // The file input writes no error parameter of its own, yet the label it holds is said out of the region the
+        // moment Invalid turns on, so the region is on the page ahead of it.
+        Assert.AreEqual(string.Empty, component.Find(".bit-fin > [role=status].bit-fin-vhd").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        var button = component.Find(".bit-fin-lbl");
+
+        Assert.AreEqual("Refused by the server.", component.Find(".bit-fin > [role=status].bit-fin-vhd").TextContent.Trim());
+        Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
+        Assert.AreEqual("Refused by the server.", component.Find($"#{button.GetAttribute("aria-describedby")}").TextContent);
     }
 
     [TestMethod]

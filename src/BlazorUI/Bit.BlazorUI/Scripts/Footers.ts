@@ -45,6 +45,11 @@
             const element = document.getElementById(id);
             if (!element) return;
 
+            // What keeps a revealed footer on the screen is a focus the keyboard put inside it (see evaluate).
+            if (reveal) {
+                Utils.watchFocusOrigin();
+            }
+
             // An explicitly named scroller wins over the walk up the tree, which is what a footer that
             // does not sit inside the box it reacts to (an app shell whose footer and content are
             // siblings) needs. A selector that matches nothing falls back to the walk rather than
@@ -141,9 +146,9 @@
                 hidden = next;
 
                 // The reference is disposed before the listeners are, so a flip of the very last frame can
-                // land on a dead reference. The rejection is consumed here rather than left to surface as an
-                // unhandled one in the console of an application that did nothing wrong.
-                dotnetObj.invokeMethodAsync('OnRevealChange', hidden).catch(() => { });
+                // land on a dead reference, and a scroll or a focus as Firefox leaves the page calls over a
+                // connection that is already closed. Neither is an error of the application (Utils.notifyDotNet).
+                Utils.notifyDotNet(dotnetObj, 'OnRevealChange', hidden);
             };
 
             const applyOverlapping = (next: boolean) => {
@@ -151,7 +156,7 @@
 
                 overlapping = next;
 
-                dotnetObj.invokeMethodAsync('OnOverlapChange', overlapping).catch(() => { });
+                Utils.notifyDotNet(dotnetObj, 'OnOverlapChange', overlapping);
             };
 
             const evaluate = () => {
@@ -180,6 +185,17 @@
                 if (y <= offset || end) {
                     next = false;
                     lastY = y;
+                }
+
+                // Revealing the footer when the focus enters it is not enough on its own: the browser scrolls the
+                // focused control into the view right after the focus handler re-read the baseline, which reads as a
+                // scroll down and slides the footer straight back out, and a keyboard user who scrolls on (the arrow
+                // keys and the space bar scroll the page from a focused button) would roll the control out of the
+                // view as well (WCAG 2.4.11). The footer stays revealed while it holds the keyboard focus, as the
+                // header does. A focus left behind by a click - a text field's included - does not count, or a mouse
+                // user who clicked into the bar could never scroll it away again (see Utils.hasKeyboardFocus).
+                if (next && Utils.hasKeyboardFocus(element)) {
+                    next = false;
                 }
 
                 apply(next);

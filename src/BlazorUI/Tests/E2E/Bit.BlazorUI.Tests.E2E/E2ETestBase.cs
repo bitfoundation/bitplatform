@@ -13,7 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E;
 /// run (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or <c>webkit</c>; <c>HEADED=1</c> to watch), and gives
 /// each test a fresh context and page. <see cref="OpenAsync"/> navigates to a page of the host and waits for its
 /// first interactive render. Every uncaught error the page raises and every console error it logs during the test
-/// fails it at cleanup, unless the test opted out through <see cref="AllowConsoleErrors"/>.
+/// fails it at cleanup, unless the test opted out through <see cref="AllowConsoleErrors"/> or ended inconclusive.
 /// </summary>
 public abstract class E2ETestBase
 {
@@ -36,6 +36,15 @@ public abstract class E2ETestBase
     private IBrowserContext? _context;
     private readonly List<string> _pageErrors = [];
     private readonly List<string> _consoleErrors = [];
+    // The stretches of _pageErrors and _consoleErrors (from, to) raised while the test was taking the page somewhere
+    // else, through OpenAsync or ReloadAsync: what of them only says the connection of the page being left is gone is
+    // not an error of the test (see LeaveThePageAsync).
+    private readonly List<(int From, int To)> _leavingPageErrors = [];
+    private readonly List<(int From, int To)> _leavingConsoleErrors = [];
+    // What the pages arrived on through OpenAsync or ReloadAsync recorded of their own connection being gone, on the way
+    // to their first interactive render: those stretches let go of such errors whichever page raised them, so the
+    // arriving page's are read off the page itself (see ConnectionErrorsRecorder) and fail the test all the same.
+    private readonly List<string> _arrivingConnectionErrors = [];
     private int _serverErrorsBefore;
     private readonly HashSet<string> _visitedPaths = new(StringComparer.OrdinalIgnoreCase);
 
@@ -72,6 +81,11 @@ public abstract class E2ETestBase
     /// Lets a test end with uncaught page errors as well as console errors.
     /// </summary>
     protected bool AllowPageErrors { get; set; }
+
+    /// <summary>
+    /// The context MSTest gives the current test, which the cleanup reads the test's outcome off.
+    /// </summary>
+    public TestContext TestContext { get; set; } = null!;
 
     /// <summary>
     /// The browser the run drives, as <c>BROWSER</c> named it: chromium, edge, firefox or webkit.
@@ -134,6 +148,7 @@ public abstract class E2ETestBase
 
         _context = await browser.NewContextAsync(ContextOptions);
         await _context.AddCookiesAsync([new Cookie { Name = "e2e-render-mode", Value = RenderMode, Url = BaseUrl }]);
+        await _context.AddInitScriptAsync(ConnectionErrorsRecorder);
         Page = await _context.NewPageAsync();
         Page.SetDefaultTimeout(DefaultTimeout);
         Page.PageError += (_, error) => _pageErrors.Add(error);
@@ -159,6 +174,15 @@ public abstract class E2ETestBase
 
             if (_context is not null)
             {
+                // Closing the context leaves the page as a navigation does (see LeaveThePageAsync): a page still at work
+                // when the test ends - a reply streaming in, a timer about to report - calls .NET over a closed
+                // connection in Firefox, which is not an error of the test. What the page raised before is caught up
+                // with first, so the test's own errors - a connection that dropped under its last step - stay its own.
+                await CatchUpWithThePageAsync();
+
+                _leavingPageErrors.Add((_pageErrors.Count, int.MaxValue));
+                _leavingConsoleErrors.Add((_consoleErrors.Count, int.MaxValue));
+
                 try
                 {
                     await _context.CloseAsync();
@@ -183,14 +207,26 @@ public abstract class E2ETestBase
         }
         finally
         {
-            if (AllowPageErrors is false && _pageErrors.Count > 0)
+            // A test that gave up (Assert.Inconclusive) has verified nothing, and what its page raised is most often why
+            // it gave up: a library that could not be loaded from its CDN fails its request and throws on the way down.
+            // Failing it here would turn "could not tell" into a failure, so its errors are written to its output instead.
+            var gaveUp = TestContext?.CurrentTestOutcome == UnitTestOutcome.Inconclusive;
+
+            var pageErrors = WithoutTheConnectionsLeftBehind(_pageErrors, _leavingPageErrors);
+            if (AllowPageErrors is false && pageErrors.Count > 0)
             {
-                Assert.Fail($"The page raised {_pageErrors.Count} uncaught error(s):{Environment.NewLine}{string.Join(Environment.NewLine, _pageErrors)}");
+                var message = $"The page raised {pageErrors.Count} uncaught error(s):{Environment.NewLine}{string.Join(Environment.NewLine, pageErrors)}";
+                if (gaveUp) TestContext!.WriteLine(message);
+                else Assert.Fail(message);
             }
 
-            if (AllowConsoleErrors is false && _consoleErrors.Count > 0)
+            var consoleErrors = WithoutTheConnectionsLeftBehind(_consoleErrors, _leavingConsoleErrors);
+            consoleErrors.AddRange(_arrivingConnectionErrors.Select(error => $"(raised by a page arriving) {error}"));
+            if (AllowConsoleErrors is false && consoleErrors.Count > 0)
             {
-                Assert.Fail($"The page logged {_consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, _consoleErrors)}");
+                var message = $"The page logged {consoleErrors.Count} console error(s):{Environment.NewLine}{string.Join(Environment.NewLine, consoleErrors)}";
+                if (gaveUp) TestContext!.WriteLine(message);
+                else Assert.Fail(message);
             }
         }
     }
@@ -208,8 +244,146 @@ public abstract class E2ETestBase
 
         // Not WaitForLoadStateAsync(NetworkIdle): Blazor Server keeps its SignalR connection open, which Playwright
         // counts as network activity, so it would never fire.
-        await Page.GotoAsync(url, new() { WaitUntil = waitForLoad ? WaitUntilState.Load : WaitUntilState.Commit });
-        await WaitForStatusAsync(status);
+        await LeaveThePageAsync(() => Page.GotoAsync(url, new() { WaitUntil = waitForLoad ? WaitUntilState.Load : WaitUntilState.Commit }), status);
+    }
+
+    /// <summary>
+    /// Reloads the page and waits until its first interactive render has run again ("Ready", or the status given), as
+    /// <see cref="OpenAsync"/> does for the page it opens. A test reloads through here rather than through
+    /// Page.ReloadAsync, so what the page being left raises over its closed connection is not taken for its error.
+    /// </summary>
+    protected Task ReloadAsync(string status = "Ready")
+    {
+        return LeaveThePageAsync(() => Page.ReloadAsync(), status);
+    }
+
+    // Takes the page somewhere else and waits for the status of the page it arrives on. Firefox closes the connection of
+    // the page it leaves first and keeps running that page's scripts until the next page commits, so a call to .NET the
+    // page makes in that time - a debounced report of the caret, a resize, a blur - fails with an error that only says
+    // the connection is gone (some of which Firefox reports only after the next page has committed), and part of it
+    // is raised by Blazor's own unawaited send, which no script of the page can catch. Those errors are told apart from
+    // the rest of what the test raises (HostE2ETests reads every page's the same way); a page whose own connection
+    // drops while it is on screen is still failed for it, since what it raised is caught up with before the stretch
+    // starts. The stretch ends once the next page has reported its status, which it does from its first interactive
+    // render: before that render it holds no reference to call .NET through, and one whose connection never comes up
+    // never reports its status, which fails the test on its own. One whose connection is lost on the way and comes back
+    // before that render still reports it, so what the stretch lets go of is read again off the page arrived on, which
+    // records its own (see ConnectionErrorsRecorder) - after which the stretch ends, so everything it raised before that
+    // read lies inside the stretch and is counted once, off its record.
+    private async Task LeaveThePageAsync(Func<Task> navigate, string status)
+    {
+        var leaving = Page.Url.StartsWith(BaseUrl, StringComparison.OrdinalIgnoreCase);
+
+        if (leaving)
+        {
+            await CatchUpWithThePageAsync();
+        }
+
+        (int Page, int Console) from = (_pageErrors.Count, _consoleErrors.Count);
+
+        try
+        {
+            await navigate();
+            await WaitForStatusAsync(status);
+            await ReadTheArrivingPagesConnectionErrorsAsync();
+        }
+        finally
+        {
+            if (leaving)
+            {
+                _leavingPageErrors.Add((from.Page, _pageErrors.Count));
+                _leavingConsoleErrors.Add((from.Console, _consoleErrors.Count));
+            }
+        }
+    }
+
+    // Waits until what the page has raised so far is in _pageErrors and _consoleErrors. Playwright hands the page's
+    // errors over as events, after the page raised them, and the answer to an evaluation comes after every event the
+    // page raised before answering it; the timeout lets a rejection nobody handled be reported first. A page that does
+    // not answer (closed, crashed, busy past the wait) is left as it is: this only narrows what the leaving stretches
+    // that start next can take in.
+    private async Task CatchUpWithThePageAsync()
+    {
+        try
+        {
+            var answered = Page.EvaluateAsync("() => new Promise(resolve => setTimeout(resolve))");
+
+            await Task.WhenAny(answered, Task.Delay(TimeSpan.FromSeconds(5)));
+
+            if (answered.IsCompleted)
+            {
+                await answered;
+            }
+            else
+            {
+                // Observed later, so a page that answers (or fails) after the wait raises nothing unobserved.
+                _ = answered.ContinueWith(t => t.Exception, TaskScheduler.Default);
+            }
+        }
+        catch (PlaywrightException) { }
+    }
+
+    private static List<string> WithoutTheConnectionsLeftBehind(List<string> errors, List<(int From, int To)> leaving)
+    {
+        return errors.Where((error, index) => IsTheConnectionGone(error) is false
+                                              || leaving.Any(stretch => index >= stretch.From && index < stretch.To) is false)
+                     .ToList();
+    }
+
+    // The connection-gone errors the page arrived on recorded itself, from its first script on: the stretch of the
+    // navigation that brought it lets go of them, as the page being left raises the same ones (see LeaveThePageAsync).
+    // A page that cannot be read (closed, crashed) has failed the test some other way.
+    private async Task ReadTheArrivingPagesConnectionErrorsAsync()
+    {
+        try
+        {
+            _arrivingConnectionErrors.AddRange(await Page.EvaluateAsync<string[]>("() => (window.__e2eConnectionErrors ?? []).slice()"));
+        }
+        catch (PlaywrightException) { }
+    }
+
+    // The messages Blazor and SignalR raise for a call made over a connection that has already been closed, or by a
+    // circuit the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
+    private static readonly string[] _connectionGoneMessages =
+    [
+        "Cannot send data if the connection is not in the 'Connected' State",
+        "WebSocket is not in the OPEN state",
+        "The circuit associated with this dispatcher is no longer available",
+    ];
+
+    // Run in every document of the context before its own scripts: records the errors of that document that say its
+    // connection is gone - logged, thrown or rejected - so the ones of a page arriving can be told apart from the same
+    // ones the page being left raises, which reach the test interleaved with them. The record is the document's own,
+    // so a page left behind (Firefox reports some of its errors after the next page has committed) adds nothing to it.
+    private static readonly string ConnectionErrorsRecorder = $$"""
+        (() => {
+            if (window.__e2eConnectionErrors) return;
+            const seen = window.__e2eConnectionErrors = [];
+            const gone = {{System.Text.Json.JsonSerializer.Serialize(_connectionGoneMessages)}};
+            const text = value => value instanceof Error ? `${value.name}: ${value.message}` : String(value);
+            const note = values => {
+                try {
+                    const message = values.map(text).join(' ');
+                    if (gone.some(g => message.includes(g))) seen.push(message);
+                } catch { }
+            };
+            const error = console.error;
+            console.error = function (...args) {
+                note(args);
+                return error.apply(this, args);
+            };
+            window.addEventListener('error', e => note([e.error ?? e.message]), true);
+            window.addEventListener('unhandledrejection', e => note([e.reason]), true);
+        })();
+        """;
+
+    /// <summary>
+    /// Whether an error is one Blazor and SignalR raise for a call made over a connection that has already been closed,
+    /// or by a circuit the page has already let go of (blazor.web.js, throwIfDispatchingWhenDisposed).
+    /// </summary>
+    protected static bool IsTheConnectionGone(string error)
+    {
+        return _connectionGoneMessages.Any(message => error.Contains(message, StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -267,6 +441,16 @@ public abstract class E2ETestBase
         var errors = await GetServerErrorsAsync();
 
         Assert.AreEqual(0, errors.Count, $"The host logged {errors.Count} error(s):{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
+    }
+
+    /// <summary>
+    /// Fails the test with every WCAG 2.0-2.2 A and AA violation axe-core finds under the one element the selector finds
+    /// (a component's root, or a section of the page: <c>#color</c>), once every animation that ends has ended, but for
+    /// those the suppressions let through. <see cref="E2EAxe"/> has the policy a scan and its suppressions follow.
+    /// </summary>
+    protected Task AssertNoAxeViolationsAsync(string scope, params AxeSuppression[] suppressions)
+    {
+        return E2EAxe.AssertNoViolationsAsync(Page, scope, suppressions);
     }
 
     /// <summary>

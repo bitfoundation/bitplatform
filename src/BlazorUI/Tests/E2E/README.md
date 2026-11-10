@@ -27,6 +27,7 @@ E2E/
 └── Bit.BlazorUI.Tests.E2E/                 # the Playwright + MSTest project
     ├── E2ETestBase.cs                      # host and browser lifecycle, OpenAsync, error capture
     ├── E2ETestRun.cs                       # run-wide cleanup and the parallelization setting
+    ├── E2EAxe.cs                           # the axe-core scan, its suppressions and their policy
     └── <Category>/Bit<Component>E2ETests.cs
 ```
 
@@ -85,14 +86,35 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Te
   for what the user does and sees. A test opens the page with `OpenAsync("/e2e/<component>")` and drives the real
   component: real clicks, real keys, real focus, the computed styles of the real stylesheet.
 - A test fails at cleanup on any uncaught page error or console error its page raised; a test whose subject is an
-  error sets `AllowConsoleErrors` (or `AllowPageErrors`). `AssertNoServerErrorsAsync` reads what the host logged for
-  the circuits of the pages this test visited (the host records which pages each circuit was on), so a neighbouring
-  test's error never fails it.
+  error sets `AllowConsoleErrors` (or `AllowPageErrors`). A test that ends inconclusive (a library its page needs could
+  not be loaded from its CDN) has them written to its output instead. A test leaves a page only through the base's
+  `OpenAsync` or `ReloadAsync` (or by ending), never `Page.GotoAsync` or `Page.ReloadAsync`: they let go of the errors
+  that only say the connection of the page being left is gone, which Firefox raises as it keeps running that page's
+  scripts after closing its connection. Everything the page raised before it is left is caught up with first, so a
+  connection that dropped while the page was on screen still fails the test - and so does one the page arrived on lost
+  on its way to its first render, even when it came back in time: every page records its own (a script the base adds
+  to every page of the context), which the base reads once the page is ready.
+  `AssertNoServerErrorsAsync` reads what the host logged for the circuits of the pages this test visited (the host
+  records which pages each circuit was on), so a neighbouring test's error never fails it.
 - Read state through Playwright's auto-waiting assertions (`Expect(...)`), never a one-off read right after an
   action: every change is a round trip to the server, and a transition may still be running.
 - A category whose tests share helpers keeps them in a file of its own (`ButtonsE2EHelpers.cs`,
   `NotificationsE2EHelpers.cs`, `BitDataGridE2ETestBase.cs`, `BitDropdownE2ETestBase.cs`, `BitDatePickersE2ETestBase.cs`).
 - An engine-specific gap is skipped with `Assert.Inconclusive` behind `IsFirefox` / `IsWebKit`, with the reason.
+
+## Accessibility scan
+
+`AssertNoAxeViolationsAsync("#section")` runs axe-core (`Deque.AxeCore.Playwright`) over one element of the page, a
+component's root or one section, against the WCAG 2.0, 2.1 and 2.2 A and AA rules, and fails with every violation it
+finds: the rule, the elements and what is wrong with each. `BitButtonE2ETests` scans each section of `/e2e/button`
+(`Axe_EachSection_HasNoWcagAOrAAViolation`); other suites take it up one component at a time.
+
+Fix a violation of the component's own rather than suppress it. One that cannot be fixed in the same change is let
+through with an `AxeSuppression`: one rule, on the elements one selector finds, with the reason, and either the link of
+the issue that tracks the fix (`AxeSuppression.KnownIssue`) or, for a violation the page renders on purpose for another
+test to check, `AxeSuppression.Fixture`. A suppression that matches nothing fails the scan. `E2EAxe.cs` has the whole
+policy. Passing the scan is necessary, not sufficient: the keyboard, the screen readers and every state a test does
+not reach are still checked by hand.
 
 ## AI pages
 

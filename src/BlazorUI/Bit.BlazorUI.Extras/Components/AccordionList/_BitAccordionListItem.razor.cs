@@ -33,6 +33,10 @@ public partial class _BitAccordionListItem<[DynamicallyAccessedMembers(Dynamical
     // wrapper around it generates none of its own (display: contents) and could not be scrolled to.
     internal ElementReference? GetElement() => Accordion?.RootElement;
 
+    // The open the list is about to apply is the one a find-in-page reveal of this item asked for (see
+    // BitAccordion.BeginRevealExpansion).
+    internal void BeginRevealExpansion() => Accordion?.BeginRevealExpansion();
+
 
 
     protected override void OnParametersSet()

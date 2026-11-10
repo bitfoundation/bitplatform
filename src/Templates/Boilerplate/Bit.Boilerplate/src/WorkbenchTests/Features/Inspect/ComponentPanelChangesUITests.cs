@@ -7,7 +7,10 @@ namespace Boilerplate.WorkbenchTests.Features.Inspect;
 [TestClass, TestCategory("UITest")]
 public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
 {
-    private const string ThemePage = "Workbench/Components/Pages/Showcases/Theme/ThemePage.razor";
+    // The theme page's sections are files of their own: the icon button is among the buttons, the progress bar under Progress.
+    private const string ButtonsSection = "Workbench/Components/Pages/Showcases/Theme/Sections/ButtonsSection.razor";
+
+    private const string ProgressSection = "Workbench/Components/Pages/Showcases/Theme/Sections/ProgressSection.razor";
 
     private ILocator Panel => Page.Locator(".component-panel");
 
@@ -24,25 +27,26 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     /// <summary>What dotnet watch calls once it has applied a change.</summary>
     private static void HotReload() => WorkbenchComponentSources.UpdateApplication(null);
 
-    /// <summary>The tag in the copy that holds the text.</summary>
-    private static string TagHolding(string text)
+    /// <summary>The tag in the file of the copy that holds the text.</summary>
+    private static string TagHolding(string file, string text)
     {
-        var markup = ReadTheCopy(ThemePage);
+        var markup = ReadTheCopy(file);
         var at = markup.IndexOf(text, StringComparison.Ordinal);
 
         // A file caught in the middle of a write may not hold the tag yet.
         return at < 0 ? string.Empty : markup[markup.LastIndexOf('<', at)..(markup.IndexOf("/>", at, StringComparison.Ordinal) + 2)];
     }
 
-    private static Task<string> IconButtonTag(Func<string, bool> holds) => WorkbenchTestReviewer.WaitFor(() => Task.FromResult(TagHolding(nameof(WorkbenchStrings.ThemeIconButton))), holds);
+    private static Task<string> IconButtonTag(Func<string, bool> holds) => WorkbenchTestReviewer.WaitFor(() => Task.FromResult(TagHolding(ButtonsSection, nameof(WorkbenchStrings.ThemeIconButton))), holds);
 
-    private static Task<string> ProgressTag(Func<string, bool> holds) => WorkbenchTestReviewer.WaitFor(() => Task.FromResult(TagHolding(nameof(WorkbenchStrings.ThemeProgress))), holds);
+    private static Task<string> ProgressTag(Func<string, bool> holds) => WorkbenchTestReviewer.WaitFor(() => Task.FromResult(TagHolding(ProgressSection, $"{nameof(WorkbenchStrings.ThemeProgress)})]")), holds);
 
     private static Func<string, bool> Has(string text) => tag => tag.Contains(text, StringComparison.Ordinal);
 
-    private async Task Pick(ILocator target, string component)
+    /// <summary>Opens the theme page on the tab, in Inspect mode, and picks the target.</summary>
+    private async Task Pick(ILocator target, string component, string tab)
     {
-        await OpenWorkbench("theme");
+        await OpenWorkbench("theme", $"?sw-section={tab}");
 
         await Press(Page.Locator(".modes").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ModeInspect, Exact = true }));
         await Expect(View().Locator("html")).ToHaveAttributeAsync("data-wb-mode", "inspect");
@@ -51,7 +55,9 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
         await Expect(Panel.Locator(".component-name")).ToHaveTextAsync(component);
     }
 
-    private Task PickTheIconButton() => Pick(IconButton, nameof(BitButton));
+    private Task PickTheIconButton() => Pick(IconButton, nameof(BitButton), "buttons");
+
+    private Task PickTheProgressBar() => Pick(ProgressLabel, nameof(BitProgress), "progress");
 
     private async Task Type(ILocator field, string text)
     {
@@ -60,7 +66,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
         await field.BlurAsync();
     }
 
-    private Task ExpectSaved() => Expect(Status).ToHaveTextAsync(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ComponentSavedHotReload, "ThemePage.razor"));
+    private Task ExpectSaved() => Expect(Status).ToHaveTextAsync(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ComponentSavedHotReload, "ButtonsSection.razor"));
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task AToggle_Should_AddItsAttributeThenWriteFalse(WorkbenchSurface surface)
@@ -165,7 +171,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
         await Type(delay, "soon");
 
         await Expect(Page.GetByText(WorkbenchStrings.ComponentSaveFailed).First).ToBeVisibleAsync();
-        Assert.DoesNotContain(nameof(BitButton.LoadingDelay), TagHolding(nameof(WorkbenchStrings.ThemeIconButton)));
+        Assert.DoesNotContain(nameof(BitButton.LoadingDelay), TagHolding(ButtonsSection, nameof(WorkbenchStrings.ThemeIconButton)));
         await Expect(delay).ToHaveValueAsync("0");
 
         await Type(delay, "20");
@@ -266,7 +272,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task AColorParameter_Should_TakeATypedColorAndShowIt(WorkbenchSurface surface)
     {
-        await Pick(ProgressLabel, nameof(BitProgress));
+        await PickTheProgressBar();
 
         var row = Parameter(nameof(BitProgress.BarColor));
 
@@ -282,7 +288,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task TheColorPicker_Should_WriteItsColorWhenADragEnds(WorkbenchSurface surface)
     {
-        await Pick(ProgressLabel, nameof(BitProgress));
+        await PickTheProgressBar();
 
         var row = Parameter(nameof(BitProgress.BarColor));
         var pick = row.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ColorPick, Exact = true });
@@ -463,7 +469,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
 
         var rounded = Parameter(nameof(BitButton.Rounded)).GetByRole(AriaRole.Switch);
 
-        File.Delete(InTheCopy(ThemePage));
+        File.Delete(InTheCopy(ButtonsSection));
 
         await Press(rounded);
 
@@ -489,7 +495,7 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task AChange_Should_LandInTheCopyAndLeaveTheProjectsFileAlone(WorkbenchSurface surface)
     {
-        var projectFile = Path.Combine(ProjectSource, ThemePage.Replace('/', Path.DirectorySeparatorChar));
+        var projectFile = Path.Combine(ProjectSource, ButtonsSection.Replace('/', Path.DirectorySeparatorChar));
         var before = File.ReadAllText(projectFile);
 
         await PickTheIconButton();

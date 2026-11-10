@@ -1728,8 +1728,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await TextArea("mde-autosave").BlurAsync();
         await Page.WaitForFunctionAsync("() => localStorage.getItem('e2e-agent20-mde-draft') === 'my draft'");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(TextArea("mde-autosave")).ToHaveValueAsync("my draft");
         await Expect(Page.Locator("#draft-restored")).ToHaveTextAsync("1");
         await Expect(Page.Locator("#draft-value")).ToHaveTextAsync("my draft");
@@ -1737,8 +1736,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-clear-draft");
         await Page.WaitForFunctionAsync("() => localStorage.getItem('e2e-agent20-mde-draft') === null");
 
-        await Page.ReloadAsync();
-        await WaitForStatusAsync("Ready");
+        await ReloadAsync();
         await Expect(TextArea("mde-autosave")).ToHaveValueAsync("");
         await Expect(Page.Locator("#draft-restored")).ToHaveTextAsync("0");
     }

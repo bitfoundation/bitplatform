@@ -1,0 +1,273 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+@using Microsoft.JSInterop
+
+@code {
+    private RenderFragment Sheet(BitBhDrawerSide side = BitBhDrawerSide.Bottom, bool modal = true, bool swipe = true,
+                                 Action<BitBhDismissRequest>? onDismiss = null) =>
+        @<BitBhDrawer Side="side" Modal="modal" DismissOnSwipe="swipe" OnDismissRequest="@(r => onDismiss?.Invoke(r))">
+            <BitBhDrawerTrigger>Filters</BitBhDrawerTrigger>
+            <BitBhDrawerBackdrop />
+            <BitBhDrawerPanel>
+                <BitBhDrawerHandle />
+                <BitBhDrawerTitle>Filters</BitBhDrawerTitle>
+                <BitBhDrawerDescription>Narrow the results.</BitBhDrawerDescription>
+                <label>Search <input /></label>
+                <BitBhDrawerClose>Done</BitBhDrawerClose>
+            </BitBhDrawerPanel>
+        </BitBhDrawer>;
+
+    private static AngleSharp.Dom.IElement TriggerOf(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.Find("button[aria-haspopup=dialog]");
+
+    private IDictionary<string, object?> LastOpenOptions()
+        => (IDictionary<string, object?>)JSInterop.Invocations["floating.open"].Last().Arguments[2]!;
+
+    private BunitJSModuleInterop Module()
+    {
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        module.Mode = JSRuntimeMode.Loose;
+        return module;
+    }
+
+    // The drawer's swipe callbacks are a private type: call them the way the runtime does, by name.
+    private static async Task<bool> SwipeDismissAsync(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, JSRuntimeInvocation attach)
+    {
+        var reference = attach.Arguments[0]!;
+        var callbacks = reference.GetType().GetProperty("Value")!.GetValue(reference)!;
+        var method = callbacks.GetType().GetMethod("OnSwipeDismiss")!;
+        return await cut.InvokeAsync(() => (Task<bool>)method.Invoke(callbacks, null)!);
+    }
+
+    [TestMethod]
+    public void A_closed_drawer_renders_its_trigger_only()
+    {
+        var cut = Render(Sheet());
+        var trigger = TriggerOf(cut);
+        Assert.AreEqual("false", trigger.GetAttribute("aria-expanded"));
+        Assert.IsNull(trigger.GetAttribute("aria-controls"));
+        Assert.AreEqual("bottom", trigger.GetAttribute("data-side"));
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void The_open_drawer_is_a_modal_dialog_named_by_its_title()
+    {
+        var cut = Render(Sheet());
+        TriggerOf(cut).Click();
+
+        var panel = cut.Find("[role=dialog]");
+        Assert.AreEqual("true", panel.GetAttribute("aria-modal"));
+        Assert.AreEqual("Filters", panel.AccessibleName());
+        Assert.AreEqual("Narrow the results.", panel.AccessibleDescription());
+        Assert.AreEqual("-1", panel.GetAttribute("tabindex"));
+        Assert.AreEqual("open", panel.GetAttribute("data-state"));
+        Assert.AreEqual("bottom", panel.GetAttribute("data-side"));
+        Assert.AreEqual("true", TriggerOf(cut).GetAttribute("aria-expanded"));
+        Assert.AreEqual(panel.Id, TriggerOf(cut).GetAttribute("aria-controls"));
+
+        var handle = cut.Find("[data-bit-bh-drawer-handle]");
+        Assert.AreEqual("true", handle.GetAttribute("aria-hidden"));
+        Assert.Contains("touch-action:none", handle.GetAttribute("style")!);
+        cut.ShouldBeAccessible();
+
+        // Dialog machinery: a trap, an inert page with its scroll locked, focus back to the trigger.
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["floating.open"]));
+        var options = LastOpenOptions();
+        var modal = (IDictionary<string, object?>)options["modal"]!;
+        Assert.IsTrue((bool)modal["hideOthers"]!);
+        var focus = (IDictionary<string, object?>)options["focus"]!;
+        Assert.IsTrue((bool)focus["trap"]!);
+        Assert.AreEqual(TriggerOf(cut).Id, focus["returnFocusId"]);
+        var surfaces = (string?[])options["portalIds"]!;
+        CollectionAssert.AreEqual(new[] { cut.Find("[data-bit-bh-dismiss-ignore]").Id, panel.Id }, surfaces);
+    }
+
+    [TestMethod]
+    public void Escape_the_backdrop_and_the_close_buttons_close_it()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDrawer @bind-Open="open">
+                <BitBhDrawerBackdrop />
+                <BitBhDrawerPanel aria-label="Cart">
+                    <BitBhDrawerClose>Done</BitBhDrawerClose>
+                    <BitBhCloseButton>Close</BitBhCloseButton>
+                </BitBhDrawerPanel>
+            </BitBhDrawer>);
+
+        cut.Find("[role=dialog]").Press("Escape");
+        Assert.IsFalse(open);
+
+        open = true;
+        cut.Render();
+        cut.Find("[aria-hidden=true]").Click();
+        Assert.IsFalse(open);
+
+        open = true;
+        cut.Render();
+        cut.FindAll("[role=dialog] button")[0].Click();
+        Assert.IsFalse(open);
+
+        open = true;
+        cut.Render();
+        cut.FindAll("[role=dialog] button")[1].Click();
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void Dismissal_can_be_turned_off_or_cancelled()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDrawer @bind-Open="open" DismissOnEscape="false" DismissOnOutsideClick="false">
+                <BitBhDrawerBackdrop />
+                <BitBhDrawerPanel aria-label="Terms"><BitBhDrawerClose>Accept</BitBhDrawerClose></BitBhDrawerPanel>
+            </BitBhDrawer>);
+        cut.Find("[role=dialog]").Press("Escape");
+        cut.Find("[aria-hidden=true]").Click();
+        Assert.IsTrue(open);
+
+        var reasons = new List<BitBhDismissReason>();
+        var cancelled = Render(Sheet(onDismiss: r => { reasons.Add(r.Reason); r.Cancel = true; }));
+        TriggerOf(cancelled).Click();
+        cancelled.Find("[role=dialog]").Press("Escape");
+        Assert.AreEqual("true", TriggerOf(cancelled).GetAttribute("aria-expanded"));
+        CollectionAssert.AreEqual(new[] { BitBhDismissReason.EscapeKey }, reasons);
+    }
+
+    [TestMethod]
+    public async Task Controlled_open_follows_its_owner()
+    {
+        var changes = new List<bool>();
+        var cut = Render(
+            @<Stateful T="bool" Context="s">
+                <BitBhDrawer Open="s.Value" OpenChanged="v => changes.Add(v)">
+                    <BitBhDrawerTrigger>Menu</BitBhDrawerTrigger>
+                    <BitBhDrawerPanel aria-label="Menu"><a href="#home">Home</a></BitBhDrawerPanel>
+                </BitBhDrawer>
+            </Stateful>);
+        var host = cut.FindComponent<Stateful<bool>>().Instance;
+
+        TriggerOf(cut).Click();
+        CollectionAssert.AreEqual(new[] { true }, changes);
+        Assert.IsEmpty(cut.FindAll("[role=dialog]"));
+
+        await cut.InvokeAsync(() => host.Set(true));
+        Assert.HasCount(1, cut.FindAll("[role=dialog]"));
+        await cut.InvokeAsync(() => host.Set(false));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[role=dialog]")));
+    }
+
+    [TestMethod]
+    public void Start_and_end_follow_the_reading_direction()
+    {
+        var cut = Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.Start">
+                    <BitBhDrawerPanel aria-label="Navigation">…</BitBhDrawerPanel>
+                </BitBhDrawer>
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.End" Dir="BitBhDirection.Ltr">
+                    <BitBhDrawerPanel aria-label="Details">…</BitBhDrawerPanel>
+                </BitBhDrawer>
+                <BitBhDrawer DefaultOpen="true" Side="BitBhDrawerSide.Top">
+                    <BitBhDrawerPanel aria-label="Search">…</BitBhDrawerPanel>
+                </BitBhDrawer>
+            </BitBhDirectionProvider>);
+
+        var panels = cut.FindAll("[role=dialog]");
+        Assert.AreEqual("right", panels[0].GetAttribute("data-side"));
+        Assert.Contains("right:0", panels[0].GetAttribute("style")!);
+        Assert.AreEqual("right", panels[1].GetAttribute("data-side"));
+        Assert.AreEqual("top", panels[2].GetAttribute("data-side"));
+        Assert.Contains("top:0", panels[2].GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public async Task A_swipe_past_the_threshold_dismisses_it()
+    {
+        var module = Module();
+        module.Setup<int>("drawer.attach", _ => true).SetResult(5);
+        var reasons = new List<BitBhDismissReason>();
+        var cut = Render(Sheet(side: BitBhDrawerSide.Left, onDismiss: r => reasons.Add(r.Reason)));
+        TriggerOf(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["drawer.attach"]));
+        var attach = JSInterop.Invocations["drawer.attach"].Last();
+        Assert.AreEqual(cut.Find("[role=dialog]").Id, attach.Arguments[1]);
+        var options = (IDictionary<string, object?>)attach.Arguments[2]!;
+        Assert.AreEqual("left", options["side"]);
+        Assert.AreEqual(0.25, options["threshold"]);
+        Assert.AreEqual(cut.Find("[data-bit-bh-dismiss-ignore]").Id, options["backdropId"]);
+        Assert.IsTrue((bool)options["enabled"]!);
+
+        Assert.IsTrue(await SwipeDismissAsync(cut, attach));
+        CollectionAssert.AreEqual(new[] { BitBhDismissReason.Swipe }, reasons);
+        Assert.AreEqual("false", TriggerOf(cut).GetAttribute("aria-expanded"));
+        // Closed: the runtime stops following drags.
+        cut.WaitForAssertion(() => Assert.AreEqual(5, JSInterop.Invocations["drawer.detach"].Last().Arguments[0]));
+    }
+
+    [TestMethod]
+    public async Task A_declined_swipe_leaves_the_drawer_open()
+    {
+        var module = Module();
+        module.Setup<int>("drawer.attach", _ => true).SetResult(3);
+        var cut = Render(Sheet(swipe: false));
+        TriggerOf(cut).Click();
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["drawer.attach"]));
+        var attach = JSInterop.Invocations["drawer.attach"].Last();
+        Assert.IsFalse((bool)((IDictionary<string, object?>)attach.Arguments[2]!)["enabled"]!);
+
+        // The runtime is told the drawer stays: the panel settles back.
+        Assert.IsFalse(await SwipeDismissAsync(cut, attach));
+        Assert.AreEqual("true", TriggerOf(cut).GetAttribute("aria-expanded"));
+
+        var cancelling = Render(Sheet(onDismiss: r => r.Cancel = true));
+        TriggerOf(cancelling).Click();
+        cancelling.WaitForAssertion(() => Assert.HasCount(2, JSInterop.Invocations["drawer.attach"]));
+        Assert.IsFalse(await SwipeDismissAsync(cancelling, JSInterop.Invocations["drawer.attach"].Last()));
+        Assert.AreEqual("true", TriggerOf(cancelling).GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_non_modal_drawer_leaves_the_page_usable_and_its_trigger_toggles_it()
+    {
+        var cut = Render(Sheet(side: BitBhDrawerSide.Right, modal: false));
+        TriggerOf(cut).Click();
+
+        Assert.IsNull(cut.Find("[role=dialog]").GetAttribute("aria-modal"));
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["floating.open"]));
+        var options = LastOpenOptions();
+        Assert.IsNull(options["modal"]);
+        Assert.IsFalse((bool)((IDictionary<string, object?>)options["focus"]!)["trap"]!);
+        var layer = (IDictionary<string, object?>)options["layer"]!;
+        Assert.Contains(TriggerOf(cut).Id, (string?[])layer["ids"]!);
+
+        TriggerOf(cut).Click();
+        Assert.AreEqual("false", TriggerOf(cut).GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void A_drawer_opened_from_another_marks_both()
+    {
+        var cut = Render(
+            @<BitBhDrawer DefaultOpen="true">
+                <BitBhDrawerPanel aria-label="Settings">
+                    <BitBhDrawer>
+                        <BitBhDrawerTrigger>Advanced</BitBhDrawerTrigger>
+                        <BitBhDrawerPanel aria-label="Advanced settings">…</BitBhDrawerPanel>
+                    </BitBhDrawer>
+                </BitBhDrawerPanel>
+            </BitBhDrawer>);
+
+        Assert.IsNull(cut.Find("[aria-label=Settings]").GetAttribute("data-nested-drawer-open"));
+        TriggerOf(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[aria-label=Settings]").HasAttribute("data-nested-drawer-open")));
+        Assert.Contains("--bit-bh-nested-drawers:1", cut.Find("[aria-label=Settings]").GetAttribute("style")!);
+        Assert.IsTrue(cut.Find("[aria-label='Advanced settings']").HasAttribute("data-nested"));
+        cut.ShouldBeAccessible();
+    }
+}

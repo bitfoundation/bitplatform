@@ -543,16 +543,37 @@ private List<BitNavItem> cascadeOwnNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
     private readonly string example16RazorCode = @"
+<BitToggleButton @bind-IsChecked=""a11yIsOpen"" OnText=""Close"" OffText=""Open"" />
+
+<div style=""width:222px"">
+    <BitNavPanel @bind-IsOpen=""a11yIsOpen""
+                 Items=""a11yNavItems""
+                 AriaLabel=""Main menu""
+                 SearchBoxPlaceholder=""Search pages""
+                 SearchAnnouncementProvider=""a11ySearchAnnouncement"" />
+</div>";
+    private readonly string example16CsharpCode = @"
+private bool a11yIsOpen;
+
+private readonly Func<int, string?> a11ySearchAnnouncement = count => count switch
+{
+    0 => ""No page matches."",
+    1 => ""One page matches."",
+    _ => $""{count} pages match.""
+};
+" + basicNavItemsCsharpCode.Replace("basicNavItems", "a11yNavItems");
+
+    private readonly string example17RazorCode = @"
 <BitToggleButton @bind-IsChecked=""colorIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:222px"">
     <BitNavPanel @bind-IsOpen=""colorIsOpen"" Items=""colorNavItems"" Color=""BitColor.Secondary"" Accent=""BitColor.SecondaryBackground"" />
 </div>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private bool colorIsOpen;
 " + basicNavItemsCsharpCode.Replace("basicNavItems", "colorNavItems");
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitToggleButton @bind-IsChecked=""externalIconIsOpen"" OnText=""Close"" OffText=""Open"" />
@@ -563,7 +584,7 @@ private bool colorIsOpen;
                  ToggleIcon=""@BitIconInfo.Fa(""solid bars"")""
                  ChevronDownIcon=""@BitIconInfo.Fa(""solid chevron-down"")"" />
 </div>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool externalIconIsOpen;
 
 private readonly List<BitNavItem> externalIconNavItems =
@@ -592,7 +613,7 @@ private readonly List<BitNavItem> externalIconNavItems =
     }
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitToggleButton @bind-IsChecked=""sizeIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div style=""width:180px"">
@@ -607,7 +628,7 @@ private readonly List<BitNavItem> externalIconNavItems =
     <div>Large</div>
     <BitNavPanel @bind-IsOpen=""sizeIsOpen"" Items=""sizeLargeNavItems"" Size=""BitSize.Large"" NoSearchBox NoToggle />
 </div>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool sizeIsOpen;
 
 // one tree per panel: the expanded state of an item lives on the item itself
@@ -616,7 +637,7 @@ private List<BitNavItem> sizeMediumNavItems = CreateBasicNavItems();
 private List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
 
 @media(hover: hover) {
@@ -691,7 +712,7 @@ private List<BitNavItem> sizeLargeNavItems = CreateBasicNavItems();
                         --bit-NavPanel-toggled-width: 3.5rem;
                         --bit-Nav-item-radius: 999px;"" />
 </div>";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private bool classStyleIsOpen;
 private bool cssVariablesIsOpen;
 
@@ -700,7 +721,7 @@ private List<BitNavItem> classStyleNavItems = CreateBasicNavItems();
 private List<BitNavItem> cssVariablesNavItems = CreateBasicNavItems();
 " + createBasicNavItemsCsharpCode;
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitToggleButton @bind-IsChecked=""rtlIsOpen"" OnText=""Close"" OffText=""Open"" />
 
 <div dir=""rtl"">
@@ -708,7 +729,7 @@ private List<BitNavItem> cssVariablesNavItems = CreateBasicNavItems();
         <BitNavPanel @bind-IsOpen=""rtlIsOpen"" Items=""rtlNavItems"" Dir=""BitDir.Rtl"" />
     </div>
 </div>";
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private bool rtlIsOpen;
 
 private List<BitNavItem> rtlNavItems =

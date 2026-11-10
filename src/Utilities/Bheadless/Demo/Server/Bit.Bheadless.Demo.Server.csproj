@@ -26,7 +26,7 @@
         <!-- Serves the client's _framework payload. -->
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.1" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
     </ItemGroup>
 
     <ItemGroup>

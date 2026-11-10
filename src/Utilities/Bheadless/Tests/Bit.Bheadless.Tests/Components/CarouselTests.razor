@@ -1,0 +1,115 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment<BitBhCarouselContext> Parts(int slides) => c => @<text>
+        <BitBhCarouselSlides>
+            @for (var i = 0; i < slides; i++)
+            {
+                var n = i + 1;
+                <BitBhCarouselSlide>Slide @n</BitBhCarouselSlide>
+            }
+        </BitBhCarouselSlides>
+        <BitBhCarouselPrevious>‹</BitBhCarouselPrevious>
+        <BitBhCarouselNext>›</BitBhCarouselNext>
+        @for (var i = 0; i < c.PageCount; i++)
+        {
+            var index = i;
+            <BitBhCarouselIndicator Index="index" />
+        }
+    </text>;
+
+    [TestMethod]
+    public void Carousel_and_slides_follow_the_APG_pattern()
+    {
+        var cut = Render(@<BitBhCarousel aria-label="Featured" Template="Parts(3)" />);
+
+        var root = cut.Find("section");
+        Assert.AreEqual("carousel", root.GetAttribute("aria-roledescription"));
+        Assert.AreEqual("Featured", root.AccessibleName());
+        Assert.Contains("--bit-bh-carousel-count:3", root.GetAttribute("style")!);
+
+        var slides = cut.FindAll("[aria-roledescription=slide]");
+        Assert.HasCount(3, slides);
+        Assert.AreEqual("1 of 3", slides[0].AccessibleName());
+        Assert.AreEqual("active", slides[0].GetAttribute("data-state"));
+        Assert.IsTrue(slides[1].HasAttribute("inert"));
+        Assert.AreEqual("true", slides[1].GetAttribute("aria-hidden"));
+        Assert.AreEqual("polite", cut.Find("[aria-live]").GetAttribute("aria-live"));
+        Assert.IsTrue(cut.Find("[aria-label='Previous slide']").HasAttribute("disabled"));
+        Assert.AreEqual("true", cut.Find("[aria-label='Go to slide 1']").GetAttribute("aria-current"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Buttons_and_indicators_move_between_slides()
+    {
+        var indexes = new List<int>();
+        var cut = Render(@<BitBhCarousel aria-label="Photos" OnIndexChange="i => indexes.Add(i)" Template="Parts(3)" />);
+
+        cut.Find("[aria-label='Next slide']").Click();
+        Assert.AreEqual("active", cut.FindAll("[aria-roledescription=slide]")[1].GetAttribute("data-state"));
+        cut.Find("[aria-label='Go to slide 3']").Click();
+        Assert.IsTrue(cut.Find("[aria-label='Next slide']").HasAttribute("disabled"));
+        cut.Find("[aria-label='Previous slide']").Click();
+        CollectionAssert.AreEqual(new[] { 1, 2, 1 }, indexes);
+    }
+
+    [TestMethod]
+    public void Looping_carousel_wraps_and_several_slides_can_be_in_view()
+    {
+        var cut = Render(@<BitBhCarousel aria-label="Cards" Loop="true" SlidesPerView="2" Template="Parts(5)" />);
+
+        var slides = cut.FindAll("[aria-roledescription=slide]");
+        Assert.AreEqual("active", slides[1].GetAttribute("data-state"));
+        Assert.AreEqual("inactive", slides[2].GetAttribute("data-state"));
+        // 5 slides, 2 in view: 4 positions.
+        Assert.HasCount(4, cut.FindAll("[aria-label^='Go to slide']"));
+
+        cut.Find("[aria-label='Previous slide']").Click();
+        Assert.AreEqual("3", cut.Find("section").GetAttribute("data-index"));
+        cut.Find("[aria-label='Next slide']").Click();
+        Assert.AreEqual("0", cut.Find("section").GetAttribute("data-index"));
+    }
+
+    [TestMethod]
+    public void Autoplay_has_a_rotation_control_and_stops_when_focus_enters()
+    {
+        var cut = Render(
+            @<BitBhCarousel aria-label="News" Autoplay="true" AutoplayInterval="60000">
+                <BitBhCarouselAutoplayToggle />
+                <BitBhCarouselSlides>
+                    <BitBhCarouselSlide>One</BitBhCarouselSlide>
+                    <BitBhCarouselSlide>Two</BitBhCarouselSlide>
+                </BitBhCarouselSlides>
+            </BitBhCarousel>);
+
+        Assert.AreEqual("off", cut.Find("[aria-live]").GetAttribute("aria-live"));
+        Assert.AreEqual("Stop automatic slide show", cut.Find("button").AccessibleName());
+        cut.Find("section").FocusIn();
+        Assert.AreEqual("Start automatic slide show", cut.Find("button").AccessibleName());
+        Assert.AreEqual("polite", cut.Find("[aria-live]").GetAttribute("aria-live"));
+        cut.Find("button").Click();
+        Assert.IsTrue(cut.Find("section").HasAttribute("data-playing"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Pressing_the_rotation_control_stops_the_rotation_rather_than_restarting_it()
+    {
+        var cut = Render(
+            @<BitBhCarousel aria-label="News" Autoplay="true" AutoplayInterval="60000">
+                <BitBhCarouselAutoplayToggle>Pause</BitBhCarouselAutoplayToggle>
+                <BitBhCarouselSlides>
+                    <BitBhCarouselSlide>One</BitBhCarouselSlide>
+                    <BitBhCarouselSlide>Two</BitBhCarouselSlide>
+                </BitBhCarouselSlides>
+            </BitBhCarousel>);
+
+        // A pointer press focuses the button, then clicks it.
+        cut.Find("button").FocusIn();
+        Assert.IsTrue(cut.Find("section").HasAttribute("data-playing"));
+        cut.Find("button").Click();
+        Assert.IsFalse(cut.Find("section").HasAttribute("data-playing"));
+    }
+}

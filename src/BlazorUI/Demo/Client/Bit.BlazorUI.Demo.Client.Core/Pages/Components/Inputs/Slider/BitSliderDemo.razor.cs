@@ -75,10 +75,38 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A line under the Slider saying why the value was rejected - by a server, a rule spanning two fields - which marks it invalid in the same way Invalid does. Every thumb is described by it, and a live region announces it the moment it shows up. A Slider inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage.",
+        },
+        new()
+        {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection with no text of its own: an ErrorMessageTemplate, in place of the default \"Invalid input\", or the forced Invalid state, which is only announced when this is set. Every thumb references it through its aria-describedby as well. A plain ErrorMessage is its own text and never uses it.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom content of the error message, replacing the plain ErrorMessage text and marking the Slider invalid in the same way. It is announced through ErrorMessageAriaLabel, or as \"Invalid input\" when that is not set.",
+        },
+        new()
+        {
             Name = "GetValueText",
             Type = "Func<double, string>?",
             DefaultValue = "null",
             Description = "Builds the text of every label the Slider draws from the value it stands for. Takes precedence over ValueFormat, and is what AriaValueText falls back to.",
+        },
+        new()
+        {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the value as invalid, giving a value rejected by something other than the cascading EditContext the same look and the same aria-invalid, on every thumb, that a failing data annotation gives it. Pair it with ErrorMessage to say what is wrong; a message on its own already implies this state.",
         },
         new()
         {
@@ -434,7 +462,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-invalid-color",
             DefaultValue = "--bit-clr-err",
-            Description = "The fill, the thumb ring and the focus ring while the value is invalid. The focus ring falls back to the error focus color rather than to --bit-clr-err.",
+            Description = "The fill, the thumb ring, the focus ring and the error message while the value is invalid. The focus ring falls back to the error focus color rather than to --bit-clr-err.",
         },
         new()
         {
@@ -771,6 +799,20 @@ public partial class BitSliderDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitSlider's floating thumb labels."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's error message container."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitSlider's error message text."
                 }
             ]
         },
@@ -934,6 +976,7 @@ public partial class BitSliderDemo
 
     public BitSliderDemoFormModel ValidationModel = new();
     public string? SuccessMessage;
+    private double budgetValue = 9;
 
 
 

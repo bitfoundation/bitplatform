@@ -661,6 +661,44 @@ private readonly BitDialogParams[] dialogParams =
         display: flex;
         flex-flow: row wrap;
     }
+
+    .dialog-body {
+        max-width: 40rem;
+        padding: 0 24px 24px;
+    }
+</style>
+
+<div class=""btn-container"">
+    <BitButton OnClick=""@(() => isOpenA11yDialog = true)"">dialog</BitButton>
+    <BitButton OnClick=""@(() => isOpenA11yAlert = true)"">alertdialog</BitButton>
+</div>
+
+<BitDialog @bind-IsOpen=""isOpenA11yDialog""
+           Title=""Rename the project""
+           Subtitle=""Tab stays inside, Escape closes""
+           Message=""Closing hands the focus back to the button that opened it."">
+    <div class=""dialog-body"">
+        <BitTextField Label=""Name"" DefaultValue=""Untitled project"" />
+    </div>
+</BitDialog>
+
+<BitDialog Blocking
+           AutoFocusButton=""BitDialogButton.Cancel""
+           @bind-IsOpen=""isOpenA11yAlert""
+           Title=""Delete this workspace?""
+           Message=""Escape and the overlay are refused: answer with a button. The focus starts on Cancel.""
+           OkText=""Delete workspace"" />";
+    private readonly string example17CsharpCode = @"
+private bool isOpenA11yDialog;
+private bool isOpenA11yAlert;";
+
+    private readonly string example18RazorCode = @"
+<style>
+    .btn-container {
+        gap: 1rem;
+        display: flex;
+        flex-flow: row wrap;
+    }
 </style>
 
 <div class=""btn-container"">
@@ -677,7 +715,7 @@ private readonly BitDialogParams[] dialogParams =
            Message=""The buttons, the ring around the focused one and the Ok spinner follow the color.""
            OkText=""Confirm""
            OnOk=""HandleColorOk"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool isOpenColor;
 private BitColor dialogColor = BitColor.Primary;
 private readonly BitColor[] dialogColors = Enum.GetValues<BitColor>();
@@ -693,7 +731,7 @@ private async Task HandleColorOk()
     await Task.Delay(1000);
 }";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .btn-container {
         gap: 1rem;
@@ -732,13 +770,13 @@ private async Task HandleColorOk()
            Title=""CSS classes""
            Message=""Any CSS icon classes, through BitIconInfo.Css.""
            CloseIcon=""@BitIconInfo.Css(""fa-solid fa-circle-xmark"")"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private bool isOpenIconName;
 private bool isOpenIconFa;
 private bool isOpenIconBi;
 private bool isOpenIconCss;";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .btn-container {
         gap: 1rem;
@@ -805,14 +843,14 @@ private bool isOpenIconCss;";
            @bind-IsOpen=""isOpenFullSize""
            Title=""Full size""
            Message=""Stretched across the whole screen."" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private bool isOpenWidth;
 private bool isOpenResponsive;
 private bool isOpenHeight;
 private bool isOpenFullWidth;
 private bool isOpenFullSize;";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .btn-container {
         gap: 1rem;
@@ -886,12 +924,12 @@ private bool isOpenFullSize;";
                Subtitle=""Set once, on an ancestor""
                Message=""Every Dialog under the element that sets them takes them - no part of this one was restyled on its own."" />
 </div>";
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private bool isOpenStyles;
 private bool isOpenClasses;
 private bool isOpenCssVariables;";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <style>
     .btn-container {
         gap: 1rem;
@@ -929,7 +967,7 @@ private bool isOpenCssVariables;";
            OkText=""تایید""
            CancelText=""انصراف""
            Message=""موقعیت فیزیکی: همیشه سمت چپ"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private bool isOpenRtl;
 private bool isOpenRtlStart;
 private bool isOpenRtlLeft;";

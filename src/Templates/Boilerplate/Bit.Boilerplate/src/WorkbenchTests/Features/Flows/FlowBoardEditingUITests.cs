@@ -4,11 +4,7 @@ namespace Boilerplate.WorkbenchTests.Features.Flows;
 [TestClass, TestCategory("UITest")]
 public class FlowBoardEditingUITests : FlowPageTest
 {
-    private ILocator LabelEditor => Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel });
-
-    private ILocator LabelField => LabelEditor.GetByRole(AriaRole.Textbox, new() { Name = WorkbenchStrings.ArrowLabel });
-
-    private ILocator EditorButton(string name) => LabelEditor.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+    private const string NewSampleLabel = "Tap Add building";
 
     private ILocator SpotOf(string screenId) => CardOf(screenId).Locator(".spot");
 
@@ -146,6 +142,78 @@ public class FlowBoardEditingUITests : FlowPageTest
         await Expect(ArrowLabels).ToHaveTextAsync(["A better name"]);
 
         await WaitForFlow(flow.Id, f => f.Links[0].Label == "A better name");
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task AnArrowsLabel_Should_OpenItsEditorOnADoublePress(WorkbenchSurface surface)
+    {
+        await OpenABoardWithAnArrow();
+
+        await DoublePress(ArrowLabels.First);
+
+        await Expect(LabelEditor).ToBeVisibleAsync();
+        await Expect(LabelField).ToHaveValueAsync(TheArrow);
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task ChangingASamplesArrow_Should_OpenACopyWithTheChangeAndLeaveTheSample(WorkbenchSurface surface)
+    {
+        await OpenBoard(WorkbenchSampleFlows.BuildingsId, 3);
+
+        await DoublePress(SampleAddArrowLabel);
+
+        await Expect(LabelEditor).ToBeVisibleAsync();
+        await Expect(LabelField).ToHaveValueAsync(WorkbenchStrings.BuildingsAdd);
+        await Expect(LabelEditor.GetByRole(AriaRole.Note)).ToBeVisibleAsync();
+
+        // Saved as it was, the label changes nothing, and so makes no copy.
+        await Press(EditorButton(WorkbenchStrings.Save));
+
+        await Expect(LabelEditor).ToHaveCountAsync(0);
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+
+        await DoublePress(SampleAddArrowLabel);
+        await LabelField.FillAsync(NewSampleLabel);
+        await Press(EditorButton(WorkbenchStrings.Save));
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}"));
+        await Expect(Page.Locator("main.board")).Not.ToHaveClassAsync(new Regex("read-only"));
+        await Expect(SampleAddArrowLabel).ToHaveTextAsync(NewSampleLabel);
+        await Expect(Screen("form").GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();
+        await Expect(Screen("map").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsMapView, Exact = true })).ToHaveAttributeAsync("aria-pressed", "true");
+
+        var copy = await WaitForFlow(Page.Url.Split('/')[^1], f => f.Links.Any(l => l.Label == NewSampleLabel));
+
+        Assert.AreEqual(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.FlowCopyName, WorkbenchStrings.SampleFlowBuildings), copy.Name);
+        Assert.AreSequenceEqual(["list", "form", "map"], copy.Screens.Select(s => s.Id));
+
+        await OpenBoard(WorkbenchSampleFlows.BuildingsId, 3);
+
+        await Expect(SampleAddArrowLabel).ToHaveTextAsync(WorkbenchStrings.BuildingsAdd);
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task MarkingWhereASamplesArrowStarts_Should_OpenACopyWithItsEditorStillOpen(WorkbenchSurface surface)
+    {
+        await OpenBoard(WorkbenchSampleFlows.BuildingsId, 3);
+
+        await DoublePress(SampleAddArrowLabel);
+        await LabelField.FillAsync(NewSampleLabel);
+        await Press(EditorButton(WorkbenchStrings.MarkArrowStart));
+
+        // The pick is ready once the screen's page shows its crosshair.
+        await Expect(Page.Locator(".pick-banner")).ToBeVisibleAsync();
+        await Expect(Screen("list").Locator("html")).ToHaveCSSAsync("cursor", "crosshair");
+
+        await Screen("list").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }).ClickAsync();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}"));
+        await Expect(LabelEditor).ToBeVisibleAsync();
+        await Expect(LabelEditor).ToContainTextAsync(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ArrowStartMarked, 1));
+        await Expect(LabelField).ToHaveValueAsync(NewSampleLabel);
+        await Expect(SpotOf("list")).ToHaveCountAsync(1);
+
+        await WaitForFlow(Page.Url.Split('/')[^1], f => f.Links.Single(l => l.Id == WorkbenchSampleFlows.BuildingsAddArrowId).Spot is not null);
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]

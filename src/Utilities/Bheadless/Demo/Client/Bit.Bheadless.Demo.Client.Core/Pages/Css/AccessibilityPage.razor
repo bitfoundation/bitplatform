@@ -319,6 +319,22 @@
     </LiveContent>
 </DemoBlock>
 
+
+<DemoBlock Title="Accessible icon and landmark navigation"
+           Code="@_landmarkCode">
+    <Description>
+        <code>BitBhAccessibleIcon</code> hides an icon from assistive technology and reads its <code>Label</code> instead - for an
+        icon that means something on its own. <code>BitBhLandmarkNavigation</code> (on while this page is open) lets F6 and
+        Shift+F6 jump between the page's landmarks - the header, the navigation, the main content - giving each back the
+        element that last had the focus in it, as React Aria's <code>useLandmark</code> does. Press F6 now.
+    </Description>
+    <LiveContent>
+        <BitBhLandmarkNavigation />
+        <p class="demo-output">
+            Build status: <BitBhAccessibleIcon Label="Passing" style="color:var(--color-success-text)">✔</BitBhAccessibleIcon>
+        </p>
+    </LiveContent>
+</DemoBlock>
 @code {
     // ── Visually hidden ────────────────────────────────────────────────────────
     private ElementReference skipTarget;
@@ -420,6 +436,13 @@
     }
 
     // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _landmarkCode = """
+@* Once, in the layout: F6 / Shift+F6 move between landmarks *@
+<BitBhLandmarkNavigation />
+
+<p>Build status: <BitBhAccessibleIcon Label="Passing">✔</BitBhAccessibleIcon></p>
+""";
 
     private const string _hiddenCode = """
 @* Skip link: hidden until it receives keyboard focus *@

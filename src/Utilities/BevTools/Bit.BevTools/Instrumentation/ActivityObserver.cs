@@ -298,7 +298,7 @@ internal static class ActivityObserver
     /// is free to live under a namespace that merely starts with "Bit.BevTools." - the demo does - and its events are
     /// ordinary application activity.
     /// </summary>
-    private static bool IsBevToolsOwnComponent(string componentType) =>
+    internal static bool IsBevToolsOwnComponent(string componentType) =>
         componentType.StartsWith(OwnNamespacePrefix, StringComparison.Ordinal)
         && componentType.IndexOf('.', OwnNamespacePrefix.Length) < 0;
 

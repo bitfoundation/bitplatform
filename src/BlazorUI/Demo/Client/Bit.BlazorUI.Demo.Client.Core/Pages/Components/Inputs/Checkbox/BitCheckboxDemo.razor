@@ -352,6 +352,35 @@
             <b>AriaDescribedby</b> points the checkbox at the element that holds the message, so the reason a submit
             was refused is read out with the control rather than only shown next to it.
         </div>
+        <br /><br /><br />
+        <div>
+            Not every rejection comes from an <b>EditForm</b>. <b>Invalid</b> forces the error styling and
+            <b>aria-invalid</b> on a state something else refused - a server, a rule spanning two controls -
+            and <b>ErrorMessage</b> adds the line that says why, on its own line under the checkbox and above
+            any <BitLink Href="#example5">description</BitLink>. A message implies <b>Invalid</b>, so the
+            flag on its own is for marking a checkbox whose explanation lives somewhere else. It is announced
+            by a live region the moment it appears, rather than waiting for the next focus.
+            <b>ErrorMessageTemplate</b> puts arbitrary markup there instead. A template has no text a screen
+            reader can be handed, so it is announced as a bare "Invalid input" unless <b>ErrorMessageAriaLabel</b>
+            says what it shows - which is also what the checkbox is described by on every later focus.
+        </div>
+        <br />
+        <div>
+            <BitCheckbox Label="Send paper invoices"
+                         Description="A printed copy of every invoice, posted to the billing address."
+                         ErrorMessage="@(paperInvoices ? "Paper invoices are not available on the free plan." : null)"
+                         @bind-Value="paperInvoices" />
+            <br />
+            <BitCheckbox Label="Marked invalid, explained elsewhere" Invalid />
+            <br />
+            <BitCheckbox Label="Share my activity with my team"
+                         ErrorMessageAriaLabel="This conflicts with your privacy settings.">
+                <ErrorMessageTemplate>
+                    This conflicts with your
+                    <BitLink Href="https://bitplatform.dev" Target="_blank">privacy settings</BitLink>.
+                </ErrorMessageTemplate>
+            </BitCheckbox>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">

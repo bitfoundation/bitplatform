@@ -136,7 +136,49 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+        <DemoExample Title="Accessibility" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                The BitAccentColorSwitcher renders a group of native buttons, one swatch per accent. The group has
+                <b>role="group"</b> and is named "Accent color", unless the <b>AriaLabel</b> parameter or an
+                aria-label attribute on the component names it otherwise.
+            </div>
+            <br />
+            <div>
+                A color is not a name, so each swatch is named after its accent item: the item's <b>Name</b> is the
+                swatch's tooltip, and its accessible name reads "Apply the {Name} accent color" ("Apply this accent
+                color" for an item without a Name). The item's own <b>AriaLabel</b> replaces that English label, which
+                is how to localize it.
+            </div>
+            <br />
+            <div>
+                The swatch of the active accent has <b>aria-pressed="true"</b> and every other one
+                <b>aria-pressed="false"</b>; on screen the active one is ringed by an outline in its own color, set a
+                little apart from it. All the switchers on a page follow the one shared accent, so a pick in one moves
+                the pressed state in all of them. Nothing else is announced: the switcher has no live region.
+            </div>
+            <br />
+            <div>
+                Every swatch is a tab stop of its own: Tab and Shift+Tab move through them one by one - there is no
+                arrow-key navigation - and Enter or Space applies the focused one. A focused swatch shows the library's
+                focus ring, which becomes a Highlight outline in forced-colors mode; the switcher's stylesheet has no
+                other forced-colors rules. A swatch measures 1.5rem across, 24&times;24 CSS pixels at the default font
+                size.
+            </div>
+            <br />
+            <div>
+                <b>Disabled</b> disables every swatch button, which takes the swatches out of the tab order, and marks
+                each one aria-disabled="true".
+            </div>
+            <br />
+            <div>
+                Tab to a swatch and press Enter or Space - like the one in the Basic section, this switcher re-themes
+                the whole website:
+            </div>
+            <br />
+            <BitAccentColorSwitcher />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
             <div>Use Style, Class, Styles and Classes to customize the switcher:</div>
             <br />
             <BitAccentColorSwitcher Style="padding:0.5rem;border:1px dashed gray;border-radius:0.5rem" />

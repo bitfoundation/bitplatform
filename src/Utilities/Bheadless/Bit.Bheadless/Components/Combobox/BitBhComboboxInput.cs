@@ -31,6 +31,12 @@ public class BitBhComboboxInput<TValue> : BitBhComponentBase, IDisposable
 
     internal void Refresh() => StateHasChanged();
 
+    /// <summary>The <c>aria-label</c> given to the input, which also names the options.</summary>
+    internal string? OwnAriaLabel => GetAdditionalAttribute("aria-label");
+
+    /// <summary>The <c>aria-labelledby</c> given to the input, which also names the options.</summary>
+    internal string? OwnAriaLabelledBy => GetAdditionalAttribute("aria-labelledby");
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var text = ComboboxContext?.Combobox.InputText ?? string.Empty;
@@ -86,9 +92,11 @@ public class BitBhComboboxInput<TValue> : BitBhComponentBase, IDisposable
             if (ComboboxContext.Disabled)
                 attrs["disabled"] = true;
 
+            // Enter belongs to the combobox when it selects something - a highlighted option, or the typed text it creates.
+            var claimsEnter = (IsOpen && ComboboxContext.ActiveId is not null) || ComboboxContext.Combobox.CanCreate;
             var keys = IsOpen
-                ? ComboboxContext.ActiveId is not null ? "ArrowDown ArrowUp PageDown PageUp Enter" : "ArrowDown ArrowUp PageDown PageUp"
-                : "ArrowDown ArrowUp";
+                ? claimsEnter ? "ArrowDown ArrowUp PageDown PageUp Enter" : "ArrowDown ArrowUp PageDown PageUp"
+                : claimsEnter ? "ArrowDown ArrowUp Enter" : "ArrowDown ArrowUp";
             attrs[BitBhKeyboard.KeysAttribute] = keys;
 
             SetDataFlag(attrs, "disabled", ComboboxContext.Disabled);

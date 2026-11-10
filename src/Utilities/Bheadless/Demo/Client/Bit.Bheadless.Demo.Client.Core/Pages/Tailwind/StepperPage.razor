@@ -1,0 +1,81 @@
+﻿@page "/tw/stepper"
+
+<PageTitle>Stepper (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Stepper</h1>
+    <p class="bb-subtitle">Steps of a multi-step flow - a checkout, a wizard - with their triggers, the current step's content and next / previous buttons.</p>
+</div>
+
+<SectionSwitcher Slug="stepper" />
+
+<TwDemoBlock Title="Wizard" Code="@_basicCode">
+    <Description>
+        Every part of a step carries <code>data-state="active|completed|inactive"</code>, styled with
+        <code>data-[state=completed]:</code>; the current trigger has <code>aria-current="step"</code>.
+    </Description>
+    <LiveContent>
+        <BitBhStepper @bind-Step="step" Count="3" class="grid w-full max-w-lg gap-4">
+            <BitBhStepperList class="m-0 flex list-none gap-2 p-0">
+                @for (var i = 0; i < _titles.Length; i++)
+                {
+                    var index = i;
+                    <BitBhStepperItem Index="index" class="flex flex-1 items-center gap-2">
+                        <BitBhStepperTrigger class="inline-flex cursor-pointer items-center gap-2 rounded text-sm text-zinc-600 aria-[current=step]:font-semibold aria-[current=step]:text-zinc-900">
+                            <BitBhStepperIndicator class="inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-zinc-300 text-xs font-semibold data-[state=active]:border-blue-600 data-[state=active]:text-blue-700 data-[state=completed]:border-blue-600 data-[state=completed]:bg-blue-600 data-[state=completed]:text-white">@(index + 1)</BitBhStepperIndicator>
+                            <BitBhStepperTitle>@_titles[index]</BitBhStepperTitle>
+                        </BitBhStepperTrigger>
+                        @if (index < _titles.Length - 1)
+                        {
+                            <BitBhStepperIndicator class="h-0.5 flex-1 bg-zinc-200 data-[state=completed]:bg-blue-600" />
+                        }
+                    </BitBhStepperItem>
+                }
+            </BitBhStepperList>
+            @for (var i = 0; i < _titles.Length; i++)
+            {
+                var index = i;
+                <BitBhStepperContent Index="index" class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">Step @(index + 1): @_titles[index]</BitBhStepperContent>
+            }
+            <div class="flex justify-between">
+                <BitBhStepperPrevious class="cursor-pointer rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50">Back</BitBhStepperPrevious>
+                <BitBhStepperNext class="cursor-pointer rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">Next</BitBhStepperNext>
+            </div>
+        </BitBhStepper>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private static readonly string[] _titles = ["Account", "Profile", "Done"];
+    private int step;
+
+    private const string _basicCode = """
+<BitBhStepper @bind-Step="step" Count="3" class="grid gap-4">
+    <BitBhStepperList class="m-0 flex list-none gap-2 p-0">
+        @for (var i = 0; i < titles.Length; i++)
+        {
+            var index = i;
+            <BitBhStepperItem Index="index" class="flex flex-1 items-center gap-2">
+                <BitBhStepperTrigger class="inline-flex items-center gap-2 text-sm aria-[current=step]:font-semibold">
+                    <BitBhStepperIndicator class="h-7 w-7 rounded-full border-2 border-zinc-300 text-center
+                                                  data-[state=active]:border-blue-600
+                                                  data-[state=completed]:bg-blue-600 data-[state=completed]:text-white">@(index + 1)</BitBhStepperIndicator>
+                    <BitBhStepperTitle>@titles[index]</BitBhStepperTitle>
+                </BitBhStepperTrigger>
+                @if (index < titles.Length - 1)
+                {
+                    <BitBhStepperIndicator class="h-0.5 flex-1 bg-zinc-200 data-[state=completed]:bg-blue-600" />
+                }
+            </BitBhStepperItem>
+        }
+    </BitBhStepperList>
+    @for (var i = 0; i < titles.Length; i++)
+    {
+        var index = i;
+        <BitBhStepperContent Index="index" class="rounded-lg border border-zinc-200 p-4">Step @(index + 1)</BitBhStepperContent>
+    }
+    <BitBhStepperPrevious>Back</BitBhStepperPrevious>
+    <BitBhStepperNext>Next</BitBhStepperNext>
+</BitBhStepper>
+""";
+}

@@ -35,6 +35,8 @@ public static class IWorkbenchServiceCollectionExtensions
                 {
                     components.Register<AssistantSalesCard>("sales_trend");
                     components.Register<AssistantStockCard>("low_stock");
+                    // The Theme page's sample of BitAiGenerativeUiView.
+                    components.Register<AiWeatherCard>(AiSamples.WeatherCardName);
                 });
             });
 

@@ -1,0 +1,54 @@
+﻿@page "/editable"
+
+<PageTitle>Editable · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Editable</h1>
+    <p class="bb-subtitle">Inline editing: text shown as a preview that turns into an input, committed with Enter or on blur, cancelled with Escape.</p>
+</div>
+
+<SectionSwitcher Slug="editable" />
+
+<DemoBlock Title="Click to rename" Code="@_code" Css="@_css">
+    <Description>
+        With <code>ActivationMode="Click"</code> the preview is a button (Enter / Space work too); focus moves into the input
+        and back afterwards. Enter or leaving the input commits (<code>OnValueCommit</code>), Escape cancels - and stays in the
+        edit, so a dialog around it doesn't close. <code>Validate</code> keeps an empty title from being saved; the
+        <code>Placeholder</code> shows while the value is empty (<code>data-empty</code>).
+    </Description>
+    <LiveContent>
+        <BitBhEditable @bind-Value="title" Placeholder="Untitled" ActivationMode="BitBhEditableActivation.Click"
+                       Validate="@(v => v.Trim().Length > 0)" class="editable">
+            <BitBhEditablePreview class="editable-preview" />
+            <BitBhEditableInput aria-label="Document title" class="ix-input" />
+            <BitBhEditableSubmitTrigger class="ix-icon-btn" aria-label="Save">✓</BitBhEditableSubmitTrigger>
+            <BitBhEditableCancelTrigger class="ix-icon-btn" aria-label="Cancel">✕</BitBhEditableCancelTrigger>
+        </BitBhEditable>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private string title = "Quarterly report";
+
+    private const string _code = """
+<BitBhEditable @bind-Value="title" Placeholder="Untitled" ActivationMode="BitBhEditableActivation.Click"
+               Validate="@(v => v.Trim().Length > 0)" class="editable">
+    <BitBhEditablePreview class="editable-preview" />
+    <BitBhEditableInput aria-label="Document title" class="ix-input" />
+    <BitBhEditableSubmitTrigger class="ix-icon-btn" aria-label="Save">✓</BitBhEditableSubmitTrigger>
+    <BitBhEditableCancelTrigger class="ix-icon-btn" aria-label="Cancel">✕</BitBhEditableCancelTrigger>
+</BitBhEditable>
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.editable { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.editable-preview { padding: 0.3rem 0.5rem; border-radius: 0.375rem; font-weight: 600; cursor: text; }
+.editable-preview:hover { background: var(--color-fill); }
+.editable-preview:focus-visible { outline: 2px solid var(--color-focus); }
+
+/* data-empty while the value is empty: the placeholder shows */
+.editable[data-empty] .editable-preview { color: var(--color-muted); font-style: italic; }
+""";
+}

@@ -40,6 +40,7 @@ public abstract class BitBhComponentBase : ComponentBase
 {
     private string? _componentId;
     private BitBhInterop? _interop;
+    private BitBhStrings? _strings;
     private readonly HashSet<string> _providedParameters = new(StringComparer.Ordinal);
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
@@ -51,6 +52,12 @@ public abstract class BitBhComponentBase : ComponentBase
     /// instance — so components work without any service registration.
     /// </summary>
     protected BitBhInterop Interop => _interop ??= BitBhInterop.Resolve(Services, JSRuntime);
+
+    /// <summary>
+    /// The text components write themselves (accessible names, announcements): the registered
+    /// <see cref="BitBhStrings"/>, or the English defaults.
+    /// </summary>
+    protected BitBhStrings Strings => _strings ??= Services.GetService<BitBhStrings>() ?? BitBhStrings.Default;
 
     /// <summary>Resolves an optional service.</summary>
     protected T? GetService<T>() where T : class => Services.GetService<T>();

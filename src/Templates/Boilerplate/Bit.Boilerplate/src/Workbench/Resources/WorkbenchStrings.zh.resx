@@ -2256,17 +2256,11 @@
     <data name="ThemeToggle" xml:space="preserve">
         <value>通知</value>
     </data>
-    <data name="ThemeFeedback" xml:space="preserve">
-        <value>消息与状态</value>
-    </data>
     <data name="ThemeMessage" xml:space="preserve">
         <value>一条 {0} 消息，与应用中的显示效果相同。</value>
     </data>
     <data name="ThemeProgress" xml:space="preserve">
         <value>上传中</value>
-    </data>
-    <data name="ThemeContainers" xml:space="preserve">
-        <value>卡片与人员</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>标签页 {0}</value>
@@ -2622,9 +2616,6 @@
     <data name="ThemeStateCollapsed" xml:space="preserve">
         <value>已折叠</value>
     </data>
-    <data name="ThemeSelection" xml:space="preserve">
-        <value>选择控件</value>
-    </data>
     <data name="ThemeNavigation" xml:space="preserve">
         <value>导航</value>
     </data>
@@ -2699,6 +2690,63 @@
     </data>
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>一分钟前已保存</value>
+    </data>
+    <data name="ThemeSwitchSection" xml:space="preserve">
+        <value>部分</value>
+    </data>
+    <data name="ThemeShadows" xml:space="preserve">
+        <value>阴影</value>
+    </data>
+    <data name="ThemeSizes" xml:space="preserve">
+        <value>尺寸和间距</value>
+    </data>
+    <data name="ThemeMotion" xml:space="preserve">
+        <value>动效</value>
+    </data>
+    <data name="ThemeLayers" xml:space="preserve">
+        <value>层级、断点和布局</value>
+    </data>
+    <data name="ThemePickers" xml:space="preserve">
+        <value>选择器</value>
+    </data>
+    <data name="ThemeLayouts" xml:space="preserve">
+        <value>布局</value>
+    </data>
+    <data name="ThemeLists" xml:space="preserve">
+        <value>列表</value>
+    </data>
+    <data name="ThemeNotifications" xml:space="preserve">
+        <value>通知</value>
+    </data>
+    <data name="ThemeProgressSection" xml:space="preserve">
+        <value>进度</value>
+    </data>
+    <data name="ThemeSurfaces" xml:space="preserve">
+        <value>容器</value>
+    </data>
+    <data name="ThemeUtilities" xml:space="preserve">
+        <value>工具</value>
+    </data>
+    <data name="ThemeExtras" xml:space="preserve">
+        <value>扩展</value>
+    </data>
+    <data name="ThemeAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="ThemeSwitchDensity" xml:space="preserve">
+        <value>密度</value>
+    </data>
+    <data name="ThemeDensityCompact" xml:space="preserve">
+        <value>紧凑</value>
+    </data>
+    <data name="ThemeDensitySpacious" xml:space="preserve">
+        <value>宽松</value>
+    </data>
+    <data name="ThemeOverlayCallout" xml:space="preserve">
+        <value>气泡框</value>
+    </data>
+    <data name="ThemeOverlayModal" xml:space="preserve">
+        <value>模态框</value>
     </data>
     <data name="PageFailed" xml:space="preserve">
         <value>此页面出了点问题。</value>
@@ -3107,5 +3155,1586 @@
     </data>
     <data name="LandingConsentFirstVisit" xml:space="preserve">
         <value>首次访问</value>
+    </data>
+    <data name="FlowSampleHint" xml:space="preserve">
+        <value>这是示例：双击屏幕即可试用，双击箭头即可修改，修改时会生成一份您自己的流程副本。</value>
+    </data>
+    <data name="ArrowSampleNote" xml:space="preserve">
+        <value>这是示例，会保持原样：在这里修改会生成一份带有此修改的流程副本，归您所有，并将其打开。</value>
+    </data>
+    <data name="ThemeAiHowDidTheStoresDo" xml:space="preserve">
+        <value>本周各门店表现如何？</value>
+    </data>
+    <data name="ThemeAiWhatRunsOutBeforeFriday" xml:space="preserve">
+        <value>周五前哪些商品会卖完？</value>
+    </data>
+    <data name="ThemeAiDraftTheHolidayOpeningHours" xml:space="preserve">
+        <value>起草节假日营业时间</value>
+    </data>
+    <data name="ThemeAiOverThe100MBLimit" xml:space="preserve">
+        <value>超过 100 MB 上限</value>
+    </data>
+    <data name="ThemeAiCanYouCheckThisDelivery" xml:space="preserve">
+        <value>你能帮我把这张送货单和我们的订单核对一下吗？</value>
+    </data>
+    <data name="ThemeAiTheDeliveryNoteLists24" xml:space="preserve">
+        <value>送货单上列有 **24 盒燕麦奶**和 **60 个可颂**，与订单一致。纸杯</value>
+    </data>
+    <data name="ThemeAiCheckingTheStockInUtrecht" xml:space="preserve">
+        <value>正在查看 Utrecht 的库存</value>
+    </data>
+    <data name="ThemeAiTheAssistantCouldNotAnswer" xml:space="preserve">
+        <value>助手无法回答。请稍后重试。</value>
+    </data>
+    <data name="ThemeAiJoinedTheConversation" xml:space="preserve">
+        <value>{0} 加入了对话。</value>
+    </data>
+    <data name="ThemeAiWeeklySalesReview" xml:space="preserve">
+        <value>每周销售回顾</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksTo" xml:space="preserve">
+        <value>Rotterdam 增长最多，得益于露台。</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStore" xml:space="preserve">
+        <value>为 Utrecht 门店补货</value>
+    </data>
+    <data name="ThemeAiOrderPlacedForFridayMorning" xml:space="preserve">
+        <value>已下单，周五上午到货。</value>
+    </data>
+    <data name="ThemeAiTwoDraftsOfThePoster" xml:space="preserve">
+        <value>海报文案的两版草稿。</value>
+    </data>
+    <data name="ThemeAiHolidayOpeningHours" xml:space="preserve">
+        <value>节假日营业时间</value>
+    </data>
+    <data name="ThemeAiPublishedOnEveryStorePage" xml:space="preserve">
+        <value>已发布到每个门店页面。</value>
+    </data>
+    <data name="ThemeAiTeamScheduleForJune" xml:space="preserve">
+        <value>6 月团队排班</value>
+    </data>
+    <data name="ThemeAiThreeShiftsStillOpen" xml:space="preserve">
+        <value>还有三个班次无人认领。</value>
+    </data>
+    <data name="ThemeAiCompareTheBakeries" xml:space="preserve">
+        <value>比较各家面包房</value>
+    </data>
+    <data name="ThemeAiDekkerDeliversEarliest" xml:space="preserve">
+        <value>Dekker 送货最早。</value>
+    </data>
+    <data name="ThemeAiSunny" xml:space="preserve">
+        <value>晴</value>
+    </data>
+    <data name="ThemeAiTwoPeopleReadingASales" xml:space="preserve">
+        <value>两个人用放大镜查看销售图表</value>
+    </data>
+    <data name="ThemeAiTheWeeklyReportAsAn" xml:space="preserve">
+        <value>以插图呈现的每周报告</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek" xml:space="preserve">
+        <value>Rotterdam 本周增长最多，这要归功于**新露台**和周六延长的营业时间。</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeekThanksTo" xml:space="preserve">
+        <value>Rotterdam 本周增长最多，这要归功于**新露台**和</value>
+    </data>
+    <data name="ThemeAiOrderPO1042IsBooked" xml:space="preserve">
+        <value>订单 PO-1042 已安排在周五 7:00 送达。</value>
+    </data>
+    <data name="ThemeAiHereIsTheOrderI" xml:space="preserve">
+        <value>这是我起草的订单，以及它所依据的送货单。</value>
+    </data>
+    <data name="ThemeAiTheWeekSSalesAre" xml:space="preserve">
+        <value>本周销售数据已到。接下来，把每家门店与上周对比，找出变化最大的地方。</value>
+    </data>
+    <data name="ThemeAiCompareEachStoreSNet" xml:space="preserve">
+        <value>将每家门店的净销售额与上周对比，然后说明变化最大的是什么以及原因。</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturday" xml:space="preserve">
+        <value>**Utrecht** 迎来了自 3 月以来最好的周六：412 笔订单，大部分在中午前。</value>
+    </data>
+    <data name="ThemeAiUtrechtHadItsBestSaturdaySinceMarch" xml:space="preserve">
+        <value>**Utrecht** 迎来了自 3 月以来最好的周六：412 笔订单，大部分</value>
+    </data>
+    <data name="ThemeAiPlaceTheOrder" xml:space="preserve">
+        <value>下单</value>
+    </data>
+    <data name="ThemeAiOrder24OatMilk60" xml:space="preserve">
+        <value>要向 Dekker 订购 24 盒燕麦奶、60 个可颂和 20 个纸杯，周五 7:00 送达吗？</value>
+    </data>
+    <data name="ThemeAiDeleteAPriceList" xml:space="preserve">
+        <value>删除价目表</value>
+    </data>
+    <data name="ThemeAiPermanentlyDeleteTheMarchPrice" xml:space="preserve">
+        <value>要永久删除 3 月价目表吗？此操作无法撤消。</value>
+    </data>
+    <data name="ThemeAiOpeningHours" xml:space="preserve">
+        <value>营业时间</value>
+    </data>
+    <data name="ThemeAiSales" xml:space="preserve">
+        <value>销售</value>
+    </data>
+    <data name="ThemeAiReading18Of30Days" xml:space="preserve">
+        <value>正在读取 30 天中的第 18 天</value>
+    </data>
+    <data name="ThemeAiStock" xml:space="preserve">
+        <value>库存</value>
+    </data>
+    <data name="ThemeAiDeliveries" xml:space="preserve">
+        <value>到货</value>
+    </data>
+    <data name="ThemeAiTheSupplierSSystemDid" xml:space="preserve">
+        <value>供应商的系统没有响应。</value>
+    </data>
+    <data name="ThemeAiYouDeclinedThisToolCall" xml:space="preserve">
+        <value>你拒绝了此工具调用。</value>
+    </data>
+    <data name="ThemeAiExportTheReport" xml:space="preserve">
+        <value>导出报表</value>
+    </data>
+    <data name="ThemeAiUtrechtHas4CartonsOf" xml:space="preserve">
+        <value>Utrecht 还剩 4 箱燕麦奶，够用到周四。</value>
+    </data>
+    <data name="ThemeAiThereIsNoStoreCalled" xml:space="preserve">
+        <value>没有名为 Haarlem 的门店。</value>
+    </data>
+    <data name="ThemeAiTheSalesServiceDidNot" xml:space="preserve">
+        <value>销售服务未能及时响应。</value>
+    </data>
+    <data name="ThemeAiTheProviderSContentFilter" xml:space="preserve">
+        <value>服务提供商的内容过滤器拦截了此请求。</value>
+    </data>
+    <data name="ThemeAiSalesReportWeek20" xml:space="preserve">
+        <value>销售报表，第 20 周</value>
+    </data>
+    <data name="ThemeAiNetSalesOfEveryStore" xml:space="preserve">
+        <value>各门店每日净销售额。</value>
+    </data>
+    <data name="ThemeAiSupplierPriceList2026" xml:space="preserve">
+        <value>2026 年供应商价目表</value>
+    </data>
+    <data name="ThemeAiPurchasing" xml:space="preserve">
+        <value>采购</value>
+    </data>
+    <data name="ThemeAiOpeningHoursOfTheStores" xml:space="preserve">
+        <value>各门店营业时间</value>
+    </data>
+    <data name="ThemeAiStoreWebsite" xml:space="preserve">
+        <value>门店网站</value>
+    </data>
+    <data name="ThemeAiRotterdamNetSalesUp12" xml:space="preserve">
+        <value>Rotterdam：净销售额比前一周增长 12.1%。</value>
+    </data>
+    <data name="ThemeAiOatMilkPerCartonOf" xml:space="preserve">
+        <value>燕麦奶，每箱 12 盒：21.60 欧元。</value>
+    </data>
+    <data name="ThemeAiStoreAssistant" xml:space="preserve">
+        <value>门店助手</value>
+    </data>
+    <data name="ThemeAiThinksItThroughAndUses" xml:space="preserve">
+        <value>会深入思考，并使用门店的工具。</value>
+    </data>
+    <data name="ThemeAiShortAnswersRightAway" xml:space="preserve">
+        <value>简短回答，即问即答。</value>
+    </data>
+    <data name="ThemeAiVision" xml:space="preserve">
+        <value>视觉</value>
+    </data>
+    <data name="ThemeAiReadsPhotosOfShelvesAnd" xml:space="preserve">
+        <value>能看懂货架和收据的照片。</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBefore" xml:space="preserve">
+        <value>有 3 种商品会在周五前卖完。</value>
+    </data>
+    <data name="ThemeAi2Of3StorePages" xml:space="preserve">
+        <value>3 个门店页面中有 2 个无法保存。</value>
+    </data>
+    <data name="ThemeAiRotterdamThePageIsOpen" xml:space="preserve">
+        <value>Rotterdam：该页面正在另一个编辑器中打开。</value>
+    </data>
+    <data name="ThemeAiUtrechtThePageIsOpen" xml:space="preserve">
+        <value>Utrecht：该页面正在另一个编辑器中打开。</value>
+    </data>
+    <data name="ThemeAiReadThisWeekSSales" xml:space="preserve">
+        <value>读取本周销售数据</value>
+    </data>
+    <data name="ThemeAiCroissantsUp18OatMilk" xml:space="preserve">
+        <value>可颂增长 18%，燕麦奶增长 9%</value>
+    </data>
+    <data name="ThemeAiCheckTheStockInThe" xml:space="preserve">
+        <value>检查后仓库存</value>
+    </data>
+    <data name="ThemeAi3ProductsRunOutBeforeFriday" xml:space="preserve">
+        <value>3 种商品会在周五前卖完</value>
+    </data>
+    <data name="ThemeAiDraftTheOrder" xml:space="preserve">
+        <value>起草订单</value>
+    </data>
+    <data name="ThemeAiSendItToTheSupplier" xml:space="preserve">
+        <value>发送给供应商</value>
+    </data>
+    <data name="ThemeAi24OatMilk60Croissants" xml:space="preserve">
+        <value>24 盒燕麦奶、60 个可颂、20 个纸杯</value>
+    </data>
+    <data name="ThemeAiPickADeliverySlot" xml:space="preserve">
+        <value>选择送货时段</value>
+    </data>
+    <data name="ThemeAiDekkerCanDeliverOnFriday" xml:space="preserve">
+        <value>Dekker 可以在周五 7:00 或周六 9:00 送货。要预约哪个时段？</value>
+    </data>
+    <data name="ThemeAiFriday700" xml:space="preserve">
+        <value>周五 7:00</value>
+    </data>
+    <data name="ThemeAiSaturday900" xml:space="preserve">
+        <value>周六 9:00</value>
+    </data>
+    <data name="ThemeAiOrderPO1042ConfirmedFor" xml:space="preserve">
+        <value>订单 PO-1042 已确认，周五 7:00 送达</value>
+    </data>
+    <data name="ThemeAiOpeningHoursAgent" xml:space="preserve">
+        <value>营业时间智能体</value>
+    </data>
+    <data name="ThemeAiPublishTheHolidayOpeningHours" xml:space="preserve">
+        <value>在每个门店页面发布节假日营业时间</value>
+    </data>
+    <data name="ThemeAiTheRunStoppedBeforeAnnouncing" xml:space="preserve">
+        <value>运行在公布新营业时间之前就停止了。</value>
+    </data>
+    <data name="ThemeAiCollectTheHoursFromThe" xml:space="preserve">
+        <value>向各店长收集营业时间</value>
+    </data>
+    <data name="ThemeAiHoursFromAll3Store" xml:space="preserve">
+        <value>已收到全部 3 位店长的营业时间</value>
+    </data>
+    <data name="ThemeAiUpdateTheStorePages" xml:space="preserve">
+        <value>更新门店页面</value>
+    </data>
+    <data name="ThemeAiAnnounceTheNewHours" xml:space="preserve">
+        <value>公布新营业时间</value>
+    </data>
+    <data name="ThemeAiSendTheOrderToThe" xml:space="preserve">
+        <value>将订单发送给供应商</value>
+    </data>
+    <data name="ThemeAiComparedWithTheSameWeek" xml:space="preserve">
+        <value>与去年同一周相比。</value>
+    </data>
+    <data name="ThemeAiRestockAgent" xml:space="preserve">
+        <value>补货智能体</value>
+    </data>
+    <data name="ThemeAiRestockTheUtrechtStoreBefore" xml:space="preserve">
+        <value>在周末前为 Utrecht 门店补货</value>
+    </data>
+    <data name="ThemeAiEveryStoreKeepsItsUsual" xml:space="preserve">
+        <value>除以下日期外，各门店均按平常时间营业：</value>
+    </data>
+    <data name="ThemeAiClosed" xml:space="preserve">
+        <value>不营业</value>
+    </data>
+    <data name="ThemeAiOrdersPlacedInTheApp" xml:space="preserve">
+        <value>这些日期在应用中下的订单，备好时间比平时晚一小时。</value>
+    </data>
+    <data name="ThemeAiFirstDraft" xml:space="preserve">
+        <value>初稿</value>
+    </data>
+    <data name="ThemeAiPriceChangesForJune" xml:space="preserve">
+        <value>6 月价格调整</value>
+    </data>
+    <data name="ThemeAiNoChange" xml:space="preserve">
+        <value>无变化</value>
+    </data>
+    <data name="ThemeAiFromTheSupplierSNew" xml:space="preserve">
+        <value>根据供应商的新价目表</value>
+    </data>
+    <data name="ThemeAiByWhatSells" xml:space="preserve">
+        <value>按销量</value>
+    </data>
+    <data name="ThemeAiUntilTheNextDelivery" xml:space="preserve">
+        <value>够用到下次到货</value>
+    </data>
+    <data name="ThemeAiEmailToTheSupplier" xml:space="preserve">
+        <value>给供应商的邮件</value>
+    </data>
+    <data name="ThemeAiDearDekkerTeam" xml:space="preserve">
+        <value>尊敬的 Dekker 团队：</value>
+    </data>
+    <data name="ThemeAiCouldYouDeliverTheOrder" xml:space="preserve">
+        <value>能否请贵司于周五 7:00 将以下订单送到我们的 Utrecht 门店？后门</value>
+    </data>
+    <data name="ThemeAiNetSalesCameTo34" xml:space="preserve">
+        <value>净销售额为 **34,820 欧元**，比上周增长 8.4%。</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThanksToTheNew" xml:space="preserve">
+        <value>Rotterdam 增长最多，得益于新露台。</value>
+    </data>
+    <data name="ThemeAiWillItBeWarmEnough" xml:space="preserve">
+        <value>明天 Amsterdam 够暖和，能开露台吗？</value>
+    </data>
+    <data name="ThemeAiYesItWillBeMild" xml:space="preserve">
+        <value>可以。天气温和，基本无雨，露台中午就能开放。</value>
+    </data>
+    <data name="ThemeAiPartlyCloudy" xml:space="preserve">
+        <value>晴间多云</value>
+    </data>
+    <data name="ThemeAiThreeProductsRunOutBefore" xml:space="preserve">
+        <value>有三种商品会在周五到货前卖完：</value>
+    </data>
+    <data name="ThemeAi4CartonsLeftEnoughUntil" xml:space="preserve">
+        <value>还剩 4 箱，够用到周四</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek2" xml:space="preserve">
+        <value>Rotterdam 本周增长最多。</value>
+    </data>
+    <data name="ThemeAiOatMilkCosts2160" xml:space="preserve">
+        <value>Dekker 的燕麦奶每箱 12 盒，售价 21.60 欧元。</value>
+    </data>
+    <data name="ThemeAiBookTheDelivery" xml:space="preserve">
+        <value>预约送货</value>
+    </data>
+    <data name="ThemeAiCheckWhatIFilledIn" xml:space="preserve">
+        <value>发送订单前，请检查我填写的内容。</value>
+    </data>
+    <data name="ThemeAiSendTheOrder" xml:space="preserve">
+        <value>发送订单</value>
+    </data>
+    <data name="ThemeAiDeliveryDate" xml:space="preserve">
+        <value>送货日期</value>
+    </data>
+    <data name="ThemeAiCrates" xml:space="preserve">
+        <value>箱数</value>
+    </data>
+    <data name="ThemeAiBeforeOpeningTime" xml:space="preserve">
+        <value>开门前送达</value>
+    </data>
+    <data name="ThemeAiTheDriverHasAKey" xml:space="preserve">
+        <value>司机有后门钥匙。</value>
+    </data>
+    <data name="ThemeAiNotesForTheDriver" xml:space="preserve">
+        <value>给司机的备注</value>
+    </data>
+    <data name="ThemeAiAnythingTheDriverShouldKnow" xml:space="preserve">
+        <value>司机需要知道的任何事项</value>
+    </data>
+    <data name="ThemeAiWeekendChecklist" xml:space="preserve">
+        <value>周末检查清单</value>
+    </data>
+    <data name="ThemeAiBeforeSaturdayEveryStoreChecks" xml:space="preserve">
+        <value>**周六**前，每家门店都要检查库存、露台和团队。*Rotterdam* 提前一小时开门。</value>
+    </data>
+    <data name="ThemeAiOrderTheOatMilk" xml:space="preserve">
+        <value>订购燕麦奶</value>
+    </data>
+    <data name="ThemeAiBookTheFridayDelivery" xml:space="preserve">
+        <value>预约周五送货</value>
+    </data>
+    <data name="ThemeAiPutTheTerraceHeatersOut" xml:space="preserve">
+        <value>摆出露台取暖器</value>
+    </data>
+    <data name="ThemeAiAFullShelfAtOpening" xml:space="preserve">
+        <value>开门时货架满满，比打烊时打折卖得更多。</value>
+    </data>
+    <data name="ThemeAiEverySampleHereIsStatic" xml:space="preserve">
+        <value>这里的每个示例都是静态的：此页面上没有任何内容会调用模型。</value>
+    </data>
+    <data name="ThemeAiWithToolCalls" xml:space="preserve">
+        <value>含工具调用</value>
+    </data>
+    <data name="ThemeAiNotInTheConversation" xml:space="preserve">
+        <value>不在对话中</value>
+    </data>
+    <data name="ThemeAiDocument" xml:space="preserve">
+        <value>文档</value>
+    </data>
+    <data name="ThemeAiSeveralVersions" xml:space="preserve">
+        <value>多个版本</value>
+    </data>
+    <data name="ThemeAiBeingWritten" xml:space="preserve">
+        <value>撰写中</value>
+    </data>
+    <data name="ThemeAiImage" xml:space="preserve">
+        <value>图片</value>
+    </data>
+    <data name="ThemeAiRemovable" xml:space="preserve">
+        <value>可移除</value>
+    </data>
+    <data name="ThemeAiAskAboutSalesStockThe" xml:space="preserve">
+        <value>可以问销售、库存、团队的情况，或露台的天气。</value>
+    </data>
+    <data name="ThemeAiTheAssistantCanMakeMistakes" xml:space="preserve">
+        <value>助手可能会出错。请核实重要信息。</value>
+    </data>
+    <data name="ThemeAiFromTheUser" xml:space="preserve">
+        <value>来自用户</value>
+    </data>
+    <data name="ThemeAiFromTheSystem" xml:space="preserve">
+        <value>来自系统</value>
+    </data>
+    <data name="ThemeAiWithAFileName" xml:space="preserve">
+        <value>带文件名</value>
+    </data>
+    <data name="ThemeAiWithoutAHeader" xml:space="preserve">
+        <value>无标题栏</value>
+    </data>
+    <data name="ThemeAiLineNumbers" xml:space="preserve">
+        <value>行号</value>
+    </data>
+    <data name="ThemeAiPlentyLeft" xml:space="preserve">
+        <value>余量充足</value>
+    </data>
+    <data name="ThemeAiFillingUp" xml:space="preserve">
+        <value>逐渐用满</value>
+    </data>
+    <data name="ThemeAiAlmostFull" xml:space="preserve">
+        <value>即将用满</value>
+    </data>
+    <data name="ThemeAiWithTheUnsentPrompt" xml:space="preserve">
+        <value>含未发送的提示</value>
+    </data>
+    <data name="ThemeAiWithItsLabel" xml:space="preserve">
+        <value>带标签</value>
+    </data>
+    <data name="ThemeAiWithRetry" xml:space="preserve">
+        <value>可重试</value>
+    </data>
+    <data name="ThemeAiWithoutRetry" xml:space="preserve">
+        <value>不可重试</value>
+    </data>
+    <data name="ThemeAiSubmitted" xml:space="preserve">
+        <value>已提交</value>
+    </data>
+    <data name="ThemeAiRegistered" xml:space="preserve">
+        <value>已注册</value>
+    </data>
+    <data name="ThemeAiNotRegistered" xml:space="preserve">
+        <value>未注册</value>
+    </data>
+    <data name="ThemeAiPropsThatDonTFit" xml:space="preserve">
+        <value>属性不匹配</value>
+    </data>
+    <data name="ThemeAiAFormattedAnswer" xml:space="preserve">
+        <value>带格式的回答</value>
+    </data>
+    <data name="ThemeAiPinned" xml:space="preserve">
+        <value>已置顶</value>
+    </data>
+    <data name="ThemeAiRated" xml:space="preserve">
+        <value>已评价</value>
+    </data>
+    <data name="ThemeAiAPartOfEachKind" xml:space="preserve">
+        <value>每种部分各一个</value>
+    </data>
+    <data name="ThemeAiGenerating" xml:space="preserve">
+        <value>生成中</value>
+    </data>
+    <data name="ThemeAiWithoutALink" xml:space="preserve">
+        <value>无链接</value>
+    </data>
+    <data name="ThemeAiRecord" xml:space="preserve">
+        <value>记录</value>
+    </data>
+    <data name="ThemeAiWithCitations" xml:space="preserve">
+        <value>带引用</value>
+    </data>
+    <data name="ThemeAiWithALabel" xml:space="preserve">
+        <value>带标签</value>
+    </data>
+    <data name="ThemeAiReadingTheSalesReport" xml:space="preserve">
+        <value>正在阅读销售报表</value>
+    </data>
+    <data name="ThemeAiTokens" xml:space="preserve">
+        <value>词元</value>
+    </data>
+    <data name="ThemeAiWithTheCost" xml:space="preserve">
+        <value>含费用</value>
+    </data>
+    <data name="ThemeAiWithSpeedAndLatency" xml:space="preserve">
+        <value>含速度和延迟</value>
+    </data>
+    <data name="ThemeAiInDetail" xml:space="preserve">
+        <value>详细</value>
+    </data>
+    <data name="ThemeAiNoLookOfTheirOwn" xml:space="preserve">
+        <value>这些组件没有自己的外观：{0}。</value>
+    </data>
+    <data name="ThemeAiAskTheStoreAssistant" xml:space="preserve">
+        <value>问问门店助手...</value>
+    </data>
+    <data name="ThemeAiWhatTheAssistantCanSee" xml:space="preserve">
+        <value>助手能看到什么</value>
+    </data>
+    <data name="ThemeAiSalesStockAndTheTeam" xml:space="preserve">
+        <value>你各门店的销售、库存和团队排班。绝不包括顾客的支付信息。</value>
+    </data>
+    <data name="ThemeAiRotterdamGrewMostThisWeek3" xml:space="preserve">
+        <value>Rotterdam 本周增长最多</value>
+    </data>
+    <data name="ThemeAiThisChatIsASample" xml:space="preserve">
+        <value>此聊天是主题页面上的示例，因此不会有模型回答。</value>
+    </data>
+    <data name="ThemeAiHigh" xml:space="preserve">
+        <value>最高 {0}</value>
+    </data>
+    <data name="ThemeAiLow" xml:space="preserve">
+        <value>最低 {0}</value>
+    </data>
+    <data name="ThemeAiChanceOfRain" xml:space="preserve">
+        <value>降水概率 {0}%</value>
+    </data>
+    <data name="ThemeButtonsColored" xml:space="preserve">
+        <value>彩色</value>
+    </data>
+    <data name="ThemeButtonsWithASecondLine" xml:space="preserve">
+        <value>带第二行文字</value>
+    </data>
+    <data name="ThemeButtonsEveryChangeIsKeptFor" xml:space="preserve">
+        <value>每次更改都会保留 30 天</value>
+    </data>
+    <data name="ThemeButtonsBackUpNow" xml:space="preserve">
+        <value>立即备份</value>
+    </data>
+    <data name="ThemeButtonsRoundedIconAtTheEnd" xml:space="preserve">
+        <value>圆角，图标在末尾</value>
+    </data>
+    <data name="ThemeButtonsContinue" xml:space="preserve">
+        <value>继续</value>
+    </data>
+    <data name="ThemeButtonsFullWidth" xml:space="preserve">
+        <value>全宽</value>
+    </data>
+    <data name="ThemeButtonsAddABuilding" xml:space="preserve">
+        <value>添加建筑</value>
+    </data>
+    <data name="ThemeButtonsAsALink" xml:space="preserve">
+        <value>作为链接</value>
+    </data>
+    <data name="ThemeButtonsOpenTheGuide" xml:space="preserve">
+        <value>打开指南</value>
+    </data>
+    <data name="ThemeButtonsIconsOnly" xml:space="preserve">
+        <value>仅图标</value>
+    </data>
+    <data name="ThemeButtonsSplit" xml:space="preserve">
+        <value>拆分式</value>
+    </data>
+    <data name="ThemeButtonsOnOutline" xml:space="preserve">
+        <value>开，描边</value>
+    </data>
+    <data name="ThemeButtonsMute" xml:space="preserve">
+        <value>静音</value>
+    </data>
+    <data name="ThemeButtonsAlignStart" xml:space="preserve">
+        <value>起始对齐</value>
+    </data>
+    <data name="ThemeButtonsAlignCenter" xml:space="preserve">
+        <value>居中对齐</value>
+    </data>
+    <data name="ThemeButtonsAlignEnd" xml:space="preserve">
+        <value>末尾对齐</value>
+    </data>
+    <data name="ThemeButtonsShare" xml:space="preserve">
+        <value>分享</value>
+    </data>
+    <data name="ThemeColorsEveryColorOfTheTheme" xml:space="preserve">
+        <value>主题中的每种颜色及其在此视图中的值：每个角色的状态色、深浅色、文字色、淡色和禁用色，中性色、它们所源自的灰阶，以及意图名称。</value>
+    </data>
+    <data name="ThemeColorsGrays" xml:space="preserve">
+        <value>灰阶</value>
+    </data>
+    <data name="ThemeColorsSpecialPurpose" xml:space="preserve">
+        <value>特殊用途</value>
+    </data>
+    <data name="ThemeColorsIntent" xml:space="preserve">
+        <value>意图</value>
+    </data>
+    <data name="ThemeExtrasLatestOrders" xml:space="preserve">
+        <value>最新订单</value>
+    </data>
+    <data name="ThemeExtrasCustomer" xml:space="preserve">
+        <value>顾客</value>
+    </data>
+    <data name="ThemeExtrasNoOrdersYetToday" xml:space="preserve">
+        <value>今天还没有订单。</value>
+    </data>
+    <data name="ThemeExtrasTheComponentsOfTheBit" xml:space="preserve">
+        <value>Bit.BlazorUI.Extras 包中的组件：表格、图表、日历、地图、编辑器和查看器。</value>
+    </data>
+    <data name="ThemeExtrasBars" xml:space="preserve">
+        <value>柱状图</value>
+    </data>
+    <data name="ThemeExtrasRevenuePerMonth" xml:space="preserve">
+        <value>每月营收</value>
+    </data>
+    <data name="ThemeExtrasLines" xml:space="preserve">
+        <value>折线图</value>
+    </data>
+    <data name="ThemeExtrasVisitorsPerDay" xml:space="preserve">
+        <value>每日访客数</value>
+    </data>
+    <data name="ThemeExtrasDoughnut" xml:space="preserve">
+        <value>环形图</value>
+    </data>
+    <data name="ThemeExtrasSalesByPaymentMethod" xml:space="preserve">
+        <value>按支付方式划分的销售额</value>
+    </data>
+    <data name="ThemeExtrasNoSalesYetThisMonth" xml:space="preserve">
+        <value>本月还没有销售。</value>
+    </data>
+    <data name="ThemeExtrasWeDonTShipThere" xml:space="preserve">
+        <value>我们暂不配送到该地区。</value>
+    </data>
+    <data name="ThemeExtrasSortedByTotalOneOrder" xml:space="preserve">
+        <value>按总额排序，已选中一个订单</value>
+    </data>
+    <data name="ThemeExtrasTodaySSalesCouldnT" xml:space="preserve">
+        <value>无法加载今天的销售数据。请稍后重试。</value>
+    </data>
+    <data name="ThemeExtrasBesideAName" xml:space="preserve">
+        <value>名称旁</value>
+    </data>
+    <data name="ThemeExtrasShapes" xml:space="preserve">
+        <value>形状</value>
+    </data>
+    <data name="ThemeExtrasTodaySOrders" xml:space="preserve">
+        <value>今日订单</value>
+    </data>
+    <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
+        <value>正在加载更多订单...</value>
+    </data>
+    <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
+        <value>今天的订单已全部显示。</value>
+    </data>
+    <data name="ThemeExtrasHoldCtrlWhileScrollingTo" xml:space="preserve">
+        <value>按住 Ctrl 并滚动即可缩放地图</value>
+    </data>
+    <data name="ThemeExtrasUseTwoFingersToMove" xml:space="preserve">
+        <value>用两根手指移动地图</value>
+    </data>
+    <data name="ThemeExtrasOurStores" xml:space="preserve">
+        <value>我们的门店</value>
+    </data>
+    <data name="ThemeExtrasPreview" xml:space="preserve">
+        <value>预览</value>
+    </data>
+    <data name="ThemeExtrasSaveYourChanges" xml:space="preserve">
+        <value>保存您的更改？</value>
+    </data>
+    <data name="ThemeExtrasTheProductHasEditsThat" xml:space="preserve">
+        <value>该商品有尚未保存的修改。</value>
+    </data>
+    <data name="ThemeExtrasInvoice" xml:space="preserve">
+        <value>发票 {0}</value>
+    </data>
+    <data name="ThemeExtrasEnterTheWholePhoneNumber" xml:space="preserve">
+        <value>请输入完整的电话号码。</value>
+    </data>
+    <data name="ThemeExtrasWriteAFewLinesBefore" xml:space="preserve">
+        <value>发送前请先写几句。</value>
+    </data>
+    <data name="ThemeExtrasLookingThroughThisWeekS" xml:space="preserve">
+        <value>正在查看本周的订单...</value>
+    </data>
+    <data name="ThemeExtrasDraftingAReply" xml:space="preserve">
+        <value>正在起草回复...</value>
+    </data>
+    <data name="ThemeExtrasPickTheTimeZoneYour" xml:space="preserve">
+        <value>请选择您门店所在的时区。</value>
+    </data>
+    <data name="ThemeExtrasAllOrders" xml:space="preserve">
+        <value>全部订单</value>
+    </data>
+    <data name="ThemeExtrasNotShownHereWhichTakes" xml:space="preserve">
+        <value>此处未展示：{0}，它会接管所在页面的键盘滚动。应用自身的外壳就使用了它。</value>
+    </data>
+    <data name="ThemeExtrasCountry" xml:space="preserve">
+        <value>国家/地区</value>
+    </data>
+    <data name="ThemeExtrasPickACountry" xml:space="preserve">
+        <value>选择国家/地区</value>
+    </data>
+    <data name="ThemeExtrasWeeklyUpdate" xml:space="preserve">
+        <value>每周动态</value>
+    </data>
+    <data name="ThemeExtrasWriteTheUpdateInMarkdown" xml:space="preserve">
+        <value>用 Markdown 撰写动态</value>
+    </data>
+    <data name="ThemeExtrasNewsletter" xml:space="preserve">
+        <value>新闻简报</value>
+    </data>
+    <data name="ThemeExtrasWriteSomethingWorthReading" xml:space="preserve">
+        <value>写点值得一读的内容</value>
+    </data>
+    <data name="ThemeExtrasTodaySSales" xml:space="preserve">
+        <value>今日销售额</value>
+    </data>
+    <data name="ThemeExtrasANewVersionIsReady" xml:space="preserve">
+        <value>新版本已就绪</value>
+    </data>
+    <data name="ThemeExtrasRestartTheAppToStart" xml:space="preserve">
+        <value>重启应用即可开始使用。</value>
+    </data>
+    <data name="ThemeExtrasPaymentReceived" xml:space="preserve">
+        <value>已收到付款</value>
+    </data>
+    <data name="ThemeExtrasOrder8042IsPaidAnd" xml:space="preserve">
+        <value>订单 8042 已付款，正在送往柜台。</value>
+    </data>
+    <data name="ThemeExtrasStorageAlmostFull" xml:space="preserve">
+        <value>存储空间即将用满</value>
+    </data>
+    <data name="ThemeExtrasDeleteOldExportsToKeep" xml:space="preserve">
+        <value>请删除旧的导出文件，以便继续保存收据。</value>
+    </data>
+    <data name="ThemeExtrasYourPlanEndsTomorrow" xml:space="preserve">
+        <value>您的套餐明天到期</value>
+    </data>
+    <data name="ThemeExtrasRenewItTodayToKeep" xml:space="preserve">
+        <value>今天续订，即可继续接单。</value>
+    </data>
+    <data name="ThemeExtrasPaymentFailed" xml:space="preserve">
+        <value>付款失败</value>
+    </data>
+    <data name="ThemeExtrasTheCardWasDeclinedAsk" xml:space="preserve">
+        <value>银行卡被拒。请让顾客换一种付款方式。</value>
+    </data>
+    <data name="ThemeExtrasSalesGrewAgainThisWeek" xml:space="preserve">
+        <value>本周销售额再次增长，燕麦拿铁领跑。</value>
+    </data>
+    <data name="ThemeExtrasRevenue" xml:space="preserve">
+        <value>营收</value>
+    </data>
+    <data name="ThemeExtrasNewCustomers" xml:space="preserve">
+        <value>新顾客</value>
+    </data>
+    <data name="ThemeExtrasNextStep" xml:space="preserve">
+        <value>下一步</value>
+    </data>
+    <data name="ThemeExtrasPlanTheSummerMenu" xml:space="preserve">
+        <value>规划夏季菜单</value>
+    </data>
+    <data name="ThemeExtrasReleaseNotes" xml:space="preserve">
+        <value>发行说明</value>
+    </data>
+    <data name="ThemeExtrasVersion24IsOut" xml:space="preserve">
+        <value>2.4 版已发布，新增离线订单，仪表板也更快了。</value>
+    </data>
+    <data name="ThemeExtrasWhatSNew" xml:space="preserve">
+        <value>新功能</value>
+    </data>
+    <data name="ThemeExtrasOfflineOrders" xml:space="preserve">
+        <value>离线订单</value>
+    </data>
+    <data name="ThemeExtrasKeepSellingWhenTheConnection" xml:space="preserve">
+        <value>断网时也能继续销售。</value>
+    </data>
+    <data name="ThemeExtrasFasterDashboard" xml:space="preserve">
+        <value>更快的仪表板</value>
+    </data>
+    <data name="ThemeExtrasReportsOpenInUnderA" xml:space="preserve">
+        <value>报表不到一秒即可打开。</value>
+    </data>
+    <data name="ThemeExtrasExport" xml:space="preserve">
+        <value>导出</value>
+    </data>
+    <data name="ThemeExtrasNowWritesExcelFilesToo" xml:space="preserve">
+        <value>现在也能生成 Excel 文件了。</value>
+    </data>
+    <data name="ThemeExtrasTipSearchTheWholeApp" xml:space="preserve">
+        <value>提示：可以在顶部的搜索框中搜索整个应用。</value>
+    </data>
+    <data name="ThemeExtrasPlan" xml:space="preserve">
+        <value>套餐</value>
+    </data>
+    <data name="ThemeExtrasStores" xml:space="preserve">
+        <value>门店数</value>
+    </data>
+    <data name="ThemeExtrasPricePerMonth" xml:space="preserve">
+        <value>月费</value>
+    </data>
+    <data name="ThemeExtrasStarter" xml:space="preserve">
+        <value>入门版</value>
+    </data>
+    <data name="ThemeExtrasReadTheFullChangelog" xml:space="preserve">
+        <value>阅读完整更新日志</value>
+    </data>
+    <data name="ThemeExtrasSummerMenu" xml:space="preserve">
+        <value>夏季菜单</value>
+    </data>
+    <data name="ThemeExtrasFromJuneEveryStoreServes" xml:space="preserve">
+        <value>从 6 月起，每家门店都供应三款冷饮：</value>
+    </data>
+    <data name="ThemeExtrasIcedOatMilkLatte" xml:space="preserve">
+        <value>冰燕麦拿铁</value>
+    </data>
+    <data name="ThemeExtrasFreshLemonade" xml:space="preserve">
+        <value>鲜榨柠檬水</value>
+    </data>
+    <data name="ThemeExtrasWhenDoesMyOrderArrive" xml:space="preserve">
+        <value>我的订单什么时候到？</value>
+    </data>
+    <data name="ThemeExtrasDelivery" xml:space="preserve">
+        <value>配送</value>
+    </data>
+    <data name="ThemeExtrasOrdersPlacedBefore4Pm" xml:space="preserve">
+        <value>下午 4 点前下的订单当天发货，两个工作日内送达。</value>
+    </data>
+    <data name="ThemeExtrasCanIReturnSomething" xml:space="preserve">
+        <value>可以退货吗？</value>
+    </data>
+    <data name="ThemeExtrasReturns" xml:space="preserve">
+        <value>退货</value>
+    </data>
+    <data name="ThemeExtrasSendItBackWithin30" xml:space="preserve">
+        <value>30 天内用原包装寄回即可，免费退货。</value>
+    </data>
+    <data name="ThemeExtrasHowCanIPay" xml:space="preserve">
+        <value>可以用哪些方式付款？</value>
+    </data>
+    <data name="ThemeExtrasByCardMobileWalletOr" xml:space="preserve">
+        <value>线上和所有门店均支持银行卡、移动支付或礼品卡付款。</value>
+    </data>
+    <data name="ThemeExtrasCatalog" xml:space="preserve">
+        <value>商品目录</value>
+    </data>
+    <data name="ThemeExtrasOrders" xml:space="preserve">
+        <value>订单</value>
+    </data>
+    <data name="ThemeExtrasThisYear" xml:space="preserve">
+        <value>今年</value>
+    </data>
+    <data name="ThemeExtrasLastYear" xml:space="preserve">
+        <value>去年</value>
+    </data>
+    <data name="ThemeExtrasLastWeek" xml:space="preserve">
+        <value>上周</value>
+    </data>
+    <data name="ThemeExtrasTeamStandUp" xml:space="preserve">
+        <value>团队站会</value>
+    </data>
+    <data name="ThemeExtrasPlansForTheDay" xml:space="preserve">
+        <value>当天的计划</value>
+    </data>
+    <data name="ThemeExtrasMenuTasting" xml:space="preserve">
+        <value>菜单试吃</value>
+    </data>
+    <data name="ThemeExtrasThreeNewSummerDrinks" xml:space="preserve">
+        <value>三款夏季新饮品</value>
+    </data>
+    <data name="ThemeExtrasSupplierCall" xml:space="preserve">
+        <value>供应商通话</value>
+    </data>
+    <data name="ThemeExtrasBeansForTheNextQuarter" xml:space="preserve">
+        <value>下季度的咖啡豆</value>
+    </data>
+    <data name="ThemeExtrasBaristaTraining" xml:space="preserve">
+        <value>咖啡师培训</value>
+    </data>
+    <data name="ThemeExtrasMilkTextureAndLatteArt" xml:space="preserve">
+        <value>奶泡质地与拉花</value>
+    </data>
+    <data name="ThemeExtrasStockDelivery" xml:space="preserve">
+        <value>进货</value>
+    </data>
+    <data name="ThemeExtrasCupsLidsAndOatMilk" xml:space="preserve">
+        <value>杯子、杯盖和燕麦奶</value>
+    </data>
+    <data name="ThemeExtrasFoodSafetyInspection" xml:space="preserve">
+        <value>食品安全检查</value>
+    </data>
+    <data name="ThemeExtrasLatteArtWorkshop" xml:space="preserve">
+        <value>拉花工作坊</value>
+    </data>
+    <data name="ThemeExtrasForCustomersTwelveSeats" xml:space="preserve">
+        <value>面向顾客，共十二个名额</value>
+    </data>
+    <data name="ThemeInputsWeekNumbersTime" xml:space="preserve">
+        <value>周数、时间</value>
+    </data>
+    <data name="ThemeInputsWithADescription" xml:space="preserve">
+        <value>带说明</value>
+    </data>
+    <data name="ThemeInputsEmailMeReceipts" xml:space="preserve">
+        <value>通过邮件给我发送收据</value>
+    </data>
+    <data name="ThemeInputsOneAMonthNeverMore" xml:space="preserve">
+        <value>每月一封，绝不多发。</value>
+    </data>
+    <data name="ThemeInputsHorizontal" xml:space="preserve">
+        <value>水平</value>
+    </data>
+    <data name="ThemeInputsWithIcons" xml:space="preserve">
+        <value>带图标</value>
+    </data>
+    <data name="ThemeInputsChips" xml:space="preserve">
+        <value>纸片</value>
+    </data>
+    <data name="ThemeInputsDropZone" xml:space="preserve">
+        <value>拖放区</value>
+    </data>
+    <data name="ThemeInputsAttachTheInvoice" xml:space="preserve">
+        <value>附上发票</value>
+    </data>
+    <data name="ThemeInputsWithFiles" xml:space="preserve">
+        <value>含文件</value>
+    </data>
+    <data name="ThemeInputsUploadPhotos" xml:space="preserve">
+        <value>上传照片</value>
+    </data>
+    <data name="ThemeInputsPrefixSuffixSteps" xml:space="preserve">
+        <value>前缀、后缀、步进</value>
+    </data>
+    <data name="ThemeInputsPrice" xml:space="preserve">
+        <value>价格</value>
+    </data>
+    <data name="ThemeInputsPerKg" xml:space="preserve">
+        <value>每公斤</value>
+    </data>
+    <data name="ThemeInputsHalfStars" xml:space="preserve">
+        <value>半星</value>
+    </data>
+    <data name="ThemeInputsWithASearchButton" xml:space="preserve">
+        <value>带搜索按钮</value>
+    </data>
+    <data name="ThemeInputsRangeWithMarks" xml:space="preserve">
+        <value>带刻度的范围</value>
+    </data>
+    <data name="ThemeInputsPriceRange" xml:space="preserve">
+        <value>价格区间</value>
+    </data>
+    <data name="ThemeInputsTypeATagAndPress" xml:space="preserve">
+        <value>输入标签后按 Enter</value>
+    </data>
+    <data name="ThemeInputsIconPrefixClearAndCount" xml:space="preserve">
+        <value>图标、前缀、清除和计数</value>
+    </data>
+    <data name="ThemeInputsWebsite" xml:space="preserve">
+        <value>网站</value>
+    </data>
+    <data name="ThemeInputsUnderlined" xml:space="preserve">
+        <value>下划线</value>
+    </data>
+    <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
+        <value>带开关文字</value>
+    </data>
+    <data name="ThemeInputsDarkMap" xml:space="preserve">
+        <value>深色地图</value>
+    </data>
+    <data name="ThemeInputsRateYourVisit" xml:space="preserve">
+        <value>评价您的到店体验</value>
+    </data>
+    <data name="ThemeInputsTags" xml:space="preserve">
+        <value>标签</value>
+    </data>
+    <data name="ThemeInputsBike" xml:space="preserve">
+        <value>自行车</value>
+    </data>
+    <data name="ThemeInputsVan" xml:space="preserve">
+        <value>货车</value>
+    </data>
+    <data name="ThemeInputsPickUp" xml:space="preserve">
+        <value>自取</value>
+    </data>
+    <data name="ThemeInputsVegan" xml:space="preserve">
+        <value>纯素</value>
+    </data>
+    <data name="ThemeInputsGlutenFree" xml:space="preserve">
+        <value>无麸质</value>
+    </data>
+    <data name="ThemeInputsOrganic" xml:space="preserve">
+        <value>有机</value>
+    </data>
+    <data name="ThemeLayersWhatFloatsOverWhatHow" xml:space="preserve">
+        <value>哪些元素浮于哪些之上、禁用元素淡化多少、布局在哪些宽度下变化，以及对话框如何排布文字和按钮。</value>
+    </data>
+    <data name="ThemeLayersLayers" xml:space="preserve">
+        <value>层级</value>
+    </data>
+    <data name="ThemeLayersScreenBreakpoints" xml:space="preserve">
+        <value>屏幕断点</value>
+    </data>
+    <data name="ThemeLayersDialogLayout" xml:space="preserve">
+        <value>对话框布局</value>
+    </data>
+    <data name="ThemeLayoutsPrivacy" xml:space="preserve">
+        <value>隐私</value>
+    </data>
+    <data name="ThemeLayoutsBorderedAndElevated" xml:space="preserve">
+        <value>带边框和阴影</value>
+    </data>
+    <data name="ThemeLayoutsTwelveColumns" xml:space="preserve">
+        <value>十二列</value>
+    </data>
+    <data name="ThemeLayoutsColoredAndElevated" xml:space="preserve">
+        <value>彩色带阴影</value>
+    </data>
+    <data name="ThemeLayoutsBordered" xml:space="preserve">
+        <value>带边框</value>
+    </data>
+    <data name="ThemeLayoutsHeaderNavPanelMainAnd" xml:space="preserve">
+        <value>页眉、导航面板、主体和页脚</value>
+    </data>
+    <data name="ThemeLayoutsPushingTheActionsToThe" xml:space="preserve">
+        <value>将操作推到末尾</value>
+    </data>
+    <data name="ThemeLayouts3Selected" xml:space="preserve">
+        <value>已选择 3 项</value>
+    </data>
+    <data name="ThemeLayoutsHorizontalCenteredWrapping" xml:space="preserve">
+        <value>水平、居中、换行</value>
+    </data>
+    <data name="ThemeLayoutsVertical" xml:space="preserve">
+        <value>垂直</value>
+    </data>
+    <data name="ThemeLayoutsBread" xml:space="preserve">
+        <value>面包</value>
+    </data>
+    <data name="ThemeLayoutsPastry" xml:space="preserve">
+        <value>酥皮点心</value>
+    </data>
+    <data name="ThemeLayoutsCoffee" xml:space="preserve">
+        <value>咖啡</value>
+    </data>
+    <data name="ThemeLayoutsTea" xml:space="preserve">
+        <value>茶</value>
+    </data>
+    <data name="ThemeLayoutsCakes" xml:space="preserve">
+        <value>蛋糕</value>
+    </data>
+    <data name="ThemeListsNobodyIsOnShiftYet" xml:space="preserve">
+        <value>还没有人当班。</value>
+    </data>
+    <data name="ThemeListsTwoAtATime" xml:space="preserve">
+        <value>一次两个</value>
+    </data>
+    <data name="ThemeListsThisWeekSSpecials" xml:space="preserve">
+        <value>本周特惠</value>
+    </data>
+    <data name="ThemeListsWithDots" xml:space="preserve">
+        <value>带圆点</value>
+    </data>
+    <data name="ThemeListsTodaySSpecials" xml:space="preserve">
+        <value>今日特惠</value>
+    </data>
+    <data name="ThemeListsBreakfastBox" xml:space="preserve">
+        <value>早餐盒</value>
+    </data>
+    <data name="ThemeListsCroissantJuiceAndCoffee" xml:space="preserve">
+        <value>可颂、果汁和咖啡</value>
+    </data>
+    <data name="ThemeListsOatFlatWhite" xml:space="preserve">
+        <value>燕麦澳白</value>
+    </data>
+    <data name="ThemeListsTwoForOneBeforeTen" xml:space="preserve">
+        <value>十点前买一送一</value>
+    </data>
+    <data name="ThemeListsCarrotCake" xml:space="preserve">
+        <value>胡萝卜蛋糕</value>
+    </data>
+    <data name="ThemeListsBakedEveryMorning" xml:space="preserve">
+        <value>每天早上现烤</value>
+    </data>
+    <data name="ThemeListsClickAndCollect" xml:space="preserve">
+        <value>线上下单，到店自取</value>
+    </data>
+    <data name="ThemeListsReadyInFifteenMinutes" xml:space="preserve">
+        <value>十五分钟即可取餐</value>
+    </data>
+    <data name="ThemeListsBaked" xml:space="preserve">
+        <value>已烤好</value>
+    </data>
+    <data name="ThemeListsOnItsWay" xml:space="preserve">
+        <value>配送中</value>
+    </data>
+    <data name="ThemeListsDelivered" xml:space="preserve">
+        <value>已送达</value>
+    </data>
+    <data name="ThemeListsAbout1030" xml:space="preserve">
+        <value>约 10:30</value>
+    </data>
+    <data name="ThemeMotionHowLongTheThemeS" xml:space="preserve">
+        <value>主题动画的时长，以及它们如何加速或减速。每一行都注明了组件在何处使用它；点击“播放”，每个圆点都会按所在行的时长和缓动曲线移动。在“试试主题”中开启“减弱动态效果”，即可看到时长降为零。</value>
+    </data>
+    <data name="ThemeMotionPlay" xml:space="preserve">
+        <value>播放</value>
+    </data>
+    <data name="ThemeMotionLoops" xml:space="preserve">
+        <value>循环</value>
+    </data>
+    <data name="ThemeMotionSpinnersLikeAButtonThat" xml:space="preserve">
+        <value>旋转指示器，比如正在保存的按钮：转一圈的时长和缓动方式如下</value>
+    </data>
+    <data name="ThemeMotionSaving" xml:space="preserve">
+        <value>正在保存...</value>
+    </data>
+    <data name="ThemeMotionSpeedFactors" xml:space="preserve">
+        <value>速度系数</value>
+    </data>
+    <data name="ThemeMotionEveryAnimationSDurationIs" xml:space="preserve">
+        <value>每个动画的时长都会乘以此值；“减弱动态效果”会把它设为 0。</value>
+    </data>
+    <data name="ThemeMotionAnimationsThatRepeatLikeSpinners" xml:space="preserve">
+        <value>重复播放的动画（如旋转指示器、脉动徽标和进度条纹）会乘以此值。</value>
+    </data>
+    <data name="ThemeMotionQuickFeedbackLikeAButton" xml:space="preserve">
+        <value>快速反馈，比如按钮在悬停或按下时的颜色</value>
+    </data>
+    <data name="ThemeMotionMostChangesLikeAToggle" xml:space="preserve">
+        <value>大多数变化，比如开关切换或区块展开</value>
+    </data>
+    <data name="ThemeMotionBiggerMovesLikeACalendar" xml:space="preserve">
+        <value>较大的移动，比如日历滑到下个月</value>
+    </data>
+    <data name="ThemeMotionComingInStartsFastAnd" xml:space="preserve">
+        <value>进入：先快后慢，比如菜单或气泡框打开</value>
+    </data>
+    <data name="ThemeMotionGoingOutStartsSlowAnd" xml:space="preserve">
+        <value>退出：先慢后快，比如模态框、面板或底部提示条离开</value>
+    </data>
+    <data name="ThemeNavsFilters" xml:space="preserve">
+        <value>筛选</value>
+    </data>
+    <data name="ThemeNavsInStock" xml:space="preserve">
+        <value>有货</value>
+    </data>
+    <data name="ThemeNavsOnSale" xml:space="preserve">
+        <value>促销中</value>
+    </data>
+    <data name="ThemeNavsFilled" xml:space="preserve">
+        <value>填充</value>
+    </data>
+    <data name="ThemeNavsFirstLastAndSummary" xml:space="preserve">
+        <value>首页、末页和摘要</value>
+    </data>
+    <data name="ThemeNavsIconsAndCounts" xml:space="preserve">
+        <value>图标和计数</value>
+    </data>
+    <data name="ThemeNavsInbox" xml:space="preserve">
+        <value>收件箱</value>
+    </data>
+    <data name="ThemeNavsSent" xml:space="preserve">
+        <value>已发送</value>
+    </data>
+    <data name="ThemeNavsShops" xml:space="preserve">
+        <value>门店</value>
+    </data>
+    <data name="ThemeNavsReports" xml:space="preserve">
+        <value>报表</value>
+    </data>
+    <data name="ThemeNotificationsMessages" xml:space="preserve">
+        <value>消息</value>
+    </data>
+    <data name="ThemeNotificationsOverTheMaximum" xml:space="preserve">
+        <value>超过上限</value>
+    </data>
+    <data name="ThemeNotificationsDot" xml:space="preserve">
+        <value>圆点</value>
+    </data>
+    <data name="ThemeNotificationsOnItsOwn" xml:space="preserve">
+        <value>单独使用</value>
+    </data>
+    <data name="ThemeNotificationsNew" xml:space="preserve">
+        <value>新</value>
+    </data>
+    <data name="ThemeNotificationsTitleActionsAndDismiss" xml:space="preserve">
+        <value>标题、操作和关闭</value>
+    </data>
+    <data name="ThemeNotificationsYourCardExpiresSoon" xml:space="preserve">
+        <value>您的银行卡即将过期</value>
+    </data>
+    <data name="ThemeNotificationsUpdateItBeforeJune1" xml:space="preserve">
+        <value>请在 6 月 1 日前更新，以确保下一笔订单顺利完成。</value>
+    </data>
+    <data name="ThemeNotificationsUpdateCard" xml:space="preserve">
+        <value>更新银行卡</value>
+    </data>
+    <data name="ThemeNotificationsEveryLine" xml:space="preserve">
+        <value>所有行</value>
+    </data>
+    <data name="ThemeNotificationsOwner" xml:space="preserve">
+        <value>店主</value>
+    </data>
+    <data name="ThemeNotificationsInTheAmsterdamShop" xml:space="preserve">
+        <value>在 Amsterdam 门店</value>
+    </data>
+    <data name="ThemeNotificationsBackAt1400" xml:space="preserve">
+        <value>14:00 回来</value>
+    </data>
+    <data name="ThemeNotificationsInitials" xml:space="preserve">
+        <value>姓名首字母</value>
+    </data>
+    <data name="ThemeNotificationsShownFromAButton" xml:space="preserve">
+        <value>通过按钮显示</value>
+    </data>
+    <data name="ThemeNotificationsDismissible" xml:space="preserve">
+        <value>可关闭</value>
+    </data>
+    <data name="ThemeOverlaysDeliveryTimes" xml:space="preserve">
+        <value>送货时间</value>
+    </data>
+    <data name="ThemeOverlaysOrdersBefore1000Arrive" xml:space="preserve">
+        <value>10:00 前下的订单当天送达。</value>
+    </data>
+    <data name="ThemePickersInlineDial" xml:space="preserve">
+        <value>内嵌表盘</value>
+    </data>
+    <data name="ThemePickersEveryPart" xml:space="preserve">
+        <value>所有部件</value>
+    </data>
+    <data name="ThemePickersBrandColor" xml:space="preserve">
+        <value>品牌色</value>
+    </data>
+    <data name="ThemePickersInlineCalendar" xml:space="preserve">
+        <value>内嵌日历</value>
+    </data>
+    <data name="ThemePickersPickTheDates" xml:space="preserve">
+        <value>选择日期</value>
+    </data>
+    <data name="ThemePickersTheShopClosesAt18" xml:space="preserve">
+        <value>本店 18:00 打烊。</value>
+    </data>
+    <data name="ThemePickersInline" xml:space="preserve">
+        <value>内嵌</value>
+    </data>
+    <data name="ThemePickersOpensAt" xml:space="preserve">
+        <value>开门时间</value>
+    </data>
+    <data name="ThemePickersPickATime" xml:space="preserve">
+        <value>选择时间</value>
+    </data>
+    <data name="ThemePickersStay" xml:space="preserve">
+        <value>入住日期</value>
+    </data>
+    <data name="ThemeProgressDeterminate" xml:space="preserve">
+        <value>确定进度</value>
+    </data>
+    <data name="ThemeProgressIndeterminate" xml:space="preserve">
+        <value>不确定进度</value>
+    </data>
+    <data name="ThemeProgressSyncing" xml:space="preserve">
+        <value>正在同步</value>
+    </data>
+    <data name="ThemeProgressUploadFailed" xml:space="preserve">
+        <value>上传失败</value>
+    </data>
+    <data name="ThemeProgressTheConnectionDropped" xml:space="preserve">
+        <value>连接已断开。</value>
+    </data>
+    <data name="ThemeProgressCircular" xml:space="preserve">
+        <value>环形</value>
+    </data>
+    <data name="ThemeProgressStorage" xml:space="preserve">
+        <value>存储空间</value>
+    </data>
+    <data name="ThemeProgressSegments" xml:space="preserve">
+        <value>分段</value>
+    </data>
+    <data name="ThemeProgressStep3Of5" xml:space="preserve">
+        <value>第 3 步，共 5 步</value>
+    </data>
+    <data name="ThemeProgressStriped" xml:space="preserve">
+        <value>条纹</value>
+    </data>
+    <data name="ThemeProgressDownloadingTheMenu" xml:space="preserve">
+        <value>正在下载菜单</value>
+    </data>
+    <data name="ThemeProgressLine" xml:space="preserve">
+        <value>单行</value>
+    </data>
+    <data name="ThemeProgressParagraph" xml:space="preserve">
+        <value>段落</value>
+    </data>
+    <data name="ThemeProgressAvatarAndLines" xml:space="preserve">
+        <value>头像和多行</value>
+    </data>
+    <data name="ThemeProgressLoaded" xml:space="preserve">
+        <value>已加载</value>
+    </data>
+    <data name="ThemeShadowsTheShadowEachSurfaceLifts" xml:space="preserve">
+        <value>每种容器浮起时所用的阴影、通用等级，以及 24 级投影高度。</value>
+    </data>
+    <data name="ThemeShapeTheCornerRadiusScaleAnd" xml:space="preserve">
+        <value>圆角半径等级以及每类组件采用的半径，然后是边框宽度和焦点环。</value>
+    </data>
+    <data name="ThemeShapeBordersAndFocus" xml:space="preserve">
+        <value>边框和焦点</value>
+    </data>
+    <data name="ThemeSizesTheSizesComponentsAreBuilt" xml:space="preserve">
+        <value>构成组件的各种尺寸（每种都画成对应长度的条形），然后是间距单位、密度以及卡片和对话框的内边距。试试“密度”开关，看看它们如何变化。</value>
+    </data>
+    <data name="ThemeSizesSpacing" xml:space="preserve">
+        <value>间距</value>
+    </data>
+    <data name="ThemeSurfacesTheSurfacesThatFloatOver" xml:space="preserve">
+        <value>浮于页面之上的容器可以在这里通过各自的按钮打开；“打开浮层”开关可以让它们在链接和截图中保持打开。</value>
+    </data>
+    <data name="ThemeSurfacesIconAndDescription" xml:space="preserve">
+        <value>图标和说明</value>
+    </data>
+    <data name="ThemeSurfacesVisaEndingIn4242" xml:space="preserve">
+        <value>尾号 4242 的 Visa 卡</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromItsAnchor" xml:space="preserve">
+        <value>从锚点处打开</value>
+    </data>
+    <data name="ThemeSurfacesTitleBodyAndActions" xml:space="preserve">
+        <value>标题、正文和操作</value>
+    </data>
+    <data name="ThemeSurfacesAutumnMenu" xml:space="preserve">
+        <value>秋季菜单</value>
+    </data>
+    <data name="ThemeSurfacesStartsOnMonday" xml:space="preserve">
+        <value>周一开始</value>
+    </data>
+    <data name="ThemeSurfacesPublish" xml:space="preserve">
+        <value>发布</value>
+    </data>
+    <data name="ThemeSurfacesWithAnImage" xml:space="preserve">
+        <value>带图片</value>
+    </data>
+    <data name="ThemeSurfacesMonthlySalesReport" xml:space="preserve">
+        <value>月度销售报表</value>
+    </data>
+    <data name="ThemeSurfacesReadyToShare" xml:space="preserve">
+        <value>可以分享了</value>
+    </data>
+    <data name="ThemeSurfacesTwoPeopleReadingTheSales" xml:space="preserve">
+        <value>两个人在看销售图表</value>
+    </data>
+    <data name="ThemeSurfacesSalesGrew12OnLast" xml:space="preserve">
+        <value>销售额比上月增长 12%。</value>
+    </data>
+    <data name="ThemeSurfacesOutlined" xml:space="preserve">
+        <value>描边</value>
+    </data>
+    <data name="ThemeSurfacesCollapsedToAPeek" xml:space="preserve">
+        <value>收起，露出一部分</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromAButton" xml:space="preserve">
+        <value>通过按钮打开</value>
+    </data>
+    <data name="ThemeSurfacesShowLess" xml:space="preserve">
+        <value>收起</value>
+    </data>
+    <data name="ThemeSurfacesShowMore" xml:space="preserve">
+        <value>显示更多</value>
+    </data>
+    <data name="ThemeSurfacesDiscardChanges" xml:space="preserve">
+        <value>放弃更改</value>
+    </data>
+    <data name="ThemeSurfacesOpensFromCode" xml:space="preserve">
+        <value>通过代码打开</value>
+    </data>
+    <data name="ThemeSurfacesModalFromTheService" xml:space="preserve">
+        <value>由服务打开的模态框</value>
+    </data>
+    <data name="ThemeSurfacesFadedEdges" xml:space="preserve">
+        <value>边缘渐隐</value>
+    </data>
+    <data name="ThemeSurfacesSideBySide" xml:space="preserve">
+        <value>并排</value>
+    </data>
+    <data name="ThemeSurfacesResizeThePanels" xml:space="preserve">
+        <value>调整面板大小</value>
+    </data>
+    <data name="ThemeSurfacesOrderDetails" xml:space="preserve">
+        <value>订单详情</value>
+    </data>
+    <data name="ThemeSurfacesStacked" xml:space="preserve">
+        <value>上下排列</value>
+    </data>
+    <data name="ThemeSurfacesDiscardYourChanges" xml:space="preserve">
+        <value>放弃您的更改？</value>
+    </data>
+    <data name="ThemeSurfacesWhatYouTypedSinceThe" xml:space="preserve">
+        <value>自上次保存以来输入的内容将会丢失。</value>
+    </data>
+    <data name="ThemeSurfacesDiscard" xml:space="preserve">
+        <value>放弃</value>
+    </data>
+    <data name="ThemeOpenedByBitModalService" xml:space="preserve">
+        <value>由 BitModalService 打开</value>
+    </data>
+    <data name="ThemeAnyComponentCanBeShown" xml:space="preserve">
+        <value>任何组件都可以通过代码显示在模态框中，无需在页面上编写标记。</value>
+    </data>
+    <data name="ThemeTypographyTheTypeRampBitTextDraws" xml:space="preserve">
+        <value>BitText 绘制的字体层级，然后是构成它的字体、字号和字重，最后是为某些组件内文字设置样式的设计令牌。</value>
+    </data>
+    <data name="ThemeTypographyFonts" xml:space="preserve">
+        <value>字体</value>
+    </data>
+    <data name="ThemeTypographyFontSizes" xml:space="preserve">
+        <value>字号</value>
+    </data>
+    <data name="ThemeTypographyFontWeights" xml:space="preserve">
+        <value>字重</value>
+    </data>
+    <data name="ThemeTypographyTextInsideComponents" xml:space="preserve">
+        <value>组件内的文字</value>
+    </data>
+    <data name="ThemeTypographyButtonsMenusAndOtherControls" xml:space="preserve">
+        <value>按钮、菜单和其他控件：文字的字重、字间距和大小写</value>
+    </data>
+    <data name="ThemeTypographyDialogsTheSizeAndWeight" xml:space="preserve">
+        <value>对话框：标题的字号和字重</value>
+    </data>
+    <data name="ThemeTypographyInputsTheWeightOfThe" xml:space="preserve">
+        <value>输入控件：字段上方标签的字重</value>
+    </data>
+    <data name="ThemeTypographyHeadersAndFootersTheLine" xml:space="preserve">
+        <value>页眉和页脚：文字的行高</value>
+    </data>
+    <data name="ThemeTypographyBitTextWithGutterTheSpace" xml:space="preserve">
+        <value>带 Gutter 的 BitText：段落下方的间距</value>
+    </data>
+    <data name="ThemeUtilitiesAnyTagStyledLikeA" xml:space="preserve">
+        <value>任意标签，套用组件样式</value>
+    </data>
+    <data name="ThemeUtilitiesTheBestCroissantIHad" xml:space="preserve">
+        <value>这是我在 Paris 以外吃过最好吃的可颂。</value>
+    </data>
+    <data name="ThemeUtilitiesSpinning" xml:space="preserve">
+        <value>旋转</value>
+    </data>
+    <data name="ThemeUtilitiesCoverRoundedWithAShadow" xml:space="preserve">
+        <value>裁剪填充，圆角，带阴影</value>
+    </data>
+    <data name="ThemeUtilitiesContainBordered" xml:space="preserve">
+        <value>完整显示，带边框</value>
+    </data>
+    <data name="ThemeUtilitiesUnderlinedWithAnIcon" xml:space="preserve">
+        <value>带下划线和图标</value>
+    </data>
+    <data name="ThemeUtilitiesReportAProblem" xml:space="preserve">
+        <value>报告问题</value>
+    </data>
+    <data name="ThemeUtilitiesWhatThisViewSWidth" xml:space="preserve">
+        <value>此视图宽度符合的条件</value>
+    </data>
+    <data name="ThemeUtilitiesNarrowerThanMd" xml:space="preserve">
+        <value>窄于 md</value>
+    </data>
+    <data name="ThemeUtilitiesMdOrWider" xml:space="preserve">
+        <value>md 或更宽</value>
+    </data>
+    <data name="ThemeUtilitiesOverABox" xml:space="preserve">
+        <value>覆盖在方框上</value>
+    </data>
+    <data name="ThemeUtilitiesPullTheListDown" xml:space="preserve">
+        <value>向下拉动列表</value>
+    </data>
+    <data name="ThemeUtilitiesWithText" xml:space="preserve">
+        <value>带文字</value>
+    </data>
+    <data name="ThemeUtilitiesOr" xml:space="preserve">
+        <value>或</value>
+    </data>
+    <data name="ThemeUtilitiesScrollTheBox" xml:space="preserve">
+        <value>滚动方框</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeInTheBox" xml:space="preserve">
+        <value>在方框内滑动</value>
+    </data>
+    <data name="ThemeUtilitiesSwipeOrDragHere" xml:space="preserve">
+        <value>在这里滑动或拖动</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedUp" xml:space="preserve">
+        <value>已向上滑动</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedDown" xml:space="preserve">
+        <value>已向下滑动</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedLeft" xml:space="preserve">
+        <value>已向左滑动</value>
+    </data>
+    <data name="ThemeUtilitiesSwipedRight" xml:space="preserve">
+        <value>已向右滑动</value>
+    </data>
+    <data name="ThemeUtilitiesForegrounds" xml:space="preserve">
+        <value>前景色</value>
+    </data>
+    <data name="ThemeUtilitiesPrimaryText" xml:space="preserve">
+        <value>主要文字</value>
+    </data>
+    <data name="ThemeUtilitiesSecondaryText" xml:space="preserve">
+        <value>次要文字</value>
+    </data>
+    <data name="ThemeUtilitiesTertiaryText" xml:space="preserve">
+        <value>第三级文字</value>
+    </data>
+    <data name="ThemeUtilitiesSaved" xml:space="preserve">
+        <value>已保存</value>
+    </data>
+    <data name="ThemeUtilitiesStyles" xml:space="preserve">
+        <value>样式</value>
+    </data>
+    <data name="ThemeUtilitiesBold" xml:space="preserve">
+        <value>粗体</value>
+    </data>
+    <data name="ThemeUtilitiesItalic" xml:space="preserve">
+        <value>斜体</value>
+    </data>
+    <data name="ThemeUtilitiesClampedToTwoLines" xml:space="preserve">
+        <value>最多显示两行</value>
+    </data>
+    <data name="ThemeSectionsOfThisPage" xml:space="preserve">
+        <value>本页各部分</value>
+    </data>
+    <data name="ThemeRenameTheShop" xml:space="preserve">
+        <value>重命名门店</value>
+    </data>
+    <data name="ThemeTheNewNameShowsOn" xml:space="preserve">
+        <value>新名称将从明天起显示在收据上。</value>
+    </data>
+    <data name="FlowCopyName" xml:space="preserve">
+        <value>{0}（副本）</value>
+    </data>
+    <data name="TourArrowsTitle" xml:space="preserve">
+        <value>修改箭头</value>
+    </data>
+    <data name="TourArrowsText" xml:space="preserve">
+        <value>双击箭头即可重命名、标记它开始的按钮或删除它。示例会保持原样：修改示例中的箭头会生成一份您自己的流程副本。</value>
+    </data>
+    <data name="ThemeTokensScale" xml:space="preserve">
+        <value>等级</value>
+    </data>
+    <data name="ThemeTokensFamilies" xml:space="preserve">
+        <value>组件类别</value>
+    </data>
+    <data name="ThemeTokensElevation" xml:space="preserve">
+        <value>投影高度</value>
+    </data>
+    <data name="ThemeTokensControlHeight" xml:space="preserve">
+        <value>控件高度</value>
+    </data>
+    <data name="ThemeTokensControlPadding" xml:space="preserve">
+        <value>控件内边距</value>
+    </data>
+    <data name="ThemeTokensIcons" xml:space="preserve">
+        <value>图标</value>
+    </data>
+    <data name="ThemeTokensCheckboxesAndRadios" xml:space="preserve">
+        <value>复选框和单选按钮</value>
+    </data>
+    <data name="ThemeTokensListRows" xml:space="preserve">
+        <value>列表行</value>
+    </data>
+    <data name="ThemeTokensTabs" xml:space="preserve">
+        <value>标签页</value>
+    </data>
+    <data name="ThemeTokensLinesAndTracks" xml:space="preserve">
+        <value>线条和轨道</value>
+    </data>
+    <data name="ThemeTokensSwitches" xml:space="preserve">
+        <value>开关</value>
+    </data>
+    <data name="ThemeTokensSliderThumbs" xml:space="preserve">
+        <value>滑块手柄</value>
+    </data>
+    <data name="ThemeTokensBadges" xml:space="preserve">
+        <value>徽标</value>
+    </data>
+    <data name="ThemeTokensLimits" xml:space="preserve">
+        <value>上限</value>
+    </data>
+    <data name="ThemeLocalizationNote" xml:space="preserve">
+        <value>本页组件的文本并未全部翻译成每种语言。这并不代表不支持本地化：这里的每个组件都可以本地化，只是把它们的文本全部翻译出来，对本页的用途帮助不大。需要时，请让您的 AI 智能体补全翻译。</value>
     </data>
 </root>

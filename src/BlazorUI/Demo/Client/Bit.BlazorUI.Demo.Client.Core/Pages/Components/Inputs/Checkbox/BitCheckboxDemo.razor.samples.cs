@@ -317,11 +317,29 @@ private bool readOnlyValue;";
 else
 {
     <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
-}";
+}
+
+
+<BitCheckbox Label=""Send paper invoices""
+             Description=""A printed copy of every invoice, posted to the billing address.""
+             ErrorMessage=""@(paperInvoices ? ""Paper invoices are not available on the free plan."" : null)""
+             @bind-Value=""paperInvoices"" />
+
+<BitCheckbox Label=""Marked invalid, explained elsewhere"" Invalid />
+
+<BitCheckbox Label=""Share my activity with my team""
+             ErrorMessageAriaLabel=""This conflicts with your privacy settings."">
+    <ErrorMessageTemplate>
+        This conflicts with your
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">privacy settings</BitLink>.
+    </ErrorMessageTemplate>
+</BitCheckbox>";
 
     private readonly string example11CsharpCode = @"
 private string SuccessMessage = string.Empty;
 private BitCheckboxValidationModel validationModel = new();
+
+private bool paperInvoices = true;
 
 public class BitCheckboxValidationModel
 {

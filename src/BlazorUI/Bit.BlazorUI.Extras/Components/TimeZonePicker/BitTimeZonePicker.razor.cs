@@ -1030,15 +1030,18 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
                 return true;
         }
 
-        if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
-        {
-            if (BitTimeZoneList.IsSearchKey(e) is false) return false;
-
-            await ApplySearchText(_list.SearchText + e.Key);
-        }
-
         try
         {
+            if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
+            {
+                if (BitTimeZoneList.IsSearchKey(e) is false) return false;
+
+                // Typed into the box where it is, and searched for through the box's own binding, as in BitCountryPicker.
+                await _js.BitExtrasTypeInto(_searchInputRef, e.Key);
+
+                return true;
+            }
+
             await _searchInputRef.FocusAsync();
         }
         catch (JSException) { } // the element might not be ready/visible yet
@@ -1255,8 +1258,8 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
         _isCalloutDisplayed = shown;
     }
 
-    private Task HandleOnSearchInput(ChangeEventArgs e) => ApplySearchText(e.Value?.ToString());
-
+    // The setter of the search box's binding (see the markup), which a letter typed on the field of an open list reaches
+    // as well, typed into the box (see HandleOnFieldOfSearchableListKeyDown).
     private async Task ApplySearchText(string? text)
     {
         SearchFor(text);

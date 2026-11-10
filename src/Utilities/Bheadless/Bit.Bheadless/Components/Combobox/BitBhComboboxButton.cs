@@ -64,7 +64,7 @@ public class BitBhComboboxButton<TValue> : BitBhComponentBase, IDisposable
             attrs["role"] = "button";
         attrs["tabindex"] = "-1";
         if (GetAdditionalAttribute("aria-label") is null && GetAdditionalAttribute("aria-labelledby") is null)
-            attrs["aria-label"] = "Show options";
+            attrs["aria-label"] = Strings.ShowOptions;
         SetAriaBool(attrs, "aria-expanded", ComboboxContext?.Combobox.IsListboxShown ?? false);
         if (ComboboxContext is not null)
             attrs["aria-controls"] = ComboboxContext.OptionsId;

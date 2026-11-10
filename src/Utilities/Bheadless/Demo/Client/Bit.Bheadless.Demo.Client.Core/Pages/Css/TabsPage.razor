@@ -41,6 +41,41 @@
     </LiveContent>
 </DemoBlock>
 
+<DemoBlock Title="Sliding indicator and segmented control"
+           Code="@_indicatorCode"
+           Css="@_indicatorCss">
+    <Description>
+        A <code>BitBhSelectionIndicator</code> placed in the tab list follows the selected tab: the browser measures it and
+        sets <code>--bit-bh-indicator-left</code>, <code>-top</code>, <code>-width</code> and <code>-height</code> - with no round
+        trip to .NET - so the underline slides with a plain CSS transition (<code>data-measured</code> keeps it from sliding in
+        on the first paint). In a <code>BitBhRadioGroup</code> the same part makes a segmented control.
+    </Description>
+    <LiveContent>
+        <div style="display:grid;gap:1.25rem;width:100%">
+            <BitBhTabGroup class="tabs">
+                <BitBhTabList class="tab-list-sliding">
+                    <BitBhTab class="tab">Overview</BitBhTab>
+                    <BitBhTab class="tab">Integrations</BitBhTab>
+                    <BitBhTab class="tab">Billing</BitBhTab>
+                    <BitBhSelectionIndicator class="tab-underline" />
+                </BitBhTabList>
+                <BitBhTabPanels class="tab-panels">
+                    <BitBhTabPanel class="tab-panel">Project overview.</BitBhTabPanel>
+                    <BitBhTabPanel class="tab-panel">Connected apps.</BitBhTabPanel>
+                    <BitBhTabPanel class="tab-panel">Plans and invoices.</BitBhTabPanel>
+                </BitBhTabPanels>
+            </BitBhTabGroup>
+
+            <BitBhRadioGroup DefaultValue="week" aria-label="Range" class="segmented">
+                <BitBhRadio Value="day" class="segment">Day</BitBhRadio>
+                <BitBhRadio Value="week" class="segment">Week</BitBhRadio>
+                <BitBhRadio Value="month" class="segment">Month</BitBhRadio>
+                <BitBhSelectionIndicator class="segment-pill" />
+            </BitBhRadioGroup>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
 <DemoBlock Title="Vertical Orientation"
            Code="@_verticalCode"
            Css="@_verticalCss">
@@ -210,6 +245,57 @@
     private int selectedIndex;
 
     // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _indicatorCode = """
+<BitBhTabGroup class="tabs">
+    <BitBhTabList class="tab-list-sliding">
+        <BitBhTab class="tab">Overview</BitBhTab>
+        <BitBhTab class="tab">Integrations</BitBhTab>
+        <BitBhTab class="tab">Billing</BitBhTab>
+        <BitBhSelectionIndicator class="tab-underline" />
+    </BitBhTabList>
+    <BitBhTabPanels>…</BitBhTabPanels>
+</BitBhTabGroup>
+
+<BitBhRadioGroup DefaultValue="week" aria-label="Range" class="segmented">
+    <BitBhRadio Value="day" class="segment">Day</BitBhRadio>
+    <BitBhRadio Value="week" class="segment">Week</BitBhRadio>
+    <BitBhRadio Value="month" class="segment">Month</BitBhRadio>
+    <BitBhSelectionIndicator class="segment-pill" />
+</BitBhRadioGroup>
+""";
+
+    private const string _indicatorCss = """
+.tab-list-sliding { position: relative; display: flex; border-bottom: 1px solid var(--color-border); }
+
+/* --bit-bh-indicator-left / -width follow the selected tab */
+.tab-underline {
+    position: absolute;
+    bottom: -1px;
+    left: var(--bit-bh-indicator-left);
+    width: var(--bit-bh-indicator-width);
+    height: 2px;
+    background: var(--color-primary);
+}
+
+/* data-measured once placed: animate from then on, never from 0 */
+.tab-underline[data-measured] { transition: left 220ms ease, width 220ms ease; }
+
+.segmented { position: relative; display: inline-flex; padding: 0.25rem; border-radius: 0.6rem; background: var(--color-fill); }
+.segment { all: unset; position: relative; z-index: 1; padding: 0.35rem 0.9rem; cursor: pointer; }
+
+.segment-pill {
+    position: absolute;
+    top: var(--bit-bh-indicator-top);
+    left: var(--bit-bh-indicator-left);
+    width: var(--bit-bh-indicator-width);
+    height: var(--bit-bh-indicator-height);
+    border-radius: 0.45rem;
+    background: var(--color-surface);
+}
+
+.segment-pill[data-measured] { transition: left 220ms ease, width 220ms ease; }
+""";
 
     private const string _basicCode = """
 <BitBhTabGroup class="tabs">

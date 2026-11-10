@@ -19,10 +19,14 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DateRangePicker;
 [TestClass]
 public class BitDateRangePickerParamsTests : BunitTestContext
 {
-    // Whether one picker's callout is open is the state of that picker, moved by its own clicks and keys.
+    // Whether one picker's callout is open is the state of that picker, moved by its own clicks and keys, and the
+    // rejection the app asserted on it is about that picker's range alone.
     private static readonly string[] _notCascaded =
     [
         nameof(BitDateRangePicker.CascadingParameters),
+        nameof(BitDateRangePicker.ErrorMessage),
+        nameof(BitDateRangePicker.ErrorMessageTemplate),
+        nameof(BitDateRangePicker.Invalid),
         nameof(BitDateRangePicker.IsOpen),
     ];
 
@@ -169,6 +173,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
             EndTimeIncreaseMinuteIconName = "EimName",
             EndTimeIncreaseMinuteTitle = "Cascaded end inc minute",
             EndTimeMinuteInputAriaLabel = "Cascaded end minute",
+            ErrorMessageAriaLabel = "Cascaded error",
             ExcludeDisabledDates = true,
             FirstDayOfWeek = DayOfWeek.Monday,
             FixedWeeks = true,
@@ -325,6 +330,7 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.AreEqual("EimName", instance.EndTimeIncreaseMinuteIconName);
         Assert.AreEqual("Cascaded end inc minute", instance.EndTimeIncreaseMinuteTitle);
         Assert.AreEqual("Cascaded end minute", instance.EndTimeMinuteInputAriaLabel);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
         Assert.IsTrue(instance.ExcludeDisabledDates);
         Assert.AreEqual(DayOfWeek.Monday, instance.FirstDayOfWeek);
         Assert.IsTrue(instance.FixedWeeks);
@@ -655,6 +661,28 @@ public class BitDateRangePickerParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-dtrp-lg"));
         Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldRenderTheLiveRegionBeforeACascadedErrorMessageAriaLabelIsAnnounced()
+    {
+        var invalid = false;
+
+        var component = RenderWithParams(new BitDateRangePickerParams { ErrorMessageAriaLabel = "Refused by the server." },
+                                         builder => builder.AddAttribute(1, nameof(BitDateRangePicker.Invalid), invalid));
+
+        // The picker writes no error parameter of its own, yet the label it holds is said out of the region the
+        // moment Invalid turns on, so the region is on the page ahead of it.
+        Assert.AreEqual(string.Empty, component.Find(".bit-dtrp > [role=status]").TextContent.Trim());
+
+        invalid = true;
+        component.Render();
+
+        var input = component.Find(".bit-dtrp-inp");
+
+        Assert.AreEqual("Refused by the server.", component.Find(".bit-dtrp > [role=status]").TextContent.Trim());
+        Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
+        Assert.AreEqual("Refused by the server.", component.Find($"#{input.GetAttribute("aria-describedby")}").TextContent);
     }
 
     private static bool IsEventCallback(Type type)

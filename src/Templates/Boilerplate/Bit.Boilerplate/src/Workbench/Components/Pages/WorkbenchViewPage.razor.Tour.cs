@@ -41,7 +41,12 @@ public partial class WorkbenchViewPage
         var columnBefore = store.Column;
         var phone = new WorkbenchScenario();
         // The building sample shows what a flow is; without its page, the list of flows does.
-        var flowsUrl = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId) ? WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId) : WorkbenchUrls.Flows;
+        var hasBuildingsSample = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId);
+        var flowsUrl = hasBuildingsSample ? WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId) : WorkbenchUrls.Flows;
+        // The sample's arrow editor, which opens only where arrows can be changed.
+        var showsArrowEditor = hasBuildingsSample && reviewSession.CanWrite;
+        // Set by the step being left when the next one is on the board too, which it then leaves as it is.
+        var staysOnBoard = false;
         var pageBefore = pageInfo!.Key;
         // Another page than the one the tour starts on, for a change; without it, that page.
         var componentsPage = WorkbenchPageCatalog.Find(TourComponentsPage)?.Key ?? pageBefore;
@@ -50,6 +55,21 @@ public partial class WorkbenchViewPage
 
         // Replaces the address, as the phone's Back from a page the tour opened by itself would lead nowhere useful.
         void ShowPage(string pageKey) => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageKey)}{store.QueryString}", replace: true);
+
+        // Back to the views, unless the next step is on the board too: then only the arrow's editor closes.
+        void LeaveBoard(string stayingOn)
+        {
+            if (staysOnBoard)
+            {
+                NavigationManager.NavigateTo(stayingOn, replace: true);
+            }
+            else
+            {
+                ShowPage(pageBefore);
+            }
+
+            staysOnBoard = false;
+        }
 
         BonboardingTourDefinition tour = new()
         {
@@ -205,7 +225,38 @@ public partial class WorkbenchViewPage
                     Title = nameof(WorkbenchStrings.Flows),
                     Description = nameof(WorkbenchStrings.AllFlowsHint),
                     Placement = BonboardingPlacement.InlineStart,
-                    OnBeforeLeave = _ => ShowInTour(() => ShowPage(pageBefore))
+                    // A leave hook that never ran, for the browser's Back, leaves no mark for the next one.
+                    OnBeforeShow = _ => ShowInTour(() => staysOnBoard = false),
+                    // Runs before the leave hook, so the board stays for the arrow's step.
+                    ResolveNext = _ =>
+                    {
+                        staysOnBoard = showsArrowEditor;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    OnBeforeLeave = _ => ShowInTour(() => LeaveBoard(stayingOn: flowsUrl))
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "flow-arrows",
+                    Route = flowsUrl,
+                    When = _ => ValueTask.FromResult(showsArrowEditor),
+                    // The editor of the sample's Add building arrow, opened the way the board's address opens it.
+                    Target = BonboardingStepTarget.Dynamic(_ =>
+                    {
+                        NavigationManager.NavigateTo(WorkbenchUrls.FlowArrow(WorkbenchSampleFlows.BuildingsId, WorkbenchSampleFlows.BuildingsAddArrowId), replace: true);
+
+                        return BonboardingStepTarget.Css(".label-editor");
+                    }),
+                    Title = nameof(WorkbenchStrings.TourArrowsTitle),
+                    Description = nameof(WorkbenchStrings.TourArrowsText),
+                    Placement = BonboardingPlacement.Bottom,
+                    OnBeforeShow = _ => ShowInTour(() => staysOnBoard = false),
+                    ResolvePrevious = _ =>
+                    {
+                        staysOnBoard = true;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    OnBeforeLeave = _ => ShowInTour(() => LeaveBoard(stayingOn: flowsUrl))
                 },
                 new BonboardingStepDefinition
                 {

@@ -31,7 +31,8 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | `Bit.Belemetry/Pipeline/` | Collectors (ActivityListener, MeterListener, ILoggerProvider), processors, batching, sampling |
 | `Bit.Belemetry/Exporters/` | OTLP (protobuf + JSON serializers), Azure Monitor (envelopes, live metrics), console, in-memory, HTTP sender + retry + persistence |
 | `Bit.Belemetry/Interop/` | The JS bridge (module import, config, relay, unload drain, context sync) |
-| `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag) and `<BelemetryInitializer />` (interactive bridge) |
+| `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag), `<BelemetryInitializer />` (interactive bridge) and `<BelemetryCapturePreview />` (the unstyled support-bundle preview) |
+| `Bit.Belemetry/Diagnostics/` | Production diagnostics: the diagnostic timeline (`BelemetryDiagnosticRecorder`, one per process on client hosts, one per circuit on a server, routed by `BelemetryDiagnosticHub`), the event model, the sanitizer, exception fingerprints, captures, issue reports and the support bundle format. See "Production diagnostics" below |
 | `Bit.Belemetry.EntityFrameworkCore/` | Separate package: a `DbCommandInterceptor` that starts a client span per EF Core command on the `Bit.Belemetry.EntityFrameworkCore` source (`UseBitBelemetry()` on the context options). Depends on the core and `Microsoft.EntityFrameworkCore.Relational` only |
 | `Bit.Belemetry.Hangfire/` | Separate package: a client + server job filter that carries the W3C trace context in the job's parameters and starts a consumer span per execution on the `Bit.Belemetry.Hangfire` source (`UseBitBelemetry()` on the global configuration). Depends on the core and `Hangfire.Core` only |
 | `Demo/` | Documentation site (Client) and its host (Server). The host also runs the MCP server at `/mcp` and an in-process OTLP receiver that the demo exports to |
@@ -54,7 +55,15 @@ core because every host may need them and they add no dependency.
   - Interop DTOs go through the source-generated `BelemetryJsonContext`.
   - The package is `IsTrimmable` and `IsAotCompatible`.
 - **No threads.** Browser WebAssembly is single-threaded, so the pipeline runs on async loops with timers only.
-  `new Thread`, blocking waits and `.Result` are forbidden.
+  `new Thread`, blocking waits and `.Result` are forbidden. A process ending on an unhandled exception runs nothing
+  async to completion, so `BelemetryPipeline.PersistForExit` saves the queue synchronously (`BelemetryFileRequestStore.SaveNow`,
+  without the store's lock; in WebAssembly the script gets it, as from the unload drain) - still without waiting on anything,
+  the network included: a crash never takes longer because of telemetry. The exports take nothing off the queue from
+  before the crash record is queued until it is saved (`BeginExitHold`), and the saved requests are bounded by
+  `Batch.MaxBatchSize` and saved newest first, so a full store drops the oldest records, never the crash. Platforms that
+  report a crash elsewhere (.NET for Android, WinUI, WinForms' UI thread) reach the same path through
+  `Belemetry.TrackBitBelemetryUnhandledException`; the core cannot subscribe to their events itself (no platform target
+  frameworks).
 - **`BelemetryOptions` stays bindable** by the configuration binder's source generator, which runs in the consuming
   app (`Tests/Bit.Belemetry.Tests/BelemetryOptionsBindingTests.cs` binds every option): collections are get-only
   `List<T>` or `Dictionary<,>`, nested options are get-only instances, an array default is empty (a binder appends
@@ -78,7 +87,7 @@ together, plus the tests on both sides.
 
 | Name | Bit | Covers |
 | --- | --- | --- |
-| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException` |
+| `Errors` | 1 | JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; `TrackException`; unhandled .NET exceptions and unobserved task exceptions (`BelemetryUnhandledExceptions`); the exceptions recorded on spans (`Activity.AddException`, taken off the span without it) |
 | `PageViews` | 2 | Page views (history/enhanced navigation, `TrackPageView`) |
 | `Interactions` | 4 | Clicks and other user interactions |
 | `Performance` | 8 | Web vitals (LCP, INP, CLS, FCP, TTFB), document-load span, resource timing, long tasks |
@@ -138,6 +147,7 @@ How consent works:
 | `bit-belemetry-pseudo-id` | localStorage | `UserTracking` | 32 hex chars |
 | `bit-belemetry-user-id` | sessionStorage | `UserTracking` | authenticated id from `setUser` |
 | `bit-belemetry-queue` | localStorage | `Persistence` | `[{"id","exporter","url","contentType","body"(base64),"time"}]`, oldest first, capped by `persistence.maxBytes` |
+| `bit-belemetry-diagnostics` | sessionStorage | `Persistence` and `diagnostics.persist` | `{"v":1,"events":[<diagnostic event>]}`: the last 100 browser timeline events (at most 256 K characters), written on hide, read back once (and removed) by the next load of the tab |
 
 Persisted requests never carry headers (API keys), in the browser queue or in the .NET file store
 (`{LocalApplicationData}/bit-belemetry/{service.name}/*.blmreq`, `BelemetryHttpRequest` JSON without `headers`). The
@@ -148,7 +158,8 @@ named by `exporter`, in the browser from the browser exporter whose URL prefix m
 
 `<BelemetryScript />` writes this into `<script type="application/json" id="bit-belemetry-config">`. The module
 auto-starts from it on load. `<BelemetryInitializer />` passes the same object to `start(config)`. `start` is
-idempotent: a second call only updates the consent defaults and the bridge.
+idempotent: a second call only updates the consent defaults and the bridge, and appends the `ignoreUrls` and
+`pageViews.routes` the first lacks.
 
 ```jsonc
 {
@@ -165,7 +176,7 @@ idempotent: a second call only updates the consent defaults and the bridge.
   ],
   "features": 4095,                                      // instrumentations switched on by configuration
   "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-  "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
+  "pageViews": { "trackHashChanges": false, "trackVisitTime": false, "routes": ["/", "/orders/{id:int}"] },  // routes: absent when none; only the configured ones when .NET starts a script already started
   "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64, "rageClicks": true },
   "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
   "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
@@ -180,7 +191,10 @@ idempotent: a second call only updates the consent defaults and the bridge.
   "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
   "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48, "retryIntervalMs": 60000 },
   "maxValueLength": 32768,                               // BelemetryOptions.MaxValueLength; 0 keeps strings whole
-  "debug": false
+  "debug": false,
+  // Only with BelemetryOptions.Diagnostics.Enabled; absent otherwise (the script then keeps no timeline).
+  "diagnostics": { "enabled": true, "maxEvents": 200, "categories": 1023, "includeSuccessfulActivity": true, "includeLogMessages": false,
+                   "persist": false, "triggerBrowserErrors": false, "allowedQueryParameters": [] }
 }
 ```
 
@@ -208,6 +222,12 @@ Notes on the fields:
 - `headers` of an OTLP exporter are `BrowserHeaders` alone when a server renders the config (its `Headers` are server
   configuration and must never be published in a page); in WebAssembly and Hybrid they are `Headers` with
   `BrowserHeaders` on top (`BelemetryBrowserConfigFactory.BrowserHeaders`).
+- `endpoint`, `tracesEndpoint`, `logsEndpoint` and the `ignoreUrls` entries never carry user info, on any host
+  (`BelemetryUserInfo`): a server would publish the credential in every page, and fetch refuses a URL with credentials
+  anyway (.NET's `HttpClient` does not send it either). A server warns at startup about an exporter whose page
+  endpoints had some. `Browser.IgnoreUrls` patterns lose it as text (`BelemetryUserInfo.RemoveFromText`: parsing would
+  rewrite a regex). Belemetry's own messages - the startup warnings, `BelemetryHttpSender`'s warnings and
+  diagnostics - name every URL without it too, a URL no `Uri` parses included (removed as text).
 - `blockedAttributes` are exact, case-sensitive attribute keys removed from every record, span event, span link and
   metric point. A blocked id
   (`session.id`, ...) is not added by the enrichment step either, and is removed from relayed records that carry it.
@@ -235,6 +255,26 @@ Notes on the fields:
   same, so storing them would deliver each twice on the next visit. Offline, it is stored as before.
 - `service.instanceId` is null from `<BelemetryScript />`: a browser tab is its own instance, so the script
   generates a random `service.instance.id` per page load.
+- `pageViews.routes` are `Browser.PageRoutes` then the `@page` templates `BelemetryPageRoutes` discovers, once each, and
+  only when page views are configured: those of `Browser.PageRouteAssemblies` exactly, or without any, from the entry
+  assembly (or, with none - .NET for Android - the loaded assemblies that use components) through the referenced
+  assemblies that use `Microsoft.AspNetCore.Components`, transitively; an assembly whose references cannot be read
+  (NativeAOT) still gives its own. Finding none logs one warning (`BelemetryPipeline.WarnIfNoPageRoutes`). Framework
+  assemblies are told by their Microsoft public key token (`BelemetryPageRoutes.IsFramework`), not their name. The bridge
+  asks `isStarted()` first and, for a started script, lists only the configured routes
+  (`BelemetrySettings.ConfiguredPageRoutes`: `Browser.PageRoutes` and the `PageRouteAssemblies`' routes, no scan): its
+  page has the routes its server discovered, and a repeated `start` appends the ones it lacks (case-insensitively) as a
+  new list, so the compiled routes are rebuilt.
+- Page route matching is one rule set on both sides (`routes.ts`, `Pipeline/BelemetryPageRouteMatcher.cs`, the same test
+  cases in `routes.test.js` and `BelemetryPageRouteMatcherTests`): a path below the base path (`<base href>`,
+  `NavigationManager.BaseUri`) against the routes in the Blazor router's order (ASP.NET Core's inbound precedence
+  digits: literal 1, constrained parameter or several parts 2, parameter 3, constrained catch-all 4, catch-all 5, then
+  the lower-cased template), a segment of several parts matched from the right (`RoutePatternMatcher`), falling back to
+  `templatePath` (C# `BelemetryUrlTemplate.TemplatePath`). C# checks the constraints with the framework's parsers, the
+  script approximates them (`decimal` within its range, a `datetime` with a month name checked against its month); a
+  constraint one side cannot check (the app's own; in the script, a `regex` that may backtrack catastrophically,
+  `mayBacktrack`, as a browser has no match timeout - C# gives it 1 s) passes. .NET's own `TrackPageView` (WebAssembly,
+  Hybrid, a server without a page) uses it, on the URL given, else `NavigationManager.Uri`.
 
 ### Browser record model (TS internal, and the relay payload C# `BelemetryRelayBatch`)
 
@@ -246,7 +286,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   "resource": { "browser.language": "en-US", "user_agent.original": "...", "telemetry.sdk.language": "webjs", ... },
   "spans": [ { "traceId": "<32 hex>", "spanId": "<16 hex>", "parentSpanId": "<16 hex>|null", "name": "GET",
                "kind": 3, "startTime": 1.0, "endTime": 2.0, "attributes": {}, "status": { "code": 2, "message": "..." },
-               "events": [ { "name": "...", "time": 1.5, "attributes": {} } ], "scope": "bit.belemetry.http", "feature": 16 } ],
+               "events": [ { "name": "...", "time": 1.5, "attributes": {}, "limited": true } ], "scope": "bit.belemetry.http", "feature": 16 } ],
   "logs":  [ { "time": 1.0, "severityNumber": 17, "severityText": "ERROR", "body": "message", "eventName": "browser.page_view|null",
                "attributes": {}, "traceId": null, "spanId": null, "scope": "bit.belemetry.errors", "feature": 1 } ]
 }
@@ -255,12 +295,19 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - `kind` uses the OTLP `SpanKind` numbers (1 internal, 2 server, 3 client, 4 producer, 5 consumer).
 - `status.code` uses the OTLP numbers (0 unset, 1 ok, 2 error).
 - `severityNumber` uses the OTLP `SeverityNumber`.
+- An event may carry `"limited": true`: an exception the page's error limits dropped as a record of its own (it stays
+  on the span; .NET reads it into `BelemetrySpanEvent.Limited`).
+- The exceptions on a span (an `exception` event with `exception.type`, `exception.message` or `exception.stacktrace`)
+  are `Errors` data on both sides: the script records none, but after the app's processors (which may add one) it takes
+  them off without `Errors`, applies the error limits to the rest, and marks their batch with `Errors`. .NET takes them
+  off a relayed span when the configuration switches `Errors` off.
 
 ### JS module API (`_content/Bit.Belemetry/bit-belemetry.js`, ES module; also on `window.BitBelemetry`)
 
 | Export | Purpose |
 | --- | --- |
 | `start(config)` | Idempotent start. Reads persisted consent, sets up the session, and installs the instrumentations the config and consent allow |
+| `isStarted()` | Whether `start` ran: the bridge asks before building a config, and lists only the configured `pageViews.routes` to a started script (a repeated `start` appends those it lacks) |
 | `setConsent(features)` / `getConsent()` / `isConsentDecided()` | Runtime consent. `setConsent` persists the choice (if `consent.persist`), purges revoked data and (un)installs instrumentations. The grant is narrowed to `config.features` (and by Global Privacy Control) |
 | `setUser(id or null)` | Authenticated user id. Only kept and sent with `UserTracking` |
 | `trackEvent(name, attributes?)` | Custom event. A log record with `eventName = name` and feature `Events` |
@@ -273,6 +320,10 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
 | `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
+| `getDiagnostics()` | The browser diagnostic timeline as the grant allows now (`{v:1,capacity,dropped,resource,events}`), after running the app's processors on the queued records; null when diagnostics are off |
+| `getDiagnosticsStream()` | The same as a `Blob`, for a server circuit (.NET asks for an `IJSStreamReference`; Blazor wraps the Blob itself - returning a stream reference made in JS is refused). Trimmed under .NET's 4 MiB read limit (`BelemetryJsBridge.MaxDiagnosticsBytes`): oldest activity first, then oldest failures, counted as `size_limit`; a larger stream is missing evidence, never a failed capture |
+| `clearDiagnostics()` | Forgets the browser timeline and its stored copy |
+| `downloadFile(name, content)` | Saves a support bundle: `content` is bytes (WASM, Hybrid) or a .NET stream reference (Server); the name is reduced to `[A-Za-z0-9._-]` |
 
 .NET `[JSInvokable]` callbacks (on the internal `BelemetryJsCallbacks` relay class):
 
@@ -281,6 +332,11 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   the configuration are dropped, and the resource keeps the server's service identity without the server's host and
   process attributes.
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
+- `"Belemetry.DiagnosticTrigger"`. Receives `{type, message}` of a JS error the page recorded, when
+  `diagnostics.triggerBrowserErrors` (at most every 10 s per page), on the next task and only once the app's processors
+  kept the record (`Pipeline.keeps`; an error a processor drops triggers nothing and uses no interval). Untrusted on a
+  server: only cut strings are read, as the key of an automatic capture whose own cooldown and in-progress limit bound
+  what a page can cause.
 - `"Belemetry.DrainForUnload"` (synchronous, WASM only). Called on `pagehide` / `visibilitychange:hidden`. Returns
   the pending .NET records serialized as requests, which JS sends with `fetch(..., { keepalive: true })` because
   async .NET work does not survive unload. Elsewhere it returns nothing: on a server any client of a circuit can call
@@ -290,8 +346,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 
 | Record | Shape |
 | --- | --- |
-| Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
-| Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Attributes: `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms, integer) |
+| Page view | Log record, `eventName = "browser.page_view"`, body = the name given to `trackPageView`, else `page.title`, else `url.template`. Attributes: `url.full`, `url.path`, `url.template` (a `url.template` the caller passes, else the first of `pageViews.routes` the path matches, after the base path, else `templatePath(url.path)`), `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
+| Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Body = its page view's body. Attributes: `url.full`, `url.path`, `url.template`, `page.title`, `page.visit.duration` (ms, integer) |
 | Rage click | Log record, `eventName = "browser.rage_click"`, with `interactions.rageClicks`: once per burst of 3 clicks on one element within 1 s (from the burst's first click). The click's target attributes, `event.type = "rage_click"`, `interaction.click_count = 3` |
 | Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped (in a shadow root under one too), and their text is left out of `target.text` |
 | Web vital | Log record, `eventName = "browser.web_vital"`. Attributes: `web_vital.name` (`LCP`/`INP`/`CLS`/`FCP`/`TTFB`), `web_vital.value`, `web_vital.delta`, `web_vital.rating` (`good`/`needs-improvement`/`poor`), `web_vital.id`, `web_vital.navigation_type` |
@@ -319,8 +375,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | `ai.user.agent` | `user_agent.original` (browser resource) |
   | `ai.device.locale` | `browser.language` (browser resource) |
   | `ai.operation.id` | traceId |
-  | `ai.operation.parentId` | parent span id (span) or span id (log) |
-  | `ai.operation.name` | Requests: the request name (`{http.request.method} {http.route}` when both are set, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
+  | `ai.operation.parentId` | parent span id (span) or span id (log, event of a span) |
+  | `ai.operation.name` | Requests, and the events of a request span: the request name (`{http.request.method} {http.route}` when both are non-empty, else the span name). Page views: the page name (the body - the name given to `trackPageView`/`TrackPageView` - else `page.title`, else `url.template`, else `url.path`, else `url.full`). Not set on other records |
   | `ai.session.id` | `session.id` |
   | `ai.user.id` | `enduser.pseudo.id` |
   | `ai.user.authUserId` | `user.id` |
@@ -334,10 +390,12 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | --- | --- | --- |
   | Span, kind SERVER/CONSUMER | `Request` | `id`, `name` (as `ai.operation.name`), `duration` (`d.hh:mm:ss.fffffff`), `responseCode`, `success`, `url` |
   | Any other span | `RemoteDependency` | `id`, `name`, `resultCode`, `data`, `duration`, `success`, `type` (`Ajax` for browser HTTP, `HTTP` for .NET, `InProc` otherwise), `target` |
+  | Span event `exception` with `exception.type` or `exception.message` (`Activity.AddException`) | `Exception` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: the log shape (`typeName` cut to 1024, `message` and `stack` to 32768 characters, on both sides), at the event's time, `severityLevel` 3, the event's other attributes as properties, the ids from the span's attributes. Not sent when the error limits dropped it (`Limited`, `limited`), or (.NET only) when a log record this exporter sends carries the same exception - type, message and stack trace - under the same span (`LogError(ex)` plus `AddException(ex)` is one item; a log record dropped before the export stands for nothing). An `exception` event without a type or message is not sent |
+  | Any other span event | `Message` | One more envelope after its span's, as the Azure Monitor OpenTelemetry exporter writes it: `message` = the event name, no `severityLevel`, at the event's time, the event's attributes as properties, the ids from the span's attributes. An event without a name is not sent |
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |
   | `eventName == "browser.web_vital"` | `Metric` | `metrics:[{name:"<web_vital.name>",kind:0,value,count:1}]` |
-  | `eventName == "browser.page_visit_time"` | `Event` | `name` = `PageVisitTime`, `measurements:{PageVisitTime:<ms>}`, properties `PageName` (`page.title`, else `url.path`) and `PageUrl` - the Application Insights JS SDK's `autoTrackPageVisitTime` shape |
+  | `eventName == "browser.page_visit_time"` | `Event` | `name` = `PageVisitTime`, `measurements:{PageVisitTime:<ms>}`, properties `PageName` (the body, else `page.title`, else `url.template`, else `url.path`) and `PageUrl` - the Application Insights JS SDK's `autoTrackPageVisitTime` shape |
   | Any other `eventName` | `Event` | `name` = eventName |
   | Any other log | `Message` | `message`, `severityLevel` (0 Verbose, 1 Information, 2 Warning, 3 Error, 4 Critical) |
   | Metric point | `Metric` | Gauge: last value. Sum: delta. Histogram: delta sum/count/min/max |
@@ -349,6 +407,57 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - **Compression:** `compression: "gzip"` sends `Content-Encoding: gzip`, from the browser too (the ingestion
   endpoint's CORS preflight allows that header). Unload batches go uncompressed (compression is async).
 
+### Production diagnostics
+
+- **Category bits** (`BelemetryDiagnosticCategories`, `diagnostics.ts Category`, names as in `BelemetryDiagnosticJson`):
+  navigation 1, component 2, exception 4, http 8, js-interop 16, browser 32, circuit 64, log 128, trace 256, custom 512,
+  all 1023. `BelemetryDiagnosticContractTests` reads the TypeScript and fails on a mismatch.
+- **Browser event** (`diagnostics.ts DiagnosticEvent`, read by `BelemetryBrowserEvidence`): `{seq, time (ms epoch),
+  elapsed (performance.now), cat, name, sev (OTLP number), outcome?, traceId?, spanId?, parentSpanId?, route? (path
+  template), dur?, feature, msg?, exc?: {type, message, stack?}, attrs?, prev?}`. The script keeps metadata only:
+  HTTP method, status, `server.address`, `error.type` and `url.template` (origin + templated path + allowlisted query);
+  click `event.type` and `target.element`; page view route (`templateRoute` of `url.template`, else of the path: a
+  caller's template may hold ids or a query - cut at a `?` or `#` outside a parameter's braces, then `templatePath`) and
+  navigation type; console messages only with `includeLogMessages`. .NET bounds (2 x `BrowserMaxEvents`, at most 1000),
+  re-sanitizes, re-templates routes (`BelemetryUrlTemplate.TemplateRoute`), validates ids and fingerprints exceptions
+  itself: the page is untrusted on a server.
+- **The timeline taps the pipeline after privacy and processors** (`BelemetryPipeline.Enqueue`: `export` and `diagnose`
+  are decided apart; the error limits apply to both). Relayed records are skipped - the browser timeline is the source
+  of browser evidence on every host. The framework's `Navigate`/`HandleEvent`/`StartCircuit` activities come through
+  the hub's own `ActivityListener` (sampling `AllData`, never `Recorded`, so it changes no export decision).
+- **Server isolation**: every `BelemetryDiagnosticsService` of a circuit shares one recorder, acquired by the
+  renderer's `SynchronizationContext` (`BelemetryDiagnosticHub.Acquire`, reference counted; the last release closes it).
+  A record goes to a recorder only when produced on that context, or under an activity the hub tagged (weakly) while it
+  started there *and that has not stopped* - a timer or loop started under a click handler outlives it and is nobody's.
+  Never "the only circuit". Unattributed server failures (error logs, failed spans - never a successful request's span)
+  go to the trace index, found only by trace ids from that page's own fetch spans, and renumbered when they join a capture.
+- **A capture holds no scope**: its consent checks hold the hub (singleton) and the bridge's `BelemetryPageConsent`
+  (the page's last grant), never the session, the bridge or the JS runtime - an app may keep a capture past its circuit.
+  The report is cached per consent key (each feature, for the process's events and the page's apart).
+- **Generations**: a revoke and `Clear` both bump the recorder's generation; an automatic capture built across either is
+  discarded (counted `consent_revoked_capture` for a revoke only). A full review queue drops its oldest capture
+  (`pending_capture_limit`); only `MaxPendingCaptures` captures in progress refuse a trigger.
+- **Exception groups in a capture** export the occurrences of the events the capture exports only; a group known only from
+  its history keeps its counts and template (the preview lists those), with no occurrence.
+- **Unhandled**: only the framework's categories (`Microsoft.AspNetCore.Components.*Renderer`, the circuit host, the
+  WebAssembly host) and Belemetry's own `Bit.Belemetry.UnhandledExceptions` scope mark an exception unhandled; an app's
+  `PdfRenderer` logs a handled one.
+- **Framework activities** (`BelemetryDiagnosticHub.CreatesActivity`): the hub's listener makes the framework create
+  `Navigate`/`HandleEvent`/`StartCircuit` only when that changes nothing for the app's traces - Belemetry's export covers
+  the source (its decision, `IgnoredActivityNames` respected), or `Diagnostics.CreateFrameworkActivities` (default: not
+  on a server). An unsampled parent makes a parent-based sampler drop the spans under it. `Belemetry.cs` registers the
+  component source (`AddComponentsTracing`) on every host, but on WebAssembly and Hybrid the export listens to it only
+  with diagnostics on (`BelemetrySettings.ExportsTraceSource`): an app without diagnostics traces as before. A framework
+  activity naming a component an `IBelemetryDiagnosticComponentFilter` excludes (BevTools' own UI) is not recorded.
+- **The size limit is the whole bundle's** (`BelemetryDiagnosticCaptureBuilder.EnforceLimit`, run last): release, groups,
+  components and snapshots measured as written (`BelemetrySupportBundle.MeasureParts`), the timeline in the room left;
+  the subject is never cut. A capture given an exception finds the occurrence that logged that object
+  (`BelemetryDiagnosticEvent.OccurrenceId`), by fingerprint only when it was never logged.
+- **Exceptions of a log record** are read from its attributes (after privacy and processors); the exception object
+  only gives the inner exceptions' types, and their messages when the record's stack text still holds them.
+- **The bundle format** (`BelemetrySupportBundle`, schema 1): see the README. A format change bumps `SchemaVersion`; a
+  fingerprint change bumps `BelemetryExceptionFingerprint.Version` (`TheFingerprint_IsStable_AcrossRunsAndVersions`).
+
 ## Tests
 
 | Project | Covers | Run |
@@ -357,7 +466,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `Tests/Bit.Belemetry.Tests.EntityFrameworkCore` | The EF Core interceptor against SQLite in memory: span shape, parenting, failures, the filter, the no-listener path | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hangfire` | The Hangfire filter against a real `BackgroundJobServer` on in-memory storage: the execution span, its parent from the enqueue, failures, the filter | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hosting` | Every render mode prerenders `<BelemetryScript />` with the right config, the script is served, and a real export reaches an in-process OTLP receiver when the server pipeline is enabled | `dotnet test` from that folder |
-| `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver | `dotnet test` from that folder (needs `playwright.ps1 install chromium`) |
+| `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver; a support bundle captured and downloaded in Server, WebAssembly and Auto (`/diagnostics` harness page), validated against the format without the library; Blazor Hybrid in the WinForms harness and the unchanged MAUI sample (Windows, WebView2). CI runs it, and the trimmed/AOT publish gate, on demand only (`bit.ci.Belemetry.e2e.yml`); `bit.ci.Belemetry.yml` builds the MAUI sample for Android, iOS and Mac Catalyst on pull requests | `dotnet test` from that folder (needs `playwright.ps1 install chromium`; the MAUI suite needs the MAUI workloads) |
 | `Tests/Bit.Belemetry.Tests.Mcp` | The demo's MCP server | `dotnet test` from that folder |
 | `Tests/bit-belemetry-js` | The TS units (protobuf writer, OTLP JSON, Azure mapping, consent, privacy, session, sampling, queue), run under vitest + happy-dom | `npm test` from that folder |
 | `Tests/Bit.Belemetry.Benchmarks` | BenchmarkDotNet: the privacy rules, the synchronous recording paths (ILogger, Activity, Counter, Histogram) and the encoders. Not run by CI; see its README for the last numbers | `dotnet run -c Release -- --filter "*"` from that folder |

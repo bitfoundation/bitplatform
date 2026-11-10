@@ -12,7 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
     </ItemGroup>
 
     <ItemGroup>
@@ -20,6 +21,8 @@
       <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
       <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
       <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+      <!-- The performance pages, rendered on the server or in the browser as each test run asks (see App.razor). -->
+      <ProjectReference Include="..\Bit.BlazorUI.Tests.Performance.TestHost.Client\Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj" />
     </ItemGroup>
 
 </Project>

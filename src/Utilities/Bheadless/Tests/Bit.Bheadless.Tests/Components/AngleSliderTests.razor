@@ -1,0 +1,123 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Thumb_is_a_slider_rotated_to_the_angle()
+    {
+        var cut = Render(
+            @<BitBhAngleSlider DefaultValue="90" Name="angle">
+                <BitBhAngleSliderMarker Value="0" />
+                <BitBhAngleSliderMarker Value="90" />
+                <BitBhAngleSliderMarker Value="180" />
+                <BitBhAngleSliderThumb aria-label="Rotation" />
+            </BitBhAngleSlider>);
+
+        var thumb = cut.Find("[role=slider]");
+        Assert.AreEqual("0", thumb.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("359", thumb.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("90", thumb.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("90 degrees", thumb.GetAttribute("aria-valuetext"));
+        StringAssert.Contains(thumb.GetAttribute("style"), "rotate(90deg)");
+        StringAssert.Contains(cut.Find("div").GetAttribute("style"), "--bit-bh-angle:90deg");
+        Assert.AreEqual("90", cut.Find("input[type=hidden]").GetAttribute("value"));
+
+        var markers = cut.FindAll("[data-value]");
+        Assert.AreEqual("under-value", markers[0].GetAttribute("data-state"));
+        Assert.AreEqual("at-value", markers[1].GetAttribute("data-state"));
+        Assert.AreEqual("over-value", markers[2].GetAttribute("data-state"));
+        Assert.IsTrue(markers.All(m => m.GetAttribute("aria-hidden") == "true"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Keys_step_wrap_and_jump()
+    {
+        var commits = new List<double>();
+        var cut = Render(
+            @<BitBhAngleSlider Step="5" OnValueCommit="v => commits.Add(v)">
+                <BitBhAngleSliderThumb aria-label="Direction" />
+            </BitBhAngleSlider>);
+
+        string Now() => cut.Find("[role=slider]").GetAttribute("aria-valuenow")!;
+        cut.Find("[role=slider]").Press("ArrowLeft");
+        Assert.AreEqual("355", Now());
+        cut.Find("[role=slider]").Press("ArrowRight");
+        Assert.AreEqual("0", Now());
+        cut.Find("[role=slider]").Press("PageUp");
+        Assert.AreEqual("15", Now());
+        cut.Find("[role=slider]").Press("ArrowDown", shift: true);
+        Assert.AreEqual("0", Now());
+        cut.Find("[role=slider]").Press("End");
+        Assert.AreEqual("355", Now());
+        cut.Find("[role=slider]").Press("Home");
+        Assert.AreEqual("0", Now());
+        CollectionAssert.AreEqual(new double[] { 355, 0, 15, 0, 355, 0 }, commits);
+    }
+
+    [TestMethod]
+    public void Read_only_and_disabled_do_not_change()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhAngleSlider DefaultValue="30" ReadOnly="true"><BitBhAngleSliderThumb aria-label="Read only" /></BitBhAngleSlider>
+                <BitBhAngleSlider DefaultValue="30" Disabled="true"><BitBhAngleSliderThumb aria-label="Disabled" /></BitBhAngleSlider>
+            </div>);
+
+        var readOnly = cut.Find("[aria-label='Read only']");
+        readOnly.Press("ArrowRight");
+        Assert.AreEqual("30", cut.Find("[aria-label='Read only']").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("true", readOnly.GetAttribute("aria-readonly"));
+        var disabled = cut.Find("[aria-label=Disabled]");
+        Assert.AreEqual("-1", disabled.GetAttribute("tabindex"));
+        Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void Angle_at_a_point_runs_clockwise_from_the_top()
+    {
+        Assert.AreEqual(0, BitBhAngleSlider.AngleAt(0.5, 1), 1e-9);
+        Assert.AreEqual(90, BitBhAngleSlider.AngleAt(1, 0.5), 1e-9);
+        Assert.AreEqual(180, BitBhAngleSlider.AngleAt(0.5, 0), 1e-9);
+        Assert.AreEqual(270, BitBhAngleSlider.AngleAt(0, 0.5), 1e-9);
+        Assert.AreEqual(45, BitBhAngleSlider.AngleAt(1, 1), 1e-9);
+    }
+
+    [TestMethod]
+    public async Task A_drag_points_the_value_at_the_pointer_and_commits_on_release()
+    {
+        var commits = new List<double>();
+        double value = 0;
+        var cut = Render(
+            @<BitBhAngleSlider @bind-Value="value" OnValueCommit="v => commits.Add(v)">
+                <BitBhAngleSliderThumb aria-label="Rotation" />
+            </BitBhAngleSlider>);
+
+        var reference = JSInterop.Invocations.Single(i => i.Identifier == "area.attach").Arguments[0]!;
+        var target = reference.GetType().GetProperty("Value")!.GetValue(reference)!;
+        Task Pointer(string phase, double x, double y)
+            => (Task)target.GetType().GetMethod("OnAreaPointer")!.Invoke(target, [phase, x, y])!;
+
+        await cut.InvokeAsync(() => Pointer("start", 1, 0.5));
+        Assert.AreEqual(90, value);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-dragging"));
+        await cut.InvokeAsync(() => Pointer("end", 0.5, 0));
+        Assert.AreEqual(180, value);
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-dragging"));
+        CollectionAssert.AreEqual(new double[] { 180 }, commits);
+    }
+
+    [TestMethod]
+    public void A_field_labels_the_thumb()
+    {
+        var cut = Render(
+            @<BitBhField>
+                <BitBhLabel>Wind direction</BitBhLabel>
+                <BitBhAngleSlider DefaultValue="270"><BitBhAngleSliderThumb /></BitBhAngleSlider>
+            </BitBhField>);
+
+        var label = cut.Find("label");
+        Assert.AreEqual(label.Id, cut.Find("[role=slider]").GetAttribute("aria-labelledby"));
+        cut.ShouldBeAccessible();
+    }
+}

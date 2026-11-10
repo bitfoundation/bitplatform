@@ -102,4 +102,14 @@ public class BitSliderClassStyles
     /// Custom CSS classes/styles for the BitSlider's floating thumb labels.
     /// </summary>
     public string? ThumbLabel { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitSlider's error message container.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitSlider's error message text.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }

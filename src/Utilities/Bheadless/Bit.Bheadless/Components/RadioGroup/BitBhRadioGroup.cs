@@ -66,6 +66,13 @@ public class BitBhRadioGroup : BitBhComponentBase, IDisposable
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>
+    /// Shows the choice without letting it change (<c>aria-readonly</c>, <c>data-readonly</c>): the arrow keys still move
+    /// between the radios, and the value is still posted, unlike a disabled group.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
     /// <summary>Marks the group required (<c>aria-required</c>).</summary>
     [Parameter]
     public bool Required { get; set; }
@@ -179,9 +186,11 @@ public class BitBhRadioGroup : BitBhComponentBase, IDisposable
         if (IsRequired) attrs["aria-required"] = "true";
         if (IsInvalid) attrs["aria-invalid"] = "true";
         if (IsDisabled) attrs["aria-disabled"] = "true";
+        if (ReadOnly) attrs["aria-readonly"] = "true";
         if (Dir is { } dir) attrs["dir"] = dir.ToAttribute();
         SetDataValue(attrs, "orientation", Vertical ? "vertical" : "horizontal");
         SetDataFlag(attrs, "disabled", IsDisabled);
+        SetDataFlag(attrs, "readonly", ReadOnly);
         SetDataFlag(attrs, "invalid", IsInvalid);
         return attrs;
     }
@@ -194,7 +203,7 @@ public class BitBhRadioGroup : BitBhComponentBase, IDisposable
 
     internal async Task SelectAsync(string value)
     {
-        if (IsDisabled || value == SelectedValue) return;
+        if (IsDisabled || ReadOnly || value == SelectedValue) return;
         if (_radios.Items.FirstOrDefault(r => r.Value == value) is { IsItemDisabled: true }) return;
 
         if (!IsProvided(nameof(Value)))

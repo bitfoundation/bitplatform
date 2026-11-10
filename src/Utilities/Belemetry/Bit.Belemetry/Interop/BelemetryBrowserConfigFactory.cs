@@ -6,7 +6,14 @@ namespace Bit.Belemetry;
 /// <summary>Builds the browser script's configuration from the resolved settings.</summary>
 internal static class BelemetryBrowserConfigFactory
 {
-    public static BelemetryBrowserConfig Create(BelemetrySettings settings)
+    /// <param name="settings">The resolved settings.</param>
+    /// <param name="includeDiscoveredRoutes">
+    /// Whether <c>pageViews.routes</c> lists the discovered routes besides the configured ones: not for a script that is
+    /// started already, which a repeated <c>start</c> only adds the routes it lacks to. Its page (a server's, Auto) has the
+    /// routes the server discovered - among them its client project's - and finding them again may cost a scan of the
+    /// app's assemblies; the routes configured here may be this side's own.
+    /// </param>
+    public static BelemetryBrowserConfig Create(BelemetrySettings settings, bool includeDiscoveredRoutes = true)
     {
         var options = settings.Options;
         var browser = options.Browser;
@@ -33,7 +40,15 @@ internal static class BelemetryBrowserConfigFactory
                 HonorGlobalPrivacyControl = options.Consent.HonorGlobalPrivacyControl,
                 PendingLimit = options.Consent.PendingLimit,
             },
-            PageViews = new() { TrackHashChanges = browser.TrackHashChanges, TrackVisitTime = browser.TrackPageVisitTime },
+            PageViews = new()
+            {
+                TrackHashChanges = browser.TrackHashChanges,
+                TrackVisitTime = browser.TrackPageVisitTime,
+                // Only for a page that records page views: the list costs its bytes in every page and its discovery a
+                // scan. The settings' own list, resolved once per process, is serialized as it is.
+                Routes = options.Enabled && browser.Enabled && (options.Features & BelemetryFeatures.PageViews) != 0
+                         && (includeDiscoveredRoutes ? settings.PageRoutes : settings.ConfiguredPageRoutes) is { Count: > 0 } routes ? routes : null,
+            },
             Interactions = new()
             {
                 // Distinct: a configuration binder appends to the list's defaults, and a DOM event listed twice would
@@ -55,7 +70,9 @@ internal static class BelemetryBrowserConfigFactory
                 Fetch = browser.Fetch,
                 Xhr = browser.Xhr,
                 PropagateTraceContextTo = [.. browser.PropagateTraceContextTo],
-                IgnoreUrls = [.. browser.IgnoreUrls],
+                // Without user info, as the exporters' entries: a pattern copied from an endpoint would publish its
+                // credential in every page. Removed as text, as parsing would rewrite a regular expression.
+                IgnoreUrls = [.. browser.IgnoreUrls.Select(BelemetryUserInfo.RemoveFromText)],
             },
             Errors = new()
             {
@@ -98,6 +115,18 @@ internal static class BelemetryBrowserConfigFactory
             },
             MaxValueLength = Math.Max(0, options.MaxValueLength),
             Debug = browser.Debug,
+            Diagnostics = options.Diagnostics.Enabled
+                ? new()
+                {
+                    MaxEvents = Math.Clamp(options.Diagnostics.BrowserMaxEvents, 1, 1000),
+                    Categories = (int)options.Diagnostics.Categories,
+                    IncludeSuccessfulActivity = options.Diagnostics.IncludeSuccessfulActivity,
+                    IncludeLogMessages = options.Diagnostics.IncludeLogMessages,
+                    Persist = options.Diagnostics.PersistBrowserTimeline,
+                    TriggerBrowserErrors = (options.Diagnostics.AutoCaptureTriggers & (BelemetryDiagnosticTriggers.BrowserErrors | BelemetryDiagnosticTriggers.AllExceptions)) != 0,
+                    AllowedQueryParameters = [.. options.Diagnostics.AllowedQueryParameters],
+                }
+                : null,
         };
 
         if (options.ServiceNamespace is not null) config.Resource[BelemetrySemanticConventions.ServiceNamespace] = options.ServiceNamespace;
@@ -122,14 +151,16 @@ internal static class BelemetryBrowserConfigFactory
                 // A page cannot speak gRPC: such an exporter reaches the browser only through an OTLP/HTTP BrowserEndpoint.
                 if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
 
+                // Every endpoint without its user info, on any host: a server would publish the credential to every
+                // visitor, as it would its Headers, and the page could not use it anyway (BelemetryUserInfo).
                 var root = otlp.BrowserEndpoint ?? otlp.Endpoint;
                 config.Exporters.Add(new()
                 {
                     Type = "otlp",
-                    Endpoint = root?.ToString(),
+                    Endpoint = BelemetryUserInfo.Remove(root)?.ToString(),
                     // A signal-specific endpoint only applies to the browser when the browser uses the same root.
-                    TracesEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Traces) ? otlp.TracesEndpoint?.ToString() : null,
-                    LogsEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Logs) ? otlp.LogsEndpoint?.ToString() : null,
+                    TracesEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Traces) ? BelemetryUserInfo.Remove(otlp.TracesEndpoint)?.ToString() : null,
+                    LogsEndpoint = otlp.BrowserEndpoint is null && otlp.Signals.HasFlag(BelemetrySignals.Logs) ? BelemetryUserInfo.Remove(otlp.LogsEndpoint)?.ToString() : null,
                     Protocol = otlp.Protocol == BelemetryOtlpProtocol.HttpJson ? "http/json" : "http/protobuf",
                     Headers = BrowserHeaders(settings, otlp),
                     Compression = otlp.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
@@ -194,10 +225,12 @@ internal static class BelemetryBrowserConfigFactory
 
         foreach (var otlp in settings.OtlpExporters)
         {
-            Add(BelemetryOtlpExporter.Resolve(otlp.TracesEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Traces));
-            Add(BelemetryOtlpExporter.Resolve(otlp.LogsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Logs));
-            Add(BelemetryOtlpExporter.Resolve(otlp.MetricsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Metrics));
-            Add(otlp.BrowserEndpoint?.ToString());
+            // Without user info, as the exporters: a URL with credentials is never fetched anyway.
+            var endpoint = BelemetryUserInfo.Remove(otlp.Endpoint);
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.TracesEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Traces));
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.LogsEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Logs));
+            Add(BelemetryOtlpExporter.Resolve(BelemetryUserInfo.Remove(otlp.MetricsEndpoint), endpoint, otlp.Protocol, BelemetrySignals.Metrics));
+            Add(BelemetryUserInfo.Remove(otlp.BrowserEndpoint)?.ToString());
         }
 
         foreach (var azure in settings.AzureMonitorExporters)

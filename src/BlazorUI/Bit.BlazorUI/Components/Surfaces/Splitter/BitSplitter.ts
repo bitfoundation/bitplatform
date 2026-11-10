@@ -160,8 +160,7 @@
             const invoke = (method: string, ...args: any[]) => {
                 if (signal.aborted) return;
 
-                Utils.invokeDotNet(entry.dotnetObj, method, ...args)
-                     .catch(e => console.error('BitBlazorUI.Splitter:', method, e));
+                Utils.notifyDotNet(entry.dotnetObj, method, ...args);
             };
 
             const flushMove = () => {
@@ -275,8 +274,7 @@
                 if (signal.aborted) return;
 
                 unansweredKeyEnds++;
-                Utils.invokeDotNet(entry.dotnetObj, 'HandleResizeEnd', percent, false)
-                     .catch(e => console.error('BitBlazorUI.Splitter:', 'HandleResizeEnd', e))
+                Utils.notifyDotNet(entry.dotnetObj, 'HandleResizeEnd', percent, false)
                      .finally(() => unansweredKeyEnds--);
             };
 

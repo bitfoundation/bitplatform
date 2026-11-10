@@ -73,6 +73,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _dateRangePickerId = string.Empty;
+    private string _errorId = string.Empty;
+    private string _errorLabelId = string.Empty;
+    private bool _hasLiveRegion;
     private ElementReference _startTimeHourInputRef = default!;
 
 
@@ -434,6 +437,43 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
+    /// The message shown below the DateRangePicker when its range was rejected by the app itself (a server
+    /// response, a rule spanning two fields). Setting it marks the DateRangePicker invalid on its own - the same
+    /// look and the same aria-invalid attribute <see cref="Invalid"/> gives it - and the message is referenced
+    /// by the input through aria-describedby and announced by a live region the moment it shows up.
+    /// </summary>
+    /// <remarks>
+    /// A DateRangePicker inside an <c>EditForm</c> already gets its messages from the cascading EditContext
+    /// through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The text a screen reader is given for a rejection that has no text of its own: an
+    /// <see cref="ErrorMessageTemplate"/>, which is free to render anything at all, or the forced
+    /// <see cref="Invalid"/> state. It is announced through the live region of the DateRangePicker the moment
+    /// the rejection shows up - in place of the default "Invalid input" for a template, and only when it is set
+    /// for the forced state, whose reason is usually explained (and announced) elsewhere - and the input
+    /// references it through its aria-describedby attribute, so the same reason is read out on every later
+    /// focus too. A plain <see cref="ErrorMessage"/> is its own text and never uses it.
+    /// </summary>
+    /// <remarks>
+    /// Give it the reason the template shows, in the language of the page: it is compared as text, so a
+    /// template switching to another reason is only announced again when this text switches along with it.
+    /// </remarks>
+    [Parameter] public string? ErrorMessageAriaLabel { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
+    /// marks the DateRangePicker invalid in the same way. It replaces the message for a screen reader as well: a
+    /// template is free to render anything at all, so the live region announces
+    /// <see cref="ErrorMessageAriaLabel"/> for it, or a bare "Invalid input" when that is not set.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
+
+    /// <summary>
     /// Whether the disabled days are excluded from the selected range. By default a range simply spans over
     /// the disabled days between its two ends. When enabled, once the start date is picked every day whose
     /// range would contain a disabled day becomes unselectable, so the produced range never covers one.
@@ -597,6 +637,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// For external icon libraries, use <see cref="Icon"/> instead.
     /// </remarks>
     [Parameter] public string? IconName { get; set; }
+
+    /// <summary>
+    /// Marks the DateRangePicker as invalid without an <c>EditContext</c> having said so, giving it the same
+    /// look and the same aria-invalid attribute an invalid bound value does. Setting <see cref="ErrorMessage"/>
+    /// implies it. It says nothing more to a screen reader unless
+    /// <see cref="ErrorMessageAriaLabel"/> gives it a reason to announce.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
 
     /// <summary>
     /// The custom validation error message for the invalid value.
@@ -1400,6 +1449,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _calloutId = $"{_dateRangePickerId}-callout";
         _overlayId = $"{_dateRangePickerId}-overlay";
         _inputId = $"{_dateRangePickerId}-input";
+        _errorId = $"{_dateRangePickerId}-error";
+        _errorLabelId = $"{_dateRangePickerId}-error-label";
 
         SetDefaultValue();
 
@@ -1413,6 +1464,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // The live region of the error is only rendered for a picker that is wired to say something through it - one
+        // whose ErrorMessage, ErrorMessageTemplate or ErrorMessageAriaLabel is written at all, even as a null for now -
+        // so a form full of plain pickers does not carry an empty one per picker. A label a BitParams hands down is not
+        // written by the markup, yet it is said out of the region the moment Invalid turns on, so holding one wires the
+        // picker too. Once there it stays, since it has to be on the page before the text meant to be announced out of it.
+        _hasLiveRegion |= HasNotBeenSet(nameof(ErrorMessage)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageTemplate)) is false
+                          || HasNotBeenSet(nameof(ErrorMessageAriaLabel)) is false
+                          || ErrorMessageAriaLabel.HasValue()
+                          || ErrorLiveText is not null;
 
         base.OnParametersSet();
     }
@@ -4457,6 +4519,44 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return string.Join(' ', classes).Trim();
+    }
+
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A rejection the app decided on its own, which the EditContext knows nothing about. A message is one:
+    // a field that says what is wrong with its range is a field saying the range is wrong.
+    protected override bool HasError => Invalid || HasErrorMessage;
+
+    // Whether ErrorMessageAriaLabel speaks for the rejection on screen: a template, which wins over a plain
+    // message (see the markup) and is free to render anything at all, or the forced state without a message.
+    // A whitespace label is no label - announcing it would leave the field sounding accepted.
+    private bool HasErrorAriaLabel => ErrorMessageAriaLabel.HasValue()
+                                      && (ErrorMessageTemplate is not null || (Invalid && ErrorMessage.HasNoValue()));
+
+    // What the live region says of the rejection, always matching what is on screen: a plain message is its own
+    // text, while a template has none on this side of the DOM, so it is announced as "Invalid input" rather than
+    // left in silence. The forced state is the one rejection only announced with a label of its own, its reason
+    // being explained - and announced - elsewhere.
+    private string? ErrorLiveText => HasErrorAriaLabel ? ErrorMessageAriaLabel
+                                     : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
+                                     : ErrorMessage.HasValue() ? ErrorMessage
+                                     : null;
+
+    // The element the rejection is described by: a label stands in for a template on focus as well, which may
+    // well be a bare icon with no text to describe the field with at all.
+    private string? ErrorDescriptionId => HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null;
+
+    // What is wrong with the range first, then whatever description the app splatted onto the input itself,
+    // which is carried over rather than replaced: aria-describedby is a space separated list of IDREFs.
+    private string? GetInputDescribedBy()
+    {
+        var ids = string.Join(' ', new[]
+        {
+            ErrorDescriptionId,
+            GetSplattedInputAttribute("aria-describedby")
+        }.Where(id => id.HasValue()));
+
+        return ids.HasValue() ? ids : null;
     }
 
     // The callout and the overlay are rendered outside the root element and relocated to the body while the

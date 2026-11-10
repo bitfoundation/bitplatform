@@ -1,0 +1,37 @@
+﻿@page "/tw/search-field"
+
+<PageTitle>Search Field (Tailwind) · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Search Field</h1>
+    <p class="bb-subtitle">A search box: Escape clears it, Enter submits, a clear button out of the tab order puts the focus back.</p>
+</div>
+
+<SectionSwitcher Slug="search-field" />
+
+<TwDemoBlock Title="Search" Code="@_code">
+    <Description>
+        <code>group-data-[empty]:</code> hides the clear button while there is nothing to clear.
+    </Description>
+    <LiveContent>
+        <BitBhSearchField @bind-Value="query" class="group inline-flex items-center rounded-full border border-zinc-300 bg-white pl-3 focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-blue-600">
+            <span aria-hidden="true" class="text-zinc-500">⌕</span>
+            <BitBhSearchFieldInput aria-label="Search" placeholder="Search…" class="h-9 bg-transparent px-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 [&::-webkit-search-cancel-button]:hidden" />
+            <BitBhSearchFieldClear class="mr-1 h-7 w-7 cursor-pointer rounded-full text-zinc-600 hover:bg-zinc-100 group-data-[empty]:invisible">✕</BitBhSearchFieldClear>
+        </BitBhSearchField>
+    </LiveContent>
+</TwDemoBlock>
+
+@code {
+    private string query = string.Empty;
+
+    private const string _code = """
+<BitBhSearchField @bind-Value="query"
+                  class="group inline-flex items-center rounded-full border border-zinc-300 bg-white pl-3 focus-within:outline-2">
+    <span aria-hidden="true">⌕</span>
+    <BitBhSearchFieldInput aria-label="Search" placeholder="Search…"
+                           class="h-9 bg-transparent px-2 text-sm outline-none [&::-webkit-search-cancel-button]:hidden" />
+    <BitBhSearchFieldClear class="h-7 w-7 rounded-full hover:bg-zinc-100 group-data-[empty]:invisible">✕</BitBhSearchFieldClear>
+</BitBhSearchField>
+""";
+}

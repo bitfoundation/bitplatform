@@ -91,7 +91,10 @@
         exporter. Give the browser a credential-free route (a collector in front of the vendor,
         <code>IncludeInBrowser = false</code> on the keyed exporter), or use the <a href="/transport">Relay transport</a>,
         which hands browser records to .NET - which only hides the key when .NET runs outside the browser, on Blazor
-        Server or in Hybrid.
+        Server or in Hybrid. The page never gets an endpoint's user info either
+        (<code>https://user:token@collector.example.com</code>, in code or <code>OTEL_EXPORTER_OTLP_ENDPOINT</code>), and
+        a server warns at startup: no export sends it anyway - neither <code>HttpClient</code> nor the browser - so put
+        the credential in <code>Headers</code>.
     </div>
     <CodeSnippet Code="@HeadersCode" Language="C#" />
     <CodeSnippet Code="@BrowserHeadersCode" Language="C#" />

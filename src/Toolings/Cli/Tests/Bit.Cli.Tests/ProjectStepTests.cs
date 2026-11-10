@@ -623,6 +623,36 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AProjectWithoutAWorkbenchOrALandingPage_Should_SkipThemAndNotFail()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
+        host.Runner.On("dotnet", "build src/Workbench", 1, "MSBUILD : error MSB1009: Project file does not exist.");
+        host.Runner.On("dotnet", "build src/LandingPage", 1, "MSBUILD : error MSB1009: Project file does not exist.");
+        var projectSteps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(true) };
+        var steps = new StepRunner(host.Services);
+
+        Assert.IsTrue(await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, true, ProjectRunMode.UntilClosed, CancellationToken.None));
+
+        var byId = steps.Reports.ToDictionary(r => r.Id, r => r.Result);
+        Assert.IsFalse(steps.AnyFailed, host.Output);
+        Assert.AreEqual(StepStatus.Skipped, byId["workbench-build"].Status);
+        Assert.AreEqual("Didn't build the Workbench", byId["workbench-build"].Title);
+        Assert.AreEqual("the project has no Workbench", byId["workbench-build"].Detail);
+        Assert.AreEqual(StepStatus.Skipped, byId["workbench-run"].Status);
+        Assert.AreEqual("the project has no Workbench", byId["workbench-run"].Detail);
+        Assert.AreEqual(StepStatus.Skipped, byId["landingpage-build"].Status);
+        Assert.AreEqual("Didn't build the landing page", byId["landingpage-build"].Title);
+        Assert.AreEqual("the project has no landing page", byId["landingpage-build"].Detail);
+        Assert.AreEqual(StepStatus.Skipped, byId["landingpage-run"].Status);
+        Assert.AreEqual("the project has no landing page", byId["landingpage-run"].Detail);
+        Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"));
+        CollectionAssert.DoesNotContain(DotnetCommands(host).ToArray(), "build src/Workbench/Contoso.Workbench.csproj");
+    }
+
+    [TestMethod]
     public async Task AWorkbenchAndALandingPageThatDontBuild_Should_LeaveTheRestOfTheSetupGoing()
     {
         using var host = new TestHost(HostOs.Windows);
@@ -913,6 +943,8 @@ public class ProjectStepTests
         var web = CreateFakeProject(host, "Contoso");
         var project = new ProjectContext { Name = web.Name, Directory = web.Directory, Platforms = new HashSet<Platform> { Platform.Web, Platform.Windows } };
         WriteSolution(project);
+        WriteWorkbench(project, "http://localhost:6030");
+        WriteLandingPage(project, "http://localhost:7030");
         host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
         var steps = new StepRunner(host.Services);
         var projectSteps = new ProjectSteps(host.Services, project);

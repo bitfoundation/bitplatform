@@ -3,7 +3,7 @@ import type { ConsentManager, ConsentMark } from './consent';
 import { Features } from './features';
 import { ErrorLimiter, limitRecord } from './limits';
 import { debug } from './log';
-import { isSpan, type Attributes, type RecordBatch, type TelemetryRecord } from './model';
+import { hasException, isExceptionEvent, isSpan, type Attributes, type RecordBatch, type SpanRecord, type TelemetryRecord } from './model';
 import { applyPrivacy, isBlocked } from './privacy';
 import { isSessionSampled, type SessionManager } from './session';
 import { countDropped } from './stats';
@@ -41,6 +41,15 @@ export class Pipeline {
     /** Attributes the app set for every record (`setAttributes`); a record's own attributes win. */
     attributes: Attributes = {};
 
+    /** The diagnostic timeline's tap: every record accepted (after consent, error limits and privacy), sampled or not. */
+    onRecord: ((record: TelemetryRecord) => void) | null = null;
+
+    /** Told about a record an app processor dropped (the diagnostic timeline forgets it too). */
+    onFiltered: ((record: TelemetryRecord) => void) | null = null;
+
+    // Each record is processed once, whether the export or the diagnostic timeline asks first.
+    private processed = new WeakMap<TelemetryRecord, boolean>();
+
     constructor(public config: ResolvedConfig, private consent: ConsentManager, private session: SessionManager, public resource: Attributes) {
         this.errors = new ErrorLimiter(config.errors);
     }
@@ -54,7 +63,9 @@ export class Pipeline {
         try {
             if (!(this.config.features & record.feature)) return;
             const sessionId = this.session.id();
-            if (!isSessionSampled(sessionId, this.config.sampling.sessionRatio)) {
+            // A session sampled out of the export still keeps its diagnostic timeline: it never leaves the page unasked.
+            const sampled = isSessionSampled(sessionId, this.config.sampling.sessionRatio);
+            if (!sampled && !this.onRecord) {
                 countDropped('sampled_out');
                 return;
             }
@@ -75,6 +86,14 @@ export class Pipeline {
             // After privacy, so a cut never hides an e-mail address from the scrubber.
             limitRecord(record, this.config.maxValueLength);
             this.setId(record, 'session.id', sessionId);
+            if (!sampled) {
+                // Never exported, so never processed at export: the app's processors run now, as the timeline's records
+                // must have been through them (one that drops the record keeps it off the timeline too).
+                if (this.onRecord && this.process(record)) this.onRecord(record);
+                countDropped('sampled_out');
+                return;
+            }
+            if (this.onRecord) this.onRecord(record);
             if (this.consent.isGranted(record.feature)) this.enqueue(record);
             else this.consent.hold(record);
         } catch (e) {
@@ -145,8 +164,12 @@ export class Pipeline {
             for (const record of this.queue.splice(0, size)) {
                 if (!this.process(record)) continue;
                 features |= record.feature;
-                if (isSpan(record)) batch.spans.push(record);
-                else batch.logs.push(record);
+                if (isSpan(record)) {
+                    if (this.prepareExceptionEvents(record)) features |= Features.Errors;
+                    batch.spans.push(record);
+                } else {
+                    batch.logs.push(record);
+                }
             }
             if (!batch.spans.length && !batch.logs.length) continue;
             try {
@@ -160,10 +183,57 @@ export class Pipeline {
     }
 
     /**
+     * The exceptions on a span (`isExceptionEvent`) are Errors records, as in C# (`PrepareExceptionEvents`). The script's
+     * instrumentations record none, but an app processor may add one, so this runs after the processors: without Errors
+     * they come off the span, and the error limits apply to the rest (`limited`: still on the span, but no Azure Monitor
+     * item; relayed to .NET with the flag). True when any stays, for the batch's mark: a revoke of Errors withdraws it.
+     */
+    private prepareExceptionEvents(span: SpanRecord): boolean {
+        const events = span.events;
+        if (!events || !events.some(isExceptionEvent)) return false;
+        if (!this.consent.isGranted(Features.Errors)) {
+            span.events = events.filter(event => !isExceptionEvent(event));
+            return false;
+        }
+        for (const event of events) {
+            // A stack trace alone is Errors data, but no error record of its own.
+            if (isExceptionEvent(event) && hasException(event.attributes) && !this.errors.allowException(span.scope, event.attributes)) event.limited = true;
+        }
+        return true;
+    }
+
+    /**
      * Runs the app's processors on a record; false drops it. Run here, at export, rather than when the record is
      * emitted, so a processor added right after the script started still sees the initial page view.
      */
     private process(record: TelemetryRecord): boolean {
+        const known = this.processed.get(record);
+        if (known !== undefined) return known;
+        const kept = this.runProcessors(record);
+        this.processed.set(record, kept);
+        if (!kept && this.onFiltered) this.onFiltered(record);
+        return kept;
+    }
+
+    /**
+     * Runs the app's processors on one record now (memoized: the export gets the same answer); false when one dropped
+     * it. What depends on the processors' verdict before the export (a diagnostic trigger) asks here.
+     */
+    keeps(record: TelemetryRecord): boolean {
+        try {
+            return this.process(record);
+        } catch (e) {
+            debug('processing failed', e);
+            return false;
+        }
+    }
+
+    /** Runs the processors on the queued records now (memoized), so the diagnostic timeline reflects them before export. */
+    processQueued(): void {
+        for (const record of this.queue) this.process(record);
+    }
+
+    private runProcessors(record: TelemetryRecord): boolean {
         for (const processor of this.processors) {
             try {
                 if (processor(record) === false) {

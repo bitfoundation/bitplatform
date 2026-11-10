@@ -72,9 +72,14 @@ internal static class ExtrasJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.disposePreventKeys", element);
     }
 
-    internal static ValueTask BitExtrasSetInputValue(this IJSRuntime jsRuntime, ElementReference element, string? value)
+    internal static ValueTask BitExtrasSetInputValue(this IJSRuntime jsRuntime, ElementReference element, string? value, string? expected)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.setInputValue", element, value);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.setInputValue", element, value, expected);
+    }
+
+    internal static ValueTask BitExtrasTypeInto(this IJSRuntime jsRuntime, ElementReference element, string text)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Extras.typeInto", element, text);
     }
 
     internal static ValueTask BitExtrasScrollOptionIntoView(this IJSRuntime jsRuntime, string optionId)

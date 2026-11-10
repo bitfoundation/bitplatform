@@ -1,0 +1,556 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using Microsoft.Extensions.DependencyInjection
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly CultureInfo En = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly CultureInfo Fa = CultureInfo.GetCultureInfo("fa-IR");
+    private static readonly DateOnly Nov8 = new(2026, 11, 8);
+
+    /// <summary>A clock stopped at noon (UTC) of <paramref name="date"/>.</summary>
+    private sealed class FixedClock(DateOnly date) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+
+    private void Today(DateOnly date) => Services.AddSingleton<TimeProvider>(new FixedClock(date));
+
+    private static RenderFragment Parts(int months = 1) =>
+        @<text>
+            <BitBhCalendarPrevious>‹</BitBhCalendarPrevious>
+            <BitBhCalendarHeading />
+            <BitBhCalendarNext>›</BitBhCalendarNext>
+            @for (var i = 0; i < months; i++)
+            {
+                var offset = i;
+                <BitBhCalendarGrid Offset="offset" />
+            }
+        </text>;
+
+    private static AngleSharp.Dom.IElement Cell(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string date)
+        => cut.Find($"td[data-date='{date}']:not([data-outside-month])");
+
+    private static string? Focused(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.FindAll("td[tabindex='0']").SingleOrDefault()?.GetAttribute("data-date");
+
+    [TestMethod]
+    public void Renders_a_labelled_month_grid_with_week_day_headers_and_one_tab_stop()
+    {
+        Today(new DateOnly(2026, 11, 3));
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultValue="Nov8" aria-label="Event date">@Parts()</BitBhCalendar>);
+
+        var grid = cut.Find("table");
+        Assert.AreEqual("grid", grid.Role());
+        Assert.AreEqual("November 2026", grid.AccessibleName());
+        Assert.AreEqual("November 2026", Text(cut.Find("h2")));
+        Assert.AreEqual("group", cut.Find("div").GetAttribute("role"));
+
+        var headers = cut.FindAll("th");
+        Assert.HasCount(7, headers);
+        Assert.AreEqual("Sunday", headers[0].AccessibleName());
+        // The culture's shortest day name: the ICU data each OS ships tells it ("S" on Windows, "Su" on Linux).
+        Assert.AreEqual(En.DateTimeFormat.GetShortestDayName(DayOfWeek.Sunday), Text(headers[0]));
+        Assert.AreEqual("Sunday", headers[0].GetAttribute("abbr"));
+
+        // November 2026 starts on a Sunday and ends on a Monday: five weeks, the last filled by December.
+        Assert.HasCount(5, cut.FindAll("tbody tr"));
+        Assert.HasCount(5, cut.FindAll("td[data-outside-month]"));
+        Assert.AreEqual(string.Empty, Text(cut.Find("td[data-outside-month]")));
+
+        var selected = Cell(cut, "2026-11-08");
+        Assert.AreEqual("Sunday, November 8, 2026", selected.AccessibleName());
+        Assert.AreEqual("true", selected.GetAttribute("aria-selected"));
+        Assert.IsTrue(selected.HasAttribute("data-selected"));
+        Assert.AreEqual("2026-11-08", Focused(cut));
+
+        var today = Cell(cut, "2026-11-03");
+        Assert.AreEqual("date", today.GetAttribute("aria-current"));
+        Assert.IsTrue(today.HasAttribute("data-today"));
+
+        Assert.AreEqual("Previous month", cut.FindAll("button")[0].AccessibleName());
+        Assert.AreEqual("Next month", cut.FindAll("button")[1].AccessibleName());
+        // The buttons and the focused date.
+        Assert.HasCount(3, cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Arrow_keys_move_the_focused_date_and_crossing_a_month_shows_it()
+    {
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date">@Parts()</BitBhCalendar>);
+        var root = cut.Find("div").Id;
+
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-09", Focused(cut));
+        Assert.AreEqual($"{root}-2026-11-09", this.LastFocusRequest());
+
+        Cell(cut, "2026-11-09").Press("ArrowDown");
+        Assert.AreEqual("2026-11-16", Focused(cut));
+
+        Cell(cut, "2026-11-16").Press("ArrowUp");
+        Assert.AreEqual("2026-11-09", Focused(cut));
+
+        Cell(cut, "2026-11-09").Press("ArrowLeft");
+        Assert.AreEqual("2026-11-08", Focused(cut));
+
+        // Wednesday 11th: Home / End go to Sunday / Saturday of its week.
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Cell(cut, "2026-11-09").Press("ArrowRight");
+        Cell(cut, "2026-11-10").Press("ArrowRight");
+        Cell(cut, "2026-11-11").Press("Home");
+        Assert.AreEqual("2026-11-08", Focused(cut));
+        Cell(cut, "2026-11-08").Press("End");
+        Assert.AreEqual("2026-11-14", Focused(cut));
+
+        // Up a week from the 1st: the previous month comes into view.
+        Cell(cut, "2026-11-14").Press("ArrowUp");
+        Cell(cut, "2026-11-07").Press("ArrowUp");
+        Assert.AreEqual("October 2026", Text(cut.Find("h2")));
+        Assert.AreEqual("2026-10-31", Focused(cut));
+    }
+
+    [TestMethod]
+    public void Page_keys_move_by_a_month_and_with_shift_by_a_year()
+    {
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="new DateOnly(2026, 1, 31)" aria-label="Date">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-01-31").Press("PageDown");
+        // February has no 31st: the last day of February.
+        Assert.AreEqual("2026-02-28", Focused(cut));
+        Assert.AreEqual("February 2026", Text(cut.Find("h2")));
+
+        Cell(cut, "2026-02-28").Press("PageUp");
+        Assert.AreEqual("2026-01-28", Focused(cut));
+
+        Cell(cut, "2026-01-28").Press("PageDown", shift: true);
+        Assert.AreEqual("2027-01-28", Focused(cut));
+        Assert.AreEqual("January 2027", Text(cut.Find("h2")));
+
+        Cell(cut, "2027-01-28").Press("PageUp", shift: true);
+        Assert.AreEqual("2026-01-28", Focused(cut));
+    }
+
+    [TestMethod]
+    public void Right_to_left_mirrors_left_and_right()
+    {
+        var cut = Render(@<BitBhCalendar Culture="En" Dir="BitBhDirection.Rtl" DefaultFocusedDate="Nov8" aria-label="Date">@Parts()</BitBhCalendar>);
+        Assert.AreEqual("rtl", cut.Find("div").GetAttribute("dir"));
+
+        Cell(cut, "2026-11-08").Press("ArrowLeft");
+        Assert.AreEqual("2026-11-09", Focused(cut));
+        Cell(cut, "2026-11-09").Press("ArrowRight");
+        Assert.AreEqual("2026-11-08", Focused(cut));
+    }
+
+    [TestMethod]
+    public void Enter_space_and_click_select_a_date_and_announce_it()
+    {
+        DateOnly? value = null;
+        var changes = 0;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date"
+                                    ValueChanged="v => value = v" OnValueChange="_ => changes++">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Assert.AreEqual(Nov8, value);
+        Assert.AreEqual("true", Cell(cut, "2026-11-08").GetAttribute("aria-selected"));
+        Assert.IsTrue(Announcer.Messages.Contains("Selected date: Sunday, November 8, 2026"));
+
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Cell(cut, "2026-11-09").Press(" ");
+        Assert.AreEqual(new DateOnly(2026, 11, 9), value);
+        Assert.IsFalse(Cell(cut, "2026-11-08").HasAttribute("aria-selected"));
+
+        Cell(cut, "2026-11-20").Click();
+        Assert.AreEqual(new DateOnly(2026, 11, 20), value);
+        Assert.AreEqual("2026-11-20", Focused(cut));
+        Assert.AreEqual(3, changes);
+    }
+
+    [TestMethod]
+    public void Controlled_value_moves_the_view_to_a_date_set_from_outside()
+    {
+        var cut = Render(
+            @<Stateful T="DateOnly?" Initial="Nov8">
+                <BitBhCalendar Culture="En" Value="context.Value" ValueChanged="context.Set" aria-label="Date">@Parts()</BitBhCalendar>
+                <button id="jump" @onclick="() => context.Set(new DateOnly(2027, 3, 15))">Jump</button>
+            </Stateful>);
+
+        Cell(cut, "2026-11-12").Click();
+        Assert.AreEqual("true", Cell(cut, "2026-11-12").GetAttribute("aria-selected"));
+
+        cut.Find("#jump").Click();
+        Assert.AreEqual("March 2027", Text(cut.Find("h2")));
+        Assert.AreEqual("2027-03-15", Focused(cut));
+        Assert.AreEqual("true", Cell(cut, "2027-03-15").GetAttribute("aria-selected"));
+    }
+
+    [TestMethod]
+    public void Min_and_max_disable_dates_clamp_the_focus_and_the_paging()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" Min="new DateOnly(2026, 11, 5)" Max="new DateOnly(2026, 11, 20)"
+                                    ValueChanged="v => value = v" aria-label="Date">@Parts()</BitBhCalendar>);
+
+        var before = Cell(cut, "2026-11-04");
+        Assert.AreEqual("true", before.GetAttribute("aria-disabled"));
+        Assert.IsTrue(before.HasAttribute("data-disabled"));
+        Assert.IsFalse(before.HasAttribute("tabindex"));
+        before.Click();
+        Assert.IsNull(value);
+
+        // The arrow keys stop at Min / Max.
+        Cell(cut, "2026-11-08").Press("ArrowUp");
+        Assert.AreEqual("2026-11-05", Focused(cut));
+        Cell(cut, "2026-11-05").Press("PageDown");
+        Assert.AreEqual("2026-11-20", Focused(cut));
+
+        // Nothing to page to: the buttons stay focusable but say they're disabled.
+        foreach (var button in cut.FindAll("button"))
+        {
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+            Assert.IsFalse(button.HasAttribute("disabled"));
+        }
+        cut.FindAll("button")[1].Click();
+        Assert.AreEqual("November 2026", Text(cut.Find("h2")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Unavailable_dates_are_focusable_but_not_selectable()
+    {
+        DateOnly? value = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" IsDateUnavailable="d => d.DayOfWeek == DayOfWeek.Monday"
+                                    ValueChanged="v => value = v" aria-label="Date">@Parts()</BitBhCalendar>);
+
+        var monday = Cell(cut, "2026-11-09");
+        Assert.AreEqual("true", monday.GetAttribute("aria-disabled"));
+        Assert.IsTrue(monday.HasAttribute("data-unavailable"));
+        Assert.IsFalse(monday.HasAttribute("data-disabled"));
+        Assert.AreEqual("-1", monday.GetAttribute("tabindex"));
+
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-09", Focused(cut));
+        Cell(cut, "2026-11-09").Press("Enter");
+        Assert.IsNull(value);
+        Cell(cut, "2026-11-09").Click();
+        Assert.IsNull(value);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Range_selection_anchors_highlights_and_completes()
+    {
+        BitBhDateRange? range = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" RangeChanged="r => range = r" aria-label="Stay">@Parts()</BitBhCalendar>);
+
+        Assert.AreEqual("range", cut.Find("div").GetAttribute("data-selection-mode"));
+        Assert.AreEqual("true", cut.Find("table").GetAttribute("aria-multiselectable"));
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Assert.IsNull(range);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-picking"));
+        Assert.IsTrue(Cell(cut, "2026-11-08").HasAttribute("data-highlighted"));
+        Assert.Contains("Escape", Cell(cut, "2026-11-08").GetAttribute("data-bit-bh-keys")!);
+
+        // The highlight follows the focus.
+        Cell(cut, "2026-11-08").Press("ArrowRight");
+        Cell(cut, "2026-11-09").Press("ArrowRight");
+        var start = Cell(cut, "2026-11-08");
+        var middle = Cell(cut, "2026-11-09");
+        var end = Cell(cut, "2026-11-10");
+        Assert.IsTrue(start.HasAttribute("data-selection-start"));
+        Assert.IsTrue(middle.HasAttribute("data-range-middle"));
+        Assert.IsTrue(middle.HasAttribute("data-highlighted"));
+        Assert.IsTrue(end.HasAttribute("data-selection-end"));
+
+        // ... and the pointer.
+        Cell(cut, "2026-11-12").TriggerEvent("onpointerenter", new PointerEventArgs());
+        Assert.IsTrue(Cell(cut, "2026-11-12").HasAttribute("data-selection-end"));
+
+        Cell(cut, "2026-11-12").Click();
+        Assert.AreEqual(new BitBhDateRange(Nov8, new DateOnly(2026, 11, 12)), range);
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-picking"));
+        Assert.IsFalse(Cell(cut, "2026-11-10").HasAttribute("data-highlighted"));
+        Assert.AreEqual("true", Cell(cut, "2026-11-10").GetAttribute("aria-selected"));
+        Assert.AreEqual("false", Cell(cut, "2026-11-20").GetAttribute("aria-selected"));
+        Assert.IsTrue(Announcer.Messages.Any(m => m.StartsWith("Selected range: Sunday, November 8, 2026 to Thursday, November 12, 2026")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Range_picked_backwards_is_ordered_and_escape_cancels_a_half_picked_range()
+    {
+        BitBhDateRange? range = null;
+        var cut = Render(@<BitBhCalendar Culture="En" SelectionMode="BitBhCalendarSelectionMode.Range" DefaultFocusedDate="Nov8"
+                                    RangeChanged="r => range = r" aria-label="Stay">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Cell(cut, "2026-11-08").Press("Escape");
+        Assert.IsFalse(cut.Find("div").HasAttribute("data-picking"));
+        Assert.IsFalse(Cell(cut, "2026-11-08").HasAttribute("data-highlighted"));
+        Assert.IsNull(range);
+
+        Cell(cut, "2026-11-20").Click();
+        Cell(cut, "2026-11-04").Click();
+        Assert.AreEqual(new DateOnly(2026, 11, 4), range!.Start);
+        Assert.AreEqual(new DateOnly(2026, 11, 20), range.End);
+        Assert.AreEqual(17, range.Days);
+    }
+
+    [TestMethod]
+    public void A_range_cannot_span_unavailable_dates_unless_allowed()
+    {
+        BitBhDateRange? range = null;
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" IsDateUnavailable="d => d.Day == 12"
+                                    RangeChanged="r => range = r" aria-label="Stay">@Parts()</BitBhCalendar>);
+
+        Cell(cut, "2026-11-08").Click();
+        // Past the unavailable 12th: disabled while this range is being picked.
+        Assert.IsTrue(Cell(cut, "2026-11-14").HasAttribute("data-disabled"));
+        Cell(cut, "2026-11-14").Click();
+        Assert.IsNull(range);
+        Cell(cut, "2026-11-11").Click();
+        Assert.AreEqual(new BitBhDateRange(Nov8, new DateOnly(2026, 11, 11)), range);
+        Assert.IsFalse(Cell(cut, "2026-11-14").HasAttribute("data-disabled"));
+
+        var free = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" IsDateUnavailable="d => d.Day == 12" AllowsNonContiguousRanges="true"
+                                     RangeChanged="r => range = r" aria-label="Stay">@Parts()</BitBhCalendar>);
+        Cell(free, "2026-11-08").Click();
+        Cell(free, "2026-11-14").Click();
+        Assert.AreEqual(new DateOnly(2026, 11, 14), range.End);
+    }
+
+    [TestMethod]
+    public void Multiple_selection_toggles_dates()
+    {
+        IReadOnlyList<DateOnly> values = [];
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" ValuesChanged="v => values = v" Name="days" aria-label="Days">@Parts()</BitBhCalendar>);
+
+        Assert.AreEqual("multiple", cut.Find("div").GetAttribute("data-selection-mode"));
+        Cell(cut, "2026-11-10").Click();
+        Cell(cut, "2026-11-03").Click();
+        CollectionAssert.AreEqual(new[] { new DateOnly(2026, 11, 3), new DateOnly(2026, 11, 10) }, values.ToArray());
+        Assert.AreEqual("2026-11-03,2026-11-10", string.Join(",", cut.FindAll("input[type=hidden]").Select(i => i.GetAttribute("value"))));
+
+        Cell(cut, "2026-11-10").Press("Enter");
+        CollectionAssert.AreEqual(new[] { new DateOnly(2026, 11, 3) }, values.ToArray());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Two_visible_months_page_together()
+    {
+        var cut = Render(@<BitBhCalendar Culture="En" VisibleMonths="2" DefaultFocusedDate="Nov8" aria-label="Date">@Parts(2)</BitBhCalendar>);
+
+        var grids = cut.FindAll("table");
+        Assert.HasCount(2, grids);
+        Assert.AreEqual("November 2026", grids[0].AccessibleName());
+        Assert.AreEqual("December 2026", grids[1].AccessibleName());
+        Assert.AreEqual("November – December 2026", Text(cut.Find("h2")));
+
+        cut.FindAll("button")[1].Click();
+        Assert.AreEqual("January – February 2027", Text(cut.Find("h2")));
+        Assert.AreEqual("2027-01-08", Focused(cut));
+        Assert.IsTrue(Announcer.Messages.Contains("January – February 2027"));
+
+        cut.FindAll("button")[0].Click();
+        Assert.AreEqual("November – December 2026", Text(cut.Find("h2")));
+
+        // Moving into the second month keeps the page; moving past it pages forward.
+        Cell(cut, "2026-11-08").Press("PageDown");
+        Assert.AreEqual("2026-12-08", Focused(cut));
+        Assert.AreEqual("November – December 2026", Text(cut.Find("h2")));
+        Cell(cut, "2026-12-08").Press("PageDown");
+        Assert.AreEqual("January – February 2027", Text(cut.Find("h2")));
+
+        // A date shows once: the filler days of the first grid are not the second grid's dates.
+        Assert.HasCount(1, cut.FindAll("td[tabindex='0']"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void German_culture_starts_the_week_on_monday_and_names_everything_in_german()
+    {
+        var cut = Render(@<BitBhCalendar Culture="De" DefaultFocusedDate="Nov8" aria-label="Datum">@Parts()</BitBhCalendar>);
+
+        var headers = cut.FindAll("th");
+        Assert.AreEqual("Montag", headers[0].AccessibleName());
+        Assert.AreEqual("Sonntag", headers[6].AccessibleName());
+        Assert.AreEqual("November 2026", Text(cut.Find("h2")));
+        Assert.AreEqual("Sonntag, 8. November 2026", Cell(cut, "2026-11-08").AccessibleName());
+
+        // 1 November 2026 is a Sunday: six days of October lead the first week, six weeks in all.
+        Assert.HasCount(6, cut.FindAll("tbody tr"));
+        Assert.AreEqual("2026-11-01", cut.FindAll("tbody tr")[0].QuerySelectorAll("td")[6].GetAttribute("data-date"));
+
+        // Home goes to Monday.
+        Cell(cut, "2026-11-08").Press("Home");
+        Assert.AreEqual("2026-11-02", Focused(cut));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Persian_culture_shows_persian_months()
+    {
+        var cut = Render(@<BitBhCalendar Culture="Fa" DefaultFocusedDate="Nov8" aria-label="تاریخ">@Parts()</BitBhCalendar>);
+
+        // 8 November 2026 is 17 Aban 1405; Aban has 30 days and starts on 23 October.
+        Assert.AreEqual(Fa.DateTimeFormat.GetMonthName(8), Text(cut.Find("h2")).Split(' ').Last());
+        Assert.StartsWith("1405", Text(cut.Find("h2")));
+        Assert.AreEqual("17", Text(Cell(cut, "2026-11-08")));
+        Assert.AreEqual("1", Text(Cell(cut, "2026-10-23")));
+        Assert.HasCount(30, cut.FindAll("td[data-date]:not([data-outside-month])"));
+        Assert.AreEqual(Fa.DateTimeFormat.GetDayName(DayOfWeek.Saturday), cut.Find("th").GetAttribute("abbr"));
+
+        // Paging goes month by Persian month.
+        cut.FindAll("button")[1].Click();
+        Assert.AreEqual("2026-11-22", Cell(cut, "2026-11-22").GetAttribute("data-date"));
+        Assert.AreEqual("1", Text(Cell(cut, "2026-11-22")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void The_invariant_culture_works()
+    {
+        var cut = Render(@<BitBhCalendar Culture="CultureInfo.InvariantCulture" DefaultFocusedDate="Nov8" aria-label="Date">@Parts()</BitBhCalendar>);
+        Assert.AreEqual("2026 November", Text(cut.Find("h2")));
+        Assert.AreEqual("Sunday", cut.Find("th").AccessibleName());
+        Assert.AreEqual("Sunday, 08 November 2026", Cell(cut, "2026-11-08").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Disabled_and_read_only_calendars()
+    {
+        DateOnly? value = null;
+        var disabled = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" Disabled="true" ValueChanged="v => value = v" aria-label="Date">@Parts()</BitBhCalendar>);
+        Assert.IsEmpty(disabled.TabSequence());
+        Assert.AreEqual("true", disabled.Find("table").GetAttribute("aria-disabled"));
+        Assert.IsTrue(disabled.FindAll("button").All(b => b.HasAttribute("disabled")));
+        Cell(disabled, "2026-11-10").Click();
+        Assert.IsNull(value);
+        disabled.ShouldBeAccessible();
+
+        var readOnly = Render(@<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" ReadOnly="true" ValueChanged="v => value = v" aria-label="Date">@Parts()</BitBhCalendar>);
+        Assert.AreEqual("true", readOnly.Find("table").GetAttribute("aria-readonly"));
+        Cell(readOnly, "2026-11-08").Press("ArrowRight");
+        Assert.AreEqual("2026-11-09", Focused(readOnly));
+        Cell(readOnly, "2026-11-09").Press("Enter");
+        Assert.IsNull(value);
+        readOnly.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Field_labels_the_calendar_and_validation_flows_in()
+    {
+        var model = new Booking();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Check-in</BitBhLabel>
+                    <BitBhCalendar Culture="En" @bind-Value="model.CheckIn" DefaultFocusedDate="Nov8" Name="checkin">@Parts()</BitBhCalendar>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        var group = cut.Find("[role=group]");
+        Assert.AreEqual("Check-in", group.AccessibleName());
+        Assert.AreEqual(string.Empty, cut.Find("input[type=hidden]").GetAttribute("value"));
+
+        cut.Find("form").Submit();
+        Assert.IsTrue(cut.Find("[role=group]").HasAttribute("data-invalid"));
+        Assert.Contains("required", cut.Find("[role=group]").AccessibleDescription());
+
+        Cell(cut, "2026-11-10").Click();
+        Assert.AreEqual(new DateOnly(2026, 11, 10), model.CheckIn);
+        Assert.AreEqual("2026-11-10", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find("[role=group]").HasAttribute("data-invalid"));
+
+        // The label focuses the focused date.
+        cut.Find("label").Click();
+        Assert.AreEqual(Cell(cut, "2026-11-10").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_range_posts_an_iso_interval_and_an_out_of_range_value_is_invalid()
+    {
+        var cut = Render(@<BitBhCalendar Culture="En" DefaultRange="new BitBhDateRange(Nov8, new DateOnly(2026, 11, 10))" Min="new DateOnly(2026, 11, 9)"
+                                    Name="stay" aria-label="Stay">@Parts()</BitBhCalendar>);
+        Assert.AreEqual("2026-11-08/2026-11-10", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-invalid"));
+        Assert.IsTrue(Cell(cut, "2026-11-10").HasAttribute("data-invalid"));
+    }
+
+    [TestMethod]
+    public void Cells_and_header_cells_take_templates()
+    {
+        var cut = Render(
+            @<BitBhCalendar Culture="En" DefaultFocusedDate="Nov8" aria-label="Date">
+                <BitBhCalendarGrid WeekdayFormat="BitBhCalendarWeekdayFormat.Abbreviated">
+                    <BitBhCalendarCell Day="context" class="cell">
+                        <Template Context="day"><span class="num">@day.Text</span>@(day.IsToday ? "*" : "")</Template>
+                    </BitBhCalendarCell>
+                </BitBhCalendarGrid>
+            </BitBhCalendar>);
+
+        Assert.AreEqual("Sun", Text(cut.Find("th")));
+        Assert.AreEqual("8", Text(Cell(cut, "2026-11-08").QuerySelector(".num")));
+        Assert.IsTrue(Cell(cut, "2026-11-08").ClassList.Contains("cell"));
+        // Without a heading the grid names itself.
+        Assert.AreEqual("November 2026", cut.Find("table").AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Escape_cancels_a_half_picked_range_without_closing_the_popover_around_it()
+    {
+        var cut = Render(
+            @<BitBhPopover DefaultOpen="true">
+                <BitBhPopoverButton>Dates</BitBhPopoverButton>
+                <BitBhPopoverPanel aria-label="Dates">
+                    <BitBhCalendar Culture="En" SelectionMode="BitBhCalendarSelectionMode.Range" DefaultFocusedDate="Nov8" aria-label="Stay">@Parts()</BitBhCalendar>
+                </BitBhPopoverPanel>
+            </BitBhPopover>);
+
+        Cell(cut, "2026-11-08").Press("Enter");
+        Cell(cut, "2026-11-08").Press("Escape");
+        Assert.IsFalse(Cell(cut, "2026-11-08").HasAttribute("data-highlighted"));
+        Assert.AreEqual("open", cut.Find("div").GetAttribute("data-state"));
+
+        // With nothing half picked, Escape is the popover's.
+        Cell(cut, "2026-11-08").Press("Escape");
+        Assert.AreEqual("closed", cut.Find("div").GetAttribute("data-state"));
+    }
+
+    [TestMethod]
+    public void A_heading_with_an_offset_titles_one_of_several_months()
+    {
+        var cut = Render(
+            @<BitBhCalendar Culture="En" VisibleMonths="2" DefaultFocusedDate="Nov8" aria-label="Date">
+                <BitBhCalendarHeading Offset="0" As="h3" aria-hidden="true" />
+                <BitBhCalendarGrid Offset="0" />
+                <BitBhCalendarHeading Offset="1" As="h3" aria-hidden="true" />
+                <BitBhCalendarGrid Offset="1" />
+            </BitBhCalendar>);
+
+        var titles = cut.FindAll("h3");
+        Assert.AreEqual("November 2026", Text(titles[0]));
+        Assert.AreEqual("December 2026", Text(titles[1]));
+        // Month titles don't name the grids: each names itself.
+        Assert.IsFalse(cut.Find("table").HasAttribute("aria-labelledby"));
+        Assert.AreEqual("December 2026", cut.FindAll("table")[1].AccessibleName());
+        cut.ShouldBeAccessible();
+    }
+
+    private sealed class Booking
+    {
+        [Required(ErrorMessage = "A check-in date is required.")]
+        public DateOnly? CheckIn { get; set; }
+    }
+}

@@ -1,0 +1,84 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment<BitBhPaginationContext> Parts => p => @<text>
+        <BitBhPaginationFirst>«</BitBhPaginationFirst>
+        <BitBhPaginationPrevious>‹</BitBhPaginationPrevious>
+        @foreach (var entry in p.Entries)
+        {
+            if (entry.IsEllipsis)
+            {
+                <BitBhPaginationEllipsis @key="entry.Key" />
+            }
+            else
+            {
+                <BitBhPaginationItem @key="entry.Key" Page="entry.Page">@entry.Page</BitBhPaginationItem>
+            }
+        }
+        <BitBhPaginationNext>›</BitBhPaginationNext>
+        <BitBhPaginationLast>»</BitBhPaginationLast>
+    </text>;
+
+    private static string Pages(int page, int count, int siblings = 1, int boundary = 1)
+        => string.Join(' ', BitBhPagination.Range(page, count, siblings, boundary).Select(e => e.IsEllipsis ? "…" : e.Page.ToString()));
+
+    [TestMethod]
+    public void Range_keeps_the_ends_and_the_neighbours_of_the_current_page()
+    {
+        Assert.AreEqual("1 2 3 4 5", Pages(1, 5));
+        Assert.AreEqual("1 2 3 4 5 … 10", Pages(1, 10));
+        Assert.AreEqual("1 2 3 4 5 … 10", Pages(4, 10));
+        Assert.AreEqual("1 … 4 5 6 … 10", Pages(5, 10));
+        Assert.AreEqual("1 … 6 7 8 9 10", Pages(8, 10));
+        Assert.AreEqual("1 … 5 6 7 8 9 … 20", Pages(7, 20, siblings: 2));
+        Assert.AreEqual("1 2 … 9 10 11 … 19 20", Pages(10, 20, boundary: 2));
+        Assert.AreEqual("1", Pages(1, 1));
+        // The number of entries stays the same while the page moves.
+        Assert.IsTrue(Enumerable.Range(1, 20).Select(p => BitBhPagination.Range(p, 20).Count).Distinct().Count() == 1);
+    }
+
+    [TestMethod]
+    public void Navigation_landmark_with_named_pages_and_the_current_one_marked()
+    {
+        var cut = Render(@<BitBhPagination TotalItems="95" PageSize="10" DefaultPage="5" Template="Parts" />);
+
+        var nav = cut.Find("nav");
+        Assert.AreEqual("Pagination", nav.AccessibleName());
+        Assert.AreEqual("10", nav.GetAttribute("data-page-count"));
+        var current = cut.Find("[aria-current=page]");
+        Assert.AreEqual("Page 5", current.AccessibleName());
+        Assert.AreEqual("5", Text(current));
+        Assert.HasCount(2, cut.FindAll("[aria-hidden=true]"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Buttons_change_the_page_and_disable_at_the_ends()
+    {
+        var pages = new List<int>();
+        var cut = Render(@<BitBhPagination PageCount="3" OnPageChange="p => pages.Add(p)" Template="Parts" />);
+
+        Assert.IsTrue(cut.Find("[aria-label='Previous page']").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[aria-label='First page']").HasAttribute("disabled"));
+        cut.Find("[aria-label='Next page']").Click();
+        cut.Find("[aria-label='Page 3']").Click();
+        CollectionAssert.AreEqual(new[] { 2, 3 }, pages);
+        Assert.IsTrue(cut.Find("[aria-label='Next page']").HasAttribute("disabled"));
+        cut.Find("[aria-label='First page']").Click();
+        Assert.AreEqual(1, pages[^1]);
+    }
+
+    [TestMethod]
+    public void Link_mode_renders_addresses()
+    {
+        var cut = Render(@<BitBhPagination PageCount="4" Page="1" PageHref="@(p => $"/posts?page={p}")" Template="Parts" />);
+
+        Assert.AreEqual("/posts?page=2", cut.Find("a[aria-label='Next page']").GetAttribute("href"));
+        Assert.AreEqual("/posts?page=4", cut.Find("a[aria-label='Page 4']").GetAttribute("href"));
+        var previous = cut.Find("[aria-label='Previous page']");
+        Assert.IsFalse(previous.HasAttribute("href"));
+        Assert.AreEqual("true", previous.GetAttribute("aria-disabled"));
+        cut.ShouldBeAccessible();
+    }
+}

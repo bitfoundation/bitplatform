@@ -1,0 +1,371 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an ancestor)
+// re-tunes every timeline under it and one set on the Style of an instance that one alone. The colors and the font
+// family are what the engine draws the canvas, SVG or HTML scene with; a value set through Options.Colors (or one of the
+// font options) wins over them:
+//   --bit-ResourceTimeline-content-background      background of the scrollable content           (default: $clr-bg-pri)
+//   --bit-ResourceTimeline-axis-background         background of the time and resource axes        (default: $clr-bg-sec)
+//   --bit-ResourceTimeline-axis-border-color       lines within and around the axes                (default: $clr-brd-pri)
+//   --bit-ResourceTimeline-tick-color              hour ticks of the time axis                     (default: $clr-brd-pri)
+//   --bit-ResourceTimeline-label-color             hour and resource labels                        (default: $clr-fg-sec)
+//   --bit-ResourceTimeline-date-label-color        date labels of the time axis                    (default: $clr-fg-pri)
+//   --bit-ResourceTimeline-grid-color              grid lines of the content                       (default: $clr-brd-sec)
+//   --bit-ResourceTimeline-bar-color               fill of a bar that has no color of its own      (default: $clr-pri)
+//   --bit-ResourceTimeline-bar-selected-color      fill of a selected bar                          (default: $clr-pri-dark)
+//   --bit-ResourceTimeline-bar-selected-border-color outline of a selected bar                     (default: $clr-pri-dark-active)
+//   --bit-ResourceTimeline-bar-label-color         labels around the bars                          (default: $clr-fg-sec)
+//   --bit-ResourceTimeline-now-color               the current-time line                           (default: $clr-err)
+//   --bit-ResourceTimeline-selection-background    fill of the marquee rectangle                   (default: $clr-pri-tint)
+//   --bit-ResourceTimeline-selection-border-color  outline of the marquee rectangle                (default: $clr-pri)
+//   --bit-ResourceTimeline-focus-color             focus of the bars, the viewport and the divider (default: $clr-pri-focus)
+//   --bit-ResourceTimeline-tooltip-background      fill of the built-in tooltip                    (default: $clr-tooltip-bg)
+//   --bit-ResourceTimeline-tooltip-color           text of the built-in tooltip                    (default: $clr-tooltip-fg)
+//   --bit-ResourceTimeline-non-working-background  wash over non-working days and hours            (default: $clr-fg-pri at 6%)
+//   --bit-ResourceTimeline-font-family             family of the labels the engine draws           (default: $tg-font-family)
+//   --bit-ResourceTimeline-resource-color          text of the rows of the resource template       (default: $clr-fg-pri)
+//   --bit-ResourceTimeline-resource-font-size      size of the rows of the resource template       (default: $tg-fs-sm)
+//   --bit-ResourceTimeline-toggle-color            the expand/collapse button of a group row       (default: $clr-fg-sec)
+//   --bit-ResourceTimeline-toggle-hover-color      that button under the pointer                   (default: $clr-pri)
+//   --bit-ResourceTimeline-loading-background      the veil of the loading overlay                 (default: $clr-bg-pri at 70%)
+//   --bit-ResourceTimeline-loading-color           the text of the loading overlay                 (default: $clr-fg-sec)
+//   --bit-ResourceTimeline-spinner-size            the default spinner of the loading overlay      (default: spacing(4.5))
+//   --bit-ResourceTimeline-spinner-color           its turning arc                                 (default: $clr-pri)
+//   --bit-ResourceTimeline-spinner-track-color     its track                                       (default: $clr-brd-sec)
+
+$rtm-focus: var(--bit-ResourceTimeline-focus-color, #{$clr-pri-focus});
+
+// What the root publishes for its parts: the direction of the page, which the parts laid out on the engine's left-to-right
+// geometry hand back to the content of the templates they hold.
+$rtm-private-properties: dir;
+
+// What the engine reads of the theme, resolved on the root so a variable set on an ancestor or on the Style of the
+// instance reaches it: the script reads each one off a hidden probe inside the root (as a background-color, which does
+// not inherit, so a chain that resolves to nothing leaves the engine's own default in place) and reads them again
+// whenever the theme of the page changes.
+.bit-rtm {
+    @each $name in $rtm-private-properties {
+        --bit-rtm-#{$name}: initial;
+    }
+
+    --bit-rtm-thm-content-bg: var(--bit-ResourceTimeline-content-background, #{$clr-bg-pri});
+    --bit-rtm-thm-axis-bg: var(--bit-ResourceTimeline-axis-background, #{$clr-bg-sec});
+    --bit-rtm-thm-axis-border: var(--bit-ResourceTimeline-axis-border-color, #{$clr-brd-pri});
+    --bit-rtm-thm-tick: var(--bit-ResourceTimeline-tick-color, #{$clr-brd-pri});
+    --bit-rtm-thm-label: var(--bit-ResourceTimeline-label-color, #{$clr-fg-sec});
+    --bit-rtm-thm-date-label: var(--bit-ResourceTimeline-date-label-color, #{$clr-fg-pri});
+    --bit-rtm-thm-grid: var(--bit-ResourceTimeline-grid-color, #{$clr-brd-sec});
+    --bit-rtm-thm-bar: var(--bit-ResourceTimeline-bar-color, #{$clr-pri});
+    --bit-rtm-thm-bar-selected: var(--bit-ResourceTimeline-bar-selected-color, #{$clr-pri-dark});
+    --bit-rtm-thm-bar-selected-border: var(--bit-ResourceTimeline-bar-selected-border-color, #{$clr-pri-dark-active});
+    --bit-rtm-thm-bar-label: var(--bit-ResourceTimeline-bar-label-color, #{$clr-fg-sec});
+    --bit-rtm-thm-now: var(--bit-ResourceTimeline-now-color, #{$clr-err});
+    --bit-rtm-thm-selection-fill: var(--bit-ResourceTimeline-selection-background, #{$clr-pri-tint});
+    --bit-rtm-thm-selection-border: var(--bit-ResourceTimeline-selection-border-color, #{$clr-pri});
+    --bit-rtm-thm-focus: #{$rtm-focus};
+    --bit-rtm-thm-tooltip-bg: var(--bit-ResourceTimeline-tooltip-background, #{$clr-tooltip-bg});
+    --bit-rtm-thm-tooltip-text: var(--bit-ResourceTimeline-tooltip-color, #{$clr-tooltip-fg});
+    --bit-rtm-thm-non-working: var(--bit-ResourceTimeline-non-working-background, #{translucent($clr-fg-pri, 6%)});
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-direction: column;
+    font-family: var(--bit-ResourceTimeline-font-family, #{$tg-font-family});
+}
+
+.bit-rtm:is(.bit-rtl, :dir(rtl)) {
+    --bit-rtm-dir: rtl;
+}
+
+// The hidden element the script resolves the theme colors on.
+.bit-rtm-prb {
+    display: none;
+}
+
+// The scroll viewport, focusable as the one place the keyboard of the timeline works. The engine lays its rows and its
+// time axis out left to right whatever the direction of the page (its scroll offsets are read as such), so the viewport
+// keeps that direction; what the templates render keeps the direction of the page.
+.bit-rtm-vpt {
+    flex: 1;
+    overflow: auto;
+    direction: ltr;
+    position: relative;
+    background-color: var(--bit-ResourceTimeline-content-background, #{$clr-bg-pri});
+
+    &:focus {
+        outline: none;
+    }
+
+    // Inset, so the sticky surface of the renderer does not hide it.
+    &:focus-visible {
+        @include focus-ring-inset($rtm-focus);
+    }
+}
+
+// The surface of the active renderer (a canvas, an svg or a div), created by the script inside the viewport. Sticky,
+// so it stays over the viewport while the viewport scrolls the spacer below.
+.bit-rtm-srf {
+    top: 0;
+    left: 0;
+    z-index: 10;
+    display: block;
+    cursor: pointer;
+    position: sticky;
+    pointer-events: auto;
+    background: transparent;
+}
+
+// The spacer the script sizes to the whole (virtual) content, which is what the viewport scrolls.
+.bit-rtm-spc {
+    z-index: 1;
+    pointer-events: none;
+}
+
+.bit-rtm-cnr {
+    top: 0;
+    left: 0;
+    z-index: 20;
+    overflow: hidden;
+    position: absolute;
+    box-sizing: border-box;
+    background-color: var(--bit-ResourceTimeline-axis-background, #{$clr-bg-sec});
+    border-right: $shp-border-width $shp-border-style var(--bit-ResourceTimeline-axis-border-color, #{$clr-brd-pri});
+    border-bottom: $shp-border-width $shp-border-style var(--bit-ResourceTimeline-axis-border-color, #{$clr-brd-pri});
+}
+
+// The overlay of the ResourceTemplate, over the resource axis the engine draws. Transparent, so the axis (and its
+// colors) shows through and the template decides its own look; its inner element is translated by the script to
+// follow the vertical scroll. Laid out on the engine's geometry, left to right, like the viewport.
+.bit-rtm-rov {
+    left: 0;
+    direction: ltr;
+    bottom: 0;
+    z-index: 15;
+    overflow: hidden;
+    position: absolute;
+    pointer-events: auto;
+    box-sizing: border-box;
+}
+
+.bit-rtm-roi {
+    top: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    will-change: transform;
+}
+
+.bit-rtm-rrw {
+    display: flex;
+    overflow: hidden;
+    gap: spacing(0.75);
+    align-items: center;
+    box-sizing: border-box;
+    padding-right: spacing(1);
+}
+
+.bit-rtm-rct {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    direction: var(--bit-rtm-dir, ltr);
+    font-size: var(--bit-ResourceTimeline-resource-font-size, #{$tg-fs-sm});
+    color: var(--bit-ResourceTimeline-resource-color, #{$clr-fg-pri});
+}
+
+.bit-rtm-tgl {
+    --bit-rtm-tgl-clr: initial;
+    padding: 0;
+    margin: 0;
+    border: none;
+    flex: 0 0 auto;
+    cursor: pointer;
+    width: spacing(2);
+    height: spacing(2);
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    background: transparent;
+    border-radius: $shp-radius-sm;
+    color: var(--bit-rtm-tgl-clr, var(--bit-ResourceTimeline-toggle-color, #{$clr-fg-sec}));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-rtm-tgl-clr: var(--bit-ResourceTimeline-toggle-hover-color, #{$clr-pri});
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring-inset($rtm-focus);
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    @media (forced-colors: active) {
+        color: ButtonText;
+
+        &:disabled,
+        &[aria-disabled="true"] {
+            color: GrayText;
+        }
+    }
+}
+
+// The chevron of the group button, drawn as two borders of a square turned to point down (expanded) or right
+// (collapsed), on the engine's left-to-right geometry.
+.bit-rtm-tgi {
+    width: spacing(0.75);
+    height: spacing(0.75);
+    box-sizing: border-box;
+    transform: translateY(-25%) rotate(45deg);
+    border-right: $shp-border-width-thick $shp-border-style currentcolor;
+    border-bottom: $shp-border-width-thick $shp-border-style currentcolor;
+    transition: transform $mot-duration-short $mot-easing;
+}
+
+.bit-rtm-tgc {
+    transform: translateX(-25%) rotate(-45deg);
+}
+
+// Both tooltips are capped to the viewport, less the 4px the script keeps them from each of its edges
+// (ResourceTimelineTooltip.place), so one taller than the viewport is cut off rather than placed past its bottom - and
+// a template wider than it is cut off at its right edge rather than running past it, where the pointer, which a tooltip
+// does not take, could never scroll it into view.
+.bit-rtm-tov {
+    z-index: 2147483647;
+    position: fixed;
+    overflow: hidden;
+    pointer-events: none;
+    box-sizing: border-box;
+    max-width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
+    max-height: calc(100dvh - 8px);
+    transform: translate(spacing(1.5), spacing(2));
+}
+
+// The divider at the end of the resource column, created by the script rather than the markup so it stays above the
+// overlay and takes the pointer without a round trip per move.
+.bit-rtm-spl {
+    --bit-rtm-spl-wid: 0px;
+    top: 0;
+    bottom: 0;
+    z-index: 25;
+    width: spacing(1);
+    touch-action: none;
+    user-select: none;
+    cursor: col-resize;
+    position: absolute;
+    box-sizing: border-box;
+    background: transparent;
+    margin-left: calc(-1 * #{spacing(0.5)});
+
+    &::after {
+        top: 0;
+        left: 50%;
+        bottom: 0;
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        transform: translateX(-50%);
+        width: var(--bit-rtm-spl-wid);
+        background-color: var(--bit-rtm-spl-clr, #{$rtm-focus});
+    }
+
+    // A disabled divider resizes nothing, so it does not show the line that says it would.
+    @media (hover: hover) {
+        &:not([aria-disabled="true"]):hover {
+            --bit-rtm-spl-wid: #{$shp-border-width-thick};
+        }
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        --bit-rtm-spl-wid: #{$shp-border-width-thick};
+        @include focus-ring-inset(var(--bit-rtm-spl-clr, #{$rtm-focus}));
+    }
+
+    &[aria-disabled="true"] {
+        cursor: default;
+    }
+
+    @media (forced-colors: active) {
+        &::after {
+            background-color: Highlight;
+        }
+    }
+}
+
+.bit-rtm-spl-drg {
+    --bit-rtm-spl-wid: #{$shp-border-width-thick};
+}
+
+.bit-rtm-ldg {
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    gap: spacing(1.5);
+    position: absolute;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    backdrop-filter: blur(1px);
+    background-color: var(--bit-ResourceTimeline-loading-background, #{translucent($clr-bg-pri, 70%)});
+}
+
+.bit-rtm-spn {
+    @include spinner-ring(var(--bit-ResourceTimeline-spinner-size, #{spacing(4.5)}),
+                          var(--bit-ResourceTimeline-spinner-color, #{$clr-pri}),
+                          var(--bit-ResourceTimeline-spinner-track-color, #{$clr-brd-sec}));
+}
+
+.bit-rtm-ldt {
+    font-size: $tg-fs-sm;
+    color: var(--bit-ResourceTimeline-loading-color, #{$clr-fg-sec});
+}
+
+// The live region the engine announces keyboard navigation, selection and edits through.
+.bit-rtm-lvr {
+    @include visually-hidden;
+}
+
+// The built-in tooltip, which the script keeps on the body so the viewport and the sticky axes never clip it. Its
+// colors and font are the engine's (the theme, or Options.Colors); the rest is the popup look of the theme.
+.bit-rtm-ttp {
+    // A popover where the browser has them (see BitResourceTimelineTooltip.ts), which draws a border by its UA style.
+    border: none;
+    max-width: 20rem;
+    overflow: hidden;
+    line-height: 1.35;
+    // The cap of .bit-rtm-tov, less the vertical padding (the box is sized by its content, as its max-width is).
+    max-height: calc(100vh - 8px - #{spacing(1.5)});
+    max-height: calc(100dvh - 8px - #{spacing(1.5)});
+    white-space: pre-line;
+    padding: spacing(0.75) spacing(1);
+    border-radius: $shp-radius-popup;
+    box-shadow: $box-shadow-tooltip;
+
+    @media (forced-colors: active) {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+}
+
+// A disabled timeline still scrolls, but takes no edit, selection or click: its content dims and the pointer says so.
+.bit-rtm.bit-dis {
+    .bit-rtm-vpt {
+        opacity: $opa-dis;
+    }
+
+    .bit-rtm-srf {
+        cursor: default;
+    }
+}

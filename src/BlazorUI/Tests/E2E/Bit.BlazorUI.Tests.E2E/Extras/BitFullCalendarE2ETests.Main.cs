@@ -446,6 +446,47 @@ public partial class BitFullCalendarE2ETests
         await Expect(Cal.Locator(".bit-bfc-header-right .bit-bfc-btn-primary")).ToBeVisibleAsync();
     }
 
+    // With no add button to carry it, the month grid's one tab stop is on the day numbers: the keys walk the days of a
+    // calendar nobody can add to as they do those of one they can, and each day is read with its full date.
+    [TestMethod]
+    [DataRow("#btn-readonly")]
+    [DataRow("#btn-allow-add")]
+    public async Task ReadOnly_TheMonthGrid_IsOneTabStopTheKeysWalkDayByDay(string toggle)
+    {
+        await OpenMainAsync();
+
+        await Page.Locator(toggle).ClickAsync();
+        await Expect(Cal.Locator(".bit-bfc-cell-add-hint-month")).ToHaveCountAsync(0);
+
+        var stop = Cal.Locator(".bit-bfc-month-cell-day[data-bit-bfc-roving][tabindex='0']");
+        await Expect(stop).ToHaveCountAsync(1);
+        await Expect(stop).ToHaveAccessibleNameAsync("Tuesday, July 1, 2025");
+
+        await stop.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+        var day = Cal.GetByRole(AriaRole.Button, new() { Name = "Wednesday, July 2, 2025", Exact = true });
+        await Expect(day).ToBeFocusedAsync();
+        await Expect(day).ToHaveAttributeAsync("tabindex", "0");
+
+        await Page.Keyboard.PressAsync("ArrowDown");
+        day = Cal.GetByRole(AriaRole.Button, new() { Name = "Wednesday, July 9, 2025", Exact = true });
+        await Expect(day).ToBeFocusedAsync();
+        // The calendar draws its focus ring as a box-shadow (the focus-ring mixin), which the day number takes as every
+        // button of the calendar does.
+        Assert.AreNotEqual("none", await day.EvaluateAsync<string>("el => getComputedStyle(el).boxShadow"), "the focused day shows the focus ring");
+
+        // Enter does what a click on the day does in a read-only calendar: it selects the date, and adds nothing.
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#date")).ToHaveTextAsync("2025-07-09");
+        await Expect(Dialog(Cal)).ToHaveCountAsync(0);
+
+        // PageDown turns the month and keeps the day, and the focus goes with it.
+        await Page.Keyboard.PressAsync("PageDown");
+        await Expect(Page.Locator("#date")).ToHaveTextAsync("2025-08-09");
+        await Expect(Cal.GetByRole(AriaRole.Button, new() { Name = "Saturday, August 9, 2025", Exact = true })).ToBeFocusedAsync();
+        await Expect(Cal.Locator(".bit-bfc-month-cell-day[data-bit-bfc-roving][tabindex='0']")).ToHaveCountAsync(1);
+    }
+
     [TestMethod]
     public async Task Permissions_AllowAddOff_HidesEveryAddAffordance_ButEditingStays()
     {

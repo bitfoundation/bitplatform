@@ -15,6 +15,9 @@
     // axis to be drawn on here, as in the other calendar libraries.
     var dayBackground = GetWholeDayBackground(isBlank);
     var backgroundLabel = string.Concat(dayBackground.Where(e => string.IsNullOrWhiteSpace(e.Title) is false).Select(e => $", {e.Title}"));
+    // A read-only month renders no add button to carry the roving tab stop of its grid, so its day number carries it:
+    // the keyboard walks the days of a calendar it cannot change as well, each read with its full date.
+    var isRovingDay = State.CanAdd is false && isOutOfRange is false;
 }
 
 @if (isBlank)
@@ -33,7 +36,7 @@ else
     {
         <div class="bit-bfc-bg-event bit-bfc-bg-event-day @(bg.IsBlocking ? "bit-bfc-bg-event-blocking" : null) @Parts.Classes?.Event @bg.CssClass"
              style="@($"{ColorScheme.GetColorStyle(bg.Color)}{Parts.Styles?.Event}")"
-             aria-hidden="@(State.CanAdd ? "true" : null)">
+             aria-hidden="@(State.CanAdd || isRovingDay ? "true" : null)">
             @if (string.IsNullOrWhiteSpace(bg.Title) is false)
             {
                 <span class="bit-bfc-bg-event-title">@bg.Title</span>
@@ -42,13 +45,30 @@ else
     }
 
     @* With nav links on, the day number opens that single day - the affordance every calendar puts
-       there - and stays a plain label otherwise. *@
+       there - and stays a plain label otherwise. In a read-only month it is the grid's roving tab stop either way
+       (isRovingDay), named with the titles of the day's background events the way the add button is, which hides
+       them from assistive technologies in its place; a click on the plain one does what a click on the cell does. *@
     @if (State.NavLinks && isOutOfRange is false)
     {
         <button type="button" class="bit-bfc-month-cell-day bit-bfc-navlink @(isToday ? "today" : "")"
+                id="@(isRovingDay ? AddButtonId : null)"
+                data-bit-bfc-roving="@isRovingDay"
+                tabindex="@(isRovingDay ? (IsRovingCell ? "0" : "-1") : null)"
                 aria-current="@(isToday ? "date" : null)"
-                aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))"
+                aria-label="@($"{string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))}{(isRovingDay ? backgroundLabel : null)}")"
                 @onclick="GoToDayView"
+                @onkeydown="args => isRovingDay ? OnCellKeyDown.InvokeAsync((Cell.Date, args)) : Task.CompletedTask"
+                @onclick:stopPropagation="true">@Cell.Day</button>
+    }
+    else if (isRovingDay)
+    {
+        <button type="button" class="bit-bfc-month-cell-day-btn bit-bfc-month-cell-day @(isToday ? "today" : "")"
+                id="@AddButtonId"
+                data-bit-bfc-roving tabindex="@(IsRovingCell ? "0" : "-1")"
+                aria-current="@(isToday ? "date" : null)"
+                aria-label="@($"{Cell.Date.ToString("D", State.Culture)}{backgroundLabel}")"
+                @onclick="() => OnCellClick()"
+                @onkeydown="args => OnCellKeyDown.InvokeAsync((Cell.Date, args))"
                 @onclick:stopPropagation="true">@Cell.Day</button>
     }
     else

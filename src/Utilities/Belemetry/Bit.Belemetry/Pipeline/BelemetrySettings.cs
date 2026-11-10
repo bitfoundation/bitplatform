@@ -69,16 +69,38 @@ internal sealed class BelemetrySettings
             for (var i = 0; i < OtlpExporters.Count; i++)
             {
                 var otlp = OtlpExporters[i];
-                if (otlp.IncludeInBrowser is false || otlp.Headers.Count == 0 || otlp.BrowserHeaders.Count > 0) continue;
+                if (otlp.IncludeInBrowser is false) continue;
 
                 // Never reaches the page (as BelemetryBrowserConfigFactory decides): gRPC without a BrowserEndpoint, or
                 // none of the signals the browser produces.
                 if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
                 if ((otlp.Signals & (BelemetrySignals.Traces | BelemetrySignals.Logs)) == 0) continue;
 
-                StartupWarnings.Add($"The OTLP exporter #{i} to {otlp.BrowserEndpoint ?? otlp.Endpoint} has Headers, which a server does not hand to the browser script " +
-                                    "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +
-                                    "use the Relay transport, or set IncludeInBrowser = false.");
+                // Named as the page gets it, without user info (BelemetryUserInfo).
+                var endpoint = BelemetryUserInfo.Remove(otlp.BrowserEndpoint ?? otlp.Endpoint);
+
+                if (otlp.Headers.Count > 0 && otlp.BrowserHeaders.Count == 0)
+                {
+                    StartupWarnings.Add($"The OTLP exporter #{i} to {endpoint} has Headers, which a server does not hand to the browser script " +
+                                        "(the page would publish them to every visitor), so the browser exports to it without them. Put a header the page may expose in BrowserHeaders, " +
+                                        "use the Relay transport, or set IncludeInBrowser = false.");
+                }
+
+                // The endpoints the page gets (BelemetryBrowserConfigFactory.Create): the BrowserEndpoint alone, or the
+                // Endpoint and the signal-specific endpoints of the signals the browser produces.
+                var userInfo = otlp.BrowserEndpoint is not null
+                    ? BelemetryUserInfo.Has(otlp.BrowserEndpoint)
+                    : BelemetryUserInfo.Has(otlp.Endpoint)
+                      || (otlp.Signals.HasFlag(BelemetrySignals.Traces) && BelemetryUserInfo.Has(otlp.TracesEndpoint))
+                      || (otlp.Signals.HasFlag(BelemetrySignals.Logs) && BelemetryUserInfo.Has(otlp.LogsEndpoint));
+
+                if (userInfo)
+                {
+                    StartupWarnings.Add($"The OTLP exporter #{i} to {endpoint} has user info in its endpoint, which a server leaves out of the browser script's configuration " +
+                                        "(the page would publish it to every visitor), so the browser exports to it without it. User info authenticates no export anyway - " +
+                                        "neither HttpClient nor the browser sends it: put the credential in Headers (an Authorization header), and use the Relay transport " +
+                                        "or set IncludeInBrowser = false if the browser's exports need it too.");
+                }
             }
         }
 
@@ -119,7 +141,83 @@ internal sealed class BelemetrySettings
 
     public List<string> TraceSources { get; }
 
+    /// <summary>
+    /// Whether the export records the activities of <paramref name="source"/>: it matches <see cref="TraceSources"/>, and
+    /// it is not the framework's component source on a WebAssembly or Hybrid host without diagnostics. That source exists
+    /// there only because Belemetry registers it (<c>AddComponentsTracing</c>) for diagnostics; without them, an app gets
+    /// no <c>Navigate</c>/<c>HandleEvent</c> spans - nor HttpClient spans reparented under them - it never asked for.
+    /// </summary>
+    public bool ExportsTraceSource(string source) =>
+        Matches(source, TraceSources)
+        && (IsServer || Options.Diagnostics.Enabled || source != BelemetryDiagnosticEventFactory.ComponentsSource);
+
     public List<string> Meters { get; }
+
+    private IReadOnlyList<string>? _pageRoutes;
+    private IReadOnlyList<string>? _configuredPageRoutes;
+    private BelemetryPageRouteMatcher? _pageRouteMatcher;
+    private volatile bool _noPageRoutesFound;
+    private int _noPageRoutesReported;
+
+    /// <summary>
+    /// The route templates page paths are matched against: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the
+    /// discovered ones (<see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>, from
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> when there are any), once each. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> PageRoutes => _pageRoutes ??= ResolvePageRoutes();
+
+    /// <summary>
+    /// The route templates the app named itself: <see cref="BelemetryBrowserOptions.PageRoutes"/>, then the routes of the
+    /// <see cref="BelemetryBrowserOptions.PageRouteAssemblies"/> (with <see cref="BelemetryBrowserOptions.DiscoverPageRoutes"/>),
+    /// once each - <see cref="PageRoutes"/> without the scan of the app's references. Resolved on first use.
+    /// </summary>
+    public IReadOnlyList<string> ConfiguredPageRoutes => _configuredPageRoutes ??= ResolveConfiguredPageRoutes();
+
+    /// <summary>The <see cref="PageRoutes"/>, compiled for the page views .NET records itself. Built on first use.</summary>
+    public BelemetryPageRouteMatcher PageRouteMatcher => _pageRouteMatcher ??= new(PageRoutes);
+
+    /// <summary>
+    /// True once, after <see cref="PageRoutes"/> were resolved, when discovery was on and found no route at all - most
+    /// likely an app whose pages discovery cannot see (no entry assembly, as on .NET for Android, and its pages not
+    /// loaded yet): every page view then falls back to its path's template, which deserves a warning.
+    /// </summary>
+    public bool TakeNoPageRoutesWarning() => _noPageRoutesFound && Interlocked.Exchange(ref _noPageRoutesReported, 1) == 0;
+
+    private List<string> ResolveConfiguredPageRoutes()
+    {
+        var browser = Options.Browser;
+        var routes = AddPageRoutes([], browser.PageRoutes);
+        if (browser.DiscoverPageRoutes && browser.PageRouteAssemblies.Count > 0)
+        {
+            var read = BelemetryPageRoutes.Read(browser.PageRouteAssemblies);
+            _noPageRoutesFound = read.Length == 0;
+            AddPageRoutes(routes, read);
+        }
+        return routes;
+    }
+
+    private IReadOnlyList<string> ResolvePageRoutes()
+    {
+        var browser = Options.Browser;
+        var configured = ConfiguredPageRoutes;
+        // The assemblies' routes are among the configured ones already.
+        if (browser.DiscoverPageRoutes is false || browser.PageRouteAssemblies.Count > 0) return configured;
+
+        var discovered = BelemetryPageRoutes.Discovered;
+        _noPageRoutesFound = discovered.Count == 0;
+        return AddPageRoutes([.. configured], discovered);
+    }
+
+    /// <summary>Appends the <paramref name="templates"/> not listed yet (blank ones skipped, trimmed, compared case-insensitively).</summary>
+    private static List<string> AddPageRoutes(List<string> routes, IEnumerable<string> templates)
+    {
+        var seen = new HashSet<string>(routes, StringComparer.OrdinalIgnoreCase);
+        foreach (var route in templates)
+        {
+            if (string.IsNullOrWhiteSpace(route) is false && seen.Add(route.Trim())) routes.Add(route.Trim());
+        }
+        return routes;
+    }
 
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
 

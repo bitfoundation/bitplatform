@@ -20,7 +20,8 @@ public partial class BitFcDayCell
     /// </summary>
     [Parameter] public bool IsRovingCell { get; set; }
 
-    /// <summary>DOM id of the cell's add button, so the month view can move focus onto it.</summary>
+    /// <summary>DOM id of the cell's roving tab stop - its add button, or the day number of a read-only month - so the
+    /// month view can move focus onto it.</summary>
     [Parameter] public string? AddButtonId { get; set; }
 
     /// <summary>
@@ -36,7 +37,7 @@ public partial class BitFcDayCell
     /// </summary>
     [Parameter] public bool IsRowStart { get; set; }
 
-    /// <summary>Raised for every key pressed on the add button, together with this cell's date.</summary>
+    /// <summary>Raised for every key pressed on the cell's roving tab stop, together with this cell's date.</summary>
     [Parameter] public EventCallback<(DateTime Date, KeyboardEventArgs Args)> OnCellKeyDown { get; set; }
 
     private bool _showEventList;

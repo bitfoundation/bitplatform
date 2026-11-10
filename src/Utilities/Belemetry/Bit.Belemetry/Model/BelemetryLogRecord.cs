@@ -28,6 +28,18 @@ public sealed class BelemetryLogRecord
     /// </summary>
     internal string? BodyTemplate { get; set; }
 
+    /// <summary>
+    /// The message template of an <c>ILogger</c> entry, whatever <see cref="BelemetryLoggingOptions.IncludeMessageTemplate"/>
+    /// says: the diagnostic timeline keeps it instead of the rendered message. Never exported.
+    /// </summary>
+    internal string? MessageTemplate { get; set; }
+
+    /// <summary>
+    /// The exception object of an <c>ILogger</c> entry or a <see cref="IBelemetry.TrackException"/> call, for the diagnostic
+    /// timeline to keep its structure (the inner exceptions, the outer stack apart from theirs). Never exported.
+    /// </summary>
+    internal Exception? Exception { get; set; }
+
     /// <summary>The event name, for records that represent a named event (e.g. <c>browser.page_view</c>).</summary>
     public string? EventName { get; set; }
 
@@ -50,5 +62,5 @@ public sealed class BelemetryLogRecord
     public BelemetryFeatures Feature { get; set; } = BelemetryFeatures.Logs;
 
     /// <summary>Whether the record carries an exception (<c>exception.type</c> or <c>exception.message</c>).</summary>
-    public bool HasException => Attributes.Contains(BelemetrySemanticConventions.ExceptionType) || Attributes.Contains(BelemetrySemanticConventions.ExceptionMessage);
+    public bool HasException => Attributes.HasException;
 }

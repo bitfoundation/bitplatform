@@ -1,0 +1,11 @@
+﻿@* The router of the performance pages where they run in the browser (InteractiveWebAssembly): it knows this project's
+   pages alone, the only ones the browser has. On the server, the host's Routes routes to them as well. *@
+<Router AppAssembly="typeof(ClientRoutes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <p role="alert">Sorry, there's nothing at this address.</p>
+    </NotFound>
+</Router>

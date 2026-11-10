@@ -23,6 +23,17 @@ public class BitCheckboxClassStyles
     public string? Description { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the line carrying the error message of the BitCheckbox.
+    /// </summary>
+    public string? ErrorMessageContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the error message of the BitCheckbox.
+    /// Ignored when an ErrorMessageTemplate replaces the plain message.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the indeterminate state of the BitCheckbox.
     /// </summary>
     public string? Indeterminate { get; set; }

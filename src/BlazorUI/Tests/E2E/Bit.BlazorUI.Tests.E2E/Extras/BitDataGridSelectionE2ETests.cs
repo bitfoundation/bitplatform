@@ -96,7 +96,11 @@ public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
         await OpenAsync(Url);
 
         const string id = "grid-multi";
-        await Expect(Table(id)).ToHaveAttributeAsync("aria-multiselectable", "true");
+        // Without cell navigation the grid is a table, which may not carry aria-multiselectable: the checkboxes and the
+        // rows' aria-selected tell the selection.
+        await Expect(Table(id)).ToHaveAttributeAsync("role", "table");
+        await Expect(Table(id)).Not.ToHaveAttributeAsync("aria-multiselectable", new Regex(".*"));
+        await Expect(DataRow(id, 0)).ToHaveAttributeAsync("aria-selected", "false");
         await Expect(HeaderCell(id, 1).Locator("input[type=checkbox]")).ToHaveAccessibleNameAsync("Select all");
         await Expect(Cell(id, 0, 1).Locator("input")).ToHaveAccessibleNameAsync("Select row: Laptop");
         await Expect(Cell(id, 0, 3)).ToHaveAttributeAsync("role", "rowheader");
@@ -298,6 +302,7 @@ public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
         await OpenAsync(Url);
 
         const string id = "grid-nav";
+        await Expect(Table(id)).ToHaveAttributeAsync("role", "grid");
         await Expect(Page.Locator("#grid-nav [role=gridcell][tabindex='0']")).ToHaveCountAsync(1);
         await Expect(Cell(id, 0, 1)).ToHaveAttributeAsync("tabindex", "0");
 

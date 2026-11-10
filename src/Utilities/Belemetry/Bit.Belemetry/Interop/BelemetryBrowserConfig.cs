@@ -26,6 +26,21 @@ internal sealed class BelemetryBrowserConfig
     public int MaxValueLength { get; set; }
     public bool Debug { get; set; }
 
+    /// <summary>Null (left out of the JSON) unless diagnostics are enabled: the script then keeps no timeline.</summary>
+    public DiagnosticsConfig? Diagnostics { get; set; }
+
+    internal sealed class DiagnosticsConfig
+    {
+        public bool Enabled { get; set; } = true;
+        public int MaxEvents { get; set; }
+        public int Categories { get; set; }
+        public bool IncludeSuccessfulActivity { get; set; }
+        public bool IncludeLogMessages { get; set; }
+        public bool Persist { get; set; }
+        public bool TriggerBrowserErrors { get; set; }
+        public List<string> AllowedQueryParameters { get; set; } = [];
+    }
+
     internal sealed class ServiceConfig
     {
         public required string Name { get; set; }
@@ -62,6 +77,9 @@ internal sealed class BelemetryBrowserConfig
     {
         public bool TrackHashChanges { get; set; }
         public bool TrackVisitTime { get; set; }
+
+        /// <summary>The route templates page paths are matched against; null (left out) when there are none.</summary>
+        public IReadOnlyList<string>? Routes { get; set; }
     }
 
     internal sealed class InteractionsConfig

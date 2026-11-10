@@ -925,6 +925,7 @@ public partial class BitMessageBoxDemo
     private bool? confirmResult;
     private string? promptResult;
     private BitMessageBoxResult serviceResult;
+    private BitMessageBoxResult accessibilityResult;
 
     private readonly BitMessageBoxParams[] messageBoxParams =
     [
@@ -1100,6 +1101,33 @@ public partial class BitMessageBoxDemo
             Body = "What could be better?",
             Multiline = true,
             OkText = "Send"
+        });
+    }
+
+    private async Task ShowAccessibleQuestion()
+    {
+        // A question is an alertdialog, and the focus starts on Stay - the harmless answer.
+        accessibilityResult = await messageBoxService.Show(new()
+        {
+            Title = "Leave the page?",
+            Body = "Your draft is kept for 7 days.",
+            Buttons = BitMessageBoxButtons.YesNo,
+            YesText = "Leave",
+            NoText = "Stay",
+            DefaultButton = BitMessageBoxResult.No,
+            CloseButtonTitle = "Close the question"
+        });
+    }
+
+    private async Task ShowAccessibleNotice()
+    {
+        // A notice is a plain dialog, and IconAriaLabel has its glyph announced.
+        accessibilityResult = await messageBoxService.Show(new()
+        {
+            Title = "Saved",
+            Body = "Your changes are saved.",
+            Color = BitColor.Success,
+            IconAriaLabel = "Success"
         });
     }
 }

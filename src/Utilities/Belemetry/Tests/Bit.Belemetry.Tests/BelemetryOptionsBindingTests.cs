@@ -29,10 +29,20 @@ public class BelemetryOptionsBindingTests
             "Debug": true,
             "Consent": { "Default": "Errors", "Persist": false, "HonorGlobalPrivacyControl": false, "PendingLimit": 50 },
             "Privacy": { "RedactQueryParameters": [ "ssn" ], "StripQueryString": true, "StripFragment": false, "ScrubPatterns": false, "CollectUserAgent": false, "BlockedAttributes": [ "user.email" ], "RedactedAttributes": [ "ssn" ] },
-            "Errors": { "DuplicateWindow": "00:00:02", "MaxPerMinute": 10 },
+            "Errors": { "CaptureUnhandledExceptions": false, "DuplicateWindow": "00:00:02", "MaxPerMinute": 10 },
             "MaxValueLength": 1000,
+            "Diagnostics": {
+              "Enabled": true, "MaxEvents": 100, "MaxFailureEvents": 20, "MaxMemoryBytes": 65536, "Categories": "Exception, Http", "MinimumLogLevel": "Error",
+              "IncludeSuccessfulActivity": false, "IncludeLogMessages": true, "IncludeExceptionMessages": false, "AllowedAttributes": [ "tenant" ],
+              "AllowedQueryParameters": [ "page" ], "RedactedKeys": [ "ssn" ], "AutoCaptureTriggers": "UnhandledExceptions, BrowserErrors",
+              "PostTriggerWindow": "00:00:01", "AutoCaptureCooldown": "00:05:00", "MaxPendingCaptures": 2, "CaptureRetention": "00:10:00",
+              "MaxBundleBytes": 1048576, "MaxExceptionGroups": 10, "GroupAcrossReleases": false, "ComponentRenderStatistics": true,
+              "BrowserMaxEvents": 50, "PersistBrowserTimeline": true,
+              "Release": { "Commit": "abc123", "BuildId": "42", "ConfigurationVersion": "7", "Metadata": { "ring": "canary" } },
+              "Snapshots": { "MaxDepth": 3, "MaxItems": 10, "MaxStringLength": 100, "MaxBytes": 4096, "Timeout": "00:00:01", "MaxRecorded": 4 }
+            },
             "Browser": {
-              "Enabled": true, "Transport": "Relay", "TrackHashChanges": true, "TrackPageVisitTime": true,
+              "Enabled": true, "Transport": "Relay", "TrackHashChanges": true, "TrackPageVisitTime": true, "PageRoutes": [ "/orders/{id:int}" ], "DiscoverPageRoutes": false,
               "InteractionEvents": [ "click", "submit" ], "CaptureInteractionText": true, "MaxInteractionTextLength": 32, "TrackRageClicks": false,
               "WebVitals": false, "DocumentLoad": false, "ResourceTiming": true, "LongTasks": true, "Fetch": false, "Xhr": false,
               "PropagateTraceContextTo": [ "same-origin", "^https://api\\.shop\\.test/" ], "IgnoreUrls": [ "/cdn/" ], "IgnoreErrorMessages": [ "Script error" ],
@@ -101,6 +111,7 @@ public class BelemetryOptionsBindingTests
         CollectionAssert.Contains(o.Privacy.RedactedAttributes, "ssn");
         CollectionAssert.Contains(o.Privacy.RedactedAttributes, "password", "Added to the defaults.");
 
+        Assert.IsFalse(o.Errors.CaptureUnhandledExceptions);
         Assert.AreEqual(TimeSpan.FromSeconds(2), o.Errors.DuplicateWindow);
         Assert.AreEqual(10, o.Errors.MaxPerMinute);
         Assert.AreEqual(1000, o.MaxValueLength);
@@ -109,6 +120,8 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetryBrowserTransport.Relay, b.Transport);
         Assert.IsTrue(b.TrackHashChanges);
         Assert.IsTrue(b.TrackPageVisitTime);
+        CollectionAssert.AreEqual(new[] { "/orders/{id:int}" }, b.PageRoutes);
+        Assert.IsFalse(b.DiscoverPageRoutes);
         // The binder appends to a list's defaults, so "click" is there twice; the browser config dedupes it (see BelemetryBrowserConfigFactoryTests).
         CollectionAssert.AreEqual(new[] { "click", "click", "submit" }, b.InteractionEvents);
         Assert.IsTrue(b.CaptureInteractionText);
@@ -194,8 +207,45 @@ public class BelemetryOptionsBindingTests
         Assert.IsNotNull(o.ConsoleExporter);
         Assert.IsFalse(o.ConsoleExporter.IncludeInBrowser);
 
+        var d = o.Diagnostics;
+        Assert.IsTrue(d.Enabled);
+        Assert.AreEqual(100, d.MaxEvents);
+        Assert.AreEqual(20, d.MaxFailureEvents);
+        Assert.AreEqual(65536, d.MaxMemoryBytes);
+        Assert.AreEqual(BelemetryDiagnosticCategories.Exception | BelemetryDiagnosticCategories.Http, d.Categories);
+        Assert.AreEqual(LogLevel.Error, d.MinimumLogLevel);
+        Assert.IsFalse(d.IncludeSuccessfulActivity);
+        Assert.IsTrue(d.IncludeLogMessages);
+        Assert.IsFalse(d.IncludeExceptionMessages);
+        CollectionAssert.AreEqual(new[] { "tenant" }, d.AllowedAttributes);
+        CollectionAssert.AreEqual(new[] { "page" }, d.AllowedQueryParameters);
+        CollectionAssert.Contains(d.RedactedKeys, "ssn", "Appended to the defaults (a binder appends to a list).");
+        CollectionAssert.Contains(d.RedactedKeys, "circuitid");
+        Assert.AreEqual(BelemetryDiagnosticTriggers.UnhandledExceptions | BelemetryDiagnosticTriggers.BrowserErrors, d.AutoCaptureTriggers);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), d.PostTriggerWindow);
+        Assert.AreEqual(TimeSpan.FromMinutes(5), d.AutoCaptureCooldown);
+        Assert.AreEqual(2, d.MaxPendingCaptures);
+        Assert.AreEqual(TimeSpan.FromMinutes(10), d.CaptureRetention);
+        Assert.AreEqual(1048576, d.MaxBundleBytes);
+        Assert.AreEqual(10, d.MaxExceptionGroups);
+        Assert.IsFalse(d.GroupAcrossReleases);
+        Assert.IsTrue(d.ComponentRenderStatistics);
+        Assert.AreEqual(50, d.BrowserMaxEvents);
+        Assert.IsTrue(d.PersistBrowserTimeline);
+        Assert.AreEqual("abc123", d.Release.Commit);
+        Assert.AreEqual("42", d.Release.BuildId);
+        Assert.AreEqual("7", d.Release.ConfigurationVersion);
+        Assert.AreEqual("canary", d.Release.Metadata["ring"]);
+        Assert.AreEqual(3, d.Snapshots.MaxDepth);
+        Assert.AreEqual(10, d.Snapshots.MaxItems);
+        Assert.AreEqual(100, d.Snapshots.MaxStringLength);
+        Assert.AreEqual(4096, d.Snapshots.MaxBytes);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), d.Snapshots.Timeout);
+        Assert.AreEqual(4, d.Snapshots.MaxRecorded);
+
         Assert.IsEmpty(o.Exporters, "Code-only members are left alone.");
         Assert.IsEmpty(o.Processors);
+        Assert.IsEmpty(o.Browser.PageRouteAssemblies);
     }
 
     [TestMethod]
@@ -220,5 +270,7 @@ public class BelemetryOptionsBindingTests
         Assert.IsEmpty(o.OtlpExporters);
         Assert.IsNull(o.ConsoleExporter);
         Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, new BelemetryOtlpExporterOptions().Protocol);
+        Assert.IsFalse(o.Diagnostics.Enabled, "Diagnostics are opt-in.");
+        Assert.AreEqual(BelemetryDiagnosticTriggers.None, o.Diagnostics.AutoCaptureTriggers);
     }
 }

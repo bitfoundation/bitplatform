@@ -70,6 +70,7 @@ public sealed class BitJsInvokableDisposalContractTests
     [DataRow(typeof(BitInfiniteScrolling<>))]
     [DataRow(typeof(BitMap<>))]
     [DataRow(typeof(BitMarkdownEditor))]
+    [DataRow(typeof(BitPdfViewer))]
     [DataRow(typeof(BitRichTextEditor))]
     [DataRow(typeof(BitMarkdownEditorLegacy))]
     public void TheScanShouldFindTheKnownComponents(Type component)

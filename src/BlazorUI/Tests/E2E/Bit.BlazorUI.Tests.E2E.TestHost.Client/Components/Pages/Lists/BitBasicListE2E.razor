@@ -92,6 +92,9 @@
 <E2ESection Id="sec-provider" Title="ItemsProvider with Virtualize, VirtualizePlaceholder, ItemsProviderDelay">
     <span id="provider-calls">@_providerCalls</span>
     <span id="provider-last">@_providerLast</span>
+    <span id="provider-held">@(_providerGate is null ? "answering" : "held")</span>
+    <button id="btn-hold-provider" @onclick="HoldVirtualProvider">Hold the provider</button>
+    <button id="btn-release-provider" @onclick="ReleaseVirtualProvider">Release the provider</button>
     <BitBasicList Id="provider" @ref="_providerList" Virtualize ItemSize="40" ItemsProviderDelay="200" TItem="Person" ItemsProvider="VirtualProvider" Class="bsl-box" Style="height: 400px">
         <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row" data-id="@person.Id">Product @person.Id</div></RowTemplate>
         <VirtualizePlaceholder><div role="listitem" class="bsl-row bsl-placeholder">Loading...</div></VirtualizePlaceholder>
@@ -287,6 +290,7 @@
     private int _providerCalls;
     private string _providerLast = "";
     private BitBasicList<Person>? _providerList;
+    private TaskCompletionSource? _providerGate;
 
     private int _loadMoreCount;
     private int _loadMoreCalls;
@@ -328,15 +332,28 @@
 
     private void ReleaseAllProvider() => _allGate.TrySetResult();
 
+    // While the page holds it, every request waits for the page to release it, so a test sees the placeholders of the
+    // region it scrolled to for as long as it needs to: a provider that only takes its time can answer before a loaded
+    // runner has looked.
     private async ValueTask<BitBasicListItemsProviderResult<Person>> VirtualProvider(BitBasicListItemsProviderRequest<Person> request)
     {
         _providerCalls++;
         _providerLast = $"{request.StartIndex}:{request.Count}";
         _ = InvokeAsync(StateHasChanged);
+        if (_providerGate is { } gate) await gate.Task.WaitAsync(request.CancellationToken);
         await Task.Delay(300, request.CancellationToken);
         var count = Math.Max(0, Math.Min(request.Count, 1000 - request.StartIndex));
         var items = Enumerable.Range(request.StartIndex, count).Select(i => new Person(i, $"Product {i}")).ToList();
         return BitBasicListItemsProviderResult.From<Person>(items, 1000);
+    }
+
+    private void HoldVirtualProvider() => _providerGate ??= new();
+
+    private void ReleaseVirtualProvider()
+    {
+        var gate = _providerGate;
+        _providerGate = null;
+        gate?.TrySetResult();
     }
 
     // Every page after the first waits for the page to release it, so the template's busy state can be seen.

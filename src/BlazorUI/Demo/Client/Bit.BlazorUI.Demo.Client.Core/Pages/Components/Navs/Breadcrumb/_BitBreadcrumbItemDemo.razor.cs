@@ -126,6 +126,16 @@ public partial class _BitBreadcrumbItemDemo
         }
     ];
 
+    private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithCategories =
+    [
+        new() { IconName = BitIconName.Home, AriaLabel = "Home", Href = "/components/breadcrumb" },
+        new() { Text = "Products", Href = "/components/breadcrumb" },
+        new() { Text = "Electronics", Href = "/components/breadcrumb" },
+        new() { Text = "Computers", Href = "/components/breadcrumb" },
+        new() { Text = "Laptops", Href = "/components/breadcrumb" },
+        new() { Text = "Gaming laptops", Href = "/components/breadcrumb", IsSelected = true }
+    ];
+
     private readonly List<BitBreadcrumbItem> RtlBreadcrumbItems =
     [
         new() { Text = "پوشه اول" },

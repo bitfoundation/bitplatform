@@ -1,0 +1,163 @@
+﻿@page "/tags-input"
+
+<PageTitle>Tags Input · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Tags Input</h1>
+    <p class="bb-subtitle">Turns what is typed into removable tags, with the keyboard model of React Aria's TagGroup and announcements of removals.</p>
+</div>
+
+<SectionSwitcher Slug="tags-input" />
+
+<DemoBlock Title="Keywords" Code="@_basicCode" Css="@_css">
+    <Description>
+        Enter or a comma adds the typed text; a pasted comma-separated list becomes several tags. The tags are a
+        <code>role="grid"</code> of rows: ← or Backspace in the empty input moves to the last tag, ← / → / Home / End move
+        between tags, Backspace / Delete remove the focused one (and announce it), → past the last returns to the input.
+        The input stays the one tab stop.
+    </Description>
+    <LiveContent>
+        <BitBhTagsInput @bind-Values="keywords" class="tags">
+            <Template Context="t">
+                <BitBhTagsInputList aria-label="Keywords" class="tags-list">
+                    @for (var i = 0; i < t.Values.Count; i++)
+                    {
+                        var index = i;
+                        <BitBhTagsInputTag Index="index" class="tag">
+                            @t.Values[index]
+                            <BitBhTagsInputTagRemove class="tag-remove">×</BitBhTagsInputTagRemove>
+                        </BitBhTagsInputTag>
+                    }
+                </BitBhTagsInputList>
+                <BitBhTagsInputInput aria-label="Add a keyword" placeholder="Add a keyword…" class="tags-input" />
+                <BitBhTagsInputClear class="tags-clear">Clear</BitBhTagsInputClear>
+            </Template>
+        </BitBhTagsInput>
+        <span class="demo-output">@string.Join(", ", keywords)</span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="E-mail recipients with rules" Code="@_rulesCode" Css="@_css">
+    <Description>
+        <code>Validate</code> decides what is a tag (here: something with an <code>@@</code>), <code>Max</code> caps the count and
+        duplicates are refused; a refused tag stays in the input and <code>OnTagRejected</code> says why. <code>AddOnBlur</code>
+        adds what is left when the input is left.
+    </Description>
+    <LiveContent>
+        <div>
+            <BitBhTagsInput @bind-Values="recipients" Max="3" AddOnBlur="true" Validate="@(t => t.Contains('@'))"
+                            OnTagRejected="r => rejection = r" class="tags">
+                <Template Context="t">
+                    <BitBhTagsInputList aria-label="Recipients" class="tags-list">
+                        @for (var i = 0; i < t.Values.Count; i++)
+                        {
+                            var index = i;
+                            <BitBhTagsInputTag Index="index" class="tag">
+                                @t.Values[index]
+                                <BitBhTagsInputTagRemove class="tag-remove">×</BitBhTagsInputTagRemove>
+                            </BitBhTagsInputTag>
+                        }
+                    </BitBhTagsInputList>
+                    <BitBhTagsInputInput aria-label="Add a recipient" placeholder="name@example.com" class="tags-input" />
+                </Template>
+            </BitBhTagsInput>
+            @if (rejection is not null)
+            {
+                <p class="demo-output" role="status">“@rejection.Tag” was refused: @rejection.Reason.</p>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@code {
+    private IReadOnlyList<string> keywords = ["blazor", "headless"];
+    private IReadOnlyList<string> recipients = ["ada@example.com"];
+    private BitBhTagRejection? rejection;
+
+    private const string _basicCode = """
+<BitBhTagsInput @bind-Values="keywords" class="tags">
+    <Template Context="t">
+        <BitBhTagsInputList aria-label="Keywords" class="tags-list">
+            @for (var i = 0; i < t.Values.Count; i++)
+            {
+                var index = i;
+                <BitBhTagsInputTag Index="index" class="tag">
+                    @t.Values[index]
+                    <BitBhTagsInputTagRemove class="tag-remove">×</BitBhTagsInputTagRemove>
+                </BitBhTagsInputTag>
+            }
+        </BitBhTagsInputList>
+        <BitBhTagsInputInput aria-label="Add a keyword" placeholder="Add a keyword…" class="tags-input" />
+        <BitBhTagsInputClear class="tags-clear">Clear</BitBhTagsInputClear>
+    </Template>
+</BitBhTagsInput>
+
+@code {
+    private IReadOnlyList<string> keywords = ["blazor", "headless"];
+}
+""";
+
+    private const string _rulesCode = """
+<BitBhTagsInput @bind-Values="recipients" Max="3" AddOnBlur="true" Validate="@(t => t.Contains('@'))"
+                OnTagRejected="r => rejection = r" class="tags">
+    <Template Context="t">
+        <BitBhTagsInputList aria-label="Recipients" class="tags-list">
+            @for (var i = 0; i < t.Values.Count; i++)
+            {
+                var index = i;
+                <BitBhTagsInputTag Index="index" class="tag">
+                    @t.Values[index] <BitBhTagsInputTagRemove class="tag-remove">×</BitBhTagsInputTagRemove>
+                </BitBhTagsInputTag>
+            }
+        </BitBhTagsInputList>
+        <BitBhTagsInputInput aria-label="Add a recipient" placeholder="name@example.com" class="tags-input" />
+    </Template>
+</BitBhTagsInput>
+
+@if (rejection is not null)
+{
+    <p role="status">“@rejection.Tag” was refused: @rejection.Reason.</p>
+}
+""";
+
+    private const string _css = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+}
+
+/* data-focused while anything inside has focus */
+.tags[data-focused] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.tags-list { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.25rem 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--color-accent-subtle);
+    color: var(--color-accent-text);
+    font-size: 0.8rem;
+    outline: none;
+}
+
+/* The focused tag (← / Backspace from the empty input) */
+.tag:focus-visible { box-shadow: 0 0 0 2px var(--color-focus); }
+
+.tag-remove { all: unset; width: 1.1rem; text-align: center; border-radius: 999px; cursor: pointer; }
+.tag-remove:hover { background: var(--color-accent-muted); }
+
+.tags-input { flex: 1; min-width: 6rem; border: none; background: transparent; color: var(--color-text); outline: none; }
+
+.tags-clear:disabled { display: none; }
+""";
+}

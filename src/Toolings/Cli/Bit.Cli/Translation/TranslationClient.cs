@@ -42,10 +42,17 @@ public sealed partial class ChatTranslationClient(IChatClient chatClient, ChatOp
         return new ChatTranslationClient(client.AsIChatClient(), settings.ChatOptions);
     }
 
+    private bool temperatureRejected;
+
     public async Task<TranslationOutput> TranslateAsync(TranslationBatch batch, CancellationToken cancellationToken)
     {
         var chatOptions = options?.Clone() ?? new ChatOptions();
         chatOptions.ResponseFormat = ChatResponseFormat.ForJsonSchema<TranslationBatchResponse>();
+
+        if (temperatureRejected)
+        {
+            chatOptions.Temperature = null;
+        }
 
         var messages = new List<ChatMessage>
         {
@@ -53,10 +60,25 @@ public sealed partial class ChatTranslationClient(IChatClient chatClient, ChatOp
             new(ChatRole.User, $"Translate the following strings to {batch.Target.NativeName}:\n\n{JsonSerializer.Serialize(batch.Values)}")
         };
 
-        var response = await chatClient.GetResponseAsync<TranslationBatchResponse>(messages, chatOptions, cancellationToken: cancellationToken);
+        ChatResponse<TranslationBatchResponse> response;
+
+        try
+        {
+            response = await chatClient.GetResponseAsync<TranslationBatchResponse>(messages, chatOptions, cancellationToken: cancellationToken);
+        }
+        catch (ClientResultException exp) when (chatOptions.Temperature is not null && exp.Status is 400 && RejectsTemperature(exp.Message))
+        {
+            temperatureRejected = true;
+            chatOptions.Temperature = null;
+            response = await chatClient.GetResponseAsync<TranslationBatchResponse>(messages, chatOptions, cancellationToken: cancellationToken);
+        }
 
         return new TranslationOutput(response.Result.Translations ?? [], response.Usage?.InputTokenCount, response.Usage?.OutputTokenCount);
     }
+
+    private static bool RejectsTemperature(string error)
+        => error.Contains("temperature", StringComparison.OrdinalIgnoreCase)
+            && (error.Contains("unsupported", StringComparison.OrdinalIgnoreCase) || error.Contains("not support", StringComparison.OrdinalIgnoreCase));
 
     public static string BuildSystemPrompt(TranslationBatch batch)
     {

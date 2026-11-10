@@ -242,3 +242,29 @@
 .calendar-day[aria-current="date"]  { font-weight: 700; box-shadow: inset 0 0 0 1px #93c5fd; }
 .calendar-day[aria-selected="true"] { background: var(--color-primary); color: #fff; }
 .calendar-day[aria-disabled="true"] { color: var(--color-disabled); cursor: default; background: transparent; }
+
+/* ---- Resizable columns (BitBhColumnResizer) ---- */
+.datagrid-fixed { table-layout: fixed; }
+.datagrid-resizable { position: relative; }
+
+.column-resizer {
+    position: absolute;
+    top: 0;
+    right: -4px;
+    width: 8px;
+    height: 100%;
+    z-index: 1;
+}
+
+.column-resizer::after {
+    content: "";
+    position: absolute;
+    inset: 20% 3px;
+    border-radius: 1px;
+    background: var(--color-border-strong);
+}
+
+.column-resizer:hover::after,
+.column-resizer[data-resizing]::after,
+.column-resizer:focus-visible::after { background: var(--color-primary); }
+.column-resizer:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }

@@ -1,0 +1,157 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static RenderFragment Slots(int count) => builder =>
+    {
+        for (var i = 0; i < count; i++)
+        {
+            builder.OpenComponent<BitBhPinInputSlot>(0);
+            builder.CloseComponent();
+        }
+    };
+
+    [TestMethod]
+    public void Slots_are_named_and_only_the_first_empty_one_is_a_tab_stop()
+    {
+        var cut = Render(
+            @<BitBhPinInput aria-label="Verification code" Otp="true">@Slots(4)</BitBhPinInput>);
+
+        var slots = cut.FindAll("input");
+        Assert.HasCount(4, slots);
+        Assert.AreEqual("Character 1 of 4", slots[0].AccessibleName());
+        Assert.AreEqual("Character 4 of 4", slots[3].AccessibleName());
+        Assert.AreEqual("one-time-code", slots[0].GetAttribute("autocomplete"));
+        Assert.AreEqual("off", slots[1].GetAttribute("autocomplete"));
+        Assert.AreEqual("numeric", slots[0].GetAttribute("inputmode"));
+        Assert.AreEqual("group", cut.Find("div").GetAttribute("role"));
+        Assert.ContainsSingle(cut.TabSequence());
+        Assert.AreEqual(slots[0].Id, cut.TabSequence()[0].Element.Id);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Typing_fills_positions_and_completes()
+    {
+        string? value = null;
+        string? completed = null;
+        var cut = Render(
+            @<BitBhPinInput aria-label="PIN" ValueChanged="v => value = v" OnComplete="v => completed = v">@Slots(4)</BitBhPinInput>);
+
+        cut.FindAll("input")[0].Input("1");
+        cut.FindAll("input")[1].Input("2");
+        cut.FindAll("input")[2].Input("3");
+        Assert.AreEqual("123", value);
+        Assert.IsNull(completed);
+        Assert.AreEqual("0", cut.FindAll("input")[3].GetAttribute("tabindex"));
+
+        cut.FindAll("input")[3].Input("4");
+        Assert.AreEqual("1234", completed);
+        Assert.IsTrue(cut.Find("div").HasAttribute("data-complete"));
+        Assert.IsTrue(cut.FindAll("input")[2].HasAttribute("data-filled"));
+    }
+
+    [TestMethod]
+    public void Paste_spreads_over_the_positions_and_drops_refused_characters()
+    {
+        string? value = null;
+        var cut = Render(
+            @<BitBhPinInput aria-label="Code" ValueChanged="v => value = v">@Slots(6)</BitBhPinInput>);
+
+        cut.FindAll("input")[0].Input("12-3 4a56789");
+        Assert.AreEqual("123456", value);
+        Assert.AreEqual("4", cut.FindAll("input")[3].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Typing_into_a_filled_position_replaces_it()
+    {
+        string value = "1234";
+        var cut = Render(
+            @<BitBhPinInput aria-label="Code" Value="@value" ValueChanged="v => value = v">@Slots(4)</BitBhPinInput>);
+
+        cut.FindAll("input")[1].Input("29");
+        Assert.AreEqual("1934", value);
+    }
+
+    [TestMethod]
+    public void Deleting_closes_up_and_backspace_on_an_empty_position_deletes_the_one_before()
+    {
+        string? value = null;
+        var cut = Render(
+            @<BitBhPinInput aria-label="Code" DefaultValue="123" ValueChanged="v => value = v">@Slots(4)</BitBhPinInput>);
+
+        cut.FindAll("input")[1].Input("");
+        Assert.AreEqual("13", value);
+
+        cut.FindAll("input")[2].Press("Backspace");
+        Assert.AreEqual("1", value);
+    }
+
+    [TestMethod]
+    public void Alphanumeric_upper_case_and_custom_patterns()
+    {
+        string? value = null;
+        var cut = Render(
+            @<div>
+                <BitBhPinInput aria-label="Ticket" Type="BitBhPinInputType.Alphanumeric" UpperCase="true" ValueChanged="v => value = v">@Slots(3)</BitBhPinInput>
+                <BitBhPinInput aria-label="Hex" Pattern="[0-9A-F]">@Slots(2)</BitBhPinInput>
+            </div>);
+
+        cut.FindAll("input")[0].Input("a1b");
+        Assert.AreEqual("A1B", value);
+        Assert.AreEqual("text", cut.FindAll("input")[0].GetAttribute("inputmode"));
+        Assert.AreEqual("[0-9A-F]", cut.FindAll("input")[3].GetAttribute("data-bit-bh-pattern"));
+    }
+
+    [TestMethod]
+    public void Masked_input_hides_characters()
+    {
+        var cut = Render(@<BitBhPinInput aria-label="PIN" Mask="true" Placeholder="○">@Slots(2)</BitBhPinInput>);
+        Assert.AreEqual("password", cut.Find("input").GetAttribute("type"));
+        Assert.AreEqual("○", cut.Find("input").GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void Disabled_input_ignores_typing()
+    {
+        string? value = null;
+        var cut = Render(@<BitBhPinInput aria-label="PIN" Disabled="true" ValueChanged="v => value = v">@Slots(2)</BitBhPinInput>);
+        Assert.IsTrue(cut.Find("input").HasAttribute("disabled"));
+        cut.Find("input").Input("1");
+        Assert.IsNull(value);
+    }
+
+    [TestMethod]
+    public void Field_labels_the_group_and_validation_flows_in()
+    {
+        var model = new Verification();
+        var cut = Render(
+            @<EditForm Model="model">
+                <DataAnnotationsValidator />
+                <BitBhField>
+                    <BitBhLabel>Verification code</BitBhLabel>
+                    <BitBhPinInput @bind-Value="model.Code" Name="code">@Slots(4)</BitBhPinInput>
+                    <BitBhErrorMessage />
+                </BitBhField>
+            </EditForm>);
+
+        Assert.AreEqual("Verification code", cut.Find("[role=group]").AccessibleName());
+        cut.Find("form").Submit();
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-invalid"));
+
+        cut.Find("input").Input("4321");
+        Assert.AreEqual("4321", model.Code);
+        Assert.AreEqual("4321", cut.Find("input[type=hidden]").GetAttribute("value"));
+        Assert.IsFalse(cut.Find("input").HasAttribute("aria-invalid"));
+        cut.ShouldBeAccessible();
+    }
+
+    private sealed class Verification
+    {
+        [Required, StringLength(4, MinimumLength = 4)]
+        public string? Code { get; set; }
+    }
+}

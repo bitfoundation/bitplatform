@@ -141,6 +141,60 @@
     object-position: top;
 }
 
+// A thumbnail is captured the first time it is asked for, which takes seconds; until it arrives, it shimmers the way a
+// BitShimmer does and follows the theme's shimmer colors, then fades in. The script marks it once it loaded or failed.
+::deep img[data-thumbnail] {
+    background-color: var(--bit-Shimmer-background, #{$bit-color-background-secondary});
+}
+
+// An image with nothing to show yet, or a failed one, would get the browser's placeholder frame over its shimmer.
+::deep img[data-thumbnail]:is(:not([src]), [data-thumbnail-state="failed"]) {
+    content: linear-gradient(transparent, transparent);
+}
+
+::deep img[data-thumbnail]:not([data-thumbnail-state]) {
+    background-size: 50% 100%;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(90deg, transparent, var(--bit-Shimmer-color, #{$bit-color-background-tertiary}), transparent);
+    animation: thumbnail-wave calc(1.6s * #{$bit-motion-loop-factor}) linear infinite;
+
+    // The wave sweeps with the reading direction.
+    &:dir(rtl) {
+        animation-direction: reverse;
+    }
+
+    // Reduced motion stops the wave, as it does a BitShimmer's, and leaves the still block.
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+        background-image: none;
+    }
+}
+
+::deep img[data-thumbnail][data-thumbnail-state="loaded"] {
+    animation: thumbnail-in #{$bit-motion-duration-long} #{$bit-motion-easing};
+}
+
+// The wave's band is half the box wide and runs from just before its start to just past its end.
+@keyframes thumbnail-wave {
+    from {
+        background-position: -100% 0;
+    }
+
+    to {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes thumbnail-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 // Of each light and dark thumbnail pair, only the one in the shell's theme shows.
 .dark-only {
     display: none !important;
@@ -326,10 +380,63 @@
     background-color: $bit-color-primary;
 }
 
+// The groups flow in one grid, each as wide as its cards, so a category of one page doesn't leave a row to itself.
 .catalog {
-    gap: 1.25rem;
+    gap: 2rem 1.25rem;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// Its columns are the catalog's, so its cards line up with those of the groups beside it, and its card rows share its height.
+.catalog-group {
+    row-gap: 0.75rem;
+    display: grid;
+    grid-auto-rows: 1fr;
+    grid-template-rows: auto;
+    grid-template-columns: subgrid;
+
+    &.span-2 {
+        grid-column: span 2;
+    }
+
+    &.span-3 {
+        grid-column: 1 / -1;
+    }
+
+    @include lt-sm {
+        &.span-2 {
+            grid-column: auto;
+        }
+    }
+}
+
+.catalog-group-title {
+    margin: 0;
+    gap: 0.75rem;
+    display: flex;
+    font-size: 13px;
+    font-weight: 700;
+    align-items: center;
+    grid-column: 1 / -1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $bit-color-foreground-secondary;
+
+    // Runs to the group's end, so it shows which cards are the group's.
+    &::after {
+        flex: 1;
+        height: 1px;
+        content: '';
+        background-color: $bit-color-border-tertiary;
+    }
 }
 
 .flow-cards {
@@ -412,17 +519,6 @@
     flex-direction: column;
 }
 
-.page-category {
-    gap: 0.375rem;
-    display: flex;
-    font-size: 12px;
-    font-weight: 600;
-    align-items: center;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: $bit-color-primary;
-}
-
 .page-review {
     gap: 0.5rem;
     display: flex;
@@ -459,8 +555,11 @@
 }
 
 .page-title {
+    gap: 0.5rem;
+    display: flex;
     font-size: 1.25rem;
     font-weight: 700;
+    align-items: center;
 }
 
 .page-description {

@@ -197,12 +197,17 @@ public class BitCollapseE2ETests : E2ETestBase
         await StartSamplerAsync("col-hor", "width");
         await El("btn-hor").ClickAsync();
 
+        // The wrapper is capped at the width of the track (max-width: 100%), so it grows along with the track: two
+        // widths read apart, a frame or more of the transition between them, can meet half way through it. Both are
+        // read in one go, and only once the transition has played, so what is measured below is the opened section.
         await PollAsync(async () =>
         {
-            var width = (await BoxAsync(root)).Width;
-            var content = (await BoxAsync(Wrapper("col-hor"))).Width;
-            return (width, content);
-        }, s => s.width > 50 && Math.Abs(s.width - s.content) < 1, "the section never reached its content's width");
+            var state = await root.EvaluateAsync<double[]>(@"el => [
+                el.getBoundingClientRect().width,
+                el.querySelector(':scope > .bit-col-con > .bit-col-wrp').getBoundingClientRect().width,
+                el.getAnimations().length]");
+            return (width: state[0], content: state[1], running: state[2]);
+        }, s => s.width > 50 && Math.Abs(s.width - s.content) < 1 && s.running == 0, "the section never reached its content's width");
 
         var full = (await BoxAsync(root)).Width;
         var text = await BoxAsync(El("col-hor-text"));

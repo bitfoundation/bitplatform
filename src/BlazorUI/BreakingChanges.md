@@ -95,6 +95,31 @@ element marked `data-bit-interactive`, an `a` without an `href`, an element in t
 did not know (`menuitemcheckbox`, `menuitemradio`, `treeitem`, `searchbox`, a media player's controls), and now does
 start on a `label` without a control and on a `summary` that is not the first of a `details` element.
 
+### A `BitDataGrid` none of whose cells takes the focus is a table
+
+The grid role promises the keyboard of the ARIA grid pattern: a cell takes the focus and the arrow keys move it. A
+`BitDataGrid` that does not provide that keyboard is now announced as a table: its root is `role="table"` and every
+cell that heads nothing is `role="cell"`, with no `aria-multiselectable`. That is a grid without `CellNavigation`,
+without `Single` selection or `Cell` editing (which turn it on), that is not a tree. The rest is unchanged: rows,
+column and row headers, the counts and
+indexes, `aria-sort`, `aria-selected` and the accessible name. No C# API changes. **An app's test that finds such a grid
+or its cells by role** (`GetByRole(AriaRole.Grid)`, `[role=grid]`, `[role=gridcell]`) looks for `table` and `cell`
+instead, or turns `CellNavigation` on if the grid should be navigable cell by cell.
+
+### An input in an `EditForm` carries the framework's field classes
+
+The framework's inputs (`InputText`, `InputSelect`, ...) carry the classes their `EditContext` gives their field:
+`valid` or `invalid`, and `modified` once the field has changed - or the names of the app's `FieldCssClassProvider`
+(`EditContext.SetFieldCssClassProvider`) instead. The inputs built on `BitInputBase` now carry them too, on their root
+beside `bit-inv`: `BitTextField`, `BitDropdown`, `BitDatePicker` and the rest of the core inputs, and the Extras'
+`BitPhoneInput`, `BitCountryPicker`, `BitTimeZonePicker` and `BitMarkdownEditor`, whenever one is bound to a field of a
+form and not `NoValidate`. No C# API changes. **An app whose stylesheet styles these classes** - the Blazor templates'
+`app.css` has `.invalid { outline: 1px solid red; }` and `.valid.modified:not([type=checkbox]) { outline: 1px solid
+#26b050; }` - now draws that around the whole input, its label and its messages included. Scope such a rule to the
+native controls (`:is(input, select, textarea).invalid`) to keep it on the framework's inputs, which leaves the bit
+inputs to their own invalid look (`bit-inv`), or remove it. **A test that compares the whole `class` attribute** of an
+input's root in a form expects the new classes.
+
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))

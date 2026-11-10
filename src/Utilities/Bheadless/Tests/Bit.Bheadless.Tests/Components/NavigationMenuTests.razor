@@ -1,0 +1,505 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+@using Microsoft.JSInterop
+
+@code {
+    private static readonly PointerEventArgs Mouse = new() { PointerType = "mouse" };
+
+    private RenderFragment Menu(string? defaultValue = null, int delay = 200, BitBhDirection dir = BitBhDirection.Ltr,
+                                BitBhOrientation orientation = BitBhOrientation.Horizontal, bool viewport = false) =>
+        @<BitBhNavigationMenu aria-label="Main" DefaultValue="@defaultValue" DelayDuration="delay" CloseDelay="0" Dir="dir" Orientation="orientation">
+            <BitBhNavigationMenuList>
+                <BitBhNavigationMenuItem Value="products">
+                    <BitBhNavigationMenuTrigger>Products</BitBhNavigationMenuTrigger>
+                    <BitBhNavigationMenuContent>
+                        <BitBhNavigationMenuLink href="/analytics">Analytics</BitBhNavigationMenuLink>
+                        <BitBhNavigationMenuLink href="/automation">Automation</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuContent>
+                </BitBhNavigationMenuItem>
+                <BitBhNavigationMenuItem Value="learn">
+                    <BitBhNavigationMenuTrigger>Learn</BitBhNavigationMenuTrigger>
+                    <BitBhNavigationMenuContent>
+                        <BitBhNavigationMenuLink href="/docs">Docs</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuContent>
+                </BitBhNavigationMenuItem>
+                <BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuLink href="/pricing" Active="true">Pricing</BitBhNavigationMenuLink>
+                </BitBhNavigationMenuItem>
+                <BitBhNavigationMenuIndicator />
+            </BitBhNavigationMenuList>
+            @if (viewport)
+            {
+                <BitBhNavigationMenuViewport />
+            }
+        </BitBhNavigationMenu>;
+
+    private RenderFragment Uncontrolled(string? defaultValue = null, int delay = 200, int skip = 300, int closeDelay = 0) =>
+        @<BitBhNavigationMenu aria-label="Main" DefaultValue="@defaultValue" DelayDuration="delay" SkipDelayDuration="skip" CloseDelay="closeDelay">
+            <BitBhNavigationMenuList>
+                <BitBhNavigationMenuItem Value="products">
+                    <BitBhNavigationMenuTrigger>Products</BitBhNavigationMenuTrigger>
+                    <BitBhNavigationMenuContent><BitBhNavigationMenuLink href="/analytics">Analytics</BitBhNavigationMenuLink></BitBhNavigationMenuContent>
+                </BitBhNavigationMenuItem>
+                <BitBhNavigationMenuItem Value="learn">
+                    <BitBhNavigationMenuTrigger>Learn</BitBhNavigationMenuTrigger>
+                    <BitBhNavigationMenuContent><BitBhNavigationMenuLink href="/docs">Docs</BitBhNavigationMenuLink></BitBhNavigationMenuContent>
+                </BitBhNavigationMenuItem>
+            </BitBhNavigationMenuList>
+        </BitBhNavigationMenu>;
+
+    private static AngleSharp.Dom.IElement Trigger(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string name)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == name);
+
+    private static AngleSharp.Dom.IElement ContentOf(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut, string trigger)
+        => cut.Find($"[id='{Trigger(cut, trigger).Id!.Replace("-trigger", "-content")}']");
+
+    private IDictionary<string, object?> LastOpenOptions()
+        => (IDictionary<string, object?>)JSInterop.Invocations["floating.open"].Last().Arguments[2]!;
+
+    [TestMethod]
+    public void Renders_a_navigation_landmark_of_disclosure_buttons_and_links()
+    {
+        var cut = Render(Uncontrolled());
+
+        var nav = cut.Find("nav");
+        Assert.AreEqual("Main", nav.GetAttribute("aria-label"));
+        Assert.AreEqual("horizontal", nav.GetAttribute("data-orientation"));
+        Assert.AreEqual("ul", cut.Find("nav > ul").LocalName);
+
+        var products = Trigger(cut, "Products");
+        Assert.AreEqual("button", products.GetAttribute("type"));
+        Assert.AreEqual("false", products.GetAttribute("aria-expanded"));
+        Assert.IsNull(products.GetAttribute("aria-controls"));
+        Assert.IsNull(products.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("closed", products.GetAttribute("data-state"));
+
+        // Closed contents stay in the DOM (their links are crawlable), hidden.
+        Assert.IsTrue(ContentOf(cut, "Products").HasAttribute("hidden"));
+        Assert.IsEmpty(cut.FindAll("[role=menu], [role=menubar], [role=menuitem]"));
+        cut.ShouldBeAccessible();
+        // Triggers and links all stay in the Tab order (Radix): each is its own tab stop.
+        Assert.HasCount(2, cut.TabSequence());
+    }
+
+    [TestMethod]
+    public void Click_toggles_the_content_and_wires_aria_controls()
+    {
+        var cut = Render(Uncontrolled());
+        var products = Trigger(cut, "Products");
+
+        products.Click();
+        products = Trigger(cut, "Products");
+        var content = ContentOf(cut, "Products");
+        Assert.AreEqual("true", products.GetAttribute("aria-expanded"));
+        Assert.AreEqual(content.Id, products.GetAttribute("aria-controls"));
+        Assert.AreEqual("open", products.GetAttribute("data-state"));
+        Assert.IsFalse(content.HasAttribute("hidden"));
+        Assert.AreEqual("open", content.GetAttribute("data-state"));
+        Assert.AreEqual("open", products.ParentElement!.GetAttribute("data-state"));
+        // Tab moves into the content, and out of it to what follows the trigger, wherever it is shown.
+        Assert.AreEqual(content.Id, products.GetAttribute("data-bit-bh-tab-into"));
+        Assert.AreEqual(products.Id, content.GetAttribute("data-bit-bh-tab-out"));
+        cut.ShouldBeAccessible();
+
+        // Another trigger switches; a second click on the open one closes it.
+        Trigger(cut, "Learn").Click();
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        Trigger(cut, "Learn").Click();
+        Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        Assert.IsTrue(ContentOf(cut, "Learn").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public async Task Controlled_value_drives_the_open_item()
+    {
+        var changes = new List<string?>();
+        var cut = Render(
+            @<Stateful T="string" Initial="@("learn")" Context="s">
+                <BitBhNavigationMenu aria-label="Main" Value="@s.Value" ValueChanged="v => changes.Add(v)">
+                    <BitBhNavigationMenuList>
+                        <BitBhNavigationMenuItem Value="products">
+                            <BitBhNavigationMenuTrigger>Products</BitBhNavigationMenuTrigger>
+                            <BitBhNavigationMenuContent><a href="#analytics">Analytics</a></BitBhNavigationMenuContent>
+                        </BitBhNavigationMenuItem>
+                        <BitBhNavigationMenuItem Value="learn">
+                            <BitBhNavigationMenuTrigger>Learn</BitBhNavigationMenuTrigger>
+                            <BitBhNavigationMenuContent><a href="#docs">Docs</a></BitBhNavigationMenuContent>
+                        </BitBhNavigationMenuItem>
+                    </BitBhNavigationMenuList>
+                </BitBhNavigationMenu>
+            </Stateful>);
+        var host = cut.FindComponent<Stateful<string>>().Instance;
+
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+
+        // A click asks the owner; nothing changes until the value does.
+        Trigger(cut, "Products").Click();
+        CollectionAssert.AreEqual(new[] { "products" }, changes);
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+
+        await cut.InvokeAsync(() => host.Set("products"));
+        Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        await cut.InvokeAsync(() => host.Set(null));
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void DefaultValue_opens_an_item_initially()
+    {
+        var cut = Render(Uncontrolled(defaultValue: "learn"));
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        Assert.IsFalse(ContentOf(cut, "Learn").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void Arrow_keys_Home_and_End_move_between_triggers_and_links()
+    {
+        var cut = Render(Menu());
+        var products = Trigger(cut, "Products");
+        Assert.AreEqual("ArrowLeft ArrowRight Home End ArrowDown", products.GetAttribute("data-bit-bh-keys"));
+
+        products.Press("ArrowRight");
+        Assert.AreEqual(Trigger(cut, "Learn").Id, this.LastFocusRequest());
+        Trigger(cut, "Learn").Press("ArrowRight");
+        var pricing = cut.Find("a[href='/pricing']");
+        Assert.AreEqual(pricing.Id, this.LastFocusRequest());
+
+        // No wrap unless Loop.
+        var focusCalls = JSInterop.Invocations["focus.focus"].Count;
+        cut.Find("a[href='/pricing']").Press("ArrowRight");
+        Assert.HasCount(focusCalls, JSInterop.Invocations["focus.focus"]);
+
+        cut.Find("a[href='/pricing']").Press("Home");
+        Assert.AreEqual(products.Id, this.LastFocusRequest());
+        Trigger(cut, "Products").Press("End");
+        Assert.AreEqual(pricing.Id, this.LastFocusRequest());
+        cut.Find("a[href='/pricing']").Press("ArrowLeft");
+        Assert.AreEqual(Trigger(cut, "Learn").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Arrow_keys_mirror_in_RTL_and_follow_a_vertical_orientation()
+    {
+        var cut = Render(Menu(dir: BitBhDirection.Rtl));
+        Trigger(cut, "Products").Press("ArrowLeft");
+        Assert.AreEqual(Trigger(cut, "Learn").Id, this.LastFocusRequest());
+
+        var vertical = Render(Menu(orientation: BitBhOrientation.Vertical));
+        var products = Trigger(vertical, "Products");
+        Assert.AreEqual("vertical", vertical.Find("ul").GetAttribute("data-orientation"));
+        Assert.AreEqual("ArrowUp ArrowDown Home End ArrowRight", products.GetAttribute("data-bit-bh-keys"));
+        products.Press("ArrowDown");
+        Assert.AreEqual(Trigger(vertical, "Learn").Id, this.LastFocusRequest());
+
+        // ArrowRight enters the content of a vertical menu's trigger.
+        Trigger(vertical, "Learn").Press("ArrowRight");
+        Assert.AreEqual("true", Trigger(vertical, "Learn").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void ArrowDown_opens_and_moves_focus_into_the_content()
+    {
+        var cut = Render(Uncontrolled());
+        Trigger(cut, "Products").Press("ArrowDown");
+
+        Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        cut.WaitForAssertion(() => Assert.AreEqual("first", ((IDictionary<string, object?>)LastOpenOptions()["focus"]!)["autoFocus"]));
+
+        // Opened by a click, focus stays on the trigger.
+        Trigger(cut, "Learn").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("none", ((IDictionary<string, object?>)LastOpenOptions()["focus"]!)["autoFocus"]));
+
+        // Already open: ArrowDown moves into it.
+        Trigger(cut, "Learn").Press("ArrowDown");
+        Assert.AreEqual(ContentOf(cut, "Learn").Id, JSInterop.Invocations["focus.focusFirst"].Last().Arguments[0]);
+    }
+
+    [TestMethod]
+    public void Arrow_keys_move_between_the_links_of_a_content()
+    {
+        var cut = Render(Menu("products"));
+        var analytics = cut.Find("a[href='/analytics']");
+        Assert.AreEqual("ArrowUp ArrowDown ArrowLeft ArrowRight Home End", analytics.GetAttribute("data-bit-bh-keys"));
+
+        analytics.Press("ArrowDown");
+        Assert.AreEqual(cut.Find("a[href='/automation']").Id, this.LastFocusRequest());
+        cut.Find("a[href='/automation']").Press("ArrowLeft");
+        Assert.AreEqual(analytics.Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void Escape_closes_and_returns_focus_to_the_trigger()
+    {
+        var cut = Render(Uncontrolled(defaultValue: "products"));
+        var products = Trigger(cut, "Products");
+        Assert.Contains("Escape", products.GetAttribute("data-bit-bh-keys")!);
+
+        cut.Find("a[href='/analytics']").Press("Escape");
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        Assert.AreEqual(products.Id, this.LastFocusRequest());
+
+        // On the trigger itself it just closes.
+        Trigger(cut, "Products").Click();
+        Trigger(cut, "Products").Press("Escape");
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public async Task Outside_press_and_focus_leaving_dismiss_through_the_layer()
+    {
+        var cut = Render(Uncontrolled(defaultValue: "products"));
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(JSInterop.Invocations["floating.open"]));
+
+        // The trigger, the list (the other triggers switch items) and the viewport belong to the layer.
+        var layer = (IDictionary<string, object?>)LastOpenOptions()["layer"]!;
+        var ids = (string?[])layer["ids"]!;
+        Assert.Contains(Trigger(cut, "Products").Id, ids);
+        Assert.Contains(cut.Find("ul").Id, ids);
+        Assert.IsTrue((bool)layer["focusOutside"]!);
+
+        var floating = (DotNetObjectReference<BitBhFloatingController>)JSInterop.Invocations["floating.open"].Last().Arguments[0]!;
+        Assert.IsTrue(await cut.InvokeAsync(() => floating.Value.OnLayerDismiss("outside")));
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Keyboard_focus_on_another_top_level_item_closes_the_open_content()
+    {
+        var cut = Render(Uncontrolled(defaultValue: "products"));
+
+        Trigger(cut, "Learn").Focus();
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+
+        // Focus from a press is left to the click that follows it.
+        Trigger(cut, "Products").Click();
+        Trigger(cut, "Learn").PointerDown();
+        Trigger(cut, "Learn").Focus();
+        Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Hover_opens_after_the_delay_and_leaving_closes()
+    {
+        var cut = Render(Uncontrolled(delay: 150, closeDelay: 150));
+        Trigger(cut, "Products").PointerEnter(Mouse);
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded")), TimeSpan.FromSeconds(3));
+
+        // While one is open, the next opens at once.
+        Trigger(cut, "Products").PointerLeave(Mouse);
+        Trigger(cut, "Learn").PointerEnter(Mouse);
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+
+        // The pointer resting on the content keeps it open; leaving both closes it.
+        ContentOf(cut, "Learn").PointerEnter(Mouse);
+        Trigger(cut, "Learn").PointerLeave(Mouse);
+        ContentOf(cut, "Learn").PointerEnter(Mouse);
+        Assert.AreEqual("true", Trigger(cut, "Learn").GetAttribute("aria-expanded"));
+        ContentOf(cut, "Learn").PointerLeave(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("false", Trigger(cut, "Learn").GetAttribute("aria-expanded")), TimeSpan.FromSeconds(3));
+    }
+
+    [TestMethod]
+    public void Touch_never_opens_on_hover_and_a_click_right_after_hovering_keeps_it_open()
+    {
+        var cut = Render(Uncontrolled(delay: 0));
+        Trigger(cut, "Products").PointerEnter(new PointerEventArgs { PointerType = "touch" });
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+
+        Trigger(cut, "Products").PointerEnter(Mouse);
+        cut.WaitForAssertion(() => Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded")));
+        // The click that follows the hover means "open", not "toggle closed".
+        Trigger(cut, "Products").Click();
+        Assert.AreEqual("true", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+        Trigger(cut, "Products").Click();
+        Assert.AreEqual("false", Trigger(cut, "Products").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Content_motion_follows_the_order_of_the_items()
+    {
+        var cut = Render(Uncontrolled());
+        Trigger(cut, "Products").Click();
+        // Opened from closed: no direction.
+        Assert.IsNull(ContentOf(cut, "Products").GetAttribute("data-motion"));
+
+        Trigger(cut, "Learn").Click();
+        Assert.AreEqual("from-end", ContentOf(cut, "Learn").GetAttribute("data-motion"));
+        Assert.AreEqual("to-start", ContentOf(cut, "Products").GetAttribute("data-motion"));
+
+        Trigger(cut, "Products").Click();
+        Assert.AreEqual("from-start", ContentOf(cut, "Products").GetAttribute("data-motion"));
+        Assert.AreEqual("to-end", ContentOf(cut, "Learn").GetAttribute("data-motion"));
+    }
+
+    [TestMethod]
+    public void Content_motion_is_mirrored_in_RTL()
+    {
+        var cut = Render(Menu("products", dir: BitBhDirection.Rtl));
+        Trigger(cut, "Learn").Click();
+        // "Learn" follows "Products", so in RTL it is on its left.
+        Assert.AreEqual("from-start", ContentOf(cut, "Learn").GetAttribute("data-motion"));
+        Assert.AreEqual("to-end", ContentOf(cut, "Products").GetAttribute("data-motion"));
+    }
+
+    [TestMethod]
+    public void Links_mark_the_current_page_and_close_the_menu()
+    {
+        var selected = 0;
+        string? value = "products";
+        var cut = Render(
+            @<BitBhNavigationMenu aria-label="Main" @bind-Value="value">
+                <BitBhNavigationMenuList>
+                    <BitBhNavigationMenuItem Value="products">
+                        <BitBhNavigationMenuTrigger>Products</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent>
+                            <BitBhNavigationMenuLink href="#analytics" OnSelect="() => selected++">Analytics</BitBhNavigationMenuLink>
+                            <BitBhNavigationMenuLink href="#keep" CloseOnSelect="false">Keep open</BitBhNavigationMenuLink>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem>
+                        <BitBhNavigationMenuLink href="#pricing" Active="true">Pricing</BitBhNavigationMenuLink>
+                    </BitBhNavigationMenuItem>
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>);
+
+        var pricing = cut.Find("a[href='#pricing']");
+        Assert.AreEqual("page", pricing.GetAttribute("aria-current"));
+        Assert.IsTrue(pricing.HasAttribute("data-active"));
+        Assert.IsNull(cut.Find("a[href='#analytics']").GetAttribute("aria-current"));
+
+        cut.Find("a[href='#keep']").Click();
+        Assert.AreEqual("products", value);
+
+        // A keyboard click (detail 0) hides the focused link: focus goes back to the trigger.
+        cut.Find("a[href='#analytics']").Click(new MouseEventArgs { Detail = 0 });
+        Assert.AreEqual(1, selected);
+        Assert.IsNull(value);
+        Assert.AreEqual(cut.Find("button").Id, this.LastFocusRequest());
+    }
+
+    [TestMethod]
+    public void The_indicator_follows_the_open_trigger_of_its_own_menu()
+    {
+        var cutWithIndicator = Render(Menu());
+        var indicator = cutWithIndicator.Find("li[aria-hidden=true]");
+        Assert.AreEqual("hidden", indicator.GetAttribute("data-state"));
+
+        var attach = JSInterop.Invocations["indicator.attach"].Last();
+        Assert.AreEqual(indicator.Id, attach.Arguments[0]);
+        var selector = (string)attach.Arguments[1]!;
+        var root = cutWithIndicator.Find("nav").Id;
+        Assert.AreEqual($"[data-bit-bh-navigation-menu-trigger=\"{root}\"][aria-expanded=\"true\"]", selector);
+        Assert.AreEqual(root, Trigger(cutWithIndicator, "Products").GetAttribute("data-bit-bh-navigation-menu-trigger"));
+
+        Trigger(cutWithIndicator, "Products").Click();
+        Assert.AreEqual("visible", cutWithIndicator.Find("li[aria-hidden=true]").GetAttribute("data-state"));
+        cutWithIndicator.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_viewport_shows_the_open_content_and_takes_its_size()
+    {
+        var cut = Render(Menu(viewport: true));
+        var viewport = cut.Find("nav > div[data-state]");
+        Assert.IsTrue(viewport.HasAttribute("hidden"));
+        Assert.AreEqual("closed", viewport.GetAttribute("data-state"));
+
+        Trigger(cut, "Products").Click();
+        viewport = cut.Find("nav > div[data-state]");
+        Assert.IsFalse(viewport.HasAttribute("hidden"));
+        Assert.AreEqual("open", viewport.GetAttribute("data-state"));
+
+        // The content moves into the viewport, reads as following its trigger, and sizes the viewport.
+        cut.WaitForAssertion(() => Assert.AreEqual(viewport.Id, LastOpenOptions()["portal"]));
+        var products = Trigger(cut, "Products");
+        Assert.AreEqual(ContentOf(cut, "Products").Id, products.NextElementSibling!.GetAttribute("aria-owns"));
+        cut.WaitForAssertion(() =>
+        {
+            var measure = JSInterop.Invocations["navigationMenu.measure"].Last();
+            Assert.AreEqual(viewport.Id, measure.Arguments[0]);
+            Assert.AreEqual(ContentOf(cut, "Products").Id, measure.Arguments[1]);
+        });
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_submenu_closes_with_the_menu_when_one_of_its_links_is_chosen()
+    {
+        string? outer = "products";
+        string? inner = "web";
+        var cut = Render(
+            @<BitBhNavigationMenu aria-label="Main" @bind-Value="outer">
+                <BitBhNavigationMenuList>
+                    <BitBhNavigationMenuItem Value="products">
+                        <BitBhNavigationMenuTrigger>Products</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent>
+                            <BitBhNavigationMenu @bind-Value="inner" Orientation="BitBhOrientation.Vertical">
+                                <BitBhNavigationMenuList>
+                                    <BitBhNavigationMenuItem Value="web">
+                                        <BitBhNavigationMenuTrigger>Web</BitBhNavigationMenuTrigger>
+                                        <BitBhNavigationMenuContent>
+                                            <BitBhNavigationMenuLink href="#hosting">Hosting</BitBhNavigationMenuLink>
+                                        </BitBhNavigationMenuContent>
+                                    </BitBhNavigationMenuItem>
+                                </BitBhNavigationMenuList>
+                            </BitBhNavigationMenu>
+                        </BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>);
+
+        // A submenu is a div, not a second navigation landmark.
+        var sub = cut.Find("nav div[data-nested]");
+        Assert.AreEqual("div", sub.LocalName);
+        Assert.HasCount(1, cut.FindAll("nav"));
+        Assert.AreEqual("true", Trigger(cut, "Web").GetAttribute("aria-expanded"));
+        cut.ShouldBeAccessible();
+
+        // Escape in the submenu's content closes the submenu only.
+        cut.Find("a[href='#hosting']").Press("Escape");
+        Assert.IsNull(inner);
+        Assert.AreEqual("products", outer);
+
+        inner = "web";
+        cut.Render();
+        cut.Find("a[href='#hosting']").Click();
+        Assert.IsNull(inner);
+        Assert.IsNull(outer);
+    }
+
+    [TestMethod]
+    public void Disabled_triggers_never_open_and_are_skipped()
+    {
+        var cut = Render(
+            @<BitBhNavigationMenu aria-label="Main">
+                <BitBhNavigationMenuList>
+                    <BitBhNavigationMenuItem Value="a">
+                        <BitBhNavigationMenuTrigger>A</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent><a href="#a">A1</a></BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem Value="b">
+                        <BitBhNavigationMenuTrigger Disabled="true">B</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent><a href="#b">B1</a></BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                    <BitBhNavigationMenuItem Value="c">
+                        <BitBhNavigationMenuTrigger>C</BitBhNavigationMenuTrigger>
+                        <BitBhNavigationMenuContent><a href="#c">C1</a></BitBhNavigationMenuContent>
+                    </BitBhNavigationMenuItem>
+                </BitBhNavigationMenuList>
+            </BitBhNavigationMenu>);
+
+        var b = Trigger(cut, "B");
+        Assert.IsTrue(b.HasAttribute("disabled"));
+        Assert.IsTrue(b.HasAttribute("data-disabled"));
+        b.PointerEnter(Mouse);
+        Assert.AreEqual("false", Trigger(cut, "B").GetAttribute("aria-expanded"));
+
+        Trigger(cut, "A").Press("ArrowRight");
+        Assert.AreEqual(Trigger(cut, "C").Id, this.LastFocusRequest());
+        cut.ShouldBeAccessible();
+    }
+}

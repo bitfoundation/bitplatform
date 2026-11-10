@@ -86,7 +86,7 @@ public class BitDataGridStructureTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "2", "3", "4", "5", "6" }, rows.Select(r => r.GetAttribute("aria-rowindex")).ToArray());
         Assert.IsTrue(rows[0].ClassList.Contains("bit-dtg-group-row"));
         Assert.IsTrue(rows[3].ClassList.Contains("bit-dtg-group-row"));
-        Assert.AreEqual("6", component.Find("[role=grid]").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("6", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
 
         // The row numbers count down the grid as shown, not by the position each row had before grouping.
         CollectionAssert.AreEqual(new[] { "1", "2", "3" },
@@ -95,7 +95,7 @@ public class BitDataGridStructureTests : BunitTestContext
         // A collapsed group's rows are not in the grid, so they are not counted either.
         rows[0].QuerySelector("button")!.Click();
         CollectionAssert.AreEqual(new[] { "2", "3", "4" }, BodyRows(component).Select(r => r.GetAttribute("aria-rowindex")).ToArray());
-        Assert.AreEqual("4", component.Find("[role=grid]").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("4", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
     }
 
     [TestMethod]
@@ -128,14 +128,14 @@ public class BitDataGridStructureTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.AddNewRowAsync());
 
         CollectionAssert.AreEqual(new[] { "2", "3", "4", "5" }, BodyRows(component).Select(r => r.GetAttribute("aria-rowindex")).ToArray());
-        Assert.AreEqual("5", component.Find("[role=grid]").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("5", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
 
         // Grouped, the group rows count on after it as well.
         await component.InvokeAsync(() => component.Instance.CancelEditAsync());
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
         await component.InvokeAsync(() => component.Instance.AddNewRowAsync());
         CollectionAssert.AreEqual(new[] { "2", "3", "4", "5", "6", "7" }, BodyRows(component).Select(r => r.GetAttribute("aria-rowindex")).ToArray());
-        Assert.AreEqual("7", component.Find("[role=grid]").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("7", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
     }
 
     [TestMethod]
@@ -204,12 +204,12 @@ public class BitDataGridStructureTests : BunitTestContext
             p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
         });
 
-        var grid = component.Find("[role=grid]");
+        var grid = component.Find(".bit-dtg-table");
         var footer = component.Find(".bit-dtg-footer-row");
         Assert.AreEqual("5", grid.GetAttribute("aria-rowcount"), "a header row, three data rows and the footer");
         Assert.AreEqual("5", footer.GetAttribute("aria-rowindex"));
 
-        var cells = footer.QuerySelectorAll("[role=gridcell]");
+        var cells = footer.QuerySelectorAll("[role=cell]");
         Assert.IsTrue(cells[0].ClassList.Contains("bit-dtg-sticky"), "the selection column's footer cell is pinned with it");
         Assert.AreEqual("1", cells[0].GetAttribute("aria-colindex"));
         Assert.IsTrue(cells[1].ClassList.Contains("bit-dtg-sticky"), "a Frozen column's total stays under it");
@@ -220,6 +220,30 @@ public class BitDataGridStructureTests : BunitTestContext
         // The FrozenEnd marker reaches every row, so the stylesheet can rule the band's edge.
         Assert.IsTrue(component.Find(".bit-dtg-header-row [aria-colindex='4']").ClassList.Contains("bit-dtg-frozen-end"));
         Assert.IsTrue(BodyRows(component)[0].QuerySelector("[aria-colindex='4']")!.ClassList.Contains("bit-dtg-frozen-end"));
+    }
+
+    [TestMethod]
+    public void TheMessageRowOfABodyWithNoDataRowIsCounted()
+    {
+        var component = RenderGrid(items: []);
+
+        // The header row and the empty message.
+        Assert.AreEqual(2, component.FindAll(".bit-dtg-table [role=row]").Count);
+        Assert.AreEqual("2", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+
+        component.Render(p => p.Add(x => x.Loading, true));
+        Assert.IsNotNull(component.Find(".bit-dtg-loading"));
+        Assert.AreEqual("2", component.Find(".bit-dtg-table").GetAttribute("aria-rowcount"), "the header row and the loading message");
+
+        // The footer follows the message row.
+        var columns = Columns(Column<Row>("Name"), Column<Row>("Id", c => c.Add("Aggregate", BitDataGridAggregateType.Count)));
+        var footed = RenderGrid(columns, p => p.Add(x => x.ShowFooter, true), items: []);
+        Assert.AreEqual("3", footed.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
+        Assert.AreEqual("3", footed.Find(".bit-dtg-footer-row").GetAttribute("aria-rowindex"));
+
+        // Loading over rows that exist keeps their count: they come back once it is done.
+        var loading = RenderGrid(configure: p => p.Add(x => x.Loading, true));
+        Assert.AreEqual("4", loading.Find(".bit-dtg-table").GetAttribute("aria-rowcount"));
     }
 
     [TestMethod]
@@ -239,7 +263,7 @@ public class BitDataGridStructureTests : BunitTestContext
         var cells = component.FindAll(".bit-dtg-group-header-row > [aria-colindex]");
         CollectionAssert.AreEqual(new[] { "1", "2", "3", "5", "6" }, cells.Select(c => c.GetAttribute("aria-colindex")).ToArray());
         CollectionAssert.AreEqual(new string?[] { null, null, "2", null, null }, cells.Select(c => c.GetAttribute("aria-colspan")).ToArray());
-        CollectionAssert.AreEqual(new[] { "gridcell", "gridcell", "columnheader", "gridcell", "gridcell" },
+        CollectionAssert.AreEqual(new[] { "cell", "cell", "columnheader", "cell", "cell" },
             cells.Select(c => c.GetAttribute("role")).ToArray(),
             "only a named banner heads its columns; the blank cells over the selection, ungrouped and command columns are plain cells");
         Assert.AreEqual("Product", cells[2].TextContent.Trim());
@@ -266,13 +290,13 @@ public class BitDataGridStructureTests : BunitTestContext
             p.Add(x => x.AriaDescribedBy, "products-help");
         });
 
-        var grid = component.Find("[role=grid]");
+        var grid = component.Find(".bit-dtg-table");
         Assert.AreEqual("products-heading", grid.GetAttribute("aria-labelledby"));
         Assert.AreEqual("products-help", grid.GetAttribute("aria-describedby"));
         Assert.IsNull(grid.GetAttribute("aria-label"));
 
         component.Render(p => p.Add(x => x.AriaLabel, "Products"));
-        Assert.AreEqual("Products", component.Find("[role=grid]").GetAttribute("aria-label"), "an explicit AriaLabel is still rendered");
+        Assert.AreEqual("Products", component.Find(".bit-dtg-table").GetAttribute("aria-label"), "an explicit AriaLabel is still rendered");
     }
 
     [TestMethod]
@@ -404,7 +428,7 @@ public class BitDataGridStructureTests : BunitTestContext
 
         var cells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
         CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9" }, cells.Select(c => c.GetAttribute("aria-colindex")).ToArray());
-        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "gridcell"),
+        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "cell"),
             "the header row names the columns; a filter-row cell holds a control, or nothing, and heads no column");
         Assert.IsTrue(cells[4].ClassList.Contains("bit-dtg-sticky"), "the frozen column's cell stays pinned");
         Assert.IsNotNull(cells[5].QuerySelector(".bit-dtg-filter-input"));
@@ -421,7 +445,7 @@ public class BitDataGridStructureTests : BunitTestContext
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
         cells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
         Assert.AreEqual(8, cells.Count);
-        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "gridcell"));
+        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "cell"));
         var nameCell = component.Find(".bit-dtg-filter-row .bit-dtg-filter-op").Closest("[aria-colindex]")!;
         Assert.AreEqual("5", nameCell.GetAttribute("aria-colindex"));
         Assert.IsNull(nameCell.QuerySelector(".bit-dtg-filter-input"));
@@ -444,7 +468,7 @@ public class BitDataGridStructureTests : BunitTestContext
 
         var spacers = component.FindAll(".bit-dtg-filter-row > [aria-hidden]");
         Assert.AreEqual(1, spacers.Count);
-        Assert.AreEqual("gridcell", spacers[0].GetAttribute("role"));
+        Assert.AreEqual("cell", spacers[0].GetAttribute("role"));
         Assert.AreEqual(0, component.FindAll(".bit-dtg-filter-row > [role=columnheader]").Count);
     }
 

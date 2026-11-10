@@ -38,7 +38,8 @@ internal static class BelemetryRelayConverter
             {
                 foreach (var e in s.Events.Take(128))
                 {
-                    var spanEvent = new BelemetrySpanEvent { Name = e.Name ?? "event", TimeUnixNano = BelemetryTime.FromUnixMilliseconds(e.Time) };
+                    // Limited by the page, which applies the error limits to the records it relays.
+                    var spanEvent = new BelemetrySpanEvent { Name = e.Name ?? "event", TimeUnixNano = BelemetryTime.FromUnixMilliseconds(e.Time), Limited = e.Limited is true };
                     Fill(spanEvent.Attributes, e.Attributes);
                     span.Events.Add(spanEvent);
                 }

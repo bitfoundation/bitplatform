@@ -138,19 +138,21 @@
     <div class="bit-dtg-viewport @Classes?.Viewport" style="@ViewportStyle" @ref="_infiniteViewport">
         @* aria-multiselectable tells assistive tech that rows carry a meaningful aria-selected state
            (only true for Multiple - Single selection is the default single-select behavior), and
-           aria-busy marks the grid as still updating while a load is in flight. *@
+           aria-busy marks the grid as still updating while a load is in flight. A table may not carry
+           aria-multiselectable; the checkbox of each row tells its state there. *@
         @* A hierarchical grid is a treegrid, not a grid: that is what tells assistive tech the rows
-           nest, and what makes the per-row aria-level/aria-expanded meaningful. *@
+           nest, and what makes the per-row aria-level/aria-expanded meaningful. A grid none of whose
+           cells can take the focus is a table (IsStaticTable): the grid role promises a keyboard it has not. *@
         @* A grid needs an accessible name for assistive tech to announce it (and to tell several grids
            on one page apart); AriaLabel names this one, falling back to the generic localized default. *@
         @* AriaLabelledBy names it after an element on the page instead, so the generic default steps aside for it. *@
         @* The row count also numbers a grouped view's rows, so it is read before any row renders. *@
-        <div class="bit-dtg-table" role="@(IsTreeMode ? "treegrid" : "grid")"
+        <div class="bit-dtg-table" role="@(IsTreeMode ? "treegrid" : IsStaticTable ? "table" : "grid")"
              aria-label="@(string.IsNullOrWhiteSpace(AriaLabel) ? (string.IsNullOrWhiteSpace(AriaLabelledBy) ? Strings.GridLabel : null) : AriaLabel)"
              aria-labelledby="@AriaLabelledBy"
              aria-describedby="@AriaDescribedBy"
              aria-rowcount="@(ComputeAriaRowCount().ToString(System.Globalization.CultureInfo.InvariantCulture))" aria-colcount="@TotalColumnSpan"
-             aria-multiselectable="@(SelectionMode == BitSelectionMode.Multiple ? "true" : null)"
+             aria-multiselectable="@(SelectionMode == BitSelectionMode.Multiple && IsStaticTable is false ? "true" : null)"
              aria-busy="@(Loading || InfiniteLoading ? "true" : null)"
              aria-disabled="@(Disabled ? "true" : null)"
              style="--bit-dtg-template:@BuildGridTemplate();">
@@ -171,7 +173,7 @@
                                 @* A banner covers several columns, which only aria-colspan tells assistive tech: without it, every
                                    header after the first banner would be mapped onto the wrong column. *@
                                 <div class="bit-dtg-hcell bit-dtg-center bit-dtg-group-header@(span.Name is null ? " bit-dtg-group-header-empty" : "")"
-                                     role="@(span.Name is null ? "gridcell" : "columnheader")" aria-colindex="@groupColIndex" aria-colspan="@(span.Span > 1 ? span.Span : (int?)null)"
+                                     role="@(span.Name is null ? CellRole : "columnheader")" aria-colindex="@groupColIndex" aria-colspan="@(span.Span > 1 ? span.Span : (int?)null)"
                                      style="grid-column:span @span.Span;">
                                     @span.Name
                                 </div>
@@ -179,7 +181,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
+                                <div class="bit-dtg-hcell" role="@CellRole" aria-colindex="@AriaCommandColIndex"></div>
                             }
                         </div>
                     }
@@ -349,11 +351,11 @@
                             {
                                 if (slot.Column is null)
                                 {
-                                    @PlaceholderCell("bit-dtg-hcell", "gridcell")
+                                    @PlaceholderCell("bit-dtg-hcell", CellRole)
                                     continue;
                                 }
                                 var column = slot.Column;
-                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="gridcell" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
+                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="@CellRole" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
                                     @if (ColumnFilterable(column))
                                     {
                                         @RenderFilterEditor(column)
@@ -362,7 +364,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
+                                <div class="bit-dtg-hcell" role="@CellRole" aria-colindex="@AriaCommandColIndex"></div>
                             }
                         </div>
                     }
@@ -381,7 +383,7 @@
                 @if (Loading)
                 {
                     <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                        <div class="bit-dtg-cell bit-dtg-loading @Classes?.Loading" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Loading">
+                        <div class="bit-dtg-cell bit-dtg-loading @Classes?.Loading" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Loading">
                             @if (LoadingTemplate is not null)
                             {
                                 @LoadingTemplate
@@ -429,7 +431,7 @@
                         {
                             <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
                                  style="grid-template-columns:var(--bit-dtg-template);@RowHeightStyle(RowHeight)">
-                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                     <span class="bit-dtg-skeleton"></span>
                                 </div>
                             </div>
@@ -437,7 +439,7 @@
                         else if (!InfiniteHasMore)
                         {
                             <div class="bit-dtg-row bit-dtg-infinite-end" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-                                <div class="bit-dtg-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
+                                <div class="bit-dtg-cell" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                                     <span>@Strings.EndOfResultsText</span>
                                 </div>
                             </div>
@@ -519,12 +521,12 @@
                         {
                             if (slot.Column is null)
                             {
-                                @PlaceholderCell("bit-dtg-cell", "gridcell")
+                                @PlaceholderCell("bit-dtg-cell", CellRole)
                                 continue;
                             }
                             var column = slot.Column;
                             var agg = _footerAggregates.FirstOrDefault(a => a.ColumnId == column.Id);
-                            <div class="@($"bit-dtg-cell {AlignClass(column.Align)}{FrozenClass(column)}")" role="gridcell" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
+                            <div class="@($"bit-dtg-cell {AlignClass(column.Align)}{FrozenClass(column)}")" role="@CellRole" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
                                 @if (column.FooterTemplate is not null && agg is not null)
                                 {
                                     @column.FooterTemplate(agg)
@@ -537,7 +539,7 @@
                         }
                         @if (HasCommandColumn)
                         {
-                            <div class="bit-dtg-cell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
+                            <div class="bit-dtg-cell" role="@CellRole" aria-colindex="@AriaCommandColIndex"></div>
                         }
                     </div>
                 </div>
@@ -554,10 +556,12 @@
 @* --------------------------------------------- Resize tracking overlay (zero-JS) *@
 @if (IsResizing)
 {
+    @* The second press of a double click on a handle can land here rather than on the handle (OnResizeOverlayMouseDownAsync). *@
     <div class="bit-dtg-resize-overlay"
          @onpointermove="e => OnResizeMove(e.ClientX)"
          @onpointerup="EndResize"
-         @onpointerleave="EndResize"></div>
+         @onpointerleave="EndResize"
+         @onmousedown="OnResizeOverlayMouseDownAsync"></div>
 }
 
 @code {
@@ -648,7 +652,7 @@
     {
         <div class="bit-dtg-row bit-dtg-placeholder-row" role="row"
              style="grid-template-columns:var(--bit-dtg-template);@RowHeightStyle(RowHeight)">
-            <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
+            <div class="bit-dtg-cell bit-dtg-placeholder-cell" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;">
                 <span class="bit-dtg-skeleton"></span>
             </div>
         </div>
@@ -662,19 +666,19 @@
         var index = 0;
         if (HasRowNumberColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@RowNumberStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@RowNumberStickyStyle" role="@CellRole" aria-colindex="@(++index)"></div>
         }
         if (HasReorderColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@ReorderStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@ReorderStickyStyle" role="@CellRole" aria-colindex="@(++index)"></div>
         }
         if (HasDetailColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@DetailStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@DetailStickyStyle" role="@CellRole" aria-colindex="@(++index)"></div>
         }
         if (HasSelectColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@SelectStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@SelectStickyStyle" role="@CellRole" aria-colindex="@(++index)"></div>
         }
     };
 
@@ -700,7 +704,7 @@
         // ValueText or a new UI culture for a translated enum name reaches the header together with the cells.
         var keyText = groupCol is null ? group.KeyText : groupCol.FormatValue(group.Key);
         <div class="bit-dtg-row bit-dtg-group-row" role="row" aria-rowindex="@GroupAriaRowIndex(group)" style="grid-template-columns:var(--bit-dtg-template);--bit-dtg-group-level:@group.Level;">
-            <div class="bit-dtg-group-cell @Classes?.GroupRow" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
+            <div class="bit-dtg-group-cell @Classes?.GroupRow" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.GroupRow">
                 <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn"
                         aria-label="@(string.Format(collapsed ? Strings.ExpandGroupFormat : Strings.CollapseGroupFormat, groupCol?.DisplayTitle, keyText))"
                         aria-expanded="@(collapsed ? "false" : "true")"
@@ -1121,7 +1125,7 @@
     private RenderFragment RenderEmptyMessage => __builder =>
     {
         <div class="bit-dtg-row bit-dtg-message-row" role="row" style="grid-template-columns:var(--bit-dtg-template);">
-            <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="gridcell" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
+            <div class="bit-dtg-cell bit-dtg-empty @Classes?.Empty" role="@CellRole" aria-colindex="1" aria-colspan="@TotalColumnSpan" style="grid-column:1 / -1;@Styles?.Empty">
                 @if (EmptyTemplate is not null)
                 {
                     @EmptyTemplate

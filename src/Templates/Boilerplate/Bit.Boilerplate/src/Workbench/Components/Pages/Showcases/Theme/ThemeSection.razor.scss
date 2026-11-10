@@ -1,0 +1,20 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.theme-section {
+    gap: 0.875rem;
+    display: flex;
+    min-width: 0;
+    padding: 1rem;
+    border-radius: 16px;
+    flex-direction: column;
+    // A section scrolled into view stops clear of the app's sticky header.
+    scroll-margin-top: 4rem;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.section-header {
+    gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}

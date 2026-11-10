@@ -16,6 +16,11 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     // so their sets never see them: IsSetByMarkup adds this one to theirs, which is what HasNotBeenSet reads.
     private readonly HashSet<string> _assignedTextInputParameters = [];
 
+    // The text the input element reported with its last input event, and the value (or the part of it the element
+    // edits) that text was typed over (see TypedText).
+    private string? _typedText;
+    private string? _typedTextBase;
+
 
     /// <summary>
     /// Specifies the value of the autocomplete attribute of the input component.
@@ -159,6 +164,75 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     /// for a derived component that has just committed that text by other means.
     /// </summary>
     protected void ResetInputRateLimiter() => _rateLimiter.Reset();
+
+    /// <summary>
+    /// The text the input element reported with its last input event (<see cref="RecordTypedText"/>), while it is held;
+    /// null once it has been let go of.
+    /// </summary>
+    /// <remarks>
+    /// A text input binds the input event of its element rather than only handling it, and renders the element with
+    /// this text for as long as what the text was typed over has not moved - Immediate off, a debounce or a throttle
+    /// still waiting, a value bound one way. Rendering the value in between would write it back over what is being
+    /// typed: the render of an older keystroke, a round trip behind the typing on a server circuit, would put back the
+    /// shorter text, and the next key would go onto it.
+    /// </remarks>
+    private protected string? TypedText => _typedText;
+
+    /// <summary>
+    /// Holds the text an input event carried, typed over <paramref name="source"/>: the value, or the part of it the
+    /// element edits. Recorded before anything is awaited, since a render that runs meanwhile is drawn from it.
+    /// </summary>
+    private protected void RecordTypedText(string? text, string? source)
+    {
+        _typedText = text;
+        _typedTextBase = source;
+    }
+
+    /// <summary>
+    /// Whether the typed text is held and <paramref name="source"/> is still what it was typed over.
+    /// </summary>
+    private protected bool HoldsTypedTextFor(string? source)
+    {
+        return _typedText is not null && string.Equals(source, _typedTextBase, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Lets go of the typed text for good once <paramref name="source"/> has moved from what it was typed over - the
+    /// page, a commit or another part of the component moving it: a source coming back to that one later (a value
+    /// committed and then cleared) would otherwise bring back a text typed long before.
+    /// </summary>
+    private protected void ReleaseTypedTextIfMoved(string? source)
+    {
+        if (_typedText is not null && HoldsTypedTextFor(source) is false)
+        {
+            _typedText = null;
+        }
+    }
+
+    /// <summary>
+    /// Settles the typed text after the element's text has been committed: it is let go of once
+    /// <paramref name="sourceText"/> shows it, and otherwise <paramref name="source"/> is what it is typed over from
+    /// now on - what the commit made of the text (trimmed, refused, laid out) is the component's own doing, not a
+    /// change from the page.
+    /// </summary>
+    private protected void SettleTypedText(string? source, string? sourceText)
+    {
+        if (_typedText is null) return;
+
+        if (string.Equals(_typedText, sourceText ?? string.Empty, StringComparison.Ordinal))
+        {
+            _typedText = null;
+        }
+        else
+        {
+            _typedTextBase = source;
+        }
+    }
+
+    /// <summary>
+    /// Lets go of the typed text, for a component that has just put a text of its own into the element.
+    /// </summary>
+    private protected void ReleaseTypedText() => _typedText = null;
 
     /// <summary>
     /// Readies the commit of the text that reached <see cref="HandleOnStringValueChangeAsync"/> - the one of the base

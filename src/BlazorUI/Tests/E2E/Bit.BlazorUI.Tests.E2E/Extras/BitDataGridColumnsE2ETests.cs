@@ -202,7 +202,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         await HeaderRow(id).Locator("[data-col='Name']").DragToAsync(HeaderRow(id).Locator("[data-col='Category']"));
 
         await Expect(HeaderCells(id)).ToHaveTextAsync(["Id", "Category", "Name", "Supplier"]);
-        await Expect(DataRow(id, 0).Locator("> [role=gridcell]")).ToHaveTextAsync(["1", "Electronics", "Laptop", "Acme"]);
+        await Expect(DataRow(id, 0).Locator("> [role=cell]")).ToHaveTextAsync(["1", "Electronics", "Laptop", "Acme"]);
     }
 
     [TestMethod]
@@ -334,7 +334,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
 
         // Only a named banner heads its columns: the blank one over the ungrouped column is a plain cell.
         var empty = bannerRow.Locator("> .bit-dtg-group-header-empty");
-        await Expect(empty).ToHaveAttributeAsync("role", "gridcell");
+        await Expect(empty).ToHaveAttributeAsync("role", "cell");
         await Expect(empty).ToHaveAttributeAsync("aria-colindex", "1");
 
         var banners = bannerRow.Locator("> [role=columnheader]");
@@ -382,7 +382,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
 
         await Page.Locator("#btn-toggle-category").ClickAsync();
         await Expect(HeaderCells(id)).ToHaveTextAsync(["Id", "Name", "Supplier"]);
-        await Expect(DataRow(id, 0).Locator("> [role=gridcell]")).ToHaveTextAsync(["1", "Laptop", "Acme"]);
+        await Expect(DataRow(id, 0).Locator("> [role=cell]")).ToHaveTextAsync(["1", "Laptop", "Acme"]);
 
         await Page.Locator("#btn-toggle-category").ClickAsync();
         await Expect(HeaderCells(id)).ToHaveTextAsync(["Id", "Name", "Category", "Supplier"]);

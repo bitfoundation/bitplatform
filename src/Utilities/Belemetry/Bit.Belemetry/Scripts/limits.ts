@@ -37,7 +37,10 @@ export class RateLimiter {
  * line and the first frame in Chrome and .NET, the first two frames in Firefox and Safari.
  */
 export function errorSignature(log: LogRecord): string {
-    const attributes = log.attributes;
+    return signature(log.scope, log.attributes, log.body);
+}
+
+function signature(scope: string, attributes: Attributes, body: string | null): string {
     const stack = attributes['exception.stacktrace'];
     let head = typeof stack === 'string' ? stack : '';
     const first = head.indexOf('\n');
@@ -45,7 +48,7 @@ export function errorSignature(log: LogRecord): string {
     if (second >= 0) head = head.slice(0, second);
     const type = attributes['exception.type'];
     const message = attributes['exception.message'];
-    return [log.scope, typeof type === 'string' ? type : '', typeof message === 'string' ? message : log.body, head.trimEnd()].join('\u0001');
+    return [scope, typeof type === 'string' ? type : '', typeof message === 'string' ? message : body, head.trimEnd()].join('\u0001');
 }
 
 /** Suppresses an error identical to one recorded within the duplicate window, then caps the rest per minute. */
@@ -58,8 +61,17 @@ export class ErrorLimiter {
     }
 
     allow(log: LogRecord): boolean {
+        return this.allowSignature(() => errorSignature(log));
+    }
+
+    /** Whether an exception recorded on a span (its event's `attributes`) should be recorded as an error of its own. */
+    allowException(scope: string, attributes: Attributes): boolean {
+        return this.allowSignature(() => signature(scope, attributes, null));
+    }
+
+    private allowSignature(signatureOf: () => string): boolean {
         if (!(this.config.duplicateWindowMs > 0)) return !this.rate || this.rate.take(1) === 1;
-        const key = errorSignature(log);
+        const key = signatureOf();
         const now = this.clock();
         const recorded = this.recent.get(key);
         if (recorded !== undefined && now - recorded < this.config.duplicateWindowMs) return false;

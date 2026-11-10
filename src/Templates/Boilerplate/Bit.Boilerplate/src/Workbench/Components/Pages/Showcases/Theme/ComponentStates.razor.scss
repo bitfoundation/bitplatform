@@ -18,3 +18,23 @@
 .states.wide {
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 }
+
+.states.full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+// The column width comes from the markup; a phone narrower than it gets one column of its whole width.
+.states.sized {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--wb-cell)), 1fr));
+}
+
+// Each state as wide as its component, wrapping onto the next line when the row is full.
+.states.flow {
+    display: flex;
+    flex-wrap: wrap;
+
+    > ::deep * {
+        min-width: 0;
+        max-width: 100%;
+    }
+}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
 /// <c>TEST_HOST_URL</c> moves the test host off <c>http://localhost:5280</c>, for a machine where another checkout's
 /// host already holds that port - a host found answering there is reused rather than started.
+/// <c>PERF_RENDER_MODE</c> picks where the performance pages run (<see cref="RenderMode"/>).
 /// </remarks>
 public abstract class PerformanceTestBase
 {
@@ -37,7 +39,29 @@ public abstract class PerformanceTestBase
                                                     : "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
 
+    internal static string HostUrl => BaseUrl;
+
+    /// <summary>The BROWSER the run asked for (Edge is a channel of Playwright's chromium): <c>chromium</c> when it asked for none.</summary>
+    internal static string BrowserName => Environment.GetEnvironmentVariable("BROWSER") is { Length: > 0 } name ? name.ToLowerInvariant() : "chromium";
+
+    /// <summary>
+    /// Where the performance pages run, as <c>PERF_RENDER_MODE</c> names it: <c>server</c> (InteractiveServer, the default)
+    /// or <c>wasm</c> (InteractiveWebAssembly). The host reads it off a cookie every browser context of the run carries; the
+    /// other pages of the host run on the server whatever it says. Any other value fails every test before the host or the
+    /// browser is started, rather than measuring the server under a name that asked for something else.
+    /// </summary>
+    internal static string RenderMode => Environment.GetEnvironmentVariable("PERF_RENDER_MODE") is { Length: > 0 } mode
+        ? mode.ToLowerInvariant() switch
+        {
+            "server" => "server",
+            "wasm" or "webassembly" => "wasm",
+            _ => throw new InvalidOperationException($"Unknown PERF_RENDER_MODE '{mode}'. Use server or wasm.")
+        }
+        : "server";
+
     protected IPage Page { get; private set; } = null!;
+
+    public TestContext TestContext { get; set; } = null!;
 
     /// <summary>
     /// The browser context a test class needs, for the ones that cannot be driven in the default desktop one -
@@ -72,6 +96,9 @@ public abstract class PerformanceTestBase
     [TestInitialize]
     public async Task TestInitializeBase()
     {
+        // Read first, so a PERF_RENDER_MODE the run does not know fails here and starts neither the host nor the browser.
+        var renderMode = RenderMode;
+
         // The host and the browser are started by the first test and kept for the whole run (BrowserTestRun stops
         // them once it is over). Stopping them whenever no test happened to be running - between any two tests of a
         // sequential run - had every test start its own `dotnet run` and browser, racing the port of the last one.
@@ -95,6 +122,7 @@ public abstract class PerformanceTestBase
         }
 
         _context = await _browser.NewContextAsync(ContextOptions);
+        await _context.AddCookiesAsync([new Cookie { Name = "perf-render-mode", Value = renderMode, Url = BaseUrl }]);
         Page = await _context.NewPageAsync();
 
         // Wait for page to be ready.
@@ -219,10 +247,14 @@ public abstract class PerformanceTestBase
         // Run the host on the same TFM as the test runner so the right one is used.
         var tfm = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
+        // And in the configuration the tests were built in: a Release build of the tests measures a Release host, the only
+        // kind whose numbers are a baseline.
+        var configuration = typeof(PerformanceTestBase).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration ?? "Debug";
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run --project \"{testHostPath}\" --framework {tfm} --urls {BaseUrl}",
+            Arguments = $"run --project \"{testHostPath}\" --framework {tfm} --configuration {configuration} --urls {BaseUrl}",
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
@@ -407,6 +439,21 @@ public abstract class PerformanceTestBase
     }
 
     /// <summary>
+    /// Opens a performance page (<paramref name="path"/>, one of Bit.BlazorUI.Tests.Performance.TestHost.Client's) and waits
+    /// for it to be interactive - its SignalR circuit up, or its WebAssembly runtime started - failing unless it runs in the
+    /// render mode the run asked for (<see cref="RenderMode"/>), so a run never measures one mode under the other's name.
+    /// </summary>
+    protected async Task OpenPerformancePageAsync(string path)
+    {
+        await Page.GotoAsync($"{BaseUrl}{path}");
+        await WaitForStatus("Ready");
+
+        var expected = RenderMode == "wasm" ? "WebAssembly" : "Server";
+        var renderer = await Page.Locator("#renderer").TextContentAsync();
+        Assert.AreEqual(expected, renderer, $"{path} runs on the {renderer} renderer, where PERF_RENDER_MODE={RenderMode} asks for {expected}.");
+    }
+
+    /// <summary>
     /// Waits for the page status element to show the given text.
     /// </summary>
     protected async Task WaitForStatus(string status)
@@ -471,6 +518,158 @@ public abstract class PerformanceTestBase
             Assert.Fail($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}");
             return 0; // unreachable
         }
+    }
+
+    /// <summary>
+    /// Records one value the test measured for the run's results file (<see cref="PerformanceResults"/>), under the test's
+    /// name: <paramref name="count"/> is the size of what was measured - the components rendered, the cycles run.
+    /// </summary>
+    protected void Record(string metric, double value, string unit, int? count = null)
+    {
+        // The BROWSER asked for, with the engine and version that ran.
+        PerformanceResults.Add(new(TestContext.TestName ?? GetType().Name, metric, Math.Round(value, 3), unit, count),
+                               _browser is null ? BrowserName : $"{BrowserName} ({_browser.BrowserType.Name} {_browser.Version})");
+    }
+
+    /// <summary>
+    /// Records what an interaction cost on both sides: the page's own stopwatch, from the handler to its OnAfterRender - on
+    /// the server, or in wasm mode in the browser's .NET runtime, recorded as <c>.server</c> in either - and the browser's
+    /// (<see cref="MeasureInBrowserAsync"/>).
+    /// </summary>
+    protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
+    {
+        Record($"{metric}.server", serverMs, "ms", count);
+        RecordBrowserTiming(metric, count, browser);
+    }
+
+    /// <summary>
+    /// Records the browser's half of an interaction alone (<see cref="MeasureInBrowserAsync"/>), for one the page's own
+    /// stopwatch cannot see the end of - rows a virtualized list renders after the page's render.
+    /// </summary>
+    protected void RecordBrowserTiming(string metric, int count, BrowserTiming browser)
+    {
+        Record($"{metric}.browser", browser.Duration, "ms", count);
+        Record($"{metric}.domNodes", browser.DomNodes, "nodes", count);
+        if (browser.LongTasks is { } longTasks) Record($"{metric}.longTasks", longTasks, "tasks", count);
+        if (browser.LongTaskTime is { } longTaskTime) Record($"{metric}.longTaskTime", longTaskTime, "ms", count);
+    }
+
+    /// <summary>
+    /// What an interaction took in the browser, the way it is seen there (<see cref="MeasureInBrowserAsync"/>).
+    /// </summary>
+    /// <param name="Duration">From the click reaching the page to the frame after the status showed its end.</param>
+    /// <param name="LongTasks">The tasks of 50 ms or more the main thread ran in between, wholly or in part; null where the browser does not report them (all but Chromium).</param>
+    /// <param name="LongTaskTime">How much of those tasks' time fell in between: a task begun before the click (the click's own) or ended after the end counts for its part inside.</param>
+    /// <param name="DomNodes">The elements on the page once it was over.</param>
+    public sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
+
+    // Arms the page for one interaction: performance.mark "bit-perf:start" as the trigger's click reaches the document,
+    // "bit-perf:end" in the frame after the end shows - the #status text reading the given status, or an element matching
+    // the given selector being on the page - after an animation frame and the task after it, so the layout and paint of
+    // what was rendered are inside, and performance.measure "bit-perf" between them, which a trace of the page shows as
+    // well. A long task counts for the part of it inside that window, and the entries the observer holds but has not
+    // delivered yet are taken before it stops. The answer is kept on the window for MeasureInBrowserAsync to await.
+    private const string ArmInteractionScript = """
+        ({ status: doneStatus, selector }) => {
+            for (const name of ['bit-perf:start', 'bit-perf:end']) performance.clearMarks(name);
+            performance.clearMeasures('bit-perf');
+
+            const longTasks = [];
+            const observer = PerformanceObserver.supportedEntryTypes?.includes('longtask')
+                ? new PerformanceObserver(list => longTasks.push(...list.getEntries()))
+                : null;
+            observer?.observe({ type: 'longtask' });
+
+            window.__bitPerfInteraction = new Promise(resolve => {
+                document.addEventListener('click', () => performance.mark('bit-perf:start'), { capture: true, once: true });
+
+                const status = document.getElementById('status');
+                const isDone = selector ? () => document.querySelector(selector) !== null : () => status.textContent === doneStatus;
+                const watcher = new MutationObserver(() => {
+                    if (isDone() === false || performance.getEntriesByName('bit-perf:start').length === 0) return;
+                    watcher.disconnect();
+
+                    requestAnimationFrame(() => setTimeout(() => {
+                        performance.mark('bit-perf:end');
+                        const measure = performance.measure('bit-perf', 'bit-perf:start', 'bit-perf:end');
+                        if (observer) {
+                            longTasks.push(...observer.takeRecords());
+                            observer.disconnect();
+                        }
+
+                        const end = measure.startTime + measure.duration;
+                        const inside = longTasks.map(t => Math.min(t.startTime + t.duration, end) - Math.max(t.startTime, measure.startTime))
+                                                .filter(overlap => overlap > 0);
+                        resolve({
+                            duration: measure.duration,
+                            longTasks: observer ? inside.length : null,
+                            longTaskTime: observer ? inside.reduce((total, overlap) => total + overlap, 0) : null,
+                            domNodes: document.getElementsByTagName('*').length,
+                        });
+                    }, 0));
+                });
+                watcher.observe(selector ? document.body : status,
+                                { childList: true, characterData: true, subtree: true, attributes: !!selector, attributeFilter: selector ? ['class'] : undefined });
+            });
+        }
+        """;
+
+    /// <summary>
+    /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until the #status element reads
+    /// <paramref name="done"/>: from the click reaching the page to the next frame after that text appeared - the round
+    /// trip, the render, the DOM it changed and the layout and paint of it - as performance.mark / performance.measure
+    /// ("bit-perf"). The page's own #render-time is the .NET half of it alone: the server's, or in wasm mode the browser
+    /// runtime's. Fails once <paramref name="timeout"/> has passed without the status reading <paramref name="done"/>.
+    /// </summary>
+    /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null, longer for an
+    /// interaction known to take more than its 30 seconds in one of the render modes.</param>
+    protected Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done, TimeSpan? timeout = null)
+    {
+        return MeasureAsync(trigger, new { status = done, selector = (string?)null }, $"#status did not read '{done}'", timeout);
+    }
+
+    /// <summary>
+    /// Clicks <paramref name="trigger"/> and times, in the browser, what it set off until an element matching
+    /// <paramref name="selector"/> is on the page, as <see cref="MeasureInBrowserAsync"/> does for a status: for what ends
+    /// after the page's own render - rows a virtualized list renders once the browser has reported where it scrolled to.
+    /// Fails when the selector matches before the click, or not within <paramref name="timeout"/> of it.
+    /// </summary>
+    /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null.</param>
+    protected async Task<BrowserTiming> MeasureInBrowserUntilAsync(ILocator trigger, string selector, TimeSpan? timeout = null)
+    {
+        if (await Page.Locator(selector).CountAsync() > 0)
+        {
+            throw new InvalidOperationException($"'{selector}' is on the page before the click, so it cannot tell when what the click set off ended.");
+        }
+
+        return await MeasureAsync(trigger, new { status = (string?)null, selector }, $"No element matched '{selector}'", timeout);
+    }
+
+    private async Task<BrowserTiming> MeasureAsync(ILocator trigger, object end, string timeoutMessage, TimeSpan? timeout)
+    {
+        var wait = timeout ?? TimeSpan.FromMilliseconds(DefaultTimeout);
+
+        await Page.EvaluateAsync(ArmInteractionScript, end);
+        // The click waits as long as the end does: in wasm mode the page's .NET handler, and the render it sets off, can
+        // run inside the click's own event, which the click does not return before.
+        await trigger.ClickAsync(new() { Timeout = (float)wait.TotalMilliseconds });
+
+        // An evaluation has no timeout of its own: it would await the page's promise for as long as the end never shows.
+        // The one left pending here is rejected when the test's context is closed.
+        JsonElement timing;
+        try
+        {
+            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(wait);
+        }
+        catch (System.TimeoutException exception)
+        {
+            throw new System.TimeoutException($"{timeoutMessage} within {wait.TotalMilliseconds} ms of the click.", exception);
+        }
+
+        return new(timing.GetProperty("duration").GetDouble(),
+                   timing.GetProperty("longTasks").ValueKind is JsonValueKind.Number ? timing.GetProperty("longTasks").GetInt32() : null,
+                   timing.GetProperty("longTaskTime").ValueKind is JsonValueKind.Number ? timing.GetProperty("longTaskTime").GetDouble() : null,
+                   timing.GetProperty("domNodes").GetInt32());
     }
 
     /// <summary>

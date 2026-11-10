@@ -1,0 +1,187 @@
+@inherits WorkbenchComponentBase
+
+<ThemeSection Id="utilities" Title="@Localizer[nameof(WorkbenchStrings.ThemeUtilities)]">
+    <ComponentStates Name="BitElement" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesAnyTagStyledLikeA)]">
+            <div class="quote-stage">
+                <BitElement Element="blockquote" Class="quote">
+                    “@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesTheBestCroissantIHad)]” — Saleh
+                </BitElement>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitIcon">
+        @foreach (var color in ThemeSamples.Colors)
+        {
+            <StateSample Name="@color.ToString()">
+                <BitIcon IconName="@BitIconName.Heart" Color="color" Size="BitSize.Large" />
+            </StateSample>
+        }
+        @foreach (var variant in new[] { BitVariant.Fill, BitVariant.Outline })
+        {
+            <StateSample Name="@variant.ToString()">
+                <BitIcon IconName="@BitIconName.Coffee" Variant="variant" Color="BitColor.Primary" Size="BitSize.Large" />
+            </StateSample>
+        }
+        @foreach (var size in Enum.GetValues<BitSize>())
+        {
+            <StateSample Name="@size.ToString()">
+                <BitIcon IconName="@BitIconName.Shop" Size="size" />
+            </StateSample>
+        }
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesSpinning)]">
+            <BitIcon IconName="@BitIconName.Sync" Animation="BitIconAnimation.Spin" Size="BitSize.Large" />
+        </StateSample>
+    </ComponentStates>
+
+    @* The avatars are drawn for small sizes, so the larger samples use the wide illustration. *@
+    <ComponentStates Name="BitImage" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesCoverRoundedWithAShadow)]">
+            <BitImage Src="@ThemeSamples.IllustrationUrl" Alt="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTwoPeopleReadingTheSales)]" Width="9rem" Height="9rem" ImageFit="BitImageFit.Cover" Rounded Shadow />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesContainBordered)]">
+            <BitImage Src="@ThemeSamples.IllustrationUrl" Alt="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesTwoPeopleReadingTheSales)]" Width="9rem" Height="9rem" ImageFit="BitImageFit.Contain" Bordered />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeProgressCircular)]">
+            <div class="row">
+                @foreach (var person in imagePeople)
+                {
+                    <BitImage Src="@WorkbenchPhotos.Find(person)" Alt="@Localizer[person]" Width="3.5rem" Height="3.5rem" ImageFit="BitImageFit.Cover" Circular />
+                }
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitLink">
+        @foreach (var (nameKey, force) in ThemeSamples.InteractionStates)
+        {
+            <StateSample NameKey="@nameKey" Force="@force">
+                <BitLink Href="#">@Localizer[nameof(WorkbenchStrings.ThemeLinkText)]</BitLink>
+            </StateSample>
+        }
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <BitLink Href="#" Disabled>@Localizer[nameof(WorkbenchStrings.ThemeLinkText)]</BitLink>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesUnderlinedWithAnIcon)]">
+            <BitLink Href="#" Underlined IconName="@BitIconName.OpenInNewWindow">@Localizer[nameof(WorkbenchStrings.ThemeButtonsOpenTheGuide)]</BitLink>
+        </StateSample>
+        <StateSample Name="@BitColor.Error.ToString()">
+            <BitLink Href="#" Color="BitColor.Error">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesReportAProblem)]</BitLink>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitMediaQuery" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesWhatThisViewSWidth)]">
+            <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd">
+                <Matched>
+                    <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesNarrowerThanMd)]" IconName="@BitIconName.CellPhone" Color="BitColor.Info" />
+                </Matched>
+                <NotMatched>
+                    <BitTag Text="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesMdOrWider)]" IconName="@BitIconName.TVMonitor" Color="BitColor.Success" />
+                </NotMatched>
+            </BitMediaQuery>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitOverlay" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesOverABox)]">
+            <div class="overlay-stage">
+                <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                <BitOverlay IsOpen AbsolutePosition ModeFull Position="BitPosition.Center">
+                    <BitRingLoading Size="BitSize.Small" />
+                </BitOverlay>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitPullToRefresh" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesPullTheListDown)]">
+            <div class="pull-stage" tabindex="0" role="region" aria-label="@Localizer[nameof(WorkbenchStrings.PosRecentOrders)]">
+                <BitPullToRefresh OnRefresh="Refresh" FullWidth>
+                    <div class="pull-list">
+                        @foreach (var order in orders)
+                        {
+                            <div class="pull-row">@order</div>
+                        }
+                    </div>
+                </BitPullToRefresh>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSeparator" Wide>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <BitSeparator />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesWithText)]">
+            <BitSeparator>@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesOr)]</BitSeparator>
+        </StateSample>
+        <StateSample Name="@BitLineStyle.Dashed.ToString()">
+            <BitSeparator LineStyle="BitLineStyle.Dashed" Color="BitColor.Primary" Thickness="2px" />
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeLayoutsVertical)]">
+            <div class="row separator-row">
+                <BitText Typography="BitTypography.Body2">@AppLocalizer[nameof(AppStrings.Home)]</BitText>
+                <BitSeparator Vertical />
+                <BitText Typography="BitTypography.Body2">@AppLocalizer[nameof(AppStrings.Settings)]</BitText>
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSticky" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesScrollTheBox)]">
+            <div class="sticky-stage" tabindex="0" role="region" aria-label="@Localizer[nameof(WorkbenchStrings.ThemeExtrasOrders)]">
+                <BitSticky Top="0" ElevateOnStuck>
+                    <div class="sticky-header">@Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySOrders)]</div>
+                </BitSticky>
+                @foreach (var order in orders)
+                {
+                    <div class="pull-row">@order</div>
+                }
+            </div>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitSwipeTrap" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesSwipeInTheBox)]">
+            <BitSwipeTrap OnTrigger="OnSwiped">
+                <div class="swipe-stage">
+                    <BitIcon IconName="@BitIconName.Touch" Size="BitSize.Large" Color="BitColor.Primary" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[swipeKey]</BitText>
+                </div>
+            </BitSwipeTrap>
+        </StateSample>
+    </ComponentStates>
+
+    <ComponentStates Name="BitText" Wide>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesForegrounds)]">
+            <div class="column">
+                <BitText Foreground="BitColorKind.Primary">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesPrimaryText)]</BitText>
+                <BitText Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesSecondaryText)]</BitText>
+                <BitText Foreground="BitColorKind.Tertiary">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesTertiaryText)]</BitText>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeColors)]">
+            <div class="column">
+                <BitText Color="BitColor.Primary">@Localizer[nameof(WorkbenchStrings.ThemePrimary)]</BitText>
+                <BitText Color="BitColor.Success">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesSaved)]</BitText>
+                <BitText Color="BitColor.Error">@Localizer[nameof(WorkbenchStrings.ThemeExtrasPaymentFailed)]</BitText>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesStyles)]">
+            <div class="column">
+                <BitText Weight="BitFontWeight.Bold">@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesBold)]</BitText>
+                <BitText Italic>@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesItalic)]</BitText>
+                <BitText Underline>@Localizer[nameof(WorkbenchStrings.ThemeInputsUnderlined)]</BitText>
+                <BitText Strikethrough>€ 4,50</BitText>
+                <BitText Monospace>PO-1042</BitText>
+            </div>
+        </StateSample>
+        <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeUtilitiesClampedToTwoLines)]">
+            <BitText LineClamp="2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)] @Localizer[nameof(WorkbenchStrings.ThemeSampleText)] @Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+        </StateSample>
+    </ComponentStates>
+
+    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeAiNoLookOfTheirOwn), "BitCascadingValueProvider, BitParams"]</BitText>
+</ThemeSection>

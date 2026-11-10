@@ -33,8 +33,9 @@ packages:
 - This workstation has only the .NET 10 runtime (10.0.13). **The net8.0 and net9.0 test legs cannot run here**
   (`You must install or update .NET to run this application`); they build, and CI (`bit.ci.Belemetry.yml`) runs
   all three. Every test result below is net10.0 unless stated otherwise.
-- The Playwright E2E suite (`Tests.E2E`) and the publish gate are on-demand (`bit.ci.Belemetry.e2e.yml`) and need a
-  Chromium install; they are not part of the per-round verification here.
+- The Playwright E2E suite (`Tests.E2E`) and the publish gate (`bit.ci.Belemetry.e2e.yml`) need a Chromium install;
+  they are not part of the per-round verification here, and CI runs them on demand only. Since #14702 that run also
+  drives the MAUI sample on Windows, and the pull request pipeline builds the sample for Android, iOS and Mac Catalyst.
 
 ### 1.3 Baseline results
 
@@ -119,6 +120,7 @@ that were audited and found sound are marked "baseline".
 | Consent | Per-feature consent, held records, purge on revoke, GPC | `BelemetryConsentState`, `consent.ts` | existing | README Consent | baseline |
 | Export | OTLP protobuf/JSON/gRPC, Azure Monitor, retries, persistence | `Exporters/*` | existing (conformance vs official protos) | README Exporters | baseline |
 | Browser | Page views, interactions, web vitals, errors, fetch/XHR | `Scripts/instrumentations/*` | existing | README Browser | baseline |
+| Exceptions | .NET unhandled and unobserved task exceptions recorded without app code; a crashing process saves its queue for the next launch (the process ends before anything async completes) | `BelemetryUnhandledExceptions`, `BelemetryPipeline.PersistForExit`, `BelemetryFileRequestStore.SaveNow`, `Errors.CaptureUnhandledExceptions`; `TrackBitBelemetryUnhandledException` for the crashes Android, WinUI and WinForms report elsewhere (wired in the MAUI sample). Not done on purpose: waiting on the network as the process ends (no disk without `Persistence`, custom exporters), and `Persistence` in the default `Server.Features` (instances sharing a machine would share the store) | `BelemetryUnhandledExceptionTests` | README Unhandled exceptions and The server pipeline, demo .NET page | done (#14703) |
 
 ---
 
@@ -155,7 +157,12 @@ publishes only `BrowserHeaders`; WebAssembly/Hybrid publish `Headers` + `Browser
 server exporter whose page now exports without its headers. This also stops the Aspire dashboard key from
 `OTEL_EXPORTER_OTLP_HEADERS` being rendered into pages. Tests: `BelemetryBrowserConfigFactoryTests` (+4),
 `BelemetryOptionsBindingTests` (binds `BrowserHeaders`). Docs: README (OTLP), CLAUDE.md, demo Transport/OTLP pages,
-the MCP code reviewer's BLM003 message.
+the MCP code reviewer's BLM003 message. Follow-up (#14701): an endpoint's user info (`https://user:token@...`, in code
+or `OTEL_EXPORTER_OTLP_ENDPOINT`) still went into the page with `Endpoint.ToString()`. The browser config now gets
+every endpoint without it, on every host (fetch refuses a URL with credentials, and `HttpClient` never sent it either);
+a server warns at startup, and Belemetry's own messages (startup warnings, the HTTP sender's export warnings and
+diagnostics) name URLs without it (`BelemetryUserInfo`). Tests: `BelemetryBrowserConfigFactoryTests` (+3),
+`BelemetrySettingsTests` (+1), `BelemetryHttpSenderTests` (+2).
 
 **G-03 relay hardening - done.** `Belemetry.Relay` is ignored unless the transport is Relay; on a server each bridge
 (circuit) gets a token bucket (`BelemetryRateLimiter`, burst `Browser.MaxQueueSize + Consent.PendingLimit`, refilled
@@ -369,6 +376,27 @@ delivered request (resent, duplicated).
 **Verification.** Core 287/287 (net10.0; net8.0/net9.0 build, their runtimes are not installed here), JS 172/172, `tsc`
 clean, Hosting 29/29, MCP 59/59, EF 9/9, Hangfire 4/4; the new tests were checked to fail against the old behavior.
 
+### Round 8 - production diagnostics and support bundles (2026-11-04)
+
+A new capability rather than a fix: `BelemetryOptions.Diagnostics` (opt-in) keeps a bounded, consent-aware, sanitized
+diagnostic timeline - routes from the router, component UI events, exceptions by origin, failed requests, browser
+errors, circuit transitions - groups exceptions by a versioned fingerprint, and turns it into support bundles the user
+previews, narrows and confirms (`<BelemetryCapturePreview>`, `BelemetryDiagnosticCapture`, `BelemetrySupportBundle`),
+with an issue report whose every statement is observed, inferred or user-provided. Blazor Server gets one timeline per
+circuit, by the renderer's synchronization context. `Bit.BevTools.Belemetry` (new package, BevTools side) adds a Support
+panel and the component tree to captures. The audit, gap analysis, decisions, evidence and limitations are in
+[`docs/engineering/production-diagnostics.md`](docs/engineering/production-diagnostics.md).
+
+**Behavior changes.** `AddBitBelemetryServices` registers the framework's component `ActivitySource` in every host, so
+WebAssembly and Hybrid export `Navigate`/`HandleEvent` spans with traces on (as Server always did). A browser session
+sampled out of the export keeps its local diagnostic timeline when diagnostics are on.
+
+**Verification.** Core 393/393 per framework (net10.0, net11.0), JS 214/214, Hosting 49/49, MCP 62/62, EF Core 18/18,
+Hangfire 8/8, E2E web modes 44/44 (three new: a bundle captured and downloaded in Server, WebAssembly and Auto), E2E hybrid
+3/3, BevTools 649/649 per framework, Release build with the trim/AOT analyzers clean. An independent review found 18
+defects (three high), all fixed with tests; the benchmarks and a Playwright run of the samples found 6 more (see the
+engineering record).
+
 ---
 
 ## 7. Research notes
@@ -392,7 +420,7 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 | Keepalive: 64 KiB in flight and ~9 requests (Chromium); Firefox keepalive historically behaved like plain fetch [unverified]; `sendBeacon` needs a CORS-safelisted type to avoid a preflight and sends credentials | WHATWG fetch, MDN, OTel JS and Datadog source comments | G-06, G-26 fixed; sendBeacon not adopted (OTLP content types need preflight, credentials mode `include`) - platform-limited |
 | `visibilitychange: hidden` is the reliable exit signal; bfcache restores re-report web vitals with a new id | MDN, web-vitals | Belemetry flushes on hide (baseline); bfcache restore handling is a gap (G-29) |
 | Mature SDKs: pre-send hooks (all), dedupe (Sentry, Faro), "Script error." filtered (Sentry), rate limits (Elastic 80/min, Datadog), frustration signals (Datadog, Faro), consent states (Datadog: granted/not-granted; pending on mobile only) | vendor docs | G-05, G-08, G-13 fixed; rage clicks fixed (G-20, R5), dead/error clicks deferred; Belemetry's per-feature held-before-decision consent goes beyond the surveyed SDKs |
-| Blazor .NET 10: `Microsoft.AspNetCore.Components` activities `Navigate` (tag `aspnetcore.components.route`) and `HandleEvent`; meters `aspnetcore.components.navigation`, `.event_handler`, lifecycle and circuit meters | aspnetcore release/10.0 source, learn.microsoft.com | collected by default (`Microsoft.AspNetCore.Components*`); the route tag is a path to G-18 |
+| Blazor .NET 10: `Microsoft.AspNetCore.Components` activities `Navigate` (tag `aspnetcore.components.route`) and `HandleEvent`; meters `aspnetcore.components.navigation`, `.event_handler`, lifecycle and circuit meters | aspnetcore release/10.0 source, learn.microsoft.com | collected by default (`Microsoft.AspNetCore.Components*`); the route tag was a path to G-18, which took the router's route list instead (#14700) |
 | OpenTelemetry .NET: `OTEL_SDK_DISABLED` honored since 1.15 | OTel .NET changelog | G-30 fixed (R4) |
 
 ---
@@ -403,8 +431,8 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 
 | Status | Gaps |
 | --- | --- |
-| **done** | G-01 privacy parity, G-02 server headers, G-03 relay trust boundary, G-04 loop context (R1); G-05 error floods, G-06 keepalive bytes, G-07 value length, G-09 sequential resend, G-12 relay resource reuse, G-13 `Script error.` (R1-R2); G-08 browser processors/attributes, G-11 partial success, G-14 processor failures, G-15 HTTP outcomes, G-16 sensitive names, G-25 OTLP retry policy, G-26 keepalive request cap, G-27 pre-signed URLs, G-28 User-Agent (R3); G-10 self-observability, G-29 bfcache, G-30 `OTEL_SDK_DISABLED` (R4); G-20 rage clicks, G-22 published endpoints, G-33 benchmarks (R5); the review's nine fixes (R6) |
-| **deferred** (in scope, not done; reason) | G-17 `session.start`/`session.end` events and `session.previous_id` - Development semconv, and without `Sessions` consent every page load is a new in-memory session, so the events would be per-page noise; needs a product decision. G-18 route templates on page views - .NET 10's `Microsoft.AspNetCore.Components.Navigate` activity carries `aspnetcore.components.route` and is collected by default; joining it to the script's page view needs a cross-boundary design (WASM-only; Server has it on the server). G-19 a `startSpan` JS API - Blazor apps time custom work with `ActivitySource` in C#, which works in every host. G-20b dead/error clicks - heuristics need field data. G-31 the composable ProbabilitySampler - Development; ratio sampling stays compatible with OpenTelemetry .NET. G-32 `browser.web_vital.*` attribute names (Development semconv) - a rename would break the Azure mapping and existing dashboards; revisit when stable. |
+| **done** | G-01 privacy parity, G-02 server headers (and endpoint user info, #14701), G-03 relay trust boundary, G-04 loop context (R1); G-05 error floods, G-06 keepalive bytes, G-07 value length, G-09 sequential resend, G-12 relay resource reuse, G-13 `Script error.` (R1-R2); G-08 browser processors/attributes, G-11 partial success, G-14 processor failures, G-15 HTTP outcomes, G-16 sensitive names, G-25 OTLP retry policy, G-26 keepalive request cap, G-27 pre-signed URLs, G-28 User-Agent (R3); G-10 self-observability, G-29 bfcache, G-30 `OTEL_SDK_DISABLED` (R4); G-20 rage clicks, G-22 published endpoints, G-33 benchmarks (R5); the review's nine fixes (R6); G-18 route templates on page views (#14700: the `@page` routes discovered in .NET go into the browser config and the script matches page paths against them in the router's order, so the template is there on every host and before .NET runs - joining the `Navigate` activity would have raced the script's page view on Server and missed static SSR; ids templated when no route matches) |
+| **deferred** (in scope, not done; reason) | G-17 `session.start`/`session.end` events and `session.previous_id` - Development semconv, and without `Sessions` consent every page load is a new in-memory session, so the events would be per-page noise; needs a product decision. G-19 a `startSpan` JS API - Blazor apps time custom work with `ActivitySource` in C#, which works in every host. G-20b dead/error clicks - heuristics need field data. G-31 the composable ProbabilitySampler - Development; ratio sampling stays compatible with OpenTelemetry .NET. G-32 `browser.web_vital.*` attribute names (Development semconv) - a rename would break the Azure mapping and existing dashboards; revisit when stable. |
 | **documented limitation** | G-21 IPv4-looking version numbers in free text (log bodies) become `[ip]` - inherent to pattern scrubbing; mitigated for version-named keys. G-23 the relay budget is per circuit. G-24 an app's own `FlushAsync` serializes on the caller's context (the loop does not). Delivery during unload is best effort. Firefox's keepalive behavior is unverified here. |
 | **out of scope** | gRPC from the browser (impossible: fetch has no trailers); `sendBeacon` (OTLP content types need a CORS preflight, and beacons send credentials); session replay; a dashboard UI in the SDK. |
 
@@ -417,7 +445,7 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 | C. Browser and Blazor instrumentation | + bfcache restores (page views, web vitals), rage clicks, XHR abort/timeout | `instrumentations.test.js`, `fetch.test.js` |
 | D. Tracing and correlation | baseline (W3C, parent-based sampling, propagation allow-list); unchanged | existing suites |
 | E. Metrics | baseline aggregation and cardinality; + self-telemetry meter | `SelfTelemetry_CountsDropsAndExports_OnTheBitBelemetryMeter` |
-| F. Logging and exceptions | + error dedupe and rate limit (both sides), structured values scrubbed, credential names redacted, processor failures reported | `BelemetryLimitsTests`, `limits.test.js`, privacy suites |
+| F. Logging and exceptions | + error dedupe and rate limit (both sides), structured values scrubbed, credential names redacted, processor failures reported; + .NET unhandled and unobserved task exceptions, saved to disk as a process crashes (#14703) | `BelemetryLimitsTests`, `limits.test.js`, privacy suites, `BelemetryUnhandledExceptionTests` |
 | G. Sessions and context | baseline sessions; + global attributes in the script that cannot bypass consent | `api.test.js` |
 | H. Export and transport | per-backend retry policy, partial successes, keepalive budget (bytes + requests), sequential resend, remainder-only persistence after a partial success | sender, transport and store tests |
 | I. Buffering and delivery | bounded queues and stores (baseline) + bounded error limiter, relay budget, value length; delivery guarantees documented (best effort at unload) | README "Offline persistence" |
@@ -448,4 +476,5 @@ Browser RUM, Grafana Faro 2.13, Elastic RUM, MDN / WHATWG / W3C). Items not veri
 
 Rounds completed: 6 (of at most 10). The rounds stopped because every P0 and P1 gap is closed with tests, the
 independent review's findings are fixed, and what remains is deferred for a stated reason or platform-limited; the
-next highest-value work (G-18 route templates, G-17 session events) needs product decisions rather than engineering.
+next highest-value work (G-18 route templates - since done, #14700 - and G-17 session events) needs product decisions rather than
+engineering.

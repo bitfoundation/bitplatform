@@ -1,0 +1,32 @@
+@inherits WorkbenchComponentBase
+
+@* The grid sizes its columns itself and scrolls sideways inside this box on a narrow screen, never the page. *@
+<div class="orders-grid">
+    <BitDataGrid @ref="grid"
+                 TItem="ExtrasOrder"
+                 Items="Items"
+                 KeyField="order => order.Number"
+                 Loading="Loading"
+                 SelectionMode="SelectionMode"
+                 SelectedItems="SelectedItems"
+                 AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeExtrasLatestOrders)]">
+        <Columns>
+            <BitDataGridColumn TItem="ExtrasOrder" Property="order => order.Number" Title="@Localizer[nameof(WorkbenchStrings.PosOrder)]" Width="96px" RowHeader="true">
+                <Template Context="order">#@order.Number</Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn TItem="ExtrasOrder" Property="order => order.Customer" Title="@Localizer[nameof(WorkbenchStrings.ThemeExtrasCustomer)]" MinWidth="140" />
+            <BitDataGridColumn TItem="ExtrasOrder" Property="order => order.Date" Title="@AppLocalizer[nameof(AppStrings.Date)]" MinWidth="120">
+                <Template Context="order">@order.Date.ToString("d MMM, HH:mm", CultureInfo.CurrentCulture)</Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn TItem="ExtrasOrder" ColumnId="@TotalColumnId" Property="order => order.Total" Title="@Localizer[nameof(WorkbenchStrings.PosTotal)]" Align="BitTextAlign.End" MinWidth="96">
+                <Template Context="order">@ExtrasSamples.Money(order.Total)</Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn TItem="ExtrasOrder" Property="order => order.Status" Title="@Localizer[nameof(WorkbenchStrings.PosStatus)]" MinWidth="110">
+                <Template Context="order"><BitTag Text="@StatusText(order.Status)" Color="StatusColor(order.Status)" /></Template>
+            </BitDataGridColumn>
+        </Columns>
+        <EmptyTemplate>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeExtrasNoOrdersYetToday)]</BitText>
+        </EmptyTemplate>
+    </BitDataGrid>
+</div>

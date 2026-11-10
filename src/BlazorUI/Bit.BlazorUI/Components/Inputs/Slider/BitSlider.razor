@@ -23,6 +23,10 @@
        rather than one per thumb, since what it says is about the slider and not about either end of it - joined
        with whatever the caller has already pointed the inputs at. *@
     var describedBy = GetDescribedBy();
+
+    @* Every thumb is invalid when the value is: the cascading EditContext rejecting it, or the app (Invalid, an error
+       message). A ranged slider has one value for the pair, so both ends say so. *@
+    var ariaInvalid = IsInvalid ? "true" : null;
     var showThumbLabel = ThumbLabel is not null and not BitSliderThumbLabel.Off;
     var valueText = GetDisplayValue(value);
     var lowerText = GetDisplayValue(lower);
@@ -253,7 +257,7 @@
                            aria-labelledby="@GetThumbAriaLabelledBy(lowerThumbAriaLabel)"
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
-                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(lowerAriaMin)"
@@ -286,7 +290,7 @@
                            aria-labelledby="@GetThumbAriaLabelledBy(upperThumbAriaLabel)"
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
-                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(upperAriaMin)"
@@ -357,7 +361,7 @@
                            aria-labelledby="@GetThumbAriaLabelledBy(null)"
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
-                           aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                           aria-invalid="@ariaInvalid"
                            aria-describedby="@describedBy"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
                            aria-valuemin="@ToInvariant(min)"
@@ -415,11 +419,48 @@
         }
     </div>
 
+    @* The error line sits right under the slider - under its mark labels too - the way it sits right under the
+       control of every other input. It is one line for the whole slider, since a range has one value for the pair.
+       It carries no live role of its own - the region at the end of the component is what announces it, so it is
+       never read out twice. *@
+    @if (HasErrorMessage)
+    {
+        <div id="@ErrorId" style="@Styles?.ErrorMessageContainer" class="bit-sld-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by, which the template itself may not have at all.
+           It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@ErrorLabelId" class="bit-sld-dsc">@ErrorMessageAriaLabel</span>
+    }
+
     @if (AriaDescription.HasValue())
     {
         @* aria-describedby takes an id reference, so the text has to live in an element of its own. It is
            removed from the page visually and left in the accessibility tree, and sits outside the label so it
            never leaks into the accessible name of either thumb. *@
         <span id="@DescriptionId" class="bit-sld-dsc">@AriaDescription</span>
+    }
+
+    @* A status rather than an alert: a rejected value must not steal the focus or interrupt what is being read,
+       only be announced once the reader is done with the current sentence. Once a slider is wired for an error
+       message it is rendered whether or not it has anything to say, because a live region that arrives with its
+       text already in it is the one thing screen readers are known to miss.
+       Only a new message is announced, not the same one again after another move: a drag or an arrow key moves the
+       value at every step, and a reason that holds for each of them would be read out at each of them. The thumbs
+       carry aria-invalid, so every step still says the value is rejected. *@
+    @if (_hasLiveRegion)
+    {
+        <span role="status" aria-live="polite" aria-atomic="true" class="bit-sld-dsc">@LiveText</span>
     }
 </div>

@@ -26,6 +26,14 @@ internal sealed class BelemetryJsCallbacks(BelemetryJsBridge bridge)
         }
     }
 
+    /// <summary>
+    /// A JavaScript error the page recorded, offered as an automatic capture trigger
+    /// (<see cref="BelemetryDiagnosticTriggers.BrowserErrors"/>). Untrusted on a server: only a type and a message are read,
+    /// and the capture's own limits (cooldown, pending captures) bound what a page can cause.
+    /// </summary>
+    [JSInvokable("Belemetry.DiagnosticTrigger")]
+    public void DiagnosticTrigger(JsonElement error) => bridge.OnDiagnosticTrigger(error);
+
     /// <summary>Synchronous on purpose: the page is unloading, and only a synchronous WebAssembly call completes in time.</summary>
     [JSInvokable("Belemetry.DrainForUnload")]
     public JsonElement DrainForUnload() => bridge.DrainForUnload();

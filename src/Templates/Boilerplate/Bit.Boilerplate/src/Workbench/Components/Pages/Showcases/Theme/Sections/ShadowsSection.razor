@@ -1,0 +1,17 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="shadows" Title="@Localizer[nameof(WorkbenchStrings.ThemeShadows)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeShadowsTheShadowEachSurfaceLifts)]">
+    @foreach (var group in ThemeTokens.Shadows)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[group.TitleKey]</BitText>
+        <div class="shadows">
+            @foreach (var token in group.Tokens)
+            {
+                <div class="shadow-cell">
+                    <span class="shadow-box" style="--wb-shadow:@token.Css"></span>
+                    <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+                </div>
+            }
+        </div>
+    }
+</ThemeSection>

@@ -1,0 +1,233 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+@inject IBelemetryDiagnostics Diagnostics
+
+@* Belemetry's production diagnostics in BevTools: the timeline and exception groups of this session, a jump from a
+   failure to its component in the tree and to the events of its trace, support bundles to preview and export, and
+   bundles from elsewhere to import. Every value is Belemetry's, already sanitized; it is rendered as text, and BevTools'
+   own rule applies on top: under ValueAccess None no application value (a message, a message template, a query value)
+   reaches the panel, and no bundle is captured here, since an export may not show more than the panels do. *@
+
+@if (Diagnostics.IsEnabled is false)
+{
+    <div class="bev-empty">
+        Belemetry diagnostics are off. Set <code>BelemetryOptions.Diagnostics.Enabled = true</code> in <code>AddBitBelemetryServices</code>.
+    </div>
+}
+else
+{
+    <div class="bev-stat-grid">
+        <div class="bev-stat"><div class="bev-stat-value">@_events.Count</div><div class="bev-stat-label">timeline events (.NET side)</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@_groups.Count</div><div class="bev-stat-label">exception groups</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@Diagnostics.PendingCaptures.Count</div><div class="bev-stat-label">automatic captures to review</div></div>
+        <div class="bev-stat">
+            <div class="bev-stat-value"><button type="button" class="bev-btn" id="bev-belemetry-capture" disabled="@ValuesHidden" @onclick="CaptureAsync">Capture</button></div>
+            <div class="bev-stat-label">
+                @if (ValuesHidden)
+                {
+                    @:value access is None: a support bundle holds messages, so it is not captured here (the app's own support flow is unaffected)
+                }
+                else
+                {
+                    @:a support bundle of what happened so far
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (_capture is not null)
+    {
+        <div class="bev-section">
+            <div class="bev-section-title">Support bundle preview</div>
+            <div class="bev-section-body">
+                <BelemetryCapturePreview Capture="_capture" OnConfirmed="Exported" OnCancelled="() => _capture = null" />
+            </div>
+        </div>
+    }
+
+    <div class="bev-section">
+        <div class="bev-section-title">Exception groups <span class="bev-muted" style="font-weight:normal">grouped by Belemetry's fingerprint (v@(BelemetryExceptionFingerprint.Version)): type, message template and application frames</span></div>
+        <div class="bev-section-body">
+            @if (_groups.Count == 0)
+            {
+                <div class="bev-empty">No exception recorded.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Exception</th><th>Template</th><th class="bev-num">Count</th><th>Releases</th><th>Last seen</th><th>Component</th></tr></thead>
+                    <tbody>
+                        @foreach (var g in _groups)
+                        {
+                            var component = g.Occurrences.LastOrDefault(o => o.ComponentType is not null)?.ComponentType;
+                            <tr class="@(_selectedGroup == g.Fingerprint ? "bev-selected" : "")" @onclick="() => SelectGroup(g)">
+                                <td class="bev-mono">@g.ExceptionType @if (g.Classification is not null) { <span class="bev-chip">@g.Classification</span> }</td>
+                                <td>@Value(g.MessageTemplate)</td>
+                                <td class="bev-num">@g.Count</td>
+                                <td>@string.Join(", ", g.Releases)</td>
+                                <td>@BevFmt.Ago(g.LastSeen)</td>
+                                <td>
+                                    @if (component is not null)
+                                    {
+                                        <button type="button" class="bev-link bev-belemetry-show-component" @onclick:stopPropagation="true" @onclick="() => ShowComponent(component)">@ShortName(component) ↗</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="bev-section">
+        <div class="bev-section-title">
+            Timeline
+            @if (_traceFilter is not null)
+            {
+                <span class="bev-muted" style="font-weight:normal"> · trace @_traceFilter[..8]… <button type="button" class="bev-link" @onclick="() => _traceFilter = null">show all</button></span>
+            }
+        </div>
+        <div class="bev-section-body">
+            @foreach (var e in Visible())
+            {
+                <div class="bev-ev-row @(e.IsFailure ? "bev-err" : "")">
+                    <span class="bev-time">@BevFmt.Time(BelemetryTime.ToDateTime(e.TimeUnixNano))</span>
+                    <span class="bev-chip">@e.Category</span>
+                    <span class="bev-ev-title">@Describe(e)</span>
+                    @if (e.ComponentType is { } type)
+                    {
+                        <button type="button" class="bev-link" @onclick="() => ShowComponent(type)">@ShortName(type) ↗</button>
+                    }
+                    @if (e.TraceId is { } trace && _traceFilter is null)
+                    {
+                        <button type="button" class="bev-link" title="The events of this trace" @onclick="() => _traceFilter = trace">trace</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="bev-section">
+        <div class="bev-section-title">Import a support bundle</div>
+        <div class="bev-section-body">
+            <InputFile OnChange="ImportAsync" accept=".zip" />
+            @if (_imported is { } bundle)
+            {
+                <p class="@(bundle.IsValid ? "" : "bev-err")">
+                    @(bundle.IsValid ? "Valid" : "Invalid") bundle @bundle.CaptureId (schema @bundle.SchemaVersion, @bundle.Generator), @bundle.Events.Count event(s)
+                </p>
+                @foreach (var error in bundle.Errors)
+                {
+                    <p class="bev-err">@error</p>
+                }
+                @if (bundle.ReportMarkdown is { } markdown)
+                {
+                    <pre class="bev-mono">@markdown</pre>
+                }
+            }
+        </div>
+    </div>
+}
+
+@if (_status is not null)
+{
+    <p class="bev-muted" role="status">@_status</p>
+}
+
+@code {
+    private const long MaxImportBytes = BelemetrySupportBundle.MaxReadBytes;
+
+    private IReadOnlyList<BelemetryDiagnosticEvent> _events = [];
+    private IReadOnlyList<BelemetryExceptionGroup> _groups = [];
+    private BelemetryDiagnosticCapture? _capture;
+    private BelemetrySupportBundleContents? _imported;
+    private string? _selectedGroup;
+    private string? _traceFilter;
+    private string? _status;
+
+    protected override void OnParametersSet()
+    {
+        _events = Diagnostics.GetEvents();
+        _groups = Diagnostics.GetExceptionGroups();
+    }
+
+    private IEnumerable<BelemetryDiagnosticEvent> Visible() =>
+        (_traceFilter is null ? _events : _events.Where(e => e.TraceId == _traceFilter)).Reverse().Take(200);
+
+    private void SelectGroup(BelemetryExceptionGroup group)
+    {
+        _selectedGroup = group.Fingerprint;
+        _traceFilter = group.Occurrences.LastOrDefault(o => o.TraceId is not null)?.TraceId;
+    }
+
+    /// <summary>Opens the component tree at the live instance of a component type a failure is associated with.</summary>
+    internal void ShowComponent(string componentType)
+    {
+        var record = BevBelemetryComponentContext.Find(Session, componentType).OrderByDescending(r => r.LastRenderTicks).FirstOrDefault();
+        if (record is null)
+        {
+            _status = $"{componentType} has no live instance any more.";
+            return;
+        }
+
+        _status = null;
+        Host.SelectComponent(record.InstanceId);
+    }
+
+    private async Task CaptureAsync()
+    {
+        if (ValuesHidden) return;
+        _capture = await Diagnostics.CaptureAsync(new BelemetryDiagnosticCaptureOptions { Reason = "bevtools" });
+        _status = null;
+    }
+
+    private void Exported(BelemetryDiagnosticCapture capture)
+    {
+        _status = $"Bundle {capture.Id} exported.";
+        _capture = null;
+    }
+
+    private async Task ImportAsync(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            await using var stream = e.File.OpenReadStream(MaxImportBytes);
+            _imported = await BelemetrySupportBundle.ReadAsync(stream);
+            _status = null;
+        }
+        catch (IOException ex)
+        {
+            _imported = null;
+            _status = "The file could not be read: " + ex.Message;
+        }
+    }
+
+    private static string ShortName(string type)
+    {
+        var dot = type.LastIndexOf('.');
+        return dot >= 0 ? type[(dot + 1)..] : type;
+    }
+
+    /// <summary>Whether this session reads no application value (<see cref="BevValueAccess.None"/>).</summary>
+    private bool ValuesHidden => Session.ValueAccess == BevValueAccess.None;
+
+    /// <summary>
+    /// An application value as the panel may show it: hidden under <see cref="BevValueAccess.None"/>, else with BevTools'
+    /// credential shapes redacted on top of Belemetry's sanitizing - as the Logs and Errors panels show theirs.
+    /// </summary>
+    private string? Value(string? text) => text is null ? null : ValuesHidden ? BevRedactor.HiddenValue : BevRedactor.RedactText(text);
+
+    /// <summary>A URL template: its path is the route's shape; the allowlisted query values are values.</summary>
+    private string Url(string url)
+    {
+        var q = url.IndexOf('?');
+        return ValuesHidden && q >= 0 ? url[..q] + "?" + BevRedactor.HiddenValue : url;
+    }
+
+    private string Describe(BelemetryDiagnosticEvent e) =>
+        e.Exception is { } x ? $"{x.Type}{(x.Message is null ? "" : ": " + Value(x.Message))}"
+        : e.Attributes.TryGetValue("url.template", out var url) && url is string template ? $"{e.Name} {Url(template)}"
+        : e.Route is not null ? $"{e.Name} {e.Route}"
+        : Value(e.Message) ?? e.Name;
+}

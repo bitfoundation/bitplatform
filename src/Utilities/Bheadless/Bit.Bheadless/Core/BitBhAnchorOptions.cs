@@ -64,9 +64,26 @@ public sealed class BitBhAnchorOptions
     /// <summary>Minimum distance (px) between an arrow and the panel's corners. Default: 0.</summary>
     public int ArrowPadding { get; set; }
 
+    /// <summary>
+    /// A CSS selector of an item inside the floating element to line up over the reference instead of placing the element
+    /// beside it - the selected option of a listbox over its button, macOS-style (Radix's item-aligned Select, Headless UI's
+    /// <c>anchor="selection"</c>). The element then gets <c>data-side="none"</c>; without a matching item it is placed as
+    /// <see cref="To"/> says. The placement <c>"selection"</c> sets it to the selected option.
+    /// </summary>
+    public string? AlignItem { get; set; }
+
+    /// <summary>The selector <c>"selection"</c> aligns: the selected option.</summary>
+    public const string SelectedItem = "[aria-selected=\"true\"]";
+
     /// <summary>Creates an <see cref="BitBhAnchorOptions"/> from a placement string.</summary>
-    /// <param name="placement">A placement string like <c>"bottom"</c>, <c>"bottom start"</c>, <c>"top end"</c>.</param>
-    public static BitBhAnchorOptions Parse(string placement) => new() { To = placement };
+    /// <param name="placement">
+    /// A placement string like <c>"bottom"</c>, <c>"bottom start"</c>, <c>"top end"</c> - or <c>"selection"</c>, which lines the
+    /// selected option up over the reference (<see cref="AlignItem"/>).
+    /// </param>
+    public static BitBhAnchorOptions Parse(string placement)
+        => string.Equals(placement?.Trim(), "selection", StringComparison.OrdinalIgnoreCase)
+            ? new() { To = "bottom start", AlignItem = SelectedItem }
+            : new() { To = placement! };
 
     /// <summary>Implicit conversion from a placement string.</summary>
     public static implicit operator BitBhAnchorOptions(string placement) => Parse(placement);
@@ -91,5 +108,6 @@ public sealed class BitBhAnchorOptions
         ["hideWhenDetached"] = HideWhenDetached,
         ["arrowPadding"] = ArrowPadding,
         ["arrowId"] = arrowId,
+        ["alignItem"] = AlignItem,
     };
 }

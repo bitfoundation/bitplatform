@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -47,7 +49,68 @@ public static class Belemetry
         services.TryAddScoped<BelemetryJsBridge>();
         services.TryAddScoped<IBelemetryConsent, BelemetryConsentService>();
         services.TryAddScoped<IBelemetry, BelemetryService>();
+        services.TryAddScoped<IBelemetryDiagnostics, BelemetryDiagnosticsService>();
 
+        // The framework registers its component ActivitySource for server-side rendering only. Registered here (public,
+        // idempotent) so the Navigate and HandleEvent activities - the route templates and component names diagnostics
+        // rest on - exist in WebAssembly and Hybrid too. Nothing is created until something listens, and there the export
+        // listens only with diagnostics on (BelemetrySettings.ExportsTraceSource): an app without them traces as before.
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Records an exception nothing caught that a platform reports through an event of its own rather than
+    /// <c>AppDomain.UnhandledException</c>, which Belemetry listens to itself
+    /// (<see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/>): .NET for Android's
+    /// <c>AndroidEnvironment.UnhandledExceptionRaiser</c>, WinUI's <c>Application.UnhandledException</c> (MAUI on
+    /// Windows), WinForms' <c>Application.ThreadException</c>. Call it from that event's handler.
+    /// </summary>
+    /// <remarks>
+    /// The record is the one Belemetry makes for <c>AppDomain.UnhandledException</c>: an
+    /// <see cref="BelemetryFeatures.Errors"/> event, FATAL when the exception ends the process and ERROR otherwise. When it
+    /// ends the process, everything queued is saved synchronously for the next launch to send (with
+    /// <see cref="BelemetryFeatures.Persistence"/>), as nothing async completes then. The exception object recorded last
+    /// is not recorded again, so a crash both events report is one record. It records even with
+    /// <see cref="BelemetryErrorOptions.CaptureUnhandledExceptions"/> off, and does nothing where Belemetry is not
+    /// registered. It never throws past argument validation.
+    /// </remarks>
+    /// <param name="services">The app's root service provider (<c>MauiApp.Services</c>, <c>IPlatformApplication.Current.Services</c>).</param>
+    /// <param name="exception">The exception.</param>
+    /// <param name="terminating">
+    /// Whether it ends the process. Defaults to <see langword="true"/>; pass <see langword="false"/> from a handler that
+    /// lets the app go on (<c>e.Handled = true</c>).
+    /// </param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="exception"/> is null.</exception>
+    public static void TrackBitBelemetryUnhandledException(this IServiceProvider services, Exception exception, bool terminating = true)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        try
+        {
+            if (services.GetService<BelemetryPipeline>() is not { } pipeline) return;
+
+            // Idempotent; the pipeline of a host that never resolved the logger factory has not started yet.
+            pipeline.Start();
+            pipeline.UnhandledExceptions.OnUnhandled(exception, terminating);
+        }
+        catch
+        {
+            // A provider disposed as the app goes down, or anything else: never a failure of its own on top of a crash.
+        }
+    }
+
+    /// <summary>
+    /// Registers an <see cref="IBelemetrySnapshotProvider"/> (scoped, so it can read the state of the user's scope - a
+    /// circuit on Blazor Server). Its snapshots are only taken when a capture asks for them.
+    /// </summary>
+    public static IServiceCollection AddBitBelemetrySnapshotProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(this IServiceCollection services)
+        where TProvider : class, IBelemetrySnapshotProvider
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetrySnapshotProvider, TProvider>());
         return services;
     }
 }

@@ -1,0 +1,94 @@
+@inherits TokenSectionBase
+
+<ThemeSection Id="typography" Title="@Localizer[nameof(WorkbenchStrings.ThemeTypography)]" Hint="@Localizer[nameof(WorkbenchStrings.ThemeTypographyTheTypeRampBitTextDraws)]">
+    <div class="type-scale">
+        @foreach (var typography in typographies)
+        {
+            <div class="type-row">
+                <span class="type-name">@typography</span>
+                <BitText Typography="typography" NoWrap Class="sample">@SampleText</BitText>
+            </div>
+        }
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeTypographyFonts)]</BitText>
+    <div class="token-grid">
+        @foreach (var token in ThemeTokens.FontFamilies)
+        {
+            <div class="token-cell">
+                <span class="font-sample" style="font-family:@token.Css">@SampleText</span>
+                <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+            </div>
+        }
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeTypographyFontSizes)]</BitText>
+    <div class="ramp">
+        @foreach (var token in ThemeTokens.FontSizes)
+        {
+            <div class="ramp-row">
+                <span class="ramp-sample" style="font-size:@token.Css">Aa</span>
+                <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+            </div>
+        }
+    </div>
+
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeTypographyFontWeights)]</BitText>
+    <div class="token-grid">
+        @foreach (var token in ThemeTokens.FontWeights)
+        {
+            <div class="token-cell">
+                <span class="weight-sample" style="font-weight:@token.Css">Aa Bb Cc 123</span>
+                <TokenLabel Name="@token.Name" Value="@ValueOf(token)" />
+            </div>
+        }
+    </div>
+
+    @* Each of these tokens styles the text of certain components, so each sits beside the real component it changes. *@
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(WorkbenchStrings.ThemeTypographyTextInsideComponents)]</BitText>
+    <div class="token-grid">
+        <div class="token-cell">
+            <span class="use-name">@Localizer[nameof(WorkbenchStrings.ThemeTypographyButtonsMenusAndOtherControls)]</span>
+            <div class="use-sample row">
+                <BitButton>@AppLocalizer[nameof(AppStrings.Save)]</BitButton>
+                <BitButton Variant="BitVariant.Outline">@AppLocalizer[nameof(AppStrings.Cancel)]</BitButton>
+            </div>
+            <TokenLabel Name="--bit-tpg-font-weight" Value="@Values.GetValueOrDefault("--bit-tpg-font-weight")" />
+            <TokenLabel Name="--bit-tpg-ctrl-letter-spacing" Value="@Values.GetValueOrDefault("--bit-tpg-ctrl-letter-spacing")" />
+            <TokenLabel Name="--bit-tpg-ctrl-text-transform" Value="@Values.GetValueOrDefault("--bit-tpg-ctrl-text-transform")" />
+        </div>
+        <div class="token-cell">
+            <span class="use-name">@Localizer[nameof(WorkbenchStrings.ThemeTypographyDialogsTheSizeAndWeight)]</span>
+            <div class="use-sample dialog-mock">
+                <span class="dialog-title">@Localizer[nameof(WorkbenchStrings.ThemeDialogTitle)]</span>
+                <span class="dialog-text">@Localizer[nameof(WorkbenchStrings.ThemeDialogMessage)]</span>
+            </div>
+            <TokenLabel Name="--bit-tpg-dialog-title-font-size" Value="@Values.GetValueOrDefault("--bit-tpg-dialog-title-font-size")" />
+            <TokenLabel Name="--bit-tpg-dialog-title-font-weight" Value="@Values.GetValueOrDefault("--bit-tpg-dialog-title-font-weight")" />
+        </div>
+        <div class="token-cell">
+            <span class="use-name">@Localizer[nameof(WorkbenchStrings.ThemeTypographyInputsTheWeightOfThe)]</span>
+            <div class="use-sample">
+                <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeNamePlaceholder)]" />
+            </div>
+            <TokenLabel Name="--bit-tpg-field-label-font-weight" Value="@Values.GetValueOrDefault("--bit-tpg-field-label-font-weight")" />
+        </div>
+        <div class="token-cell">
+            <span class="use-name">@Localizer[nameof(WorkbenchStrings.ThemeTypographyHeadersAndFootersTheLine)]</span>
+            <div class="use-sample">
+                <BitFooter Bordered>
+                    <BitText Typography="BitTypography.Caption1">© 2026 Bit Bakery</BitText>
+                </BitFooter>
+            </div>
+            <TokenLabel Name="--bit-tpg-line-height" Value="@Values.GetValueOrDefault("--bit-tpg-line-height")" />
+        </div>
+        <div class="token-cell">
+            <span class="use-name">@Localizer[nameof(WorkbenchStrings.ThemeTypographyBitTextWithGutterTheSpace)]</span>
+            <div class="use-sample paragraphs">
+                <BitText Typography="BitTypography.Body2" Gutter>@SampleText</BitText>
+                <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+            </div>
+            <TokenLabel Name="--bit-tpg-gutter-size" Value="@Values.GetValueOrDefault("--bit-tpg-gutter-size")" />
+        </div>
+    </div>
+</ThemeSection>

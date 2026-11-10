@@ -1,0 +1,134 @@
+﻿/* scroll-area demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Root: a size, a frame, and overflow hidden ------------------------- */
+.scroll-area {
+    width: 100%;
+    max-width: 18rem;
+    height: 15rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* ---- Viewport: fills the root; the content scrolls natively -------------- */
+.scroll-area-viewport {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    outline: none;
+}
+
+/* A viewport with nothing focusable inside is a tab stop: show where the keyboard is. */
+.scroll-area-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--color-focus); }
+
+/* ---- Scrollbar: a 10px track over the inline-end / bottom edge ----------- */
+.scroll-area-scrollbar {
+    display: flex;
+    padding: 2px;
+    background: transparent;
+    transition: opacity 160ms ease, background-color 160ms ease;
+}
+
+.scroll-area-scrollbar[data-orientation="vertical"]   { width: 10px; }
+.scroll-area-scrollbar[data-orientation="horizontal"] { height: 10px; flex-direction: column; }
+
+.scroll-area-scrollbar[data-hovering],
+.scroll-area-scrollbar[data-dragging] { background: var(--color-fill); }
+
+/* Hidden by the area's Type: fade out (the scrollbar takes no pointer input meanwhile). */
+.scroll-area-scrollbar[data-state="hidden"] { opacity: 0; }
+
+/* ---- Thumb: length and position come from the component ----------------- */
+.scroll-area-thumb {
+    flex: 1;
+    border-radius: 999px;
+    background: var(--color-border-control);
+}
+
+.scroll-area-thumb:hover,
+.scroll-area-thumb[data-dragging] { background: var(--color-border-control-hover); }
+
+/* ---- Corner: fills the square both scrollbars leave ---------------------- */
+.scroll-area-corner { background: var(--color-fill); }
+
+/* ---- Tags list ------------------------------------------------------------ */
+.scroll-area-content { padding: 0.75rem 1rem; }
+
+.scroll-area-heading {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.scroll-area-tag {
+    padding: 0.4rem 0;
+    border-top: 1px solid var(--color-border-subtle);
+    font-size: 0.8125rem;
+}
+
+/* ---- Both axes: wide, unwrapped lines ------------------------------------ */
+.scroll-area-wide { max-width: 26rem; height: 12rem; }
+
+.scroll-area-log {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font: 0.8125rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre;
+}
+
+/* ---- Fade edges: the overflow variables are the pixels hidden past each edge */
+.scroll-area-faded .scroll-area-viewport {
+    -webkit-mask-image: linear-gradient(to bottom,
+        transparent 0,
+        #000 min(2.5rem, var(--bit-bh-scroll-area-overflow-y-start, 0px)),
+        #000 calc(100% - min(2.5rem, var(--bit-bh-scroll-area-overflow-y-end, 0px))),
+        transparent 100%);
+    mask-image: linear-gradient(to bottom,
+        transparent 0,
+        #000 min(2.5rem, var(--bit-bh-scroll-area-overflow-y-start, 0px)),
+        #000 calc(100% - min(2.5rem, var(--bit-bh-scroll-area-overflow-y-end, 0px))),
+        transparent 100%);
+}
+
+.scroll-area-paragraph { margin: 0 0 0.75rem; font-size: 0.875rem; line-height: 1.6; }
+
+/* ---- Horizontal chips (right to left) -------------------------------------- */
+.scroll-area-strip { max-width: 22rem; height: auto; }
+
+.scroll-area-strip .scroll-area-viewport { height: auto; }
+
+.scroll-area-chips {
+    display: flex;
+    gap: 0.5rem;
+    width: max-content;
+    padding: 0.75rem 0.75rem 1rem;
+}
+
+.scroll-area-chip {
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--color-border-control);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.scroll-area-chip:hover { background: var(--color-fill); }
+.scroll-area-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.scroll-area-chip[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* ---- Demo layout ----------------------------------------------------------- */
+.scroll-area-demo { display: grid; gap: 0.75rem; width: 100%; }
+
+.scroll-area-output { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.scroll-area-output strong { color: var(--color-text); font-weight: 600; }
