@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// follows <c>/Prev</c> and hybrid <c>/XRefStm</c> chains, and resolves
 /// indirect references - including objects packed inside object streams.
 /// </summary>
-public sealed class BitPdfXRef : IBitPdfXRef
+public sealed partial class BitPdfXRef : IBitPdfXRef
 {
     private enum EntryType { Free, Uncompressed, Compressed }
 
@@ -133,7 +133,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void ReadXRefChain()
     {
-        int start = FindStartXRef();
+        int start = ReadLinearizedStart() ?? FindStartXRef();
         if (start < 0)
         {
             Warnings.Add("Could not locate 'startxref'.");
@@ -435,7 +435,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     public object? Fetch(BitPdfRef reference, bool suppressEncryption = false)
     {
         ThrowIfSourceDisposed();
-        if (_cache.TryGetValue((reference.Num, reference.Gen), out var cached))
+        if (TryGetCachedObject((reference.Num, reference.Gen), out var cached))
         {
             return cached;
         }
@@ -453,7 +453,11 @@ public sealed class BitPdfXRef : IBitPdfXRef
             object? result = entry.Type == EntryType.Compressed
                 ? FetchCompressed(entry)
                 : FetchUncompressed(reference, entry);
-            _cache[(reference.Num, reference.Gen)] = result;
+            (_attemptCache ?? _cache)[(reference.Num, reference.Gen)] = result;
+            if (IsPartial && result is BitPdfDict dictionary)
+            {
+                (_attemptReferences ?? _references).TryAdd(dictionary, reference);
+            }
             return result;
         }
         finally
@@ -477,6 +481,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         {
             if (!_scanned)
             {
+                if (IsPartial) throw new BitPdfRangeFallbackException("The PDF xref requires a complete-file recovery scan.");
                 _scanned = true;
                 RebuildByScanning();
                 if (_entries.TryGetValue(reference.Num, out var corrected))
@@ -633,46 +638,50 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private List<object?> GetObjectStream(int streamNum)
     {
-        if (_objStmCache.TryGetValue(streamNum, out var cached))
-        {
-            return cached;
-        }
-
+        if (TryGetCachedObjectStream(streamNum, out var cached)) return cached;
         var result = new List<object?>();
-        _objStmCache[streamNum] = result; // guard re-entrancy
-
-        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
+        if (!_pendingObjectStreams.Add(streamNum)) return result;
+        try
         {
+            if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
+                return result;
+            BitPdfDict dict = stream.Dict;
+            int first = ToInt(dict.Get("First"));
+            byte[] data = BitPdfStreamDecoder.Decode(stream);
+            var header = ReadObjectStreamHeader(data, ToInt(dict.Get("N")), first);
+
+            // Each object ends where the next one starts - the next by offset, not by header order, so
+            // an out-of-order header does not cut an object short. Only the first entry at an offset is
+            // given its object: two object numbers handed the one parse would be one node under two
+            // references, and every byte of the stream is still parsed at most once however the header
+            // is written.
+            int[] starts = [.. header.Select(pair => pair.Offset).Distinct().Order()];
+            var parsed = new HashSet<int>();
+            foreach (var (_, offset) in header)
+            {
+                object? obj = null;
+                long objStart = (long)first + offset;
+                if (parsed.Add(offset) && offset >= 0 && objStart < data.Length)
+                {
+                    int next = Array.BinarySearch(starts, offset) + 1;
+                    long objEnd = next < starts.Length ? Math.Min((long)first + starts[next], data.Length) : data.Length;
+                    var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, (int)objStart, (int)(objEnd - objStart))), this);
+                    obj = parser.GetObj();
+                }
+                result.Add(obj);
+            }
+
+            (_attemptObjectStreams ?? _objStmCache)[streamNum] = result;
             return result;
         }
-
-        BitPdfDict dict = stream.Dict;
-        int first = ToInt(dict.Get("First"));
-        byte[] data = BitPdfStreamDecoder.Decode(stream);
-        var header = ReadObjectStreamHeader(data, ToInt(dict.Get("N")), first);
-
-        // Each object ends where the next one starts - the next by offset, not by header order, so
-        // an out-of-order header does not cut an object short. Only the first entry at an offset is
-        // given its object: two object numbers handed the one parse would be one node under two
-        // references, and every byte of the stream is still parsed at most once however the header
-        // is written.
-        int[] starts = [.. header.Select(pair => pair.Offset).Distinct().Order()];
-        var parsed = new HashSet<int>();
-        foreach (var (_, offset) in header)
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
-            object? obj = null;
-            long objStart = (long)first + offset;
-            if (parsed.Add(offset) && offset >= 0 && objStart < data.Length)
-            {
-                int next = Array.BinarySearch(starts, offset) + 1;
-                long objEnd = next < starts.Length ? Math.Min((long)first + starts[next], data.Length) : data.Length;
-                var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, (int)objStart, (int)(objEnd - objStart))), this);
-                obj = parser.GetObj();
-            }
-            result.Add(obj);
+            // Remember a malformed stream just as buffered loading did before
+            // partial attempts: another reference must not repeat its decode.
+            (_attemptObjectStreams ?? _objStmCache)[streamNum] = result;
+            throw;
         }
-
-        return result;
+        finally { _pendingObjectStreams.Remove(streamNum); }
     }
 
     /// <summary>
@@ -725,6 +734,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private void RebuildByScanning()
     {
+        if (IsPartial) throw new BitPdfRangeFallbackException("The PDF xref requires a complete-file recovery scan.");
         _scanned = true;
         Warnings.Add("Rebuilding the cross-reference table by scanning the file.");
         _entries.Clear();
@@ -948,8 +958,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         var keyword = "startxref"u8.ToArray();
         int searchStart = Math.Max(0, _reader.Length - 2048);
-        using var window = _source.GetMemory(searchStart, _reader.Length - searchStart);
-        var tail = window.Span;
+        // A classic xref commonly begins in the preceding chunk. Acquire the
+        // bounded tail in one request, while keeping the same startxref search.
+        int acquireStart = _source is IBitPdfPartialByteSource ranges
+            ? Math.Max(0, _reader.Length - Math.Max(2048, Math.Min(64 * 1024, ranges.ChunkSize))) : searchStart;
+        using var window = _source.GetMemory(acquireStart, _reader.Length - acquireStart);
+        var tail = window.Span[(searchStart - acquireStart)..];
         int index = tail.LastIndexOf(keyword);
         if (index >= 0)
         {

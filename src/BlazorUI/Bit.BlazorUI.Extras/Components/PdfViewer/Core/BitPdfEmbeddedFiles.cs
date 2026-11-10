@@ -7,13 +7,15 @@ internal static class BitPdfEmbeddedFiles
 {
     private const long MaxContentBytes = 1L << 28;
 
+    internal static BitPdfBudget CreateContentBudget() => new(MaxContentBytes);
+
     public static IReadOnlyList<BitPdfAttachment> Build(IBitPdfXRef xref, BitPdfDict catalog, IReadOnlyList<BitPdfPage> pages)
     {
         var result = new List<BitPdfAttachment>();
         // The same file specification can be reachable both from the name tree and
         // from an annotation; the stream reference is what identifies it.
         var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
-        var budget = new BitPdfBudget(MaxContentBytes);
+        var budget = CreateContentBudget();
 
         if (xref.FetchIfRef(catalog.Get("Names")) is BitPdfDict names
             && xref.FetchIfRef(names.Get("EmbeddedFiles")) is BitPdfDict tree)
@@ -41,6 +43,44 @@ internal static class BitPdfEmbeddedFiles
         }
 
         return result;
+    }
+
+    // Range scans commit one node/page/file at a time. A failed decode has no
+    // externally visible deduplication state for the next parser attempt to skip.
+    internal sealed record NameNode(BitPdfDict Identity, (object? Spec, string? Name)[] Files, object?[] Children);
+    internal sealed record FileResult(object Identity, BitPdfAttachment Attachment);
+
+    internal static object? NameRoot(IBitPdfXRef xref, BitPdfDict catalog)
+        => xref.FetchIfRef(catalog.GetRaw("Names")) is BitPdfDict names ? names.GetRaw("EmbeddedFiles") : null;
+
+    internal static NameNode? ReadNameNode(IBitPdfXRef xref, object? value)
+    {
+        if (xref.FetchIfRef(value) is not BitPdfDict node) return null;
+        var files = new List<(object?, string?)>();
+        if (xref.FetchIfRef(node.GetRaw("Names")) is List<object?> pairs)
+            for (int i = 0; i + 1 < pairs.Count; i += 2)
+                files.Add((pairs[i + 1], (xref.FetchIfRef(pairs[i]) as BitPdfString)?.AsText()));
+        return new(node, files.ToArray(), xref.FetchIfRef(node.GetRaw("Kids")) is List<object?> kids ? kids.ToArray() : []);
+    }
+
+    internal static object?[] PageFiles(IBitPdfXRef xref, BitPdfPage page)
+    {
+        var files = new List<object?>();
+        if (page.Dict.Get("Annots") is List<object?> annots)
+            foreach (var value in annots)
+                if (xref.FetchIfRef(value) is BitPdfDict annotation
+                    && BitPdfPrimitives.IsName(annotation.Get("Subtype"), "FileAttachment"))
+                    files.Add(annotation.GetRaw("FS"));
+        return files.ToArray();
+    }
+
+    internal static FileResult? ReadFile(IBitPdfXRef xref, object? spec, int? page, string? name,
+        BitPdfBudget budget, ISet<object> completed)
+    {
+        var result = new List<BitPdfAttachment>();
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        Add(xref, spec, result, seen, budget, page, name, completed);
+        return result.Count == 0 ? null : new(seen.Single(), result[0]);
     }
 
     private static void CollectNameTree(IBitPdfXRef xref, BitPdfDict node, List<BitPdfAttachment> result,
@@ -75,7 +115,7 @@ internal static class BitPdfEmbeddedFiles
     }
 
     private static void Add(IBitPdfXRef xref, object? fileSpecObj, List<BitPdfAttachment> result,
-        HashSet<object> seen, BitPdfBudget budget, int? pageNumber, string? fallbackName)
+        HashSet<object> seen, BitPdfBudget budget, int? pageNumber, string? fallbackName, ISet<object>? completed = null)
     {
         if (xref.FetchIfRef(fileSpecObj) is not BitPdfDict spec)
         {
@@ -97,7 +137,7 @@ internal static class BitPdfEmbeddedFiles
                 break;
             }
         }
-        if (stream is null || seen.Add(stream) is false)
+        if (stream is null || completed?.Contains(stream) is true || seen.Add(stream) is false)
         {
             return;
         }
@@ -112,20 +152,23 @@ internal static class BitPdfEmbeddedFiles
             // A broken attachment must not cost the document its other ones.
             content = [];
         }
-        if (budget.TrySpend(content.Length) is false)
-        {
-            content = [];
-        }
 
         string? name = (xref.FetchIfRef(spec.Get("UF")) as BitPdfString)?.AsText()
             ?? (xref.FetchIfRef(spec.Get("F")) as BitPdfString)?.AsText()
             ?? fallbackName;
 
+        // All potentially missing reads finish before spending the shared budget.
+        string? description = (xref.FetchIfRef(spec.Get("Desc")) as BitPdfString)?.AsText();
+        string? mimeType = (stream.Dict?.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal);
+        if (budget.TrySpend(content.Length) is false)
+        {
+            content = [];
+        }
         result.Add(new BitPdfAttachment
         {
             Name = string.IsNullOrWhiteSpace(name) ? "attachment" : name,
-            Description = (xref.FetchIfRef(spec.Get("Desc")) as BitPdfString)?.AsText(),
-            MimeType = (stream.Dict?.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal),
+            Description = description,
+            MimeType = mimeType,
             PageNumber = pageNumber,
             Content = content,
         });

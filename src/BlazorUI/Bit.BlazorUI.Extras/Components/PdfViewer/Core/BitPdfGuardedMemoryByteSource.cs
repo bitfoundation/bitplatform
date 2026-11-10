@@ -43,6 +43,7 @@ internal sealed class BitPdfGuardedMemoryByteSource(byte[] bytes, IBitPdfByteSou
         }
         public override int GetByte()
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             _inner.Pos = Pos;
             int result = _inner.GetByte();
@@ -51,6 +52,7 @@ internal sealed class BitPdfGuardedMemoryByteSource(byte[] bytes, IBitPdfByteSou
         }
         public override byte[] GetBytes(int length = 0)
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             _inner.Pos = Pos;
             byte[] result = _inner.GetBytes(length);
@@ -59,12 +61,15 @@ internal sealed class BitPdfGuardedMemoryByteSource(byte[] bytes, IBitPdfByteSou
         }
         public override byte[] GetByteRange(int begin, int end)
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             return _inner.GetByteRange(begin, end);
         }
-        public override void Reset() { _source.CheckRead(); Pos = Start; }
+        public override void Skip(int n = 1) { BitPdfXRef.TrackPartialStream(this); base.Skip(n); }
+        public override void Reset() { BitPdfXRef.TrackPartialStream(this); _source.CheckRead(); Pos = Start; }
         public override void MoveStart()
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             _inner.Pos = Pos;
             _inner.MoveStart();

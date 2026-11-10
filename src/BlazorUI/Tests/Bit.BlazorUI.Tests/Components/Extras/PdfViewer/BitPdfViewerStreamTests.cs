@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
 
 [TestClass]
-public class BitPdfViewerStreamTests : BunitTestContext
+public partial class BitPdfViewerStreamTests : BunitTestContext
 {
     [TestMethod]
     public async Task StreamViewerShouldPreserveFeaturesAndReturnOnlyExplicitUnretainedCopies()
@@ -67,6 +67,7 @@ public class BitPdfViewerStreamTests : BunitTestContext
         byte[] bytes = TestPdf.HelloWorld();
         var input = new PdfTrackingStream(new byte[11].Concat(bytes).ToArray(), shortRead: 5) { Position = 11 };
         bool cancel = false;
+        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(input), "hello.pdf"))
             .Add(v => v.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, args =>
@@ -75,7 +76,6 @@ public class BitPdfViewerStreamTests : BunitTestContext
                 args.Cancel = cancel;
             })));
         component.WaitForPages(1);
-        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var download = component.InvokeAsync(() => component.Instance.Download());
         component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
         var invocation = planned.Invocations.Single();
@@ -95,9 +95,11 @@ public class BitPdfViewerStreamTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public async Task StreamDownloadFailureShouldNotifyAfterCleanupAndAllowReentrantWork(bool replace)
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task StreamDownloadFailureShouldNotifyAfterCleanupAndAllowReentrantWork(bool replace, bool pendingRender)
     {
         var input = new PdfTrackingStream(TestPdf.HelloWorld());
         var errors = new List<string>();
@@ -105,45 +107,62 @@ public class BitPdfViewerStreamTests : BunitTestContext
         int attempts = 0;
         bool cancel = false;
         string? text = null;
-        var component = RenderComponent<BitPdfViewer>(p => p
-            .Add(v => v.Source, BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(input)))
-            .Add(v => v.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, args =>
-            {
-                attempts++;
-                args.Cancel = cancel;
-            }))
-            .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, async message =>
-            {
-                errors.Add(message);
-                input.FailRead = false;
-                if (replace)
-                    await viewer!.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))).WaitAsync(TimeSpan.FromSeconds(3));
-                else
-                    text = await viewer!.ExtractPageTextAsync(1).WaitAsync(TimeSpan.FromSeconds(3));
-                // The busy flag must also be cleared before entering host code.
-                cancel = true;
-                await viewer.Download();
-            })));
-        component.WaitForPages(1);
-        viewer = component.Instance;
-        input.FailRead = true;
+        // WaitForPages observes markup, not completion of OnAfterRenderAsync.
+        // bUnit's handler list must be configured before rendering can read it.
         var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
-        var download = component.InvokeAsync(() => viewer.Download());
-        component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
-        var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
-        using var copied = new MemoryStream();
-        var failure = await Assert.ThrowsAsync<IOException>(() => reference.Stream.CopyToAsync(copied));
-        // Browser arrayBuffer rejects when its .NET stream read fails.
-        planned.SetException(new JSException(failure.Message));
-        await download.WaitAsync(TimeSpan.FromSeconds(5));
+        var widths = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.correctTextWidths", _ => true);
+        if (!pendingRender) widths.SetVoidResult();
+        try
+        {
+            var component = RenderComponent<BitPdfViewer>(p => p
+                .Add(v => v.Source, BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(input)))
+                .Add(v => v.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, args =>
+                {
+                    attempts++;
+                    args.Cancel = cancel;
+                }))
+                .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, async message =>
+                {
+                    errors.Add(message);
+                    input.FailRead = false;
+                    if (replace)
+                        await viewer!.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))).WaitAsync(TimeSpan.FromSeconds(3));
+                    else
+                        text = await viewer!.ExtractPageTextAsync(1).WaitAsync(TimeSpan.FromSeconds(3));
+                    // The busy flag must also be cleared before entering host code.
+                    cancel = true;
+                    await viewer.Download();
+                })));
+            component.WaitForPages(1);
+            if (pendingRender)
+            {
+                // Keep post-render interop pending throughout the failed download and
+                // host callback, so the overlap from CI is exercised deliberately.
+                component.WaitForAssertion(() => Assert.AreEqual(1, widths.Invocations.Count));
+            }
+            viewer = component.Instance;
+            input.FailRead = true;
+            var download = component.InvokeAsync(() => viewer.Download());
+            component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
+            var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
+            using var copied = new MemoryStream();
+            var failure = await Assert.ThrowsAsync<IOException>(() => reference.Stream.CopyToAsync(copied));
+            // Browser arrayBuffer rejects when its .NET stream read fails.
+            planned.SetException(new JSException(failure.Message));
+            await download.WaitAsync(TimeSpan.FromSeconds(5));
 
-        component.WaitForPages(replace ? 2 : 1);
-        CollectionAssert.AreEqual(new[] { failure.Message }, errors);
-        Assert.AreEqual(2, attempts);
-        Assert.AreEqual(1, planned.Invocations.Count);
-        Assert.AreEqual(replace ? 1 : 0, input.DisposeCount);
-        Assert.AreEqual(0, viewer.FailedPages.Count);
-        if (!replace) StringAssert.Contains(text!, "Hello");
+            component.WaitForPages(replace ? 2 : 1);
+            CollectionAssert.AreEqual(new[] { failure.Message }, errors);
+            Assert.AreEqual(2, attempts);
+            Assert.AreEqual(1, planned.Invocations.Count);
+            Assert.AreEqual(replace ? 1 : 0, input.DisposeCount);
+            Assert.AreEqual(0, viewer.FailedPages.Count);
+            if (!replace) StringAssert.Contains(text!, "Hello");
+        }
+        finally
+        {
+            widths.SetVoidResult();
+        }
     }
 
     [TestMethod]
@@ -177,12 +196,12 @@ public class BitPdfViewerStreamTests : BunitTestContext
     public async Task BufferedDownloadInteropExceptionsShouldStillPropagate()
     {
         int errors = 0;
+        var failure = new JSException("Browser download failed.");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true).SetException(failure);
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
         component.WaitForPages(1);
-        var failure = new JSException("Browser download failed.");
-        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true).SetException(failure);
         var thrown = await Assert.ThrowsAsync<JSException>(() => component.InvokeAsync(() => component.Instance.Download()));
         Assert.AreSame(failure, thrown);
         Assert.AreEqual(0, errors);
@@ -192,11 +211,11 @@ public class BitPdfViewerStreamTests : BunitTestContext
     public async Task StreamDownloadCancellationShouldNotBeReportedAsFailure()
     {
         int errors = 0;
+        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true).SetException(new OperationCanceledException());
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(new PdfTrackingStream(TestPdf.HelloWorld()))))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
         component.WaitForPages(1);
-        Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true).SetException(new OperationCanceledException());
         await Assert.ThrowsAsync<OperationCanceledException>(() => component.InvokeAsync(() => component.Instance.Download()));
         Assert.AreEqual(0, errors);
         Assert.AreEqual(0, component.Instance.FailedPages.Count);
@@ -519,6 +538,7 @@ public class BitPdfViewerStreamTests : BunitTestContext
         var input = new PausedAsyncPdfStream(bytes);
         var errors = new List<string>();
         var rendered = new List<int>();
+        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.BackgroundRendering, false)
             .Add(v => v.RenderMode, mode)
@@ -527,7 +547,6 @@ public class BitPdfViewerStreamTests : BunitTestContext
             .Add(v => v.OnPageRendered, EventCallback.Factory.Create<int>(this, rendered.Add)));
         component.WaitForPages(3);
         using var copied = new MemoryStream();
-        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         byte[]? result = null;
         var operation = component.InvokeAsync(async () =>
         {
@@ -572,11 +591,11 @@ public class BitPdfViewerStreamTests : BunitTestContext
     {
         var input = new PausedAsyncPdfStream(TestPdf.MultiPage(3));
         int errors = 0;
+        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(_ => Task.FromResult<Stream>(input)))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
         component.WaitForPages(3);
-        var planned = Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.download", _ => true);
         var download = component.InvokeAsync(() => component.Instance.Download());
         component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
         var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;

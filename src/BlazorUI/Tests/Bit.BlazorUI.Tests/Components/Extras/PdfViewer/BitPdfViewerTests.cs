@@ -135,10 +135,10 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForPages(1);
 
-        await component.Instance.GoToPage(42);
+        await component.InvokeAsync(() => component.Instance.GoToPage(42));
         Assert.AreEqual(1, component.Instance.CurrentPage);
 
-        await component.Instance.PrevPage();
+        await component.InvokeAsync(() => component.Instance.PrevPage());
         Assert.AreEqual(1, component.Instance.CurrentPage);
     }
 
@@ -2971,14 +2971,6 @@ public class BitPdfViewerTests : BunitTestContext
     [TestMethod]
     public void BitPdfViewerShouldMoveThumbnailFocusBeforeNavigating()
     {
-        var component = RenderComponent<BitPdfViewer>(parameters =>
-        {
-            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
-            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
-        });
-
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
-
         // bUnit records the invocations grouped by identifier, not in call order, so the order is read at the moment the
         // jump's scroll is sent: the matcher that sees that call notes which thumbnail held the focus then.
         var scrolled = false;
@@ -2990,6 +2982,14 @@ public class BitPdfViewerTests : BunitTestContext
             scrolled = true;
             return true;
         }).SetVoidResult();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
+            parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
 
         component.Find("[data-thumb='1']").KeyDown(new KeyboardEventArgs { Key = "End" });
 
@@ -3588,7 +3588,7 @@ internal static class TestPdf
     /// default grants everything, while <c>0</c> withholds every optional right
     /// (printing and copying included).
     /// </summary>
-    public static byte[] Encrypted(string userPassword, int permissions = -1)
+    public static byte[] Encrypted(string userPassword, int permissions = -1, int contentPadding = 0)
     {
         byte[] id0 = Encoding.Latin1.GetBytes("0123456789abcdef");
         int p = permissions;
@@ -3609,7 +3609,8 @@ internal static class TestPdf
 
         // The content stream is object 4; its key mixes in the object number.
         byte[] contentKey = ObjectKey(fileKey, 4, 0);
-        string content = Encoding.Latin1.GetString(Rc4(contentKey, Encoding.Latin1.GetBytes("BT ET")));
+        string plain = contentPadding == 0 ? "BT ET" : "BT ET\n%" + new string('a', contentPadding) + "\n";
+        string content = Encoding.Latin1.GetString(Rc4(contentKey, Encoding.Latin1.GetBytes(plain)));
 
         var bodies = new List<string>
         {

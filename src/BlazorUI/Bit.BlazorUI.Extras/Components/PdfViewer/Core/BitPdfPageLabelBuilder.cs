@@ -40,7 +40,7 @@ internal static class BitPdfPageLabelBuilder
         }
 
         var keys = new List<int>(ranges.Keys);
-        var budget = new BitPdfBudget(MaxLabelChars);
+        var budget = BitPdfBudget.ForRetry(MaxLabelChars, catalog, "page-labels");
         for (int r = 0; r < keys.Count; r++)
         {
             int start = Math.Max(0, keys[r]);
