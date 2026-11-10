@@ -224,6 +224,7 @@ public static class WebApplicationBuilderExtensions
                 {
                     tracing.AddSource(ActivitySource.Current.Name)
                         .AddSource("Experimental.Microsoft.Extensions.AI")
+                        .AddSource("SmsBridge")
                         .AddProcessor<AppOpenTelemetryProcessor>()
                         .AddAspNetCoreInstrumentation(options =>
                         {

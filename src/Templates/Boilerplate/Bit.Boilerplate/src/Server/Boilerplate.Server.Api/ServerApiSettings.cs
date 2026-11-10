@@ -2,6 +2,7 @@
 //#if (notification == true)
 using AdsPush.Abstraction.Settings;
 //#endif
+using SmsBridge.DependencyInjection;
 using Boilerplate.Server.Shared;
 
 namespace Boilerplate.Server.Api;
@@ -316,13 +317,17 @@ public class CloudflareOptions
 
 public partial class SmsOptions
 {
-    public string? FromPhoneNumber { get; set; }
-    public string? TwilioAccountSid { get; set; }
-    public string? TwilioAutoToken { get; set; }
+    public SmsProvidersOptions Providers { get; set; } = new();
 
-    public bool Configured => string.IsNullOrWhiteSpace(FromPhoneNumber) is false &&
-                              string.IsNullOrWhiteSpace(TwilioAccountSid) is false &&
-                              string.IsNullOrWhiteSpace(TwilioAutoToken) is false;
+    public bool Configured => Providers.Twilio is { } twilio &&
+                              string.IsNullOrWhiteSpace(twilio.AccountSid) is false &&
+                              string.IsNullOrWhiteSpace(twilio.AuthToken) is false &&
+                              string.IsNullOrWhiteSpace(twilio.From) is false;
+}
+
+public partial class SmsProvidersOptions
+{
+    public TwilioProviderConfig? Twilio { get; set; }
 }
 
 public class HangfireOptions

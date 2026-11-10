@@ -38,7 +38,7 @@ using Microsoft.Identity.Web;
 using Microsoft.AspNetCore.OData;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
-using Twilio;
+using SmsBridge.DependencyInjection;
 using Ganss.Xss;
 using Fido2NetLib;
 using PhoneNumbers;
@@ -125,9 +125,10 @@ public static partial class Program
         services.AddScoped<ProductEmbeddingService>();
         //#endif
         //#endif
+        var smsBridge = services.AddSmsBridge(configuration.GetSection("Sms"));
         if (appSettings.Sms?.Configured is true)
         {
-            TwilioClient.Init(appSettings.Sms.TwilioAccountSid, appSettings.Sms.TwilioAutoToken);
+            smsBridge.UseTwilio("Twilio", twilio => configuration.GetSection("Sms:Providers:Twilio").Bind(twilio));
         }
 
         services.AddSingleton(_ => PhoneNumberUtil.GetInstance());

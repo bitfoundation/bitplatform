@@ -339,12 +339,10 @@ public virtual async Task SendSms(string messageText, string phoneNumber)
         LogSendSms(phoneLogger, messageText, phoneNumber);
     }
 
-    if (appSettings.Sms?.Configured is false) return;
-
-    var from = appSettings.Sms!.FromPhoneNumber!;
+    if (appSettings.Sms?.Configured is not true) return;
 
     // Enqueue the job - this returns immediately
-    backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, from, messageText));
+    backgroundJobClient.Enqueue<PhoneServiceJobsRunner>(x => x.SendSms(phoneNumber, messageText));
 }
 ```
 
@@ -360,25 +358,20 @@ In [`PhoneServiceJobsRunner.cs`](/src/Server/Boilerplate.Server.Api/Infrastructu
 ```csharp
 public partial class PhoneServiceJobsRunner
 {
+    [AutoInject] private ISmsClient smsClient = default!;
     [AutoInject] private ServerExceptionHandler serverExceptionHandler = default!;
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = [30])]
-    public async Task SendSms(string phoneNumber, string from, string messageText,
+    public async Task SendSms(string phoneNumber, string messageText,
         PerformContext context = null!,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var messageOptions = new CreateMessageOptions(new(phoneNumber))
-            {
-                From = new(from),
-                Body = messageText
-            };
+            var result = await smsClient.SendAsync(new() { To = phoneNumber, Body = messageText }, cancellationToken);
 
-            var smsMessage = MessageResource.Create(messageOptions);
-
-            if (smsMessage.ErrorCode is not null)
-                throw new InvalidOperationException(smsMessage.ErrorMessage).WithData(new() { { "Code", smsMessage.ErrorCode } });
+            if (result.Success is false)
+                throw new InvalidOperationException(result.ErrorMessage).WithData(new() { { "Provider", result.Provider }, { "Code", result.ErrorCode } });
         }
         catch (Exception exp)
         {

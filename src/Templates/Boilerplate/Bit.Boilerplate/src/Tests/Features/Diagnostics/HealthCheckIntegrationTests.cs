@@ -165,7 +165,7 @@ public partial class HealthCheckIntegrationTests
     /// <summary>
     /// A remote dependency must neither hang <c>/health</c> nor make it answer 503, so every check outside
     /// <c>localChecks</c> needs a timeout, reports Degraded and stays out of <c>/alive</c>. The optional ones are
-    /// configured below, as development only registers them then (Sms aside: it would initialize the static Twilio client).
+    /// configured below, as development only registers them then.
     /// </summary>
     [TestMethod]
     public async Task ExternalHealthChecks_Should_BeBoundedAndNonFatal()
@@ -178,6 +178,9 @@ public partial class HealthCheckIntegrationTests
             configuration["Authentication:Keycloak:Realm"] = "dev";
             configuration["Authentication:AzureAD:ClientId"] = "not-a-real-client";
             configuration["Authentication:Apple:ClientId"] = "not-a-real-client";
+            configuration["Sms:Providers:Twilio:AccountSid"] = "not-a-real-sid";
+            configuration["Sms:Providers:Twilio:AuthToken"] = "not-a-real-token";
+            configuration["Sms:Providers:Twilio:From"] = "+15005550006";
             //#if (cloudflare == true)
             configuration["Cloudflare:ApiToken"] = "not-a-real-token";
             configuration["Cloudflare:ZoneIds:0"] = "not-a-real-zone";
@@ -203,7 +206,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "smtp", "keycloakIdentity", "entraId", "appleSignIn",
+            "userProfileImages", "smtp", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif
@@ -328,7 +331,7 @@ public partial class HealthCheckIntegrationTests
         // Blank, whatever the machine's environment variables hold.
         foreach (var key in new[]
         {
-            "Sms:TwilioAccountSid", "KEYCLOAK_HTTP", "Authentication:Keycloak:KeycloakUrl", "Authentication:AzureAD:ClientId",
+            "Sms:Providers:Twilio:AccountSid", "KEYCLOAK_HTTP", "Authentication:Keycloak:KeycloakUrl", "Authentication:AzureAD:ClientId",
             "Authentication:Google:ClientId", "Authentication:GitHub:ClientId", "Authentication:Twitter:ConsumerKey", "Authentication:Facebook:AppId",
             "Authentication:Apple:ClientId", "Cloudflare:ApiToken", "Azure:SignalR:ConnectionString", "AdsPushFirebase:PrivateKey",
             "AdsPushAPNS:P8PrivateKey", "AI:OpenAI:ChatApiKey", "AI:OpenAI:EmbeddingApiKey", "AI:HuggingFace:EmbeddingEndpoint",
@@ -367,13 +370,15 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
-    /// A failing check must report its registration's FailureStatus. <c>TwilioClient.Init</c> is never called in
-    /// tests, so the SDK throws without a network request.
+    /// A failing check must report its registration's FailureStatus. Sms is not configured here, so the check throws
+    /// without a network request.
     /// </summary>
     [TestMethod]
     public async Task TwilioHealthCheck_Should_ReportTheRegisteredFailureStatus()
     {
-        var healthCheck = new TwilioHealthCheck();
+        await using var serviceProvider = new ServiceCollection().AddHttpClient().AddSingleton(new ServerApiSettings()).BuildServiceProvider();
+
+        var healthCheck = ActivatorUtilities.CreateInstance<TwilioHealthCheck>(serviceProvider);
 
         var registration = new HealthCheckRegistration("sms", healthCheck, failureStatus: HealthStatus.Degraded, tags: null);
 

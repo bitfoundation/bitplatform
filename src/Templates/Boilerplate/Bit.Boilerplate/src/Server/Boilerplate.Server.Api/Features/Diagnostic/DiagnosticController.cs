@@ -1,7 +1,7 @@
 //+:cnd:noEmit
 using FluentEmail.Core;
 using System.Runtime.CompilerServices;
-using Twilio.Rest.Api.V2010.Account;
+using SmsBridge.Abstractions;
 using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Shared.Infrastructure.Services;
@@ -28,6 +28,7 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
     [AutoInject] private IHostEnvironment HostEnvironment = default!;
     [AutoInject] private UserManager<User> userManager = default!;
     [AutoInject] private IFluentEmail fluentEmail = default!;
+    [AutoInject] private ISmsClient smsClient = default!;
     [AutoInject] private IStringLocalizer<EmailStrings> emailLocalizer = default!;
 
     // The report is reachable anonymously (7 header taps / Ctrl+Shift+X / the /diagnostic page), and an anonymous
@@ -234,14 +235,14 @@ public partial class DiagnosticController : AppControllerBase, IDiagnosticContro
         if (AppSettings.Sms?.Configured is not true)
             throw new BadRequestException("Sms is not configured.");
 
-        var message = await MessageResource.CreateAsync(new CreateMessageOptions(new(user.PhoneNumber))
+        var result = await smsClient.SendAsync(new()
         {
-            From = new(AppSettings.Sms.FromPhoneNumber),
+            To = user.PhoneNumber,
             Body = $"This is a test message. {TimeProvider.GetUtcNow():HH:mm:ss} UTC"
-        });
+        }, cancellationToken);
 
-        if (message.ErrorCode is not null)
-            throw new InvalidOperationException(message.ErrorMessage);
+        if (result.Success is false)
+            throw new InvalidOperationException(result.ErrorMessage);
 
         return true;
     }
