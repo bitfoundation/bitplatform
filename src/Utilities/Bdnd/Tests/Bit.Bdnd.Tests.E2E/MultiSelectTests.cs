@@ -6,7 +6,8 @@ namespace Bit.Bdnd.Tests.E2E;
 
 /// <summary>
 /// Dragging several items: a drag of a ticked card carries the whole selection - every ticked card shows as dragged
-/// and the archive takes them all - while an unticked card drags alone; the keyboard drags the selection too.
+/// and the archive takes them all - while an unticked card drags alone; the keyboard drags the selection too. Dropped
+/// above or below a card, the selection moves there together, and Undo takes the move back.
 /// </summary>
 [TestClass]
 public sealed class MultiSelectTests : BdndTest
@@ -19,6 +20,10 @@ public sealed class MultiSelectTests : BdndTest
     private static ILocator Archive(IPage page) => page.Locator(".multi-archive");
 
     private static ILocator Archived(IPage page) => page.Locator(".multi-archived");
+
+    private static ILocator Row(IPage page, string name) => page.Locator(".multi-row", new() { Has = Card(page, name) });
+
+    private static ILocator Cards(IPage page) => page.Locator(".multi-card:not([data-bit-bdnd-preview])");
 
     [TestMethod]
     public async Task A_drag_of_a_ticked_card_carries_the_whole_selection()
@@ -68,9 +73,10 @@ public sealed class MultiSelectTests : BdndTest
         await Card(page, "Charlie").FocusAsync();
 
         await page.Keyboard.PressAsync("Space");
-        await Expect(live).ToContainTextAsync("Picked up Charlie.");
-        await page.Keyboard.PressAsync("ArrowDown");
-        await Expect(live).ToHaveTextAsync("Charlie is over the archive.");
+        await Expect(live).ToContainTextAsync("Picked up Charlie and 1 other item.");
+        // the archive is the last place: the rows before it are places among the cards
+        await page.Keyboard.PressAsync("End");
+        await Expect(live).ToHaveTextAsync("2 items are over the archive.");
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(Archived(page)).ToHaveTextAsync("Archived: Alpha, Charlie");
@@ -94,5 +100,47 @@ public sealed class MultiSelectTests : BdndTest
         await page.GetByRole(AriaRole.Button, new() { Name = "Put them back" }).ClickAsync();
         await Expect(Archived(page)).ToHaveTextAsync("Archived: nothing yet");
         await Expect(page.Locator(".multi-card:not([data-bit-bdnd-preview])")).ToHaveCountAsync(6);
+    }
+
+    [TestMethod]
+    public async Task A_selection_dropped_above_a_card_moves_there_in_its_order_and_undo_takes_it_back()
+    {
+        var page = await OpenAsync("/sortable/multi-select");
+        await Check(page, "Bravo").CheckAsync();
+        await Check(page, "Delta").CheckAsync();
+        var alpha = await BoxAsync(Card(page, "Alpha"));
+
+        await StartDragAsync(page, Card(page, "Delta"));
+        await DragToAsync(page, new Point(alpha.Centre.X, alpha.Y + alpha.Height * 0.2),
+            () => Expect(Row(page, "Alpha")).ToHaveAttributeAsync("data-bit-bdnd-edge", "top"));
+
+        await Expect(Cards(page)).ToHaveTextAsync(["Bravo", "Delta", "Alpha", "Charlie", "Echo", "Foxtrot"]);
+        await Expect(Archived(page)).ToHaveTextAsync("Archived: nothing yet");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
+        await Expect(Cards(page)).ToHaveTextAsync(["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"]);
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Undo" })).ToBeDisabledAsync();
+    }
+
+    [TestMethod]
+    public async Task The_keyboard_moves_the_selection_among_the_cards()
+    {
+        var page = await OpenAsync("/sortable/multi-select");
+        var live = page.Locator("#bit-bdnd-live-region");
+        await Check(page, "Alpha").CheckAsync();
+        await Check(page, "Charlie").CheckAsync();
+        await WaitForBdndAsync(page.MainFrame);
+        await Card(page, "Charlie").FocusAsync();
+
+        await page.Keyboard.PressAsync("Space");
+        await Expect(live).ToContainTextAsync("Picked up Charlie and 1 other item.");
+        await page.Keyboard.PressAsync("End");
+        await Expect(live).ToHaveTextAsync("2 items are over the archive.");
+        // back from the archive: the place after the last card
+        await page.Keyboard.PressAsync("ArrowUp");
+        await Expect(live).ToContainTextAsync("after Foxtrot");
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(Cards(page)).ToHaveTextAsync(["Bravo", "Delta", "Echo", "Foxtrot", "Alpha", "Charlie"]);
     }
 }

@@ -13,21 +13,29 @@
         the pointer - "3 cards" - in place of the browser's picture of the one card that was grabbed. The keyboard
         does the same: Space on a ticked card picks the selection up (the layer asks
         <code>Monitor.GetDragInput()</code> and draws nothing for a keyboard drag, which has no pointer to follow).
+        Every row is a drop target with <code>Edges</code> too: dropped above or below a card, the selection moves
+        there together, in its order - <code>BdndList.PlanMove</code> works the move out, and <em>Undo</em> takes it
+        back with <code>Revert</code>.
     </p>
 </div>
 
 <div class="bb-demo">
     <div class="bb-demo-bar">
         <span class="bb-demo-label">@_selected.Count selected · @_archived.Count archived</span>
+        <button type="button" class="btn btn-secondary" disabled="@(_moves.Count == 0)" @onclick="Undo">Undo</button>
         <button type="button" class="btn btn-secondary" disabled="@(_archived.Count == 0)" @onclick="Restore">Put them back</button>
     </div>
 
-    <BdndProvider>
+    <BdndProvider Announcements="Texts">
         <div class="multi-board">
             <ul class="multi-list" aria-label="Cards">
-                @foreach (var card in _cards)
+                @for (var i = 0; i < _cards.Count; i++)
                 {
-                    <li class="multi-row" @key="card">
+                    var card = _cards[i];
+                    var index = i;
+                    <BdndDropTarget TItem="IReadOnlyList<string>" Tag="li" Accept="cards" Edges="BdndEdges.Vertical" Label="@card"
+                                    OnDrop="@(e => Move(e.Item!, BdndList.InsertionIndex(index, e.ClosestEdge)))"
+                                    class="multi-row" @key="card">
                         <input type="checkbox" class="multi-check" checked="@_selected.Contains(card)"
                                aria-label="@($"Select {card}")" @onchange="() => Toggle(card)" />
                         <BdndDraggable TItem="IReadOnlyList<string>" Type="cards" Label="@card" UseCustomDragLayer="true"
@@ -36,7 +44,7 @@
                                        class="@($"multi-card {(_selected.Contains(card) ? "multi-card--selected" : "")}")" Context="drag">
                             @card
                         </BdndDraggable>
-                    </li>
+                    </BdndDropTarget>
                 }
             </ul>
 
@@ -68,6 +76,23 @@
     private readonly List<string> _cards = [.. All];
     private readonly HashSet<string> _selected = [];
     private readonly List<string> _archived = [];
+    private readonly Stack<BdndListMove<string>> _moves = new();
+
+    // a drag carries the selection as a list: the announcements count its cards ("3 items are over the archive")
+    private static readonly BdndAnnouncements Texts = new() { CountItems = BdndAnnouncements.CountElements };
+
+    // The cards dropped above or below a row go there together, in the order they have in the list.
+    private void Move(IReadOnlyList<string> cards, int insertionIndex)
+    {
+        var indexes = cards.Select(card => _cards.IndexOf(card)).Where(i => i >= 0);
+        // null when the cards would stay where they are
+        if (BdndList.PlanMove(_cards, indexes, _cards, insertionIndex) is { } move && move.Apply()) _moves.Push(move);
+    }
+
+    private void Undo()
+    {
+        if (_moves.TryPop(out var move)) move.Revert();
+    }
 
     private void Toggle(string card)
     {
@@ -79,6 +104,8 @@
         foreach (var card in cards) _cards.Remove(card);
         _selected.ExceptWith(cards);
         _archived.AddRange(cards);
+        // the moves made before name places in the list as it was: archiving is where the history starts again
+        _moves.Clear();
     }
 
     private void Restore()
@@ -86,6 +113,7 @@
         _cards.Clear();
         _cards.AddRange(All);
         _archived.Clear();
+        _moves.Clear();
     }
 
     // the invariant culture: a decimal comma would be invalid CSS

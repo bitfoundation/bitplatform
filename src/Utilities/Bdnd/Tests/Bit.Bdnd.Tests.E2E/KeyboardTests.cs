@@ -256,4 +256,39 @@ public sealed class KeyboardTests : BdndTest
         await Expect(page.Locator(".kanban-column[data-bit-bdnd-can-drop]")).ToHaveCountAsync(2);
         await page.Keyboard.PressAsync("Escape");
     }
+
+    [TestMethod]
+    public async Task Keys_the_provider_binds_move_the_drag_and_the_instructions_name_them()
+    {
+        var page = await OpenAsync("/accessibility/keyboard");
+        var doing = page.Locator(".kanban-column", new() { Has = page.Locator("h2", new() { HasText = "Doing" }) });
+        var card = Card(page, "Write the docs");
+        // the letters do nothing until they are bound
+        await FocusAsync(page, card);
+        await page.Keyboard.PressAsync("Space");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Picked up Write the docs. 2 drop targets are available.");
+        await page.Keyboard.PressAsync("l");
+        await page.Keyboard.PressAsync("ArrowRight");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Doing.");
+        await page.Keyboard.PressAsync("Escape");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Dragging Write the docs was cancelled.");
+
+        await page.GetByLabel("Letter keys H J K L").CheckAsync();
+        await Expect(card).ToHaveAccessibleDescriptionAsync(new System.Text.RegularExpressions.Regex("use Up Arrow or K for up, Down Arrow or J for down, Left Arrow or H for left and Right Arrow or L for right to move"));
+        await FocusAsync(page, card);
+        await page.Keyboard.PressAsync("Space");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Picked up Write the docs. 2 drop targets are available.");
+        await page.Keyboard.PressAsync("l");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Doing.");
+        // a letter in the other case (Shift, or Caps Lock) is the same key
+        await page.Keyboard.PressAsync("Shift+L");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Done.");
+        // and on a layout that writes other letters, the key in the H key's place: a Russian keyboard's "р"
+        await page.EvaluateAsync("() => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'р', code: 'KeyH', bubbles: true, cancelable: true }))");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Doing.");
+        await Expect(doing).ToHaveAttributeAsync("data-bit-bdnd-over", "");
+        await page.Keyboard.PressAsync("Space");
+
+        await Expect(doing.Locator(".kanban-card", new() { HasText = "Write the docs" })).ToHaveCountAsync(1);
+    }
 }

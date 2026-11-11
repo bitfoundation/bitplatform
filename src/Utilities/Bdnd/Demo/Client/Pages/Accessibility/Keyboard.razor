@@ -11,7 +11,9 @@
         <kbd>Escape</kbd> to cancel. A live region tells screen readers what happens, using each source's and target's
         <code>Label</code>; the panel under the board shows what it said. The arrow buttons on each card are the
         single-pointer alternative WCAG 2.5.7 asks for: the same move, without dragging. The columns are styled from
-        the <code>data-bit-bdnd-*</code> attributes alone.
+        the <code>data-bit-bdnd-*</code> attributes alone. With letter keys on, the provider's
+        <code>KeyBindings</code> add <kbd>H</kbd>, <kbd>J</kbd>, <kbd>K</kbd> and <kbd>L</kbd> to the arrows, and the
+        instructions screen readers read name them - their placeholders are filled in from the keys bound.
     </p>
 </div>
 
@@ -30,9 +32,13 @@
         <label class="bb-check">
             <input type="checkbox" @bind="_doneLocked" /> Lock Done (<code>Disabled</code>)
         </label>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_letterKeys" /> Letter keys H J K L (<code>KeyBindings</code>)
+        </label>
     </div>
 
-    <BdndProvider Announcements="@(_german ? _germanTexts : _englishTexts)" AllowKeyboard="_allowKeyboard">
+    <BdndProvider Announcements="@(_german ? _germanTexts : _englishTexts)" AllowKeyboard="_allowKeyboard"
+                  KeyBindings="@(_letterKeys ? LetterKeys : BdndKeyBindings.Default)">
         <div class="kanban">
             @foreach (var column in Columns)
             {
@@ -116,17 +122,52 @@
     private bool _german;
     private bool _allowKeyboard = true;
     private bool _doneLocked;
+    private bool _letterKeys;
 
-    // The texts in German - every one replaceable, the rest kept from BdndAnnouncements.Default.
+    // The arrows, and the letters vi and many keyboard-driven apps move with: H left, J down, K up, L right.
+    private static readonly BdndKeyBindings LetterKeys = new()
+    {
+        Left = ["ArrowLeft", "h"],
+        Down = ["ArrowDown", "j"],
+        Up = ["ArrowUp", "k"],
+        Right = ["ArrowRight", "l"],
+    };
+
+    // The texts in German - every one replaceable, the rest kept from BdndAnnouncements.Default. The instructions name
+    // the keys through placeholders, which NameKeys fills in from the provider's KeyBindings.
     private static readonly BdndAnnouncements German = new()
     {
-        Instructions = "Leertaste oder Eingabe zum Aufnehmen; Pfeiltasten zum Bewegen, Pos1 und Ende zum ersten oder letzten Ablageziel; Leertaste oder Eingabe zum Ablegen; Escape zum Abbrechen.",
+        Instructions = "{PickUp} zum Aufnehmen; {Move} zum Bewegen, {First} und {Last} zum ersten oder letzten Ablageziel; {Drop} zum Ablegen; {Cancel} zum Abbrechen.",
+        NameKeys = GermanKeys,
         DragStarted = a => $"{a.SourceLabel} aufgenommen. {a.TargetCount} Ablageziele verfügbar.",
         DraggedOver = a => a.TargetLabel is null ? $"{a.SourceLabel} ist über keinem Ablageziel." : $"{a.SourceLabel} ist über {a.TargetLabel}.",
         NoFurtherTarget = _ => "In dieser Richtung gibt es kein weiteres Ablageziel.",
         Dropped = a => $"{a.SourceLabel} auf {a.TargetLabel} abgelegt.",
         Cancelled = a => $"Ziehen von {a.SourceLabel} abgebrochen.",
     };
+
+    private static string GermanKeys(BdndKeyBindings keys, string placeholder) => placeholder switch
+    {
+        "PickUp" => Names(keys.PickUp),
+        "Drop" => Names(keys.Drop),
+        "Cancel" => Names(keys.Cancel),
+        "First" => Names(keys.First),
+        "Last" => Names(keys.Last),
+        "Move" when keys.Up.Count == 1 && keys.Down.Count == 1 && keys.Left.Count == 1 && keys.Right.Count == 1 => "Pfeiltasten",
+        "Move" => $"Pfeiltasten oder {Names(keys.Left.Skip(1))}, {Names(keys.Down.Skip(1))}, {Names(keys.Up.Skip(1))} und {Names(keys.Right.Skip(1))}",
+        _ => Names(placeholder switch { "Up" => keys.Up, "Down" => keys.Down, "Left" => keys.Left, _ => keys.Right }),
+    };
+
+    private static string Names(IEnumerable<string> keys) => string.Join(" oder ", keys.Select(key => key switch
+    {
+        " " => "Leertaste",
+        "Enter" => "Eingabe",
+        "Home" => "Pos1",
+        "End" => "Ende",
+        "Esc" => "Escape",
+        { Length: 1 } => key.ToUpperInvariant(),
+        _ => key,
+    }).Distinct());
 
     private readonly BdndAnnouncements _englishTexts;
     private readonly BdndAnnouncements _germanTexts;
@@ -142,6 +183,8 @@
     private BdndAnnouncements Transcribed(BdndAnnouncements texts) => new()
     {
         Instructions = texts.Instructions,
+        NameKeys = texts.NameKeys,
+        CountItems = texts.CountItems,
         UnnamedSource = texts.UnnamedSource,
         UnnamedTarget = texts.UnnamedTarget,
         DragStarted = a => Heard(texts.DragStarted(a)),
