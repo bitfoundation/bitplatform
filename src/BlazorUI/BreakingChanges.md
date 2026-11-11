@@ -7,12 +7,23 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
 
-Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and an interactive render now leaves its content out
-(the header, the search box, the `BitNav` and the footer) until the drawer first opens. It keeps the content from then on.
-A prerender and a static SSR page still render the content, so the links stay in the HTML. On a wide screen the panel is
-a column and renders as before. **An app that reads something of the nav before the drawer has been opened**, such as
-the `SelectedItem` the automatic `NavMode` takes from the URL, or a template's side effects, sets `NoLazyDrawer` (or
-`BitNavPanelParams.NoLazyDrawer`) to render the content at once, as before.
+Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and the content of a drawer that has never been opened
+(the header, the search box, the `BitNav` and the footer) is now left out until it first opens. It keeps the content from
+then on. Leaving it out takes knowing the shape of the panel before its first render, which only a WebAssembly app can ask
+the browser synchronously (from the start with the bundled scripts, once the media query script is loaded with the lazy
+ones): on Server, Hybrid and the first page of a lazy-scripts app the content is rendered as before. A prerender and a
+static SSR page still render the content, so the links stay in the HTML. On a wide screen the panel is a column and
+renders as before.
+
+What reads the nav still finds it: an app listening to the selection the automatic `NavMode` takes from the URL
+(`SelectedItemChanged`, `@bind-SelectedItem`, `OnSelectItem`) gets the content at once, and the methods that act on the
+nav (`SelectItem`, `ExpandItem`, `CollapseItem`, `ToggleItem`, `ExpandAll`, `CollapseAll`, `FocusItem`,
+`IsItemExpanded`) render it as they are called. **An app that reads something else of the nav before the drawer has been
+opened**, such as a template's side effects, sets `NoLazyDrawer` (or `BitNavPanelParams.NoLazyDrawer`) to `true` to
+render the content at once, as before.
+
+`BitMediaQuery` asks the browser the same way before its own first render: in a WebAssembly app whose script is in the
+page it renders the matching content right away, and `DefaultMatched` only applies where the browser cannot answer yet.
 
 ### Seekable PDF sources defer forms and tagged structure ([#13702](https://github.com/bitfoundation/bitplatform/issues/13702))
 
