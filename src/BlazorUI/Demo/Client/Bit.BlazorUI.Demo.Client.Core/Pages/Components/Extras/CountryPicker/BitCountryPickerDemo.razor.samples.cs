@@ -109,8 +109,8 @@ private static string? GetFlagUrl(BitCountry country) => $""https://flagcdn.com/
     <BitCountryPicker Label=""Nationality""
                       Required
                       Placeholder=""Select a country""
+                      ShowValidationMessage
                       @bind-Value=""validationModel.Nationality"" />
-    <ValidationMessage For=""() => validationModel.Nationality"" />
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
