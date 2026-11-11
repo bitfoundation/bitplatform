@@ -107,21 +107,22 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
+**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 to 11.0.0 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, which a .NET 10
-Boilerplate project uses. For .NET 11, MAUI can't stay behind: a MAUI built for an
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 and 11.0.10 fixed it, and the app icons
+of the Boilerplate and the BlazorUI demo have a drop shadow (their `<filter>`), so MAUI never goes below those.
+Before a major ships, MAUI can't stay behind: a MAUI built for an
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
 follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
 can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
-too. The SDK waits for MAUI the same way: on the day a major ships, MAUI and the first workload set of the new band
+too. A service release of a shipped major doesn't wait for a set that names it when its `Microsoft.Maui.Core`
+references the same `Java.Interop` and `Microsoft.iOS` versions as the one before it. The SDK waits for MAUI the same way: on the day a major ships, MAUI and the first workload set of the new band
 can come hours or days after the SDK, and until that workload set is on NuGet a GA SDK's `dotnet workload restore`
 installs the stale preview workloads bundled in the SDK. The set itself can appear before the packs it names, so
 check that each manifest and pack it points at downloads too. A feature band's patch SDK waits for its own workload
 set the same way: SDK 10.0.404 without one left `wasm-tools` unusable (NETSDK1147). So the SDK, the major's `.0` packages and the `global.json` files move together once it is
-out. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
-`<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
+out.
 
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
 the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
