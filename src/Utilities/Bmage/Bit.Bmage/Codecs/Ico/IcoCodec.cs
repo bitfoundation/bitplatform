@@ -240,8 +240,8 @@ public sealed class IcoEncoder : IImageEncoder
             if (image.Width > MaxSize || image.Height > MaxSize)
                 throw new ArgumentException($"An icon image is at most {MaxSize} pixels either way, not {image.Width} x {image.Height}: resize it first, or use CreateFavicon.", nameof(images));
         }
-        // Icons carry no metadata, and their PNGs need none.
-        var png = (options ?? new ImageExportOptions()) with { Format = ImageFormat.Png, Metadata = MetadataPolicy.Remove, MaxFileSize = null };
+        // Icons carry no metadata, and their PNGs need none; nor a palette, which would lose the exact colours.
+        var png = (options ?? new ImageExportOptions()) with { Format = ImageFormat.Png, Metadata = MetadataPolicy.Remove, MaxFileSize = null, MaxColors = null };
         var bodies = new byte[images.Count][];
         for (var i = 0; i < images.Count; i++)
         {

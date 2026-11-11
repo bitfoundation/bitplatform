@@ -159,6 +159,21 @@ public sealed class GifEncoderTests
     }
 
     [TestMethod]
+    public void AnOpaquePixelFarFromEveryOpaqueEntryStaysOpaque()
+    {
+        // Transparency takes one of the two entries and the light pixels the other: black is nearer transparent black
+        // than that light grey once alpha counts, but a GIF pixel that was opaque must not vanish.
+        using var image = ImageBuffer.Create(16, 16, Rgba32.White);
+        for (var x = 0; x < 16; x++) image[x, 0] = Rgba32.Transparent;
+        for (var x = 0; x < 16; x++) image[x, 1] = new Rgba32(235, 235, 235);
+        image[8, 8] = Rgba32.Black;
+        var options = new ImageExportOptions { Format = ImageFormat.Gif, MaxColors = 2, Dither = false };
+        using var decoded = GifDecoder.Decode(GifEncoder.Encode(image, options).Data);
+        Assert.AreEqual(255, decoded[8, 8].A, "The black pixel is still opaque.");
+        Assert.AreEqual(0, decoded[3, 0].A, "The transparent row is still transparent.");
+    }
+
+    [TestMethod]
     public void ARepetitiveImageCompressesWell()
     {
         using var stripes = ImageBuffer.Create(400, 300);

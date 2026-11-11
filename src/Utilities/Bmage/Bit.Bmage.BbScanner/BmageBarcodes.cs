@@ -53,11 +53,15 @@ public sealed record BarcodeReadOptions
 /// <summary>What <see cref="BmageBarcodes.Read"/> found, and which preparation found it.</summary>
 /// <param name="Barcodes">The codes; empty when none was found.</param>
 /// <param name="Preprocessing">The preparation that found them, or null when none did.</param>
-/// <param name="Scale">
-/// How much larger than the image given the image the codes were found in was: above 1 after
+/// <param name="ScaleX">
+/// How much wider than the image given the image the codes were found in was: above 1 after
 /// <see cref="BarcodePreprocessing.Enlarge"/>, else 1. <see cref="CornersOf"/> maps a code's corners back.
 /// </param>
-public sealed record BarcodeReadResult(IReadOnlyList<BbBarcodeResult> Barcodes, BarcodePreprocessing? Preprocessing, double Scale = 1)
+/// <param name="ScaleY">
+/// How much taller than the image given the image the codes were found in was. Rounding each side to whole pixels can
+/// leave it a little different from <paramref name="ScaleX"/>.
+/// </param>
+public sealed record BarcodeReadResult(IReadOnlyList<BbBarcodeResult> Barcodes, BarcodePreprocessing? Preprocessing, double ScaleX = 1, double ScaleY = 1)
 {
     /// <summary>True when at least one code was found.</summary>
     public bool Found => Barcodes.Count > 0;
@@ -66,7 +70,7 @@ public sealed record BarcodeReadResult(IReadOnlyList<BbBarcodeResult> Barcodes, 
     public IReadOnlyList<BbScanPoint> CornersOf(BbBarcodeResult barcode)
     {
         ArgumentNullException.ThrowIfNull(barcode);
-        return Scale == 1 ? barcode.Corners : [.. barcode.Corners.Select(p => new BbScanPoint((float)(p.X / Scale), (float)(p.Y / Scale)))];
+        return ScaleX == 1 && ScaleY == 1 ? barcode.Corners : [.. barcode.Corners.Select(p => new BbScanPoint((float)(p.X / ScaleX), (float)(p.Y / ScaleY)))];
     }
 }
 
@@ -133,16 +137,16 @@ public static class BmageBarcodes
                 continue;
             }
             if (Prepare(image, step, options) is not { } prepared) continue;
-            var (pipeline, scale) = prepared;
-            using var processed = pipeline.Execute(image, new PipelineExecutionOptions { CancellationToken = cancellationToken });
+            using var processed = prepared.Execute(image, new PipelineExecutionOptions { CancellationToken = cancellationToken });
             var results = decoder.DecodeAll(processed.Bytes, processed.Width, processed.Height, BbPixelFormat.Rgba32, options.MaxSymbols, suppressDuplicates: false);
-            if (results.Count > 0) return new BarcodeReadResult(results, step, scale);
+            // Each side's own scale, from the sizes themselves: rounding them to whole pixels can make the two differ.
+            if (results.Count > 0) return new BarcodeReadResult(results, step, processed.Width / (double)image.Width, processed.Height / (double)image.Height);
         }
         return new BarcodeReadResult([], null);
     }
 
-    /// <summary>The pipeline for a step and the scale it leaves the image at, or null when the step does not apply.</summary>
-    private static (ImagePipeline Pipeline, double Scale)? Prepare(ImageBuffer image, BarcodePreprocessing step, BarcodeReadOptions options)
+    /// <summary>The pipeline for a step, or null when the step does not apply.</summary>
+    private static ImagePipeline? Prepare(ImageBuffer image, BarcodePreprocessing step, BarcodeReadOptions options)
     {
         var longer = Math.Max(image.Width, image.Height);
         switch (step)
@@ -153,10 +157,10 @@ public static class BmageBarcodes
                 var scale = options.MinimumSize / (double)longer;
                 var width = (int)Math.Round(image.Width * scale);
                 var height = (int)Math.Round(image.Height * scale);
-                return (ImagePipeline.Create().Add(new ResizeOperation(width, height, ResizeMode.Stretch, ResamplingFilter.Bicubic)), width / (double)image.Width);
+                return ImagePipeline.Create().Add(new ResizeOperation(width, height, ResizeMode.Stretch, ResamplingFilter.Bicubic));
             }
             case BarcodePreprocessing.Sharpen:
-                return (ImagePipeline.Create().Sharpen(1.5f, Math.Max(1f, longer / 800f)), 1);
+                return ImagePipeline.Create().Sharpen(1.5f, Math.Max(1f, longer / 800f));
             default:
                 throw new ArgumentOutOfRangeException(nameof(step), step, "Unknown preprocessing.");
         }

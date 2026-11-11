@@ -190,7 +190,9 @@ method is the simpler local mean less an offset. Make the radius about the heigh
 depend on the radius.
 
 `RadialBlur` streaks towards the centre (`Zoom`) or around it (`Spin`), more the further a pixel is from it. Its centre is a
-fraction of the width and height and its strength a fraction of the distance, so it replays the same on a proxy.
+fraction of the width and height. Its strength is a fraction too: for `Zoom`, of the distance from each pixel to the
+centre (at most 95% of it); for `Spin`, of a 45 degree arc. Neither depends on the resolution, so it replays the same on a
+proxy.
 
 `ColorLut` maps every colour through a three-dimensional lookup table, by tetrahedral interpolation. Read one from an
 Adobe or DaVinci Resolve `.cube` file with `ColorLookupTable.ParseCube`, write one with `ToCube`, or build one from any

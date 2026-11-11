@@ -36,11 +36,29 @@ public class ScanAndCropperTests : DemoTest
         StringAssert.Contains(size, "KB");
         Assert.IsLessThan(120, double.Parse(size.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture), size);
 
-        // Turning the clean-up off shows the photo in grey, and on again the scan comes back.
+        // Turning the clean-up off shows the photo in grey, a PNG of many shades rather than two, so far larger; on
+        // again, the same two-colour scan comes back.
+        const string SizeOnceIdle = """
+            (previous) => {
+                const size = document.querySelector('[data-testid=scan-size]')?.textContent.trim();
+                return !document.querySelector('.working') && size && size !== previous;
+            }
+            """;
+        var preview = page.Locator("img.scan-preview").First;
+        var scanSource = await preview.GetAttributeAsync("src");
         await page.Locator("#clean").UncheckAsync();
-        await page.WaitForFunctionAsync("() => !document.querySelector('.working')", null, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        await page.WaitForFunctionAsync(SizeOnceIdle, size, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        var grey = await page.Locator("[data-testid=scan-size]").InnerTextAsync();
+        Assert.IsTrue(grey.Contains("MB", StringComparison.Ordinal)
+            || double.Parse(grey.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture) > double.Parse(size.Split(' ')[0], System.Globalization.CultureInfo.InvariantCulture),
+            $"The grey photo ({grey}) is larger than the two-colour scan ({size}).");
+        // The preview encodes its own copy after the run, so its new picture can arrive a moment later.
+        await page.WaitForFunctionAsync("(previous) => document.querySelector('img.scan-preview')?.getAttribute('src') !== previous",
+            scanSource, new PageWaitForFunctionOptions { Timeout = 60_000 });
+
         await page.Locator("#clean").CheckAsync();
-        await page.WaitForFunctionAsync("() => !document.querySelector('.working')", null, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        await page.WaitForFunctionAsync(SizeOnceIdle, grey, new PageWaitForFunctionOptions { Timeout = 60_000 });
+        Assert.AreEqual(size, await page.Locator("[data-testid=scan-size]").InnerTextAsync(), "The scan is the same as before.");
         await AssertCleanAsync(page, errors);
     }
 

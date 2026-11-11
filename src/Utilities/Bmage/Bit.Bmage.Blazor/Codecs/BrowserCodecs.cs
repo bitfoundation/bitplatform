@@ -54,6 +54,9 @@ public sealed class BrowserImageDecoder : IImageDecoder
             ImageFormat.Gif => new Gif.GifDecoder().Identify(data),
             ImageFormat.WebP => new WebP.WebPDecoder().Identify(data),
             ImageFormat.Avif => new Avif.AvifDecoder().Identify(data),
+            // The largest image's size, which the pixel limit is checked against; an icon whose directory is invalid
+            // gets none, so a pixel limit refuses it before the browser sees it.
+            ImageFormat.Ico => new Ico.IcoDecoder().Identify(data),
             ImageFormat.Tiff => IdentifyTiff(data),
             _ => null,
         };

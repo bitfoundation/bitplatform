@@ -243,7 +243,7 @@ internal static class ColorQuantizer
                 }
                 var key = Key(p);
                 var index = cache[key];
-                if (index < 0) cache[key] = index = (short)Nearest(palette, p);
+                if (index < 0) cache[key] = index = (short)Nearest(palette, p, opaqueOnly: binaryAlpha);
                 line[x] = (byte)index;
                 if (!dither) continue;
 
@@ -269,13 +269,19 @@ internal static class ColorQuantizer
         errors[e + 2] += db * share;
     }
 
-    private static int Nearest(Rgba32[] palette, Rgba32 p)
+    /// <summary>
+    /// The entry nearest <paramref name="p"/>. With <paramref name="opaqueOnly"/>, as for GIF, whose pixels are opaque or
+    /// transparent, the transparent entry is passed over: alpha's weight would otherwise send an opaque colour far from
+    /// every opaque entry, such as black against a palette of white, to it.
+    /// </summary>
+    private static int Nearest(Rgba32[] palette, Rgba32 p, bool opaqueOnly)
     {
         int best = 0;
         var bestDistance = long.MaxValue;
         for (var i = 0; i < palette.Length; i++)
         {
             var c = palette[i];
+            if (opaqueOnly && c.A == 0) continue;
             int dr = p.R - c.R, dg = p.G - c.G, db = p.B - c.B, da = p.A - c.A;
             var distance = 3L * dr * dr + 4L * dg * dg + 2L * db * db + 4L * da * da;
             if (distance < bestDistance) (best, bestDistance) = (i, distance);

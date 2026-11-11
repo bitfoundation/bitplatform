@@ -1431,7 +1431,9 @@
     {
         _tool = tool;
         if (tool != EditorToolKind.Eyedropper) _pickingWhiteBalance = false;
-        if (tool != EditorToolKind.Crop) _cropRectangle = null;
+        // Panning to see more of the image keeps the frame for when the crop tool comes back; any other tool discards it,
+        // as applying and cancelling the crop do.
+        if (tool is not (EditorToolKind.Crop or EditorToolKind.Pan)) _cropRectangle = null;
         if (tool != EditorToolKind.Select) _selectedId = null;
         StateHasChanged();
     }

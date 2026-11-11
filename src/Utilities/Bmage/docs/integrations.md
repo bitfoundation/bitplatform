@@ -19,6 +19,7 @@ A Bmage image is straight RGBA, the layout BbScanner calls `BbPixelFormat.Rgba32
 they are, without a copy and without a canvas. It works in the browser and on a server alike.
 
 ```csharp
+using Bit.BbScanner;          // BbBarcodeResult
 using Bit.Bmage.BbScanner;
 
 using var photo = await loader.LoadAsync(file);
@@ -95,7 +96,15 @@ using var overlay = document.RenderOverlay(new Size(photo.Width * 2, photo.Heigh
 
 Each rendering reports, in `BinkRenderedImage`, what the managed rasteriser left out: text elements when no
 `BinkPngExportOptions.TextRasterizer` was given, and image elements that are not embedded PNG. Check `IsComplete`, or
-export text-heavy drawings through Bink's browser canvas instead.
+export text-heavy drawings through Bink's browser canvas instead. `Flatten` and `ToImageLayer` return only pixels, so
+they throw `InvalidOperationException` rather than hand back a drawing with something missing.
+
+`Flatten` renders the drawing onto the image itself, so a layer or a highlighter set to multiply or screen blends with
+the photo as it does in the editor. `RenderOverlay` and `ToImageLayer` draw on transparency, where those modes have
+nothing beneath them to blend with.
+
+The image's layer is known by a mark in its metadata (`BmageBink.ImageLayerMetadataKey`), not by its name, so renaming
+or unlocking it still leaves it out of an overlay, and a layer the user names "Image" is drawn like any other.
 
 What is returned is yours: dispose the images, and an `ImageLayer`'s image once no document uses the layer.
 

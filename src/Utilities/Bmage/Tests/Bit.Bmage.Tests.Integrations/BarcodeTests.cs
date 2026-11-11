@@ -59,7 +59,8 @@ public sealed class BarcodeTests
         var read = image.ReadBarcodes();
         Assert.IsTrue(read.Found);
         Assert.AreEqual(BarcodePreprocessing.None, read.Preprocessing);
-        Assert.AreEqual(1, read.Scale);
+        Assert.AreEqual(1, read.ScaleX);
+        Assert.AreEqual(1, read.ScaleY);
         Assert.AreSame(read.Barcodes[0].Corners, read.CornersOf(read.Barcodes[0]));
     }
 
@@ -84,7 +85,15 @@ public sealed class BarcodeTests
         var read = image.ReadBarcodes(new BarcodeReadOptions { Preprocessing = [BarcodePreprocessing.None, BarcodePreprocessing.Enlarge] });
         Assert.IsTrue(read.Found);
         Assert.AreEqual(BarcodePreprocessing.Enlarge, read.Preprocessing);
-        Assert.IsGreaterThan(4, read.Scale);
+        // Each side scales by what it was rounded to, so the two can differ a little.
+        var longer = Math.Max(image.Width, image.Height);
+        Assert.AreEqual(Math.Round(image.Width * 1200.0 / longer) / image.Width, read.ScaleX, 1e-12);
+        Assert.AreEqual(Math.Round(image.Height * 1200.0 / longer) / image.Height, read.ScaleY, 1e-12);
+        Assert.IsGreaterThan(4, read.ScaleY);
+        var found = read.Barcodes[0].Corners[0];
+        var mapped = read.CornersOf(read.Barcodes[0])[0];
+        Assert.AreEqual(found.X / read.ScaleX, mapped.X, 1e-3);
+        Assert.AreEqual(found.Y / read.ScaleY, mapped.Y, 1e-3);
         // The code sits in the middle third across and half down; its corners, mapped back, lie there in the original.
         foreach (var corner in read.CornersOf(read.Barcodes[0]))
         {

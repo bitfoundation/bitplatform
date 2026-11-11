@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using Bit.Bink;
 using Bit.Bmage.Bink;
+using Bit.Bmage.Codecs;
 using Bit.Bmage.Layers;
 
 namespace Bit.Bmage.Tests.Integrations;
@@ -118,5 +119,68 @@ public sealed class BinkTests
         using var _ = rendered.Image;
         Assert.AreEqual(1, rendered.SkippedTextElements);
         Assert.IsFalse(rendered.IsComplete);
+
+        // The helpers that hand back only pixels refuse rather than pass off the drawing without its text as finished.
+        var flatten = Assert.ThrowsExactly<InvalidOperationException>(() => BmageBink.Flatten(photo, document));
+        StringAssert.Contains(flatten.Message, "1 text element");
+        Assert.ThrowsExactly<InvalidOperationException>(() => document.ToImageLayer(photo.Size));
+    }
+
+    [TestMethod]
+    public void TheImageLayerIsKnownByItsMarkNotItsName()
+    {
+        using var photo = Photo();
+        var document = BmageBink.CreateDocument(photo);
+        var image = document.Layers[0];
+        document.UpdateLayer(image.Id, p => p with { Name = "Background", IsLocked = false });
+        // A layer of the user's own, named and locked as the image's once was, is drawing like any other.
+        var own = document.AddLayer(new BinkLayerProperties { Name = BmageBink.ImageLayerName });
+        document.AddElement(new BinkRectangleShape(new BinkRect(40, 30, 20, 20)) { Style = BinkShapeStyle.Default with { FillColor = new BinkColor(255, 0, 0), StrokeWidth = 0 } }, own.Id);
+        document.UpdateLayer(own.Id, p => p with { IsLocked = true });
+
+        using var overlay = document.RenderOverlay(photo.Size).Image;
+        Assert.AreEqual(0, overlay[5, 20].A, "The renamed, unlocked image layer is still left out.");
+        Assert.AreEqual(new Rgba32(255, 0, 0), overlay[50, 40], "The layer named Image is drawn.");
+        using var flat = BmageBink.Flatten(photo, document);
+        Assert.AreEqual(photo[5, 20], flat[5, 20]);
+        Assert.AreEqual(new Rgba32(255, 0, 0), flat[50, 40]);
+    }
+
+    [TestMethod]
+    public void FlatteningAMultiplyLayerBlendsWithTheImageAsTheWholeDocumentDoes()
+    {
+        using var photo = Photo();
+        var document = BmageBink.CreateDocument(photo);
+        var drawing = document.Layers[1];
+        document.UpdateLayer(drawing.Id, p => p with { BlendMode = BinkBlendMode.Multiply });
+        document.AddElement(new BinkRectangleShape(new BinkRect(30, 20, 60, 50)) { Style = BinkShapeStyle.Default with { FillColor = new BinkColor(255, 200, 40), StrokeWidth = 0 } }, drawing.Id);
+
+        using var flat = BmageBink.Flatten(photo, document);
+        using var whole = document.RenderToImage().Image;
+        Assert.IsLessThanOrEqualTo(2, BarcodeTests.MaxDifference(whole, flat));
+        // Multiplied, the square darkens the image under it rather than covering it.
+        Assert.AreNotEqual(new Rgba32(255, 200, 40), flat[60, 45]);
+        Assert.IsLessThan((int)photo[60, 45].B, (int)flat[60, 45].B);
+    }
+
+    [TestMethod]
+    public void AnIndexedPngOfFewColoursRendersInBink()
+    {
+        // Two, three and five colours are written at 1, 2 and 4 bits a pixel; an odd width leaves a part-filled byte.
+        Rgba32[] colours = [new(250, 20, 20), new(20, 30, 240), new(10, 200, 60, 128), new(0, 0, 0), new(255, 255, 255)];
+        foreach (var count in new[] { 2, 3, 5 })
+        {
+            using var few = ImageBuffer.Create(7, 5);
+            for (var y = 0; y < 5; y++)
+                for (var x = 0; x < 7; x++)
+                    few[x, y] = colours[(x + 2 * y) % count];
+            var source = few.ToBinkImageSource(ImageExportOptions.Png with { MaxColors = 16 });
+            var document = new BinkDocument(BinkDocumentSettings.Default with { Width = 7, Height = 5, Background = BinkColor.Transparent });
+            document.AddElement(new BinkImageElement(source, new BinkRect(0, 0, 7, 5)));
+            var rendered = document.RenderToImage();
+            using var _ = rendered.Image;
+            Assert.IsTrue(rendered.IsComplete, $"{count} colours");
+            Assert.IsLessThanOrEqualTo(1, BarcodeTests.MaxDifference(few, rendered.Image), $"{count} colours");
+        }
     }
 }

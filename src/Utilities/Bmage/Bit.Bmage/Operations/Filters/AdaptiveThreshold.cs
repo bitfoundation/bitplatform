@@ -88,9 +88,10 @@ public sealed class AdaptiveThresholdFilter : RegionOperation
         var radius = (int)MathF.Round(Radius);
         // Luminance of every pixel, once: each row is read by the window of every row within the radius.
         var luma = ArrayPool<byte>.Shared.Rent(width * height);
-        var output = GetMutableCopy(source, context);
+        ImageBuffer? output = null;
         try
         {
+            output = GetMutableCopy(source, context);
             ParallelRows.For(context, 0, height, width, (start, end, band) =>
             {
                 for (var y = start; y < end; y++)
@@ -107,14 +108,15 @@ public sealed class AdaptiveThresholdFilter : RegionOperation
                 }
             });
 
+            var target = output;
             ParallelRows.For(context, region.Top, region.Bottom, (long)region.Width * 4, (start, end, band) =>
-                ThresholdRows(luma, output, width, height, region, radius, start, end, band));
+                ThresholdRows(luma, target, width, height, region, radius, start, end, band));
             context.ReportProgress(1);
-            return output;
+            return target;
         }
         catch
         {
-            if (!ReferenceEquals(output, source)) output.Dispose();
+            if (output is not null && !ReferenceEquals(output, source)) output.Dispose();
             throw;
         }
         finally

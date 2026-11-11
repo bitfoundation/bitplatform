@@ -183,36 +183,50 @@ public sealed class RadialBlurFilter : RegionOperation
 
             var result = (passes & 1) == 0 ? a : b;
             var output = GetMutableCopy(source, context);
-            ParallelRows.For(context, region.Top, region.Bottom, region.Width, (start, end, band) =>
+            try
             {
-                for (var y = start; y < end; y++)
-                {
-                    var row = output.GetRow(y);
-                    for (var x = region.Left; x < region.Right; x++)
-                    {
-                        var o = (y * width + x) * 4;
-                        int alpha = result[o + 3];
-                        if (alpha == 0)
-                        {
-                            row[x] = Rgba32.Transparent;
-                            continue;
-                        }
-                        row[x] = new Rgba32(
-                            (byte)Math.Min(255, (result[o] * 255 + alpha / 2) / alpha),
-                            (byte)Math.Min(255, (result[o + 1] * 255 + alpha / 2) / alpha),
-                            (byte)Math.Min(255, (result[o + 2] * 255 + alpha / 2) / alpha),
-                            (byte)((alpha + 128) / 257));
-                    }
-                }
-            });
-            context.ReportProgress(1);
-            return output;
+                WriteBack(output, result, width, region, context);
+                return output;
+            }
+            catch
+            {
+                if (!ReferenceEquals(output, source)) output.Dispose();
+                throw;
+            }
         }
         finally
         {
             ArrayPool<ushort>.Shared.Return(a);
             ArrayPool<ushort>.Shared.Return(b);
         }
+    }
+
+    /// <summary>Writes the blurred region, premultiplied at 16 bits a channel, back into <paramref name="output"/> as straight 8-bit pixels.</summary>
+    private static void WriteBack(ImageBuffer output, ushort[] result, int width, Rectangle region, OperationContext context)
+    {
+        ParallelRows.For(context, region.Top, region.Bottom, region.Width, (start, end, band) =>
+        {
+            for (var y = start; y < end; y++)
+            {
+                var row = output.GetRow(y);
+                for (var x = region.Left; x < region.Right; x++)
+                {
+                    var o = (y * width + x) * 4;
+                    int alpha = result[o + 3];
+                    if (alpha == 0)
+                    {
+                        row[x] = Rgba32.Transparent;
+                        continue;
+                    }
+                    row[x] = new Rgba32(
+                        (byte)Math.Min(255, (result[o] * 255 + alpha / 2) / alpha),
+                        (byte)Math.Min(255, (result[o + 1] * 255 + alpha / 2) / alpha),
+                        (byte)Math.Min(255, (result[o + 2] * 255 + alpha / 2) / alpha),
+                        (byte)((alpha + 128) / 257));
+                }
+            }
+        });
+        context.ReportProgress(1);
     }
 
     private static Vector4 Load(ushort[] pixels, int o) => new(pixels[o], pixels[o + 1], pixels[o + 2], pixels[o + 3]);

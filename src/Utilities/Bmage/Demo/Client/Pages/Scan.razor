@@ -257,9 +257,16 @@
         await SetSourceAsync(SamplePage());
     }
 
+    // Sources replaced while a run still reads one of them: the run disposes them once it is done.
+    private readonly List<ImageBuffer> _retired = [];
+
     private async Task SetSourceAsync(ImageBuffer image)
     {
-        _source?.Dispose();
+        if (_source is not null)
+        {
+            if (_busy) _retired.Add(_source);
+            else _source.Dispose();
+        }
         _source = image;
         await RunAsync();
     }
@@ -300,11 +307,22 @@
                 pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
             pipeline = _clean ? pipeline.AdaptiveThreshold(_window) : pipeline.Grayscale();
 
+            // The scan and its PNG replace the last ones together, once both are made: a failure leaves the last pair.
             var result = await pipeline.ExecuteAsync(source);
+            EncodedImage encoded;
+            try
+            {
+                encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = _clean ? 2 : 256 });
+            }
+            catch
+            {
+                result.Dispose();
+                throw;
+            }
             _result?.Dispose();
             _result = result;
+            _encoded = encoded;
             _version++;
-            _encoded = await Exporter.EncodeAsync(result, new ImageExportOptions { Format = ImageFormat.Png, MaxColors = _clean ? 2 : 256 });
         }
         catch (Exception ex)
         {
@@ -313,6 +331,8 @@
         finally
         {
             _busy = false;
+            foreach (var retired in _retired) retired.Dispose();
+            _retired.Clear();
             if (_disposed) ReleaseImages();
             else StateHasChanged();
         }
@@ -387,6 +407,8 @@
         _source?.Dispose();
         _result?.Dispose();
         _source = _result = null;
+        foreach (var retired in _retired) retired.Dispose();
+        _retired.Clear();
     }
 
     /// <summary>The QR code for https://bitplatform.dev/bmage/scan, version 3, error correction M, one character a module.</summary>
