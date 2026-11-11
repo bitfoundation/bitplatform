@@ -274,11 +274,17 @@ public sealed class KeyboardTests : BdndTest
         await Expect(LiveRegion(page)).ToHaveTextAsync("Dragging Write the docs was cancelled.");
 
         await page.GetByLabel("Letter keys H J K L").CheckAsync();
-        await Expect(card).ToHaveAccessibleDescriptionAsync(new System.Text.RegularExpressions.Regex("H, J, K and L move like the arrow keys"));
+        await Expect(card).ToHaveAccessibleDescriptionAsync(new System.Text.RegularExpressions.Regex("use Up Arrow or K for up, Down Arrow or J for down, Left Arrow or H for left and Right Arrow or L for right to move"));
         await FocusAsync(page, card);
         await page.Keyboard.PressAsync("Space");
         await Expect(LiveRegion(page)).ToHaveTextAsync("Picked up Write the docs. 2 drop targets are available.");
         await page.Keyboard.PressAsync("l");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Doing.");
+        // a letter in the other case (Shift, or Caps Lock) is the same key
+        await page.Keyboard.PressAsync("Shift+L");
+        await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Done.");
+        // and on a layout that writes other letters, the key in the H key's place: a Russian keyboard's "р"
+        await page.EvaluateAsync("() => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'р', code: 'KeyH', bubbles: true, cancelable: true }))");
         await Expect(LiveRegion(page)).ToHaveTextAsync("Write the docs is over Doing.");
         await Expect(doing).ToHaveAttributeAsync("data-bit-bdnd-over", "");
         await page.Keyboard.PressAsync("Space");

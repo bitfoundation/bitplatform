@@ -53,6 +53,19 @@ public class BdndTreeTests
     }
 
     [TestMethod]
+    public void ANodeIsNotMovedOutOfTheTreeIntoADetachedNode()
+    {
+        var t = Tree();
+        var detached = new Node("detached");
+
+        Assert.IsNull(BdndTree.PlanMove(t.Root, t.Docs, detached, 0, ChildrenOf));
+        Assert.AreEqual("docs (invoices, letters), photos (2025), music", Outline(t.Root));
+
+        // the root is in the tree, and takes the node at its top level
+        Assert.IsNotNull(BdndTree.PlanMove(t.Root, t.Year, t.Root, 0, ChildrenOf));
+    }
+
+    [TestMethod]
     public void ANodeMovesWithItsSubtreeIntoAnotherNode()
     {
         var t = Tree();

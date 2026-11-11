@@ -482,6 +482,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     [TestMethod]
     public async Task ADragOfSeveralItemsIsAnnouncedWithHowManyItCarries()
     {
+        Manager.Announcements = new BdndAnnouncements { CountItems = BdndAnnouncements.CountElements };
         var cut = RenderProvider(p => p
             .AddChildContent<BdndDraggable<IReadOnlyList<string>>>(d => d
                 .Add(x => x.Type, "cards")
@@ -509,7 +510,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     [TestMethod]
     public async Task AnItemCountedAsOneIsAnnouncedByItsSourcesName()
     {
-        Manager.Announcements = new BdndAnnouncements { CountItems = _ => 1 };
+        // by default a collection is one thing: a column dragged as its list of cards is one column
         var cut = RenderProvider(p => p
             .AddChildContent<BdndDraggable<IReadOnlyList<string>>>(d => d
                 .Add(x => x.Type, "cards")
@@ -544,7 +545,8 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
         var options = SourceRegistrations.Last();
         Assert.IsTrue(options.Keyboard);
         Assert.AreEqual(Manager.InstructionsId, options.InstructionsId);
-        Assert.AreEqual(BdndAnnouncements.Default.Instructions, options.Instructions);
+        Assert.AreEqual("To pick up, press Space or Enter. While dragging, use the arrow keys to move between drop targets, " +
+            "Home and End to go to the first or last one, Space or Enter to drop, and Escape to cancel.", options.Instructions);
 
         var host = HostOf(Source(cut));
         Assert.AreEqual("0", host.GetAttribute("tabindex"));

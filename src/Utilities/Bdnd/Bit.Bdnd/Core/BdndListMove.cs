@@ -10,7 +10,11 @@
 /// The items moved keep their order and land next to each other, the first at <see cref="FinishIndex"/>. A plan holds
 /// on to the two lists: it is made against them as they are, and <see cref="Apply"/> and <see cref="Revert"/> change
 /// nothing - answering false - when the items are no longer where the plan expects them, as when the lists changed in
-/// between in a way that undoing the later changes first does not put back.
+/// between in a way that undoing the later changes first does not put back. An item is where the plan expects it when
+/// the very instance it moved is there (for a reference type; for a value type, an equal value), so an equal item put
+/// in its place - a duplicate, or a copy of a record - does not pass for it. Both lists must take inserts and removals:
+/// <see cref="Apply"/> and <see cref="Revert"/> refuse a read-only or fixed-size list (an array) before they change
+/// anything.
 /// </remarks>
 /// <typeparam name="T">The type of the items of the lists.</typeparam>
 public sealed class BdndListMove<T>
@@ -60,8 +64,10 @@ public sealed class BdndListMove<T>
     /// <see cref="Destination"/>. Answers false, changing nothing, when the move has been made already or the items are
     /// no longer at <see cref="SourceIndexes"/>. A move taken back with <see cref="Revert"/> can be made again (redo).
     /// </summary>
+    /// <exception cref="NotSupportedException">One of the lists is read-only or of a fixed size; neither is changed.</exception>
     public bool Apply()
     {
+        EnsureChangeable();
         if (IsApplied || Holds(Source, _sourceIndexes) is false) return false;
         // checked before anything changes: a list half moved is worse than a move refused
         if (FinishIndex > Destination.Count - (IsReorder ? _items.Length : 0)) return false;
@@ -78,8 +84,10 @@ public sealed class BdndListMove<T>
     /// <see cref="Source"/>, which is then as it was before <see cref="Apply"/>. Answers false, changing nothing, when
     /// the move has not been made or the items are no longer where it put them.
     /// </summary>
+    /// <exception cref="NotSupportedException">One of the lists is read-only or of a fixed size; neither is changed.</exception>
     public bool Revert()
     {
+        EnsureChangeable();
         if (IsApplied is false || Holds(Destination, FinishIndex) is false) return false;
         // each item goes back to its index of the source as it fills up again
         var count = Source.Count - (IsReorder ? _items.Length : 0);
@@ -94,6 +102,20 @@ public sealed class BdndListMove<T>
         IsApplied = false;
         return true;
     }
+
+    // checked before anything changes: a list half moved is worse than a move refused - the items taken out of one
+    // list and then refused by the other would be in neither
+    private void EnsureChangeable()
+    {
+        if (Changeable(Source) is false || Changeable(Destination) is false)
+            throw new NotSupportedException("A move needs lists that take inserts and removals; one of them is read-only or of a fixed size (an array).");
+    }
+
+    private static bool Changeable(IList<T> list) => list.IsReadOnly is false && list is not System.Collections.IList { IsFixedSize: true };
+
+    // the very item the plan moved: the same instance, not an equal one (a duplicate elsewhere in the list, a copy of a
+    // record); a value type has no instance, and an equal value is the item
+    private static bool Same(T a, T b) => typeof(T).IsValueType ? EqualityComparer<T>.Default.Equals(a, b) : ReferenceEquals(a, b);
 
     // A List<T> takes a selection out, or puts it back, in one pass over the elements after the first index: removing
     // or inserting the items one at a time shifts the rest of the list once per item.
@@ -131,7 +153,7 @@ public sealed class BdndListMove<T>
     {
         for (var i = 0; i < indexes.Length; i++)
         {
-            if (indexes[i] >= list.Count || EqualityComparer<T>.Default.Equals(list[indexes[i]], _items[i]) is false) return false;
+            if (indexes[i] >= list.Count || Same(list[indexes[i]], _items[i]) is false) return false;
         }
         return true;
     }
@@ -142,7 +164,7 @@ public sealed class BdndListMove<T>
         if (start + _items.Length > list.Count) return false;
         for (var i = 0; i < _items.Length; i++)
         {
-            if (EqualityComparer<T>.Default.Equals(list[start + i], _items[i]) is false) return false;
+            if (Same(list[start + i], _items[i]) is false) return false;
         }
         return true;
     }

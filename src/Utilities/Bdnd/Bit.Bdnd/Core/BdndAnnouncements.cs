@@ -16,11 +16,41 @@ public sealed class BdndAnnouncements
 
     /// <summary>
     /// How to drag with the keyboard. Every keyboard-draggable source (or its drag handle) references this text
-    /// through <c>aria-describedby</c>, so a screen reader reads it when the source is focused.
+    /// through <c>aria-describedby</c>, so a screen reader reads it when the source is focused. The keys are named by
+    /// placeholders - <c>{PickUp}</c>, <c>{Drop}</c>, <c>{Cancel}</c>, <c>{Up}</c>, <c>{Down}</c>, <c>{Left}</c>,
+    /// <c>{Right}</c>, <c>{First}</c>, <c>{Last}</c>, and <c>{Move}</c> for the four moves - which
+    /// <see cref="NameKeys"/> fills in from the provider's <see cref="BdndKeyBindings"/>, so the text follows the keys
+    /// bound. A text without placeholders is read as it is.
     /// </summary>
     public string Instructions { get; init; } =
-        "To pick up, press Space or Enter. While dragging, use the arrow keys to move between drop targets, " +
-        "Home and End to go to the first or last one, Space or Enter to drop, and Escape to cancel.";
+        "To pick up, press {PickUp}. While dragging, use {Move} to move between drop targets, " +
+        "{First} and {Last} to go to the first or last one, {Drop} to drop, and {Cancel} to cancel.";
+
+    /// <summary>
+    /// What a placeholder of <see cref="Instructions"/> reads (its name without the braces: <c>"PickUp"</c>,
+    /// <c>"Move"</c>, ...) for these keys. The English default names each key (<c>"Space"</c>, <c>"Up Arrow"</c>,
+    /// <c>"K"</c>) and joins a command's keys with "or"; <c>{Move}</c> is "the arrow keys" for the default moves, else
+    /// each direction's keys ("Up Arrow or K for up, ..."). Replace it with <see cref="Instructions"/> to translate
+    /// them.
+    /// </summary>
+    public Func<BdndKeyBindings, string, string> NameKeys { get; init; } = EnglishKeyNames;
+
+    /// <summary>
+    /// <see cref="Instructions"/> with its placeholders filled in for these keys - the text the sources are described by.
+    /// </summary>
+    internal string InstructionsFor(BdndKeyBindings keys)
+    {
+        var text = Instructions;
+        if (text.Contains('{') is false) return text;
+        foreach (var name in Placeholders)
+        {
+            var placeholder = "{" + name + "}";
+            if (text.Contains(placeholder, StringComparison.Ordinal)) text = text.Replace(placeholder, NameKeys(keys, name), StringComparison.Ordinal);
+        }
+        return text;
+    }
+
+    private static readonly string[] Placeholders = ["PickUp", "Drop", "Cancel", "Move", "Up", "Down", "Left", "Right", "First", "Last"];
 
     /// <summary>The name of a source that has no <c>Label</c> and no text of its own.</summary>
     public string UnnamedSource { get; init; } = "item";
@@ -30,12 +60,25 @@ public sealed class BdndAnnouncements
         static (position, count) => $"drop target {position} of {count}";
 
     /// <summary>
-    /// How many things a dragged item stands for (<see cref="BdndAnnouncement.ItemCount"/>): the number of elements of
-    /// an item that is a collection (an <see cref="ICollection"/> - a list or an array of the selected cards, say), and
-    /// one for any other item. Replace it for an item that counts otherwise - a selection object, or a collection that
-    /// is one thing (<c>_ =&gt; 1</c>).
+    /// How many things a dragged item stands for (<see cref="BdndAnnouncement.ItemCount"/>). One by default, whatever
+    /// the item - a column dragged as its list of cards is one column. A drag that carries a selection says so:
+    /// <see cref="CountElements"/> counts the elements of an item that is a collection (a list, an array or a set of
+    /// the selected cards), or count a selection object of your own.
     /// </summary>
-    public Func<object?, int> CountItems { get; init; } = static item => item is ICollection collection ? collection.Count : 1;
+    public Func<object?, int> CountItems { get; init; } = static _ => 1;
+
+    /// <summary>
+    /// The number of elements of an item that is a collection - an <see cref="ICollection"/> (lists, arrays) or an
+    /// <see cref="IReadOnlyCollection{T}"/> of a reference type (a <c>HashSet&lt;string&gt;</c>, a set of records) -
+    /// and one for anything else: the <see cref="CountItems"/> of a provider whose drags carry selections.
+    /// </summary>
+    public static int CountElements(object? item) => item switch
+    {
+        string => 1, // a string is one thing, though its characters are a collection
+        ICollection collection => collection.Count,
+        IReadOnlyCollection<object> collection => collection.Count,
+        _ => 1,
+    };
 
     /// <summary>Read when a keyboard drag begins.</summary>
     public Func<BdndAnnouncement, string?> DragStarted { get; init; } = static a =>
@@ -79,6 +122,52 @@ public sealed class BdndAnnouncements
 
     /// <summary>Read when a keyboard drag is cancelled, or dropped while it was over no target.</summary>
     public Func<BdndAnnouncement, string?> Cancelled { get; init; } = static a => $"Dragging {Subject(a)} was cancelled.";
+
+    // the default NameKeys: the keys of a placeholder in English
+    private static string EnglishKeyNames(BdndKeyBindings keys, string placeholder) => placeholder switch
+    {
+        "PickUp" => EnglishKeys(keys.PickUp),
+        "Drop" => EnglishKeys(keys.Drop),
+        "Cancel" => EnglishKeys(keys.Cancel),
+        "Up" => EnglishKeys(keys.Up),
+        "Down" => EnglishKeys(keys.Down),
+        "Left" => EnglishKeys(keys.Left),
+        "Right" => EnglishKeys(keys.Right),
+        "First" => EnglishKeys(keys.First),
+        "Last" => EnglishKeys(keys.Last),
+        "Move" when keys.Up is ["ArrowUp"] && keys.Down is ["ArrowDown"] && keys.Left is ["ArrowLeft"] && keys.Right is ["ArrowRight"] => "the arrow keys",
+        "Move" => EnglishList(new (IReadOnlyList<string> Keys, string Name)[] { (keys.Up, "up"), (keys.Down, "down"), (keys.Left, "left"), (keys.Right, "right") }
+            .Where(direction => direction.Keys.Count > 0)
+            .Select(direction => $"{EnglishKeys(direction.Keys)} for {direction.Name}")
+            .ToList(), "and"),
+        _ => placeholder,
+    };
+
+    // "Space or Enter": each key once, Esc being Escape
+    private static string EnglishKeys(IReadOnlyList<string> keys) =>
+        EnglishList(keys.Select(EnglishKey).Distinct(StringComparer.Ordinal).ToList(), "or");
+
+    private static string EnglishKey(string key) => key switch
+    {
+        " " or "Spacebar" => "Space",
+        "Esc" => "Escape",
+        "ArrowUp" or "Up" => "Up Arrow",
+        "ArrowDown" or "Down" => "Down Arrow",
+        "ArrowLeft" or "Left" => "Left Arrow",
+        "ArrowRight" or "Right" => "Right Arrow",
+        "PageUp" => "Page Up",
+        "PageDown" => "Page Down",
+        { Length: 1 } => key.ToUpperInvariant(),
+        _ => key,
+    };
+
+    // "A", "A or B", "A, B or C"
+    private static string EnglishList(List<string> parts, string conjunction) => parts.Count switch
+    {
+        0 => "",
+        1 => parts[0],
+        _ => $"{string.Join(", ", parts.Take(parts.Count - 1))} {conjunction} {parts[^1]}",
+    };
 
     // what the English texts call the dragged item: its source's name, or how many things it carries
     private static string Subject(BdndAnnouncement a) => a.ItemCount > 1 ? $"{a.ItemCount} items" : a.SourceLabel;

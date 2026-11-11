@@ -662,7 +662,8 @@ so a deep tree does not exhaust the stack:
 // refuses the node's own subtree
 CanDropPredicate="@((dragged, _) => dragged is not null && BdndTree.Contains(dragged, node, n => n.Children) is false)"
 
-// moves the node, children and all, under parent at index - null when it would go into itself or stay where it is
+// moves the node, children and all, under parent at index - null when it would go into itself, either node is not
+// in the tree under _root, or the node would stay where it is
 if (BdndTree.PlanMove(_root, dragged, parent, index, n => n.Children) is { } move && move.Apply()) _history.Push(move);
 ```
 
@@ -889,7 +890,10 @@ items it moves (`Items`, in their order), where they come from (`SourceIndexes`)
 and land next to each other - within the list (a selection dropped on one of its own cards closes up around it) or in
 another. It answers null when an index is out of range or nothing would change, and `Apply` and `Revert` answer false,
 changing nothing, when the items are no longer where the move expects them: a history undone in reverse order always
-finds them, a move kept past other changes to the lists may not. A move holds on to the two lists and the items, not
+finds them, a move kept past other changes to the lists may not. An item is where the move expects it when the very
+instance is there - an equal one (a duplicate, a copy of a record) does not pass for it; for a value type, an equal
+value does. Both lists must take inserts and removals: a read-only or fixed-size list (an array) makes `Apply` and
+`Revert` throw a `NotSupportedException` before either list changes. A move holds on to the two lists and the items, not
 to a component, so it can live in a store - an action of a state container whose undo calls `Revert`. In a document
 shared by several people, record what moved (the items' ids and where they went) rather than the indexes, which
 another person's edit can shift; the indexes are for the lists in front of you.
@@ -1210,22 +1214,18 @@ drag that begins before .NET has handled that cancel ends the keyboard drag firs
 
 The keys are WAI-ARIA's, and `BdndKeyBindings` changes them for a provider - for an app whose users move with letters,
 or one where the arrows already do something else. Each command lists `KeyboardEvent.key` values (`" "` for Space,
-`"Enter"`, `"j"`), pressed without Ctrl, Alt or Meta; set the commands to change and keep the rest:
+`"Enter"`, `"j"`), pressed without Ctrl, Alt or Meta; set the commands to change and keep the rest. A key of one
+character matches in either case (Caps Lock, or Shift during a drag), and a Latin letter is also the key in its place
+on a layout that writes other letters - `"j"` is the J key on a Russian keyboard too:
 
 ```razor
-<BdndProvider KeyBindings="_keys" Announcements="_texts">...</BdndProvider>
+<BdndProvider KeyBindings="_keys">...</BdndProvider>
 
 @code {
     private static readonly BdndKeyBindings _keys = new()
     {
         Down = ["ArrowDown", "j"],
         Up = ["ArrowUp", "k"],
-    };
-
-    // the instructions name the keys: say what was added
-    private static readonly BdndAnnouncements _texts = new()
-    {
-        Instructions = BdndAnnouncements.Default.Instructions + " J and K move like the down and up arrows.",
     };
 }
 ```
@@ -1240,11 +1240,13 @@ or one where the arrows already do something else. Each command lists `KeyboardE
 | `First`, `Last` | <kbd>Home</kbd>, <kbd>End</kbd> | The first or last place. |
 
 Each key of a drag in progress does one thing: a key listed for two of `Drop`, `Cancel` and the moves is refused with
-an `ArgumentException` when the bindings are set, and so are a `PickUp` or a `Drop` without a key - a drag must stay
-possible from the keyboard. `PickUp` may share its keys with `Drop`, as the defaults do. <kbd>Tab</kbd> always ends a
-drag by moving the focus. The default keys are the module's own, so a provider that keeps them sends nothing for
+an `ArgumentException` when the bindings are set (`"k"` and `"K"` being one key), and so are a `PickUp` or a `Drop`
+without a key - a drag must stay possible from the keyboard - and any binding of <kbd>Tab</kbd>, which always moves
+the focus and so ends a drag: the keyboard never traps the focus (WCAG 2.1.2). `PickUp` may share its keys with
+`Drop`, as the defaults do. The default keys are the module's own, so a provider that keeps them sends nothing for
 them; one that changes them sends the keys with each source's registration. The instructions screen readers read name
-the default keys - change `BdndAnnouncements.Instructions` with them. The
+the keys bound: their placeholders are filled in from the bindings ("Down Arrow or J for down, ..."), see
+[what screen readers hear](#what-screen-readers-hear). The
 [keyboard demo](https://bdnd.bitplatform.dev/accessibility/keyboard) has a switch that adds H, J, K and L.
 
 ### What screen readers hear
@@ -1279,15 +1281,28 @@ one answering `null` is not read out:
 }
 ```
 
-A drag that carries several items - a [selection](#dragging-several-items) whose item is a list - is announced by how
-many it carries rather than by the grabbed source's name alone:
+The instructions name the keys through placeholders - `{PickUp}`, `{Drop}`, `{Cancel}`, `{Up}`, `{Down}`, `{Left}`,
+`{Right}`, `{First}`, `{Last}`, and `{Move}` for the four moves - which `BdndAnnouncements.NameKeys` fills in from the
+provider's [`KeyBindings`](#choosing-the-keys), so they follow the keys bound. The English default names each key
+("Space", "Up Arrow", "K"), joins a command's keys with "or", and reads `{Move}` as "the arrow keys" for the default
+moves. A translation that keeps the placeholders gives its own `NameKeys`; a text without placeholders (like the one
+above) is read as it is, and then names whatever keys it says. The
+[keyboard demo](https://bdnd.bitplatform.dev/accessibility/keyboard) translates both.
+
+A drag that carries several items - a [selection](#dragging-several-items) whose item is a list - can be announced by
+how many it carries rather than by the grabbed source's name alone:
 
 > Picked up Charlie and 2 other items. 1 drop target is available. · 3 items are over the archive. · 3 items were dropped on the archive.
 
-`BdndAnnouncements.CountItems` decides how many things an item stands for - by default the `Count` of an item that
-is a collection (`ICollection`: lists and arrays), and one for anything else - and every announcement gets it as
-`ItemCount`. Replace it for an item that counts otherwise (a selection object of your own), or with `_ => 1` for a
-collection that is one thing.
+`BdndAnnouncements.CountItems` decides how many things an item stands for, and every announcement gets it as
+`ItemCount`. By default an item is one thing, whatever it is - a column dragged as its list of cards is one column.
+For drags that carry selections, give the provider `CountItems = BdndAnnouncements.CountElements`, which counts the
+elements of an item that is a collection (an `ICollection` - lists, arrays - or an `IReadOnlyCollection<T>` of a
+reference type, such as a `HashSet<string>`), or count a selection object of your own:
+
+```csharp
+private static readonly BdndAnnouncements _texts = new() { CountItems = BdndAnnouncements.CountElements };
+```
 
 The live region and the instructions are elements the module adds to the end of the `body` - one region per
 document, one hidden element per distinct instruction text - so a provider's own markup is unchanged. Mouse drags

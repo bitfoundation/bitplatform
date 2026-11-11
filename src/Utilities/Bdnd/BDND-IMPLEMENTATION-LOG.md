@@ -790,6 +790,25 @@ crosses no interop boundary, and the demo pages it touched were run on all three
 | No measurement of the .NET side of a drag, which on Blazor Server runs per user. | `Tests/Bit.Bdnd.Benchmarks` (BenchmarkDotNet, a headless renderer as Blow's harness has): drag start and end, an edge change, a hover moving on and a keyboard move on 100 and 1,000 rows; list and tree moves on 1,000 and 10,000 items. Results and what they say in its README. | The harness itself. |
 | Found by the harness: moving a selection of 100 items in a 10,000-item `List<T>` and back took 113 µs - the items went out and back one at a time, each shifting the rest of the list. | `BdndListMove<T>` takes a `List<T>`'s selection out and puts it back in one pass, and inserts and removes the moved block as a range: 18 µs. Other `IList<T>`s keep the item-at-a-time path, so their change notifications are unchanged. | A `Collection<T>` and a `List<T>` moved and reverted alike, same list and across; a selection at both ends of a 1,000-item list. |
 
+### Review fixes
+
+A review of the round found ten issues; each is fixed:
+
+| Issue | Change | Tests |
+| --- | --- | --- |
+| `Apply` and `Revert` took the items out of one list before inserting them into the other, so a read-only or fixed-size list (an array) threw halfway and the items were in neither. | Both check that each list takes inserts and removals (`IsReadOnly`, `IList.IsFixedSize`) before anything changes, and throw `NotSupportedException` otherwise. | `AReadOnlyOrFixedSizeListIsRefusedBeforeAnythingChanges` |
+| A move checked that its items were still in place with `EqualityComparer<T>.Default`, so a duplicate or an equal copy passed for the item and the wrong element moved. | The item must be the same instance (an equal value for a value type). | `AnEqualItemInThePlaceOfTheOneMovedDoesNotPassForIt`, `AValueTypeItemIsWhereTheMoveExpectsItWhenAnEqualValueIsThere` |
+| `BdndTree.PlanMove` checked the node but not the parent, so a node could be moved into a detached node and leave the tree. | Null unless the parent is in the tree under the root (the root itself included). | `ANodeIsNotMovedOutOfTheTreeIntoADetachedNode` |
+| Tab could be bound, trapping the focus during a drag (WCAG 2.1.2), or picking up instead of moving on. | `BdndKeyBindings` refuses Tab in any command. | `TabCannotBeBoundSoTheFocusIsNeverTrapped` |
+| Keys were compared exactly, so Caps Lock or Shift turned a bound letter into another key, and a non-Latin layout never matched. | The module matches a one-character key in either case and, for a letter of a non-Latin layout, the Latin letter of the key in that place (`KeyboardEvent.code`); validation treats `"k"` and `"K"` as one key. | `ALetterInEitherCaseIsOneKey`; E2E: Shift+H, and a `д` from the L key, move the drag. |
+| A source whose pick-up keys differ from an outer source's no longer claimed the key, so it bubbled and picked the outer source up. | The innermost source the key was pressed on claims every key, and then picks up only on its own. | None yet: it needs nested sources under providers with different bindings. |
+| `CountItems` counted every `ICollection`, changing what existing apps whose single item is a list announce. | The default counts one; `BdndAnnouncements.CountElements` (for providers whose drags carry selections) counts an `ICollection` or an `IReadOnlyCollection<T>` of a reference type, so a `HashSet<string>` counts too. The multi-select demo opts in. | `AnItemCountsOneByDefaultEvenACollection`, `CountElementsCountsTheElementsOfACollectionAndAnythingElseAsOne`; the component tests. |
+| The instructions named the default keys whatever was bound, so every app rewrote them by hand (the keyboard demo kept four variants). | `Instructions` takes placeholders (`{PickUp}`, `{Move}`, ...) that `NameKeys` fills in from the manager's key bindings; the default text reads as before with the default keys. The keyboard demo keeps one text per language. | `TheDefaultInstructionsNameTheDefaultKeys`, `TheInstructionsNameTheKeysBound`, `TranslatedInstructionsNameTheKeysTheirOwnWay`, `TheInstructionsFollowTheKeys`; E2E: the description names the letters. |
+| The default key table is kept in C# and in the module, and every new bindings instance rebuilt the default map to compare with. | The default map is built once; a test reads `defaultKeys` from `bit-bdnd.ts` and fails if it drifts from `BdndKeyBindings`. | `TheModulesDefaultKeysAreTheseDefaults` |
+
+After the fixes: unit 476 passed on each of net10.0 and net11.0 (952); MCP 161 passed; E2E keyboard, multi-select, tree
+and screen reader classes 26 passed on Chromium, keyboard and multi-select 17 passed on each of Firefox and WebKit.
+
 What the harness showed beyond that is recorded in its README: an edge or hover change renders the rows involved and
 no others at any list size, while the start and the end of a drag render every row whose `CanDrop` changes (about
 10 µs a row, once per drag) - the price of a target's content being a `RenderFragment`.

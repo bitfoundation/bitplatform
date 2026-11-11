@@ -1,4 +1,7 @@
-﻿namespace Bit.Bdnd.Tests.Core;
+﻿using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+
+namespace Bit.Bdnd.Tests.Core;
 
 /// <summary>Key bindings a manager accepts: every key doing one thing, and a drag always possible from the keyboard.</summary>
 [TestClass]
@@ -65,6 +68,62 @@ public class BdndKeyBindingsTests
         Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Up = [""] });
         Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Up = null! });
         Assert.ThrowsExactly<ArgumentNullException>(() => manager.KeyBindings = null!);
+    }
+
+    [TestMethod]
+    [DataRow("Tab")]
+    [DataRow("tab")]
+    public void TabCannotBeBoundSoTheFocusIsNeverTrapped(string tab)
+    {
+        var manager = new BdndDragDropManager();
+
+        var error = Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Down = ["ArrowDown", tab] });
+        Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { PickUp = [tab] });
+
+        StringAssert.Contains(error.Message, "Tab");
+        Assert.AreSame(BdndKeyBindings.Default, manager.KeyBindings);
+    }
+
+    [TestMethod]
+    public void ALetterInEitherCaseIsOneKey()
+    {
+        // the module matches a character whatever its case, so "k" and "K" would both go up and down
+        var manager = new BdndDragDropManager();
+
+        Assert.ThrowsExactly<ArgumentException>(() => manager.KeyBindings = new BdndKeyBindings { Up = ["ArrowUp", "k"], Down = ["ArrowDown", "K"] });
+        manager.KeyBindings = new BdndKeyBindings { Up = ["ArrowUp", "k", "K"] };
+    }
+
+    [TestMethod]
+    public void TheModulesDefaultKeysAreTheseDefaults()
+    {
+        // the module keeps a copy of the defaults, so that a source sends nothing for them: the two must not drift apart
+        var script = File.ReadAllText(Path.Combine(Path.GetDirectoryName(ThisFile())!, "..", "..", "..", "Bit.Bdnd", "Scripts", "bit-bdnd.ts"));
+        var table = Regex.Match(script, @"const defaultKeys: Record<KeyCommand, string\[\]> = \{(?<body>[^}]*)\};");
+        Assert.IsTrue(table.Success, "defaultKeys in bit-bdnd.ts");
+        var module = Regex.Matches(table.Groups["body"].Value, @"(?<command>\w+): \[(?<keys>[^\]]*)\]")
+            .ToDictionary(m => m.Groups["command"].Value, m => Regex.Matches(m.Groups["keys"].Value, "'([^']*)'").Select(k => k.Groups[1].Value).ToArray());
+
+        Assert.IsTrue(BdndKeyBindings.SameMap(BdndKeyBindings.DefaultMap, module),
+            string.Join("; ", module.Select(pair => $"{pair.Key}: {string.Join(",", pair.Value)}")));
+    }
+
+    private static string ThisFile([CallerFilePath] string path = "") => path;
+
+    [TestMethod]
+    public void TheInstructionsFollowTheKeys()
+    {
+        var manager = new BdndDragDropManager();
+        var before = manager.InstructionsId;
+
+        manager.KeyBindings = new BdndKeyBindings { Drop = ["d"] };
+
+        StringAssert.Contains(manager.InstructionsText, "D to drop");
+        Assert.AreNotEqual(before, manager.InstructionsId);
+
+        manager.KeyBindings = BdndKeyBindings.Default;
+        Assert.AreEqual(before, manager.InstructionsId);
+        StringAssert.Contains(manager.InstructionsText, "Space or Enter to drop");
     }
 
     [TestMethod]

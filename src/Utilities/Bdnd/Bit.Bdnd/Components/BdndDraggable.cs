@@ -274,7 +274,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             TrackPointer = manager.FollowsPointer(Type),
             Keyboard = keyboard,
             InstructionsId = keyboard ? manager.InstructionsId : null,
-            Instructions = keyboard ? manager.Announcements.Instructions : null,
+            Instructions = keyboard ? manager.InstructionsText : null,
             Keys = keyboard ? manager.KeyMap : null,
             PointerDrag = PointerDrag switch
             {

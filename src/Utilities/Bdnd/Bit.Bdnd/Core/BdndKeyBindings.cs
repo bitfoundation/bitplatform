@@ -4,7 +4,9 @@
 /// The keys of a keyboard drag: the ones that pick a source up, and the ones that move, drop and cancel the drag in
 /// progress. Each lists <see href="https://developer.mozilla.org/docs/Web/API/KeyboardEvent/key">KeyboardEvent.key</see>
 /// values - <c>" "</c> for Space, <c>"Enter"</c>, <c>"ArrowDown"</c>, <c>"j"</c> - pressed without Ctrl, Alt or Meta
-/// (and, to pick up, without Shift). The defaults are the WAI-ARIA conventions; set the ones to change and keep the
+/// (and, to pick up, without Shift). A key of one character matches whatever its case (Caps Lock, or Shift during a
+/// drag), and a Latin letter also matches the key in its place on a keyboard whose layout writes other letters
+/// (Cyrillic, Greek): <c>"l"</c> is the L key on a Russian layout too. The defaults are the WAI-ARIA conventions; set the ones to change and keep the
 /// rest, and hand the instance to <see cref="BdndProvider.KeyBindings"/> (or <see cref="BdndDragDropManager.KeyBindings"/>).
 /// </summary>
 /// <remarks>
@@ -12,8 +14,9 @@
 /// <see cref="Cancel"/>, <see cref="Up"/>, <see cref="Down"/>, <see cref="Left"/>, <see cref="Right"/>,
 /// <see cref="First"/> and <see cref="Last"/>; <see cref="PickUp"/> may share its keys with <see cref="Drop"/> (Space
 /// and Enter do both by default). A drag must be possible from the keyboard, so <see cref="PickUp"/> and
-/// <see cref="Drop"/> need a key each. Tab always ends a drag, by moving the focus. The texts screen readers read
-/// (<see cref="BdndAnnouncements.Instructions"/>) name the default keys: change them along with the keys.
+/// <see cref="Drop"/> need a key each. Tab cannot be bound: it always moves the focus, which ends a drag, so the
+/// keyboard never traps the focus (WCAG 2.1.2). The instructions screen readers read
+/// (<see cref="BdndAnnouncements.Instructions"/>) name the keys bound, through their placeholders.
 /// </remarks>
 public sealed class BdndKeyBindings
 {
@@ -61,12 +64,17 @@ public sealed class BdndKeyBindings
     /// </summary>
     internal Dictionary<string, string[]>? ToModuleMap()
     {
-        Validate();
         if (ReferenceEquals(this, Default)) return null;
+        Validate();
         var map = Map();
-        var defaults = Default.Map();
-        return map.All(pair => pair.Value.SequenceEqual(defaults[pair.Key], StringComparer.Ordinal)) ? null : map;
+        return SameMap(map, DefaultMap) ? null : map;
     }
+
+    /// <summary>
+    /// The default keys by command - which the module has a copy of (<c>defaultKeys</c> in <c>bit-bdnd.ts</c>, checked
+    /// against this by a test), so that a source sends nothing for them. Worked out once.
+    /// </summary>
+    internal static Dictionary<string, string[]> DefaultMap { get; } = new BdndKeyBindings().Map();
 
     /// <summary>Whether two maps of <see cref="ToModuleMap"/> bind the same keys.</summary>
     internal static bool SameMap(Dictionary<string, string[]>? a, Dictionary<string, string[]>? b) =>
@@ -98,6 +106,8 @@ public sealed class BdndKeyBindings
         {
             if (keys is null) throw new ArgumentException($"{nameof(BdndKeyBindings)}.{name} is null; list no keys with [].");
             if (keys.Any(string.IsNullOrEmpty)) throw new ArgumentException($"{nameof(BdndKeyBindings)}.{name} lists an empty key.");
+            if (keys.Any(key => string.Equals(key, "Tab", StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException($"{nameof(BdndKeyBindings)}.{name} lists Tab, which cannot be bound: it moves the focus on, which ends a drag, so the keyboard never traps the focus.");
         }
         if (PickUp.Count == 0) throw new ArgumentException($"{nameof(BdndKeyBindings)}.{nameof(PickUp)} needs a key: a drag must be possible from the keyboard.");
         if (Drop.Count == 0) throw new ArgumentException($"{nameof(BdndKeyBindings)}.{nameof(Drop)} needs a key: a keyboard drag must be droppable.");
@@ -106,7 +116,8 @@ public sealed class BdndKeyBindings
         var owners = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var (name, keys) in all.Skip(1))
         {
-            foreach (var key in keys!.Distinct(StringComparer.Ordinal))
+            // "k" and "K" are one key: the module matches a character whatever its case
+            foreach (var key in keys!.Select(Normalized).Distinct(StringComparer.Ordinal))
             {
                 if (owners.TryGetValue(key, out var other))
                     throw new ArgumentException($"The key \"{key}\" is bound to both {nameof(BdndKeyBindings)}.{other} and {name}.");
@@ -114,4 +125,7 @@ public sealed class BdndKeyBindings
             }
         }
     }
+
+    // as the module compares a key: one character whatever its case (isKey in bit-bdnd.ts)
+    private static string Normalized(string key) => key.Length == 1 ? key.ToLowerInvariant() : key;
 }

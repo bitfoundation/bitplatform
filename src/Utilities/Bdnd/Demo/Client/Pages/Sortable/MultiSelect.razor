@@ -26,7 +26,7 @@
         <button type="button" class="btn btn-secondary" disabled="@(_archived.Count == 0)" @onclick="Restore">Put them back</button>
     </div>
 
-    <BdndProvider>
+    <BdndProvider Announcements="Texts">
         <div class="multi-board">
             <ul class="multi-list" aria-label="Cards">
                 @for (var i = 0; i < _cards.Count; i++)
@@ -77,6 +77,9 @@
     private readonly HashSet<string> _selected = [];
     private readonly List<string> _archived = [];
     private readonly Stack<BdndListMove<string>> _moves = new();
+
+    // a drag carries the selection as a list: the announcements count its cards ("3 items are over the archive")
+    private static readonly BdndAnnouncements Texts = new() { CountItems = BdndAnnouncements.CountElements };
 
     // The cards dropped above or below a row go there together, in the order they have in the list.
     private void Move(IReadOnlyList<string> cards, int insertionIndex)

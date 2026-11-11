@@ -48,12 +48,64 @@ public class BdndAnnouncementsTests
     }
 
     [TestMethod]
-    public void ACollectionCountsItsElementsAndAnythingElseCountsOne()
+    public void AnItemCountsOneByDefaultEvenACollection()
     {
-        Assert.AreEqual(3, Texts.CountItems(new[] { "a", "b", "c" }));
-        Assert.AreEqual(2, Texts.CountItems(new List<int> { 1, 2 }));
-        Assert.AreEqual(1, Texts.CountItems("a string is one item"));
+        Assert.AreEqual(1, Texts.CountItems(new[] { "a", "b", "c" }));
+        Assert.AreEqual(1, Texts.CountItems(new List<string> { "a", "b" }));
         Assert.AreEqual(1, Texts.CountItems(null));
-        Assert.AreEqual(1, Texts.CountItems(new object()));
+    }
+
+    [TestMethod]
+    public void CountElementsCountsTheElementsOfACollectionAndAnythingElseAsOne()
+    {
+        Assert.AreEqual(3, BdndAnnouncements.CountElements(new[] { "a", "b", "c" }));
+        Assert.AreEqual(2, BdndAnnouncements.CountElements(new List<int> { 1, 2 }));
+        Assert.AreEqual(3, BdndAnnouncements.CountElements(new HashSet<string> { "a", "b", "c" }));
+        Assert.AreEqual(2, BdndAnnouncements.CountElements((IReadOnlySet<string>)new SortedSet<string> { "a", "b" }));
+        Assert.AreEqual(1, BdndAnnouncements.CountElements("a string is one item"));
+        Assert.AreEqual(1, BdndAnnouncements.CountElements(null));
+        Assert.AreEqual(1, BdndAnnouncements.CountElements(new object()));
+    }
+
+    [TestMethod]
+    public void TheDefaultInstructionsNameTheDefaultKeys()
+        => Assert.AreEqual(
+            "To pick up, press Space or Enter. While dragging, use the arrow keys to move between drop targets, " +
+            "Home and End to go to the first or last one, Space or Enter to drop, and Escape to cancel.",
+            Texts.InstructionsFor(BdndKeyBindings.Default));
+
+    [TestMethod]
+    public void TheInstructionsNameTheKeysBound()
+    {
+        var keys = new BdndKeyBindings
+        {
+            PickUp = ["p"],
+            Drop = ["d", "Enter"],
+            Cancel = ["Esc", "Escape", "q"],
+            Up = ["ArrowUp", "k"],
+            Down = ["ArrowDown", "j"],
+            Left = [],
+            Right = ["l"],
+            First = ["PageUp"],
+        };
+
+        Assert.AreEqual(
+            "To pick up, press P. While dragging, use Up Arrow or K for up, Down Arrow or J for down and L for right to move " +
+            "between drop targets, Page Up and End to go to the first or last one, D or Enter to drop, and Escape or Q to cancel.",
+            Texts.InstructionsFor(keys));
+    }
+
+    [TestMethod]
+    public void TranslatedInstructionsNameTheKeysTheirOwnWay()
+    {
+        var texts = new BdndAnnouncements
+        {
+            Instructions = "{PickUp} zum Aufnehmen, {Cancel} zum Abbrechen. {Unknown} bleibt.",
+            NameKeys = (keys, placeholder) => placeholder == "PickUp" ? string.Join(" oder ", keys.PickUp) : "Escape",
+        };
+
+        Assert.AreEqual("Enter oder x zum Aufnehmen, Escape zum Abbrechen. {Unknown} bleibt.",
+            texts.InstructionsFor(new BdndKeyBindings { PickUp = ["Enter", "x"] }));
+        Assert.AreEqual("Ohne Platzhalter.", new BdndAnnouncements { Instructions = "Ohne Platzhalter." }.InstructionsFor(BdndKeyBindings.Default));
     }
 }

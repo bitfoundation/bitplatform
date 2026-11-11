@@ -58,8 +58,9 @@ public static class BdndTree
     /// <paramref name="parent"/> at <paramref name="insertionIndex"/> (an index in those children as they are before
     /// the move, what <see cref="BdndList.InsertionIndex"/> answers). Nothing changes until
     /// <see cref="BdndListMove{T}.Apply"/> is called, and <see cref="BdndListMove{T}.Revert"/> takes it back. Answers
-    /// null when the move would put the node inside itself, the node is not in the tree under <paramref name="root"/>,
-    /// the index is out of range, or the node would stay where it is.
+    /// null when the move would put the node inside itself, the node or <paramref name="parent"/> is not in the tree
+    /// under <paramref name="root"/> (<paramref name="root"/> itself can be the parent) - a node moved into a detached
+    /// node would leave the tree - the index is out of range, or the node would stay where it is.
     /// </summary>
     public static BdndListMove<T>? PlanMove<T>(T root, T node, T parent, int insertionIndex, Func<T, IList<T>> children) where T : class
     {
@@ -67,7 +68,8 @@ public static class BdndTree
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(parent);
         ArgumentNullException.ThrowIfNull(children);
-        if (Contains(node, parent, children) || ParentOf(root, node, children) is not { } from) return null;
+        if (Contains(node, parent, children) || Contains(root, parent, children) is false
+            || ParentOf(root, node, children) is not { } from) return null;
         var siblings = children(from);
         return BdndList.PlanMove(siblings, siblings.IndexOf(node), children(parent), insertionIndex);
     }

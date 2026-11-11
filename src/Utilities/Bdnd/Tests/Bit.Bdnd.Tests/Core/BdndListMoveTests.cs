@@ -181,6 +181,54 @@ public class BdndListMoveTests
     }
 
     [TestMethod]
+    public void AnEqualItemInThePlaceOfTheOneMovedDoesNotPassForIt()
+    {
+        // a duplicate - another instance equal to the item moved - put where the move left it
+        string a = new('a', 1), b = "b", other = new('a', 1);
+        List<string> list = [a, b, "c"];
+        var move = BdndList.PlanMove(list, 0, list, 3)!;
+        Assert.IsTrue(move.Apply());
+        list[2] = other;
+
+        Assert.IsFalse(move.Revert());
+        Assert.AreSame(other, list[2]);
+        Assert.AreSequenceEqual(new[] { "b", "c", "a" }, list);
+
+        // nor in the place it comes from
+        List<string> again = [a, b];
+        var stale = BdndList.PlanMove(again, 0, again, 2)!;
+        again[0] = other;
+        Assert.IsFalse(stale.Apply());
+    }
+
+    [TestMethod]
+    public void AValueTypeItemIsWhereTheMoveExpectsItWhenAnEqualValueIsThere()
+    {
+        List<int> list = [1, 2, 3];
+        var move = BdndList.PlanMove(list, 0, list, 3)!;
+
+        Assert.IsTrue(move.Apply());
+        Assert.IsTrue(move.Revert());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3 }, list);
+    }
+
+    [TestMethod]
+    public void AReadOnlyOrFixedSizeListIsRefusedBeforeAnythingChanges()
+    {
+        List<string> source = ["a", "b", "c"];
+        string[] array = ["x", "y"];
+        IList<string> readOnly = new System.Collections.ObjectModel.ReadOnlyCollection<string>(["x", "y"]);
+
+        Assert.ThrowsExactly<NotSupportedException>(() => BdndList.PlanMove(source, 2, array, 0)!.Apply());
+        Assert.ThrowsExactly<NotSupportedException>(() => BdndList.PlanMove(source, 2, readOnly, 0)!.Apply());
+        Assert.ThrowsExactly<NotSupportedException>(() => BdndList.PlanMove(readOnly, 0, source, 0)!.Apply());
+
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, source);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, array);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, readOnly);
+    }
+
+    [TestMethod]
     public void UndoingMovesInReverseOrderRestoresTheLists()
     {
         List<string> todo = ["a", "b", "c", "d"];
