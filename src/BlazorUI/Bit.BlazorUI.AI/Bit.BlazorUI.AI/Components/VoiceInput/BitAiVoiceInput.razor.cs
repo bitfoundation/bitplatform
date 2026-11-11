@@ -581,6 +581,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private async Task FailAsync(string error)
     {
         _handle = 0;
+        _transcribing = false;
         StopCountdown();
 
         await SetListeningAsync(false, Strings.DictationFailed(error));

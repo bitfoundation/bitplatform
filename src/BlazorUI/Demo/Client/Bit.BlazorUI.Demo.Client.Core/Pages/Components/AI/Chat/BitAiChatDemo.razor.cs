@@ -844,6 +844,7 @@ public partial class BitAiChatDemo
         await templateSession.DisposeAsync();
         await citedSession.DisposeAsync();
         await reasoningSession.DisposeAsync();
+        await readAloudSession.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }
