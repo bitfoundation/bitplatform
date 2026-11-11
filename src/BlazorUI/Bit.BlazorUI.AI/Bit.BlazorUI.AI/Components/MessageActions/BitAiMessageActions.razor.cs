@@ -15,7 +15,11 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitAiMessageActions : BitAiComponentBase
 {
+    private BitAiIconClassesCache<BitButtonClassStyles> _readAloudButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _regenerateButtonClasses;
+    private BitAiReadAloud? _subscribedReadAloud;
+    private bool _renderedReading;
+    private bool _renderedFailed;
     private BitAiIconClassesCache<BitButtonClassStyles> _positiveButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _negativeButtonClasses;
     private TimeZoneInfo? _browserTimeZone;
@@ -39,6 +43,9 @@ public partial class BitAiMessageActions : BitAiComponentBase
     /// </remarks>
     [CascadingParameter(Name = BitAiMessageActionsParams.ParamName)]
     public BitAiMessageActionsParams? CascadingParameters { get; set; }
+
+    // The reader a chat cascades to everything inside it (BitAiChat.AllowReadAloud), unless one is handed over directly.
+    [CascadingParameter] private BitAiReadAloud? CascadedReadAloud { get; set; }
 
 
 
@@ -78,6 +85,13 @@ public partial class BitAiMessageActions : BitAiComponentBase
     [Parameter, ResetClassBuilder] public bool Pinned { get; set; }
 
     /// <summary>
+    /// What reads the message aloud, which offers the "Read aloud" action. When null, the one cascaded by an ancestor -
+    /// a <see cref="BitAiChat"/> with <see cref="BitAiChat.AllowReadAloud"/> on - is used, and with none the action is not
+    /// offered.
+    /// </summary>
+    [Parameter] public BitAiReadAloud? ReadAloud { get; set; }
+
+    /// <summary>
     /// The session, which enables regeneration.
     /// </summary>
     [Parameter] public BitAiChatSession? Session { get; set; }
@@ -114,11 +128,32 @@ public partial class BitAiMessageActions : BitAiComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+
+        // The button follows the reader - a reading of this message starting, ending or being stopped from elsewhere -
+        // so it listens to the one in force, and only to that one.
+        var readAloud = _ReadAloud;
+        _renderedReading = readAloud?.IsReading(Message) is true;
+        _renderedFailed = readAloud?.HasFailed(Message) is true;
+
+        if (ReferenceEquals(readAloud, _subscribedReadAloud)) return;
+
+        if (_subscribedReadAloud is not null) _subscribedReadAloud.Changed -= OnReadAloudChanged;
+
+        _subscribedReadAloud = readAloud;
+
+        if (readAloud is not null) readAloud.Changed += OnReadAloudChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // The browser wakes the player inside the press of the button (data-bit-ai-read-aloud) once the reader has asked
+        // it to listen for them, which only the first actions of a reader to render with the button ask.
+        if (_subscribedReadAloud is { } readAloud && Options.ShowMessageActions && IsDisposed is false)
+        {
+            await readAloud.PrepareAsync();
+        }
 
         // The time is first drawn in the zone of the process, and in the browser's once it has answered - which only a
         // rendered component can ask, and only one that shows the time with no zone of the options to show it in needs to.
@@ -136,8 +171,15 @@ public partial class BitAiMessageActions : BitAiComponentBase
 
 
 
+    private BitAiReadAloud? _ReadAloud => ReadAloud ?? CascadedReadAloud;
+
     // None of the glyphs is one of the core font's, so they are drawn from this package's own subset (see
     // BitAiIconClasses), and each button is handed the same classes while the app's own and its glyph stay the same.
+    private BitButtonClassStyles _ReadAloudButtonClasses =>
+        _readAloudButtonClasses.Get(_ReadAloud?.IsReading(Message) is true ? "bit-icon-ai bit-icon-ai--StopSolid" : "bit-icon-ai bit-icon-ai--ReadOutLoud",
+                                    Classes?.ReadAloudButton,
+                                    BitAiIconClasses.With);
+
     private BitButtonClassStyles _RegenerateButtonClasses =>
         _regenerateButtonClasses.Get("bit-icon-ai bit-icon-ai--Refresh", Classes?.RegenerateButton, BitAiIconClasses.With);
 
@@ -172,6 +214,26 @@ public partial class BitAiMessageActions : BitAiComponentBase
     // The same moment for machines: a valid global date and time, in UTC, whatever zone it is shown in.
     private string _Instant => Message.CreatedAt.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
+    private async Task ToggleReadAloudAsync()
+    {
+        if (Disabled || _ReadAloud is not { } readAloud) return;
+
+        await readAloud.ToggleAsync(Message);
+    }
+
+    // Raised for every change of the reader, which drives the buttons of every reply: only the actions whose button it
+    // changes render again, so a reading starting does not re-render every reply of a long transcript.
+    private void OnReadAloudChanged()
+    {
+        var reading = _ReadAloud?.IsReading(Message) is true;
+        var failed = _ReadAloud?.HasFailed(Message) is true;
+        if (reading == _renderedReading && failed == _renderedFailed) return;
+
+        _renderedReading = reading;
+        _renderedFailed = failed;
+        RequestRender();
+    }
+
     private async Task RegenerateAsync()
     {
         if (Disabled || Session is null) return;
@@ -189,5 +251,20 @@ public partial class BitAiMessageActions : BitAiComponentBase
         Message.SetFeedback(next);
 
         await OnFeedback.InvokeAsync(next);
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        if (_subscribedReadAloud is not null)
+        {
+            _subscribedReadAloud.Changed -= OnReadAloudChanged;
+            _subscribedReadAloud = null;
+        }
+
+        await base.DisposeAsync(disposing);
     }
 }

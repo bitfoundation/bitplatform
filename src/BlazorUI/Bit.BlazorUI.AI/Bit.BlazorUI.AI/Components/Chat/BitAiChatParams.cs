@@ -6,9 +6,9 @@ namespace Bit.BlazorUI;
 /// The parameters for <see cref="BitAiChat"/> component.
 /// </summary>
 /// <remarks>
-/// What belongs here is what the chats of an application agree on: what the composer offers, the words of the empty
+/// What belongs here is what the chats of an application agree on: what the composer and the replies offer, the words of the empty
 /// state and the composer, whether the system messages are shown, and their classes and styles. The session, the
-/// conversation, the templates and the callbacks are left out on purpose: they are what makes one chat the one it is.
+/// conversation, the templates, the callbacks and the speech delegates are left out on purpose: they are what makes one chat the one it is.
 /// </remarks>
 public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -46,6 +46,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllowDictation { get; set; }
 
     /// <summary>
+    /// Offers reading the replies aloud.
+    /// </summary>
+    public bool? AllowReadAloud { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the chat.
     /// </summary>
     public BitAiChatClassStyles? Classes { get; set; }
@@ -66,6 +71,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
     public bool? HideSystemMessages { get; set; }
 
     /// <summary>
+    /// Goes on reading each reply that finishes after the one a reading was started on.
+    /// </summary>
+    public bool? KeepReadingAloud { get; set; }
+
+    /// <summary>
     /// The largest file the composer will stage, in bytes.
     /// </summary>
     public long? MaxAttachmentSize { get; set; }
@@ -74,6 +84,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
     /// The placeholder of the composer.
     /// </summary>
     public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// The language the replies are read aloud in, handed to the text-to-speech service.
+    /// </summary>
+    public string? ReadAloudLanguage { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the chat.
@@ -109,6 +124,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
             bitAiChat.TakeFromCascade(nameof(AllowDictation), AllowDictation.Value, static c => c.AllowDictation, static (c, v) => c.AllowDictation = v);
         }
 
+        if (AllowReadAloud.HasValue)
+        {
+            bitAiChat.TakeFromCascade(nameof(AllowReadAloud), AllowReadAloud.Value, static c => c.AllowReadAloud, static (c, v) => c.AllowReadAloud = v);
+        }
+
         if (Classes is not null)
         {
             bitAiChat.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
@@ -129,6 +149,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
             bitAiChat.TakeFromCascade(nameof(HideSystemMessages), HideSystemMessages.Value, static c => c.HideSystemMessages, static (c, v) => c.HideSystemMessages = v);
         }
 
+        if (KeepReadingAloud.HasValue)
+        {
+            bitAiChat.TakeFromCascade(nameof(KeepReadingAloud), KeepReadingAloud.Value, static c => c.KeepReadingAloud, static (c, v) => c.KeepReadingAloud = v);
+        }
+
         if (MaxAttachmentSize.HasValue)
         {
             bitAiChat.TakeFromCascade(nameof(MaxAttachmentSize), MaxAttachmentSize.Value, static c => c.MaxAttachmentSize, static (c, v) => c.MaxAttachmentSize = v);
@@ -137,6 +162,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
         if (Placeholder.HasValue())
         {
             bitAiChat.TakeFromCascade(nameof(Placeholder), Placeholder, static c => c.Placeholder, static (c, v) => c.Placeholder = v);
+        }
+
+        if (ReadAloudLanguage.HasValue())
+        {
+            bitAiChat.TakeFromCascade(nameof(ReadAloudLanguage), ReadAloudLanguage, static c => c.ReadAloudLanguage, static (c, v) => c.ReadAloudLanguage = v);
         }
 
         if (Styles is not null)

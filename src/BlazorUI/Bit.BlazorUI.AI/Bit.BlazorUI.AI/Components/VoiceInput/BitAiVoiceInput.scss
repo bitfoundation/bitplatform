@@ -1,13 +1,24 @@
 ﻿@import '../../../../Bit.BlazorUI/Styles/functions.scss';
 
-// No public CSS variables of its own: the button is a BitToggleButton, restyled through its own --bit-ToggleButton-*
-// variables and the Button classes/styles of the voice input.
+// The button is a BitToggleButton, restyled through its own --bit-ToggleButton-* variables and the Button
+// classes/styles of the voice input. Its own public CSS variable is read with a fallback and never declared here, so a
+// value set on :root restyles every voice input, one set on an ancestor the voice inputs inside it, and one set on the
+// Style of an instance that one alone (a voice input holds no other voice input):
+//   --bit-AiVoiceInput-countdown-color    color of the time left of a recording    (default: $clr-fg-sec)
 
 .bit-aivci {
     // The containing block of the visually hidden live region.
     position: relative;
     display: inline-flex;
     align-items: center;
+}
+
+.bit-aivci-cdn {
+    color: var(--bit-AiVoiceInput-countdown-color, #{$clr-fg-sec});
+    font-size: $tg-fs-xs;
+    font-variant-numeric: tabular-nums;
+    padding-inline-end: spacing(0.5);
+    white-space: nowrap;
 }
 
 .bit-aivci-sts {
