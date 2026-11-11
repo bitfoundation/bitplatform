@@ -66,8 +66,14 @@ once per registry change. The tables below predate the change and were captured 
 
 ## 50,000 commands (2026-11)
 
-The short job, in process (`--job short --inProcess`), on .NET 10, the same machine for every size, with the guard
-and diagnostics changes in (no listener attached, so the instruments cost one `Enabled` check):
+The short job, in process (`--job short --inProcess`), on the project's `net11.0` target - .NET 11.0.0-rc.3, SDK
+11.0.100-rc.3, x64, an Intel Core i9-14900K under Windows 11 - the same machine for every size, with the guard and
+diagnostics changes in (no listener attached, so the instruments cost one `Enabled` check). `--inProcess` is required
+on `net11.0`: BenchmarkDotNet 0.15.8 cannot launch a .NET 11 child process. To reproduce:
+
+```bash
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*.KeystrokeBenchmarks.*" "*.SnapshotBenchmarks.*" --job short --inProcess
+```
 
 | Commands | Empty query | `s` | `sett` | `open sett` | `qjz` | Snapshot |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

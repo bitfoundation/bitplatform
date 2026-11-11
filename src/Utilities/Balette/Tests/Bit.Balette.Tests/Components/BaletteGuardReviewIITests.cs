@@ -135,6 +135,26 @@ public sealed class BaletteGuardReviewIITests : BunitContext
     }
 
     [TestMethod]
+    public async Task An_action_of_a_nested_row_found_from_the_root_asks_the_ancestor_pages_guard()
+    {
+        var allowed = true;
+        var ran = false;
+        _service.Register(BaletteCmd.New("Admin").Guard(_ => allowed, "Admins only.").Children(
+            BaletteCmd.New("Rotate keys").Handler(() => { }).Actions(BaletteCmd.New("Rotate now").Handler(() => ran = true))));
+        var cut = await OpenAsync("rotate keys");
+        cut.WaitForAssertion(() => Assert.AreEqual("admin.rotate-keys", cut.Find("[data-balette=item]").GetAttribute("data-value")));
+
+        // Tab opens the row's actions straight from the root, with no page of Admin under them.
+        await Press(cut, "Tab");
+        cut.WaitForAssertion(() => Assert.AreEqual("Rotate now", cut.Find("[data-balette=item]").TextContent.Trim()));
+        allowed = false;
+        await Press(cut, "Enter");
+
+        Assert.IsFalse(ran);
+        cut.WaitForAssertion(() => Assert.AreEqual("Admins only.", Toast(cut)));
+    }
+
+    [TestMethod]
     public async Task Submitting_a_multi_select_page_asks_the_guards_of_the_rows_checked()
     {
         IReadOnlyList<BaletteCommand>? applied = null;

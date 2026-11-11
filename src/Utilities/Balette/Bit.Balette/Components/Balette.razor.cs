@@ -1589,14 +1589,14 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         // The row the user chose: the command itself, or the row whose action it is.
         var row = via ?? cmd;
-        var pages = trigger == BaletteExecutionTrigger.Palette ? PageOwners(row) : null;
+        BaletteCommand? orphan = null;
+        var pages = trigger == BaletteExecutionTrigger.Palette ? PageOwners(row, out orphan) : null;
 
         // The ancestors of the row, the action and the checked rows, outermost first. One that cannot be found - not
         // registered, out of reach (IncludeRegisteredCommands off), its registration disposed, or nested deeper than 32
         // levels - fails closed, as a guard that throws does: its guard, or one further up, could not be asked.
         List<BaletteCommand>? ancestors = null;
         HashSet<string>? resolvedParents = null;
-        BaletteCommand? orphan = null;
         bool AddAncestors(BaletteCommand c)
         {
             // Rows under the same parent share its ancestors: walked once.
@@ -1615,7 +1615,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return true;
         }
 
-        var resolved = AddAncestors(row) && (via is null || AddAncestors(cmd));
+        var resolved = orphan is null && AddAncestors(row) && (via is null || AddAncestors(cmd));
         foreach (var checkedRow in selected ?? [])
         {
             resolved = resolved && AddAncestors(checkedRow);
@@ -1852,15 +1852,16 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// confirmation or a prompt started by a shortcut or code sits on whatever page was open, which it has nothing to do
     /// with - and never <paramref name="cmd"/> itself.
     /// </summary>
-    private List<(BaletteCommand Owner, bool Detached)> PageOwners(BaletteCommand cmd)
+    private List<(BaletteCommand Owner, bool Detached)> PageOwners(BaletteCommand cmd, out BaletteCommand? orphan)
     {
-        var owners = new List<(BaletteCommand, bool)>();
+        orphan = null;
+        var found = new List<(BaletteCommand, bool)>();
         for (var i = _pages.Count - 1; i >= 0; i--)
         {
             var page = _pages[i];
             if ((page.Command ?? page.Owner) is { } owner && owner.Id != cmd.Id)
             {
-                owners.Add((owner, page.Detached));
+                found.Add((owner, page.Detached));
             }
 
             if (page.Detached)
@@ -1869,7 +1870,30 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             }
         }
 
-        owners.Reverse();
+        // A page reached without its ancestors' pages under it - an action panel opened with Tab on a nested row found
+        // from the root - is still under their guards: each owner comes after its ancestors.
+        var owners = new List<(BaletteCommand, bool)>();
+        for (var i = found.Count - 1; i >= 0; i--)
+        {
+            var (owner, detached) = found[i];
+            if (owner.Parent is not null)
+            {
+                if (AncestorsOf(owner) is not { } ancestors)
+                {
+                    orphan ??= owner;
+                }
+                else
+                {
+                    foreach (var ancestor in ancestors)
+                    {
+                        owners.Add((ancestor, detached));
+                    }
+                }
+            }
+
+            owners.Add((owner, detached));
+        }
+
         return owners;
     }
 
