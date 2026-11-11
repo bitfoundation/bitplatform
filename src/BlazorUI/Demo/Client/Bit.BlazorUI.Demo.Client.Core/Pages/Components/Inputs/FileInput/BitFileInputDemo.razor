@@ -479,8 +479,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode"
-                 CodeFiles="@example20CodeFiles" Id="example20">
+    <DemoExample Title="Validation" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             Inside an <b>EditForm</b> the file input is a form field like any other. Its <b>Value</b> is the names of
             the valid files joined with commas (<b>report.pdf,photo.png</b>), or null while it holds none, so a
@@ -493,6 +492,19 @@
 
         <br />
 
+        <div>
+            <b>ShowValidationMessage</b> shows the messages of the form under the browse button, where
+            <b>ErrorMessage</b> goes, so the form below needs no <b>ValidationMessage</b> component. The button is
+            described by them through <b>aria-describedby</b>, so they are read out when it takes the focus, and an
+            <b>ErrorMessage</b> of the app's own wins the place while it is set. They are about the selection as a
+            whole: a file the component rejects on its own still says why in the list. They are not announced as they
+            appear: a submit validates every field at once, and a message from each of them read out in a row would
+            bury the form under its own errors. A <b>BitParams</b> holding a <b>BitFileInputParams</b> with
+            <b>ShowValidationMessage</b> turns it on for every file input inside it.
+        </div>
+
+        <br />
+
         <div class="example-box">
             <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                 <DataAnnotationsValidator />
@@ -500,8 +512,8 @@
                 <BitFileInput Required ShowRemoveButton
                               Label="Attach your resume"
                               AllowedExtensions="@([".pdf", ".docx"])"
+                              ShowValidationMessage
                               @bind-Value="validationModel.Resume" />
-                <ValidationMessage For="@(() => validationModel.Resume)" />
 
                 <br />
 
