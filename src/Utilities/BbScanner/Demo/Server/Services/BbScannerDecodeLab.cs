@@ -257,6 +257,7 @@ public static class BbScannerDecodeLab
                 Height = Round(result.BoundingBox.Height)
             },
             Metadata = result?.Metadata is { } metadata ? Metadata(metadata) : null,
+            Gs1 = result is not null && result.TryGetGs1(out var gs1) ? gs1.ToBracketedString() : null,
             Timings = new BbScannerTimingsDto
             {
                 TotalMilliseconds = Milliseconds(timings.Total),

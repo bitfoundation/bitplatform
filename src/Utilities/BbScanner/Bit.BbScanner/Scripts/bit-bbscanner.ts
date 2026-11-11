@@ -822,8 +822,35 @@ async function open(sessionId: string, videoElementId: string, deviceId: string 
     scheduleFrameCallback(session);
     observeViewSize(session, video);
     startWatchdog(session, watchdogMs);
+    await preferContinuousFocus(track);
+    if (superseded()) {
+        // Released or restarted while the focus was being set: the stream is already closed by then.
+        stopTracks(stream);
+        throw new Error('AbortError: the camera request was superseded.');
+    }
 
     return JSON.stringify(describeTrack(track, video));
+}
+
+/**
+ * Asks a camera that can refocus by itself to keep doing so. Some phones open their rear camera focused once, or at a
+ * fixed distance, which leaves a barcode held close a blur for good; a camera that reports no focus modes, or does not
+ * offer a continuous one, is left as it is, and one that refuses keeps the focus it had.
+ */
+async function preferContinuousFocus(track: MediaStreamTrack): Promise<void> {
+    if (typeof track.getCapabilities !== 'function' || typeof track.applyConstraints !== 'function') {
+        return;
+    }
+
+    try {
+        const modes = (track.getCapabilities() as { focusMode?: unknown }).focusMode;
+        const current = (track.getSettings() as { focusMode?: unknown }).focusMode;
+        if (Array.isArray(modes) && modes.includes('continuous') && current !== 'continuous') {
+            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] });
+        }
+    } catch {
+        // A track stopped meanwhile, or a camera that rejects the mode: scanning goes on with the focus there is.
+    }
 }
 
 function observeViewSize(session: Session, video: HTMLVideoElement): void {

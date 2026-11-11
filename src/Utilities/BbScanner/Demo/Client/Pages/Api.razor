@@ -166,8 +166,10 @@
                 <tr><td class="bb-table-key">ErrorCorrectionLevel</td><td class="bb-mono bb-table-key">string?</td><td>For example <code>L</code>, <code>M</code>, <code>Q</code> or <code>H</code> for QR Code.</td></tr>
                 <tr><td class="bb-table-key">ErrorsCorrected</td><td class="bb-mono bb-table-key">int?</td><td>Codewords Reed-Solomon had to repair - a print quality signal.</td></tr>
                 <tr><td class="bb-table-key">Eci</td><td class="bb-mono bb-table-key">int?</td><td>The ECI character set the symbol declared.</td></tr>
-                <tr><td class="bb-table-key">IsGs1</td><td class="bb-mono bb-table-key">bool?</td><td>The symbol carries a GS1 application identifier stream.</td></tr>
-                <tr><td class="bb-table-key">StructuredAppendIndex / Count / Parity</td><td class="bb-mono bb-table-key">int?</td><td>Where this symbol sits in a message split across several, and the identifier that groups them.</td></tr>
+                <tr><td class="bb-table-key">IsGs1</td><td class="bb-mono bb-table-key">bool?</td><td>The symbol carries a GS1 application identifier stream; <code>result.TryGetGs1</code> splits it into its AIs.</td></tr>
+                <tr><td class="bb-table-key">StructuredAppendIndex / Count / Parity</td><td class="bb-mono bb-table-key">int?</td><td>Where this symbol sits in a message split across several - from 0 for QR Code and PDF417, from 1 for Data Matrix - and the parity or file identification that groups them.</td></tr>
+                <tr><td class="bb-table-key">StructuredAppendFileId</td><td class="bb-mono bb-table-key">string?</td><td>The Macro PDF417 file ID every segment of one file carries.</td></tr>
+                <tr><td class="bb-table-key">StructuredAppendIsLast</td><td class="bb-mono bb-table-key">bool?</td><td>This symbol is the last of its sequence. <code>BbStructuredAppendAssembler</code> puts a sequence back together.</td></tr>
                 <tr><td class="bb-table-key">Rows / Columns</td><td class="bb-mono bb-table-key">int?</td><td>PDF417 rows and data columns, or the size of the sampled matrix.</td></tr>
                 <tr><td class="bb-table-key">Extension</td><td class="bb-mono bb-table-key">string?</td><td>The digits of an EAN-2 or EAN-5 add-on beside an EAN or UPC symbol; <code>Text</code> holds the main symbol alone.</td></tr>
             </tbody>

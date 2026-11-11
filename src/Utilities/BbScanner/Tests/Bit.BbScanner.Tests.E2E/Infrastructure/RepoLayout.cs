@@ -18,7 +18,7 @@ public static class RepoLayout
     public static string ServerSampleProject() => FindUpward(Path.Combine("Samples", "Server", $"{ServerSampleName}.csproj"));
 
     public static string ServerSampleAssembly(string configuration) =>
-        Path.Combine(Path.GetDirectoryName(ServerSampleProject())!, "bin", configuration, "net10.0", $"{ServerSampleName}.dll");
+        Path.Combine(Path.GetDirectoryName(ServerSampleProject())!, "bin", configuration, "net11.0", $"{ServerSampleName}.dll");
 
     private static string FindUpward(string relativePath)
     {

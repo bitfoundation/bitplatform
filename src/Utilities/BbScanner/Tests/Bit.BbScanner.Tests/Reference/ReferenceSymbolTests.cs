@@ -488,6 +488,15 @@ public class ReferenceSymbolTests
         if (symbol.Gs1)
         {
             Assert.IsTrue(result.Metadata?.IsGs1, $"{context} is a GS1 symbol.");
+
+            // BWIPP checks the element strings it encodes against the GS1 rules, so every one of them must parse,
+            // and must encode back to the text it was read as.
+            Assert.IsTrue(result.TryGetGs1(out var elements), $"{context}: '{result.Text}' should parse as a GS1 element string.");
+            Assert.AreEqual(result.Text, elements.ToElementString(), context);
+        }
+        else
+        {
+            Assert.IsFalse(result.TryGetGs1(out _), $"{context} is not a GS1 symbol.");
         }
 
         if (symbol.Eci is { } eci)

@@ -143,6 +143,8 @@ public static class BbPdf417BitStreamParser
 
         int? segmentIndex = null;
         int? segmentCount = null;
+        string? fileId = null;
+        var lastSegment = false;
 
         var index = 1;
         while (index < length)
@@ -181,7 +183,7 @@ public static class BbPdf417BitStreamParser
                     break;
 
                 case MacroControlBlock:
-                    index = DecodeMacro(codewords, index, length, ref segmentIndex, ref segmentCount);
+                    index = DecodeMacro(codewords, index, length, ref segmentIndex, ref segmentCount, ref fileId, ref lastSegment);
                     break;
 
                 case MacroOptionalField:
@@ -220,6 +222,8 @@ public static class BbPdf417BitStreamParser
             Eci = output.Eci,
             StructuredAppendIndex = segmentIndex,
             StructuredAppendCount = segmentCount,
+            StructuredAppendFileId = fileId,
+            StructuredAppendIsLast = segmentIndex is null ? null : lastSegment,
         };
     }
 
@@ -585,7 +589,8 @@ public static class BbPdf417BitStreamParser
     /// and count are numeric compaction values, so their digits carry the leading 1 that keeps
     /// zeros intact.
     /// </remarks>
-    private static int DecodeMacro(int[] codewords, int index, int length, ref int? segmentIndex, ref int? segmentCount)
+    private static int DecodeMacro(
+        int[] codewords, int index, int length, ref int? segmentIndex, ref int? segmentCount, ref string? fileId, ref bool lastSegment)
     {
         if (index + 2 > length)
         {
@@ -600,12 +605,23 @@ public static class BbPdf417BitStreamParser
         segmentIndex = parsedIndex;
         index += 2;
 
-        // The file identifier: text compaction codewords up to the first optional field or the
-        // terminator. It names the file, not the payload, so it is skipped.
+        // The file identifier: the codewords up to the first optional field or the terminator, which every
+        // segment of one file shares. It names the file rather than being part of its payload, so it is
+        // reported apart from it, each codeword as the three digits it stands for.
+        var fileIdStart = index;
         while (index < length && codewords[index] < TextCompaction)
         {
             index++;
         }
+
+        var id = new StringBuilder((index - fileIdStart) * 3);
+        for (var i = fileIdStart; i < index; i++)
+        {
+            id.Append(codewords[i].ToString("D3", CultureInfo.InvariantCulture));
+        }
+
+        // Every segment of a file carries its ID; one without any cannot be told apart from another file's.
+        fileId = id.Length == 0 ? null : id.ToString();
 
         while (index < length && codewords[index] == MacroOptionalField)
         {
@@ -615,9 +631,11 @@ public static class BbPdf417BitStreamParser
                 return length;
             }
 
+            // A field runs to the next field or the terminator: a text field may latch and shift between compaction
+            // modes on the way, so a codeword of 900 or over does not end it.
             var designator = codewords[index++];
             var fieldStart = index;
-            while (index < length && codewords[index] < TextCompaction)
+            while (index < length && codewords[index] is not (MacroOptionalField or MacroTerminator))
             {
                 index++;
             }
@@ -631,9 +649,11 @@ public static class BbPdf417BitStreamParser
             }
         }
 
+        // The terminator closes the control block of the last segment of a file, and of no other.
         if (index < length && codewords[index] == MacroTerminator)
         {
             index++;
+            lastSegment = true;
         }
 
         return index;
