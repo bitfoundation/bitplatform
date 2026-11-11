@@ -311,6 +311,13 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
     public bool? ShowClearButton { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the field, where the
+    /// <c>ErrorMessage</c> of the phone input goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component
+    /// beside it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the phone input.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -625,6 +632,11 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
         if (ShowClearButton.HasValue)
         {
             bitPhoneInput.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static p => p.ShowClearButton, static (p, v) => p.ShowClearButton = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitPhoneInput.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static p => p.ShowValidationMessage, static (p, v) => p.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)
