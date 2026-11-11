@@ -29,17 +29,21 @@ matcher therefore sees real word boundaries, shared prefixes and near misses.
 
 ## Running it
 
+The project targets `net11.0`, built with the .NET 11 SDK that `global.json` pins. BenchmarkDotNet 0.15.8, the
+latest stable release, cannot launch a .NET 11 benchmark process (it fails with `GetRuntimeVersion not implemented
+for NotRecognized`), so every run needs `--inProcess`.
+
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --inProcess
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*"
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*" --inProcess
 
-# How the numbers below were captured (3 measured iterations per case, about 7 minutes for the whole suite):
-dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short
+# The whole suite with the short job (3 measured iterations per case, about 7 minutes):
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short --inProcess
 
-# A quick smoke run (one iteration, in-process, numbers not meaningful):
+# A quick smoke run (one iteration, numbers not meaningful):
 dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*FuzzyMatcher*" --job dry --inProcess
 ```
 
@@ -68,8 +72,9 @@ once per registry change. The tables below predate the change and were captured 
 
 The short job, in process (`--job short --inProcess`), on the project's `net11.0` target - .NET 11.0.0-rc.3, SDK
 11.0.100-rc.3, x64, an Intel Core i9-14900K under Windows 11 - the same machine for every size, with the guard and
-diagnostics changes in (no listener attached, so the instruments cost one `Enabled` check). `--inProcess` is required
-on `net11.0`: BenchmarkDotNet 0.15.8 cannot launch a .NET 11 child process. To reproduce:
+diagnostics changes in (no listener attached, so the instruments cost one `Enabled` check). Re-run on the released
+.NET 11.0.0 with SDK 11.0.100, the SDK `global.json` pins, the allocations are the same to within a few bytes and the
+times are within the noise of a short run, so the table stands for both. To reproduce:
 
 ```bash
 dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*.KeystrokeBenchmarks.*" "*.SnapshotBenchmarks.*" --job short --inProcess
