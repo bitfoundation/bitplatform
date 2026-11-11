@@ -523,7 +523,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private Task ExecuteFromServiceAsync(string commandId) => InvokeAsync(async () =>
     {
         var command = FindCommand(commandId) ?? throw new KeyNotFoundException($"Command '{commandId}' is not registered.");
-        await ExecuteCommandAsync(command, fromCode: true);
+        await ExecuteCommandAsync(command, BaletteExecutionTrigger.Programmatic);
         StateHasChanged();
     });
 
@@ -569,6 +569,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             // Always open: only the query or the page changes, and the input takes the focus.
             if (query is not null || pageCommandId is not null)
             {
+                // Opening a page lists it - and loads it: its guards decide first.
+                if (pageCommandId is not null && FindCommand(pageCommandId) is { } guarded && !await MayRunAsync(guarded, BaletteExecutionTrigger.Programmatic))
+                {
+                    return;
+                }
+
                 ResetState();
                 if (pageCommandId is not null && FindCommand(pageCommandId) is { } target)
                 {
@@ -590,6 +596,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         if (_isOpen && query is null && pageCommandId is null)
+        {
+            return;
+        }
+
+        // Opening a page lists it - and loads it: its guards decide first. Refused, the palette stays as it was.
+        if (pageCommandId is not null && FindCommand(pageCommandId) is { } guardedPage && !await MayRunAsync(guardedPage, BaletteExecutionTrigger.Programmatic))
         {
             return;
         }
@@ -799,6 +811,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         var started = Stopwatch.GetTimestamp();
         Rebuild();
         _lastSearchCost = Stopwatch.GetElapsedTime(started);
+        BaletteDiagnostics.SearchEnded(_lastSearchCost);
         TriggerSourceSearch();
         _pendingScroll = true;
         if (OnQueryChanged.HasDelegate)
@@ -880,17 +893,30 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 }
                 else if (mod && ActiveCommand is { Actions.Count: > 0 } ac)
                 {
-                    // Mod+Enter runs the first secondary action.
-                    await ExecuteCommandAsync(ac.Actions[0], fromCode: false);
+                    // Mod+Enter runs the first secondary action - of a row that may itself be acted on: enabled, still
+                    // listed, and allowed by its guards, as its action panel would require.
+                    CancelAutoClose();
+                    if (ac.Disabled)
+                    {
+                        ShowToast(ac.DisabledReason ?? S.Disabled);
+                    }
+                    else if (!_executing && await MayRunAsync(ac, BaletteExecutionTrigger.Palette, chosenFromList: true))
+                    {
+                        await ExecuteCommandAsync(ac.Actions[0], BaletteExecutionTrigger.Palette);
+                    }
                 }
                 else if (mod && ActiveCommand is { Handler: null, Href: not null, Disabled: false, ConfirmMessage: null } link && !HasPage(link))
                 {
                     // ...and on a plain link, without secondary actions, opens it in a new tab, as GitHub's palette does.
-                    await OpenLinkAsync(link, newTab: true, fromCode: false);
+                    CancelAutoClose();
+                    if (!_executing && await MayRunAsync(link, BaletteExecutionTrigger.Palette, chosenFromList: true))
+                    {
+                        await OpenLinkAsync(link, newTab: true, BaletteExecutionTrigger.Palette);
+                    }
                 }
                 else if (ActiveCommand is { } cmd)
                 {
-                    await ExecuteCommandAsync(cmd, fromCode: false);
+                    await ExecuteCommandAsync(cmd, BaletteExecutionTrigger.Palette);
                 }
                 else if (page.LoadFailed)
                 {
@@ -966,7 +992,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await ExecuteCommandAsync(cmd, fromCode: false);
+        await ExecuteCommandAsync(cmd, BaletteExecutionTrigger.Shortcut);
         StateHasChanged();
     });
 
@@ -1063,7 +1089,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             Disarm();
         }
 
-        return ExecuteCommandAsync(row.Command, fromCode: false);
+        return ExecuteCommandAsync(row.Command, BaletteExecutionTrigger.Palette);
     }
 
     /// <summary>Whether a row has an action panel to open: its own actions, or pinning and forgetting it.</summary>
@@ -1236,6 +1262,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             actions.Add(new BaletteCommand
             {
                 Id = $"__pin:{target.Id}",
+                IsPaletteOwned = true,
                 Title = pinned ? S.Unpin : S.Pin,
                 Kind = BaletteCommandKind.Action,
                 Icon = IconSvg("pin"),
@@ -1252,6 +1279,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 actions.Add(new BaletteCommand
                 {
                     Id = $"__forget:{target.Id}",
+                    IsPaletteOwned = true,
                     Title = S.RemoveFromRecents,
                     Icon = IconSvg("clock"),
                     ExcludeFromHistory = true,
@@ -1269,6 +1297,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 actions.Add(new BaletteCommand
                 {
                     Id = "__clear-recents",
+                    IsPaletteOwned = true,
                     Title = S.ClearRecents,
                     Icon = IconSvg("trash"),
                     ExcludeFromHistory = true,
@@ -1291,6 +1320,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             Title = target.Title,
             Items = actions,
             IsActions = true,
+            Owner = target,
             Placeholder = S.Actions,
             QueryBefore = _query,
         });
@@ -1324,7 +1354,14 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await RunHandlerAsync(owner, submit, selected, null);
+        // Asked again on submit - about the page's command, or the one whose handler made the page - since what the guards
+        // read may have changed while the boxes were being checked.
+        if (_executing || !await MayRunAsync(page.Command ?? page.Owner ?? owner, BaletteExecutionTrigger.Palette))
+        {
+            return;
+        }
+
+        await RunHandlerAsync(owner, submit, selected, null, BaletteExecutionTrigger.Palette);
     }
 
     private async Task SubmitPromptAsync()
@@ -1344,19 +1381,27 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         _promptError = null;
         var owner = page.Command ?? new BaletteCommand { Id = "__prompt", Title = page.Title, ExcludeFromHistory = true };
-        await RunHandlerAsync(owner, page.Prompt.OnSubmit, [], _query);
+
+        // Asked again on submit: what the guards read may have changed while the value was being typed.
+        if (_executing || !await MayRunAsync(owner, BaletteExecutionTrigger.Palette))
+        {
+            return;
+        }
+        await RunHandlerAsync(owner, page.Prompt.OnSubmit, [], _query, BaletteExecutionTrigger.Palette);
     }
 
     // ---- Execution -----------------------------------------------------------------------------------
 
     /// <param name="cmd">The command to run, open or arm.</param>
-    /// <param name="fromCode">
-    /// Started by <see cref="IBaletteService.ExecuteAsync"/>: an unhandled exception is rethrown to that caller. Started
-    /// from the palette's own UI, it is logged and shown instead - rethrown into a click handler it would end a Blazor
-    /// Server circuit, and into a key handler it would only reach the browser's console.
+    /// <param name="trigger">
+    /// What started it. Started by <see cref="IBaletteService.ExecuteAsync"/>, an unhandled exception is rethrown to that
+    /// caller. Started from the palette's own UI or a shortcut, it is logged and shown instead - rethrown into a click
+    /// handler it would end a Blazor Server circuit, and into a key handler it would only reach the browser's console.
     /// </param>
-    private async Task ExecuteCommandAsync(BaletteCommand cmd, bool fromCode)
+    private async Task ExecuteCommandAsync(BaletteCommand cmd, BaletteExecutionTrigger trigger)
     {
+        var fromCode = trigger == BaletteExecutionTrigger.Programmatic;
+
         // Whatever it does - runs, arms a confirmation, toggles a row, explains why it is disabled - the palette is in use.
         CancelAutoClose();
 
@@ -1386,6 +1431,22 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
+        // Before anything is armed, opened or run - and again on a confirmation's second Enter, which comes back here.
+        if (!await MayRunAsync(cmd, trigger, chosenFromList: trigger == BaletteExecutionTrigger.Palette))
+        {
+            // Nothing stays armed. The refusal's error took the confirmation's place in the footer; without one, it goes.
+            if (_confirmingId is not null)
+            {
+                _confirmingId = null;
+                if (!_toastIsError)
+                {
+                    ShowToast(null);
+                }
+            }
+
+            return;
+        }
+
         if (cmd.ConfirmMessage is not null && _confirmingId != cmd.Id)
         {
             await EnsureOpenAsync();
@@ -1395,7 +1456,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             var row = _itemRows.FindIndex(r => r.Command.Id == cmd.Id);
             if (row < 0)
             {
-                PushPage(new BalettePageFrame { Title = cmd.Title, Items = [cmd], QueryBefore = _query });
+                PushPage(new BalettePageFrame { Title = cmd.Title, Items = [cmd], QueryBefore = _query, Detached = true });
                 row = 0;
             }
 
@@ -1413,7 +1474,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             await EnsureOpenAsync();
 
             // A nested page found from the root opens with its ancestors' pages under it.
-            var frame = PushPageWithAncestors(cmd, _query);
+            var frame = PushPageWithAncestors(cmd, _query, detached: trigger != BaletteExecutionTrigger.Palette);
             if (cmd.ChildrenProvider is not null)
             {
                 await LoadChildrenAsync(frame, cmd);
@@ -1424,7 +1485,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         if (cmd.Handler is null && cmd.Href is not null)
         {
-            await OpenLinkAsync(cmd, cmd.OpenInNewTab, fromCode);
+            await OpenLinkAsync(cmd, cmd.OpenInNewTab, trigger);
             return;
         }
 
@@ -1434,11 +1495,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await RunHandlerAsync(cmd, cmd.Handler, [], null, fromCode);
+        await RunHandlerAsync(cmd, cmd.Handler, [], null, trigger);
     }
 
     /// <summary>Follows a command's <see cref="BaletteCommand.Href"/>, in this tab or a new one, when its scheme is allowed.</summary>
-    private async Task OpenLinkAsync(BaletteCommand cmd, bool newTab, bool fromCode)
+    private async Task OpenLinkAsync(BaletteCommand cmd, bool newTab, BaletteExecutionTrigger trigger)
     {
         if (BaletteUrl.UnsafeScheme(cmd.Href!, Options.AllowedUrlSchemes) is { } scheme)
         {
@@ -1459,11 +1520,245 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             }
 
             return BaletteCommandResult.Close;
-        }, [], null, fromCode);
+        }, [], null, trigger);
     }
 
-    private async Task RunHandlerAsync(BaletteCommand cmd, Func<BaletteCommandContext, Task<BaletteCommandResult>> handler, IReadOnlyList<BaletteCommand> selected, string? promptValue, bool propagate = false)
+    /// <summary>
+    /// Whether <paramref name="cmd"/> may run now. A row <paramref name="chosenFromList"/> must still be listed - its
+    /// <see cref="BaletteCommand.IsVisible"/>, an ancestor's or a page's it was reached through may have turned false since
+    /// the list was built - and the guards of those ancestors and pages, its own and every registered
+    /// <see cref="IBaletteCommandGuard"/> must allow it. Without guards it answers synchronously. A guard that throws
+    /// refuses; one still deciding when the palette closes, or when the user moves on in it, refuses quietly. A refusal is
+    /// logged, raised as <see cref="IBaletteService.CommandRefused"/> and shown while the palette is open.
+    /// </summary>
+    private async Task<bool> MayRunAsync(BaletteCommand cmd, BaletteExecutionTrigger trigger, bool chosenFromList = false)
     {
+        if (cmd.IsPaletteOwned)
+        {
+            return true;
+        }
+
+        var ancestors = cmd.Parent is null ? null : AncestorsOf(cmd);
+        var pages = trigger == BaletteExecutionTrigger.Palette ? PageOwners(cmd) : null;
+        if (chosenFromList && !IsStillListed(cmd, ancestors, pages))
+        {
+            ShowError(S.Format(S.CommandUnavailable, cmd.Title));
+            Rebuild();
+            return false;
+        }
+
+        // A page's guard covers every command under it: its registered descendants (found through their Parent), and - run
+        // from the palette - whatever its page lists, which a lazily loaded page, a page's sources, a handler's page and an
+        // action panel list without a Parent. Outermost first, each command once.
+        List<Func<BaletteGuardContext, CancellationToken, ValueTask<BaletteGuardResult>>>? own = null;
+        HashSet<string>? asked = null;
+        void Collect(BaletteCommand guarded)
+        {
+            if (guarded.Guard is { } guard && (asked ??= new(StringComparer.Ordinal)).Add(guarded.Id))
+            {
+                (own ??= []).Add(guard);
+            }
+        }
+
+        foreach (var (owner, _) in pages ?? [])
+        {
+            Collect(owner);
+        }
+
+        foreach (var ancestor in ancestors ?? [])
+        {
+            Collect(ancestor);
+        }
+
+        Collect(cmd);
+
+        var registered = Services.GetService(typeof(IEnumerable<IBaletteCommandGuard>)) as IEnumerable<IBaletteCommandGuard> ?? [];
+        if (own is null && !registered.Any())
+        {
+            return true;
+        }
+
+        // Deciding can take a round trip to a server: it shows busy as a handler does, a second Enter is turned away,
+        // and closing the palette cancels it. Asked while a handler runs - a handler opening a page through the service -
+        // it leaves that handler's state alone and is cancelled with it.
+        var nested = _executing;
+        using var cts = nested ? CancellationTokenSource.CreateLinkedTokenSource(_executeCts?.Token ?? CancellationToken.None) : new CancellationTokenSource();
+        using var busy = new CancellationTokenSource();
+        var startPage = CurrentPage;
+        var startConfirming = _confirmingId;
+        var context = new BaletteGuardContext(cmd, trigger, Services);
+        var verdict = BaletteGuardResult.Allow;
+        if (!nested)
+        {
+            _executeCts = cts;
+            _executing = true;
+            _runningId = cmd.Id;
+            _ = ShowBusyLaterAsync(cts, busy.Token);
+        }
+
+        try
+        {
+            foreach (var guard in own ?? [])
+            {
+                if (!(verdict = await DecideAsync(guard(context, cts.Token), cts.Token)).IsAllowed)
+                {
+                    break;
+                }
+            }
+
+            if (verdict.IsAllowed)
+            {
+                foreach (var guard in registered)
+                {
+                    if (!(verdict = await DecideAsync(guard.CheckAsync(context, cts.Token), cts.Token)).IsAllowed)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            // Fails closed: a guard that could not decide - its server down, a bug - must not let the command through.
+            BaletteLog.GuardFailed(Logger, cmd.Id, cmd.Title, ex);
+            verdict = BaletteGuardResult.Deny();
+        }
+        finally
+        {
+            busy.Cancel();
+            if (!nested)
+            {
+                _executing = false;
+                _busy = false;
+                _runningId = null;
+                if (_announcement == S.Running)
+                {
+                    _announcement = string.Empty;
+                }
+
+                if (ReferenceEquals(_executeCts, cts))
+                {
+                    _executeCts = null;
+                }
+            }
+        }
+
+        // Closed or disposed while a guard decided: the user has moved on, and nothing is run or shown.
+        if (cts.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        // Moved on in the palette while it decided - went back a page, disarmed the confirmation: what was chosen is no
+        // longer what is on screen, so it is neither run nor refused.
+        if (trigger == BaletteExecutionTrigger.Palette && (!ReferenceEquals(CurrentPage, startPage) || _confirmingId != startConfirming))
+        {
+            return false;
+        }
+
+        if (verdict.IsAllowed)
+        {
+            return true;
+        }
+
+        BaletteLog.CommandRefused(Logger, cmd.Id, cmd.Title, trigger);
+        BaletteDiagnostics.CommandEnded(null, cmd, trigger, BaletteDiagnostics.Refused, null);
+        Service.RaiseRefused(cmd, trigger, verdict.Message);
+        var message = verdict.Message ?? S.Format(S.CommandRefused, cmd.Title);
+        if (message.Length > 0)
+        {
+            ShowError(message);
+        }
+        else
+        {
+            // Said nothing on purpose: a message left from something else must not read as the answer.
+            ShowToast(null);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// A guard's answer, given up on when <paramref name="cancellationToken"/> is cancelled even if the guard ignores it -
+    /// so a palette closed on a guard that never answers is not left turning every command away. A late failure is observed.
+    /// </summary>
+    private static async ValueTask<BaletteGuardResult> DecideAsync(ValueTask<BaletteGuardResult> decision, CancellationToken cancellationToken)
+    {
+        if (decision.IsCompleted)
+        {
+            return decision.Result;
+        }
+
+        var task = decision.AsTask();
+        _ = task.ContinueWith(static t => _ = t.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
+        return await task.WaitAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// The commands of the pages a row was reached through, outermost first: each page's command, or the command that made
+    /// it (a handler's page, an action panel's row). Only down to the first page something outside the palette pushed - a
+    /// confirmation or a prompt started by a shortcut or code sits on whatever page was open, which it has nothing to do
+    /// with - and never <paramref name="cmd"/> itself.
+    /// </summary>
+    private List<(BaletteCommand Owner, bool Detached)> PageOwners(BaletteCommand cmd)
+    {
+        var owners = new List<(BaletteCommand, bool)>();
+        for (var i = _pages.Count - 1; i >= 0; i--)
+        {
+            var page = _pages[i];
+            if ((page.Command ?? page.Owner) is { } owner && owner.Id != cmd.Id)
+            {
+                owners.Add((owner, page.Detached));
+            }
+
+            if (page.Detached)
+            {
+                break;
+            }
+        }
+
+        owners.Reverse();
+        return owners;
+    }
+
+    /// <summary>
+    /// Whether a command is still listed as it was: it and its ancestors visible, its ancestors enabled, and the pages it
+    /// was reached through from the list still visible (a page pushed from outside the palette was not reached that way).
+    /// </summary>
+    private static bool IsStillListed(BaletteCommand cmd, List<BaletteCommand>? ancestors, List<(BaletteCommand Owner, bool Detached)>? pages)
+    {
+        if (cmd.IsVisible?.Invoke() == false)
+        {
+            return false;
+        }
+
+        foreach (var ancestor in ancestors ?? [])
+        {
+            if (ancestor.Disabled || ancestor.IsVisible?.Invoke() == false)
+            {
+                return false;
+            }
+        }
+
+        foreach (var (owner, detached) in pages ?? [])
+        {
+            if (!detached && owner.IsVisible?.Invoke() == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Started by code (trigger), an unhandled exception is rethrown to that caller.
+    private async Task RunHandlerAsync(BaletteCommand cmd, Func<BaletteCommandContext, Task<BaletteCommandResult>> handler, IReadOnlyList<BaletteCommand> selected, string? promptValue, BaletteExecutionTrigger trigger)
+    {
+        var propagate = trigger == BaletteExecutionTrigger.Programmatic;
         // Submitting a prompt or a multi-select page comes here directly: this is what turns away a second Enter.
         if (_executing)
         {
@@ -1477,6 +1772,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _executing = true;
         _runningId = cmd.Id;
         _ = ShowBusyLaterAsync(cts);
+        // The handler runs inside it, so what it calls - an HttpClient, a database - is traced as its children.
+        var tracked = !cmd.IsPaletteOwned;
+        var activity = tracked ? BaletteDiagnostics.StartCommand(cmd, trigger, Options.RecordCommandIdsInTraces) : null;
         BaletteCommandResult result;
         try
         {
@@ -1486,11 +1784,21 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         {
             // The palette cancelled it, or the handler stopped on purpose. A timeout is a failure, reported below:
             // HttpClient reports one as a TaskCanceledException around a TimeoutException.
+            if (tracked)
+            {
+                BaletteDiagnostics.CommandEnded(activity, cmd, trigger, BaletteDiagnostics.Cancelled, sw.Elapsed);
+            }
+
             return;
         }
         catch (Exception ex)
         {
             _executing = false;
+            if (tracked)
+            {
+                BaletteDiagnostics.CommandEnded(activity, cmd, trigger, BaletteDiagnostics.Failed, sw.Elapsed, ex);
+            }
+
             ReportFailure(cmd, ex, loadingChildren: false, propagate);
             return;
         }
@@ -1502,6 +1810,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         sw.Stop();
+        if (tracked)
+        {
+            BaletteDiagnostics.CommandEnded(activity, cmd, trigger, BaletteDiagnostics.Succeeded, sw.Elapsed);
+        }
 
         // What the handler did may have shown or hidden commands (VisibleWhen): their shortcuts follow.
         SyncShortcuts();
@@ -1532,10 +1844,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        await ApplyResultAsync(cmd, result);
+        await ApplyResultAsync(cmd, result, trigger);
     }
 
-    private async Task ApplyResultAsync(BaletteCommand cmd, BaletteCommandResult result)
+    private async Task ApplyResultAsync(BaletteCommand cmd, BaletteCommandResult result, BaletteExecutionTrigger trigger)
     {
         switch (result)
         {
@@ -1573,6 +1885,9 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     MultiSelect = p.MultiSelect,
                     OnSubmit = p.OnSubmit,
                     QueryBefore = _query,
+                    // Its rows are under the command that made it, whose guard covers them.
+                    Owner = cmd,
+                    Detached = trigger != BaletteExecutionTrigger.Palette,
                 });
                 break;
             case BaletteCommandResult.PromptResult pr:
@@ -1584,6 +1899,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                     Prompt = pr,
                     Placeholder = pr.Placeholder ?? S.PromptPlaceholder,
                     QueryBefore = _query,
+                    Detached = trigger != BaletteExecutionTrigger.Palette,
                 });
                 break;
             case BaletteCommandResult.ErrorResult e:
@@ -1638,11 +1954,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// handler has run for <see cref="BusyDelay"/>, so a slow one is never mistaken for one that did nothing, and a quick
     /// one never flickers. <c>Esc</c> closes the palette and cancels it.
     /// </summary>
-    private async Task ShowBusyLaterAsync(CancellationTokenSource cts)
+    private async Task ShowBusyLaterAsync(CancellationTokenSource cts, CancellationToken stop = default)
     {
         try
         {
-            await Task.Delay(BusyDelay, cts.Token);
+            using var either = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, stop);
+            await Task.Delay(BusyDelay, either.Token);
         }
         catch (OperationCanceledException)
         {
@@ -1824,6 +2141,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     {
         BaletteSourcePage? results = null;
         var timeoutMs = Options.SourceTimeoutMs;
+        var started = Stopwatch.GetTimestamp();
+        var activity = BaletteDiagnostics.StartSource(source);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         if (timeoutMs > 0)
         {
@@ -1841,15 +2160,23 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
+            BaletteDiagnostics.SourceEnded(activity, source, BaletteDiagnostics.Cancelled, Stopwatch.GetElapsedTime(started));
             return;
         }
         catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && timeout.IsCancellationRequested))
         {
             BaletteLog.SourceTimedOut(Logger, source.Name, timeoutMs);
+            BaletteDiagnostics.SourceEnded(activity, source, BaletteDiagnostics.TimedOut, Stopwatch.GetElapsedTime(started));
         }
         catch (Exception ex)
         {
             BaletteLog.SourceFailed(Logger, source.Name, ex);
+            BaletteDiagnostics.SourceEnded(activity, source, BaletteDiagnostics.Failed, Stopwatch.GetElapsedTime(started), ex);
+        }
+
+        if (results is not null)
+        {
+            BaletteDiagnostics.SourceEnded(activity, source, BaletteDiagnostics.Succeeded, Stopwatch.GetElapsedTime(started));
         }
 
         if (token.IsCancellationRequested)
@@ -1954,6 +2281,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private BaletteCommand SourceMoreRow(string name, int listed, int? total) => new()
     {
         Id = $"__source-more:{name}",
+        IsPaletteOwned = true,
         Title = total is { } all ? S.Format(S.MoreResults, all - listed) : S.LoadMore,
         Group = name,
         Kind = BaletteCommandKind.Search,
@@ -1974,6 +2302,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private BaletteCommand SourceErrorRow(string name) => new()
     {
         Id = $"__source-error:{name}",
+        IsPaletteOwned = true,
         Title = S.Format(S.SourceFailed, name),
         Subtitle = S.Retry,
         Icon = IconSvg("alert"),
@@ -2425,18 +2754,25 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// Opens a command's page from the root with its ancestors' pages under it, so the breadcrumbs show the whole path
     /// and going back goes up one level at a time rather than straight to the root.
     /// </summary>
-    private BalettePageFrame PushPageWithAncestors(BaletteCommand cmd, string queryBefore)
+    /// <param name="cmd">The page's command.</param>
+    /// <param name="queryBefore">The query to restore when the first page pushed is left.</param>
+    /// <param name="detached">Opened by a shortcut or code: the first page pushed is <see cref="BalettePageFrame.Detached"/>.</param>
+    private BalettePageFrame PushPageWithAncestors(BaletteCommand cmd, string queryBefore, bool detached = false)
     {
         if (CurrentPage.IsRoot && cmd.Parent is not null && AncestorsOf(cmd) is { } ancestors)
         {
             foreach (var ancestor in ancestors)
             {
-                PushPage(PageFor(ancestor, queryBefore));
+                var ancestorFrame = PageFor(ancestor, queryBefore);
+                ancestorFrame.Detached = detached;
+                PushPage(ancestorFrame);
                 queryBefore = string.Empty;
+                detached = false;
             }
         }
 
         var frame = PageFor(cmd, queryBefore);
+        frame.Detached = detached;
         PushPage(frame);
         return frame;
     }
@@ -2497,6 +2833,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private IEnumerable<BaletteCommand> ModeHints() => RegisteredModes.Where(m => m.ShowHint).Select(m => new BaletteCommand
     {
         Id = $"__mode:{m.Prefix}",
+        IsPaletteOwned = true,
         Title = m.Name,
         Subtitle = m.Description,
         Group = S.Modes,

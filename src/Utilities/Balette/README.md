@@ -58,8 +58,12 @@ natively for Blazor.
 - **Accessibility as architecture**: a native modal `<dialog>`, the WAI-ARIA combobox and grouped listbox pattern,
   live regions for result counts, pages, toasts and errors, focus restore, forced colours, reduced motion, right-to-left
   layouts - audited with axe-core in the browser suite.
+- **Guards at execution time**: per command, per page or registered in DI, asked every time a command is about to run -
+  from a row, a shortcut or code - so a permission is enforced, not just a row hidden.
 - **Failures handled**: a handler or a page loader that throws is logged and reported in the palette, never ends a
   Blazor Server circuit, and a page that failed to load offers a retry.
+- **Metrics and traces** through `System.Diagnostics` for OpenTelemetry or Bit.Belemetry: command outcomes and
+  durations, source and search latency - never a query or a prompt value.
 - **Theming through CSS variables**, light and dark, eight templates, or a fully unstyled mode.
 - Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, is
   trimming and AOT friendly, and can be lazy loaded on WebAssembly.
@@ -181,6 +185,7 @@ final order - the quickest way to see why a command ranks where it does. Every t
 - [Declarative markup](#declarative-markup)
 - [Inline palettes](#inline-palettes)
 - [Handlers and results](#handlers-and-results)
+- [Guards](#guards)
 - [Nested pages](#nested-pages)
 - [Search and ranking](#search-and-ranking)
 - [Modes](#modes)
@@ -195,6 +200,7 @@ final order - the quickest way to see why a command ranks where it does. Every t
 - [Hosting models](#hosting-models)
 - [Security](#security)
 - [Options](#options)
+- [Diagnostics](#diagnostics)
 - [Performance](#performance)
 - [Troubleshooting](#troubleshooting)
 - [Migration notes](#migration-notes)
@@ -430,6 +436,10 @@ A disabled command answers `Enter` with its reason in the footer. A destructive 
 colour; with a confirmation message the first `Enter` arms it and shows the message, the second runs it, and
 `Esc` or moving away disarms it.
 
+A row chosen after its `VisibleWhen` - or an ancestor's - turned false since the list was built (the user signed out in
+another tab, and nobody called `Refresh()`) does not run: the footer says "“Sign out” is no longer available."
+(`BaletteStrings.CommandUnavailable`) and the list is rebuilt.
+
 ### Page-scoped commands
 
 Commands that only make sense on one page are registered by that page and disposed with it:
@@ -605,6 +615,65 @@ handler that throws `OperationCanceledException` simply stops - unless it wraps 
 When the reader leaves the page a handler was started on while it runs - `Esc` out of a prompt whose submit is still
 working - its answer about pages (`Back`, a page, a prompt, `Reset`) is dropped rather than applied to the page they are
 on now; closing, toasts and errors still apply.
+
+## Guards
+
+`VisibleWhen` and `Disabled` decide what is listed; a guard decides, every time a command is about to run, whether it
+may. Guards are asked on every path a command takes - a row chosen with the keyboard or the mouse, `Mod+Enter`, a
+global shortcut, `Palette.ExecuteAsync(id)` - and again for the second `Enter` of a confirmation and when a prompt or a
+multi-select page is submitted, since what they read can change in between:
+
+```csharp
+BaletteCmd.New("Export as PDF")
+    .Guard(_ => plan.IsPro, "Exports need the Pro plan.")                  // a check that needs nothing async
+    .Handler(ExportAsync);
+
+BaletteCmd.New("Admin")
+    .Guard(async (ctx, ct) => await auth.IsAdminAsync(ct) ? true : BaletteGuardResult.Deny("Admins only."))
+    .Children(purgeCache, auditLog);                                        // guards everything under it too
+```
+
+For rules that hold for many commands - permissions, feature flags, tenancy - register an `IBaletteCommandGuard`. It is
+resolved from the scope, so it can use scoped services such as an `AuthenticationStateProvider`, and it sees the
+command (its `Tags` and `Data` are the place for a convention of your own) and what started it:
+
+```csharp
+builder.Services.AddBitBaletteCommandGuard<PermissionGuard>();
+
+public sealed class PermissionGuard(AuthenticationStateProvider auth) : IBaletteCommandGuard
+{
+    public async ValueTask<BaletteGuardResult> CheckAsync(BaletteGuardContext context, CancellationToken cancellationToken)
+    {
+        if (context.Command.Data is not RequiredPermission { Name: var permission })
+        {
+            return BaletteGuardResult.Allow;
+        }
+
+        var user = (await auth.GetAuthenticationStateAsync()).User;
+        return user.HasClaim("permission", permission) ? true : BaletteGuardResult.Deny($"You need the {permission} permission.");
+    }
+}
+```
+
+The order is the command's ancestors' guards (outermost first), its own, then the registered ones; the first refusal
+wins. A page's guard covers every command under it - its registered descendants however they run, and, from the
+palette, whatever its page lists, lazily loaded children and source results included. So does the guard of a command
+whose handler returned a page (`BaletteCommandResult.Page`), over that page's rows and its multi-select submit, and a
+row's guard over its secondary actions (`Tab`, `Mod+Enter`). A confirmation or a prompt that a shortcut or code started
+is not under the page that happened to be open. Opening a page by id (`OpenAsync(query, pageCommandId)`) asks its
+guards before it is listed or loaded.
+
+A refused command does not run, arm or open: the footer shows the guard's message, or `BaletteStrings.CommandRefused`
+("You can’t run “Export”.") when it gave none (`Deny("")` shows nothing), `IBaletteService.CommandRefused` is raised
+and an information entry is logged. `ExecuteAsync` does not throw for a refusal. A guard that throws refuses - it fails
+closed - and is logged as an error. One still deciding shows the palette busy after 150 ms, like a handler; closing the
+palette gives up on it (even if it ignores its token), and going back a page or disarming a confirmation while it
+decides drops its answer. A command has one guard: a later `.Guard(...)` replaces an earlier one. Read
+`BaletteGuardResult.IsAllowed` rather than comparing results - two refusals with different messages are different
+values. Without any guard the check costs nothing and nothing about running a command changes.
+
+Guards keep the palette honest; they are not the last line. On WebAssembly they run in the browser with the rest of the
+app, so the server still checks every action a handler asks it to perform.
 
 ## Nested pages
 
@@ -1005,7 +1074,7 @@ to the same keys: with Vim bindings on, `Ctrl+K` moves up rather than closing.
 | `OpenAsync(query, pageCommandId)`, `CloseAsync()`, `ToggleAsync()` | Drive the palette. |
 | `ExecuteAsync(id)` | Run a command as if it had been selected - registered, declared in markup or passed to `Commands` - opening the palette when it needs it. |
 | `IsOpen`, `IsMac`, `Commands`, `Modes`, `Sources` | State. |
-| `CommandsChanged`, `Opened`, `Closed`, `CommandExecuted`, `CommandFailed`, `PlatformDetected` | Events. |
+| `CommandsChanged`, `Opened`, `Closed`, `CommandExecuted`, `CommandFailed`, `CommandRefused`, `PlatformDetected`, `SequencePending` | Events. |
 
 Where the services are not registered - an app that [lazy loads](#lazy-loading-on-webassembly) Balette on
 WebAssembly - `IServiceProvider.GetBaletteService()` returns the one the palette uses; where they are, it returns the
@@ -1329,8 +1398,9 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
   [errors](#errors)).
 - **History is ids only.** Recents and pins store command ids, counts and times - never queries. A source whose
   command ids embed personal data (an e-mail address) should set `ExcludeFromHistory`, or use opaque ids.
-- **Visibility is not authorization.** `VisibleWhen` and `Disabled` shape the UI; the server must still check every
-  action a handler asks it to perform.
+- **Visibility is not authorization.** `VisibleWhen` and `Disabled` shape the UI. [Guards](#guards) are asked every time
+  a command is about to run - from a row, a shortcut or code - and refuse it when they say so; on WebAssembly they run in
+  the browser, so the server must still check every action a handler asks it to perform.
 - Stored history is validated when it is read: entries a hand-edited or corrupt `localStorage` holds are dropped.
 - **Search is bounded.** A query is searched up to `BaletteQuery.MaxLength` (256) characters, the spaces around it
   aside; a field up to `BaletteFuzzyMatcher.MaxOptimalLength` (4,096) characters is aligned in at most (256 + 1) x
@@ -1361,6 +1431,7 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 | `SearchNestedCommands` | `true` | Find nested commands from the root page. |
 | `TypoTolerance` | `true` | Retry a query that found nothing allowing a typo per term. |
 | `AllowedUrlSchemes` | `http`, `https`, `mailto`, `tel` | Schemes an `Href` may use; relative links always may. |
+| `RecordCommandIdsInTraces` | `true` | Whether `balette.command` activities carry the command's id; see [diagnostics](#diagnostics). |
 | `CloseOnBackdropClick`, `CloseOnNavigation`, `ResetOnClose` | `true` | |
 | `HighlightMatches`, `ShowFooter`, `ShowShortcuts` | `true` | |
 | `Virtualize`, `RowHeight` | `false`, `44` | Recommended above about 500 visible rows; while on, rows are `RowHeight` pixels tall whatever `--bit-balette-row-height` says. |
@@ -1371,6 +1442,42 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 | `Density` | `comfortable` | `compact` for tighter rows. |
 
 Most display options can be overridden per palette with the parameter of the same name.
+
+## Diagnostics
+
+The palette reports what it does through `System.Diagnostics`, so OpenTelemetry, Bit.Belemetry or any `MeterListener`
+picks it up - and records nothing while nobody listens. The names are `BaletteDiagnostics.MeterName` and
+`BaletteDiagnostics.ActivitySourceName`, both `Bit.Balette`:
+
+```csharp
+// Bit.Belemetry
+builder.Services.AddBitBelemetryServices(options =>
+{
+    options.Metrics.Meters.Add(BaletteDiagnostics.MeterName);
+    options.Traces.Sources.Add(BaletteDiagnostics.ActivitySourceName);
+});
+
+// OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(m => m.AddMeter(BaletteDiagnostics.MeterName))
+    .WithTracing(t => t.AddSource(BaletteDiagnostics.ActivitySourceName));
+```
+
+| Instrument | Unit | Tags |
+| --- | --- | --- |
+| `balette.command.executions` | `{execution}` | `balette.command.kind`, `balette.trigger` (`palette`, `shortcut`, `programmatic`), `balette.outcome` (`succeeded`, `failed`, `cancelled`, `refused`) |
+| `balette.command.duration` | `s` | the same; refusals ran nothing and have no duration |
+| `balette.source.duration` | `s` | `balette.source.name`, `balette.outcome` (`succeeded`, `failed`, `timed_out`); a search the palette abandoned is not recorded |
+| `balette.search.duration` | `s` | none: matching and ranking the in-memory commands for a query |
+
+Every handler runs inside a `balette.command` activity - so the `HttpClient` calls it makes are its children - tagged
+with the kind, the trigger, the outcome and the command's id; a failure sets the activity's status to an error and
+records the exception's type (`exception.type`) - never its message, which can quote what the user typed. Every source
+search runs inside a `balette.source` activity. The palette's own rows (pin, forget, retry, "Show more") are neither
+counted nor traced. Metrics never carry ids, and
+queries, prompt values, titles and selections are never recorded; set `RecordCommandIdsInTraces = false` when ids embed
+personal data (`person:ada@example.com`). On WebAssembly, metrics need the `System.Diagnostics.Metrics` feature switch
+(`MetricsSupport`), which the SDK turns off by default (Bit.Belemetry turns it back on).
 
 ## Performance
 
@@ -1423,6 +1530,9 @@ or set `SuppressShortcutsInEditableElements = false`.
 **A command does nothing, or the wrong one runs.** Look at the app's log: the palette warns about duplicate ids, about
 shortcuts several commands claim or the toggle takes, about links it refused, and logs every failed command and page.
 
+**A command does nothing and the footer says "You can’t run …".** A guard refused it; the log has an information
+entry naming the command and what started it, and `IBaletteService.CommandRefused` reports it to code.
+
 **A command's shortcut works only after opening the palette.** Its `VisibleWhen` changed while the palette was closed:
 call `Palette.Refresh()` after the state it reads changes.
 
@@ -1437,6 +1547,8 @@ Changes in behaviour since the first release:
   `BaletteStrings.CommandFailed` instead of the exception's message. To show the message, set
   `e.Message = e.Exception.Message` in `CommandFailed`. `ExecuteAsync` still rethrows unhandled failures.
 - When two commands claim one global shortcut, the one registered last runs (it used to be the first).
+- A row chosen after its `VisibleWhen` (or an ancestor's) turned false since the list was built no longer runs; the
+  footer says it is no longer available. `ExecuteAsync` still runs a hidden command - refuse one with a [guard](#guards).
 - Nested commands are found from the root page (`SearchNestedCommands`), and a query that finds nothing is retried
   with typo tolerance (`TypoTolerance`); set either to `false` for the old behaviour.
 - Matching ignores Latin diacritics and Arabic-script letter variants (`BaletteFuzzyMatcher.Normalize`).

@@ -411,6 +411,59 @@ sample was driven by a Playwright script - register and dispose, the SVG icons, 
 folding row in the lab and the palette, `Alt+Q` before, during and after the override with its warning, the refused link
 with no alert and its warning - with no console error.
 
+## Iteration 14 (2026-11-10) - guards at execution time, diagnostics
+
+A 19-phase "world-class" plan was reviewed phase by phase against the code; the verdicts (done, built, backlog,
+declined, with reasons) are in [docs/engineering/plan-review.md](docs/engineering/plan-review.md). Two gaps were real
+and fit the product: nothing checked permissions when a command ran (`VisibleWhen` only shaped the list), and the
+palette reported nothing to telemetry.
+
+**Changed**
+
+- Guards: `BaletteCommand.Guard` / `.Guard(...)`, `IBaletteCommandGuard` + `AddBitBaletteCommandGuard<T>()`,
+  `IBaletteService.CommandRefused`, `BaletteExecutionTrigger`, `BaletteStrings.CommandRefused`. Asked on every path a
+  command runs, failing closed; a page's guard covers what is under it. See the README's Guards section.
+- A row chosen after its `VisibleWhen` (or an ancestor's, or a page's it was reached through) turned false since the
+  list was built is refused (`BaletteStrings.CommandUnavailable`). `ExecuteAsync` still runs hidden commands.
+- Diagnostics: `BaletteDiagnostics` (`Bit.Balette` meter and activity source), four instruments, `balette.command` and
+  `balette.source` activities, `BaletteOptions.RecordCommandIdsInTraces`.
+- Demo: the Options & security page runs guards live (a role switch, a guarded command and a guarded page, the
+  `CommandRefused` log) and documents diagnostics.
+- Benchmarks run to 50,000 commands (linear; a first keystroke 33 ms at 50,000).
+
+**Independent review.** A fresh-context reviewer, given the code and the intent but not these notes, wrote probes for
+its findings in a scratch copy; every one reproduced. Fixed, each with a regression test in `BaletteGuardReviewTests`:
+
+| # | Sev | Defect | Fix |
+|---|---|---|---|
+| 1 | High | Submitting a multi-select page a handler returned skipped every guard, registered ones included: its synthetic `__multiselect` owner matched the "palette's own row" shortcut. | Palette rows are marked by an internal `IsPaletteOwned`, not an id prefix; a handler's page records the command that made it (`Owner`), and the submit asks about that command. |
+| 2 | Medium | The rows of a page a handler returned were not under that command's guard (the page had no `Command`). | The page's `Owner` is collected like a page's command. |
+| 3 | Medium | An app command with an id starting with `__` bypassed every guard. | As 1: identity, not a prefix. |
+| 4 | Medium | A secondary action (`Mod+Enter`, or `Tab` then `Enter`) skipped its row's guard and staleness check; `Mod+Enter` ignored a disabled row. | The action panel's `Owner` is its row; `Mod+Enter` checks the row (disabled, still listed, guards) first. |
+| 5 | Medium | Going back a page while a guard decided, then an allow, ran the command (or pushed its page) on the page now shown. | A palette-started guard whose page or armed confirmation changed meanwhile drops its answer. |
+| 6 | Medium | `OpenAsync(query, pageCommandId)` listed and loaded a guarded page. | Its guards are asked first; refused, nothing changes. |
+| 7 | Low | `Activity.AddException` put an exception's message - which can quote a prompt value - into traces. | Only `exception.type` and the error status. |
+| 8 | Low | A guard's busy timer was never stopped, and a slow refusal left "Working…" announced. | A stop token for the timer; the announcement is cleared. |
+| 9 | Low | Disarming a confirmation while its second-`Enter` guard decided re-armed it. | Covered by 5. |
+| 10 | Low | A guard that ignored its token kept a closed palette turning every command away. | Its answer is awaited with the palette's token (`WaitAsync`); a late failure is observed. |
+| 11 | Low | A confirmation or prompt started from code on top of a guarded page was asked that page's guard. | Pages pushed by a shortcut or code are `Detached`: the pages under them are not collected. |
+| 12 | Low | A lazily loaded page hidden since it opened still ran its rows. | The staleness check includes the pages a row was reached through from the list. |
+| 13 | Low | API traps: `result == false` with a message, `.Guard(a).Guard(b)` replacing `a`. | Documented on `BaletteGuardResult` and the builder. |
+| 14 | Low | The palette's own rows (pin, forget, retry, "Show more") were counted and traced as commands. | Not counted or traced. |
+
+Also found while testing: `BaletteExecutionTrigger.Code` outranked the guide's "Open it" for the MCP query "open the
+palette from code"; the member is `Programmatic`.
+
+**Verified**: `Bit.Balette.Tests` 734 passed (367 per framework; new `BaletteGuardTests`, `BaletteRegisteredGuardTests`,
+`BaletteDiagnosticsTests`, `BaletteGuardReviewTests`). MCP 188 passed, after Guards became a top-level README section:
+the search index ranks a whole `##` section as one entry, and as a subsection of Commands its text made Commands
+outrank Prompts for "a command that asks for a name before it runs". E2E in Chromium on WebAssembly: 93 passed, 2
+skipped (the lazy loading sample was not published), 0 failed, including the new `GuardTests`. `dotnet build` of the
+solution: only the MAUI sample's Android target fails, for an Android SDK (API 37) not installed on this machine.
+
+**Not run this time**: Firefox, WebKit and Blazor Server E2E (`bit.ci.Balette.e2e.yml` runs them), and a manual
+screen-reader pass (still open).
+
 ## Where it stands
 
 Ten iterations, the mission's limit, and an eleventh across browser engines. Every P0 and P1 finding is fixed and

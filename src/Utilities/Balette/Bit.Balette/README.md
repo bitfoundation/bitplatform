@@ -69,8 +69,12 @@ A WebAssembly app can skip the registration and lazy load `Bit.Balette.wasm` ins
   layouts, held keys and input methods handled; conflicts reported.
 - A native modal `<dialog>` with the WAI-ARIA combobox and grouped listbox patterns, live announcements, forced colours
   and right-to-left layouts, audited with axe-core.
+- Guards - per command, per page or registered in DI - asked every time a command is about to run, from a row, a
+  shortcut or code, and failing closed.
 - Failures logged through `ILogger` and reported in the palette without exposing exception text; unsafe link schemes
   refused.
+- Metrics and traces through `System.Diagnostics` (`Bit.Balette`), for OpenTelemetry or Bit.Belemetry, with no query
+  or prompt value ever recorded.
 - CSS-variable theming, light and dark, eight templates or a fully unstyled mode, localizable strings.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; trimming and AOT
   friendly; lazy loadable on WebAssembly.

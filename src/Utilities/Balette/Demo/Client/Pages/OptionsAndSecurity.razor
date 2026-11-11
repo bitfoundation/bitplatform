@@ -2,6 +2,7 @@
 @using System.Globalization
 @inject BaletteOptions Options
 @inject IBaletteService Palette
+@implements IDisposable
 
 <PageTitle>Options and security · Balette</PageTitle>
 
@@ -18,6 +19,8 @@
 
 @* A link the palette must refuse, listed while this page is on screen - see the security section. *@
 <BaletteCommands Commands="SecurityCommands" />
+@* Guarded commands, whose guards read the role picked in the security section. *@
+<BaletteCommands Commands="_guardedCommands" />
 
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Search the options</span></div>
@@ -141,8 +144,10 @@
             source whose command ids embed personal data (an e-mail address) should set <code>ExcludeFromHistory</code>, or use
             opaque ids - as this site's directory search does. Stored history is validated when it is read: entries a
             hand-edited or corrupt <code>localStorage</code> holds are dropped.</li>
-        <li><strong>Visibility is not authorization.</strong> <code>VisibleWhen</code> and <code>Disabled</code> shape the UI;
-            the server must still check every action a handler asks it to perform.</li>
+        <li><strong>Visibility is not authorization.</strong> <code>VisibleWhen</code> and <code>Disabled</code> shape the UI.
+            Guards are asked every time a command is about to run - from a row, a shortcut or code - and refuse it when they
+            say so (below). On WebAssembly they run in the browser, so the server must still check every action a handler
+            asks it to perform.</li>
         <li><strong>No inline script.</strong> The browser layer is a module imported from
             <code>_content/Bit.Balette/bit-balette.js</code>, with no inline scripts and no <code>eval</code>:
             <code>script-src 'self'</code> is enough.</li>
@@ -160,6 +165,51 @@
         </div>
     </div>
     <CodeBlock Language="csharp" Code="@SecurityExample" />
+
+    <div class="bb-demo" id="guards">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Guards</span></div>
+        <p>
+            This page registers <em>Purge the cache</em> (<code>Alt+Shift+P</code>), guarded by the role below, and an
+            <em>Admin tools</em> page whose guard covers every command under it. Both stay listed for a viewer - hiding them
+            is <code>VisibleWhen</code>'s job - and are refused when chosen, from their shortcut or from code, with the
+            guard's message. Switch the role while the palette shows them: the next <code>Enter</code> asks again.
+        </p>
+        <div class="bb-try" role="group" aria-label="Signed in as">
+            @foreach (var role in Roles)
+            {
+                <button type="button" class="btn @(role == _role ? "btn-secondary" : "btn-outline") demo-chip" aria-pressed="@(role == _role ? "true" : "false")" @onclick="() => _role = role">@role</button>
+            }
+            <button type="button" class="btn btn-outline" @onclick='() => Palette.OpenAsync("purge")'>Search "purge"</button>
+            <button type="button" class="btn btn-outline" @onclick='() => Palette.ExecuteAsync("demo-purge-cache")'><code>ExecuteAsync("demo-purge-cache")</code></button>
+        </div>
+        <p class="bb-muted demo-small" role="status">
+            <code>CommandRefused</code>:
+            @if (_refusals.Count == 0)
+            {
+                <strong>nothing refused yet</strong>
+            }
+            else
+            {
+                <strong>@string.Join(" · ", _refusals)</strong>
+            }
+            · ran: <strong>@_guardedRuns</strong>
+        </p>
+        <CodeBlock Language="csharp" Code="@GuardExample" />
+    </div>
+</section>
+
+<section class="bb-card" id="diagnostics">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Diagnostics</h3>
+    <p>
+        The palette reports through <code>System.Diagnostics</code> under <code>Bit.Balette</code>
+        (<code>BaletteDiagnostics.MeterName</code>, <code>.ActivitySourceName</code>): how many commands ran, failed, were
+        cancelled or refused, by kind and by what started them (<code>balette.command.executions</code>), how long handlers,
+        sources and the in-memory search took (<code>balette.command.duration</code>, <code>balette.source.duration</code>,
+        <code>balette.search.duration</code>), and a <code>balette.command</code> activity around every handler, so the calls
+        it makes are its children. Nothing is recorded while nobody listens; no query, prompt value or title ever is, and
+        <code>RecordCommandIdsInTraces = false</code> keeps ids out of traces too.
+    </p>
+    <CodeBlock Language="csharp" Code="@DiagnosticsExample" />
 </section>
 
 @code {
@@ -222,7 +272,44 @@
         new("Theme", o => o.Theme, "auto follows the page; light or dark forces one.", "theming"),
         new("Strings", o => o.Strings.GetType().Name, "Every label and announcement.", "localization"),
         new("AllowedUrlSchemes", o => Join(o.AllowedUrlSchemes.Order(StringComparer.Ordinal)), "Schemes an Href may use; relative links always may.", "options#security"),
+        new("RecordCommandIdsInTraces", o => Bool(o.RecordCommandIdsInTraces), "Whether balette.command activities carry the command's id; metrics never do.", "options#diagnostics"),
     ];
+
+    private static readonly string[] Roles = ["viewer", "admin"];
+
+    private const string GuardExample = """
+        BaletteCmd.New("Purge the cache").Shortcut("Alt+Shift+P")
+            .Guard(_ => user.IsAdmin, "Only admins can purge the cache.")
+            .Handler(PurgeAsync);
+
+        BaletteCmd.New("Admin tools")
+            .Guard(async (ctx, ct) => await auth.IsAdminAsync(ct) ? true : BaletteGuardResult.Deny("Admin tools are for admins."))
+            .Children(rotateKeys, auditLog);                          // guards everything under it
+
+        // Rules for many commands: one guard, resolved from the scope.
+        builder.Services.AddBitBaletteCommandGuard<PermissionGuard>();
+
+        Palette.CommandRefused += (_, e) => audit.Log(e.Command.Id, e.Trigger, e.Message);
+        """;
+
+    private const string DiagnosticsExample = """
+        // Bit.Belemetry
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Metrics.Meters.Add(BaletteDiagnostics.MeterName);
+            options.Traces.Sources.Add(BaletteDiagnostics.ActivitySourceName);
+        });
+
+        // OpenTelemetry
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(m => m.AddMeter(BaletteDiagnostics.MeterName))
+            .WithTracing(t => t.AddSource(BaletteDiagnostics.ActivitySourceName));
+        """;
+
+    private string _role = "viewer";
+    private readonly List<string> _refusals = [];
+    private int _guardedRuns;
+    private List<BaletteCommand> _guardedCommands = [];
 
     private const string FinderExample = """
         <button @onclick='() => _finder.SetQueryAsync("history")'>SetQueryAsync("history")</button>
@@ -292,6 +379,24 @@
 
     protected override void OnInitialized()
     {
+        _guardedCommands =
+        [
+            BaletteCmd.New("Purge the cache").Id("demo-purge-cache").Group("This page").Shortcut("Alt+Shift+P")
+                .Keywords("guard", "permission", "security")
+                .Subtitle("Guarded: admins only")
+                .Guard(_ => _role == "admin", "Only admins can purge the cache.")
+                .Handler(_ => { _guardedRuns++; StateHasChanged(); return Task.FromResult(BaletteCommandResult.Toast("Cache purged.")); })
+                .Build(),
+            BaletteCmd.New("Admin tools").Id("demo-admin-tools").Group("This page").Keywords("guard", "permission", "security")
+                .Subtitle("A guarded page: its guard covers every command under it")
+                .Guard(_ => _role == "admin", "Admin tools are for admins.")
+                .Children(
+                    BaletteCmd.New("Rotate API keys").Handler(_ => { _guardedRuns++; StateHasChanged(); return Task.FromResult(BaletteCommandResult.Toast("Keys rotated.")); }),
+                    BaletteCmd.New("Export audit log").Handler(_ => { _guardedRuns++; StateHasChanged(); return Task.FromResult(BaletteCommandResult.Toast("Audit log exported.")); }))
+                .Build(),
+        ];
+        Palette.CommandRefused += OnRefused;
+
         _optionCommands =
         [
             .. AllOptions.Select(option => BaletteCmd.New(option.Name)
@@ -317,6 +422,19 @@
                 }
             </div>;
     }
+
+    private void OnRefused(object? sender, BaletteCommandRefusedEventArgs e) => _ = InvokeAsync(() =>
+    {
+        _refusals.Insert(0, $"{e.Command.Title} ({e.Trigger.ToString().ToLowerInvariant()})");
+        if (_refusals.Count > 3)
+        {
+            _refusals.RemoveAt(3);
+        }
+
+        StateHasChanged();
+    });
+
+    public void Dispose() => Palette.CommandRefused -= OnRefused;
 
     private static string Bool(bool value) => value ? "true" : "false";
 
