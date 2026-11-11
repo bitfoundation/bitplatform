@@ -139,9 +139,11 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// </summary>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about - a server that refused the color, a rule spanning two
-    /// fields. A picker inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
-    /// <c>ValidationMessage</c> component. The picker holds one color, so it has one message, which every control
-    /// that holds the color - the gradient, the sliders and the text fields - is described by.
+    /// fields. A picker inside an <c>EditForm</c> already gets its messages from the cascading EditContext, which
+    /// <see cref="ShowValidationMessage"/> shows in this same place - giving way to this message while it is set - or
+    /// the <c>ValidationMessage</c> component shows wherever the page puts it. The picker holds one color, so it has
+    /// one message, which every control that holds the color - the gradient, the sliders and the text fields - is
+    /// described by.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -347,6 +349,22 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// of choosing it, not where it is kept - and whichever control is left first takes the focus in its place.
     /// </remarks>
     [Parameter] public bool ShowSaturationArea { get; set; } = true;
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
+    /// those of any other validator of the form - at the foot of the picker, where <see cref="ErrorMessage"/> goes, so
+    /// an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. Every control that holds the color -
+    /// the gradient, the sliders and the text fields - references them through its aria-describedby attribute, so
+    /// they are read out whenever one of them takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the picker: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the control that takes the focus says what is wrong with the color. A picker that
+    /// validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the color picker.
@@ -1071,6 +1089,18 @@ public partial class BitColorPicker : BitInputBase<string?>
     private bool _HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
 
     /// <summary>
+    /// The messages of the EditContext the error line shows (<see cref="ShowValidationMessage"/>), which only take it
+    /// while the app has no message of its own there. They mark nothing themselves: the EditContext already has.
+    /// </summary>
+    private string? _ShownValidationMessage => ShowValidationMessage && _HasErrorMessage is false ? FieldValidationMessage : null;
+
+    /// <summary>
+    /// Whether the error line at the foot of the picker is rendered, for the app's own message or for the
+    /// EditContext's.
+    /// </summary>
+    private bool _HasErrorLine => _HasErrorMessage || _ShownValidationMessage is not null;
+
+    /// <summary>
     /// Whether the app itself has rejected the color of the picker, by the flag or by a message saying why.
     /// </summary>
     /// <remarks>
@@ -1110,13 +1140,16 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// <remarks>
     /// What is wrong with the color comes first, since it is the more urgent thing to hear, then the verdict of the
     /// readout. The error is on every control rather than the first alone because every one of them carries
-    /// aria-invalid, and a control that says it is invalid has to be able to say why.
+    /// aria-invalid, and a control that says it is invalid has to be able to say why. The forced state's label gives
+    /// way to a message of the EditContext on screen, which is the text the reader can see.
     /// </remarks>
     private string? GetDescribedBy(bool withContrast)
     {
         var describedBy = string.Join(' ', new[]
         {
-            _HasErrorAriaLabel ? _ErrorLabelId : _HasErrorMessage ? _ErrorId : null,
+            _HasErrorAriaLabel && (_HasErrorMessage || _ShownValidationMessage is null) ? _ErrorLabelId
+                : _HasErrorLine ? _ErrorId
+                : null,
             withContrast && ShowContrast ? _ContrastId : null,
         }.Where(id => id.HasValue()));
 

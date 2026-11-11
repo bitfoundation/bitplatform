@@ -369,8 +369,9 @@
     @* The error line is the last row of the panel, under the palette too, the way the message of every other input
        sits right under the control it is about - and here the whole panel is that control. It is one line for the
        whole picker, since the picker holds one color. It carries no live role of its own - the region below is what
-       announces it, so it is never read out twice. *@
-    @if (_HasErrorMessage)
+       announces the app's message, so it is never read out twice. The messages of the EditContext
+       (ShowValidationMessage) take the same line while the app has none of its own. *@
+    @if (_HasErrorLine)
     {
         <div id="@_ErrorId" style="@Styles?.ErrorMessageContainer" class="bit-clp-erm @Classes?.ErrorMessageContainer">
             @if (ErrorMessageTemplate is not null)
@@ -379,7 +380,7 @@
             }
             else
             {
-                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(_HasErrorMessage ? ErrorMessage : _ShownValidationMessage)</span>
             }
         </div>
     }

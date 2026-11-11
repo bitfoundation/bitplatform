@@ -187,6 +187,13 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
     public bool? ShowSaturationArea { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field at the foot of the picker, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it.
+    /// An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the color picker.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -347,6 +354,11 @@ public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentPa
         if (ShowSaturationArea.HasValue)
         {
             bitColorPicker.TakeFromCascade(nameof(ShowSaturationArea), ShowSaturationArea.Value, static c => c.ShowSaturationArea, static (c, v) => c.ShowSaturationArea = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitColorPicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static c => c.ShowValidationMessage, static (c, v) => c.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)
