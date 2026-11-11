@@ -222,6 +222,7 @@ public class BitTimePickerParamsTests : BunitTestContext
             ShowInputClearButton = true,
             ShowNowButton = true,
             ShowSeconds = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             StartingValue = new TimeSpan(9, 30, 0),
             Suffix = "Cascaded suffix",
@@ -286,6 +287,7 @@ public class BitTimePickerParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowInputClearButton);
         Assert.IsTrue(instance.ShowNowButton);
         Assert.IsTrue(instance.ShowSeconds);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreEqual(new TimeSpan(9, 30, 0), instance.StartingValue);
         Assert.AreEqual(BitTimeFormat.TwelveHours, instance.TimeFormat);
