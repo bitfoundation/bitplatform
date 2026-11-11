@@ -223,9 +223,10 @@ public partial class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSe
                 MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
-            // Note: a CDN may ignore this. Cloudflare, for one, does not consider Vary in caching decisions unless the
-            // header is Accept-Encoding or a Cache Rules Vary setting naming origin/x-origin has been configured on the
-            // zone. Without that rule the edge keeps a single variant per URL and hands it to callers of every origin.
+            // Note: a CDN may ignore this. Cloudflare keys every cached response on the request's Origin by itself, but
+            // considers the rest of Vary, X-Origin here, only when the zone has a Cache Rules Vary setting that names
+            // x-origin and has normalize, not bypass, as its default (See the deploy skill). Without it the edge keeps a
+            // single variant per URL and hands it to callers of every X-Origin.
             context.HttpContext.Response.Headers.Append(HeaderNames.Vary, "Origin, X-Origin");
 
             if (edgeCacheTtl > 0)
