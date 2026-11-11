@@ -315,8 +315,8 @@ private string cascadedSmallColor = ""rgba(126,74,226,1)"";";
 
     <BitColorPicker Required ShowInputs ShowPreview
                     Label=""Brand color""
+                    ShowValidationMessage
                     @bind-Value=""validationModel.Color"" />
-    <ValidationMessage For=""@(() => validationModel.Color)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
@@ -362,14 +362,6 @@ private void HandleInvalidSubmit()
 {
     validationResult = null;
 }";
-    private const string example13ScssCode = @"
-.validation-message {
-    color: $bit-color-error;
-}";
-    private readonly DemoCodeFile[] example13CodeFiles =
-    [
-        new("BitColorPickerDemo.razor.scss", example13ScssCode),
-    ];
 
     private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
