@@ -222,7 +222,7 @@ public class ThemePageUITests : ShowcaseUITest
             (WorkbenchStrings.ThemeSurfaces, ["BitAccordion", "BitCallout", "BitCard", "BitCollapse", "BitDialog", "BitModal", "BitModalService", "BitPanel", "BitScrollablePane", "BitSplitter", "BitTooltip"]),
             (WorkbenchStrings.ThemeUtilities, ["BitElement", "BitIcon", "BitImage", "BitLink", "BitMediaQuery", "BitOverlay", "BitPullToRefresh", "BitSeparator", "BitSticky", "BitSwipeTrap", "BitText"]),
             (WorkbenchStrings.ThemeExtras, ["BitAccordionList", "BitChart", "BitCountryPicker", "BitDataGrid", "BitErrorBoundary", "BitFlag", "BitFullCalendar", "BitInfiniteScrolling", "BitMap",
-                                            "BitMarkdownEditor", "BitMarkdownViewer", "BitMessageBox", "BitNavPanel", "BitPdfViewer", "BitPhoneInput", "BitRichTextEditor", "BitTextShimmer",
+                                            "BitMarkdownEditor", "BitMarkdownViewer", "BitMessageBox", "BitNavPanel", "BitPdfViewer", "BitPhoneInput", "BitResourceTimeline", "BitRichTextEditor", "BitTextShimmer",
                                             "BitTimeZonePicker", "BitVirtualize"]),
             (WorkbenchStrings.ThemeAi, ["BitAiAgentRunView", "BitAiAgentStatusBadge", "BitAiAgentStepView", "BitAiArtifactPartView", "BitAiArtifactView", "BitAiAttachmentChip", "BitAiChat",
                                         "BitAiChatMessage", "BitAiCitationMarker", "BitAiCodeBlockView", "BitAiCollapsible", "BitAiContextMeter", "BitAiConversationList", "BitAiCopyButton",
@@ -243,6 +243,72 @@ public class ThemePageUITests : ShowcaseUITest
                 await Expect(Section(section).GetByRole(AriaRole.Heading, new() { Name = component, Level = 3, Exact = true })).ToBeVisibleAsync();
             }
         }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task EveryErrorSample_Should_ShowItsMessageUnderItsValue(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-section=inputs");
+
+        (string Component, string Message)[] inputs =
+        [
+            ("BitCheckbox", WorkbenchStrings.ThemeInputsCheckThisToContinue), ("BitChoiceGroup", WorkbenchStrings.ThemeChoiceError),
+            ("BitDropdown", WorkbenchStrings.ThemeChoiceError), ("BitFileInput", WorkbenchStrings.ThemeInputsAttachAPdfOfUpTo5Mb),
+            ("BitNumberField", WorkbenchStrings.ThemeQuantityError), ("BitRating", WorkbenchStrings.ThemeInputsPickAtLeastOneStar),
+            ("BitSearchBox", WorkbenchStrings.ThemeInputsTypeAtLeastThreeLetters), ("BitSlider", WorkbenchStrings.ThemeInputsKeepItAt80OrBelow),
+            ("BitTextField", WorkbenchStrings.ThemeNameError), ("BitToggle", WorkbenchStrings.ThemeInputsTurnNotificationsOnToGet)
+        ];
+
+        // The line under the component comes first; a component may repeat its message after it in a live region for screen readers.
+        foreach (var (component, message) in inputs)
+        {
+            await Expect(StateOf(component, WorkbenchStrings.ThemeStateError).GetByText(message, new() { Exact = true }).First).ToBeVisibleAsync();
+        }
+
+        // The values the messages are about.
+        await Expect(StateOf("BitNumberField", WorkbenchStrings.ThemeStateError).GetByRole(AriaRole.Spinbutton)).ToHaveValueAsync("0");
+        await Expect(StateOf("BitSearchBox", WorkbenchStrings.ThemeStateError).GetByRole(AriaRole.Searchbox)).ToHaveValueAsync("Am");
+        await Expect(StateOf("BitSlider", WorkbenchStrings.ThemeStateError).GetByRole(AriaRole.Slider)).ToHaveValueAsync("90");
+        await Expect(StateOf("BitTextField", WorkbenchStrings.ThemeStateError).GetByRole(AriaRole.Textbox)).ToHaveValueAsync("S");
+
+        await ShowTab(WorkbenchStrings.ThemePickers);
+
+        (string Component, string Message)[] pickers =
+        [
+            ("BitColorPicker", WorkbenchStrings.ThemePickersTooLightToReadOnWhite), ("BitDatePicker", WorkbenchStrings.ThemeDateError),
+            ("BitDateRangePicker", WorkbenchStrings.ThemePickersStayAtLeastTwoNights), ("BitTimePicker", WorkbenchStrings.ThemePickersTheShopClosesAt18)
+        ];
+
+        foreach (var (component, message) in pickers)
+        {
+            await Expect(StateOf(component, WorkbenchStrings.ThemeStateError).GetByText(message, new() { Exact = true }).First).ToBeVisibleAsync();
+        }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheResourceTimeline_Should_ShowItsWeekAndItsLoadingAndDisabledStates(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-section=extras");
+
+        ILocator Schedule(string state) => StateOf("BitResourceTimeline", state).GetByRole(AriaRole.Application, new() { Name = WorkbenchStrings.ShiftsHeading, Exact = true });
+
+        var schedule = Schedule(WorkbenchStrings.ThemeStateDefault);
+        var announced = StateOf("BitResourceTimeline", WorkbenchStrings.ThemeStateDefault).Locator("[aria-live]");
+
+        // The week is drawn on a canvas, so its rows are read the way a screen reader hears them: the first store, then its first shift.
+        await Expect(schedule.Locator("canvas").First).ToBeVisibleAsync();
+        await schedule.FocusAsync();
+        await schedule.PressAsync("ArrowDown");
+        await Expect(announced).ToContainTextAsync(WorkbenchStrings.PosStoreAmsterdam);
+        await schedule.PressAsync("ArrowDown");
+        await Expect(announced).ToHaveTextAsync(new Regex($"^{Regex.Escape(WorkbenchStrings.PosStaffEmma)}: ({WorkbenchStrings.ShiftsOpening}|{WorkbenchStrings.ShiftsClosing}), "));
+
+        var loading = StateOf("BitResourceTimeline", WorkbenchStrings.ThemeStateLoading);
+
+        await Expect(loading.GetByText(WorkbenchStrings.ThemeExtrasLoadingTheSchedule, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(loading.Locator("[aria-busy='true']")).ToHaveCountAsync(1);
+
+        await Expect(Schedule(WorkbenchStrings.ThemeDisabled)).ToHaveAttributeAsync("aria-disabled", "true");
     }
 
     [TestMethod, EverySurface]

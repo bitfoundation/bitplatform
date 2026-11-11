@@ -106,7 +106,8 @@ what the user approves is how the real page will look.
 - Check the widths between the presets too: drag a view's edge, or snap it to one of the app's breakpoints in the bar
   above it.
 - `/api/checks/<key>` takes the same query keys and returns an accessibility check of the view (axe-core) and the colors
-  the page sets that match none of the theme's. Fix what the page's own markup causes. A finding inside a bit component
+  the page sets that match none of the theme's, on the page and on each tab, panel and menu it opens; a finding's `where`
+  names the part it was found in. Fix what the page's own markup causes. A finding inside a bit component
   or the app's chrome is reported to the user, not worked around in the page.
 - A theme color mixed with white, black or the background counts as the theme's. A color that stands for data, like a
   category's, goes in a `--data-color` custom property (`style="--data-color:..."`, painted with `var(--data-color)`),

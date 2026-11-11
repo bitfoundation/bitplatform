@@ -87,6 +87,7 @@
             // dictation is over, or a quick stop and restart would show the button as off.
             current.onend = () => {
                 AiVoiceInput._finishing.delete(current);
+                AiSpeech.endCapture(current);
 
                 if (AiVoiceInput._recognition !== current) return;
 
@@ -101,6 +102,16 @@
                 return 0;
             }
 
+            // The microphone is the page's one: a recording the app transcribes stops as this starts, and a reply read
+            // aloud falls silent. A recording starting later ends this dictation the way another dictation would, and its
+            // component is told so.
+            AiSpeech.beginCapture(current, () => {
+                if (AiVoiceInput._recognition !== current) return;
+
+                AiVoiceInput.stopDictation(0);
+                dotnetObj.invokeMethodAsync('OnDictationEnded').catch(() => { });
+            });
+
             return handle;
         }
 
@@ -112,6 +123,7 @@
             if (handle && handle !== AiVoiceInput._handle) return;
 
             AiVoiceInput.clear();
+            AiSpeech.endCapture(current);
             AiVoiceInput._finishing.add(current);
 
             try {

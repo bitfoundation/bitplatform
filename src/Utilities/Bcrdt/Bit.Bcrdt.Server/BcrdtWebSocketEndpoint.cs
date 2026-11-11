@@ -56,6 +56,13 @@ public sealed class BcrdtWebSocketEndpointOptions
     /// </remarks>
     public BcrdtDocumentHost? DocumentHost { get; init; }
 
+    /// <summary>
+    /// Where this endpoint lists the connections it admits, so that a grant can be revoked or narrowed while the
+    /// socket is open. Omitted means the <see cref="BcrdtRelayConnections"/> registered in the container, if any -
+    /// <c>AddBitBcrdtRelayConnections()</c> or <c>AddBitBcrdtHub()</c> registers one.
+    /// </summary>
+    public BcrdtRelayConnections? Connections { get; init; }
+
     /// <summary>The default largest message a client may send: 16 MB.</summary>
     public const int DefaultMaxMessageSize = BcrdtWebSocketFraming.DefaultMaxMessageSize;
 
@@ -172,11 +179,11 @@ public static class BcrdtWebSocketEndpoint
         ArgumentOutOfRangeException.ThrowIfLessThan(options.OutboundQueueByteLimit, options.MaxMessageSize, nameof(options));
 
         // One relay - and so one set of rooms - per mapping.
-        var relay = new Relay(authorize, options);
+        var relay = new Relay(authorize, options, options.Connections ?? endpoints.ServiceProvider.GetService<BcrdtRelayConnections>());
         return endpoints.Map(pattern, (HttpContext context) => relay.HandleAsync(context));
     }
 
-    private sealed class Relay(BcrdtWebSocketAuthorization? authorize, BcrdtWebSocketEndpointOptions options)
+    private sealed class Relay(BcrdtWebSocketAuthorization? authorize, BcrdtWebSocketEndpointOptions options, BcrdtRelayConnections? connections)
     {
         /// <summary>How long a close frame may take before the socket is abandoned.</summary>
         private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
@@ -222,10 +229,11 @@ public static class BcrdtWebSocketEndpoint
             // The hosted replica is loaded before the upgrade, so it is ready for the handshake the
             // client sends as soon as its socket opens - and a store that cannot load the document is
             // reported as a status the client retries, not as a socket that opens onto nothing.
-            var connection = new SocketHostConnection(context.Connection.Id, access, UserIdOf(context), _relayName);
+            var connection = new SocketHostConnection(documentId, context.Connection.Id, access, UserIdOf(context), _relayName);
             BcrdtHostSession? session = null;
             if (options.DocumentHost is { } host)
             {
+                connection.Host = host;
                 try
                 {
                     session = await host.JoinAsync(documentId, connection, context.RequestAborted).ConfigureAwait(false);
@@ -277,16 +285,19 @@ public static class BcrdtWebSocketEndpoint
             BcrdtHostSession? session)
         {
             Member member = new(socket, options.OutboundQueueCapacity, options.OutboundQueueByteLimit);
-            connection.Attach(member);
 
             // The grant goes out before anything else, so the client knows whether it may write before
             // it hears - and answers - anybody.
-            member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(connection.Access, null));
+            connection.Attach(member);
 
             BcrdtRoomRegistry<Member>.Room room = _rooms.Join(documentId, member);
 
+            // Listed once it has a socket to be told on, so a revocation from here on reaches the client.
+            connections?.Add(connection);
+
             using CancellationTokenSource shutdown = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
             Task pump = member.PumpAsync(shutdown.Token);
+            Task refusal = CloseWhenRefusedAsync(connection, pump, socket, shutdown);
 
             // A graceful host shutdown does not signal RequestAborted until its timeout has run out, so
             // without this every open socket would hold the host up for the whole timeout and then be
@@ -315,30 +326,39 @@ public static class BcrdtWebSocketEndpoint
                     // whole room for good.
                     if (!BcrdtSyncProtocol.IsRelayable(message)) continue;
 
-                    // What a reader writes reaches nobody.
-                    if (connection.Access != BcrdtDocumentAccess.ReadWrite && BcrdtSyncProtocol.IsWrite(message)) continue;
+                    // What a reader writes reaches nobody, nor anything from a connection refused while this
+                    // waited for it. A revocation waits for a message that got past here to go where it is going.
+                    if (connection.TryBeginRelay(message) is not { } relaying) continue;
 
-                    if (session is null)
-                    {
-                        Broadcast(room, member, message);
-                        continue;
-                    }
-
-                    // The host sees every message before the room does, so what it refuses - a
-                    // malformed message, a change its validator rejected - is never passed on.
-                    bool relay;
-                    List<byte[]>? answer;
-                    connection.BeginAnswer();
+                    List<byte[]>? answer = null;
                     try
                     {
-                        relay = await session.ReceiveAsync(message).ConfigureAwait(false);
+                        if (session is null)
+                        {
+                            Broadcast(room, member, message);
+                            continue;
+                        }
+
+                        // The host sees every message before the room does, so what it refuses - a
+                        // malformed message, a change its validator rejected - is never passed on.
+                        bool relay;
+                        connection.BeginAnswer();
+                        try
+                        {
+                            relay = await session.ReceiveAsync(message).ConfigureAwait(false);
+                        }
+                        finally
+                        {
+                            answer = connection.EndAnswer();
+                        }
+
+                        // Revoked while the host was handling it: it was applied, but goes no further.
+                        if (relay && !connection.Refused) Broadcast(room, member, message);
                     }
                     finally
                     {
-                        answer = connection.EndAnswer();
+                        relaying.End();
                     }
-
-                    if (relay) Broadcast(room, member, message);
 
                     // What the host answered is queued before this client is heard again, so however
                     // often it asks, it has at most one answer waiting on the server.
@@ -360,6 +380,7 @@ public static class BcrdtWebSocketEndpoint
                 // socket that is about to go, so the pump can drain what it has and stop. An empty
                 // room is retired, so a long-lived server does not keep one per document it has seen.
                 _rooms.Leave(documentId, room, member);
+                connection.Unlist();
                 member.Complete();
 
                 try
@@ -383,12 +404,43 @@ public static class BcrdtWebSocketEndpoint
                     }
                 }
 
-                if (connection.Refused) await CloseRefusedAsync(socket).ConfigureAwait(false);
+                await refusal.ConfigureAwait(false);
                 await BcrdtWebSocketFraming.AcknowledgeCloseAsync(socket).ConfigureAwait(false);
             }
         }
 
-        /// <summary>Closes a socket the host refused, once the refusal itself has been sent.</summary>
+        /// <summary>
+        /// Closes the socket of a refused client once the refusal itself has gone out, rather than leaving that
+        /// to the client: one that ignored the refusal could otherwise hold its socket open for as long as it
+        /// liked. A client that does not answer the close frame is dropped shortly after.
+        /// </summary>
+        private static async Task CloseWhenRefusedAsync(SocketHostConnection connection, Task pump, WebSocket socket, CancellationTokenSource shutdown)
+        {
+            // A refusal completes the member, so the pump sends what is queued - the refusal last - and stops;
+            // otherwise it stops when the relay does.
+            try
+            {
+                await pump.ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Its own failure is the relay's to notice.
+            }
+
+            if (!connection.Refused) return;
+            await CloseRefusedAsync(socket).ConfigureAwait(false);
+
+            try
+            {
+                shutdown.CancelAfter(CloseTimeout);
+            }
+            catch (ObjectDisposedException)
+            {
+                // The relay already finished.
+            }
+        }
+
+        /// <summary>Closes a refused socket, once the refusal itself has been sent.</summary>
         private static async Task CloseRefusedAsync(WebSocket socket)
         {
             try
@@ -471,37 +523,45 @@ public static class BcrdtWebSocketEndpoint
         }
     }
 
-    /// <summary>A socket as the document host sees it.</summary>
+    /// <summary>
+    /// A socket as the relay, the document host and the list of connections see it - whether or not there
+    /// is a host.
+    /// </summary>
     /// <remarks>
     /// Created before the socket is accepted, so the host can be joined - and the document loaded -
     /// first; attached to the socket's member once there is one. Anything sent before that is dropped,
-    /// which the client's handshake repairs.
+    /// which the client's handshake repairs; a refusal is kept, and is all the client hears.
     /// </remarks>
-    private sealed class SocketHostConnection(string id, BcrdtDocumentAccess access, string? userId, string relay) : IBcrdtHostConnection
+    private sealed class SocketHostConnection(string documentId, string id, BcrdtDocumentAccess access, string? userId, string relay)
+        : BcrdtRelayConnection(documentId, id, access, userId, relay)
     {
         private readonly object _gate = new();
         private Member? _member;
-        private int _refused;
+        private string? _refusal;
 
         // While the host handles a message this client sent, what it sends here - the answer to a
         // handshake, above all - is held, and then queued as the client drains rather than all at once.
         private bool _answering;
         private List<byte[]>? _answer;
 
-        public string Id => id;
+        /// <summary>Gives the connection its socket's member, and queues the grant - or the refusal - first.</summary>
+        public void Attach(Member member)
+        {
+            lock (_gate)
+            {
+                Volatile.Write(ref _member, member);
+                if (_refusal is null)
+                {
+                    member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(Access, null));
+                    return;
+                }
 
-        public BcrdtDocumentAccess Access => access;
+                member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, _refusal));
+                member.Complete();
+            }
+        }
 
-        public string? UserId => userId;
-
-        public string Relay => relay;
-
-        /// <summary>Whether the host refused this connection, so the relay stops reading from it.</summary>
-        public bool Refused => Volatile.Read(ref _refused) != 0;
-
-        public void Attach(Member member) => Volatile.Write(ref _member, member);
-
-        public void Send(byte[] message)
+        public override void Send(byte[] message)
         {
             lock (_gate)
             {
@@ -550,13 +610,16 @@ public static class BcrdtWebSocketEndpoint
         }
 
         /// <summary>Queues the refusal as the last thing this client hears; the relay then closes it.</summary>
-        public void Refuse(string reason)
+        protected override void OnRefused(string reason)
         {
-            if (Interlocked.Exchange(ref _refused, 1) != 0) return;
-            if (Volatile.Read(ref _member) is not { } member) return;
+            lock (_gate)
+            {
+                _refusal = reason;
+                if (_member is not { } member) return;
 
-            member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason));
-            member.Complete();
+                member.TryEnqueue(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.None, reason));
+                member.Complete();
+            }
         }
     }
 

@@ -10,7 +10,7 @@ namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 public partial class ExtrasSection
 {
     /// <summary>The questions the Several selected sample of the accordion list opens together.</summary>
-    private static readonly string[] multipleKeys = ["delivery", "returns"];
+    private static readonly string[] multipleKeys = ["returns", "payment"];
 
     /// <summary>The orders of the grid's loading and empty samples.</summary>
     private static readonly ExtrasOrder[] noOrders = [];
@@ -62,6 +62,9 @@ public partial class ExtrasSection
     private string markdownDraft = string.Empty;
     private string markdownDocument = string.Empty;
     private string richText = string.Empty;
+    private BitResourceTimelineConfig[] schedules = [];
+    private BitResourceTimelineOptions timelineOptions = new();
+    private BitResourceTimelineTexts timelineTexts = new();
     private BitErrorBoundary? failedBoundary;
     private bool isPhone;
     // The calendar view the user picked; until then the default for the screen.
@@ -100,6 +103,8 @@ public partial class ExtrasSection
 
     private string ReportTitle => Localizer[nameof(WorkbenchStrings.ThemeExtrasTodaySSales)];
 
+    private string ScheduleLabel => Localizer[nameof(WorkbenchStrings.ShiftsHeading)];
+
     /// <summary>A day on phones, where a week doesn't fit, a week elsewhere; used until the user picks a view.</summary>
     private BitFullCalendarView CalendarView => pickedView ?? (isPhone ? BitFullCalendarView.Day : BitFullCalendarView.Week);
 
@@ -113,6 +118,20 @@ public partial class ExtrasSection
 
         calendarEvents = CreateCalendarEvents();
         calendarTexts = CreateCalendarTexts();
+
+        schedules = [.. Enumerable.Range(0, 3).Select(_ => CreateSchedule())];
+
+        // The axis is drawn in UTC, the samples' zone, and in the page's language rather than the browser's.
+        timelineOptions = new()
+        {
+            TimeZone = "UTC",
+            Locale = CultureInfo.CurrentCulture.Name,
+            ResourceHeight = 32,
+            WorkingHoursStart = 7 * 60,
+            WorkingHoursEnd = 19 * 60
+        };
+
+        timelineTexts = new() { Loading = Localizer[nameof(WorkbenchStrings.ThemeExtrasLoadingTheSchedule)] };
 
         mapMarkers = [.. ExtrasSamples.Stores.Select(store => new BitMapMarker
         {
@@ -412,6 +431,62 @@ public partial class ExtrasSection
         }
 
         return texts;
+    }
+
+    /// <summary>
+    /// A week of the three stores' shifts from the samples' Monday, each store a group of its staff; Utrecht starts
+    /// collapsed, so the open and the closed group both show.
+    /// </summary>
+    private BitResourceTimelineConfig CreateSchedule()
+    {
+        var monday = new DateTimeOffset(ThemeSamples.Today.Date, TimeSpan.Zero);
+
+        List<BitResourceTimelineResource> resources = [];
+        List<BitResourceTimelineAllocation> shifts = [];
+
+        foreach (var store in ExtrasSamples.Staff.Select(member => member.StoreKey).Distinct())
+        {
+            resources.Add(new() { Id = store, Name = Localizer[store], Collapsed = store == nameof(WorkbenchStrings.PosStoreUtrecht) });
+
+            foreach (var (nameKey, _, week) in ExtrasSamples.Staff.Where(member => member.StoreKey == store))
+            {
+                resources.Add(new() { Id = nameKey, Name = Localizer[nameKey], ParentId = store });
+
+                for (var day = 0; day < week.Length; day++)
+                {
+                    if (week[day] is '-')
+                        continue;
+
+                    var (start, end, shiftKey) = ExtrasSamples.Shift(week[day]);
+
+                    shifts.Add(new()
+                    {
+                        Id = FormattableString.Invariant($"{nameKey}-{day}"),
+                        ResourceId = nameKey,
+                        StartTime = monday.AddDays(day).AddHours(start),
+                        EndTime = monday.AddDays(day).AddHours(end),
+                        TextAbove = Localizer[shiftKey]
+                    });
+                }
+            }
+        }
+
+        return new() { Resources = resources, StartDate = monday, EndDate = monday.AddDays(7), Allocations = shifts };
+    }
+
+    /// <summary>The shifts of the loading sample, which never arrive, so the timeline keeps showing its loading state.</summary>
+    private async Task<IReadOnlyList<BitResourceTimelineAllocation>> LoadShiftsForever(BitResourceTimelineWindow window)
+    {
+        try
+        {
+            await Task.Delay(Timeout.Infinite, CurrentCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // The section went away.
+        }
+
+        return [];
     }
 
     private void OnPhoneChanged(bool phone) => isPhone = phone;

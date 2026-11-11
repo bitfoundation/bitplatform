@@ -202,6 +202,13 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
     public Func<int, string?>? SearchResultsAnnouncement { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the field, where the
+    /// <c>ErrorMessage</c> of the picker goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside
+    /// it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the time zone picker.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -402,6 +409,11 @@ public class BitTimeZonePickerParams : BitComponentBaseParams, IBitComponentPara
         if (SearchResultsAnnouncement is not null)
         {
             bitTimeZonePicker.TakeFromCascade(nameof(SearchResultsAnnouncement), SearchResultsAnnouncement, static p => p.SearchResultsAnnouncement, static (p, v) => p.SearchResultsAnnouncement = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitTimeZonePicker.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static p => p.ShowValidationMessage, static (p, v) => p.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

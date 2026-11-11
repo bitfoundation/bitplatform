@@ -4,6 +4,7 @@
 @* The options in force - the cascaded ones, the UiOptions of this chat, or the registered ones - are handed down to
    everything the chat composes, so its parts all read the same strings and settings. *@
 <CascadingValue Value="Options" IsFixed="false">
+<CascadingValue Value="_readAloud" IsFixed="false">
     <div @ref="RootElement"
          @attributes="HtmlAttributes"
          id="@_Id"
@@ -73,6 +74,7 @@
                                       MaxAttachmentSize="MaxAttachmentSize"
                                       OnAttachmentRejected="OnAttachmentRejected"
                                       AllowDictation="AllowDictation"
+                                      Transcriber="Transcriber"
                                       Commands="Commands"
                                       Mentions="Mentions"
                                       PrefixTemplate="ComposerPrefixTemplate"
@@ -88,4 +90,5 @@
             </div>
         </div>
     </div>
+</CascadingValue>
 </CascadingValue>

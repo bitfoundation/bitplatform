@@ -43,6 +43,8 @@
 }
 
 .opacity-sample {
+    border: none;
+    font: inherit;
     padding: 0.375rem 1rem;
     color: $bit-color-primary-text;
     border-radius: $bit-shape-radius-button;

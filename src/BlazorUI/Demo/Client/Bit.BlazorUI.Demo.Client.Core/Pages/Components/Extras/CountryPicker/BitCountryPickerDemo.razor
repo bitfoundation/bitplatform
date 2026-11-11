@@ -171,6 +171,16 @@
                 <code>aria-describedby</code> and announced when it appears.
             </div>
             <br />
+            <div>
+                <b>ShowValidationMessage</b> shows the messages of the form under the field, where <b>ErrorMessage</b>
+                goes, so the form below needs no <b>ValidationMessage</b> component. The field is described by them
+                through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
+                <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
+                appear: a submit validates every field at once, and a message from each of them read out in a row
+                would bury the form under its own errors. A <b>BitParams</b> holding a <b>BitCountryPickerParams</b>
+                with <b>ShowValidationMessage</b> turns it on for every country picker inside it.
+            </div>
+            <br />
             <div class="example-box">
                 <BitCountryPicker Invalid Label="Invalid" DefaultValue="BitCountries.Spain" />
                 <BitCountryPicker Label="Shipping country"
@@ -183,8 +193,8 @@
                     <BitCountryPicker Label="Nationality"
                                       Required
                                       Placeholder="Select a country"
+                                      ShowValidationMessage
                                       @bind-Value="validationModel.Nationality" />
-                    <ValidationMessage For="() => validationModel.Nationality" />
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>

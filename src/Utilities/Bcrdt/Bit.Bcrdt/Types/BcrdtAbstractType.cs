@@ -14,6 +14,14 @@ public enum BcrdtTypeKind : byte
     Set = 3,
     /// <summary>A root type whose kind is not yet known.</summary>
     Untyped = 4,
+    /// <summary>A <see cref="BcrdtCounter"/>.</summary>
+    Counter = 5,
+    /// <summary>A <see cref="BcrdtXmlFragment"/>.</summary>
+    XmlFragment = 6,
+    /// <summary>A <see cref="BcrdtXmlElement"/>. The only kind whose payload carries more than its number: the element's name follows it.</summary>
+    XmlElement = 7,
+    /// <summary>A <see cref="BcrdtXmlText"/>.</summary>
+    XmlText = 8,
 }
 
 /// <summary>
@@ -21,7 +29,7 @@ public enum BcrdtTypeKind : byte
 /// </summary>
 /// <remarks>
 /// <para>
-/// All four built-in types are views over one underlying structure: a doubly-linked list of blocks
+/// All the built-in types are views over one underlying structure: a doubly-linked list of blocks
 /// for sequence content, plus a key index for map content. A map uses only the key index, an array
 /// and a text use only the list, and a nested document uses both at different levels. Keeping them
 /// unified means one integration algorithm, one encoder, one garbage collector and one undo manager
@@ -87,6 +95,12 @@ public abstract class BcrdtAbstractType
             return depth;
         }
     }
+
+    /// <summary>
+    /// How many levels of types a detached type brings with it, itself included: one, unless it holds detached
+    /// types of its own waiting to be inserted with it. Stops counting past <paramref name="limit"/>.
+    /// </summary>
+    internal virtual int PendingHeight(int limit) => 1;
 
     /// <summary>Whether this sequence has ever carried a rich-text mark.</summary>
     /// <remarks>
@@ -304,11 +318,21 @@ public abstract class BcrdtAbstractType
             }
             else
             {
+                // An XML container's indices count its child nodes only, so an entry it ignores - a plain
+                // value a peer put among them - shifts no path, just as it shifts no index of the container.
+                bool xml = item.Parent is BcrdtXmlContainer;
                 int index = 0;
                 BcrdtItem? cursor = (item.Parent as BcrdtAbstractType)?.Start;
                 while (cursor is not null && cursor != item)
                 {
-                    if (!cursor.Deleted && cursor.Countable) index += cursor.Length;
+                    if (xml)
+                    {
+                        if (BcrdtXmlContainer.IsChild(cursor)) index++;
+                    }
+                    else if (!cursor.Deleted && cursor.Countable)
+                    {
+                        index += cursor.Length;
+                    }
                     cursor = cursor.Right;
                 }
                 path.Insert(0, index);

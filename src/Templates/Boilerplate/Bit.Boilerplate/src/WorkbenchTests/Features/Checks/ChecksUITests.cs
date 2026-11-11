@@ -1,6 +1,10 @@
 namespace Boilerplate.WorkbenchTests.Features.Checks;
 
-/// <summary>The Checks tab: an accessibility check of the selected view and a search for colors outside the theme. A desktop's; a phone's tools don't offer it.</summary>
+/// <summary>
+/// The Checks tab: an accessibility check of the selected view and of each tab, panel and menu it opens, and a search for
+/// colors outside the theme, with a finding sent to the agent or all of them exported. A desktop's; a phone's tools don't
+/// offer it.
+/// </summary>
 [TestClass, TestCategory("UITest")]
 public class ChecksUITests : WorkbenchPageTest
 {
@@ -20,7 +24,7 @@ public class ChecksUITests : WorkbenchPageTest
 
     private Task AddToTheView(string html, string paneId = "1") => View(paneId).Locator("section").Last.EvaluateAsync("(section, html) => section.insertAdjacentHTML('afterend', html)", html);
 
-    private async Task OpenChecks(string pageKey = "theme", string query = "")
+    private async Task OpenChecks(string pageKey = "pos-dashboard", string query = "")
     {
         await OpenWorkbench(pageKey, query);
         await OpenTab(WorkbenchModes.ChecksColumn);
@@ -225,7 +229,7 @@ public class ChecksUITests : WorkbenchPageTest
     [TestMethod, OnDesktops]
     public async Task TheChecks_Should_RunOnTheSelectedViewOnly(WorkbenchSurface surface)
     {
-        await OpenChecks("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "iphone-se", Theme = WorkbenchThemeMode.Dark }])}");
+        await OpenChecks("pos-dashboard", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "iphone-se", Theme = WorkbenchThemeMode.Dark }])}");
 
         var panes = await Page.Locator("iframe[data-pane-id]").EvaluateAllAsync<string[]>("frames => frames.map(f => f.dataset.paneId)");
 
@@ -249,7 +253,7 @@ public class ChecksUITests : WorkbenchPageTest
     [TestMethod, OnDesktops]
     public async Task AStoreViewsChecks_Should_CoverThePageInItsScreen(WorkbenchSurface surface)
     {
-        await OpenChecks("theme", "?device=store-play-phone&backdrop=ocean");
+        await OpenChecks("pos-dashboard", "?device=store-play-phone&backdrop=ocean");
 
         var screen = View().FrameLocator("iframe.screen-frame");
 
@@ -265,6 +269,180 @@ public class ChecksUITests : WorkbenchPageTest
         await WorkbenchTestReviewer.WaitFor(() => screen.Locator("#nameless").EvaluateAsync<int>("e => e.getAnimations().length"), count => count > 0);
     }
 
+    [TestMethod, OnDesktops]
+    public async Task EveryTab_Should_BeCheckedInTurnAndNamedOnItsFindings(WorkbenchSurface surface)
+    {
+        // A stand-in checker names the section of the tab it finds shown, so each tab leaves a finding of its own.
+        await Page.RouteAsync(Axe, route => route.FulfillAsync(new()
+        {
+            ContentType = "text/javascript",
+            Body = """
+                window.axe = { run: async () => {
+                    const section = document.querySelector('.theme-section[id]');
+                    return { violations: section ? [{ id: 'stand-in', impact: 'serious', help: section.id, helpUrl: 'https://example.com', nodes: [{ target: [`#${section.id}`] }] }] : [] };
+                } };
+                """
+        }));
+
+        await OpenChecks("theme", "?sw-section=pickers");
+
+        var address = Page.Url;
+
+        await Press(Run);
+
+        await Expect(AccessibilityTitle).ToBeVisibleAsync(new() { Timeout = 300_000 });
+
+        // The tab shown at the start is checked first, then every other one in turn.
+        var tabs = WorkbenchPageCatalog.Find("theme")!.Switches.Single(pageSwitch => pageSwitch.Key == "section").Options;
+        var inTurn = tabs.Where(tab => tab.Value == "pickers").Concat(tabs.Where(tab => tab.Value != "pickers")).ToArray();
+        var findings = Panel.Locator(".finding");
+
+        await Expect(findings.Locator(".where")).ToHaveTextAsync([.. inTurn.Select(tab => WorkbenchStrings.ResourceManager.GetString(tab.TextKey, CultureInfo.InvariantCulture)!)]);
+        await Expect(findings.Locator(".finding-text")).ToContainTextAsync([.. inTurn.Select(tab => tab.Value)]);
+
+        // The view is back on the tab it showed, and its address never followed the tabs the checks went through.
+        await Expect(View().GetByRole(AriaRole.Tab, new() { Name = WorkbenchStrings.ThemePickers, Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+        Assert.AreEqual(address, Page.Url);
+
+        // Showing a finding of another tab picks that tab, as the user would, and the result stays.
+        await Press(findings.Filter(new() { HasText = "inputs" }).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowOnPage }));
+
+        await Expect(View().GetByRole(AriaRole.Tab, new() { Name = WorkbenchStrings.ThemeInputs, Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+        await WorkbenchTestReviewer.WaitFor(() => View().Locator("#inputs").EvaluateAsync<int>("e => e.getAnimations().length"), count => count > 0);
+        await Expect(Page).ToHaveURLAsync(new Regex("sw-section=inputs"));
+        await Expect(findings).ToHaveCountAsync(tabs.Length);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task ThePanelsAndMenusOfAPage_Should_BeOpenedInTurnAndClosedAgain(WorkbenchSurface surface)
+    {
+        // A stand-in checker finds each tab shown and each part opened, so each state leaves a finding where it opened.
+        await Page.RouteAsync(Axe, route => route.FulfillAsync(new()
+        {
+            ContentType = "text/javascript",
+            Body = """
+                window.axe = { run: async () => {
+                    const place = element => element === document.body ? 'body' : `${place(element.parentElement)} > :nth-child(${Array.from(element.parentElement.children).indexOf(element) + 1})`;
+                    const open = Array.from(document.querySelectorAll('[role="tab"][aria-selected="true"], [aria-expanded="true"]'));
+                    return { violations: [{ id: 'stand-in', impact: 'serious', help: 'Open', helpUrl: 'https://example.com', nodes: open.map(element => ({ target: [place(element)] })) }] };
+                } };
+                """
+        }));
+
+        // On a desktop, where the account section shows all of its tabs instead of putting some in a menu.
+        await OpenChecks("settings", "?device=desktop-1536");
+
+        const string openParts = "elements => elements.map(element => element.id || element.outerHTML.slice(0, 60))";
+        var openBefore = await View().Locator("[aria-expanded=true]").EvaluateAllAsync<string[]>(openParts);
+
+        await RunTheChecks();
+
+        var account = AppStrings.AccountTitle;
+        var password = $"{account} › {AppStrings.Password}";
+        var where = await Panel.Locator(".finding .where").AllInnerTextsAsync();
+
+        foreach (var part in new[] { account, $"{account} › {AppStrings.Phone}", password, AppStrings.TfaTitle })
+        {
+            Assert.Contains(part, where);
+        }
+
+        // What was open at the start, like the first section of the accordion, is open again, and nothing else is.
+        await WorkbenchTestReviewer.WaitFor(() => View().Locator("[aria-expanded=true]").EvaluateAllAsync<string[]>(openParts), open => open.SequenceEqual(openBefore));
+
+        // Showing a finding opens the parts it was found in.
+        var finding = Panel.Locator(".finding").Filter(new() { Has = Page.Locator(".where", new() { HasTextString = password }) });
+
+        await Press(finding.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowOnPage }));
+
+        await Expect(View().GetByRole(AriaRole.Tab, new() { Name = AppStrings.Password, Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task AskTheAgent_Should_PinTheFindingOnItsElementAsAComment(WorkbenchSurface surface)
+    {
+        await OpenChecks();
+
+        await AddToTheView("<button id='nameless'></button>");
+
+        await RunTheChecks();
+
+        var finding = Finding("critical");
+
+        await Press(finding.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.AskTheAgent }));
+
+        await Expect(finding.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksAsked })).ToBeDisabledAsync();
+
+        static bool IsAsked(WorkbenchReviewThread thread) => thread.PageKey == "pos-dashboard" && thread.Messages[0].Text.StartsWith(WorkbenchStrings.ChecksAskAccessibility, StringComparison.Ordinal);
+
+        var threads = await WorkbenchTestReviewer.WaitFor(() => Server.Agent.GetThreads(CancellationToken.None), all => all.Any(IsAsked));
+        var thread = threads.Last(IsAsked);
+
+        Assert.Contains("(button-name)", thread.Messages[0].Text);
+        Assert.Contains("<button id=\"nameless\"></button>", thread.Messages[0].Text);
+
+        // The comment is pinned on the element itself.
+        Assert.AreEqual("nameless", await View().Locator(thread.Anchor.Selector).GetAttributeAsync("id"));
+
+        // The Checks tab stays open for the next finding.
+        await Expect(AccessibilityTitle).ToBeVisibleAsync();
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    public async Task WithoutAnAgent_Should_NotOfferToAskIt(WorkbenchSurface surface)
+    {
+        await OpenChecks();
+
+        await AddToTheView("<button id='nameless'></button>");
+
+        await RunTheChecks();
+
+        await Expect(Finding("critical").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowOnPage })).ToBeVisibleAsync();
+        await Expect(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.AskTheAgent })).ToHaveCountAsync(0);
+        await Expect(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksExportAll })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task ExportAll_Should_CopyAPromptWithEveryFindingAndWhereItIs(WorkbenchSurface surface)
+    {
+        await Context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+
+        await OpenChecks();
+
+        await AddToTheView("<button id='nameless'></button><div style='color: #ff00ff'>Own text</div>");
+
+        await RunTheChecks();
+
+        await Press(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksExportAll }));
+
+        await Expect(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksExported })).ToBeVisibleAsync();
+
+        var title = WorkbenchStrings.ResourceManager.GetString(WorkbenchPageCatalog.Find("pos-dashboard")!.TitleKey, CultureInfo.InvariantCulture)!;
+        var prompt = await WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("() => navigator.clipboard.readText()"), text => text.StartsWith("# ", StringComparison.Ordinal));
+
+        Assert.StartsWith($"# {string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ChecksPromptTitle, title)}", prompt);
+        Assert.Contains("`/api/checks/pos-dashboard", prompt);
+        Assert.Contains("(`button-name`)", prompt);
+        Assert.Contains("`<button id=\"nameless\"></button>`", prompt);
+        Assert.Contains("`color: rgb(255, 0, 255)` × 1", prompt);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task ExportAll_Should_SaveAFileWhenTheClipboardIsRefused(WorkbenchSurface surface)
+    {
+        await Context.AddInitScriptAsync("navigator.clipboard.writeText = () => Promise.reject(new Error('Refused'))");
+
+        await OpenChecks();
+
+        await AddToTheView("<button id='nameless'></button>");
+
+        await RunTheChecks();
+
+        var download = await Page.RunAndWaitForDownloadAsync(() => Press(Panel.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ChecksExportAll })));
+
+        Assert.AreEqual("pos-dashboard-checks.md", download.SuggestedFilename);
+        Assert.Contains("(`button-name`)", await File.ReadAllTextAsync(await download.PathAsync(), TestContext.CancellationToken));
+    }
+
     [TestMethod, OnPhones]
     public async Task APhone_Should_NotOfferTheChecks(WorkbenchSurface surface)
     {
@@ -276,4 +454,5 @@ public class ChecksUITests : WorkbenchPageTest
         await Expect(Page.GetByRole(AriaRole.Tab, new() { Name = WorkbenchStrings.ChecksTab })).ToHaveCountAsync(0);
         await Expect(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.RunChecks })).ToHaveCountAsync(0);
     }
+
 }

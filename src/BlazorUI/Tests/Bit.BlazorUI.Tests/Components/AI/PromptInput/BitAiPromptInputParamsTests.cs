@@ -34,6 +34,7 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
         nameof(BitAiPromptInput.PrefixTemplate),
         nameof(BitAiPromptInput.Session),
         nameof(BitAiPromptInput.SuffixTemplate),
+        nameof(BitAiPromptInput.Transcriber),
         nameof(BitAiPromptInput.Value),
         nameof(BitAiPromptInput.ValueChanged),
     ];

@@ -1939,10 +1939,49 @@
         <value>Diese Ansicht prüfen</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>Für die ausgewählte Ansicht, mit ihrem Gerät, Design, ihrer Sprache und ihren Daten: eine Barrierefreiheitsprüfung (axe-core) und eine Suche nach Farben, die nicht aus dem Design stammen.</value>
+        <value>Für die ausgewählte Ansicht, mit ihrem Gerät, Design, ihrer Sprache und ihren Daten, und nacheinander für jeden ihrer Tabs, Bereiche und Menüs: eine Barrierefreiheitsprüfung (axe-core) und eine Suche nach Farben, die nicht aus dem Design stammen.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Prüfungen starten</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Alle exportieren</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Kopiert einen Prompt für einen KI-Agenten mit allen Befunden: was falsch ist und wo.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Kopiert</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Gefragt</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Nach {0} Prüfungen angehalten, daher wurden einige Teile der Seite nicht geöffnet.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Prüfungen der Seite {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Die Workbench hat die Seite {0} in der Ansicht {1} geprüft, die Gerät, Design, Sprache und Daten festlegt. Sie hat die Tabs, Bereiche und Menüs der Seite nacheinander geöffnet, und ein Befund, der in einem davon gefunden wurde, nennt ihn.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Beheben Sie, was das Markup der Seite selbst verursacht, und führen Sie dann {0} erneut aus. Melden Sie einen Befund, der aus einer bit BlazorUI-Komponente oder dem App-Rahmen kommt, statt ihn in der Seite zu umgehen. Eine Farbe, die für Daten steht, etwa die einer Kategorie, gehört in eine Custom Property --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Wo: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Regel: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>Zum Beispiel {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>Der Tab Prüfungen hat hier dieses Barrierefreiheitsproblem gefunden. Beheben Sie es, wenn das Markup der Seite selbst es verursacht; kommt es aus einer bit BlazorUI-Komponente oder dem App-Rahmen, sagen Sie es mir stattdessen.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>Der Tab Prüfungen hat hier diese Farbe gefunden, die zu keiner Farbe des Designs passt. Verwenden Sie stattdessen eine Designfarbe; steht sie für Daten, etwa für eine Kategorie, gehört sie in eine Custom Property --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>Die Prüfungen konnten in dieser Ansicht nicht laufen. Warten Sie, bis sie geladen ist, und versuchen Sie es erneut.</value>
@@ -3798,6 +3837,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Weitere Bestellungen werden geladen...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Der Dienstplan wird geladen...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Das sind alle Bestellungen von heute.</value>
     </data>
@@ -4119,6 +4161,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Unterstrichen</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Aktivieren Sie dies, um fortzufahren.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Hängen Sie eine PDF-Datei mit höchstens 5 MB an.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Wählen Sie mindestens einen Stern.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Geben Sie mindestens drei Buchstaben ein.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Bleiben Sie bei höchstens 80.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Aktivieren Sie Benachrichtigungen, um über Bestellungen informiert zu werden.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Mit Text für Ein und Aus</value>
     </data>
@@ -4400,6 +4460,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Eingebettet</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Zu hell, um auf Weiß lesbar zu sein.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Bleiben Sie mindestens zwei Nächte.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Öffnet um</value>

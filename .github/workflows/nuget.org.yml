@@ -366,6 +366,36 @@ jobs:
     - name: dotnet pack Bcrdt.Testing
       run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj --output . --configuration Release
 
+    - name: dotnet build Bcrdt.BlazeDb
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.BlazeDb/Bit.Bcrdt.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.BlazeDb
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.BlazeDb/Bit.Bcrdt.BlazeDb.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Butil
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Butil/Bit.Bcrdt.Butil.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Butil
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Butil/Bit.Bcrdt.Butil.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Bink
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Bink/Bit.Bcrdt.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Bink
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Bink/Bit.Bcrdt.Bink.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Blow
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Blow/Bit.Bcrdt.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Blow
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Blow/Bit.Bcrdt.Blow.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Borm
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Borm/Bit.Bcrdt.Borm.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Borm
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Borm/Bit.Bcrdt.Borm.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Blex
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Blex/Bit.Bcrdt.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Blex
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Blex/Bit.Bcrdt.Blex.csproj --output . --configuration Release
+
     - name: dotnet build Blex
       run: dotnet build src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex

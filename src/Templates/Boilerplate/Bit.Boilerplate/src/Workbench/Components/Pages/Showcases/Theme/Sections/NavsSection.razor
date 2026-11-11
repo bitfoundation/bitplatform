@@ -5,14 +5,14 @@
         @foreach (var (nameKey, force) in ThemeSamples.InteractionStates.Take(3))
         {
             <StateSample NameKey="@nameKey" Force="@force" Target="a, button" Index="2">
-                <BitBreadcrumb Items="crumbs" />
+                <BitBreadcrumb Items="crumbs" AriaLabel="@($"BitBreadcrumb ({Localizer[nameKey]})")" />
             </StateSample>
         }
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeStateCollapsed)]">
-            <BitBreadcrumb Items="longCrumbs" MaxDisplayedItems="3" />
+            <BitBreadcrumb Items="longCrumbs" MaxDisplayedItems="3" AriaLabel="@($"BitBreadcrumb ({Localizer[nameof(WorkbenchStrings.ThemeStateCollapsed)]})")" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
-            <BitBreadcrumb Items="crumbs" Disabled />
+            <BitBreadcrumb Items="crumbs" Disabled AriaLabel="@($"BitBreadcrumb ({Localizer[nameof(WorkbenchStrings.ThemeDisabled)]})")" />
         </StateSample>
     </ComponentStates>
 
@@ -77,20 +77,20 @@
         @foreach (var variant in Enum.GetValues<BitVariant>())
         {
             <StateSample Name="@variant.ToString()">
-                <BitPagination Count="12" DefaultSelectedPage="4" Variant="variant" />
+                <BitPagination Count="12" DefaultSelectedPage="4" Variant="variant" AriaLabel="@($"{nameof(BitPagination)} ({variant})")" />
             </StateSample>
         }
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="button" Index="3">
-            <BitPagination Count="12" DefaultSelectedPage="4" />
+            <BitPagination Count="12" DefaultSelectedPage="4" AriaLabel="@($"{nameof(BitPagination)} ({Localizer[nameof(WorkbenchStrings.ThemeStateHover)]})")" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Target="button" Index="3">
-            <BitPagination Count="12" DefaultSelectedPage="4" />
+            <BitPagination Count="12" DefaultSelectedPage="4" AriaLabel="@($"{nameof(BitPagination)} ({Localizer[nameof(WorkbenchStrings.ThemeStateFocused)]})")" />
         </StateSample>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeNavsFirstLastAndSummary)]">
-            <BitPagination Count="12" DefaultSelectedPage="4" ShowFirstButton ShowLastButton Rounded />
+            <BitPagination Count="12" DefaultSelectedPage="4" ShowFirstButton ShowLastButton Rounded AriaLabel="@($"{nameof(BitPagination)} ({Localizer[nameof(WorkbenchStrings.ThemeNavsFirstLastAndSummary)]})")" />
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
-            <BitPagination Count="12" DefaultSelectedPage="4" Disabled />
+            <BitPagination Count="12" DefaultSelectedPage="4" Disabled AriaLabel="@($"{nameof(BitPagination)} ({Localizer[nameof(WorkbenchStrings.ThemeDisabled)]})")" />
         </StateSample>
     </ComponentStates>
 

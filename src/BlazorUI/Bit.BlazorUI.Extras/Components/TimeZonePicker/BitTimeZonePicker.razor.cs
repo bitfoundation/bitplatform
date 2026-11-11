@@ -152,8 +152,9 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     /// <summary>
     /// The error message shown under the time zone picker, which also puts the field in its invalid state - for a
     /// rejection that comes from a server or from a rule no data annotation can express. Inside an EditContext the
-    /// validation of the model is what decides the state instead, and its message is rendered by a ValidationMessage of
-    /// its own.
+    /// validation of the model is what decides the state instead, and its message is rendered by
+    /// <see cref="ShowValidationMessage"/> in this same place - giving way to this message while it is set - or by a
+    /// ValidationMessage wherever the page puts it.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -325,6 +326,21 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     /// announced at all.
     /// </summary>
     [Parameter] public Func<int, string?>? SearchResultsAnnouncement { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
+    /// those of any other validator of the form - under the field, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. The field references them through its
+    /// aria-describedby attribute, so they are read out whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the picker: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the field that takes the focus says what is wrong with it. A picker that validates
+    /// nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the time zone picker.
@@ -750,6 +766,13 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
 
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the field is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
     // The invalid state the consumer forces, either as a flag or by handing the field a message to show.
     protected override bool HasError => Invalid || HasErrorMessage;
 
@@ -759,12 +782,12 @@ public partial class BitTimeZonePicker<TValue> : BitInputBase<TValue>
     {
         get
         {
-            if (HasErrorMessage is false && HasDescription is false) return GetSplattedInputAttribute("aria-describedby");
+            if (HasErrorLine is false && HasDescription is false) return GetSplattedInputAttribute("aria-describedby");
 
             var ids = string.Join(' ', new[]
             {
                 GetSplattedInputAttribute("aria-describedby"),
-                HasErrorMessage ? _errorId : null,
+                HasErrorLine ? _errorId : null,
                 HasDescription ? _descriptionId : null
             }.Where(id => id.HasValue()));
 

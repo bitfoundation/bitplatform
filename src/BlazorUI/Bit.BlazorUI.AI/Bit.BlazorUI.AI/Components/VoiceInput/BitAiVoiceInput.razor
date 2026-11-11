@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitAiComponentBase
 
-@if (_supported)
+@if (Visible)
 {
     <span @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
           id="@_Id"
@@ -11,11 +11,13 @@
         @* The name says what a press does next - Dictate, or Stop dictation - and that is the one thing announced: a
            pressed state on top of a name that changes with it would say the same twice and read ambiguously ("Stop
            dictation, pressed"), so the toggle button leaves aria-pressed out, as it does by default for a name that
-           changes. The live region beside it says that the microphone is on. *@
+           changes. The live region beside it says that the microphone is on. While a recording is being transcribed the
+           button waits for it, unavailable but focusable, so the focus stays where the user left it. *@
         <BitToggleButton IconName="Microphone"
                          IsChecked="@_listening"
                          OnClick="ToggleAsync"
                          Disabled="Disabled"
+                         IsLoading="_transcribing"
                          Variant="BitVariant.Text"
                          OnAriaLabel="@Strings.StopDictation"
                          OffAriaLabel="@Strings.StartDictation"
@@ -24,6 +26,15 @@
                          Class="bit-aivci-btn"
                          Styles="@Styles?.Button"
                          Classes="_ButtonClasses" />
+
+        @* The time left of a recording, for the eye: the live region announces it once as the end nears, rather than
+           every second. *@
+        @if (_countdown is { } countdown)
+        {
+            <span aria-hidden="true"
+                  style="@Styles?.Countdown"
+                  class="bit-aivci-cdn @Classes?.Countdown">@countdown</span>
+        }
 
         @* The name of the button does not say that the microphone is live; this does, politely. *@
         <span role="status"

@@ -132,6 +132,13 @@ jobs:
         dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bcrdt integrations
+      run: |
+        for project in Bit.Bcrdt.BlazeDb Bit.Bcrdt.Butil Bit.Bcrdt.Bink Bit.Bcrdt.Blow Bit.Bcrdt.Borm Bit.Bcrdt.Blex; do
+          dotnet build src/Utilities/Bcrdt/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Bcrdt/$project/$project.csproj --output ./packages --configuration Release
+        done
+
     - name: Build and pack Blex
       run: |
         dotnet build src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

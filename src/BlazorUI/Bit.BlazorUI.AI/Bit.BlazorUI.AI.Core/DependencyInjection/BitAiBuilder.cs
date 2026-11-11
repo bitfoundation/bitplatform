@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// </para>
 /// <para>
 /// What it configures here is what a session needs wherever it runs: the transport, the tools, the approval policy, the
-/// models, the store and the session defaults. The other packages add their own parts as extension methods -
+/// models, the store, the speech services and the session defaults. The other packages add their own parts as extension methods -
 /// <c>ConfigureUi</c>, <c>ConfigureRenderers</c> and <c>ConfigureGenerativeUi</c> (Bit.BlazorUI.AI),
 /// <c>UseSignalRTransport</c> (Bit.BlazorUI.AI.SignalR) and <c>UseChatClient</c> (Bit.BlazorUI.AI.ChatClient) - so an
 /// app only sees the ones of the packages it installed.
@@ -160,6 +160,87 @@ public sealed class BitAiBuilder
     {
         Services.RemoveAll<IBitAiConversationStore>();
         Services.AddScoped<IBitAiConversationStore, TStore>();
+        return this;
+    }
+
+    /// <summary>
+    /// Registers the speech-to-text service the voice inputs dictate through: they record the microphone in the browser
+    /// and hand each take to it, in place of the speech API of the browser (see <see cref="IBitAiSpeechToText"/>).
+    /// </summary>
+    /// <typeparam name="TSpeechToText">The service implementation.</typeparam>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseSpeechToText<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSpeechToText>() where TSpeechToText : class, IBitAiSpeechToText
+    {
+        // Scoped, like the transport: a service posting to the app's server typically takes its HttpClient, and on Blazor
+        // Server a per-user one.
+        Services.RemoveAll<IBitAiSpeechToText>();
+        Services.AddScoped<IBitAiSpeechToText, TSpeechToText>();
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a speech-to-text service instance the voice inputs dictate through (see <see cref="IBitAiSpeechToText"/>).
+    /// </summary>
+    /// <param name="speechToText">The service.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseSpeechToText(IBitAiSpeechToText speechToText)
+    {
+        ArgumentNullException.ThrowIfNull(speechToText);
+        Services.RemoveAll<IBitAiSpeechToText>();
+        Services.AddSingleton(speechToText);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a speech-to-text service built from services, which the voice inputs dictate through (see
+    /// <see cref="IBitAiSpeechToText"/>).
+    /// </summary>
+    /// <param name="factory">Creates the service.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseSpeechToText(Func<IServiceProvider, IBitAiSpeechToText> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        Services.RemoveAll<IBitAiSpeechToText>();
+        Services.AddScoped(factory);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers the text-to-speech service replies are read aloud through (see <see cref="IBitAiTextToSpeech"/>).
+    /// </summary>
+    /// <typeparam name="TTextToSpeech">The service implementation.</typeparam>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseTextToSpeech<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TTextToSpeech>() where TTextToSpeech : class, IBitAiTextToSpeech
+    {
+        Services.RemoveAll<IBitAiTextToSpeech>();
+        Services.AddScoped<IBitAiTextToSpeech, TTextToSpeech>();
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a text-to-speech service instance replies are read aloud through (see <see cref="IBitAiTextToSpeech"/>).
+    /// </summary>
+    /// <param name="textToSpeech">The service.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseTextToSpeech(IBitAiTextToSpeech textToSpeech)
+    {
+        ArgumentNullException.ThrowIfNull(textToSpeech);
+        Services.RemoveAll<IBitAiTextToSpeech>();
+        Services.AddSingleton(textToSpeech);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a text-to-speech service built from services, which replies are read aloud through (see
+    /// <see cref="IBitAiTextToSpeech"/>).
+    /// </summary>
+    /// <param name="factory">Creates the service.</param>
+    /// <returns>The builder, for chaining.</returns>
+    public BitAiBuilder UseTextToSpeech(Func<IServiceProvider, IBitAiTextToSpeech> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        Services.RemoveAll<IBitAiTextToSpeech>();
+        Services.AddScoped(factory);
         return this;
     }
 

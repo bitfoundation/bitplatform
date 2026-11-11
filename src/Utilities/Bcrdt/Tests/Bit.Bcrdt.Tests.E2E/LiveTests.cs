@@ -1,11 +1,13 @@
-﻿using Bit.Bcrdt.Tests.E2E.Infrastructure;
+﻿using System.Text.RegularExpressions;
+using Bit.Bcrdt.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bcrdt.Tests.E2E;
 
 /// <summary>
 /// The live page, the one that leaves the tab: two browser contexts stand for two people on two machines, each
-/// with its own WebAssembly instance and its own replica, opening the same link. They meet through the demo
+/// with its own WebAssembly instance and its own replica, opening the same link - and two pages of one context for
+/// two tabs of one browser, which also reach each other directly. They meet through the demo
 /// server's relay - the SignalR hub, or the WebSocket endpoint with <c>?relay=websocket</c> - behind which a
 /// document host keeps one more replica of the document; each tab also keeps its copy in the browser's IndexedDB.
 /// Each test uses a room of its own.
@@ -133,6 +135,39 @@ public sealed class LiveTests : BcrdtTest
         await Assertions.Expect(Editor(reader.Page)).ToHaveValueAsync("Online. Offline.");
     }
 
+    [TestMethod]
+    public async Task Two_tabs_of_one_browser_follow_each_other_while_both_are_offline()
+    {
+        var room = NewRoom();
+        var browser = await NewContextAsync();
+        var first = await OpenTabAsync(room, relay: null, context: browser);
+        var second = await OpenTabAsync(room, relay: null, context: browser);
+        var elsewhere = await OpenTabAsync(room, relay: null);   // somebody else's browser
+        ILocator[] tabs = [Editor(first.Page), Editor(second.Page)];
+
+        await GoOfflineAsync(first.Page.Locator("section.panel"));
+        await GoOfflineAsync(second.Page.Locator("section.panel"));
+
+        // The server is out of reach, and the tabs of one browser still reach each other - over a BroadcastChannel.
+        await TypeAtEndAsync(Editor(first.Page), "Offline in the first tab.");
+        await Assertions.Expect(Editor(second.Page)).ToHaveValueAsync("Offline in the first tab.");
+        await TypeAtEndAsync(Editor(second.Page), " Offline in the second.");
+        await Assertions.Expect(Editor(first.Page)).ToHaveValueAsync("Offline in the first tab. Offline in the second.");
+
+        // Nobody else has any of it yet.
+        await Task.Delay(1000, TestContext.CancellationToken);
+        await Assertions.Expect(Editor(elsewhere.Page)).ToHaveValueAsync("");
+
+        // Back online, the handshake each tab runs brings the server - and everyone else - what they wrote.
+        await GoOnlineAsync(first.Page.Locator("section.panel"));
+        await GoOnlineAsync(second.Page.Locator("section.panel"));
+        var merged = await ExpectConvergedAsync([.. tabs, Editor(elsewhere.Page)], "Offline in the first tab. Offline in the second.");
+        Assert.AreEqual("Offline in the first tab. Offline in the second.", merged, "characters were lost or duplicated");
+
+        // And online, each of them is one participant, listed once in the other's presence - through the server.
+        await Assertions.Expect(first.Page.Locator(".panel-foot")).ToContainTextAsync("2 other tabs on this document");
+    }
+
     /// <summary>How many records the page's browser store holds, read straight from IndexedDB.</summary>
     private static Task<int> StoredRecordsAsync(IPage page) => page.EvaluateAsync<int>("""
         async () => {
@@ -174,16 +209,54 @@ public sealed class LiveTests : BcrdtTest
         await Assertions.Expect(Presence(writer.Page)).ToContainTextAsync(await NameAsync(reader.Page));
     }
 
+    [TestMethod]
+    public async Task The_connection_read_out_says_where_each_tab_stands_and_takes_it_offline_and_back()
+    {
+        var room = NewRoom();
+        var writer = await OpenTabAsync(room, relay: null);
+        var reader = await OpenTabAsync(room, relay: null, readOnly: true);
+        var panel = writer.Page.Locator("section.panel");
+
+        // BcrdtSyncStatus: the state in words, in a polite live region that holds the words only - its button sits
+        // beside it, so a change of the button's label is not announced as a change of the connection.
+        var status = ConnectionStatus(writer.Page);
+        await Assertions.Expect(status).ToHaveAttributeAsync("aria-live", "polite");
+        await Assertions.Expect(status).ToHaveTextAsync("Synced");
+        await Assertions.Expect(panel.Locator(".live-status")).ToHaveAttributeAsync("data-status", "synced");
+        await Assertions.Expect(status.Locator("button")).ToHaveCountAsync(0);
+        await Assertions.Expect(panel.Locator(".live-status > button.panel-toggle")).ToHaveTextAsync("Go offline");
+
+        // The tab the relay granted read access only says so, after the state.
+        await Assertions.Expect(ConnectionStatus(reader.Page)).ToHaveTextAsync("Synced - read-only");
+
+        // Its own button takes the tab offline (the page hears of it and turns its badge to "offline"), and the
+        // read-out tells how fresh the offline copy is. The other tab is not affected.
+        await GoOfflineAsync(panel);
+        await Assertions.Expect(status).ToHaveTextAsync(new Regex(@"^\s*Offline - last synced \S+\s*$"));
+        await Assertions.Expect(panel.Locator(".live-status")).ToHaveAttributeAsync("data-status", "disconnected");
+        await Assertions.Expect(ConnectionStatus(reader.Page)).ToHaveTextAsync("Synced - read-only");
+
+        // And back: the handshake runs again, and the read-out returns to "Synced".
+        await GoOnlineAsync(panel);
+        await Assertions.Expect(status).ToHaveTextAsync("Synced");
+        await Assertions.Expect(panel.Locator(".live-status")).ToHaveAttributeAsync("data-status", "synced");
+
+        // Still the same document, both ways.
+        await TypeAtEndAsync(Editor(writer.Page), "Back online.");
+        await Assertions.Expect(Editor(reader.Page)).ToHaveValueAsync("Back online.");
+    }
+
     /// <summary>A room no other test uses, in the alphabet the page accepts.</summary>
     private static string NewRoom() => "e2e-" + Guid.NewGuid().ToString("N")[..12];
 
     /// <summary>
-    /// Opens the room in a browser context of its own - another person's browser - and waits until its replica is
-    /// open and connected to the relay. Records the WebSockets the page opens, to tell which relay it used.
+    /// Opens the room in a browser context of its own - another person's browser - or in another tab of
+    /// <paramref name="context"/>, and waits until its replica is open and connected to the relay. Records the
+    /// WebSockets the page opens, to tell which relay it used.
     /// </summary>
-    private async Task<Tab> OpenTabAsync(string room, string? relay, bool readOnly = false)
+    private async Task<Tab> OpenTabAsync(string room, string? relay, bool readOnly = false, IBrowserContext? context = null)
     {
-        var page = await NewPageAsync(await NewContextAsync());
+        var page = await NewPageAsync(context ?? await NewContextAsync());
         var sockets = new List<string>();
         page.WebSocket += (_, socket) => { lock (sockets) sockets.Add(socket.Url); };
 
@@ -202,9 +275,13 @@ public sealed class LiveTests : BcrdtTest
 
     private static ILocator Presence(IPage page) => page.Locator("section.panel .presence-list");
 
+    /// <summary>The live region of the panel's <c>BcrdtSyncStatus</c>: the connection, in words.</summary>
+    private static ILocator ConnectionStatus(IPage page) => page.Locator("section.panel .live-status [role=status]");
+
     /// <summary>The guest name the tab gave itself, from its "You are Guest 123" header.</summary>
     private static async Task<string> NameAsync(IPage page) =>
         (await page.Locator("section.panel .panel-name").InnerTextAsync()).Replace("You are", "", StringComparison.Ordinal).Trim();
 
     private sealed record Tab(IPage Page, List<string> Sockets);
+
 }

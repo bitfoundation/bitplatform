@@ -46,6 +46,8 @@ public class BitAiChatParamsTests : BitAiTestBase
         nameof(BitAiChat.Session),
         nameof(BitAiChat.SessionOptions),
         nameof(BitAiChat.Suggestions),
+        nameof(BitAiChat.Synthesizer),
+        nameof(BitAiChat.Transcriber),
         nameof(BitAiChat.UiOptions),
     ];
 

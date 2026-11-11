@@ -32,7 +32,8 @@ using (var transaction = document.BeginTransaction())
 
 Two people running that against the same document identifier both end up with the same document, whether they were
 online at the time or not. For the SignalR transport add `Bit.Bcrdt.SignalR`; for the relay a server maps, add
-`Bit.Bcrdt.Server`.
+`Bit.Bcrdt.Server`; to keep documents in a bit BlazeDb database, `Bit.Bcrdt.BlazeDb`; and to follow the browser's
+network and page lifecycle in WebAssembly, `Bit.Bcrdt.Butil`.
 
 ## Blazor
 
@@ -42,6 +43,7 @@ online at the time or not. For the SignalR transport add `Bit.Bcrdt.SignalR`; fo
 
 <BcrdtCollaborationScope DocumentId="notes-42" User="_me" Context="document">
     <BcrdtPresenceView Presence="document.Presence" />
+    <BcrdtSyncStatus />
     <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" />
 </BcrdtCollaborationScope>
 
@@ -56,6 +58,8 @@ That is a working collaborative editor with live presence, automatic reconnectio
 - `BcrdtTextArea` edits a `BcrdtText`: what the user types becomes the minimal CRDT edit, remote edits arrive without
   moving the caret or overwriting keystrokes still in flight, and the caret is published through presence.
 - `BcrdtPresenceView` lists the people on a document.
+- `BcrdtSyncStatus` says where the document's connection stands - synced, reconnecting, offline or local only, when it
+  last synced, read-only or not - in a polite live region, optionally with a button that takes it offline and back.
 - `BcrdtComponentBase` marshals change notifications onto the renderer and coalesces them onto a frame budget, and
   disposes its subscriptions with the component - the base for your own collaborative components.
 
@@ -69,7 +73,10 @@ service through `IServiceProvider.GetBcrdtCollaborationService(...)`; see
 ## Features
 
 - A YATA-family sequence CRDT with run-length-encoded blocks: `BcrdtText` (with rich-text marks), `BcrdtArray`,
-  `BcrdtMap` and `BcrdtSet`, nestable inside each other.
+  `BcrdtMap`, `BcrdtSet` and `BcrdtCounter`, nestable inside each other - and an XML tree for ProseMirror-style
+  structured editors: `BcrdtXmlFragment`, `BcrdtXmlElement` and `BcrdtXmlText`.
+- `BcrdtOrderedCollection`, for task boards and lists people reorder together: items move by fractional order key
+  (`BcrdtOrderKey`), so concurrent moves never duplicate an item and never lose an edit made to it.
 - Incremental binary updates that merge without a document, and a symmetric, loss-, duplication- and
   reorder-tolerant sync protocol with jittered reconnection - offline work flows both ways on reconnect, deletions
   included.
@@ -78,7 +85,10 @@ service through `IServiceProvider.GetBcrdtCollaborationService(...)`; see
 - Selective undo that reverses your own edits and leaves everyone else's alone.
 - Snapshots that restore any point in a document's history.
 - `BcrdtTextSynchronizer` and `BcrdtTextInputBinding`, which turn an input's whole new value into the minimal edit.
-- In-memory and WebSocket client transports; every seam - transport, store, client identity - is an interface.
+- In-memory and WebSocket client transports, and live sync between the tabs of one browser - offline too - over a
+  `BroadcastChannel` (`UseCrossTabSync()`); every seam - transport, store, client identity - is an interface.
+- Metrics and distributed tracing through `System.Diagnostics` - `BcrdtDiagnostics.MeterName` and
+  `BcrdtDiagnostics.ActivitySourceName` - that never record a document, client or user identifier.
 - .NET 10 and 11; trim- and AOT-safe for the collaborative value model; lazy loadable on WebAssembly.
 
 ## For AI agents

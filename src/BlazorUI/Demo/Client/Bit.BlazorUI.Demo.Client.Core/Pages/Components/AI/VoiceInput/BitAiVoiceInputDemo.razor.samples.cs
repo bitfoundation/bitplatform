@@ -137,6 +137,46 @@ private void HandleDisabledTranscript(string transcript)
 }";
 
     private readonly string example8RazorCode = @"
+<BitChoiceGroup @bind-Value=""dictationMode"" Items=""dictationModes"" Horizontal />
+
+<BitAiVoiceInput Transcriber=""DescribeRecordingAsync""
+                 Mode=""dictationMode""
+                 MaxRecordingDuration=""TimeSpan.FromSeconds(20)""
+                 SilenceTimeout=""TimeSpan.FromSeconds(2)""
+                 OnListeningChanged=""v => isRecording = v""
+                 OnTranscript=""HandleTranscriberTranscript""
+                 OnError=""v => transcriberError = v"" />
+
+<div>Listening: <b>@isRecording</b></div>
+<div>Heard: <b>@transcriberTranscript</b></div>
+<div>Last error: <b>@transcriberError</b></div>";
+    private readonly string example8CsharpCode = @"
+private BitAiDictationMode dictationMode;
+private readonly List<BitChoiceGroupItem<BitAiDictationMode>> dictationModes =
+[
+    new() { Text = ""Auto"", Value = BitAiDictationMode.Auto },
+    new() { Text = ""Browser"", Value = BitAiDictationMode.Browser },
+    new() { Text = ""Recording"", Value = BitAiDictationMode.Recording },
+];
+private bool isRecording;
+private string transcriberTranscript = ""nothing yet"";
+private string transcriberError = ""none"";
+
+// A stand-in for the app's speech-to-text, which would post the recording to its server (or to Whisper, Azure
+// Speech, ...) and return what it heard: this one only says what it was handed.
+private async Task<string?> DescribeRecordingAsync(Stream audio, string contentType, CancellationToken cancellationToken)
+{
+    await Task.Delay(600, cancellationToken);
+
+    return $""(a {audio.Length:N0}-byte {contentType} recording, which a real app sends to its speech-to-text)"";
+}
+
+private void HandleTranscriberTranscript(string transcript)
+{
+    transcriberTranscript = transcript;
+}";
+
+    private readonly string example9RazorCode = @"
 <style>
     .custom-class {
         padding: 0.25rem;
@@ -170,7 +210,7 @@ private void HandleDisabledTranscript(string transcript)
 </span>
 
 <div>Heard: <b>@styleTranscript</b></div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private const string cssVariablesStyle = ""--bit-ToggleButton-text-color:var(--bit-clr-pri);"" +
                                          ""--bit-ToggleButton-radius:50%;"" +
                                          ""--bit-ToggleButton-checked-background:var(--bit-clr-err);"" +
@@ -183,12 +223,12 @@ private void HandleStyleTranscript(string transcript)
     styleTranscript = transcript;
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <div dir=""rtl"" style=""display:flex;align-items:center;gap:0.5rem"">
     <BitAiVoiceInput Dir=""BitDir.Rtl"" Language=""fa-IR"" OnTranscript=""HandleRtlTranscript"" />
     <span>شنیده شد: <b>@rtlTranscript</b></span>
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private string rtlTranscript = ""هنوز چیزی شنیده نشده"";
 
 private void HandleRtlTranscript(string transcript)

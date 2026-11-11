@@ -86,7 +86,7 @@ public class McpToolTests
             Assert.Contains($"## {package}\n", index.ReplaceLineEndings("\n"));
         }
 
-        foreach (var type in new[] { "BcrdtDocument", "BcrdtText", "BcrdtMap", "BcrdtArray", "BcrdtSet", "IBcrdtCollaborationService", "BcrdtCollaborativeDocument", "BcrdtSyncProvider", "BcrdtUndoManager", "BcrdtCollaborationScope", "BcrdtTextArea", "BcrdtPresenceView", "BcrdtComponentBase", "BcrdtSignalRTransportFactory", "BcrdtHub", "BcrdtSimulatedNetwork", "BcrdtConvergenceHarness" })
+        foreach (var type in new[] { "BcrdtDocument", "BcrdtText", "BcrdtMap", "BcrdtArray", "BcrdtSet", "IBcrdtCollaborationService", "BcrdtCollaborativeDocument", "BcrdtSyncProvider", "BcrdtUndoManager", "BcrdtCollaborationScope", "BcrdtTextArea", "BcrdtPresenceView", "BcrdtSyncStatus", "BcrdtComponentBase", "BcrdtSignalRTransportFactory", "BcrdtHub", "BcrdtSimulatedNetwork", "BcrdtConvergenceHarness" })
         {
             Assert.Contains($"**{type}**", index);
         }
@@ -175,7 +175,8 @@ public class McpToolTests
 
         // A sealed type has nobody to protect anything for, a component's own lifecycle overrides are plumbing,
         // and what a component inherits protected from BcrdtComponentBase is BcrdtComponentBase's reference.
-        var text = await McpCall.TextAsync("GetBcrdtApi", new() { ["typeName"] = "BcrdtText" });
+        // (BcrdtText is not the example any more: BcrdtXmlText derives from it.)
+        var text = await McpCall.TextAsync("GetBcrdtApi", new() { ["typeName"] = "BcrdtMap" });
         var scope = await McpCall.TextAsync("GetBcrdtApi", new() { ["typeName"] = "BcrdtCollaborationScope" });
 
         Assert.DoesNotContain("*(protected)*", text);
@@ -261,6 +262,19 @@ public class McpToolTests
         Assert.Contains("### `Demo/Client/Pages/Live.razor`", guide);
         Assert.Contains("### Register the services", guide, "The quoted guide section should be demoted under 'From the guide'.");
         Assert.DoesNotContain("[truncated", guide);
+    }
+
+    [TestMethod]
+    public async Task No_hosting_models_guide_is_cut_short()
+    {
+        // A guide is the whole wiring or it is a trap: the half of a Program.cs past the cut is the half nobody writes.
+        foreach (var model in BcrdtSetupGuide.HostingModels)
+        {
+            var guide = await McpCall.TextAsync("GetBcrdtSetupGuide", new() { ["hostingModel"] = model });
+
+            Assert.DoesNotContain("[truncated", guide, model);
+            Assert.AreEqual(BcrdtSetupGuide.Get(model), guide, model);
+        }
     }
 
     [TestMethod]

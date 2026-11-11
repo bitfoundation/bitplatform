@@ -7,6 +7,7 @@
 //   --bit-AiMessageActions-actions-gap  room between two action buttons                      (default: spacing(0.5))
 //   --bit-AiMessageActions-color        text of the metadata (the model, the usage, the time) (default: $clr-fg-ter)
 //   --bit-AiMessageActions-font-size    size of the metadata                                  (default: $tg-fs-xs)
+//   --bit-AiMessageActions-error-color  text saying that reading the reply aloud failed       (default: $clr-err-fg)
 
 .bit-aimac {
     display: flex;
@@ -46,6 +47,16 @@
 @include xs {
     .bit-aimac-act {
         opacity: 1;
+    }
+}
+
+// Says that reading the reply aloud failed. Empty, it takes no room in the row (a gap of its own included) while staying
+// on the page as the live region the failure is announced through.
+.bit-aimac-ras {
+    color: var(--bit-AiMessageActions-error-color, #{$clr-err-fg});
+
+    &:empty {
+        @include visually-hidden;
     }
 }
 

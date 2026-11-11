@@ -23,6 +23,27 @@ public sealed class BcrdtOperationGeneratorOptions
 
     /// <summary>How many distinct map keys to draw from. Fewer means more write conflicts.</summary>
     public int KeySpace { get; init; } = 8;
+
+    /// <summary>Whether set edits are generated, on the <c>tags</c> root set.</summary>
+    /// <remarks>
+    /// Off by default, like <see cref="Counter"/>, so a seed recorded before these existed still replays
+    /// the same schedule.
+    /// </remarks>
+    public bool Set { get; init; }
+
+    /// <summary>
+    /// Whether counter edits are generated, on the <c>votes</c> root counter and - with
+    /// <see cref="NestedTypes"/> - on counters nested in the <c>meta</c> map.
+    /// </summary>
+    public bool Counter { get; init; }
+
+    /// <summary>
+    /// Whether XML tree edits are generated, on the <c>tree</c> root fragment: elements and texts inserted
+    /// and removed anywhere in the tree - whole subtrees built detached included - attributes set and
+    /// removed, and the texts edited and formatted.
+    /// </summary>
+    /// <remarks>Off by default, like <see cref="Set"/> and <see cref="Counter"/>.</remarks>
+    public bool Xml { get; init; }
 }
 
 /// <summary>
@@ -81,8 +102,128 @@ public sealed class BcrdtOperationGenerator(int seed, BcrdtOperationGeneratorOpt
         if (_options.Text) choices.Add(() => TextOperation(doc));
         if (_options.Array) choices.Add(() => ArrayOperation(doc));
         if (_options.Map) choices.Add(() => MapOperation(doc));
+        if (_options.Set) choices.Add(() => SetOperation(doc));
+        if (_options.Counter) choices.Add(() => CounterOperation(doc));
+        if (_options.Xml) choices.Add(() => XmlOperation(doc));
 
         return choices.Count == 0 ? null : choices[_random.Next(choices.Count)]();
+    }
+
+    private string? SetOperation(BcrdtDocument doc)
+    {
+        BcrdtSet set = doc.GetSet("tags");
+
+        // A small domain, so concurrent adds and removes of the same element are common.
+        string element = "t" + _random.Next(_options.KeySpace);
+        if (_random.Next(3) == 0)
+        {
+            set.Remove(element);
+            return $"set.remove({element})";
+        }
+
+        set.Add(element);
+        return $"set.add({element})";
+    }
+
+    private string? CounterOperation(BcrdtDocument doc)
+    {
+        BcrdtCounter counter = doc.GetCounter("votes");
+        string target = "votes";
+
+        if (_options.NestedTypes && _random.Next(3) == 0)
+        {
+            string key = "c" + _random.Next(Math.Max(1, _options.KeySpace / 4));
+            // Creating it here races with the other replicas creating it too, which is exactly the
+            // case worth exploring: one creation wins and the increments made into the other go with it.
+            counter = doc.GetMap("meta").EnsureCounter(key);
+            target = $"meta.{key}";
+        }
+
+        long amount = _random.Next(-5, 10);
+        counter.Add(amount);
+        return $"{target}.add({amount})";
+    }
+
+    private static readonly string[] ElementNames = ["p", "h1", "li", "ul", "blockquote"];
+
+    private static readonly string[] AttributeNames = ["class", "level", "data-id"];
+
+    private string? XmlOperation(BcrdtDocument doc)
+    {
+        BcrdtXmlFragment tree = doc.GetXmlFragment("tree");
+
+        // Any container in the tree, so concurrent edits land at every depth - and often in the same
+        // element, which is where they compete.
+        List<BcrdtXmlContainer> containers = [tree, .. tree.Descendants().OfType<BcrdtXmlElement>()];
+        BcrdtXmlContainer target = containers[_random.Next(containers.Count)];
+        string where = target is BcrdtXmlElement element ? $"<{element.Name}>" : "tree";
+        int roll = _random.Next(10);
+
+        if (roll < 4 || target.Count == 0)
+        {
+            int index = _random.Next(target.Count + 1);
+            IBcrdtXmlNode node = RandomXmlNode();
+            target.Insert(index, node);
+            return $"{where}.insert({index}, {node.ToXmlString()})";
+        }
+
+        if (roll < 5)
+        {
+            int index = _random.Next(target.Count);
+            target.Delete(index);
+            return $"{where}.delete({index})";
+        }
+
+        if (roll < 7 && target is BcrdtXmlElement attributed)
+        {
+            string name = AttributeNames[_random.Next(AttributeNames.Length)];
+            if (_random.Next(4) == 0)
+            {
+                attributed.RemoveAttribute(name);
+                return $"{where}.removeAttribute({name})";
+            }
+
+            object value = _random.Next(2) == 0 ? Words[_random.Next(Words.Length)] : _random.Next(6);
+            attributed.SetAttribute(name, value);
+            return $"{where}.setAttribute({name}, {Format(value)})";
+        }
+
+        List<BcrdtXmlText> texts = [.. tree.Descendants().OfType<BcrdtXmlText>()];
+        if (texts.Count == 0) return null;
+        BcrdtXmlText text = texts[_random.Next(texts.Count)];
+
+        if (text.Count == 0 || _random.Next(3) == 0)
+        {
+            int index = _random.Next(text.Count + 1);
+            string word = Words[_random.Next(Words.Length)];
+            text.Insert(index, word);
+            return $"xmltext.insert({index}, {Format(word)})";
+        }
+
+        int start = _random.Next(text.Count);
+        int length = Math.Min(_random.Next(1, 5), text.Count - start);
+        if (_options.Formatting && _random.Next(2) == 0)
+        {
+            text.Format(start, length, new Dictionary<string, object?> { ["bold"] = _random.Next(3) == 0 ? null : true });
+            return $"xmltext.format({start}, {length})";
+        }
+
+        text.Delete(start, length);
+        return $"xmltext.delete({start}, {length})";
+    }
+
+    /// <summary>A new text, or a new element - sometimes with an attribute and a child already inside it.</summary>
+    private IBcrdtXmlNode RandomXmlNode()
+    {
+        if (_random.Next(3) == 0) return new BcrdtXmlText(Words[_random.Next(Words.Length)]);
+
+        var element = new BcrdtXmlElement(ElementNames[_random.Next(ElementNames.Length)]);
+        if (_random.Next(2) == 0)
+        {
+            element.SetAttribute(AttributeNames[_random.Next(AttributeNames.Length)], _random.Next(6));
+            element.Push(new BcrdtXmlText(Words[_random.Next(Words.Length)]));
+        }
+        return element;
     }
 
     private string? TextOperation(BcrdtDocument doc)
@@ -159,7 +300,7 @@ public sealed class BcrdtOperationGenerator(int seed, BcrdtOperationGeneratorOpt
 
     private object? RandomValue(BcrdtDocument doc)
     {
-        int roll = _random.Next(_options.NestedTypes ? 8 : 6);
+        int roll = _random.Next(_options.NestedTypes ? (_options.Counter ? 9 : 8) : 6);
         return roll switch
         {
             0 => _random.Next(1000),
@@ -169,7 +310,8 @@ public sealed class BcrdtOperationGenerator(int seed, BcrdtOperationGeneratorOpt
             4 => null,
             5 => new List<object?> { _random.Next(10), Words[_random.Next(Words.Length)] },
             6 => new BcrdtMap(),
-            _ => new BcrdtArray(),
+            7 => new BcrdtArray(),
+            _ => new BcrdtCounter(_random.Next(-3, 4)),
         };
     }
 

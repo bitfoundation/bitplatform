@@ -116,7 +116,8 @@ public partial class BitAiPromptInput : BitAiComponentBase
     [Parameter] public bool AllowAttachments { get; set; } = true;
 
     /// <summary>
-    /// Offers the dictation button, when the browser supports it.
+    /// Offers the dictation button, when the browser supports it - or, with a <see cref="Transcriber"/> or an
+    /// <see cref="IBitAiSpeechToText"/> service, when it can record the microphone.
     /// <br />
     /// The default value is <strong>false</strong>.
     /// </summary>
@@ -282,6 +283,14 @@ public partial class BitAiPromptInput : BitAiComponentBase
     /// The content placed between the tools and the send button.
     /// </summary>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+
+    /// <summary>
+    /// The app's speech-to-text the dictation button transcribes a recording of the microphone with, in place of the
+    /// speech API of the browser (see <see cref="BitAiVoiceInput.Transcriber"/>). When null, an
+    /// <see cref="IBitAiSpeechToText"/> service registered through <c>AddBitBlazorUIAIServices</c> is used, if there is one.
+    /// </summary>
+    /// <remarks>Only used when <see cref="AllowDictation"/> is on.</remarks>
+    [Parameter] public Func<Stream, string, CancellationToken, Task<string?>>? Transcriber { get; set; }
 
     /// <summary>
     /// The text of the composer.

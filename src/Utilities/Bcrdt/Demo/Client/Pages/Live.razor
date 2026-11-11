@@ -55,14 +55,18 @@
                         <span class="replica-dot" aria-hidden="true"></span>
                         <span class="panel-name">You are @_me.Name</span>
                         <ConnectionBadge Status="document.ConnectionStatus" WantsConnection="_online" />
-                        <button type="button" class="panel-toggle btn btn-secondary" @onclick="() => ToggleAsync(document)">
-                            @(_online ? "Go offline" : "Go online")
-                        </button>
                     </header>
 
                     <div class="panel-presence">
                         <span class="presence-label">Here now:</span>
                         <BcrdtPresenceView Presence="document.Presence" Class="presence-list" />
+                    </div>
+
+                    @* Follows the cascaded document by itself; the page only remembers a deliberate disconnect, for the badge. *@
+                    <div class="panel-presence live-connection">
+                        <span class="presence-label">Connection:</span>
+                        <BcrdtSyncStatus Class="live-status" ShowToggle="true" ToggleClass="panel-toggle btn btn-secondary"
+                                         OnToggled="connected => Toggled(document, connected)" />
                     </div>
 
                     <div class="panel-body">
@@ -86,7 +90,7 @@
                         @if (!_online)
                         {
                             <span class="metric metric-warn">
-                                editing offline - changes are stored in this browser and sent when this tab reconnects, even after a reload
+                                editing offline - changes reach this browser's other tabs now, and the server when this tab reconnects, even after a reload
                             </span>
                         }
                         <span class="panel-client" title="The engine's per-session client identifier. Every tab has its own.">
@@ -116,9 +120,9 @@
         The document comes from the app's own <code>AddBitBcrdtServices</code> registration and is opened by
         <code>BcrdtCollaborationScope</code>, which shows <code>LoadingContent</code> while the page is prerendered and
         the document opens, <code>ErrorContent</code> if it cannot be opened, and closes it when the page goes away. The
-        editor is <code>BcrdtTextArea</code> and the list of people is <code>BcrdtPresenceView</code>. Each tab keeps its
-        copy in the browser's IndexedDB (<code>UseIndexedDbStore</code>), so a reload - online or not - starts from where
-        it left off.
+        editor is <code>BcrdtTextArea</code>, the list of people is <code>BcrdtPresenceView</code> and the connection, with
+        its offline switch, is <code>BcrdtSyncStatus</code>. Each tab keeps its copy in the browser's IndexedDB
+        (<code>UseIndexedDbStore</code>), so a reload - online or not - starts from where it left off; the tabs of one browser also sync directly (<code>UseCrossTabSync</code>), offline too.
     </p>
     <p class="bb-card-desc">
         On the server, <code>BcrdtHub</code> from <code>Bit.Bcrdt.Server</code> relays each message to the other tabs,
@@ -221,21 +225,13 @@ app.MapBitBcrdtWebSocket(<span class="s">"/ws/bcrdt/{documentId}"</span>, option
 
     private void Opened(BcrdtCollaborativeDocument document) => _online = true;
 
-    private async Task ToggleAsync(BcrdtCollaborativeDocument document)
+    private void Toggled(BcrdtCollaborativeDocument document, bool connected)
     {
-        _online = !_online;
-        if (_online)
-        {
-            await document.ConnectAsync();
+        _online = connected;
 
-            // Disconnecting withdraws this tab's presence so the others see it leave at once; coming back
-            // publishes it again.
-            document.Presence.SetUser(_me);
-        }
-        else
-        {
-            await document.DisconnectAsync();
-        }
+        // Disconnecting withdraws this tab's presence so the others see it leave at once; coming back publishes it
+        // again.
+        if (connected) document.Presence.SetUser(_me);
     }
 
     // The relay tabs keep the access this tab asked for; the share links name it explicitly.

@@ -169,6 +169,31 @@ private readonly BitAiMessage cascadeMessage = CreateReply(""Pinned, without fee
 private readonly BitAiMessage cascadeOwnMessage = CreateReply(""Pinned from the BitParams, with its own ShowFeedback."");";
 
     private readonly string example9RazorCode = @"
+<div>@readAloudMessage.GetText()</div>
+<BitAiMessageActions Pinned Message=""readAloudMessage"" ReadAloud=""readAloud"" />
+
+<div>@readAloudOtherMessage.GetText()</div>
+<BitAiMessageActions Pinned Message=""readAloudOtherMessage"" ReadAloud=""readAloud"" />";
+    private readonly string example9CsharpCode = @"
+[Inject] private IJSRuntime js { get; set; } = default!;
+
+private BitAiReadAloud? readAloud;
+private readonly BitAiMessage readAloudMessage = CreateReply(""A reply to read aloud. Press the speaker under it to hear it, and again to stop."");
+private readonly BitAiMessage readAloudOtherMessage = CreateReply(""Another reply: starting its reading stops the first one."");
+
+protected override void OnInitialized()
+{
+    // A real app hands BitAiReadAloud its text-to-speech service; this stand-in plays a voiceless tone about as long as
+    // the reply.
+    readAloud = new BitAiReadAloud(js, (reply, cancellationToken) => AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken));
+}
+
+public async ValueTask DisposeAsync()
+{
+    if (readAloud is not null) await readAloud.DisposeAsync();
+}";
+
+    private readonly string example10RazorCode = @"
 <style>
     .custom-actions {
         padding-block: 0.5rem;
@@ -200,16 +225,16 @@ private readonly BitAiMessage cascadeOwnMessage = CreateReply(""Pinned from the 
 <BitAiMessageActions Pinned
                      Message=""variablesMessage""
                      Style=""--bit-AiMessageActions-gap:2rem;--bit-AiMessageActions-actions-gap:0.5rem;--bit-AiMessageActions-color:var(--bit-clr-pri);--bit-AiMessageActions-font-size:0.875rem"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 // CreateReply is the helper of the Basic example.
 private readonly BitAiMessage styleMessage = CreateReply(""Styled."");
 private readonly BitAiMessage classMessage = CreateReply(""Classy."");
 private readonly BitAiMessage variablesMessage = CreateReply(""Restyled by its variables."");";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div dir=""rtl"">@rtlMessage.GetText()</div>
 <BitAiMessageActions Pinned Dir=""BitDir.Rtl"" Message=""rtlMessage"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 // CreateReply is the helper of the Basic example.
 private readonly BitAiMessage rtlMessage = CreateReply(""پاسخی که دکمه‌هایش همیشه نمایش داده می‌شوند."");";
 }
