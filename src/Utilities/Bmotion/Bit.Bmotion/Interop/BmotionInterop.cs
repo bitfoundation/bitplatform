@@ -108,13 +108,17 @@ public sealed class BmotionInterop : IBmotionInterop
     // The key the module's engine registries (the rAF loop, the reduced-motion watchers) know a reference by.
     // Blazor hands JS a brand-new DotNetObject wrapper every time it marshals the same DotNetObjectReference,
     // so a registry holding the wrappers themselves could never find the one to remove: a stopped engine would
-    // keep being ticked, and every restart would add another. Shared across interop instances (and so across
-    // Blazor roots, which share the one JS module), and released with the reference.
+    // keep being ticked, and every restart would add another. Shared across interop instances, and released with the
+    // reference. The counter is only unique within this .NET runtime, but a page can hold several - a Server circuit
+    // and a WebAssembly runtime (InteractiveAuto, or mixed render modes) - that all share the one JS module, so every
+    // key starts with an id drawn at random for this runtime.
     private static readonly ConditionalWeakTable<object, string> _refKeys = new();
+    private static readonly string _runtimeKey = Guid.NewGuid().ToString("N");
     private static long _lastRefKey;
 
     private static string KeyOf(object dotnetRef)
-        => _refKeys.GetValue(dotnetRef, static _ => Interlocked.Increment(ref _lastRefKey).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        => _refKeys.GetValue(dotnetRef, static _ => string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{_runtimeKey}:{Interlocked.Increment(ref _lastRefKey)}"));
 
     // ── rAF loop ──────────────────────────────────────────────────────────────
 
@@ -157,6 +161,7 @@ public sealed class BmotionInterop : IBmotionInterop
     /// <summary>Unsubscribes the engine ref from <c>prefers-reduced-motion</c> change notifications.</summary>
     public async ValueTask UnwatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
         if (!_moduleTask.IsValueCreated) return;
         await (await Module()).InvokeVoidAsync("unwatchReducedMotion", KeyOf(dotnetRef));
     }

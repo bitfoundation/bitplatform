@@ -238,6 +238,9 @@ export function stopRafLoop(key?: string | null): void {
     if (_engines.size === 0 && _rafId !== null) {
         cancelAnimationFrame(_rafId);
         _rafId = null;
+        // Work queued while the loop was running counted on its next tick, so it never got a frame of its own:
+        // the frame just cancelled was the only one that would have run it.
+        if (_beforeFrame.size > 0) _scheduleOwnFrame();
     }
 }
 
@@ -247,7 +250,8 @@ export function stopRafLoop(key?: string | null): void {
 const _beforeFrame = new Set<() => void>();
 let _ownFrame: number | null = null;
 
-function _requestBeforeFrame(callback: () => void): void {
+// Exported for the JS tests only.
+export function _requestBeforeFrame(callback: () => void): void {
     _beforeFrame.add(callback);
     if (_rafId === null) _scheduleOwnFrame();
 }
@@ -266,7 +270,14 @@ function _runBeforeFrame(): void {
 }
 
 function _tick(timestamp: number): void {
+    // The id this frame was scheduled under. On WebAssembly the work below runs .NET synchronously, and .NET can stop
+    // the loop (an engine whose last animation just finished) - and start it again, scheduling a frame of its own -
+    // before this tick returns. A tick that finds the loop no longer on its own frame leaves it as it is: scheduling
+    // the next frame anyway would run a second chain beside the new one (every engine ticked twice a frame, and only
+    // one of the chains cancellable), or keep ticking a stopped loop for one empty frame.
+    const self = _rafId;
     _runBeforeFrame();
+    if (_rafId !== self) return;
     if (_engines.size === 0) {
         _rafId = null;
         if (_beforeFrame.size > 0) _scheduleOwnFrame();
@@ -288,6 +299,7 @@ function _tick(timestamp: number): void {
             console.error('bmotion: ComputeFrame tick failed', e);
         }
     }
+    if (_rafId !== self) return;
     _rafId = requestAnimationFrame(_tick);
 }
 

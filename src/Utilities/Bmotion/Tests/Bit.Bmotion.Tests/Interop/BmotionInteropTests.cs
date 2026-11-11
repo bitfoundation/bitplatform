@@ -145,6 +145,7 @@ public class BmotionInteropTests
         var stops = module.Invocations["stopRafLoop"];
         var key = starts[0].Arguments[0] as string;
         Assert.IsFalse(string.IsNullOrEmpty(key));
+        Assert.IsFalse(key!.All(char.IsAsciiDigit),"a bare counter would collide with another runtime's on the same page");
         Assert.AreSame(engine, starts[0].Arguments[1], "the reference JS ticks through");
         Assert.AreEqual(key, stops[0].Arguments[0], "the stop names the engine its start registered");
         Assert.AreEqual(1, stops[0].Arguments.Count, "the stop needs only the key");
@@ -170,6 +171,17 @@ public class BmotionInteropTests
         Assert.AreSame(engine, watch.Arguments[1]);
         Assert.AreEqual(watch.Arguments[0], unwatch.Arguments[0]);
         Assert.AreEqual(1, unwatch.Arguments.Count);
+    }
+
+    [TestMethod]
+    public async Task UnwatchReducedMotion_NullReference_ThrowsLikeWatch()
+    {
+        var (ctx, _, interop) = Create();
+        await using var __ = ctx;
+
+        var ex = await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await interop.UnwatchReducedMotionAsync<Target>(null!));
+        Assert.AreEqual("dotnetRef", ex.ParamName);
     }
 
     [TestMethod]

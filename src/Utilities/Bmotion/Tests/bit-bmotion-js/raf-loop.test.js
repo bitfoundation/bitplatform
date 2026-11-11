@@ -1,34 +1,45 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { startRafLoop, stopRafLoop, watchReducedMotion, unwatchReducedMotion } from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
+import { startRafLoop, stopRafLoop, watchReducedMotion, unwatchReducedMotion, _requestBeforeFrame } from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
 
 // Blazor revives a brand-new DotNetObject wrapper every time it marshals a DotNetObjectReference, so each call
 // below gets a fresh wrapper for the same engine - the way the real interop hands them over (a fake that passes
-// the same object back would hide the bug where stopping by identity removed nothing).
-function engine() {
-    const engine = { calls: 0 };
+// the same object back would hide the bug where stopping by identity removed nothing). onFrame runs inside the
+// engine's ComputeFrame, the way .NET calls back into the module synchronously on WebAssembly.
+function engine(onFrame) {
+    const engine = { calls: 0, timestamps: [] };
     engine.wrapper = () => ({
-        invokeMethod(name) { if (name === 'ComputeFrame') engine.calls++; return null; },
+        invokeMethod(name, timestamp) {
+            if (name !== 'ComputeFrame') return null;
+            engine.calls++;
+            engine.timestamps.push(timestamp);
+            onFrame?.();
+            return null;
+        },
     });
     return engine;
 }
 
-// A hand-driven requestAnimationFrame: frame() runs the callback the loop last asked for.
-let pending = null;
+// A hand-driven requestAnimationFrame: frame() runs every callback asked for before it started, as one browser frame
+// does (with one timestamp), and leaves the ones they ask for to the next.
+let pending = new Map();
 let nextId = 0;
+let now = 0;
 function frame() {
-    const callback = pending;
-    pending = null;
-    callback?.(performance.now());
+    const due = [...pending.values()];
+    pending.clear();
+    now += 16;
+    for (const callback of due) callback(now);
 }
 
 beforeEach(() => {
-    pending = null;
-    globalThis.requestAnimationFrame = cb => { pending = cb; return ++nextId; };
-    globalThis.cancelAnimationFrame = () => { pending = null; };
+    pending = new Map();
+    globalThis.requestAnimationFrame = cb => { pending.set(++nextId, cb); return nextId; };
+    globalThis.cancelAnimationFrame = id => { pending.delete(id); };
 });
 
 afterEach(() => {
     stopRafLoop(null);
+    frame(); // run off anything left queued, so it can't leak into the next test
     delete globalThis.requestAnimationFrame;
     delete globalThis.cancelAnimationFrame;
 });
@@ -41,7 +52,7 @@ describe('the rAF loop', () => {
         expect(a.calls).toBe(1);
 
         stopRafLoop('1');
-        expect(pending).toBeNull();
+        expect(pending.size).toBe(0);
         frame();
         expect(a.calls).toBe(1);
     });
@@ -72,7 +83,7 @@ describe('the rAF loop', () => {
         frame();
         expect(a.calls).toBe(0);
         expect(b.calls).toBe(1);
-        expect(pending).not.toBeNull();
+        expect(pending.size).toBe(1);
     });
 
     it('stops every engine without a key', () => {
@@ -81,7 +92,70 @@ describe('the rAF loop', () => {
         startRafLoop('1', a.wrapper());
         startRafLoop('2', b.wrapper());
         stopRafLoop(null);
-        expect(pending).toBeNull();
+        expect(pending.size).toBe(0);
+    });
+
+    it('schedules no further frame for an engine that stops itself inside its tick', () => {
+        const a = engine(() => stopRafLoop('1'));
+        startRafLoop('1', a.wrapper());
+        frame();
+        expect(a.calls).toBe(1);
+        expect(pending.size).toBe(0);
+    });
+
+    it('runs a single chain when the loop stops and restarts inside one tick', () => {
+        // The last engine stops itself, and the same tick starts another (a later engine of another root, a
+        // re-render): the frame the restart scheduled is the loop's only one.
+        const b = engine();
+        const a = engine(() => { stopRafLoop('1'); startRafLoop('2', b.wrapper()); });
+        startRafLoop('1', a.wrapper());
+        frame();
+        expect(pending.size).toBe(1);
+        const ticked = b.calls; // the tick that started it may already have reached it
+
+        frame();
+        frame();
+        expect(b.calls - ticked).toBe(2); // once a frame, not once per chain
+        expect(new Set(b.timestamps).size).toBe(b.timestamps.length);
+
+        stopRafLoop('2');
+        expect(pending.size).toBe(0);
+    });
+});
+
+describe('the work before a frame', () => {
+    it('still runs work queued while the loop ran, when the loop stops before its next tick', () => {
+        let runs = 0;
+        const a = engine();
+        startRafLoop('1', a.wrapper());
+        _requestBeforeFrame(() => runs++); // the loop's next tick would run it, so it gets no frame of its own
+        stopRafLoop('1');
+        frame();
+        expect(runs).toBe(1);
+    });
+
+    it('still runs work queued inside a tick that stops the loop', () => {
+        let runs = 0;
+        const a = engine(() => { _requestBeforeFrame(() => runs++); stopRafLoop('1'); });
+        startRafLoop('1', a.wrapper());
+        frame();
+        frame();
+        expect(runs).toBe(1);
+        expect(a.calls).toBe(1);
+    });
+
+    it('keeps re-queued work going after the loop stops', () => {
+        // A drag's auto-scroll asks again each frame for as long as it scrolls.
+        let runs = 0;
+        const step = () => { if (++runs < 3) _requestBeforeFrame(step); };
+        const a = engine();
+        startRafLoop('1', a.wrapper());
+        _requestBeforeFrame(step);
+        frame();
+        stopRafLoop('1');
+        frame();
+        frame();
+        expect(runs).toBe(3);
     });
 });
 
