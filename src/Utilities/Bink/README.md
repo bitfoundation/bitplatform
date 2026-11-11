@@ -701,8 +701,22 @@ the browser supports tilt, not that the device produces it.
 ### Tilt and twist
 
 Tilt and barrel rotation are captured into the stroke when the device reports them, and preserved by
-serialization. The built-in brushes do not shape ink from tilt, because a convincing chisel nib needs a brush
-model of its own. The data is there for a custom brush to use; see [Extending Bink](#extending-bink).
+serialization. A brush reads them from `BinkStrokePointsView.TiltX`, `TiltY` and `Twist`, which are empty for points
+from a device without them; see [Extending Bink](#extending-bink).
+
+The calligraphy brush uses them when `FollowPen` is on: its nib turns as a real one turns in the hand.
+
+```csharp
+var italic = new BinkCalligraphyBrush { Width = 10f, NibAngle = 45f, FollowPen = true };
+var leftHanded = italic with { PenLean = 135f };
+```
+
+With a pen that reports barrel rotation, the nib turns by it. With one that reports only tilt, which is most of them,
+it turns by as much as the direction the pen leans differs from `PenLean`, the hand's usual lean: 45 degrees, the
+default, is a right hand's, the pen leaning toward the lower right; 135 suits a left hand. Leaning that way, the nib
+is at `NibAngle`. While the pen is held nearly upright its lean has no direction and the nib keeps the angle it had;
+with a mouse or a finger it stays at `NibAngle`. Each point's angle depends on that point alone, so a stroke an eraser
+cuts in two keeps the same ink in both parts. Both settings are saved with the stroke.
 
 ### Simplification
 
@@ -1204,6 +1218,26 @@ if (BinkShapeRecognizer.Recognize(stroke.Points) is { } shape)
 
 Override `BinkDrawTool.RecognizeShape` to recognize differently or to style the result. An arrow drawn in two
 strokes, the head after the shaft, is two strokes to the recognizer, which looks at one stroke at a time.
+
+### Editing points
+
+`BinkNodeEditTool` edits an outline point by point: the corners of a polygon or polyline, the ends of a line, and
+the anchors and Bézier control points of a path. Click an element to edit it (one already selected is edited at
+once), then drag a point. Moving a path's anchor carries the control points beside it, so the curves on either side
+keep their shape; dragging a control point bends the curve alone. Lines from each control point to its anchor show
+which curve it bends.
+
+```csharp
+var tool = new BinkNodeEditTool();
+```
+
+Every drag is one undo step, and a cancelled one (a palm, a second finger) leaves none. From the keyboard, Tab and
+Shift+Tab step through the points, the arrow keys nudge the current one a unit (ten with Shift), Delete removes a
+polygon's corner while it keeps enough to stay a polygon, and Escape stops editing; the screen reader hears which
+point is current. Locked elements and elements on locked or hidden layers are left alone.
+
+The same edits work without a tool, on any element: `BinkNodeEditTool.GetNodes`, `MoveNode` and `RemoveNode` return
+the points and edited copies to replace in the document.
 
 ### Highlights
 
@@ -2730,11 +2764,26 @@ that is already on the dispatcher, such as the one the demo uses, needs nothing 
 
 - Two people editing the same element at the same moment: one edit wins, the other is dropped. Every replica
   agrees on which, but the losing edit is gone.
-- Element and layer order is index-based and is not reconciled. Concurrent reorders (bring to front, send to back,
-  moving between layers, reordering layers), or an undone delete re-inserting an element at its old index while
-  someone else reorders, can leave participants with the same elements stacked in a different order. Nothing is
-  lost, and `SendSnapshotAsync` brings everyone back to one order.
+- Two people moving the same element (or layer) at the same moment: one move wins, the same one everywhere, and the
+  other is dropped, as with edits. Moves of different elements all land.
 - There is no server-side authority in the box. If you need one, the same operations are what it would arbitrate.
+
+### Stacking order
+
+Concurrent reorders reconcile. An element's place in its layer, and a layer's place in the stack, is an order key
+(`BinkOrderKey`): a short string that sorts in stacking order, with room for another between any two. The document
+keeps the keys, and an addition or a move travels with the key it was placed at, so two people bringing different
+strokes to the front at once, one moving a stroke onto another layer while someone else reorders that layer, or an
+undo putting a deleted stroke back while others rearrange, end in the same order on every screen whatever order the
+changes arrive in. When two moves of the same element cross, a Lamport clock carried with each decides, then the key,
+then the layer, so every replica keeps the same one.
+
+The index-based API is unchanged: `AddElement` with an index, `Arrange`, `ReorderLayer` and the operations still take
+indices, and the document makes the keys for them. Keys are not written to files by default, since a file's order is
+the order it lists things in and keys are made from it on reading; `BinkSerializerOptions.IncludeOrderKeys` writes
+them, which is what a session's snapshots do so that a participant who joins carries on with everyone else's keys. A
+participant running a version from before keys sends moves without them, and those are placed by their index, as
+everyone's were before.
 
 ## Extending Bink
 

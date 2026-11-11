@@ -51,6 +51,15 @@ public sealed class BinkDocumentChangedEventArgs : EventArgs
 public sealed partial class BinkDocument
 {
     private readonly List<BinkLayer> _layers = new();
+
+    // Each layer's order key and the clock of the move that put it there, parallel to _layers, which is always in key
+    // order (ties by id); see BinkLayer for the same arrangement of elements.
+    private readonly List<string> _layerKeys = new();
+    private readonly List<long> _layerClocks = new();
+
+    // A Lamport clock for moves: every local move takes the next tick, and every tick seen from a collaborator or a
+    // file moves it past that, so a later move always carries a greater clock than any it could have seen.
+    private long _clock;
     private readonly Dictionary<Guid, BinkLayer> _elementLayers = new();
     private readonly Dictionary<Guid, BinkLayer> _layersById = new();
     private readonly Dictionary<string, string> _metadata = new(StringComparer.Ordinal);
@@ -239,7 +248,10 @@ public sealed partial class BinkDocument
         BinkDrawingOperation inverse;
         try
         {
-            inverse = operation.ApplyCore(this);
+            // Listeners, history and collaborators are told the operation as it was applied: an addition or a move
+            // carries the order key and clock it was placed with, so repeating it elsewhere places it the same.
+            inverse = operation.ApplyCore(this, out BinkDrawingOperation applied);
+            operation = applied;
         }
         finally
         {
@@ -837,27 +849,116 @@ public sealed partial class BinkDocument
 
     // ---- Core mutations (called by operations) ------------------------------------------------------------------------
 
-    internal void InsertElementCore(Guid layerId, BinkElement element, int? index)
+    /// <summary>
+    /// The clock a move is stored with: a collaborator's, or a file's, as it carries it, and the next tick for a move
+    /// made here, so the clock always passes every one it has seen.
+    /// </summary>
+    private long Stamp(long given, bool adopt)
+    {
+        if (adopt && given > 0)
+        {
+            if (given > _clock) _clock = given;
+            return given;
+        }
+        return _clock == long.MaxValue ? _clock : ++_clock;
+    }
+
+    /// <summary>The clock an addition is stored with: the one it carries from elsewhere, or 0, meaning never moved.</summary>
+    private long Observe(long given, bool adopt)
+    {
+        if (!adopt || given <= 0) return 0;
+        if (given > _clock) _clock = given;
+        return given;
+    }
+
+    /// <summary>The latest move clock this document has made or seen.</summary>
+    internal long Clock => _clock;
+
+    /// <summary>
+    /// Whether a move at (clock, key, layer) wins over the one that put an element or layer where it is: the later
+    /// clock, then the greater key, then the greater layer id, so every replica picks the same.
+    /// </summary>
+    private static bool Wins(long clock, string key, Guid layer, long currentClock, string currentKey, Guid currentLayer)
+    {
+        if (clock != currentClock) return clock > currentClock;
+        int byKey = string.CompareOrdinal(key, currentKey);
+        return byKey != 0 ? byKey > 0 : layer.CompareTo(currentLayer) > 0;
+    }
+
+    // Where recently removed elements were: their layer, key and move clock. An element can come back (an undone
+    // removal) while a collaborator moves it: one side applies the move and then the return, the other the return and
+    // then the move. Both settle on whichever of the return and the last position wins, so a return is resolved against
+    // the tombstone as a move would be. Bounded: only removals recent enough to race a return matter.
+    private readonly Dictionary<Guid, (Guid Layer, string Key, long Clock)> _tombstones = new();
+    private readonly Queue<Guid> _tombstoneOrder = new();
+    private const int MaxTombstones = 4096;
+
+    private void Bury(Guid elementId, Guid layerId, string key, long clock)
+    {
+        if (!_tombstones.ContainsKey(elementId))
+        {
+            _tombstoneOrder.Enqueue(elementId);
+            while (_tombstoneOrder.Count > MaxTombstones) _tombstones.Remove(_tombstoneOrder.Dequeue());
+        }
+        _tombstones[elementId] = (layerId, key, clock);
+    }
+
+    /// <summary>The clock stored exactly as given: a rollback restoring what was, or a snapshot stating it.</summary>
+    private long Exact(long given)
+    {
+        long clock = Math.Max(given, 0);
+        if (clock > _clock) _clock = clock;
+        return clock;
+    }
+
+    internal (string Key, long Clock) InsertElementCore(Guid layerId, BinkElement element, int? index, string? key = null, long clock = 0, bool authoritative = false)
     {
         BinkLayer layer = RequireLayer(layerId);
         if (_elementLayers.ContainsKey(element.Id)) throw new InvalidOperationException($"An element with id {element.Id} already exists in the document.");
         ValidateElement(element);
         if (_elementLayers.Count >= Limits.MaxElements) throw new InvalidOperationException($"The document limit of {Limits.MaxElements} elements was reached.");
-        int at = index is null ? layer.Count : Math.Clamp(index.Value, 0, layer.Count);
-        layer.InsertAt(at, element);
+        bool keyed = key is not null && BinkOrderKey.IsValid(key);
+        string placed;
+        long stamped;
+        if (Restoring || authoritative)
+        {
+            placed = keyed ? key! : layer.KeyForIndex(index is null ? layer.Count : Math.Clamp(index.Value, 0, layer.Count));
+            stamped = Exact(clock);
+        }
+        else
+        {
+            // A key decides the place when there is one (a collaborator's addition, an undone removal); otherwise the
+            // index does, and the key is made for it.
+            placed = keyed ? key! : layer.KeyForIndex(index is null ? layer.Count : Math.Clamp(index.Value, 0, layer.Count));
+            // A new addition is not a move: it takes no tick, so replicas that started from the same page (one that
+            // drew it, one that opened a copy) agree nothing in it has moved yet. Putting back an element that was
+            // here is a move to where it was, made now; a collaborator's clock is kept as it is.
+            stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _tombstones.ContainsKey(element.Id) ? Stamp(0, adopt: false) : 0;
+            if (_tombstones.Remove(element.Id, out var grave) && !Wins(stamped, placed, layer.Id, grave.Clock, grave.Key, grave.Layer)
+                && TryGetLayer(grave.Layer, out BinkLayer? graveLayer))
+            {
+                // A move it lost while gone beats this return: it comes back where that move put it.
+                layer = graveLayer;
+                placed = grave.Key;
+                stamped = grave.Clock;
+            }
+        }
+        layer.Insert(element, placed, stamped);
         _elementLayers[element.Id] = layer;
         if (element is BinkStroke s) _totalPoints += s.Points.Count;
+        return (placed, stamped);
     }
 
-    internal (BinkLayer Layer, int Index, BinkElement Element) RemoveElementCore(Guid elementId)
+    internal (BinkLayer Layer, int Index, BinkElement Element, string Key, long Clock) RemoveElementCore(Guid elementId)
     {
         if (!_elementLayers.TryGetValue(elementId, out BinkLayer? layer)) throw new InvalidOperationException($"Element {elementId} is not in the document.");
         int index = layer.IndexOf(elementId);
         BinkElement element = layer.Elements[index];
-        layer.RemoveAt(index);
+        (string key, long clock) = layer.RemoveAt(index);
         _elementLayers.Remove(elementId);
         if (element is BinkStroke s) _totalPoints -= s.Points.Count;
-        return (layer, index, element);
+        if (!Restoring) Bury(elementId, layer.Id, key, clock);
+        return (layer, index, element, key, clock);
     }
 
     internal BinkElement ReplaceElementCore(BinkElement element)
@@ -892,25 +993,58 @@ public sealed partial class BinkDocument
         return previous;
     }
 
-    internal (Guid PreviousLayerId, int PreviousIndex) ReorderElementCore(Guid elementId, Guid targetLayerId, int? index)
+    /// <summary>
+    /// Moves an element. With a key it goes where the key places it; otherwise to the index, given the layer without
+    /// it. A collaborator's move applies only when it wins over the move that put the element where it is
+    /// (<see cref="Wins"/>), so concurrent moves of one element end the same everywhere; an
+    /// <paramref name="authoritative"/> move, a snapshot's, always applies.
+    /// </summary>
+    /// <returns>Where the element was, and where it is now.</returns>
+    internal (Guid PreviousLayerId, int PreviousIndex, string PreviousKey, long PreviousClock, string Key, long Clock) ReorderElementCore(Guid elementId, Guid targetLayerId, int? index, string? key = null, long clock = 0, bool authoritative = false)
     {
         BinkLayer target = RequireLayer(targetLayerId);
-        // An element already where it is sent stays put. Taking it out and putting it back would leave the order as
-        // it is, but the layer would then re-index every element above it on the next lookup.
-        if (_elementLayers.TryGetValue(elementId, out BinkLayer? current) && current == target)
+        if (!_elementLayers.TryGetValue(elementId, out BinkLayer? current)) throw new InvalidOperationException($"Element {elementId} is not in the document.");
+        int position = current.IndexOf(elementId);
+        string currentKey = current.KeyAt(position);
+        long currentClock = current.ClockAt(position);
+        bool remote = _keepRemoteVersions;
+        bool keyed = key is not null && BinkOrderKey.IsValid(key);
+        bool exact = Restoring || authoritative;
+
+        // A collaborator's keyed move always faces the one that put the element where it is: a clock of 0 (a move that
+        // changed nothing where it was made) simply loses.
+        if (remote && keyed && !exact && !Wins(clock, key!, target.Id, currentClock, currentKey, current.Id))
         {
-            int position = target.IndexOf(elementId);
-            if ((index is null ? target.Count - 1 : Math.Clamp(index.Value, 0, target.Count - 1)) == position) return (target.Id, position);
+            // Lost to a move this replica already has: it stays, and the clock still learns the tick.
+            if (clock > _clock) _clock = clock;
+            return (current.Id, position, currentKey, currentClock, currentKey, currentClock);
         }
-        (BinkLayer source, int previousIndex, BinkElement element) = RemoveElementCore(elementId);
-        int at = index is null ? target.Count : Math.Clamp(index.Value, 0, target.Count);
-        target.InsertAt(at, element);
+        // An element already where it is sent stays put. Taking it out and putting it back would leave the order as
+        // it is, but the layer would then re-index every element above it on the next lookup; and a move that changes
+        // nothing must not take a tick, or it would outrank a real move made meanwhile elsewhere.
+        bool unmoved = keyed
+            ? current == target && key == currentKey && (!exact || clock == currentClock)
+            : current == target && (index is null ? target.Count - 1 : Math.Clamp(index.Value, 0, target.Count - 1)) == position;
+        if (unmoved) return (target.Id, position, currentKey, currentClock, currentKey, currentClock);
+
+        (BinkLayer source, int previousIndex, BinkElement element, string previousKey, long previousClock) = RemoveElementCore(elementId);
+        // A move is not a removal: it leaves no tombstone.
+        _tombstones.Remove(elementId);
+        string placed = keyed ? key! : target.KeyForIndex(index is null ? target.Count : Math.Clamp(index.Value, 0, target.Count));
+        long stamped = exact ? Exact(clock) : Stamp(clock, remote);
+        target.Insert(element, placed, stamped);
         _elementLayers[elementId] = target;
         if (element is BinkStroke s) _totalPoints += s.Points.Count;
-        return (source.Id, previousIndex);
+        return (source.Id, previousIndex, previousKey, previousClock, placed, stamped);
     }
 
-    internal void InsertLayerCore(Guid layerId, BinkLayerProperties properties, int? index, IReadOnlyList<BinkElement>? elements)
+    /// <summary>
+    /// Adds a layer. Its key decides its place when there is one, otherwise the index does; its elements keep the keys
+    /// they came with when those are in their order. With <paramref name="adoptPositions"/> (a file or a clone being
+    /// built) the clocks given are kept as they are, as a collaborator's are.
+    /// </summary>
+    internal (string Key, long Clock) InsertLayerCore(Guid layerId, BinkLayerProperties properties, int? index, IReadOnlyList<BinkElement>? elements,
+        string? key = null, long clock = 0, IReadOnlyList<string>? elementKeys = null, IReadOnlyList<long>? elementClocks = null, bool adoptPositions = false)
     {
         ArgumentNullException.ThrowIfNull(properties);
         if (_layersById.ContainsKey(layerId)) throw new InvalidOperationException($"A layer with id {layerId} already exists.");
@@ -931,30 +1065,82 @@ public sealed partial class BinkDocument
             if (_elementLayers.Count + elements.Count > Limits.MaxElements) throw new InvalidOperationException($"The document limit of {Limits.MaxElements} elements was reached.");
             if (_totalPoints + points > Limits.MaxTotalPoints) throw new InvalidOperationException($"The document limit of {Limits.MaxTotalPoints} stroke points was reached.");
         }
-        var layer = new BinkLayer(layerId, Sanitize(properties), elements);
-        int at = index is null ? _layers.Count : Math.Clamp(index.Value, 0, _layers.Count);
+        // A rollback restores the clocks the layer and its elements had, exactly as a file or a collaborator states them.
+        bool adopt = adoptPositions || _keepRemoteVersions || Restoring;
+        var layer = new BinkLayer(layerId, Sanitize(properties), elements, elementKeys, adopt ? elementClocks : null);
+        // The elements keep the clocks they came with only when they come from elsewhere (a collaborator, a file);
+        // an undone removal is a new move here, so they start afresh like the layer.
+        if (adopt) foreach (long c in layer.Clocks) if (c > _clock) _clock = c;
+        string placed = key is not null && BinkOrderKey.IsValid(key) ? key : LayerKeyForIndex(index is null ? _layers.Count : Math.Clamp(index.Value, 0, _layers.Count));
+        long stamped = Observe(clock, adopt);
+        int at = LayerIndexForKey(placed, layerId);
         _layers.Insert(at, layer);
+        _layerKeys.Insert(at, placed);
+        _layerClocks.Insert(at, stamped);
         _layersById[layerId] = layer;
         foreach (BinkElement e in layer.Elements)
         {
             _elementLayers[e.Id] = layer;
             if (e is BinkStroke s) _totalPoints += s.Points.Count;
         }
+        return (placed, stamped);
     }
 
-    internal (int Index, BinkLayer Layer) RemoveLayerCore(Guid layerId)
+    /// <summary>The order key of a layer, or null when it is not in the document.</summary>
+    public string? OrderKeyOf(Guid layerId)
+    {
+        int index = TryGetLayer(layerId, out BinkLayer? layer) ? _layers.IndexOf(layer) : -1;
+        return index < 0 ? null : _layerKeys[index];
+    }
+
+    /// <summary>The order key of the layer at an index of <see cref="Layers"/>.</summary>
+    internal string LayerKeyAt(int index) => _layerKeys[index];
+
+    /// <summary>The clock of the move that put the layer at an index where it is.</summary>
+    internal long LayerClockAt(int index) => _layerClocks[index];
+
+    /// <summary>The key a layer inserted at an index of the stack (itself not among it) would need.</summary>
+    private string LayerKeyForIndex(int index, Guid excluded = default)
+    {
+        string? below = null, above = null;
+        for (int i = index - 1; i >= 0 && below is null; i--) if (_layers[i].Id != excluded) below = _layerKeys[i];
+        for (int i = index; i < _layers.Count && above is null; i++)
+        {
+            if (_layers[i].Id == excluded) continue;
+            if (below is null || string.CompareOrdinal(_layerKeys[i], below) > 0) above = _layerKeys[i];
+        }
+        return BinkOrderKey.Between(below, above);
+    }
+
+    private int LayerIndexForKey(string key, Guid layerId)
+    {
+        int low = 0, high = _layers.Count;
+        while (low < high)
+        {
+            int mid = (low + high) / 2;
+            if (BinkLayer.Precedes(_layerKeys[mid], _layers[mid].Id, key, layerId)) low = mid + 1;
+            else high = mid;
+        }
+        return low;
+    }
+
+    internal (int Index, BinkLayer Layer, string Key, long Clock) RemoveLayerCore(Guid layerId)
     {
         BinkLayer layer = RequireLayer(layerId);
         if (_layers.Count == 1) throw new InvalidOperationException("A document must keep at least one layer.");
         int index = _layers.IndexOf(layer);
+        string key = _layerKeys[index];
+        long clock = _layerClocks[index];
         _layers.RemoveAt(index);
+        _layerKeys.RemoveAt(index);
+        _layerClocks.RemoveAt(index);
         _layersById.Remove(layerId);
         foreach (BinkElement e in layer.Elements)
         {
             _elementLayers.Remove(e.Id);
             if (e is BinkStroke s) _totalPoints -= s.Points.Count;
         }
-        return (index, layer);
+        return (index, layer, key, clock);
     }
 
     internal BinkLayerProperties UpdateLayerCore(Guid layerId, BinkLayerProperties properties)
@@ -978,13 +1164,34 @@ public sealed partial class BinkDocument
         return properties with { Opacity = opacity, BlendMode = blend, Name = properties.Name ?? string.Empty };
     }
 
-    internal int ReorderLayerCore(Guid layerId, int index)
+    /// <summary>Moves a layer, by key when there is one and otherwise by index, as <see cref="ReorderElementCore"/> moves elements.</summary>
+    internal (int PreviousIndex, string PreviousKey, long PreviousClock, string Key, long Clock) ReorderLayerCore(Guid layerId, int index, string? key = null, long clock = 0, bool authoritative = false)
     {
         BinkLayer layer = RequireLayer(layerId);
         int previous = _layers.IndexOf(layer);
+        string currentKey = _layerKeys[previous];
+        long currentClock = _layerClocks[previous];
+        bool remote = _keepRemoteVersions;
+        bool keyed = key is not null && BinkOrderKey.IsValid(key);
+        bool exact = Restoring || authoritative;
+        if (remote && keyed && !exact && !Wins(clock, key!, layerId, currentClock, currentKey, layerId))
+        {
+            if (clock > _clock) _clock = clock;
+            return (previous, currentKey, currentClock, currentKey, currentClock);
+        }
+        bool unmoved = keyed ? key == currentKey && (!exact || clock == currentClock) : Math.Clamp(index, 0, _layers.Count - 1) == previous;
+        if (unmoved) return (previous, currentKey, currentClock, currentKey, currentClock);
+
         _layers.RemoveAt(previous);
-        _layers.Insert(Math.Clamp(index, 0, _layers.Count), layer);
-        return previous;
+        _layerKeys.RemoveAt(previous);
+        _layerClocks.RemoveAt(previous);
+        string placed = keyed ? key! : LayerKeyForIndex(Math.Clamp(index, 0, _layers.Count));
+        long stamped = exact ? Exact(clock) : Stamp(clock, remote);
+        int at = LayerIndexForKey(placed, layerId);
+        _layers.Insert(at, layer);
+        _layerKeys.Insert(at, placed);
+        _layerClocks.Insert(at, stamped);
+        return (previous, currentKey, currentClock, placed, stamped);
     }
 
     internal BinkDocumentSettings UpdateSettingsCore(BinkDocumentSettings settings)
@@ -1040,7 +1247,12 @@ public sealed partial class BinkDocument
     public BinkDocument Clone()
     {
         var copy = new BinkDocument(Id, Settings, Limits, withoutLayers: true);
-        foreach (BinkLayer layer in _layers) copy.InsertLayerCore(layer.Id, layer.Properties, null, layer.Elements.ToArray());
+        for (int i = 0; i < _layers.Count; i++)
+        {
+            BinkLayer layer = _layers[i];
+            copy.InsertLayerCore(layer.Id, layer.Properties, null, layer.Elements.ToArray(), _layerKeys[i], _layerClocks[i], layer.Keys, layer.Clocks, adoptPositions: true);
+        }
+        copy._clock = _clock;
         foreach ((string k, string v) in _metadata) copy._metadata[k] = v;
         copy.Revision = Revision;
         copy.SavedRevision = SavedRevision;

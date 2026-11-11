@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
 namespace Bit.Bink;
@@ -176,6 +176,7 @@ internal sealed class BinkPdfResources
         width = height = components = 0;
         orientation = 1;
         if (data.Length < 4 || data[0] != 0xFF || data[1] != 0xD8) return false;
+        bool sawExif = false;
         int i = 2;
         while (i + 4 <= data.Length)
         {
@@ -195,7 +196,12 @@ internal sealed class BinkPdfResources
                 return width > 0 && height > 0;
             }
             if (marker is 0xD9 or 0xDA) return false;
-            if (marker == 0xE1 && orientation == 1) orientation = ReadExifOrientation(data.Slice(i + 4, length - 2));
+            // The first Exif segment decides, as browsers read it; a later one (an XMP packet shares the marker) does not.
+            if (marker == 0xE1 && !sawExif && data.Slice(i + 4, length - 2).StartsWith("Exif\0\0"u8))
+            {
+                sawExif = true;
+                orientation = ReadExifOrientation(data.Slice(i + 4, length - 2));
+            }
             i += 2 + length;
         }
         return false;

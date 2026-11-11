@@ -265,7 +265,8 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         {
             // A snapshot with an asset table is format version 2, which a participant from before the table refuses;
             // it would then be unable to join at all.
-            BinkSerializerOptions options = EveryoneResolvesImages() ? _options.SerializerOptions : _options.SerializerOptions with { ShareImageData = false };
+            // The keys come along, so the receiver continues with the same order keys as everyone else.
+            BinkSerializerOptions options = (EveryoneResolvesImages() ? _options.SerializerOptions : _options.SerializerOptions with { ShareImageData = false }) with { IncludeOrderKeys = true };
             snapshot = BinkSerializer.Serialize(_document, options);
         }
         catch (Exception ex) when (IsSerializationFailure(ex))
@@ -1128,16 +1129,28 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
 
         // Add the incoming layers before removing the local ones that are gone: a document must always keep at
         // least one layer, and removing them first would trip that rule.
-        foreach (BinkLayer layer in incoming.Layers)
+        // Everything is placed at the keys and clocks the snapshot carries, so this replica continues with exactly the
+        // order keys everyone else has (a sender that predates keys sends none, and the snapshot's order is used).
+        for (int li = 0; li < incoming.Layers.Count; li++)
         {
+            BinkLayer layer = incoming.Layers[li];
             if (_document.TryGetLayer(layer.Id, out _))
             {
                 operations.Add(new BinkUpdateLayerOperation(layer.Id, layer.Properties));
-                foreach (BinkElement element in layer.Elements) operations.Add(new BinkAddElementOperation(layer.Id, element));
+                for (int i = 0; i < layer.Elements.Count; i++)
+                {
+                    operations.Add(new BinkAddElementOperation(layer.Id, layer.Elements[i]) { OrderKey = layer.KeyAt(i), OrderClock = layer.ClockAt(i), Authoritative = true });
+                }
             }
             else
             {
-                operations.Add(new BinkAddLayerOperation(layer.Id, layer.Properties, null, layer.Elements.ToArray()));
+                operations.Add(new BinkAddLayerOperation(layer.Id, layer.Properties, null, layer.Elements.ToArray())
+                {
+                    OrderKey = incoming.LayerKeyAt(li),
+                    OrderClock = incoming.LayerClockAt(li),
+                    ElementOrderKeys = layer.Keys.ToArray(),
+                    ElementOrderClocks = layer.Clocks.ToArray(),
+                });
             }
         }
         foreach (BinkLayer layer in _document.Layers)
@@ -1148,7 +1161,11 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         // The rest of the document comes along too. Without these a joining participant kept its own page size,
         // background and metadata, and layers it already had stayed wherever they were in its own stack, so the
         // two replicas drew the same layers in a different order.
-        for (int i = 0; i < incoming.Layers.Count; i++) operations.Add(new BinkReorderLayerOperation(incoming.Layers[i].Id, i));
+        // The snapshot's order of layers is the answer, whatever this replica's own clocks say.
+        for (int i = 0; i < incoming.Layers.Count; i++)
+        {
+            operations.Add(new BinkReorderLayerOperation(incoming.Layers[i].Id, i) { OrderKey = incoming.LayerKeyAt(i), OrderClock = incoming.LayerClockAt(i), Authoritative = true });
+        }
         if (_document.Settings != incoming.Settings) operations.Add(new BinkUpdateSettingsOperation(incoming.Settings));
         foreach (string key in _document.Metadata.Keys)
         {

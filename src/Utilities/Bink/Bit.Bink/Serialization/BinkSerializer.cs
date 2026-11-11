@@ -139,7 +139,7 @@ public static class BinkSerializer
 
         writer.WritePropertyName("layers");
         writer.WriteStartArray();
-        foreach (BinkLayer layer in document.Layers) WriteLayer(writer, layer, options, assets);
+        for (int i = 0; i < document.Layers.Count; i++) WriteLayer(writer, document.Layers[i], options, assets, document.LayerKeyAt(i), document.LayerClockAt(i));
         writer.WriteEndArray();
 
         writer.WriteEndObject();
@@ -167,7 +167,7 @@ public static class BinkSerializer
         return table;
     }
 
-    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options, BinkImageAssets? assets)
+    private static void WriteLayer(Utf8JsonWriter writer, BinkLayer layer, BinkSerializerOptions options, BinkImageAssets? assets, string key, long clock)
     {
         writer.WriteStartObject();
         writer.WriteString("id", layer.Id);
@@ -177,6 +177,20 @@ public static class BinkSerializer
         if (layer.Opacity < 1f) writer.WriteNumber("opacity", Round(layer.Opacity, 3));
         if (layer.BlendMode != BinkBlendMode.Normal) writer.WriteString("blend", BlendName(layer.BlendMode));
         WriteMetadata(writer, layer.Properties.Metadata);
+        if (options.IncludeOrderKeys)
+        {
+            // Parallel to the elements rather than inside them, so an element is written the same whatever the option.
+            writer.WriteString("key", key);
+            if (clock > 0) writer.WriteNumber("clock", clock);
+            writer.WritePropertyName("elementKeys");
+            writer.WriteStartArray();
+            foreach (string k in layer.Keys) writer.WriteStringValue(k);
+            writer.WriteEndArray();
+            writer.WritePropertyName("elementClocks");
+            writer.WriteStartArray();
+            foreach (long c in layer.Clocks) writer.WriteNumberValue(c);
+            writer.WriteEndArray();
+        }
 
         writer.WritePropertyName("elements");
         writer.WriteStartArray();
@@ -766,10 +780,13 @@ public static class BinkSerializer
         BinkImageAssets? assets = ReadAssets(root, options);
         int layerCount = 0;
         var seenIds = new HashSet<Guid>();
+        // The layers' keys are used only when every layer has one and they rise with the order the layers are listed
+        // in; otherwise the list decides, as it does for a file that stores no keys.
+        bool layerKeys = LayerKeysInOrder(layers);
         foreach (JsonElement layerElement in layers.EnumerateArray())
         {
             if (++layerCount > options.Limits.MaxLayers) throw new BinkFormatException($"The document declares more than {options.Limits.MaxLayers} layers.");
-            ReadLayer(document, layerElement, options, seenIds, assets);
+            ReadLayer(document, layerElement, options, seenIds, assets, layerKeys);
         }
         if (document.Layers.Count == 0) document.InsertLayerCore(Guid.NewGuid(), new BinkLayerProperties { Name = "Drawing" }, null, null);
         return document;
@@ -796,7 +813,25 @@ public static class BinkSerializer
         return new BinkImageAssets { Resolve = id => images.GetValueOrDefault(id) };
     }
 
-    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds, BinkImageAssets? assets)
+    private static bool LayerKeysInOrder(JsonElement layers)
+    {
+        string? previous = null;
+        int count = 0;
+        foreach (JsonElement layer in layers.EnumerateArray())
+        {
+            if (++count > 10_000) return false;
+            if (layer.ValueKind != JsonValueKind.Object || ReadString(layer, "key") is not { } key || !BinkOrderKey.IsValid(key)) return false;
+            if (previous is not null && string.CompareOrdinal(previous, key) >= 0) return false;
+            previous = key;
+        }
+        return previous is not null;
+    }
+
+    /// <summary>A non-negative whole number no larger than JavaScript represents exactly, or 0.</summary>
+    private static long ReadClock(JsonElement value)
+        => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long clock) && clock is > 0 and <= 9_007_199_254_740_991 ? clock : 0;
+
+    private static void ReadLayer(BinkDocument document, JsonElement element, BinkDeserializerOptions options, HashSet<Guid> seenIds, BinkImageAssets? assets, bool useLayerKey)
     {
         if (element.ValueKind != JsonValueKind.Object) throw new BinkFormatException("Each layer must be a JSON object.");
         var properties = new BinkLayerProperties
@@ -813,12 +848,29 @@ public static class BinkSerializer
         if (document.TryGetLayer(id, out _)) id = Guid.NewGuid();
 
         var elements = new List<BinkElement>();
+        // Element keys and clocks, when written, sit beside the elements one for one; an element left out takes its
+        // key with it, so the rest stay matched. Keys that do not then rise with the elements are made afresh.
+        JsonElement keyArray = default, clockArray = default;
+        bool keyed = element.TryGetProperty("elementKeys", out keyArray) && keyArray.ValueKind == JsonValueKind.Array
+            && element.TryGetProperty("elements", out JsonElement listed) && listed.ValueKind == JsonValueKind.Array && keyArray.GetArrayLength() == listed.GetArrayLength();
+        bool clocked = keyed && element.TryGetProperty("elementClocks", out clockArray) && clockArray.ValueKind == JsonValueKind.Array && clockArray.GetArrayLength() == keyArray.GetArrayLength();
+        List<string>? keys = keyed ? new List<string>() : null;
+        List<long>? clocks = clocked ? new List<long>() : null;
         if (element.TryGetProperty("elements", out JsonElement elementArray) && elementArray.ValueKind == JsonValueKind.Array)
         {
+            int position = -1;
             foreach (JsonElement e in elementArray.EnumerateArray())
             {
+                position++;
                 BinkElement? parsed = ReadElement(e, options, assets);
                 if (parsed is null) continue;
+                if (keys is not null)
+                {
+                    JsonElement k = keyArray[position];
+                    if (k.ValueKind == JsonValueKind.String) keys.Add(k.GetString()!);
+                    else keys = null;
+                }
+                clocks?.Add(ReadClock(clockArray[position]));
                 // A duplicate id would make the element unaddressable. Give it a fresh one rather than
                 // rejecting the whole document: the drawing is still perfectly good.
                 if (document.ContainsElement(parsed.Id) || seenIds.Contains(parsed.Id)) parsed = parsed with { Id = Guid.NewGuid() };
@@ -826,9 +878,11 @@ public static class BinkSerializer
                 elements.Add(parsed);
             }
         }
+        string? layerKey = useLayerKey ? ReadString(element, "key") : null;
+        long layerClock = useLayerKey && element.TryGetProperty("clock", out JsonElement clockValue) ? ReadClock(clockValue) : 0;
         try
         {
-            document.InsertLayerCore(id, properties, null, elements);
+            document.InsertLayerCore(id, properties, null, elements, layerKey, layerClock, keys, keys is null ? null : clocks, adoptPositions: true);
         }
         catch (InvalidOperationException ex)
         {

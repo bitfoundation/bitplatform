@@ -459,16 +459,62 @@ these changes. One failed, on a page this round did not touch: the Getting Start
 from their sentence by colour alone (WCAG 1.4.1), as round 4 had fixed for cards and notes; links in table cells are
 now underlined too.
 
-### Observed, not changed
+### Round 5, second part: the remaining items
 
-`dotnet build` with SDK 11.0.100 intermittently fails in `ApplyCompressionNegotiation` with "An item with the same key
-has already been added" for `Bit.Bink.lib.module.js`, on the first build after a source change; running it again
-succeeds. It is in the static web assets pipeline, not in anything this round touched.
+| # | Change | Tests | Docs and demo |
+| --- | --- | --- | --- |
+| 21 | **Recognition snaps, one at a time.** An ellipse or rectangle tries both snaps, then each alone, then neither, keeping the first within the tolerance (both were dropped together before). An arrow's straightening is judged against its shaft, as its acceptance is. A JPEG's first Exif segment decides its orientation; a later APP1 (an XMP packet) does not. | 1 | |
+| 22 | **Tilt and twist reach brushes.** `BinkStrokePointsView` carries `TiltX`, `TiltY` and `Twist` (empty when the device reported none; the old constructor still builds a view without them). `BinkCalligraphyBrush.FollowPen` turns the nib by the barrel's twist, or else by how far the pen's lean is from `PenLean` (a right hand's 45 degrees by default), holding its angle while the pen is nearly upright; each point's angle depends on that point alone, so an erased stroke's parts keep their ink. Saved as `followPen` and `penLean`, both always written. | 5 | README "Tilt and twist"; handwriting "Follow pen" |
+| 23 | **Editing points.** `BinkNodeEditTool` edits lines, polygons, polylines and paths point by point: drag a corner, an end, an anchor or a Bézier control point; an anchor carries the cubic controls beside it. A drag is one undo step and a cancelled one none; Tab, the arrow keys, Delete and Escape from the keyboard, with announcements. A grabbed point keeps its offset from the pointer, keys during a drag are the drag's (Escape cancels it), and a closed loop's start and end on one spot move together. `GetNodes`, `MoveNode` and `RemoveNode` work without the tool. | 11 | README "Editing points"; whiteboard "Points" tool and card |
+| 24 | **Stacking order that reconciles.** `BinkOrderKey` (the integer-plus-fraction scheme of the common fractional-indexing libraries: appends step the integer, so the first 3,906 strokes have keys of two or three characters). Each layer keeps a key and a move clock per element, the document one per layer, and both are kept sorted by key, ties by id, so order is a function of keys. Additions and moves resolve their index to a key when applied, and every operation reports the form it was applied in (`ApplyCore` now returns it), so history and collaborators repeat exactly that placement; inverses carry the old key, so undo puts things back at their place whatever moved meanwhile. A collaborator's move applies only if it wins on (Lamport clock, key, layer); additions take no tick, so replicas that started from the same page agree nothing has moved. Keys travel in the operation codec (`key`, `clock`, `elementKeys`, `elementClocks`, ignored by older peers, whose index-only moves are placed by index) and in snapshots (`BinkSerializerOptions.IncludeOrderKeys`), applied authoritatively. Files are unchanged unless asked; keys that contradict a file's list are made afresh from it. | 24 (18 convergence, 5 key, the inverted limitation test), including a randomized three-participant run (moves, cross-layer moves, layer reorders and drawing in random interleavings, three seeds) and the old limitation test inverted | README "Stacking order"; collaboration page card |
+
+**Decision for 24.** Order keys live in the layer, not in the element record: an element's content and its place
+then version independently, a content edit and a concurrent move both land, and nothing about elements, their
+converters or their equality changed. The file format did not need a version: keys are optional fields that earlier
+readers ignore, and a file without them is ordered by its list as before. Chosen by the maintainer over a
+wire-only layer-order message and over leaving the limit documented.
+
+**Review of 24.** An independent review confirmed five defects, each fixed with a regression test built from the
+reviewer's failing scenario:
+
+| Defect | Fix |
+| --- | --- |
+| A move that changed nothing was sent with clock 0; the receiver skipped the comparison and gave it a tick, so it outranked a real move made elsewhere (elements and layers) | A collaborator's keyed move is always compared, and 0 loses; a keyed move to where the thing already is stays a no-op |
+| A joiner's snapshot layer moves stamped clock 0 afresh, so the joiner refused the host's next layer move | Snapshot (authoritative) placements store the clock exactly, 0 included; snapshot additions are authoritative too |
+| A rolled-back batch gave moved elements new ticks and re-added removed ones at clock 0 | Inverses carry the previous clock (and a removed layer's element clocks); a rollback stores them exactly |
+| An undone delete racing a collaborator's move of the same element ended in different places | A removal leaves a bounded tombstone (layer, key, clock); putting an element back is a move made now, weighed against the tombstone as any move is |
+| Keys passed 256 characters after 1,271 insertions at one spot, and `Between`'s `ArgumentException` escaped `Apply` | Keys up to 4,096 characters (some twenty thousand insertions at one spot); past that the change is refused with `InvalidOperationException`, as `Apply` documents |
+
+Known limits, left as they are: an index that falls inside a run of elements sharing a key (which only concurrent
+insertions at one spot make) places the element just above the run, so `GroupElements` may not gather such elements
+contiguously; and a file saved without keys and reopened gets fresh keys and clocks, so participants should join a
+session by snapshot, as they already must to share the document's content.
+
+A third review read these three changes and confirmed four defects in them, all fixed before this record and folded
+into the rows above, each with a test that failed on the code it reviewed: a click near a point moved the point onto
+the pointer and recorded a step; a view with one tilt channel and not the other made the calligraphy brush throw;
+`FollowPen` measured the lean from the stroke's first point, so the part of a stroke an eraser left after a cut
+turned its nib back (now measured from `PenLean`, the hand's usual lean); and keys during a drag reached the canvas,
+where Delete removed the element mid-drag. Its three plausible items were taken too: `followPen` is written when off
+as well, Escape leaves the selection with the element, and a closed loop's coincident start and end move together.
+
+### The intermittent build failure, explained
+
+`ApplyCompressionNegotiation` failed with "An item with the same key has already been added" for
+`Bit.Bink.lib.module.js`. A detailed log showed the two items it collided on: the content item
+`c:\...\wwwroot\Bit.Bink.lib.module.js` and the SDK's JS-module asset `C:\...\wwwroot\Bit.Bink#[.{fingerprint}]!.lib.module.js`,
+the same file with the drive letter in different case. The SDK merges the two by comparing paths case-sensitively,
+so on Windows they stay apart and the file is compressed twice. The casing comes from MSBuild worker nodes, which
+are reused across builds and keep the project paths of the build that started them: a build started from a
+lowercase working directory (some editors' terminals) followed by one with an uppercase path, or the reverse, hits it,
+and the SDK's `*.dswa.cache.json` caches carry it into the next build too. It is not specific to Bink: BbScanner and
+Bheadless add their `lib.module.js` the same way. Use one casing, or run `dotnet build-server shutdown` (or build with
+`-nodeReuse:false`) after switching; CI, which builds from one path, is not affected.
 
 ## Next priorities
 
-1. Fractional z-order keys, which would let concurrent reorders reconcile (a format change).
-2. Bézier node editing for `BinkPathElement` and polygons.
-3. A calligraphy nib that follows the pen's azimuth or twist, the first built-in use of tilt.
-4. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
-5. A per-picture request message, should snapshot recovery for a missing picture prove too heavy in large sessions.
+1. Rebinding shortcuts to other keys inside the canvas, beyond disabling them.
+2. A per-picture request message, should snapshot recovery for a missing picture prove too heavy in large sessions.
+3. Fonts embedded in PDF export, for text beyond Western European languages.
+4. The Bcrdt adapter, now that ordering converges natively: it would have to beat the operation protocol on more
+   than ordering to be worth its dependency.

@@ -75,6 +75,10 @@
                 <input type="range" min="0" max="180" step="5" value="@_nibAngle" aria-label="Nib angle" @onchange="OnNibAngleChanged" />
                 <span class="bink-field-value bink-field-value--wide">@_nibAngle.ToString("0")°</span>
             </label>
+            <label class="bb-check" title="Turn the nib with the pen's barrel, or with the direction it leans, as a real nib turns in the hand">
+                <input type="checkbox" checked="@_followPen" @onchange="OnFollowPenChanged" />
+                Follow pen
+            </label>
         }
         <span class="bink-sep" aria-hidden="true"></span>
         <label class="bb-check" title="Draw the live stroke reaching where the browser predicts the pen is going">
@@ -192,7 +196,10 @@
     <p class="bb-card-desc">
         <strong>Calligraphy</strong> is a flat nib held at a fixed angle: thick where the stroke moves across the nib,
         thin where it moves along it, as an italic pen or a chisel marker draws. Its <code>NibAngle</code> and
-        <code>NibThickness</code> are saved with each stroke, so a document reopens with the same hand.
+        <code>NibThickness</code> are saved with each stroke, so a document reopens with the same hand. With
+        <strong>Follow pen</strong> (<code>FollowPen</code>) the nib turns as a real one turns in the hand: by the barrel's
+        rotation on a pen that reports it, otherwise by how far the direction the pen leans is from a right hand's usual
+        lean (<code>PenLean</code>, 45 degrees; 135 for a left hand).
     </p>
     <pre class="bb-code"><span class="k">var</span> tool = <span class="k">new</span> BinkDrawTool { HonorPenEraserButton = <span class="k">true</span> };          <span class="c">// the default</span>
 <span class="k">var</span> italic = <span class="k">new</span> BinkCalligraphyBrush { Width = 10f, NibAngle = 45f, NibThickness = 0.15f };</pre>
@@ -234,6 +241,7 @@
     private string _curve = "default";
     private bool _simulatePressure = true;
     private float _nibAngle = 45f;
+    private bool _followPen;
     private bool _predict = true;
     private bool _palmRejection = true;
 
@@ -289,7 +297,7 @@
         {
             "pencil" => new BinkPencilBrush { Width = _width, Color = color },
             // A broad nib: thick downstrokes one way, hairlines the other, as an italic hand.
-            "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = color, NibAngle = _nibAngle },
+            "calligraphy" => new BinkCalligraphyBrush { Width = MathF.Max(_width * 2.5f, 6f), Color = color, NibAngle = _nibAngle, FollowPen = _followPen },
             "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = color },
             "highlighter" => new BinkHighlighterBrush { Width = MathF.Max(_width * 5f, 16f) },
             _ => new BinkPenBrush { Width = _width, Color = color, Spacing = 0.12f, TaperEnd = 5f },
@@ -302,6 +310,12 @@
         }
         _brush = brush;
         _tool = new BinkDrawTool { SimplifyTolerance = 0.08f, Stabilization = _stabilization };
+    }
+
+    private void OnFollowPenChanged(ChangeEventArgs e)
+    {
+        _followPen = e.Value is true;
+        SetInstrument(_instrument);
     }
 
     private void OnStabilizationChanged(ChangeEventArgs e)

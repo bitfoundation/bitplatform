@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink;
 
@@ -203,19 +203,20 @@ public static class BinkShapeRecognizer
         }
         if (barbs == 0 || barbs > 2) return null;
 
-        (Vector2 start, Vector2 end, float error) = Straighten(r.AsSpan(0, tip + 1), r[0], r[tip], diagonal, tolerance, options);
-        return new BinkShapeRecognition(BinkShapeKind.Arrow, [start, end], BinkRect.FromPoints(start, end), 0f, error);
+        // The shaft is judged against its own length, as it was accepted; the result reports it against the diagonal.
+        (Vector2 start, Vector2 end, float error) = Straighten(r.AsSpan(0, tip + 1), r[0], r[tip], shaft, tolerance, options);
+        return new BinkShapeRecognition(BinkShapeKind.Arrow, [start, end], BinkRect.FromPoints(start, end), 0f, error * shaft / diagonal);
     }
 
     /// <summary>
     /// A segment snapped to the nearest multiple of 45 degrees, unless snapping takes it further from the points than
-    /// the tolerance allows, and its error measured as drawn.
+    /// the tolerance allows, and its error, as drawn, as a fraction of <paramref name="scale"/>.
     /// </summary>
-    private static (Vector2 Start, Vector2 End, float Error) Straighten(ReadOnlySpan<Vector2> points, Vector2 start, Vector2 end, float diagonal, float tolerance, BinkShapeRecognizerOptions options)
+    private static (Vector2 Start, Vector2 End, float Error) Straighten(ReadOnlySpan<Vector2> points, Vector2 start, Vector2 end, float scale, float tolerance, BinkShapeRecognizerOptions options)
     {
         (Vector2 snappedStart, Vector2 snappedEnd) = SnapLine(start, end, options.AngleSnap);
-        float snapped = SegmentError(points, snappedStart, snappedEnd) / diagonal;
-        return snapped <= tolerance ? (snappedStart, snappedEnd, snapped) : (start, end, SegmentError(points, start, end) / diagonal);
+        float snapped = SegmentError(points, snappedStart, snappedEnd) / scale;
+        return snapped <= tolerance ? (snappedStart, snappedEnd, snapped) : (start, end, SegmentError(points, start, end) / scale);
     }
 
     private static float SegmentError(ReadOnlySpan<Vector2> points, Vector2 a, Vector2 b)
@@ -305,12 +306,20 @@ public static class BinkShapeRecognizer
         else if (angle <= -MathF.PI / 4f) { angle += MathF.PI / 2f; (rx, ry) = (ry, rx); }
 
         // Snapped upright and round when that stays within the tolerance; measured as it will be drawn either way.
+        // Each snap is kept when it stays within the tolerance on its own: both, then the circle, then upright, then
+        // neither. A circle has no angle, so making it round makes it upright too.
         (float srx, float sry) = SnapProportion(rx, ry, options.ProportionSnap, out bool even);
-        float sangle = even ? 0f : SnapAngle(angle, MathF.PI / 2f, options.AngleSnap);
-        float error = EllipseError(ring, centroid, srx, sry, sangle, diagonal);
-        if (error <= tolerance) (rx, ry, angle) = (srx, sry, sangle);
-        else error = EllipseError(ring, centroid, rx, ry, angle, diagonal);
-        return new BinkShapeRecognition(BinkShapeKind.Ellipse, [], BinkRect.FromCenter(centroid, rx * 2f, ry * 2f), angle, error);
+        float sangle = SnapAngle(angle, MathF.PI / 2f, options.AngleSnap);
+        ReadOnlySpan<(float Rx, float Ry, float Angle)> candidates = [(srx, sry, even ? 0f : sangle), (srx, sry, even ? 0f : angle), (rx, ry, sangle), (rx, ry, angle)];
+        (float Rx, float Ry, float Angle) chosen = candidates[^1];
+        float error = 0f;
+        foreach ((float Rx, float Ry, float Angle) candidate in candidates)
+        {
+            chosen = candidate;
+            error = EllipseError(ring, centroid, candidate.Rx, candidate.Ry, candidate.Angle, diagonal);
+            if (error <= tolerance) break;
+        }
+        return new BinkShapeRecognition(BinkShapeKind.Ellipse, [], BinkRect.FromCenter(centroid, chosen.Rx * 2f, chosen.Ry * 2f), chosen.Angle, error);
     }
 
     private static BinkShapeRecognition? FitPolygon(ReadOnlySpan<Vector2> ring, Vector2 centroid, float diagonal, float tolerance, BinkShapeRecognizerOptions options)
@@ -397,9 +406,14 @@ public static class BinkShapeRecognizer
         (float width, float height) = SnapProportion(right - left, bottom - top, options.ProportionSnap, out _);
         float snapped = SnapAngle(rotation, MathF.PI / 2f, options.AngleSnap);
 
-        // Snapped square and upright when that stays within the tolerance; measured as it will be drawn either way.
-        BinkShapeRecognition result = Build(BinkRect.FromCenter(middle, width, height), snapped, ring, diagonal);
-        return result.Error <= tolerance ? result : Build(BinkRect.FromCenter(middle, right - left, bottom - top), rotation, ring, diagonal);
+        // Each snap is kept when it stays within the tolerance on its own: both, then square, then upright, then
+        // neither; measured as it will be drawn either way.
+        BinkRect square = BinkRect.FromCenter(middle, width, height), drawn = BinkRect.FromCenter(middle, right - left, bottom - top);
+        BinkShapeRecognition result = Build(square, snapped, ring, diagonal);
+        if (result.Error > tolerance) result = Build(square, rotation, ring, diagonal);
+        if (result.Error > tolerance) result = Build(drawn, snapped, ring, diagonal);
+        if (result.Error > tolerance) result = Build(drawn, rotation, ring, diagonal);
+        return result;
 
         static BinkShapeRecognition Build(BinkRect frame, float rotation, ReadOnlySpan<Vector2> ring, float diagonal)
         {

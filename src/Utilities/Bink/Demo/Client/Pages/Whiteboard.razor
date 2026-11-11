@@ -385,6 +385,12 @@ _shapeStyle = <span class="k">new</span> BinkShapeStyle
         path is a <code>BinkPathElement</code> holding curves in any number of sub-paths; both save, paste, export and
         synchronize like every other element.
     </p>
+    <p class="bb-card-desc">
+        <strong>Points</strong> (<code>BinkNodeEditTool</code>) edits any of them, and lines, point by point: click one,
+        drag a corner, an end, an anchor or a curve's control point. Moving an anchor carries its control points, so the
+        curves beside it keep their shape. Each drag is one undo step; Tab steps through the points, the arrow keys
+        nudge, Delete removes a corner.
+    </p>
 </div>
 
 <div class="bb-card">
@@ -701,6 +707,7 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
         ("highlighter", "Highlighter", "Translucent highlighter"),
         ("eraser", "Eraser", "Eraser: whole strokes, parts of strokes or a pixel mask, chosen beside the tools"),
         ("shape", "Shape", "Rectangles, ellipses, lines, arrows, polygons, stars and outlines: pick which beside the tools"),
+        ("points", "Points", "Edit the points of lines, polygons and paths: drag a point, Tab between them, Delete removes one"),
         ("text", "Text", "Text, typed into a real text box"),
         ("pan", "Pan", "Pan and pinch zoom"),
     ];
@@ -832,6 +839,10 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
                 break;
             case "text":
                 _tool = new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = MathF.Max(_width * 4f, 14f), Color = color, Bold = _bold } };
+                break;
+            case "points":
+                // Edits what is selected straight away, or what is clicked next.
+                _tool = new BinkNodeEditTool();
                 break;
             case "pan":
                 _tool = new BinkPanTool();

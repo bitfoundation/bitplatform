@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -294,6 +294,22 @@ public sealed class ShapeRecognitionTests
                 Assert.IsLessThanOrEqualTo(options.Tolerance, result.Error, $"{result.Kind} seed {seed}");
             }
         }
+    }
+
+    [TestMethod]
+    public void A_snap_that_does_not_fit_is_dropped_on_its_own()
+    {
+        // Squaring this box would take it past the tolerance; straightening it would not. Both used to be dropped.
+        var options = new BinkShapeRecognizerOptions { Tolerance = 0.02f, ProportionSnap = 0.2f, AngleSnap = 8f };
+        Vector2[] corners = [new(-100, -85), new(100, -85), new(100, 85), new(-100, 85)];
+        for (int i = 0; i < 4; i++) corners[i] = BinkGeometryMath.Rotate(corners[i], 0.05f) + new Vector2(200, 200);
+
+        BinkShapeRecognition? result = BinkShapeRecognizer.Recognize(Trace(corners, closed: true, wobble: 0.3f), options);
+
+        Assert.AreEqual(BinkShapeKind.Rectangle, result?.Kind);
+        Assert.AreEqual(0f, result!.Rotation, "Straightened.");
+        Assert.AreEqual(200f, result.Frame.Width, 4f, "Not squared.");
+        Assert.AreEqual(170f, result.Frame.Height, 4f);
     }
 
     [TestMethod]
