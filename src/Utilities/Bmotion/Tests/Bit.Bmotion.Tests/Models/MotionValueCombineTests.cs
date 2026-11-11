@@ -62,6 +62,29 @@ public class MotionValueCombineTests
     }
 
     [TestMethod]
+    public void ACombinedValueDroppedWithoutDispose_IsNotHeldOnToByItsInputs()
+    {
+        // Its inputs (a page-scoped scroll value, say) outlive it: a strong subscription would keep every dropped
+        // composite alive - and recomputing on every change - for as long as they live.
+        var a = Bm.Value(1.0);
+        var combined = DropCombined(a);
+        var template = DropTemplate(a);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.IsFalse(combined.IsAlive, "Combine");
+        Assert.IsFalse(template.IsAlive, "Template");
+        a.Value = 2; // the dead subscriptions remove themselves without throwing
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static WeakReference DropCombined(BmValue<double> a) => new(Bm.Combine(() => a.Value * 2, a));
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static WeakReference DropTemplate(BmValue<double> a) => new(Bm.Template(() => $"{a.Value}px", a));
+
+    [TestMethod]
     public void ANullInput_IsRejected()
     {
         Assert.ThrowsExactly<ArgumentNullException>(() => Bm.Combine(() => 0, Bm.Value(0.0), null!));

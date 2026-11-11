@@ -41,10 +41,13 @@ public static class BmSprings
 
     /// <summary>
     /// A heavy mass that takes a moment to get going and settles without wobble in about a second - drawers, sheets,
-    /// things with weight. A physical spring (stiffness 120, damping 38, mass 3: critically damped) rather than a
-    /// duration-based one.
+    /// things with weight. A physical spring (stiffness 120, mass 3 and the critical damping 2·√(120·3) ≈ 37.95)
+    /// rather than a duration-based one.
     /// </summary>
-    public static BmSpring Heavy() => Bm.Spring(stiffness: 120, damping: 38, mass: 3);
+    public static BmSpring Heavy() => Bm.Spring(stiffness: HeavyStiffness, damping: 2 * Math.Sqrt(HeavyStiffness * HeavyMass), mass: HeavyMass);
+
+    private const double HeavyStiffness = 120;
+    private const double HeavyMass = 3;
 
     /// <summary>
     /// Near-instant and critically damped, arriving in about 0.15 s - for following input (an element trailing the

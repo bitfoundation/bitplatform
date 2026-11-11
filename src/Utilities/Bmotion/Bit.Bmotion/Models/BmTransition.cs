@@ -334,7 +334,9 @@ public sealed class BmSpring : BmTransition
     /// </summary>
     /// <param name="from">Where the motion starts. Default 0.</param>
     /// <param name="to">Where it ends. Default 1, so <see cref="BmSpringAnalysis.PeakVelocity"/> reads as distances per second.</param>
-    /// <exception cref="ArgumentException">A value or the spring's configuration isn't finite.</exception>
+    /// <exception cref="ArgumentException">
+    /// A value or the spring's configuration isn't finite, or its stiffness isn't positive or its damping is negative.
+    /// </exception>
     public BmSpringAnalysis Analyze(double from = 0, double to = 1) => BmotionSpringAnalyzer.Analyze(this, from, to);
 
     private protected override BmotionTransitionConfig CreateConfig()

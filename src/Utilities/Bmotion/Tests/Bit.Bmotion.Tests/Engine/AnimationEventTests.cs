@@ -179,6 +179,102 @@ public class AnimationEventTests
     }
 
     [TestMethod]
+    public async Task TheOldPartEnds_BeforeTheNewOneStarts()
+    {
+        // A tracker of "what runs on x" applies events in order: the new start must not be followed by the old end.
+        var (engine, _, events) = NewEngine();
+        await using var __ = engine;
+        engine.RegisterElement("el");
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 0.0)), Bm.Tween(1).ToConfig());
+        await Task.Delay(50); // the old part's completion settles late, asynchronously: it must not report again
+
+        var kinds = events.Select(e => e.Kind).ToArray();
+        CollectionAssert.AreEqual(
+            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted, BmAnimationEventKind.Started }, kinds);
+    }
+
+    [TestMethod]
+    public async Task APerPropertyCallbackOfAnotherKey_IsNotTheReason()
+    {
+        var (engine, _, events) = NewEngine();
+        await using var __ = engine;
+        engine.RegisterElement("el", Values(("d", "M0 0 L10 10")));
+        var config = Bm.Tween(0.3).ToConfig();
+        config.Properties = new() { ["opacity"] = new BmotionTransitionConfig { OnUpdate = _ => { } } };
+
+        await engine.AnimateToAsync("el", Values(("d", "M0 0 L20 20")), config);
+
+        var started = events.Single();
+        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, started.Strategy);
+        StringAssert.Contains(started.Reason, "'d'");
+    }
+
+    [TestMethod]
+    public async Task ABrowserAnimationThatNeverStarts_IsReportedAsReplayingOnTheFrameLoop()
+    {
+        var (engine, interop, events) = NewEngine();
+        await using var __ = engine;
+        interop.PlayWaapiHandler = (_, _, _, _) => Task.FromResult(false); // rejected at once: playback never started
+        engine.RegisterElement("el");
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.1).ToConfig());
+
+        var replay = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Started && e.Strategy == BmPlaybackStrategy.FrameLoop);
+        StringAssert.Contains(replay.Reason, "didn't start");
+        var browserEnd = events.Single(e => e.Strategy == BmPlaybackStrategy.BrowserTimeline && e.Kind != BmAnimationEventKind.Started);
+        Assert.AreEqual(BmAnimationEventKind.Interrupted, browserEnd.Kind);
+
+        RunFrames(engine, 300);
+        var finished = await WaitForAsync(events, e => e.Kind == BmAnimationEventKind.Finished);
+        Assert.AreEqual(BmPlaybackStrategy.FrameLoop, finished.Strategy, "the finish is the frame loop's, not the browser's");
+    }
+
+    [TestMethod]
+    public async Task UnregisteringTheElement_EndsItsRunningParts()
+    {
+        var (engine, _, events) = NewEngine();
+        await using var __ = engine;
+        engine.RegisterElement("el");
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1).ToConfig());
+        engine.UnregisterElement("el");
+
+        var interrupted = events.Single(e => e.Kind == BmAnimationEventKind.Interrupted);
+        CollectionAssert.AreEqual(new[] { "x" }, interrupted.Properties.ToArray());
+    }
+
+    [TestMethod]
+    public async Task InstantParts_AreNotRecordedInTheDurationHistogram()
+    {
+        var durations = new ConcurrentBag<string>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, l) =>
+        {
+            if (instrument.Meter.Name == BmotionAnimationEngine.MeterName && instrument.Name == "bmotion.animation.duration")
+                l.EnableMeasurementEvents(instrument);
+        };
+        listener.SetMeasurementEventCallback<double>((_, _, tags, _) =>
+        {
+            foreach (var tag in tags)
+                if (tag.Key == "bmotion.strategy") durations.Add((string)tag.Value!);
+        });
+        listener.Start();
+
+        var interop = new FakeBmotionInterop { SupportsLinearEasing = true };
+        await using var engine = new BmotionAnimationEngine(interop);
+        engine.RegisterElement("el");
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0).ToConfig());
+        await engine.AnimateToAsync("el", Values(("opacity", 0.5)), Bm.Tween(0.3).ToConfig());
+        interop.FinishWaapi("el");
+
+        for (int i = 0; i < 400 && !durations.Contains("browser_timeline"); i++) await Task.Delay(5);
+        Assert.IsTrue(durations.Contains("browser_timeline"));
+        Assert.IsFalse(durations.Contains("instant"));
+    }
+
+    [TestMethod]
     public async Task AStop_IsAnInterruption()
     {
         var (engine, _, events) = NewEngine();

@@ -91,7 +91,7 @@
             </BmotionAnimatePresence>
         </div>
     </div>
-    <CodeSnippet Code="@_expandCode" />
+    <CodeSnippet Code="@ExpandCode" />
 </section>
 
 <section class="bb-card">
@@ -210,7 +210,7 @@
     private int _attentionRun;
     private bool _expanded;
 
-    private const string _expandCode = """
+    private const string ExpandCode = """
         @using Bit.Bmotion
 
         <button aria-expanded="@(_open ? "true" : "false")" aria-controls="details"

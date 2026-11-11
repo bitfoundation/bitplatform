@@ -20,7 +20,7 @@ public sealed partial class BmotionAnimationEngine
     /// <item><c>bmotion.animation.ended</c> - a counter, one per part that ends, tagged <c>bmotion.strategy</c> and
     /// <c>bmotion.outcome</c> (<c>finished</c> or <c>interrupted</c>).</item>
     /// <item><c>bmotion.animation.duration</c> - a histogram of how long the parts that finished ran, in seconds, tagged
-    /// <c>bmotion.strategy</c>.</item>
+    /// <c>bmotion.strategy</c>. Instant parts, which run no time, aren't recorded.</item>
     /// </list>
     /// </summary>
     public const string MeterName = "Bit.Bmotion";
@@ -51,37 +51,98 @@ public sealed partial class BmotionAnimationEngine
     /// <summary>Whether anybody listens: only then are parts tracked and their ends watched.</summary>
     private bool IsObserved => AnimationEvent is not null || s_started.Enabled || s_ended.Enabled || s_duration.Enabled;
 
+    // The reported parts still running, per element: a start that takes over some of their properties ends them
+    // (interrupted) before it reports its own start, so a consumer always hears the old part end before the new one
+    // starts - the supersession itself settles their completions only later, asynchronously. The engine runs on one
+    // context (the renderer's), where the lock is uncontended; it keeps a host without one (a test, a background
+    // service) from ending a part twice or hearing the two out of order.
+    private readonly Dictionary<string, List<ReportedPart>> _runningParts = new(StringComparer.Ordinal);
+    private readonly Lock _partsLock = new();
+
+    private sealed class ReportedPart(
+        string elementId, string[] properties, BmPlaybackStrategy strategy, string? reason, long startedAt)
+    {
+        public string ElementId { get; } = elementId;
+        public string[] Properties { get; } = properties;
+        public BmPlaybackStrategy Strategy { get; } = strategy;
+        public string? Reason { get; } = reason;
+        public long StartedAt { get; } = startedAt;
+        public bool Ended { get; set; }
+
+        public bool Overlaps(string[] properties)
+        {
+            foreach (var p in properties)
+                if (Array.IndexOf(Properties, p) >= 0) return true;
+            return false;
+        }
+    }
+
     /// <summary>
     /// Reports a part of an animation starting and, once <paramref name="end"/> resolves, ending - <c>true</c> for a
-    /// natural finish. A part with no completion to watch (nobody waits for it) reports its start alone.
+    /// natural finish. A part with no completion to watch (nobody waits for it) reports its start alone. A running
+    /// part of the same element that animates any of these properties ends first, as interrupted.
     /// </summary>
     private void ReportPart(
         string elementId, IEnumerable<string> keys, BmPlaybackStrategy strategy, string? reason, Task<bool>? end)
     {
         string[] properties = [.. keys];
-        string strategyTag = StrategyTag(strategy);
-        long startedAt = Stopwatch.GetTimestamp();
-        if (s_started.Enabled) s_started.Add(1, new KeyValuePair<string, object?>("bmotion.strategy", strategyTag));
-        Raise(new BmotionAnimationEvent(BmAnimationEventKind.Started, elementId, properties, strategy, reason));
-
-        if (end is null) return;
-        if (end.IsCompleted) Ended(end);
-        else ((Task)end).OnCallerContext(_ => Ended(end));
-
-        void Ended(Task<bool> settled)
+        var part = new ReportedPart(elementId, properties, strategy, reason, Stopwatch.GetTimestamp());
+        lock (_partsLock)
         {
-            bool finished = settled.IsCompletedSuccessfully && settled.Result;
-            double elapsedMs = Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
+            if (_runningParts.TryGetValue(elementId, out var running))
+                foreach (var superseded in running.Where(p => p.Overlaps(properties)).ToList())
+                    EndPart(superseded, finished: false);
+
+            if (s_started.Enabled) s_started.Add(1, new KeyValuePair<string, object?>("bmotion.strategy", StrategyTag(strategy)));
+            Raise(new BmotionAnimationEvent(BmAnimationEventKind.Started, elementId, properties, strategy, reason));
+
+            if (end is null) return;
+            if (end.IsCompleted)
+            {
+                EndPart(part, end.IsCompletedSuccessfully && end.Result);
+                return;
+            }
+            // Fetched again: ending the superseded parts may have dropped the element's list.
+            if (!_runningParts.TryGetValue(elementId, out running)) _runningParts[elementId] = running = new List<ReportedPart>();
+            running.Add(part);
+        }
+        ((Task)end).OnCallerContext(_ => EndPart(part, end.IsCompletedSuccessfully && end.Result));
+    }
+
+    /// <summary>Reports <paramref name="part"/> ending, once: a later end of an already ended part is ignored.</summary>
+    private void EndPart(ReportedPart part, bool finished)
+    {
+        lock (_partsLock)
+        {
+            if (part.Ended) return;
+            part.Ended = true;
+            if (_runningParts.TryGetValue(part.ElementId, out var running) && running.Remove(part) && running.Count == 0)
+                _runningParts.Remove(part.ElementId);
+
+            string strategyTag = StrategyTag(part.Strategy);
+            double elapsedMs = Stopwatch.GetElapsedTime(part.StartedAt).TotalMilliseconds;
             if (s_ended.Enabled)
                 s_ended.Add(1,
                     new KeyValuePair<string, object?>("bmotion.strategy", strategyTag),
                     new KeyValuePair<string, object?>("bmotion.outcome", finished ? "finished" : "interrupted"));
-            if (finished && s_duration.Enabled)
+            // An instant part runs no time: recording its ~0 s would only drag the distribution of real runs down.
+            if (finished && part.Strategy != BmPlaybackStrategy.Instant && s_duration.Enabled)
                 s_duration.Record(elapsedMs / 1000, new KeyValuePair<string, object?>("bmotion.strategy", strategyTag));
             Raise(new BmotionAnimationEvent(
                 finished ? BmAnimationEventKind.Finished : BmAnimationEventKind.Interrupted,
-                elementId, properties, strategy, reason)
+                part.ElementId, part.Properties, part.Strategy, part.Reason)
             { ElapsedMs = elapsedMs });
+        }
+    }
+
+    /// <summary>Ends every part of <paramref name="elementId"/> still running, as interrupted (its element is gone).</summary>
+    private void EndRunningParts(string elementId)
+    {
+        lock (_partsLock)
+        {
+            if (!_runningParts.TryGetValue(elementId, out var running)) return;
+            foreach (var part in running.ToList()) EndPart(part, finished: false);
+            _runningParts.Remove(elementId);
         }
     }
 
@@ -107,30 +168,21 @@ public sealed partial class BmotionAnimationEngine
         _ => "instant_without_frame_loop",
     };
 
-    /// <summary>
-    /// Why <paramref name="keys"/> are not played by the browser: the first condition of <see cref="Partition"/> that
-    /// keeps one of them on the frame loop, or the browser being unable to reproduce them exactly.
-    /// </summary>
-    private string LoopReason(
-        BmotionElementAnimationState state, IEnumerable<string> keys, BmotionTransitionConfig? transition, bool browserDeclined)
-    {
-        var config = transition ?? new BmotionTransitionConfig();
-        bool inProcess = _interop.IsInProcess;
-        if (config.OnUpdate is not null || (config.Properties?.Values.Any(p => p.OnUpdate is not null) ?? false))
-            return "a per-frame callback (OnUpdate) reports every frame, which only the frame loop produces";
-        if (inProcess && state.OnFrame is not null) return "a per-frame callback (OnFrame) is attached to the element";
-        if (inProcess && state.PlaybackRate != 1)
-            return $"the element plays at a rate of {state.PlaybackRate:0.###} (paused or re-timed controls)";
-        foreach (var key in keys)
-        {
-            if (key is "d" or "points") return $"SVG '{key}' is an attribute, which Web Animations can't animate";
-            if (BmotionTransformComposer.IsTransformProp(key) && state.IsDragging)
-                return "a drag owns the element's transform";
-            if (BmotionTransformComposer.IsTransformProp(key) && inProcess && state.HasActiveTransformDriver())
-                return "another transform component is already animating on the frame loop (transform is one CSS property)";
-        }
-        return browserDeclined
-            ? "the browser can't reproduce it exactly (for example a recording longer than the recorder takes, or a curve without linear() support)"
-            : "it needs the frame loop";
-    }
+    // Why a part plays on the frame loop: Partition picks the reason as it routes the first key there, from the
+    // condition that routed it - so the report is the decision itself, not a re-derivation after it.
+    private const string OnUpdateReason = "a per-frame callback (OnUpdate) reports every frame, which only the frame loop produces";
+    private const string OnFrameReason = "a per-frame callback (OnFrame) is attached to the element";
+    private const string DragReason = "a drag owns the element's transform";
+    private const string TransformDriverReason =
+        "another transform component is already animating on the frame loop (transform is one CSS property)";
+    private const string BrowserDeclinedReason =
+        "the browser can't reproduce it exactly (for example a recording longer than the recorder takes, or a curve without linear() support)";
+    private const string NeverStartedReason =
+        "the browser didn't start it (the element was missing or an easing was rejected), so it replays on the frame loop";
+    private const string HandOffReason =
+        "another animation took over part of its browser animation (transform is one CSS property), so the rest carries on on the frame loop";
+
+    private static string PlaybackRateReason(double rate) => $"the element plays at a rate of {rate:0.###} (paused or re-timed controls)";
+
+    private static string SvgAttributeReason(string key) => $"SVG '{key}' is an attribute, which Web Animations can't animate";
 }

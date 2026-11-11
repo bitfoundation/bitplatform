@@ -163,6 +163,33 @@ public class SpringAnalysisTests
     }
 
     [TestMethod]
+    public void Heavy_IsCriticallyDamped()
+    {
+        var a = BmSprings.Heavy().Analyze();
+        Assert.AreEqual(BmSpringDamping.CriticallyDamped, a.DampingKind, $"ζ {a.DampingRatio}");
+    }
+
+    [TestMethod]
+    public void Analyze_ReportsThePhysicsTheDriverRuns_ForANonPositiveMass()
+    {
+        // The driver falls back to mass 1 before deriving stiffness/damping from bounce/duration, so a mass of 0 runs
+        // (and is reported as) the mass-1 spring rather than the near-undamped one SpringFromBounce(.., 0) would give.
+        var zero = new BmSpring { Bounce = 0.3, Duration = 0.5, Mass = 0 }.Analyze();
+        var one = new BmSpring { Bounce = 0.3, Duration = 0.5, Mass = 1 }.Analyze();
+        Assert.AreEqual(one.Stiffness, zero.Stiffness, 1e-9);
+        Assert.AreEqual(one.Damping, zero.Damping, 1e-9);
+        Assert.AreEqual(1, zero.Mass);
+        Assert.IsTrue(zero.Settled);
+        Assert.AreEqual(one.SettlingTime, zero.SettlingTime, 1e-9);
+    }
+
+    [TestMethod]
+    public void Analyze_RejectsANegativeStiffness()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = -5, Damping = 10, Mass = 1 }.Analyze());
+    }
+
+    [TestMethod]
     public void TheLivelySprings_BounceInOrder()
     {
         double snappy = BmSprings.Snappy().Analyze().Overshoot;

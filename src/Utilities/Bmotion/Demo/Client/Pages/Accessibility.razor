@@ -117,7 +117,7 @@
         <button class="btn btn-primary" @onclick="@(() => _behaved = !_behaved)">Move all three</button>
     </div>
 
-    <CodeSnippet Code="@_behaviorCode" />
+    <CodeSnippet Code="@BehaviorCode" />
 </section>
 
 <section class="bb-card">
@@ -262,7 +262,7 @@
     private readonly BmReducedMotionBehavior[] _behaviors =
         [BmReducedMotionBehavior.Reduce, BmReducedMotionBehavior.Instant, BmReducedMotionBehavior.Full];
 
-    private const string _behaviorCode = """
+    private const string BehaviorCode = """
         @using Bit.Bmotion
 
         @* A progress bar carries information and moves calmly: keep it when motion is reduced. *@

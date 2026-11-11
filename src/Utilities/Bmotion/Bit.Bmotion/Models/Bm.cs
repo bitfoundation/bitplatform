@@ -192,7 +192,10 @@ public static class Bm
         ArgumentNullException.ThrowIfNull(inputs);
         var composed = new BmValue<string>($"mv_{Guid.NewGuid():N}", format());
         foreach (var input in inputs)
-            composed.AttachUpstream(input.Subscribe(_ => composed.SetSync(format())));
+        {
+            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
+            composed.AttachUpstream(SubscribeWeak(input, composed, format));
+        }
         return composed;
     }
 
@@ -219,9 +222,29 @@ public static class Bm
         foreach (var input in inputs)
         {
             ArgumentNullException.ThrowIfNull(input, nameof(inputs));
-            combined.AttachUpstream(input.Subscribe(_ => combined.SetSync(compute())));
+            combined.AttachUpstream(SubscribeWeak(input, combined, compute));
         }
         return combined;
+    }
+
+    /// <summary>
+    /// Recomputes <paramref name="derived"/> on every change of <paramref name="input"/> through a weak reference, as
+    /// <see cref="BmValue{T}.Transform{TOut}(Func{T, TOut})"/> does: the input never keeps the derived value alive, so a
+    /// composite that is dropped without <c>Dispose()</c> is collected instead of leaking (and recomputing) for as long
+    /// as its inputs live. The subscription removes itself the first time it fires after the derived value is gone.
+    /// </summary>
+    private static IDisposable SubscribeWeak<TOut>(BmValue<double> input, BmValue<TOut> derived, Func<TOut> compute)
+    {
+        var weak = new WeakReference<BmValue<TOut>>(derived);
+        IDisposable? sub = null;
+        sub = input.Subscribe(_ =>
+        {
+            if (weak.TryGetTarget(out var target))
+                target.SetSync(compute());
+            else
+                sub?.Dispose();
+        });
+        return sub;
     }
 
     /// <summary>

@@ -1021,10 +1021,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     private async Task InitialiseAsync()
     {
-        // Probe the OS preference only when it can actually change ShouldReduceMotion()'s result:
-        // a local <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so
-        // detection there is a wasted interop round-trip. This mirrors ShouldReduceMotion().
-        bool osPreferenceMatters = ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
+        // Probe the OS preference only when it can actually change IsMotionReduced()'s result: an
+        // element that keeps its full animation (ReducedMotion="Full") ignores reduced motion, a local
+        // <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so detection
+        // there is a wasted interop round-trip. This mirrors IsMotionReduced()/ShouldReduceMotion().
+        bool osPreferenceMatters = ReducedMotionBehavior != BmReducedMotionBehavior.Full
+            && ConfigCtx?.ReduceMotion is null && Options.ReducedMotion switch
         {
             BmReducedMotionMode.User => true,
             BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,

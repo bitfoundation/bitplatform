@@ -110,7 +110,7 @@
         <button class="btn btn-primary" @onclick="@(() => _namedOn = !_namedOn)">@(_namedOn ? "Send back" : "Animate")</button>
     </div>
 
-    <CodeSnippet Code="@_namedCode" />
+    <CodeSnippet Code="@NamedCode" />
 </section>
 
 <section class="bb-card">
@@ -317,7 +317,7 @@
         return points.ToString();
     }
 
-    private const string _namedCode = """
+    private const string NamedCode = """
         @using Bit.Bmotion
 
         @* A named spring: say how it should feel, not how stiff it is. *@

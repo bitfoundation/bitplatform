@@ -149,6 +149,16 @@
         if (parts.Count > MaxPartsShown) parts.RemoveAt(0);
     }
 
+    // Elements that unmounted (a keyed list, a presence switch, a virtualized grid) never show again: drop their lines
+    // so the map tracks the live elements instead of every id that ever animated.
+    private void PruneLastStarts(IReadOnlyList<BmotionElementDiagnostics> snapshot)
+    {
+        if (_lastStarts.Count == 0) return;
+        var live = new HashSet<string>(snapshot.Select(d => d.Id), StringComparer.Ordinal);
+        foreach (var id in _lastStarts.Keys.Where(id => !live.Contains(id)).ToList())
+            _lastStarts.Remove(id);
+    }
+
     private static string StrategyLabel(BmPlaybackStrategy strategy) => strategy switch
     {
         BmPlaybackStrategy.Instant => "instant",
@@ -174,7 +184,11 @@
             {
                 _snapshot = Engine.GetDiagnostics();
                 _activeTotal = _snapshot.Count(d => d.HasActiveAnimations);
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(() =>
+                {
+                    PruneLastStarts(_snapshot);
+                    StateHasChanged();
+                });
             }
         }
         // Disposal races the poll loop: the timer/CTS may be disposed, or the renderer torn down,

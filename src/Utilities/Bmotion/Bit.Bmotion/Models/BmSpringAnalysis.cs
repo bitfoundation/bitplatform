@@ -104,13 +104,13 @@ internal static class BmotionSpringAnalyzer
         config.RepeatInfinite = false;
         config.RepeatDelay = 0;
 
-        double k = config.Stiffness, d = config.Damping;
-        double m = config.Mass > 0 ? config.Mass : 1;
-        if (config.Bounce.HasValue)
-            (k, d) = BmotionTransitionConfig.SpringFromBounce(config.VisualDuration ?? config.Duration, config.Bounce.Value, m);
-
         double value = from;
         var driver = new BmotionSpringDriver(from, to, config, v => value = v);
+
+        // The physics the driver resolved (bounce/duration derivation, mass fallback) - the spring that actually runs.
+        double k = driver.Stiffness, d = driver.Damping, m = driver.Mass;
+        if (k <= 0 || d < 0)
+            throw new ArgumentException("A spring is analysed with a positive stiffness and a non-negative damping.", nameof(spring));
 
         double distance = to - from;
         double direction = Math.Sign(distance);
