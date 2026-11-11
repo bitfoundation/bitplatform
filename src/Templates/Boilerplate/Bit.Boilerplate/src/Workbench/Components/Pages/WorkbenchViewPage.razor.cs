@@ -36,6 +36,8 @@ public partial class WorkbenchViewPage
     private (string PaneId, string Query, string SnapshotId)? shownSnapshot;
     // The text clicked in Edit text mode and the resource entries it came from.
     private (string PaneId, string Text, WorkbenchTextMatch[] Matches, WorkbenchReviewAnchor Anchor)? pickedText;
+    // The page switches the page has changed by itself, like the tab it shows, which the checks go through on their own.
+    private readonly HashSet<string> inPageSwitches = [];
     // The component clicked in Inspect mode, null when it isn't a bit BlazorUI one, the CSS variables its styles use and the
     // spot a comment on it is pinned to.
     private (string PaneId, WorkbenchComponentInfo? Info, WorkbenchCssVariable[] Variables, WorkbenchReviewAnchor Anchor)? pickedComponent;
@@ -130,6 +132,7 @@ public partial class WorkbenchViewPage
         // A comment being written, a thread that's open and what was picked belong to the page that was left.
         if (pageInfo != previous)
         {
+            inPageSwitches.Clear();
             pendingComment = null;
             selectedThreadId = null;
             drafts.Comment = null;
@@ -367,6 +370,9 @@ public partial class WorkbenchViewPage
     // No callback for a read-only viewer, so the text panel hides its button that asks the agent.
     private EventCallback<string> AskAgentCallback => reviewSession.CanWrite ? EventCallback.Factory.Create<string>(this, AskAgentAboutText) : default;
 
+    // Likewise for the Checks tab's.
+    private Func<string, string, WorkbenchCheckStep[], Task<bool>>? AskAgentAboutFindingCallback => reviewSession.CanWrite ? AskAgentAboutFinding : null;
+
     /// <summary>Saved translations reach the views only through a reload, as the resources are read when a page renders.</summary>
     private async Task OnTextSaved()
     {
@@ -388,6 +394,36 @@ public partial class WorkbenchViewPage
         store.ShowColumn(WorkbenchModes.ReviewColumn);
     }
 
+    /// <summary>
+    /// Turns a finding of the Checks tab into a comment for the agent, pinned on its element after opening the part of the
+    /// view it was found in, or on the page when the element isn't there anymore. The comment is selected, so its pin
+    /// shows on the view, and the Checks tab stays open for the next finding.
+    /// </summary>
+    private async Task<bool> AskAgentAboutFinding(string text, string selector, WorkbenchCheckStep[] steps)
+    {
+        if (pageInfo is null)
+            return false;
+
+        var pageKey = pageInfo.Key;
+        var paneId = store.SelectedPane.Id;
+        var anchor = await JSRuntime.InvokeAsync<WorkbenchReviewAnchor?>("workbench.anchorInFrame", paneId, selector, steps) ?? PageAnchor;
+        var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", paneId);
+
+        // Read after the awaits, as opening a tab of the view can change its scenario.
+        if (IsDisposed || pageInfo?.Key != pageKey || store.Panes.FirstOrDefault(p => p.Id == paneId) is not { } pane)
+            return false;
+
+        var threadId = await reviewSession.AddThread(pageKey, pane.Scenario.ToQueryString(), anchor, ReviewerName, text, state);
+
+        if (threadId is null)
+            return false;
+
+        selectedThreadId = threadId;
+        StateHasChanged();
+
+        return true;
+    }
+
     /// <summary>A click on a comment's pin in a view; the pin of the comment being written brings its composer back.</summary>
     [JSInvokable]
     public void OpenThread(string threadId)
@@ -406,7 +442,7 @@ public partial class WorkbenchViewPage
     }
 
     /// <summary>The spot of the comment being written: where it was pinned, or the page itself on the tour's live review step.</summary>
-    private WorkbenchReviewAnchor? ComposerAnchor => pendingComment?.Anchor ?? (IsTourAskingForAComment ? TourCommentAnchor : null);
+    private WorkbenchReviewAnchor? ComposerAnchor => pendingComment?.Anchor ?? (IsTourAskingForAComment ? PageAnchor : null);
 
     private async Task SendComment(string text)
     {
@@ -414,7 +450,7 @@ public partial class WorkbenchViewPage
             return;
 
         var pageKey = pageInfo.Key;
-        var (paneId, anchor, state) = pendingComment ?? (store.SelectedPane.Id, TourCommentAnchor, null);
+        var (paneId, anchor, state) = pendingComment ?? (store.SelectedPane.Id, PageAnchor, null);
 
         if (store.Panes.FirstOrDefault(p => p.Id == paneId) is not { } pane)
             return;
@@ -535,6 +571,11 @@ public partial class WorkbenchViewPage
         if (scenario.Device == DevicePresets.ThisDeviceKey && store.Panes.FirstOrDefault(pane => pane.Id == paneId)?.Scenario is { } current)
         {
             scenario = scenario with { Device = current.Device, Width = current.Width, Height = current.Height, Rotated = current.Rotated };
+        }
+
+        if (store.Panes.FirstOrDefault(pane => pane.Id == paneId)?.Scenario is { } shown)
+        {
+            inPageSwitches.UnionWith(shown.ChangedSwitches(scenario));
         }
 
         store.ReportScenario(paneId, scenario);

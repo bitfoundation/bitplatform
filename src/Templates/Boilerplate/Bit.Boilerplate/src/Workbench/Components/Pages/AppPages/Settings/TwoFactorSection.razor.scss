@@ -1,3 +1,13 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
 section {
     width: 100%;
+}
+
+::deep a {
+    color: $bit-color-primary;
+}
+
+li + li {
+    margin-block-start: 1.35em;
 }

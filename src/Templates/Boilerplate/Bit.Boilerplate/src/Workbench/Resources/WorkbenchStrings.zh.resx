@@ -1939,10 +1939,49 @@
         <value>检测此视图</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>在所选视图上运行，沿用它的设备、主题、语言和数据：一项无障碍检测（axe-core），以及查找不来自主题的颜色。</value>
+        <value>在所选视图上运行，沿用它的设备、主题、语言和数据，并依次在它的每个标签页、面板和菜单上运行：一项无障碍检测（axe-core），以及查找不来自主题的颜色。</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>运行检测</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>全部导出</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>复制一段给 AI 智能体的提示词，包含所有发现：问题是什么、在哪里。</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>已复制</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>已交给智能体</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>检测在 {0} 次后停止，页面的部分内容没有打开。</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>{0} 页面的检测结果</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Workbench 在视图 {1} 中检测了 {0} 页面，该视图决定了设备、主题、语言和数据。它逐一打开了页面的标签页、面板和菜单，在其中某处发现的问题会注明是哪一处。</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>修复由页面自身标记造成的问题，然后再运行 {0} 检查一遍。来自 bit BlazorUI 组件内部或应用外壳的问题请报告出来，不要在页面里绕开。代表数据的颜色（例如某个类别的颜色）放进 --data-color 自定义属性。</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>位置：{0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>规则：{0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>例如 {0}：{1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>检测标签页在这里发现了这个无障碍问题。如果是页面自身的标记造成的，请修复；如果来自 bit BlazorUI 组件内部或应用外壳，请告诉我。</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>检测标签页在这里发现了这个颜色，它与主题中的任何颜色都不匹配。请改用主题颜色；如果它代表数据（例如某个类别的颜色），请把它放进 --data-color 自定义属性。</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>无法在此视图上运行检测。请等视图加载完成后重试。</value>
@@ -3798,6 +3837,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>正在加载更多订单...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>正在加载排班表...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>今天的订单已全部显示。</value>
     </data>
@@ -4119,6 +4161,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>下划线</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>请勾选此项以继续。</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>请附上不超过 5 MB 的 PDF 文件。</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>请至少选择一颗星。</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>请至少输入三个字母。</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>请保持在 80 或以下。</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>请开启通知以接收订单动态。</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>带开关文字</value>
     </data>
@@ -4400,6 +4460,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>内嵌</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>颜色太浅，在白色背景上难以阅读。</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>请至少入住两晚。</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>开门时间</value>
