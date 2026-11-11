@@ -35,7 +35,6 @@
 
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
-        <!-- The debug proxy only lets a browser debug the WebAssembly client, so builds for anywhere else leave its 12 MB out. -->
         <BlazorWebAssemblyOmitDebugProxyOutput Condition="'$(Environment)' != 'Development'">true</BlazorWebAssemblyOmitDebugProxyOutput>
 
         <IncludeSourceRevisionInInformationalVersion Condition="$(Configuration.Contains('Debug'))">false</IncludeSourceRevisionInInformationalVersion>
