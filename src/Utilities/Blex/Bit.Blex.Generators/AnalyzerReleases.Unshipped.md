@@ -14,7 +14,6 @@ BLEX007 | Bit.Blex.Generators | Error | Effect method must return Task or ValueT
 BLEX008 | Bit.Blex.Generators | Error | Blex member must be a writable instance member
 BLEX009 | Bit.Blex.Generators | Warning | Latest effect cannot cancel without a CancellationToken
 BLEX010 | Bit.Blex.Generators | Error | Action must not be 'async void'
-BLEX011 | Bit.Blex.Generators | Warning | Action return value is discarded
 BLEX012 | Bit.Blex.Generators | Error | State field name equals generated property name
 BLEX013 | Bit.Blex.Generators | Error | Unsupported parameter modifier
 BLEX014 | Bit.Blex.Generators | Error | Generic action/effect/computed methods are not supported
@@ -30,3 +29,6 @@ BLEX023 | Bit.Blex.Generators | Error | Effect timeout needs a CancellationToken
 BLEX024 | Bit.Blex.Generators | Error | Store version cannot be negative
 BLEX025 | Bit.Blex.Generators | Warning | Store version has no effect without Persist
 BLEX026 | Bit.Blex.Generators | Error | Store declares a member the generator overrides
+BLEX027 | Bit.Blex.Generators | Error | Effect throttle cannot be negative
+BLEX028 | Bit.Blex.Generators | Error | Effect cannot both debounce and throttle
+BLEX029 | Bit.Blex.Generators | Error | State comparer is not an equality comparer of the state's type

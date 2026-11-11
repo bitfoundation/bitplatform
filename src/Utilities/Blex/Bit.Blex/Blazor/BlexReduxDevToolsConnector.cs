@@ -23,6 +23,10 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
     private bool _ready;
     private bool _disposed;
 
+    // While the module's connect call is in flight: disposal then leaves the cleanup to ConnectAsync, which is the only
+    // one to learn the handle the extension is about to hand out.
+    private bool _connecting;
+
     /// <summary>Creates a connector over the supplied JS runtime.</summary>
     public BlexReduxDevToolsConnector(IJSRuntime js) => _js = js;
 
@@ -47,8 +51,26 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
             _module = module;
             _selfRef = DotNetObjectReference.Create(this);
 
-            var handle = await _module.InvokeAsync<int>("connect", _selfRef, name);
-            if (handle > 0 && !_disposed)
+            int handle;
+            _connecting = true;
+            try
+            {
+                handle = await _module.InvokeAsync<int>("connect", _selfRef, name);
+            }
+            finally
+            {
+                _connecting = false;
+            }
+
+            if (_disposed)
+            {
+                // Disposed while connecting: the extension subscription it just made would go on calling a released
+                // reference -- a phantom monitor instance -- so it is closed here, now that its handle is known.
+                await ReleaseAsync(handle);
+                return;
+            }
+
+            if (handle > 0)
             {
                 _handle = handle;
                 _ready = true;
@@ -58,6 +80,7 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
         catch (JSDisconnectedException)
         {
             // Circuit gone before the bridge loaded.
+            await ReleaseIfDisposedAsync();
         }
         catch (JSException ex)
         {
@@ -65,8 +88,12 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
             // should be visible. Routed through the manager so it reaches the app's OnError like
             // every other non-fatal failure, instead of only a console line nobody reads.
             Report(ex, "connecting the DevTools bridge");
+            await ReleaseIfDisposedAsync();
         }
     }
+
+    // Disposed while the connect call was in flight, which then failed: disposal left the cleanup to it.
+    private Task ReleaseIfDisposedAsync() => _disposed ? ReleaseAsync(0) : Task.CompletedTask;
 
     private void Report(Exception exception, string detail)
     {
@@ -139,14 +166,28 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+            return;
+
         _disposed = true;
         _ready = false;
+        _manager?.DisconnectDevTools(this);
+
+        // ConnectAsync releases everything once its connect call answers.
+        if (_connecting)
+            return;
+
+        await ReleaseAsync(_handle);
+    }
+
+    private async Task ReleaseAsync(int handle)
+    {
         try
         {
             if (_module is not null)
             {
-                if (_handle > 0)
-                    await _module.InvokeVoidAsync("disconnect", _handle);
+                if (handle > 0)
+                    await _module.InvokeVoidAsync("disconnect", handle);
                 await _module.DisposeAsync();
             }
         }

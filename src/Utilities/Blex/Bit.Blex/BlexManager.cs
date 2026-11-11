@@ -100,7 +100,7 @@ public sealed class BlexManager
     /// Whether anything observes dispatched actions (middleware, DevTools or subscribers).
     /// Lets hot paths skip payload capture when nobody is listening.
     /// </summary>
-    internal bool HasObservers => _middleware.Count > 0 || _connected || ActionDispatched is not null;
+    internal bool HasObservers => _middleware.Count > 0 || _connected || ActionDispatched is not null || ActionRecorded is not null;
 
     /// <summary>
     /// Whether generated wrappers should capture action arguments: whenever anything observes actions,
@@ -378,6 +378,14 @@ public sealed class BlexManager
     public event Action<BlexActionContext>? ActionDispatched;
 
     /// <summary>
+    /// Raised for each recorded action after DevTools and before <see cref="ActionDispatched"/>: for the library's own
+    /// timeline observers (undo/redo), which must see an action before any subscriber reacts to it. A reactor's
+    /// follow-up action re-enters the pipeline and would otherwise be seen first -- with the cause's change already in
+    /// the state it captures, folding both into one undo step depending on who subscribed first.
+    /// </summary>
+    internal event Action<BlexActionContext>? ActionRecorded;
+
+    /// <summary>
     /// Invokes a multicast event one handler at a time, containing and reporting any exception, so
     /// that one misbehaving observer cannot starve the rest of the pipeline.
     /// </summary>
@@ -416,8 +424,14 @@ public sealed class BlexManager
     public IDisposable Subscribe(Action<BlexActionContext> handler, Func<BlexActionContext, bool>? filter = null)
     {
         ArgumentNullException.ThrowIfNull(handler);
+        BlexSubscription? subscription = null;
         void Wrapped(BlexActionContext ctx)
         {
+            // A dispatch runs a snapshot of its handlers: one disposed by a handler before it, for this very action,
+            // must not run anyway -- against a store its owner has just closed, say.
+            if (subscription!.IsDisposed)
+                return;
+
             try
             {
                 // The filter is user code too, and it runs on the dispatch path: a throwing
@@ -433,8 +447,9 @@ public sealed class BlexManager
             }
         }
 
+        subscription = new BlexSubscription(() => ActionDispatched -= Wrapped);
         ActionDispatched += Wrapped;
-        return new BlexSubscription(() => ActionDispatched -= Wrapped);
+        return subscription;
     }
 
     /// <summary>Subscribes to actions originating from a specific store type.</summary>
@@ -527,9 +542,14 @@ public sealed class BlexManager
         ArgumentNullException.ThrowIfNull(onChanged);
         var equality = comparer ?? EqualityComparer<T>.Default;
         var last = selector();
+        var disposed = false;
 
         void Evaluate()
         {
+            // Disposed by a handler that ran before it for the same change: it is no longer anyone's subscription.
+            if (disposed)
+                return;
+
             var current = selector();
             if (equality.Equals(current, last))
                 return;
@@ -560,6 +580,7 @@ public sealed class BlexManager
         UnannouncedChange += OnUnannounced;
         var subscription = new BlexSubscription(() =>
         {
+            disposed = true;
             StateRestored -= OnRestored;
             UnannouncedChange -= OnUnannounced;
             actions.Dispose();
@@ -859,10 +880,13 @@ public sealed class BlexManager
     {
         private Action? _dispose = dispose;
 
+        public bool IsDisposed => _dispose is null;
+
         public void Dispose()
         {
-            _dispose?.Invoke();
+            var dispose = _dispose;
             _dispose = null;
+            dispose?.Invoke();
         }
     }
 
@@ -972,7 +996,9 @@ public sealed class BlexManager
             throw new ArgumentException("An instance key must not be empty.", nameof(key));
 
         var generated = key is null;
-        key ??= Interlocked.Increment(ref _scopeSequence).ToString(CultureInfo.InvariantCulture);
+        // "#n" rather than "n": keys given are usually ids, and a generated "1" next to document 1's would make two
+        // instances one name -- one slice that undo, time-travel and storage would write into either.
+        key ??= "#" + Interlocked.Increment(ref _scopeSequence).ToString(CultureInfo.InvariantCulture);
 
         var unkeyed = store.Name;
         store.AssignInstanceKey(key, generated);
@@ -1078,6 +1104,17 @@ public sealed class BlexManager
         SetDevToolsStatus(paused: false, locked: false);
     }
 
+    /// <summary>
+    /// Detaches <paramref name="devTools"/> if it is the sink connected now, and does nothing otherwise: a bridge that
+    /// is going away must not take down one connected after it (another provider in the same scope, say).
+    /// </summary>
+    public void DisconnectDevTools(IBlexDevTools devTools)
+    {
+        ArgumentNullException.ThrowIfNull(devTools);
+        if (ReferenceEquals(_devTools, devTools))
+            DisconnectDevTools();
+    }
+
     /// <summary>Builds the global state tree: <c>{ "&lt;StoreName&gt;": &lt;state&gt;, ... }</c>.</summary>
     public JsonObject CaptureGlobalState()
     {
@@ -1114,6 +1151,13 @@ public sealed class BlexManager
         public BlexManager Manager { get; } = manager;
 
         public ActionFrame? Outer { get; } = outer;
+
+        /// <summary>
+        /// The failure an action nested in this one already reported on its way out: this frame re-throws it silently.
+        /// Kept per frame -- not per manager -- so two unrelated actions failing with one exception instance (two effects
+        /// awaiting one faulted task) are both reported.
+        /// </summary>
+        public Exception? ReportedError { get; set; }
     }
 
     /// <summary>
@@ -1122,7 +1166,8 @@ public sealed class BlexManager
     /// </summary>
     internal ActionBodyScope EnterActionBody()
     {
-        if (!HasObservers)
+        // An ActionFailed handler alone needs the frames too: they are how a nested failure is reported once.
+        if (!CapturesArgs)
             return default;
 
         var outer = RunningActions.Value;
@@ -1261,6 +1306,7 @@ public sealed class BlexManager
                 _devTools.Send(SanitizeAction(context.QualifiedName), SanitizeState(global), BuildDevToolsPayload(context.Args));
             }
 
+            InvokeIsolated(ActionRecorded, context, "subscriber", context.QualifiedName);
             InvokeIsolated(ActionDispatched, context, "subscriber", context.QualifiedName);
         }
         finally
@@ -1282,12 +1328,6 @@ public sealed class BlexManager
     /// </remarks>
     public event Action<BlexActionErrorContext>? ActionFailed;
 
-    // The exception most recently reported, so one failure travelling out through nested actions
-    // is reported once rather than once per frame. Held weakly: the reference exists only to
-    // compare against the next report, and keeping a strong one would pin an exception (and its
-    // whole captured stack) alive for the lifetime of the manager.
-    private readonly WeakReference<Exception> _lastReportedError = new(null!);
-
     /// <summary>
     /// Reports that an action body threw. Runs the middleware error hooks and raises
     /// <see cref="ActionFailed"/>, both isolated: reporting a failure must never replace it with a
@@ -1303,11 +1343,14 @@ public sealed class BlexManager
         // An action calling another action -- or an effect body calling one -- means the same
         // exception passes through several dispatch frames on its way out. Report the innermost
         // one, which names the action that actually threw, and let the outer frames re-throw
-        // silently. A reporter that fired once per frame would multiply every nested failure.
-        if (_lastReportedError.TryGetTarget(out var previous) && ReferenceEquals(previous, exception))
-            return;
+        // silently. A reporter that fired once per frame would multiply every nested failure. The frame of the
+        // action reporting is the flow's current one (its body is still entered); the action around it learns of it.
+        var frame = RunningActions.Value;
+        if (frame?.Outer is { } outer)
+            outer.ReportedError = exception;
 
-        _lastReportedError.SetTarget(exception);
+        if (frame is not null && ReferenceEquals(frame.ReportedError, exception))
+            return;
 
         if (_middleware.Count == 0 && ActionFailed is null)
             return;

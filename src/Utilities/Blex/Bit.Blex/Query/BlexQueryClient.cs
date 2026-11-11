@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Text.Json.Nodes;
@@ -47,7 +47,7 @@ public sealed record BlexQueryInfo(
 public sealed class BlexQueryClient : IDisposable
 {
     private readonly Dictionary<BlexQueryKey, BlexQueryEntry> _entries = [];
-    private readonly Dictionary<string, (JsonNode? Data, DateTimeOffset UpdatedAt)> _hydration = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (JsonNode? Data, DateTimeOffset UpdatedAt, bool Invalidated)> _hydration = new(StringComparer.Ordinal);
     private readonly BlexManager? _manager;
 
     /// <summary>Creates a client.</summary>
@@ -255,7 +255,7 @@ public sealed class BlexQueryClient : IDisposable
 
                 entry.Attach(observer);
                 observer.Entry = entry;
-                entry.GcTime = Max(entry.GcTime, GcTimeFor(observer.Options));
+                entry.GcTime = Longer(entry.GcTime, GcTimeFor(observer.Options));
                 CancelGc(entry);
                 return;
             }
@@ -297,7 +297,7 @@ public sealed class BlexQueryClient : IDisposable
 
         var entry = GetOrCreate<T>(key);
         lock (Gate)
-            entry.GcTime = Max(entry.GcTime, GcTimeFor(options));
+            entry.GcTime = Longer(entry.GcTime, GcTimeFor(options));
 
         if (!entry.IsStale(StaleTimeFor(options), TimeProvider.GetUtcNow()) && entry.TryGetData(out var cached, out _))
         {
@@ -343,7 +343,7 @@ public sealed class BlexQueryClient : IDisposable
         options ??= new BlexQueryOptions();
         var entry = GetOrCreate<T>(key);
         lock (Gate)
-            entry.GcTime = Max(entry.GcTime, GcTimeFor(options));
+            entry.GcTime = Longer(entry.GcTime, GcTimeFor(options));
 
         if (!entry.IsStale(StaleTimeFor(options), TimeProvider.GetUtcNow()))
         {
@@ -442,10 +442,14 @@ public sealed class BlexQueryClient : IDisposable
         T? previous;
         DateTimeOffset? updatedAt;
         BlexQueryStatus status;
+        Exception? error;
+        bool invalidated;
         lock (Gate)
         {
             hadData = entry.TryGetData(out previous, out updatedAt);
             status = entry.Status;
+            error = entry.Error;
+            invalidated = entry.IsInvalidated;
         }
 
         T next;
@@ -459,7 +463,7 @@ public sealed class BlexQueryClient : IDisposable
             ScheduleGc(entry);
         }
 
-        return new BlexOptimisticUpdate<T>(this, entry, hadData, previous, updatedAt, status, next);
+        return new BlexOptimisticUpdate<T>(this, entry, hadData, previous, updatedAt, status, error, invalidated, next);
     }
 
     /// <summary>Creates a mutation: a change sent to the server, with its own status and the cache updates around it.</summary>
@@ -483,6 +487,7 @@ public sealed class BlexQueryClient : IDisposable
     public Task InvalidateAsync(BlexQueryKey key, bool exact = false)
     {
         ArgumentNullException.ThrowIfNull(key);
+        InvalidateHandoffs(key.ToString(), exact);
         var refetches = InvalidateAsync(Matcher(key, exact));
 
         // For the other tabs (SyncAcrossTabs); what they pass on arrives through InvalidateFromElsewhereAsync, which
@@ -502,6 +507,26 @@ public sealed class BlexQueryClient : IDisposable
         return refetches;
     }
 
+    /// <summary>
+    /// Marks the prerender's handed-over queries that <paramref name="keyText"/> covers and nobody has claimed yet as
+    /// invalidated, so the first query of one refetches it rather than taking it for fresh.
+    /// </summary>
+    private void InvalidateHandoffs(string keyText, bool exact)
+    {
+        var prefix = keyText[..^1] + ",";
+        lock (Gate)
+        {
+            if (_hydration.Count == 0)
+                return;
+
+            foreach (var pending in _hydration.Keys.ToArray())
+            {
+                if (pending == keyText || (!exact && pending.StartsWith(prefix, StringComparison.Ordinal)))
+                    _hydration[pending] = _hydration[pending] with { Invalidated = true };
+            }
+        }
+    }
+
     /// <summary>Raised after an invalidation by key made here, with the key's text: what the cross-tab bridge passes on.</summary>
     internal event Action<string, bool>? InvalidatedHere;
 
@@ -516,6 +541,7 @@ public sealed class BlexQueryClient : IDisposable
         if (keyText.Length < 2 || keyText[0] != '[' || keyText[^1] != ']')
             return Task.CompletedTask;
 
+        InvalidateHandoffs(keyText, exact);
         var prefix = keyText[..^1];
         return InvalidateAsync(key =>
         {
@@ -528,6 +554,10 @@ public sealed class BlexQueryClient : IDisposable
     }
 
     /// <summary>Invalidates every query whose key <paramref name="predicate"/> accepts; see <see cref="InvalidateAsync(BlexQueryKey, bool)"/>.</summary>
+    /// <remarks>
+    /// A query the prerender handed over that nothing has asked for yet is held as text until then, which a predicate
+    /// cannot be run on: invalidate it by key, which covers it.
+    /// </remarks>
     public Task InvalidateAsync(Func<BlexQueryKey, bool> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
@@ -787,7 +817,7 @@ public sealed class BlexQueryClient : IDisposable
 
             lock (Gate)
             {
-                _hydration[key] = (data, updatedAt);
+                _hydration[key] = (data, updatedAt, false);
                 pending.Add(key);
             }
         }
@@ -871,7 +901,7 @@ public sealed class BlexQueryClient : IDisposable
     private BlexQueryEntry<T> GetOrCreate<T>(BlexQueryKey key)
     {
         BlexQueryEntry<T> created;
-        (JsonNode? Data, DateTimeOffset UpdatedAt) handoff;
+        (JsonNode? Data, DateTimeOffset UpdatedAt, bool Invalidated) handoff;
         bool handedOver;
         lock (Gate)
         {
@@ -883,7 +913,7 @@ public sealed class BlexQueryClient : IDisposable
                 return typed;
             }
 
-            created = new BlexQueryEntry<T>(this, key) { GcTime = Options.GcTime };
+            created = new BlexQueryEntry<T>(this, key);
             _entries[key] = created;
 
             var text = key.ToString();
@@ -895,6 +925,10 @@ public sealed class BlexQueryClient : IDisposable
             try
             {
                 created.Hydrate(handoff.Data, handoff.UpdatedAt);
+
+                // Invalidated before anyone claimed it: the data still shows, and the first query of it refetches.
+                if (handoff.Invalidated)
+                    created.Invalidate();
             }
             catch (Exception ex)
             {
@@ -943,7 +977,7 @@ public sealed class BlexQueryClient : IDisposable
     internal void OnObserverOptions(BlexQueryEntry entry, BlexQueryOptions options)
     {
         lock (Gate)
-            entry.GcTime = Max(entry.GcTime, GcTimeFor(options));
+            entry.GcTime = Longer(entry.GcTime, GcTimeFor(options));
     }
 
     internal void OnFetchSettled(BlexQueryEntry entry) => ScheduleGc(entry);
@@ -960,13 +994,15 @@ public sealed class BlexQueryClient : IDisposable
         lock (Gate)
         {
             if (IsDisposed || entry.ObserverCount > 0 || entry.FetchStatus == BlexFetchStatus.Fetching
-                || entry.GcTicket is not null || entry.GcTime == TimeSpan.MaxValue || entry.GcTime == Timeout.InfiniteTimeSpan
+                || entry.GcTicket is not null || IsForever(entry.GcTime ?? Options.GcTime)
                 || !_entries.TryGetValue(entry.Key, out var current) || !ReferenceEquals(current, entry))
             {
                 return;
             }
 
-            var due = remaining ?? (entry.GcTime < TimeSpan.Zero ? TimeSpan.Zero : entry.GcTime);
+            // An entry no query has asked anything of (SetQueryData, a handoff) keeps the client's default.
+            var gcTime = entry.GcTime ?? Options.GcTime;
+            var due = remaining ?? (gcTime < TimeSpan.Zero ? TimeSpan.Zero : gcTime);
 
             // A timer cannot wait longer than MaxTimerDue; a longer GC time is waited out in more than one go.
             wait = due > MaxTimerDue ? MaxTimerDue : due;
@@ -1151,5 +1187,18 @@ public sealed class BlexQueryClient : IDisposable
         }
     }
 
-    private static TimeSpan Max(TimeSpan a, TimeSpan b) => a >= b ? a : b;
+    /// <summary>
+    /// The longer of the GC time an entry has so far and one more query's: the first query's sets it, shorter than the
+    /// client's default or not, and a never-collect value (<see cref="TimeSpan.MaxValue"/>,
+    /// <see cref="Timeout.InfiniteTimeSpan"/>) outlasts every finite one.
+    /// </summary>
+    private static TimeSpan Longer(TimeSpan? current, TimeSpan requested)
+    {
+        if (current is not { } existing || IsForever(requested))
+            return requested;
+
+        return IsForever(existing) || existing >= requested ? existing : requested;
+    }
+
+    private static bool IsForever(TimeSpan gcTime) => gcTime == TimeSpan.MaxValue || gcTime == Timeout.InfiniteTimeSpan;
 }

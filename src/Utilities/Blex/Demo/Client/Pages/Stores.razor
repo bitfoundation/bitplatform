@@ -83,6 +83,14 @@
             <a href="persistence">Persistence</a>.
         </p>
         <p>
+            A setter skips an assignment of an equal value - by <code>EqualityComparer&lt;T&gt;.Default</code>, which for
+            an array or a list means the same instance. <code>[BlexState(Comparer = nameof(Unchanged))]</code> names a
+            field or property of the store holding the <code>IEqualityComparer&lt;T&gt;</code> to decide with instead,
+            so an endpoint polled every few seconds that answers with an equal copy re-renders nothing, records nothing
+            and writes nothing (<code>BLEX029</code> when the member is missing or holds something else):
+        </p>
+        <CodeBlock Code="@StateComparer" />
+        <p>
             By default the properties have public setters, and an outside assignment becomes a
             <code>Set X</code> action. <code>[BlexStore(EnforceActions = true)]</code> makes the setters
             private instead, so state can only change through the store's own actions - see
@@ -288,6 +296,12 @@
 </DocPage>
 
 @code {
+    private const string StateComparer = """
+        private static readonly IEqualityComparer<Message[]> Unchanged = BlexComparers.Sequence<Message>();
+
+        [BlexState(Comparer = nameof(Unchanged))] private Message[] _messages = [];
+        """;
+
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
 
     // The manager's own setting when the page opened, put back when it closes: detection is this page's

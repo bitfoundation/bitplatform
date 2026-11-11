@@ -115,6 +115,27 @@ public class MauiIntegrationTests
     }
 
     [TestMethod]
+    public async Task GoingToTheBackground_WritesTheDebouncedSave()
+    {
+        // The OS stops a backgrounded app without disposing anything: a save still waiting out its debounce would die
+        // with the process.
+        var preferences = new FakePreferences();
+        var manager = new BlexManager { TimeProvider = new Microsoft.Extensions.Time.Testing.FakeTimeProvider() };
+        var settings = new SettingsStore();
+        manager.Register(settings);
+        var persistor = new BlexStatePersistor(manager, new BlexPreferencesStorage(preferences),
+            new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
+        await persistor.StartAsync();
+
+        settings.SetTheme("dark");
+        Assert.IsFalse(preferences.Data.ContainsKey("blex:settings"));
+
+        BlexPreferencesStorage.NotifySuspending();
+
+        StringAssert.Contains((string)preferences.Data["blex:settings"]!, "dark");
+    }
+
+    [TestMethod]
     public async Task PreferencesStorage_RoundTrips()
     {
         var storage = new BlexPreferencesStorage(new FakePreferences());

@@ -91,4 +91,31 @@ public sealed class BlexEffectAttribute : Attribute
     /// stop (<c>BLEX023</c>).
     /// </summary>
     public int TimeoutMilliseconds { get; set; }
+
+    /// <summary>
+    /// Runs the effect at most once per window of this many milliseconds: an invocation made less than that long
+    /// after the last run <em>started</em> is dropped (leading-edge throttle). <c>0</c> (the default) disables
+    /// throttling. Cannot be negative (<c>BLEX027</c>) or combined with <see cref="DebounceMilliseconds"/>
+    /// (<c>BLEX028</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Where <see cref="DebounceMilliseconds"/> waits for a burst to end and runs its last invocation,
+    /// a throttle runs the first one at once and ignores the rest of the burst -- the shape for a refresh button
+    /// pressed repeatedly, a scroll position reaching the end of a list, or a window regaining focus.
+    /// </para>
+    /// <para>
+    /// A dropped invocation leaves no trace, like one <see cref="BlexEffectConcurrency.Drop"/> ignores: it never
+    /// flips <c>XxxIsLoading</c>, never clears <c>XxxError</c>, is never offered to middleware and records no
+    /// action. Only an invocation that passes the middleware opens a window, so a vetoed one never delays the next.
+    /// The window is measured on the manager's <see cref="System.TimeProvider"/>, so a test advances a fake clock
+    /// instead of waiting, and a replay of recorded actions never throttles. It composes with
+    /// <see cref="Concurrency"/>, which still governs the invocations that get through.
+    /// </para>
+    /// </remarks>
+    /// <example><code>
+    /// [BlexEffectAttribute(ThrottleMilliseconds = 2000)]
+    /// private async Task OnRefresh(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+    /// </code></example>
+    public int ThrottleMilliseconds { get; set; }
 }

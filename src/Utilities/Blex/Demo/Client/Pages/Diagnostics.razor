@@ -51,9 +51,8 @@
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Suppressing a warning</h2>
         <p>
-            The @WarningCount warnings are suppressible like any other. Blex's own test project suppresses
-            <code>BLEX011</code> project-wide, because it has a fixture that deliberately declares a
-            value-returning action.
+            The @WarningCount warnings are suppressible like any other - <code>BLEX009</code>, say, for a
+            <code>Latest</code> effect whose superseded runs are fine to let finish.
         </p>
         <CodeBlock Code="@Suppress" Language="xml" FileName="MyApp.csproj" />
         <CodeBlock Code="@SuppressLocal" Title="Or locally" />
@@ -84,13 +83,14 @@
 
     private const string Suppress = """
         <PropertyGroup>
-          <NoWarn>$(NoWarn);BLEX011</NoWarn>
+          <NoWarn>$(NoWarn);BLEX009</NoWarn>
         </PropertyGroup>
         """;
 
     private const string SuppressLocal = """
-        #pragma warning disable BLEX011
-        [BlexAction] private int OnIncrement() => ++Count;
-        #pragma warning restore BLEX011
+        #pragma warning disable BLEX009
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
+        private async Task OnRefresh() => Items = await _api.GetItemsAsync();
+        #pragma warning restore BLEX009
         """;
 }

@@ -501,9 +501,9 @@
             <p>
                 An <code>async void</code> action cannot be awaited or recorded correctly, so it is a
                 hard error (<code>BLEX010</code>). Return <code>Task</code> or <code>ValueTask</code>.
-                Similarly, an action that returns a <em>value</em> gets warning <code>BLEX011</code>,
-                because the generated wrapper discards it - put the result in a <code>[BlexState]</code>
-                field instead.
+                An action may return a <em>value</em> too - <code>T</code>, <code>Task&lt;T&gt;</code> or
+                <code>ValueTask&lt;T&gt;</code> - and the wrapper hands it back (an action that creates something
+                can return its id). A vetoed action never runs, and its wrapper returns <code>default</code>.
             </p>
         </Callout>
     </div>

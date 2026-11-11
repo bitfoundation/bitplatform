@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace Bit.Blex.Query;
 
@@ -51,6 +51,8 @@ public sealed class BlexOptimisticUpdate<T> : IBlexRollback
     private readonly T? _previous;
     private readonly DateTimeOffset? _previousUpdatedAt;
     private readonly BlexQueryStatus _previousStatus;
+    private readonly Exception? _previousError;
+    private readonly bool _previousInvalidated;
     private int _done;
 
     internal BlexOptimisticUpdate(
@@ -60,6 +62,8 @@ public sealed class BlexOptimisticUpdate<T> : IBlexRollback
         T? previous,
         DateTimeOffset? previousUpdatedAt,
         BlexQueryStatus previousStatus,
+        Exception? previousError,
+        bool previousInvalidated,
         T value)
     {
         _client = client;
@@ -68,6 +72,8 @@ public sealed class BlexOptimisticUpdate<T> : IBlexRollback
         _previous = previous;
         _previousUpdatedAt = previousUpdatedAt;
         _previousStatus = previousStatus;
+        _previousError = previousError;
+        _previousInvalidated = previousInvalidated;
         Value = value;
     }
 
@@ -92,7 +98,7 @@ public sealed class BlexOptimisticUpdate<T> : IBlexRollback
 
         if (current)
         {
-            _entry.Restore(_hadData, _previous, _previousUpdatedAt, _previousStatus);
+            _entry.Restore(_hadData, _previous, _previousUpdatedAt, _previousStatus, _previousError, _previousInvalidated);
             if (!_hadData)
                 _entry.Invalidate();
         }

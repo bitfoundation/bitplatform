@@ -44,7 +44,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
         "Dispose", "IsDisposed", "CancelEffects",
         "InstanceKey", "WithInstanceKey", "TimeProvider",
         "ActionDescriptors", "FindAction", "DescribeActions", "EnforcesActions", "TransientStateKeys",
-        "CaptureRollbackState", "ApplyRollbackState",
+        "CaptureRollbackState", "ApplyRollbackState", "IsEffectThrottled", "MarkEffectStarted",
     ];
 
     /// <summary>The nested class the typed action descriptors are generated into.</summary>
@@ -131,14 +131,6 @@ public sealed class BlexGenerator : IIncrementalGenerator
         "Action method '{0}' is 'async void'; return Task or ValueTask so the dispatch pipeline can await and record it correctly",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Error,
-        isEnabledByDefault: true);
-
-    private static readonly DiagnosticDescriptor ActionReturnsValue = new(
-        "BLEX011",
-        "Action return value is discarded",
-        "Action method '{0}' returns a value that the generated wrapper discards; use void, Task or ValueTask (store results in [BlexStateAttribute] fields instead)",
-        "Bit.Blex.Generators",
-        DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor StateFieldNameConflict = new(
@@ -249,6 +241,30 @@ public sealed class BlexGenerator : IIncrementalGenerator
         "BLEX026",
         "Store declares a member the generator overrides",
         "Blex store '{0}' declares its own '{1}', which the generated code overrides {2}; remove it from the store",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor NegativeThrottle = new(
+        "BLEX027",
+        "Effect throttle cannot be negative",
+        "Effect '{0}' sets a negative ThrottleMilliseconds; use 0 to disable throttling",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor ThrottleWithDebounce = new(
+        "BLEX028",
+        "Effect cannot both debounce and throttle",
+        "Effect '{0}' sets both DebounceMilliseconds and ThrottleMilliseconds; a debounce runs the last invocation of a burst and a throttle the first, so keep the one that matches what the effect is for",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor BadStateComparer = new(
+        "BLEX029",
+        "State comparer is not an equality comparer of the state's type",
+        "State '{0}' names '{1}' as its Comparer, but the store has no field or property of that name assignable to IEqualityComparer<{2}>; use nameof on a field or property of the store that holds one",
         "Bit.Blex.Generators",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -439,11 +455,21 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     var stateAttr = field.GetAttributes().First(a => a.AttributeClass?.ToDisplayString() == BlexStateAttribute);
                     var persistField = stateAttr.NamedArguments.FirstOrDefault(a => a.Key == "Persist").Value.Value is not false;
 
+                    // [BlexState(Comparer = nameof(X))]: X must hold an IEqualityComparer<FieldType>, or the generated
+                    // setter would fail to compile in code the user never wrote.
+                    var comparer = stateAttr.NamedArguments.FirstOrDefault(a => a.Key == "Comparer").Value.Value as string;
+                    if (comparer is not null && !IsStateComparer(symbol, field.Type, comparer, ctx.SemanticModel.Compilation))
+                    {
+                        Report(BadStateComparer, NamedArgumentLocation(stateAttr, "Comparer") ?? field.Locations.FirstOrDefault(), field.Name, comparer, field.Type.ToDisplayString());
+                        break;
+                    }
+
                     states.Add(new BlexStateModel(
                         field.Name,
                         propertyName,
                         field.Type.ToDisplayString(TypeFormat),
-                        persistField));
+                        persistField,
+                        comparer));
                     break;
                 }
 
@@ -523,8 +549,18 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     }
 
                     var isAsync = IsTaskReturning(am.ReturnType);
-                    if (ReturnsDiscardedValue(am, isAsync))
-                        Report(ActionReturnsValue, am.Locations.FirstOrDefault(), am.Name);
+
+                    // The wrapper hands back what the method returns: T of a sync method, or of Task<T>/ValueTask<T>.
+                    string? resultType = null;
+                    if (isAsync)
+                    {
+                        if (am.ReturnType is INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } task)
+                            resultType = task.TypeArguments[0].ToDisplayString(TypeFormat);
+                    }
+                    else if (!am.ReturnsVoid)
+                    {
+                        resultType = am.ReturnType.ToDisplayString(TypeFormat);
+                    }
 
                     // The label is for display (DevTools / time-travel) and may contain spaces;
                     // the wrapper is a C# identifier and is kept separate.
@@ -541,6 +577,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         label,
                         isAsync,
                         isValueTask,
+                        resultType,
                         new BlexEquatableArray<BlexParamModel>(prms)));
                     break;
                 }
@@ -606,6 +643,20 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         break;
                     }
 
+                    var throttle = attr.NamedArguments.FirstOrDefault(a => a.Key == "ThrottleMilliseconds").Value.Value is int th ? th : 0;
+                    if (throttle < 0)
+                    {
+                        Report(NegativeThrottle, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
+
+                    // Opposite ends of a burst: neither combination order would do what both settings promise.
+                    if (throttle > 0 && debounce > 0)
+                    {
+                        Report(ThrottleWithDebounce, em.Locations.FirstOrDefault(), em.Name);
+                        break;
+                    }
+
                     // A trailing CancellationToken parameter is supplied by the wrapper (it does
                     // not appear on the public method) and enables CancelXxx() / Latest semantics.
                     var parameters = em.Parameters;
@@ -642,6 +693,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         retryCount,
                         retryDelay,
                         timeout,
+                        throttle,
                         new BlexEquatableArray<BlexParamModel>(prms)));
                     break;
                 }
@@ -697,16 +749,49 @@ public sealed class BlexGenerator : IIncrementalGenerator
     /// Where <c>Version = n</c> is written in the store's attribute, for the diagnostics about it; <c>null</c>
     /// when it cannot be found.
     /// </summary>
-    private static Location? VersionArgumentLocation(AttributeData? storeAttr)
+    private static Location? VersionArgumentLocation(AttributeData? storeAttr) => NamedArgumentLocation(storeAttr, "Version");
+
+    /// <summary>Where the named argument <paramref name="name"/> is written in an attribute; <c>null</c> when it cannot be found.</summary>
+    private static Location? NamedArgumentLocation(AttributeData? attribute, string name)
     {
-        if (storeAttr?.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax syntax || syntax.ArgumentList is null)
+        if (attribute?.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax syntax || syntax.ArgumentList is null)
         {
             return null;
         }
 
         return syntax.ArgumentList.Arguments
-            .FirstOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == "Version")?
+            .FirstOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == name)?
             .GetLocation();
+    }
+
+    /// <summary>
+    /// Whether the store declares a field or readable property named <paramref name="member"/> whose type converts
+    /// implicitly to <c>IEqualityComparer&lt;<paramref name="stateType"/>&gt;</c> -- what the generated setter passes on.
+    /// </summary>
+    private static bool IsStateComparer(INamedTypeSymbol store, ITypeSymbol stateType, string member, Compilation compilation)
+    {
+        if (compilation.GetTypeByMetadataName("System.Collections.Generic.IEqualityComparer`1") is not { } comparerType)
+        {
+            return false;
+        }
+
+        var target = comparerType.Construct(stateType);
+        foreach (var candidate in store.GetMembers(member))
+        {
+            var type = candidate switch
+            {
+                IFieldSymbol field => field.Type,
+                IPropertySymbol { GetMethod: not null, Parameters.Length: 0 } property => property.Type,
+                _ => null,
+            };
+
+            if (type is not null && compilation.ClassifyCommonConversion(type, target).IsImplicit)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -997,22 +1082,6 @@ public sealed class BlexGenerator : IIncrementalGenerator
         };
     }
 
-    private static bool ReturnsDiscardedValue(IMethodSymbol method, bool isAsync)
-    {
-        if (method.ReturnsVoid)
-            return false;
-
-        var name = method.ReturnType.ToDisplayString();
-        if (name == "System.Threading.Tasks.Task" || name == "System.Threading.Tasks.ValueTask")
-            return false;
-
-        // Task<T> / ValueTask<T> results and plain sync return values are dropped by the wrapper.
-        return isAsync
-            ? name.StartsWith("System.Threading.Tasks.Task<", System.StringComparison.Ordinal)
-                || name.StartsWith("System.Threading.Tasks.ValueTask<", System.StringComparison.Ordinal)
-            : true;
-    }
-
     /// <summary>
     /// Reports BLEX005 for every generated member that would collide, and BLEX026 for every member of the
     /// store's own that one of the generated overrides would collide with. Returns the names of every
@@ -1093,6 +1162,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 Check($"__{e.WrapperName}Queue");
             if (e.DebounceMilliseconds > 0)
                 Check($"__{e.WrapperName}Debounce");
+            if (e.ThrottleMilliseconds > 0)
+                Check($"__{e.WrapperName}Throttle");
         }
 
         // Private plumbing behind DescribeActions and TransientStateKeys.
@@ -1579,7 +1650,15 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}public {s.TypeFqn} {s.PropertyName}");
             sb.AppendLine($"{body}{{");
             sb.AppendLine($"{body}    get => {field};");
-            sb.AppendLine($"{body}    {setter} => SetState(ref {field}, value, \"{Escape(s.PropertyName)}\");");
+            if (s.Comparer is null)
+            {
+                sb.AppendLine($"{body}    {setter} => SetState(ref {field}, value, \"{Escape(s.PropertyName)}\");");
+            }
+            else
+            {
+                // [BlexState(Comparer = ...)]: the store's comparer decides what counts as a change.
+                sb.AppendLine($"{body}    {setter} => SetState<{s.TypeFqn}>(ref {field}, value, {Id(s.Comparer)}, \"{Escape(s.PropertyName)}\");");
+            }
             sb.AppendLine($"{body}}}");
             sb.AppendLine();
         }
@@ -1624,6 +1703,32 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var label = Escape(a.ActionLabel);
             var argsExpr = ArgsExpression(a.Parameters);
             var trailing = argsExpr is null ? "" : $", {argsExpr}";
+            if (a.ResultTypeFqn is { } result)
+            {
+                // The wrapper returns the method's result; a vetoed action never ran and returns default.
+                sb.AppendLine($"{body}/// <summary>Dispatches the <c>{DocEscape(a.ActionLabel)}</c> action and returns its result (<c>default</c> when a middleware vetoes it).</summary>");
+                if (a.IsAsync)
+                {
+                    var call = a.IsValueTask ? $"{a.ImplName}({argList}).AsTask()" : $"{a.ImplName}({argList})";
+                    sb.AppendLine($"{body}public global::System.Threading.Tasks.Task<{result}> {a.WrapperName}({paramList})");
+                    sb.AppendLine($"{body}    => DispatchAsync<{result}>(\"{label}\", () => {call}, {argsExpr ?? "null"});");
+                }
+                else
+                {
+                    // A block-bodied lambda converts to Action only, so this is the plain Dispatch: one closure, shared
+                    // by the arguments and the result.
+                    sb.AppendLine($"{body}public {result} {a.WrapperName}({paramList})");
+                    sb.AppendLine($"{body}{{");
+                    sb.AppendLine($"{body}    {result} __blexResult = default!;");
+                    sb.AppendLine($"{body}    Dispatch(\"{label}\", () => {{ __blexResult = {a.ImplName}({argList}); }}{trailing});");
+                    sb.AppendLine($"{body}    return __blexResult;");
+                    sb.AppendLine($"{body}}}");
+                }
+
+                sb.AppendLine();
+                continue;
+            }
+
             sb.AppendLine($"{body}/// <summary>Dispatches the <c>{DocEscape(a.ActionLabel)}</c> action.</summary>");
             if (a.IsAsync)
             {
@@ -1674,6 +1779,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var isQueue = e.Concurrency == 3;
             var debounceField = $"__{e.WrapperName}Debounce";
             var isDebounced = e.DebounceMilliseconds > 0;
+            var throttleField = $"__{e.WrapperName}Throttle";
+            var isThrottled = e.ThrottleMilliseconds > 0;
 
             var cancellationNote = e.HasCancellationToken
                 ? " Cancellations via the effect's own token are not treated as errors."
@@ -1719,9 +1826,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
             if (isDebounced)
                 sb.AppendLine($"{body}private global::System.Threading.CancellationTokenSource? {debounceField};");
 
+            if (isThrottled)
+                sb.AppendLine($"{body}private long? {throttleField};");
+
             var debounceNote = isDebounced
                 ? $" Waits for a quiet period of {e.DebounceMilliseconds} ms first; a newer invocation supersedes this one, which then returns without running."
-                : "";
+                : isThrottled
+                    ? $" Runs at most once per {e.ThrottleMilliseconds} ms; an invocation made sooner after the last run started returns without running."
+                    : "";
             sb.AppendLine($"{body}/// <summary>Runs the <c>{DocEscape(e.ActionLabel)}</c> effect, managing its loading/error state.{debounceNote}</summary>");
             sb.AppendLine($"{body}public async global::System.Threading.Tasks.Task {e.WrapperName}({paramList})");
             sb.AppendLine($"{body}{{");
@@ -1769,6 +1881,13 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}        return;");
             }
 
+            // Throttle: dropped like a Drop invocation -- before the middleware, so it leaves no trace.
+            if (isThrottled)
+            {
+                sb.AppendLine($"{body}    if (base.IsEffectThrottled({throttleField}, {e.ThrottleMilliseconds}))");
+                sb.AppendLine($"{body}        return;");
+            }
+
             // Take the veto decision before touching anything observable. A vetoed action must
             // leave no trace, and every step below this point is a side effect: the loading
             // counter, the cleared error, the cancelled predecessor (Latest) and the queue slot
@@ -1777,6 +1896,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}    global::Bit.Blex.BlexActionArg[]? __blexArgs = {argsExpr ?? "null"};");
             sb.AppendLine($"{body}    if (!BeginAction(\"{label}\", __blexArgs))");
             sb.AppendLine($"{body}        return;");
+
+            // Only an approved invocation opens the next window: a vetoed one must not hold back the one after it.
+            if (isThrottled)
+                sb.AppendLine($"{body}    base.MarkEffectStarted(ref {throttleField});");
 
             if (isLatest) // stale runs must not clobber the newest run's error state
                 sb.AppendLine($"{body}    var __blexVersion = ++{versionField};");
