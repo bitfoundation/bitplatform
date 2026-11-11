@@ -182,7 +182,7 @@
                             <BitActionButton FullWidth
                                              Color="BitColor.Error"
                                              IconName="@BitIconName.SignOut"
-                                             OnClick="() => { isSignOutConfirmOpen = true; CloseMenu(); }">
+                                             OnClick="() => { isSignOutConfirmRendered = isSignOutConfirmOpen = true; CloseMenu(); }">
                                 @Localizer[nameof(AppStrings.SignOut)]
                             </BitActionButton>
                         </AuthorizeView>
@@ -265,4 +265,8 @@
     </BitDropMenu>
 </section>
 
-<SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" CanSignOutOfAllAccounts="otherAccounts.Length > 0" />
+@* Built on the first sign out rather than with every page, since it stays closed until then. *@
+@if (isSignOutConfirmRendered)
+{
+    <SignOutConfirmDialog @bind-IsOpen="isSignOutConfirmOpen" CanSignOutOfAllAccounts="otherAccounts.Length > 0" />
+}

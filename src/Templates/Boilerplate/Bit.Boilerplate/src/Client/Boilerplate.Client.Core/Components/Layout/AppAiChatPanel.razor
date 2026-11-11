@@ -9,7 +9,7 @@
                Rounded
                Draggable
                FloatOffset="2rem"
-               OnClick="() => isOpen = true"
+               OnClick="WrapHandled(OpenPanel)"
                FloatPosition="BitPosition.BottomEnd"
                Color="@(isInVoiceCall ? BitColor.Error : BitColor.Primary)"
                IconName="@(isInVoiceCall ? BitIconName.Phone : BitIconName.ChatBot)"
@@ -21,363 +21,367 @@
 
     <audio @ref="voiceCallAudioRef" class="read-aloud-audio" autoplay></audio>
 
-    @* Kept mounted, so what is typed survives closing the panel. *@
-    <BitPanel @bind-IsOpen="isOpen"
-                 KeepMounted
-                 TitleAriaId="ai-chat-panel-title"
-                 ShowCloseButton
-                 ModeFull="isSmallScreen is true"
-                 Modeless="isSmallScreen is false"
-                 OnDismiss="WrapHandled(HandleOnDismissPanel)"
-                 Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
-        <Header>
-            <BitStack Horizontal Alignment="BitAlignment.Center">
-                <BitText Id="ai-chat-panel-title" Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
-                @if (isLoading || isRestoringHistory)
-                {
-                    <BitRollingSquareLoading Size="BitSize.Small" />
-                }
-                <BitSpacer />
-                <BitButton IconOnly
-                           FixedColor
-                           Variant="BitVariant.Text"
-                           IconName="@BitIconName.Delete"
-                           OnClick="WrapHandled(ClearChat)"
-                           Color="BitColor.SecondaryBackground"
-                           Disabled="isRestoringHistory"
-                           Title="@Localizer[nameof(AppStrings.Clear)]"
-                           AriaLabel="@Localizer[nameof(AppStrings.Clear)]" />
+    @* Built on its first open rather than with every page (See OpenPanel), then kept mounted, so what is typed
+       survives closing the panel. *@
+    @if (isPanelRendered)
+    {
+        <BitPanel @bind-IsOpen="isOpen"
+                     KeepMounted
+                     TitleAriaId="ai-chat-panel-title"
+                     ShowCloseButton
+                     ModeFull="isSmallScreen is true"
+                     Modeless="isSmallScreen is false"
+                     OnDismiss="WrapHandled(HandleOnDismissPanel)"
+                     Classes="@(new() { Container = $"panel-cnt{(isMaximized ? " maximized" : null)}" })">
+            <Header>
+                <BitStack Horizontal Alignment="BitAlignment.Center">
+                    <BitText Id="ai-chat-panel-title" Typography="BitTypography.H5">@Localizer[nameof(AppStrings.AiChatPanelTitle)]</BitText>
+                    @if (isLoading || isRestoringHistory)
+                    {
+                        <BitRollingSquareLoading Size="BitSize.Small" />
+                    }
+                    <BitSpacer />
+                    <BitButton IconOnly
+                               FixedColor
+                               Variant="BitVariant.Text"
+                               IconName="@BitIconName.Delete"
+                               OnClick="WrapHandled(ClearChat)"
+                               Color="BitColor.SecondaryBackground"
+                               Disabled="isRestoringHistory"
+                               Title="@Localizer[nameof(AppStrings.Clear)]"
+                               AriaLabel="@Localizer[nameof(AppStrings.Clear)]" />
 
-                <BitButton IconOnly
-                           FixedColor
-                           Variant="BitVariant.Text"
-                           Color="BitColor.SecondaryBackground"
-                           OnClick="() => isMaximized = !isMaximized"
-                           IconName="@(isMaximized ? BitIconName.BackToWindow : BitIconName.FullScreen)"
-                           Title="@(isMaximized ? Localizer[nameof(AppStrings.AiChatPanelRestore)] : Localizer[nameof(AppStrings.AiChatPanelMaximize)])"
-                           AriaLabel="@(isMaximized ? Localizer[nameof(AppStrings.AiChatPanelRestore)] : Localizer[nameof(AppStrings.AiChatPanelMaximize)])" />
-            </BitStack>
-        </Header>
-        <Body>
-            <BitStack Class="body" onpointerdown="event.stopPropagation()">
-                <BitScrollablePane FullSize
-                                   AutoScroll
-                                   Class="scr-container"
-                                   ScrollbarWidth="BitScrollbarWidth.Thin">
-                    <BitStack Gap="0">
-                        @foreach (var item in chatMessages)
-                        {
-                            @* A card brings its own markup rather than a bubble, or its RawMarkdown where this app version has no component for it. *@
-                            if (item is AiChatCard card)
+                    <BitButton IconOnly
+                               FixedColor
+                               Variant="BitVariant.Text"
+                               Color="BitColor.SecondaryBackground"
+                               OnClick="() => isMaximized = !isMaximized"
+                               IconName="@(isMaximized ? BitIconName.BackToWindow : BitIconName.FullScreen)"
+                               Title="@(isMaximized ? Localizer[nameof(AppStrings.AiChatPanelRestore)] : Localizer[nameof(AppStrings.AiChatPanelMaximize)])"
+                               AriaLabel="@(isMaximized ? Localizer[nameof(AppStrings.AiChatPanelRestore)] : Localizer[nameof(AppStrings.AiChatPanelMaximize)])" />
+                </BitStack>
+            </Header>
+            <Body>
+                <BitStack Class="body" onpointerdown="event.stopPropagation()">
+                    <BitScrollablePane FullSize
+                                       AutoScroll
+                                       Class="scr-container"
+                                       ScrollbarWidth="BitScrollbarWidth.Thin">
+                        <BitStack Gap="0">
+                            @foreach (var item in chatMessages)
                             {
-                                <BitStack @key="card" FitHeight Gap="0" Class="message-row card-row">
-                                    @if (ResolveCardComponent(card.ComponentType) is { } cardType)
+                                @* A card brings its own markup rather than a bubble, or its RawMarkdown where this app version has no component for it. *@
+                                if (item is AiChatCard card)
+                                {
+                                    <BitStack @key="card" FitHeight Gap="0" Class="message-row card-row">
+                                        @if (ResolveCardComponent(card.ComponentType) is { } cardType)
+                                        {
+                                            <DynamicComponent Type="cardType" Parameters="CardParameters(card)" />
+                                        }
+                                        else
+                                        {
+                                            <BitMarkdownViewer Markdown="@card.RawMarkdown"
+                                                               HeadingIdPrefix="@($"ai-{chatMessages.IndexOf(item)}-")" />
+                                        }
+                                    </BitStack>
+                                    continue;
+                                }
+
+                                if (item is not AiChatMessage message) continue;
+
+                                <BitStack @key="message"
+                                          FitHeight
+                                          Gap="0"
+                                          HorizontalAlign="@(message.Role is AiChatMessageRole.User ? BitAlignment.End : null)"
+                                          Class="@($"message-row{(message.Role is AiChatMessageRole.User ? " user" : null)}")">
+
+                                    @if (message.Role is AiChatMessageRole.User)
                                     {
-                                        <DynamicComponent Type="cardType" Parameters="CardParameters(card)" />
+                                        <BitCard Background="BitColorKind.Tertiary" Class="user-message">
+                                            @if (message.AttachmentId is Guid attachmentId)
+                                            {
+                                                @* Markdown rather than an img tag so the picture is rendered by the same
+                                                   viewer the answers are, and picks up the same image styling. *@
+                                                <BitMarkdownViewer Markdown="@($"![]({GetAttachmentUrl(attachmentId)})")"
+                                                    ImageRendering="BitMarkdownViewerImageRendering.All" />
+                                            }
+                                            @if (string.IsNullOrWhiteSpace(message.Content) is false)
+                                            {
+                                                <BitText Element="pre" PreserveWhitespace ForceBreak>@message.Content</BitText>
+                                            }
+                                        </BitCard>
                                     }
                                     else
                                     {
-                                        <BitMarkdownViewer Markdown="@card.RawMarkdown"
+                                        <BitMarkdownViewer Markdown="@message.Content"
+                                                           MaxLength="100_000"
+                                                           HeadingLevelOffset="2"
                                                            HeadingIdPrefix="@($"ai-{chatMessages.IndexOf(item)}-")" />
-                                    }
-                                </BitStack>
-                                continue;
-                            }
-
-                            if (item is not AiChatMessage message) continue;
-
-                            <BitStack @key="message"
-                                      FitHeight
-                                      Gap="0"
-                                      HorizontalAlign="@(message.Role is AiChatMessageRole.User ? BitAlignment.End : null)"
-                                      Class="@($"message-row{(message.Role is AiChatMessageRole.User ? " user" : null)}")">
-
-                                @if (message.Role is AiChatMessageRole.User)
-                                {
-                                    <BitCard Background="BitColorKind.Tertiary" Class="user-message">
-                                        @if (message.AttachmentId is Guid attachmentId)
+                                        @if (message.Successful is false)
                                         {
-                                            @* Markdown rather than an img tag so the picture is rendered by the same
-                                               viewer the answers are, and picks up the same image styling. *@
-                                            <BitMarkdownViewer Markdown="@($"![]({GetAttachmentUrl(attachmentId)})")"
-                                                ImageRendering="BitMarkdownViewerImageRendering.All" />
+                                            <BitTag Color="BitColor.Error" Size="BitSize.Small">
+                                                @Localizer[nameof(AppStrings.Canceled)]
+                                            </BitTag>
+                                        }
+                                    }
+
+                                    @* The row is only drawn while the pointer is on the message, which is fine for actions
+                                       the user is reaching for but not for the spinner below: that has to stay in sight
+                                       whether they keep hovering or not. *@
+                                    <BitStack Horizontal
+                                              FitSize
+                                              Gap="0.25rem"
+                                              VerticalAlign="BitAlignment.Center"
+                                              Class="@($"message-actions{(isReadAloudLoading && ReferenceEquals(readAloudMessage, message) ? " busy" : null)}")">
+                                        @if (SentAtLabel(message) is { Length: > 0 } sentAt)
+                                        {
+                                            <BitText NoWrap
+                                                     Numeric
+                                                     Class="message-time"
+                                                     Typography="BitTypography.Caption2"
+                                                     Color="BitColor.SecondaryForeground">
+                                                @sentAt
+                                            </BitText>
                                         }
                                         @if (string.IsNullOrWhiteSpace(message.Content) is false)
                                         {
-                                            <BitText Element="pre" PreserveWhitespace ForceBreak>@message.Content</BitText>
-                                        }
-                                    </BitCard>
-                                }
-                                else
-                                {
-                                    <BitMarkdownViewer Markdown="@message.Content"
-                                                       MaxLength="100_000"
-                                                       HeadingLevelOffset="2"
-                                                       HeadingIdPrefix="@($"ai-{chatMessages.IndexOf(item)}-")" />
-                                    @if (message.Successful is false)
-                                    {
-                                        <BitTag Color="BitColor.Error" Size="BitSize.Small">
-                                            @Localizer[nameof(AppStrings.Canceled)]
-                                        </BitTag>
-                                    }
-                                }
-
-                                @* The row is only drawn while the pointer is on the message, which is fine for actions
-                                   the user is reaching for but not for the spinner below: that has to stay in sight
-                                   whether they keep hovering or not. *@
-                                <BitStack Horizontal
-                                          FitSize
-                                          Gap="0.25rem"
-                                          VerticalAlign="BitAlignment.Center"
-                                          Class="@($"message-actions{(isReadAloudLoading && ReferenceEquals(readAloudMessage, message) ? " busy" : null)}")">
-                                    @if (SentAtLabel(message) is { Length: > 0 } sentAt)
-                                    {
-                                        <BitText NoWrap
-                                                 Numeric
-                                                 Class="message-time"
-                                                 Typography="BitTypography.Caption2"
-                                                 Color="BitColor.SecondaryForeground">
-                                            @sentAt
-                                        </BitText>
-                                    }
-                                    @if (string.IsNullOrWhiteSpace(message.Content) is false)
-                                    {
-                                        <BitButton IconOnly
-                                                   Variant="BitVariant.Text"
-                                                   IconName="@BitIconName.Copy"
-                                                   Title="@Localizer[nameof(AppStrings.Copy)]"
-                                                   AriaLabel="@Localizer[nameof(AppStrings.Copy)]"
-                                                   OnClick="WrapHandled(() => CopyMessage(message))" />
-
-                                        @* Only a signed answer can be read aloud, which rules out the greeting
-                                           written here and any answer that never finished arriving. *@
-                                        @if (message.Signature is not null)
-                                        {
-                                            var isReading = ReferenceEquals(readAloudMessage, message);
-
-                                            @* The recording is made on the backend and takes as long as the answer is
-                                               long, and nothing else on the row would say so. *@
                                             <BitButton IconOnly
                                                        Variant="BitVariant.Text"
-                                                       Disabled="isReadAloudLoading"
-                                                       IsLoading="@(isReading && isReadAloudLoading)"
-                                                       OnClick="WrapHandled(() => ToggleReadAloud(message))"
-                                                       IconName="@(isReading ? BitIconName.CircleStopSolid : BitIconName.Volume3)"
-                                                       Title="@(isReading ? Localizer[nameof(AppStrings.AiChatPanelStopReading)] : Localizer[nameof(AppStrings.AiChatPanelReadAloud)])"
-                                                       AriaLabel="@(isReading ? Localizer[nameof(AppStrings.AiChatPanelStopReading)] : Localizer[nameof(AppStrings.AiChatPanelReadAloud)])" />
+                                                       IconName="@BitIconName.Copy"
+                                                       Title="@Localizer[nameof(AppStrings.Copy)]"
+                                                       AriaLabel="@Localizer[nameof(AppStrings.Copy)]"
+                                                       OnClick="WrapHandled(() => CopyMessage(message))" />
+
+                                            @* Only a signed answer can be read aloud, which rules out the greeting
+                                               written here and any answer that never finished arriving. *@
+                                            @if (message.Signature is not null)
+                                            {
+                                                var isReading = ReferenceEquals(readAloudMessage, message);
+
+                                                @* The recording is made on the backend and takes as long as the answer is
+                                                   long, and nothing else on the row would say so. *@
+                                                <BitButton IconOnly
+                                                           Variant="BitVariant.Text"
+                                                           Disabled="isReadAloudLoading"
+                                                           IsLoading="@(isReading && isReadAloudLoading)"
+                                                           OnClick="WrapHandled(() => ToggleReadAloud(message))"
+                                                           IconName="@(isReading ? BitIconName.CircleStopSolid : BitIconName.Volume3)"
+                                                           Title="@(isReading ? Localizer[nameof(AppStrings.AiChatPanelStopReading)] : Localizer[nameof(AppStrings.AiChatPanelReadAloud)])"
+                                                           AriaLabel="@(isReading ? Localizer[nameof(AppStrings.AiChatPanelStopReading)] : Localizer[nameof(AppStrings.AiChatPanelReadAloud)])" />
+                                            }
                                         }
-                                    }
-                                </BitStack>
-                            </BitStack>
-                        }
-
-                        <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
-
-                            @foreach (var suggestion in followUpSuggestions)
-                            {
-                                <BitButton FixedColor
-                                           Variant="BitVariant.Outline"
-                                           Class="default-prompt-button"
-                                           Color="BitColor.SecondaryBackground"
-                                           OnClick="WrapHandled(() => SendPromptMessage(suggestion))">
-                                    @suggestion
-                                </BitButton>
-                            }
-
-                        </BitStack>
-
-                        @* Not while a card waits on the user. *@
-                        @if (isLoading && awaitedCard is null && string.IsNullOrWhiteSpace(lastAssistantMessage?.Content))
-                        {
-                            <BitEllipsisLoading Size="BitSize.Small" />
-                        }
-                    </BitStack>
-                </BitScrollablePane>
-
-                @if (chatMessages.Count == 1)
-                {
-                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt1)]))">
-                            @Localizer[nameof(AppStrings.AiChatPanelPrompt1)]
-                        </BitButton>
-
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt2)]))">
-                            @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
-                        </BitButton>
-
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)]))">
-                            @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
-                        </BitButton>
-                    </BitStack>
-                }
-
-                @* The message box is nested inside the picker so that the box itself takes an image: drops are
-                   listened for on this component's root element and reach it by bubbling, and a paste is only
-                   claimed while the focus is inside that root. A sibling of the box satisfies neither, however it
-                   is positioned or stacked.
-
-                   AllowedExtensions as well as Accept: Accept only narrows the file dialog, and a drop and a paste
-                   never pass through that dialog's filter. *@
-                <BitFileUpload @ref="attachmentUploadRef"
-                               AutoReset
-                               ShowPreview
-                               Accept="@ImageUploadContentTypes.Accept"
-                               Class="composer"
-                               Classes="@(new() { Dragging = "dragging" })"
-                               MaxSize="1024 * 1024 * 10"
-                               AllowedExtensions="ImageUploadContentTypes.All"
-                               OnFilesChange="HandleOnAttachmentChange"
-                               OnInvalid="HandleOnAttachmentInvalid"
-                               UploadUrlProvider="GetAttachmentUploadUrl"
-                               OnUploadFailed="HandleOnAttachmentUploadFailed"
-                               OnUploadComplete="HandleOnAttachmentUploaded"
-                               MaxSizeErrorMessage="@Localizer[nameof(AppStrings.AiChatPanelImageTooLarge)]"
-                               NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.AiChatPanelOnlyImagesAllowed)]"
-                               UploadRequestHttpHeadersProvider="WrapHandled(GetAttachmentUploadRequestHeaders)">
-                    <LabelTemplate>
-                        <BitStack FitHeight Class="message-box" Style="position:relative">
-                            @* The end padding makes room for the buttons that float over the field, and for the
-                               recording wave while it is there - so what is being typed is never written underneath
-                               either of them. *@
-                            <BitTextField Rows="1"
-                                          Immediate
-                                          Multiline
-                                          AutoHeight
-                                          MaxRows="6"
-                                          PreventEnter
-                                          MaxLength="1024"
-                                          FullWidth
-                                          @bind-Value="@userInput"
-                                          OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
-                                          Styles="@(new() { FieldGroup = $"padding:0.5rem; padding-inline-start:2.5rem; padding-inline-end:{MessageBoxEndPadding}", Input = "min-height:unset" })"
-                                          Placeholder="@(Localizer[nameof(AppStrings.AiChatPanelPlaceholder)])" />
-
-                            <BitButton IconOnly
-                                       FloatAbsolute
-                                       FloatOffset="0.5rem"
-                                       Class="attach-button"
-                                       Variant="BitVariant.Text"
-                                       IconName="@BitIconName.Attach"
-                                       FloatPosition="BitPosition.BottomStart"
-                                       Disabled="@(isUploadingAttachment || isInVoiceCall)"
-                                       Color="BitColor.SecondaryForeground"
-                                       OnClick="WrapHandled(BrowseAttachment)"
-                                       Title="@Localizer[nameof(AppStrings.AiChatPanelAttachImage)]"
-                                       AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelAttachImage)]" />
-
-                            @* Speech-to-text. Hidden outright where the browser cannot record, rather than shown
-                               disabled: a control that can never become usable is noise. *@
-                            @if (ShowDictateButton)
-                            {
-                                @* Loading rather than disabled while the take is with the backend: the microphone has
-                                   closed and the wave above has gone with it, so without the spinner the panel would
-                                   look idle for the whole round trip. The loading state holds the button shut too. *@
-                                <BitButton IconOnly
-                                           FloatAbsolute
-                                           FloatOffset="0.5rem"
-                                           Class="dictate-button"
-                                           Variant="BitVariant.Text"
-                                           IsLoading="isTranscribing"
-                                           FloatPosition="BitPosition.BottomEnd"
-                                           OnClick="WrapHandled(ToggleDictation)"
-                                           IconName="@(isListening ? BitIconName.CircleStopSolid : BitIconName.Microphone)"
-                                           Color="@(isListening ? BitColor.Error : isTranscribing ? BitColor.Primary : BitColor.SecondaryForeground)"
-                                           Title="@(isTranscribing ? Localizer[nameof(AppStrings.AiChatPanelTranscribing)] : isListening ? Localizer[nameof(AppStrings.AiChatPanelStopDictation)] : Localizer[nameof(AppStrings.AiChatPanelDictate)])"
-                                           AriaLabel="@(isTranscribing ? Localizer[nameof(AppStrings.AiChatPanelTranscribing)] : isListening ? Localizer[nameof(AppStrings.AiChatPanelStopDictation)] : Localizer[nameof(AppStrings.AiChatPanelDictate)])" />
-                            }
-
-                            @if (isListening || isInVoiceCall)
-                            {
-                                @* Drains towards the take's or call's max duration: warning for the last 30%, error for the last 10%. *@
-                                <BitStack FitHeight Class="@($"speech-timer{(speechPercent >= 90 ? " ending" : null)}")">
-                                    <BitProgress Rounded
-                                                 Thickness="24"
-                                                 Class="speech-timer-progress"
-                                                 Percent="100 - speechPercent"
-                                                 Color="SpeechTimerColor"
-                                                 Classes="@(new() { Bar = "speech-timer-bar" })"
-                                                 AriaValueText="@speechTimeLeft.ToString(@"m\:ss")"
-                                                 AriaLabel="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelVoiceCallTimeLeft)] : Localizer[nameof(AppStrings.AiChatPanelDictationTimeLeft)])" />
-                                    @* Over the whole pill rather than inside the fill, which gets too narrow to hold it near the end. *@
-                                    <BitText Numeric
-                                             Class="speech-timer-text"
-                                             Weight="BitFontWeight.Semibold"
-                                             Typography="BitTypography.Caption1">@speechTimeLeft.ToString(@"m\:ss")</BitText>
+                                    </BitStack>
                                 </BitStack>
                             }
 
-                            @if (ShowVoiceCallButton)
+                            <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+
+                                @foreach (var suggestion in followUpSuggestions)
+                                {
+                                    <BitButton FixedColor
+                                               Variant="BitVariant.Outline"
+                                               Class="default-prompt-button"
+                                               Color="BitColor.SecondaryBackground"
+                                               OnClick="WrapHandled(() => SendPromptMessage(suggestion))">
+                                        @suggestion
+                                    </BitButton>
+                                }
+
+                            </BitStack>
+
+                            @* Not while a card waits on the user. *@
+                            @if (isLoading && awaitedCard is null && string.IsNullOrWhiteSpace(lastAssistantMessage?.Content))
                             {
+                                <BitEllipsisLoading Size="BitSize.Small" />
+                            }
+                        </BitStack>
+                    </BitScrollablePane>
+
+                    @if (chatMessages.Count == 1)
+                    {
+                        <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+                            <BitButton FixedColor
+                                       Variant="BitVariant.Outline"
+                                       Class="default-prompt-button"
+                                       Color="BitColor.SecondaryBackground"
+                                       OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt1)]))">
+                                @Localizer[nameof(AppStrings.AiChatPanelPrompt1)]
+                            </BitButton>
+
+                            <BitButton FixedColor
+                                       Variant="BitVariant.Outline"
+                                       Class="default-prompt-button"
+                                       Color="BitColor.SecondaryBackground"
+                                       OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt2)]))">
+                                @Localizer[nameof(AppStrings.AiChatPanelPrompt2)]
+                            </BitButton>
+
+                            <BitButton FixedColor
+                                       Variant="BitVariant.Outline"
+                                       Class="default-prompt-button"
+                                       Color="BitColor.SecondaryBackground"
+                                       OnClick="WrapHandled(() => SendPromptMessage(Localizer[nameof(AppStrings.AiChatPanelPrompt3)]))">
+                                @Localizer[nameof(AppStrings.AiChatPanelPrompt3)]
+                            </BitButton>
+                        </BitStack>
+                    }
+
+                    @* The message box is nested inside the picker so that the box itself takes an image: drops are
+                       listened for on this component's root element and reach it by bubbling, and a paste is only
+                       claimed while the focus is inside that root. A sibling of the box satisfies neither, however it
+                       is positioned or stacked.
+
+                       AllowedExtensions as well as Accept: Accept only narrows the file dialog, and a drop and a paste
+                       never pass through that dialog's filter. *@
+                    <BitFileUpload @ref="attachmentUploadRef"
+                                   AutoReset
+                                   ShowPreview
+                                   Accept="@ImageUploadContentTypes.Accept"
+                                   Class="composer"
+                                   Classes="@(new() { Dragging = "dragging" })"
+                                   MaxSize="1024 * 1024 * 10"
+                                   AllowedExtensions="ImageUploadContentTypes.All"
+                                   OnFilesChange="HandleOnAttachmentChange"
+                                   OnInvalid="HandleOnAttachmentInvalid"
+                                   UploadUrlProvider="GetAttachmentUploadUrl"
+                                   OnUploadFailed="HandleOnAttachmentUploadFailed"
+                                   OnUploadComplete="HandleOnAttachmentUploaded"
+                                   MaxSizeErrorMessage="@Localizer[nameof(AppStrings.AiChatPanelImageTooLarge)]"
+                                   NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.AiChatPanelOnlyImagesAllowed)]"
+                                   UploadRequestHttpHeadersProvider="WrapHandled(GetAttachmentUploadRequestHeaders)">
+                        <LabelTemplate>
+                            <BitStack FitHeight Class="message-box" Style="position:relative">
+                                @* The end padding makes room for the buttons that float over the field, and for the
+                                   recording wave while it is there - so what is being typed is never written underneath
+                                   either of them. *@
+                                <BitTextField Rows="1"
+                                              Immediate
+                                              Multiline
+                                              AutoHeight
+                                              MaxRows="6"
+                                              PreventEnter
+                                              MaxLength="1024"
+                                              FullWidth
+                                              @bind-Value="@userInput"
+                                              OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
+                                              Styles="@(new() { FieldGroup = $"padding:0.5rem; padding-inline-start:2.5rem; padding-inline-end:{MessageBoxEndPadding}", Input = "min-height:unset" })"
+                                              Placeholder="@(Localizer[nameof(AppStrings.AiChatPanelPlaceholder)])" />
+
                                 <BitButton IconOnly
                                            FloatAbsolute
                                            FloatOffset="0.5rem"
+                                           Class="attach-button"
                                            Variant="BitVariant.Text"
-                                           IsLoading="isVoiceCallConnecting"
+                                           IconName="@BitIconName.Attach"
+                                           FloatPosition="BitPosition.BottomStart"
+                                           Disabled="@(isUploadingAttachment || isInVoiceCall)"
+                                           Color="BitColor.SecondaryForeground"
+                                           OnClick="WrapHandled(BrowseAttachment)"
+                                           Title="@Localizer[nameof(AppStrings.AiChatPanelAttachImage)]"
+                                           AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelAttachImage)]" />
+
+                                @* Speech-to-text. Hidden outright where the browser cannot record, rather than shown
+                                   disabled: a control that can never become usable is noise. *@
+                                @if (ShowDictateButton)
+                                {
+                                    @* Loading rather than disabled while the take is with the backend: the microphone has
+                                       closed and the wave above has gone with it, so without the spinner the panel would
+                                       look idle for the whole round trip. The loading state holds the button shut too. *@
+                                    <BitButton IconOnly
+                                               FloatAbsolute
+                                               FloatOffset="0.5rem"
+                                               Class="dictate-button"
+                                               Variant="BitVariant.Text"
+                                               IsLoading="isTranscribing"
+                                               FloatPosition="BitPosition.BottomEnd"
+                                               OnClick="WrapHandled(ToggleDictation)"
+                                               IconName="@(isListening ? BitIconName.CircleStopSolid : BitIconName.Microphone)"
+                                               Color="@(isListening ? BitColor.Error : isTranscribing ? BitColor.Primary : BitColor.SecondaryForeground)"
+                                               Title="@(isTranscribing ? Localizer[nameof(AppStrings.AiChatPanelTranscribing)] : isListening ? Localizer[nameof(AppStrings.AiChatPanelStopDictation)] : Localizer[nameof(AppStrings.AiChatPanelDictate)])"
+                                               AriaLabel="@(isTranscribing ? Localizer[nameof(AppStrings.AiChatPanelTranscribing)] : isListening ? Localizer[nameof(AppStrings.AiChatPanelStopDictation)] : Localizer[nameof(AppStrings.AiChatPanelDictate)])" />
+                                }
+
+                                @if (isListening || isInVoiceCall)
+                                {
+                                    @* Drains towards the take's or call's max duration: warning for the last 30%, error for the last 10%. *@
+                                    <BitStack FitHeight Class="@($"speech-timer{(speechPercent >= 90 ? " ending" : null)}")">
+                                        <BitProgress Rounded
+                                                     Thickness="24"
+                                                     Class="speech-timer-progress"
+                                                     Percent="100 - speechPercent"
+                                                     Color="SpeechTimerColor"
+                                                     Classes="@(new() { Bar = "speech-timer-bar" })"
+                                                     AriaValueText="@speechTimeLeft.ToString(@"m\:ss")"
+                                                     AriaLabel="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelVoiceCallTimeLeft)] : Localizer[nameof(AppStrings.AiChatPanelDictationTimeLeft)])" />
+                                        @* Over the whole pill rather than inside the fill, which gets too narrow to hold it near the end. *@
+                                        <BitText Numeric
+                                                 Class="speech-timer-text"
+                                                 Weight="BitFontWeight.Semibold"
+                                                 Typography="BitTypography.Caption1">@speechTimeLeft.ToString(@"m\:ss")</BitText>
+                                    </BitStack>
+                                }
+
+                                @if (ShowVoiceCallButton)
+                                {
+                                    <BitButton IconOnly
+                                               FloatAbsolute
+                                               FloatOffset="0.5rem"
+                                               Variant="BitVariant.Text"
+                                               IsLoading="isVoiceCallConnecting"
+                                               FloatPosition="BitPosition.BottomEnd"
+                                               OnClick="WrapHandled(ToggleVoiceCall)"
+                                               Class="@($"voice-call-button{(ShowDictateButton ? null : " no-dictation")}")"
+                                               IconName="@(isInVoiceCall ? BitIconName.DeclineCall : BitIconName.Phone)"
+                                               Color="@(isInVoiceCall ? BitColor.Error : isVoiceCallConnecting ? BitColor.Primary : BitColor.SecondaryForeground)"
+                                               Title="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])"
+                                               AriaLabel="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])" />
+                                }
+
+                                @* The panel drives the loading state rather than AutoLoading, because the enter key and
+                                   the suggestions send without ever touching this button. It stays enabled while it
+                                   spins so it reads as busy, not dead. *@
+                                <BitButton FloatAbsolute
+                                           IsLoading="isSending"
+                                           FloatOffset="0.5rem"
+                                           Class="send-message-button"
+                                           OnClick="WrapHandled(SendMessage)"
                                            FloatPosition="BitPosition.BottomEnd"
-                                           OnClick="WrapHandled(ToggleVoiceCall)"
-                                           Class="@($"voice-call-button{(ShowDictateButton ? null : " no-dictation")}")"
-                                           IconName="@(isInVoiceCall ? BitIconName.DeclineCall : BitIconName.Phone)"
-                                           Color="@(isInVoiceCall ? BitColor.Error : isVoiceCallConnecting ? BitColor.Primary : BitColor.SecondaryForeground)"
-                                           Title="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])"
-                                           AriaLabel="@(isInVoiceCall ? Localizer[nameof(AppStrings.AiChatPanelEndVoiceCall)] : Localizer[nameof(AppStrings.AiChatPanelStartVoiceCall)])" />
-                            }
-
-                            @* The panel drives the loading state rather than AutoLoading, because the enter key and
-                               the suggestions send without ever touching this button. It stays enabled while it
-                               spins so it reads as busy, not dead. *@
-                            <BitButton FloatAbsolute
-                                       IsLoading="isSending"
-                                       FloatOffset="0.5rem"
-                                       Class="send-message-button"
-                                       OnClick="WrapHandled(SendMessage)"
-                                       FloatPosition="BitPosition.BottomEnd"
-                                       Title="@Localizer[nameof(AppStrings.Send)]"
-                                       AriaLabel="@Localizer[nameof(AppStrings.Send)]"
-                                       Disabled=@(isRestoringHistory || (isSending is false && string.IsNullOrWhiteSpace(userInput) && pendingAttachment is null))
-                                       IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
-                        </BitStack>
-                    </LabelTemplate>
-                    <FileViewTemplate Context="attachment">
-                        @if (attachment.PreviewUrl is not null && attachment.Status is not BitFileUploadStatus.NotAllowed)
-                        {
-                            <BitStack FitSize Class="pending-attachment">
-                                <BitImage Src="@attachment.PreviewUrl"
-                                          Width="3rem"
-                                          Height="3rem"
-                                          Alt="@attachment.Name"
-                                          ImageFit="BitImageFit.Cover" />
-
-                                @* Sits on the corner of the picture it removes. TopEnd rather than TopRight, so it
-                                   moves to the other corner under RTL on its own. *@
-                                <BitButton IconOnly
-                                           FloatAbsolute
-                                           FloatOffset="0"
-                                           Variant="BitVariant.Text"
-                                           Class="remove-attachment"
-                                           IconName="@BitIconName.Cancel"
-                                           FloatPosition="BitPosition.TopEnd"
-                                           Color="BitColor.PrimaryForeground"
-                                           Disabled="isUploadingAttachment"
-                                           OnClick="WrapHandled(RemovePendingAttachment)"
-                                           Title="@Localizer[nameof(AppStrings.Remove)]"
-                                           AriaLabel="@Localizer[nameof(AppStrings.Remove)]" />
+                                           Title="@Localizer[nameof(AppStrings.Send)]"
+                                           AriaLabel="@Localizer[nameof(AppStrings.Send)]"
+                                           Disabled=@(isRestoringHistory || (isSending is false && string.IsNullOrWhiteSpace(userInput) && pendingAttachment is null))
+                                           IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.SendMirrored : BitIconName.Send)" />
                             </BitStack>
-                        }
-                    </FileViewTemplate>
-                </BitFileUpload>
-            </BitStack>
-        </Body>
-    </BitPanel>
+                        </LabelTemplate>
+                        <FileViewTemplate Context="attachment">
+                            @if (attachment.PreviewUrl is not null && attachment.Status is not BitFileUploadStatus.NotAllowed)
+                            {
+                                <BitStack FitSize Class="pending-attachment">
+                                    <BitImage Src="@attachment.PreviewUrl"
+                                              Width="3rem"
+                                              Height="3rem"
+                                              Alt="@attachment.Name"
+                                              ImageFit="BitImageFit.Cover" />
+
+                                    @* Sits on the corner of the picture it removes. TopEnd rather than TopRight, so it
+                                       moves to the other corner under RTL on its own. *@
+                                    <BitButton IconOnly
+                                               FloatAbsolute
+                                               FloatOffset="0"
+                                               Variant="BitVariant.Text"
+                                               Class="remove-attachment"
+                                               IconName="@BitIconName.Cancel"
+                                               FloatPosition="BitPosition.TopEnd"
+                                               Color="BitColor.PrimaryForeground"
+                                               Disabled="isUploadingAttachment"
+                                               OnClick="WrapHandled(RemovePendingAttachment)"
+                                               Title="@Localizer[nameof(AppStrings.Remove)]"
+                                               AriaLabel="@Localizer[nameof(AppStrings.Remove)]" />
+                                </BitStack>
+                            }
+                        </FileViewTemplate>
+                    </BitFileUpload>
+                </BitStack>
+            </Body>
+        </BitPanel>
+    }
 </section>

@@ -37,6 +37,7 @@ public partial class AppMenu
     private bool isOpen;
     private bool showCultures;
     private bool isSignOutConfirmOpen;
+    private bool isSignOutConfirmRendered;
     private DeviceAccountDto[] otherAccounts = [];
     private BitChoiceGroupItem<string>[] cultures = default!;
     //#if (signalR == true || notification == true)
@@ -106,14 +107,6 @@ public partial class AppMenu
     }
 
     //#if (signalR == true || notification == true)
-    protected override async Task OnAfterFirstRenderAsync()
-    {
-        await base.OnAfterFirstRenderAsync();
-
-        // Warms the switch so the first open shows the real state; OnDropMenuOpen keeps it fresh from then on.
-        await RefreshNotificationsState();
-    }
-
     private bool ShowNotificationsToggle
     {
         get
@@ -278,7 +271,8 @@ public partial class AppMenu
 
     /// <summary>
     /// Re-reads whatever the menu shows that can go stale while it is closed. The notification permission is the one
-    /// that matters: it changes in the browser's or the OS's own settings, and nothing tells the app when.
+    /// that matters: it changes in the browser's or the OS's own settings, and nothing tells the app when. It is
+    /// first read here too, rather than after the menu's first render, which falls in the app's start.
     /// </summary>
     private async Task OnDropMenuOpen()
     {

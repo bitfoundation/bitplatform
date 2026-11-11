@@ -20,6 +20,13 @@ public partial class AppDiagnosticModal
     private static bool showKnownException = true;
 
     private bool isOpen;
+
+    /// <summary>
+    /// The modals are first built when the modal first opens, not with the page. This component itself stays from
+    /// the start, since a failure during the start asks it to open (See AppErrorBoundary).
+    /// </summary>
+    private bool isRendered;
+
     private bool enableRegExp;
     private string? searchText;
     private bool isLogModalOpen;
@@ -50,7 +57,7 @@ public partial class AppDiagnosticModal
 
         unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async payload =>
         {
-            isOpen = true;
+            isRendered = isOpen = true;
             // A payload means someone else's logs were fetched for inspection (UsersPage). Without one the modal
             // shows this device's own store.
             SetLogSource(payload as DiagnosticLogDto[]);

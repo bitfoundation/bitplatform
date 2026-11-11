@@ -23,6 +23,13 @@ public partial class AppAiChatPanel : IAiChatCardHost
 
 
     private bool isOpen;
+
+    /// <summary>
+    /// The panel is first built when it first opens, not with the page: until then only its button can be seen, and
+    /// the app's start is spent on what can.
+    /// </summary>
+    private bool isPanelRendered;
+
     private bool isLoading;
     private string? userInput;
 
@@ -203,6 +210,23 @@ public partial class AppAiChatPanel : IAiChatCardHost
         showCardSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_CARD, (AiChatCard card) => ShowCard(card));
         awaitCardSubscription = hubConnection.On(SharedAppMessages.AWAIT_AI_CHAT_CARD, (AiChatCard card) => AwaitCard(card));
         showSuggestionsSubscription = hubConnection.On(SharedAppMessages.SHOW_AI_CHAT_SUGGESTIONS, (string[] suggestions) => ShowSuggestions(suggestions));
+
+        await RestoreHistory();
+
+        await base.OnAfterFirstRenderAsync();
+    }
+
+    private async Task OpenPanel()
+    {
+        isOpen = true;
+
+        if (isPanelRendered) return;
+
+        isPanelRendered = true;
+        StateHasChanged();
+
+        // Asked here rather than at the start, since only the panel's own buttons depend on the answers.
+        //
         // Recording is the one half of speech that is still a browser capability: read aloud only needs an audio
         // element to play what the backend synthesised, and every engine has one of those.
         //
@@ -210,11 +234,6 @@ public partial class AppAiChatPanel : IAiChatCardHost
         // navigator.mediaDevices needs a secure context, so over plain http MediaRecorder is there and it is not.
         isDictationSupported = await mediaRecorder.IsSupported() && await mediaDevices.IsSupported();
         isVoiceCallSupported = await webRtc.IsSupported() && await mediaDevices.IsSupported();
-        StateHasChanged();
-
-        await RestoreHistory();
-
-        await base.OnAfterFirstRenderAsync();
     }
 
     /// <summary>

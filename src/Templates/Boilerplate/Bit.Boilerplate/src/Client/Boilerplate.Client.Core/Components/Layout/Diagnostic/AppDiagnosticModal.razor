@@ -2,175 +2,178 @@
 @inherits AppComponentBase
 
 <div>
-    <BitModal @bind-IsOpen="isOpen"
-              FullSize
-              Class="modal"
-              OnDismiss="() => searchText = null">
-        <BitStack FillContent Padding="1rem">
-            <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                <BitText Typography="BitTypography.H3">Diagnostic</BitText>
-                <BitSpacer />
-                <BitButton IconOnly
-                           Title="Close"
-                           AriaLabel="Close"
-                           Color="BitColor.Info"
-                           Variant="BitVariant.Text"
-                           OnClick="() => isOpen = false"
-                           IconName="@BitIconName.ChromeClose" />
-            </BitStack>
-
-            <BitAccordion Title="Diagnostic">
-                <DiagnosticReport AutoRun="false" />
-            </BitAccordion>
-
-            <BitStack Horizontal FitHeight Wrap>
-                <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
-                    <BitSearchBox FixedIcon
-                                  Immediate
-                                  DebounceTime="500"
-                                  @bind-Value="@searchText"
-                                  OnChange="_ => FilterLogs()" />
-                    <BitToggleButton Variant="BitVariant.Text"
-                                     Color="BitColor.Secondary"
-                                     OnChange="_ => FilterLogs()"
-                                     @bind-IsChecked="enableRegExp"
-                                     Title="Enable Regular Expression"
-                                     IconName="@BitIconName.FilterSettings" />
+    @if (isRendered)
+    {
+        <BitModal @bind-IsOpen="isOpen"
+                  FullSize
+                  Class="modal"
+                  OnDismiss="() => searchText = null">
+            <BitStack FillContent Padding="1rem">
+                <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.H3">Diagnostic</BitText>
+                    <BitSpacer />
+                    <BitButton IconOnly
+                               Title="Close"
+                               AriaLabel="Close"
+                               Color="BitColor.Info"
+                               Variant="BitVariant.Text"
+                               OnClick="() => isOpen = false"
+                               IconName="@BitIconName.ChromeClose" />
                 </BitStack>
 
-                <BitDropdown FitWidth
-                             MultiSelect
-                             Items="logLevelItems"
-                             Placeholder="Select a log level"
-                             OnValuesChange="_ => FilterLogs()"
-                             @bind-Values="filterLogLevelValues"
-                             TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
+                <BitAccordion Title="Diagnostic">
+                    <DiagnosticReport AutoRun="false" />
+                </BitAccordion>
 
-                <BitDropdown FitWidth
-                             Responsive
-                             MultiSelect
-                             ShowSearchBox
-                             ShowClearButton
-                             Items="allCategoryItems"
-                             Placeholder="Select a category"
-                             OnValuesChange="_ => FilterLogs()"
-                             @bind-Values="filterCategoryValues"
-                             TItem="BitDropdownItem<string>" TValue="string">
-                    <TextTemplate>Categories&nbsp;</TextTemplate>
-                </BitDropdown>
+                <BitStack Horizontal FitHeight Wrap>
+                    <BitStack Horizontal Gap="4px" FitWidth AutoHeight>
+                        <BitSearchBox FixedIcon
+                                      Immediate
+                                      DebounceTime="500"
+                                      @bind-Value="@searchText"
+                                      OnChange="_ => FilterLogs()" />
+                        <BitToggleButton Variant="BitVariant.Text"
+                                         Color="BitColor.Secondary"
+                                         OnChange="_ => FilterLogs()"
+                                         @bind-IsChecked="enableRegExp"
+                                         Title="Enable Regular Expression"
+                                         IconName="@BitIconName.FilterSettings" />
+                    </BitStack>
 
-                <BitButton IconOnly
-                           Title="Sort"
-                           AriaLabel="Sort"
-                           OnClick="HandleOnSortClick"
-                           Color="BitColor.SecondaryBackground"
-                           IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
-                &nbsp;
-                <BitButton IconOnly
-                           Title="Reload logs"
-                           AriaLabel="Reload logs"
-                           OnClick="ReloadLogs"
-                           IconName="@BitIconName.Refresh"
-                           Color="BitColor.SecondaryBackground" />
+                    <BitDropdown FitWidth
+                                 MultiSelect
+                                 Items="logLevelItems"
+                                 Placeholder="Select a log level"
+                                 OnValuesChange="_ => FilterLogs()"
+                                 @bind-Values="filterLogLevelValues"
+                                 TItem="BitDropdownItem<LogLevel>" TValue="LogLevel" />
 
-                <BitButton IconOnly
-                           Title="Clear logs"
-                           AriaLabel="Clear logs"
-                           OnClick="ClearLogs"
-                           IconName="@BitIconName.Delete"
-                           Color="BitColor.SecondaryBackground" />
+                    <BitDropdown FitWidth
+                                 Responsive
+                                 MultiSelect
+                                 ShowSearchBox
+                                 ShowClearButton
+                                 Items="allCategoryItems"
+                                 Placeholder="Select a category"
+                                 OnValuesChange="_ => FilterLogs()"
+                                 @bind-Values="filterCategoryValues"
+                                 TItem="BitDropdownItem<string>" TValue="string">
+                        <TextTemplate>Categories&nbsp;</TextTemplate>
+                    </BitDropdown>
 
-                @* Deliberately unwrapped: this button exists to prove the unhandled-exception path, so
-                   WrapHandled would defeat the only thing it does. *@
-                <BitButton IconOnly
-                           Title="Throw test error"
-                           AriaLabel="Throw test error"
-                           OnClick="ThrowTestException"
-                           IconName="@BitIconName.Error"
-                           Color="BitColor.SecondaryBackground" />
-
-                @if (bevToolsLoader.CanOpen)
-                {
-                    <BitButton IconOnly AutoLoading
-                               Title="Open dev tools"
-                               AriaLabel="Open dev tools"
-                               Color="BitColor.SecondaryBackground"
-                               OnClick="WrapHandled(OpenDevTools)"
-                               IconName="@BitIconName.DeveloperTools" />
-                }
-
-                @if (AppPlatform.IsBrowser is false && (AppPlatform.IsBlazorHybrid || AppEnvironment.IsDevelopment()))
-                {
                     <BitButton IconOnly
-                               Title="Call GC"
-                               AriaLabel="Call GC"
-                               IconName="@BitIconName.RecycleBin"
-                               OnClick="WrapHandled(CallGC)"
+                               Title="Sort"
+                               AriaLabel="Sort"
+                               OnClick="HandleOnSortClick"
+                               Color="BitColor.SecondaryBackground"
+                               IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
+                    &nbsp;
+                    <BitButton IconOnly
+                               Title="Reload logs"
+                               AriaLabel="Reload logs"
+                               OnClick="ReloadLogs"
+                               IconName="@BitIconName.Refresh"
                                Color="BitColor.SecondaryBackground" />
-                }
 
-                <BitButton IconOnly
-                           AutoLoading
-                           Title="Clear app files"
-                           AriaLabel="Clear app files"
-                           IconName="@BitIconName.RemoveFrom"
-                           OnClick="WrapHandled(ClearAppFiles)"
-                           Color="BitColor.SecondaryBackground" />
+                    <BitButton IconOnly
+                               Title="Clear logs"
+                               AriaLabel="Clear logs"
+                               OnClick="ClearLogs"
+                               IconName="@BitIconName.Delete"
+                               Color="BitColor.SecondaryBackground" />
 
-                <BitButton IconOnly
-                           AutoLoading
-                           Title="Update app"
-                           AriaLabel="Update app"
-                           IconName="@BitIconName.UpdateRestore"
-                           OnClick="WrapHandled(UpdateApp)"
-                           Color="BitColor.SecondaryBackground" />
+                    @* Deliberately unwrapped: this button exists to prove the unhandled-exception path, so
+                       WrapHandled would defeat the only thing it does. *@
+                    <BitButton IconOnly
+                               Title="Throw test error"
+                               AriaLabel="Throw test error"
+                               OnClick="ThrowTestException"
+                               IconName="@BitIconName.Error"
+                               Color="BitColor.SecondaryBackground" />
+
+                    @if (bevToolsLoader.CanOpen)
+                    {
+                        <BitButton IconOnly AutoLoading
+                                   Title="Open dev tools"
+                                   AriaLabel="Open dev tools"
+                                   Color="BitColor.SecondaryBackground"
+                                   OnClick="WrapHandled(OpenDevTools)"
+                                   IconName="@BitIconName.DeveloperTools" />
+                    }
+
+                    @if (AppPlatform.IsBrowser is false && (AppPlatform.IsBlazorHybrid || AppEnvironment.IsDevelopment()))
+                    {
+                        <BitButton IconOnly
+                                   Title="Call GC"
+                                   AriaLabel="Call GC"
+                                   IconName="@BitIconName.RecycleBin"
+                                   OnClick="WrapHandled(CallGC)"
+                                   Color="BitColor.SecondaryBackground" />
+                    }
+
+                    <BitButton IconOnly
+                               AutoLoading
+                               Title="Clear app files"
+                               AriaLabel="Clear app files"
+                               IconName="@BitIconName.RemoveFrom"
+                               OnClick="WrapHandled(ClearAppFiles)"
+                               Color="BitColor.SecondaryBackground" />
+
+                    <BitButton IconOnly
+                               AutoLoading
+                               Title="Update app"
+                               AriaLabel="Update app"
+                               IconName="@BitIconName.UpdateRestore"
+                               OnClick="WrapHandled(UpdateApp)"
+                               Color="BitColor.SecondaryBackground" />
+                </BitStack>
+
+                <BitBasicList @ref="logStackRef"
+                              Virtualize
+                              ItemSize="32"
+                              Style="height:unset"
+                              Items="indexedFilteredLogs">
+                    <EmptyContent>Nothing to show!</EmptyContent>
+                    <RowTemplate Context="logIndex">
+                        <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" role="listitem" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                            <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
+                            <BitButton IconOnly
+                                       Title="Copy"
+                                       AriaLabel="Copy"
+                                       Color="BitColor.Info"
+                                       Variant="BitVariant.Text"
+                                       IconName="@BitIconName.Copy"
+                                       OnClick="WrapHandled(() => CopyLog(logIndex.item))" />
+                            <BitButton IconOnly
+                                       Title="Details"
+                                       AriaLabel="Details"
+                                       Color="BitColor.Info"
+                                       Variant="BitVariant.Text"
+                                       IconName="@BitIconName.DiagnosticDataViewerApp"
+                                       OnClick="WrapHandled(() => OpenLog(logIndex.item, logIndex.index))" />
+                            <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
+                            <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
+                        </BitStack>
+                    </RowTemplate>
+                </BitBasicList>
             </BitStack>
 
-            <BitBasicList @ref="logStackRef"
-                          Virtualize
-                          ItemSize="32"
-                          Style="height:unset"
-                          Items="indexedFilteredLogs">
-                <EmptyContent>Nothing to show!</EmptyContent>
-                <RowTemplate Context="logIndex">
-                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" role="listitem" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
-                        <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
-                        <BitButton IconOnly
-                                   Title="Copy"
-                                   AriaLabel="Copy"
-                                   Color="BitColor.Info"
-                                   Variant="BitVariant.Text"
-                                   IconName="@BitIconName.Copy"
-                                   OnClick="WrapHandled(() => CopyLog(logIndex.item))" />
-                        <BitButton IconOnly
-                                   Title="Details"
-                                   AriaLabel="Details"
-                                   Color="BitColor.Info"
-                                   Variant="BitVariant.Text"
-                                   IconName="@BitIconName.DiagnosticDataViewerApp"
-                                   OnClick="WrapHandled(() => OpenLog(logIndex.item, logIndex.index))" />
-                        <BitText Style="white-space:nowrap" Color="GetColor(logIndex.item.Level)">[@logIndex.item.Category]</BitText>
-                        <BitText Style="white-space:nowrap">@logIndex.item.Message</BitText>
-                    </BitStack>
-                </RowTemplate>
-            </BitBasicList>
-        </BitStack>
+            <BitButton IconOnly
+                       Title="Go to top"
+                       AriaLabel="Go to top"
+                       Color="BitColor.Info"
+                       Class="go-top-button"
+                       Variant="BitVariant.Text"
+                       OnClick="WrapHandled(GoTop)"
+                       IconName="@BitIconName.Up" />
+        </BitModal>
 
-        <BitButton IconOnly
-                   Title="Go to top"
-                   AriaLabel="Go to top"
-                   Color="BitColor.Info"
-                   Class="go-top-button"
-                   Variant="BitVariant.Text"
-                   OnClick="WrapHandled(GoTop)"
-                   IconName="@BitIconName.Up" />
-    </BitModal>
-
-    <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen"
-                        OnNav="WrapHandled((bool isNext) => NavLog(isNext))"
-                        Content="@GetContent(selectedLog)"
-                        OnCopy="WrapHandled(() => CopyLog(selectedLog))"
-                        Color="GetColor(selectedLog?.Level)" />
+        <DiagnosticLogModal @bind-IsLogModalOpen="isLogModalOpen"
+                            OnNav="WrapHandled((bool isNext) => NavLog(isNext))"
+                            Content="@GetContent(selectedLog)"
+                            OnCopy="WrapHandled(() => CopyLog(selectedLog))"
+                            Color="GetColor(selectedLog?.Level)" />
+    }
 
     <BevToolsLoaderPanel />
 </div>
