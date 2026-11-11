@@ -127,6 +127,8 @@ public sealed class BaletteService : IBaletteService
 
     public event EventHandler<BaletteCommandErrorEventArgs>? CommandFailed;
 
+    public event EventHandler<BaletteCommandRefusedEventArgs>? CommandRefused;
+
     /// <summary>The component asks the service to open with these arguments (internal plumbing).</summary>
     internal event Func<string?, string?, Task>? OpenRequested;
 
@@ -309,6 +311,9 @@ public sealed class BaletteService : IBaletteService
         CommandFailed?.Invoke(this, args);
         return args;
     }
+
+    internal void RaiseRefused(BaletteCommand command, BaletteExecutionTrigger trigger, string? message)
+        => CommandRefused?.Invoke(this, new BaletteCommandRefusedEventArgs(command, trigger, message));
 
     internal BaletteOptions Options => _options;
 

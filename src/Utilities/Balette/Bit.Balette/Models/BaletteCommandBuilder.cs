@@ -31,6 +31,7 @@ public sealed class BaletteCommandBuilder
     private bool _disabled;
     private string? _disabledReason;
     private Func<bool>? _isVisible;
+    private Func<BaletteGuardContext, CancellationToken, ValueTask<BaletteGuardResult>>? _guard;
     private bool _destructive;
     private string? _confirm;
     private string? _badge;
@@ -77,6 +78,7 @@ public sealed class BaletteCommandBuilder
         _disabled = c.Disabled;
         _disabledReason = c.DisabledReason;
         _isVisible = c.IsVisible;
+        _guard = c.Guard;
         _destructive = c.Destructive;
         _confirm = c.ConfirmMessage;
         _badge = c.Badge;
@@ -154,6 +156,23 @@ public sealed class BaletteCommandBuilder
     public BaletteCommandBuilder Disabled(bool disabled = true, string? reason = null) { _disabled = disabled; _disabledReason = reason; return this; }
     /// <summary>Lists the command only while <paramref name="predicate"/> returns true; evaluated every time the list is built.</summary>
     public BaletteCommandBuilder VisibleWhen(Func<bool> predicate) { _isVisible = predicate; return this; }
+    /// <summary>
+    /// Checks, every time the command is about to run, whether it may - a permission, a plan, a feature flag - and refuses
+    /// with <see cref="BaletteGuardResult.Deny"/> otherwise. On a page, it guards every command under it too. See
+    /// <see cref="IBaletteCommandGuard"/> for when guards run. A command has one guard: a later call replaces an earlier
+    /// one, so combine checks in one guard.
+    /// </summary>
+    public BaletteCommandBuilder Guard(Func<BaletteGuardContext, CancellationToken, ValueTask<BaletteGuardResult>> guard) { ArgumentNullException.ThrowIfNull(guard); _guard = guard; return this; }
+    /// <summary>
+    /// Checks, every time the command is about to run, that <paramref name="allowed"/> returns true, and refuses it with
+    /// <paramref name="deniedMessage"/> (or <see cref="BaletteStrings.CommandRefused"/>) otherwise. Replaces a guard set earlier.
+    /// </summary>
+    public BaletteCommandBuilder Guard(Func<BaletteGuardContext, bool> allowed, string? deniedMessage = null)
+    {
+        ArgumentNullException.ThrowIfNull(allowed);
+        _guard = (ctx, _) => ValueTask.FromResult(allowed(ctx) ? BaletteGuardResult.Allow : BaletteGuardResult.Deny(deniedMessage));
+        return this;
+    }
     /// <summary>Styles the command as dangerous; with a message, <c>Enter</c> has to be pressed twice. Without one, a confirmation set by <see cref="Confirm"/> stays.</summary>
     public BaletteCommandBuilder Destructive(string? confirmMessage = null) { _destructive = true; _confirm = confirmMessage ?? _confirm; return this; }
     /// <summary>Asks for a second <c>Enter</c> before running, showing <paramref name="message"/>.</summary>
@@ -202,6 +221,7 @@ public sealed class BaletteCommandBuilder
         Disabled = _disabled,
         DisabledReason = _disabledReason,
         IsVisible = _isVisible,
+        Guard = _guard,
         Destructive = _destructive,
         ConfirmMessage = _confirm,
         Badge = _badge,

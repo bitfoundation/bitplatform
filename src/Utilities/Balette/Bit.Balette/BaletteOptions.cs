@@ -192,6 +192,17 @@ public sealed class BaletteOptions
     /// </summary>
     public string Density { get; set; } = "comfortable";
 
+    /// <summary>
+    /// Whether the <c>balette.command</c> activities the palette traces carry the command's id (default true) - see
+    /// <see cref="BaletteDiagnostics"/>. Turn it off when ids embed personal data, as ids made from an API's records can
+    /// (<c>person:ada@example.com</c>). Metrics never carry ids, and queries, prompt values and titles are never recorded.
+    /// Off, it also keeps a command's id and title out of the palette's log messages about running it - a failure, a
+    /// refusal, a guard that threw, an unsafe link - which usually leave through the same pipeline; they read
+    /// <c>(hidden)</c> instead. The configuration warnings about shortcuts and duplicate ids, which name the commands an
+    /// app registers, still carry them.
+    /// </summary>
+    public bool RecordCommandIdsInTraces { get; set; } = true;
+
     /// <summary>Colour theme: <c>auto</c> (prefers-color-scheme), <c>light</c> or <c>dark</c>.</summary>
     public string Theme { get; set; } = "auto";
 

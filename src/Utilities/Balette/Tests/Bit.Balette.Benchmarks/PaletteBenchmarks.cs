@@ -125,7 +125,7 @@ public class RankerBenchmarks
     /// Matches to rank. A first keystroke matches most of a registry, so these are also roughly the registry sizes
     /// at which ranking matters.
     /// </summary>
-    [Params(200, 2_000, 20_000)]
+    [Params(200, 2_000, 20_000, 50_000)]
     public int Matches { get; set; }
 
     [GlobalSetup]
@@ -177,7 +177,7 @@ public class KeystrokeBenchmarks
     private Dictionary<string, BaletteCommand> _byId = null!;
 
     /// <summary>Commands in the registry.</summary>
-    [Params(200, 2_000, 20_000)]
+    [Params(200, 2_000, 20_000, 50_000)]
     public int Commands { get; set; }
 
     /// <summary>
@@ -269,7 +269,7 @@ public class SnapshotBenchmarks
     private BaletteService _service = null!;
 
     /// <summary>Commands in the registry.</summary>
-    [Params(200, 2_000, 20_000)]
+    [Params(200, 2_000, 20_000, 50_000)]
     public int Commands { get; set; }
 
     [GlobalSetup]
