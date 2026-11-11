@@ -388,8 +388,9 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.
-6. CodeRabbit reviews the PR a few minutes after it opens, and again after every push, so come back to the PR
-   once its review is in. Check each of its comments against the code: fix the ones that hold in the same branch,
+6. CodeRabbit reviews the PR a few minutes after it opens, so come back to the PR once its review is in. It skips
+   later pushes when incremental reviews are off ("Review skipped"), so after the last push comment
+   `@coderabbitai review` and come back for that review too. Check each of its comments against the code: fix the ones that hold in the same branch,
    and answer every other thread with the reason it stays. Its pre-merge checks can't see the lock files it skips,
    so an "inconclusive" that only asks for them needs no answer.
 7. Clean up at once, without asking: `git restore` the pushed files in the original checkout (after

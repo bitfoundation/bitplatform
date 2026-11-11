@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="bunit" Version="2.14.0" />
+        <PackageReference Include="bunit" Version="2.15.2" />
         <PackageReference Include="MSTest" Version="4.5.2" />
         <!-- Boots the demo server's real Program.cs in memory, so the MCP server under test is the
              one the app actually maps at /mcp rather than a re-registration of its pieces. -->
