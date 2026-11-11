@@ -659,16 +659,22 @@ The order is the command's ancestors' guards (outermost first), its own, then th
 wins. A page's guard covers every command under it - its registered descendants however they run, and, from the
 palette, whatever its page lists, lazily loaded children and source results included. So does the guard of a command
 whose handler returned a page (`BaletteCommandResult.Page`), over that page's rows and its multi-select submit, and a
-row's guard over its secondary actions (`Tab`, `Mod+Enter`). A confirmation or a prompt that a shortcut or code started
-is not under the page that happened to be open. Opening a page by id (`OpenAsync(query, pageCommandId)`) asks its
-guards before it is listed or loaded.
+row's guard over its secondary actions (`Tab`, `Mod+Enter` - asked once with the action's, and again on the second
+`Enter` when the action asks for a confirmation). Submitting a multi-select page also asks about every row checked: each
+must still be visible and enabled, and its own guard and the registered ones, asked about that row, must allow it -
+checking a box asks nothing, the submit is what acts on the rows. A confirmation or a prompt that a shortcut or code
+started is not under the page that happened to be open; a prompt's submit is guarded as the command whose handler opened
+it. Opening a page by id (`OpenAsync(query, pageCommandId)`) asks its guards before it is listed or loaded. A command
+with an ancestor the palette cannot find - its `Parent` not registered, out of reach with `IncludeRegisteredCommands`
+off, or nested deeper than 32 levels - is refused, since that ancestor's guard could not be asked.
 
 A refused command does not run, arm or open: the footer shows the guard's message, or `BaletteStrings.CommandRefused`
 ("You can’t run “Export”.") when it gave none (`Deny("")` shows nothing), `IBaletteService.CommandRefused` is raised
 and an information entry is logged. `ExecuteAsync` does not throw for a refusal. A guard that throws refuses - it fails
-closed - and is logged as an error. One still deciding shows the palette busy after 150 ms, like a handler; closing the
-palette gives up on it (even if it ignores its token), and going back a page or disarming a confirmation while it
-decides drops its answer. A command has one guard: a later `.Guard(...)` replaces an earlier one. Read
+closed - and is logged as an error. One still deciding about a row shows the palette busy after 150 ms, like a handler,
+and turns a second `Enter` away; but it is not a running handler: navigating still closes the palette, and a shortcut
+or `ExecuteAsync` still runs its own command meanwhile. Closing the palette gives up on it (even if it ignores its
+token), and going back a page or disarming a confirmation while it decides drops its answer. A command has one guard: a later `.Guard(...)` replaces an earlier one. Read
 `BaletteGuardResult.IsAllowed` rather than comparing results - two refusals with different messages are different
 values. Without any guard the check costs nothing and nothing about running a command changes.
 
@@ -1431,7 +1437,7 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 | `SearchNestedCommands` | `true` | Find nested commands from the root page. |
 | `TypoTolerance` | `true` | Retry a query that found nothing allowing a typo per term. |
 | `AllowedUrlSchemes` | `http`, `https`, `mailto`, `tel` | Schemes an `Href` may use; relative links always may. |
-| `RecordCommandIdsInTraces` | `true` | Whether `balette.command` activities carry the command's id; see [diagnostics](#diagnostics). |
+| `RecordCommandIdsInTraces` | `true` | Whether `balette.command` activities - and the log entries about running a command - carry its id; see [diagnostics](#diagnostics). |
 | `CloseOnBackdropClick`, `CloseOnNavigation`, `ResetOnClose` | `true` | |
 | `HighlightMatches`, `ShowFooter`, `ShowShortcuts` | `true` | |
 | `Virtualize`, `RowHeight` | `false`, `44` | Recommended above about 500 visible rows; while on, rows are `RowHeight` pixels tall whatever `--bit-balette-row-height` says. |
@@ -1476,7 +1482,8 @@ records the exception's type (`exception.type`) - never its message, which can q
 search runs inside a `balette.source` activity. The palette's own rows (pin, forget, retry, "Show more") are neither
 counted nor traced. Metrics never carry ids, and
 queries, prompt values, titles and selections are never recorded; set `RecordCommandIdsInTraces = false` when ids embed
-personal data (`person:ada@example.com`). On WebAssembly, metrics need the `System.Diagnostics.Metrics` feature switch
+personal data (`person:ada@example.com`) - it also keeps a command's id and title out of the log entries about running
+it (a failure, a refusal, a guard that threw, an unsafe link), which read `(hidden)` instead. On WebAssembly, metrics need the `System.Diagnostics.Metrics` feature switch
 (`MetricsSupport`), which the SDK turns off by default (Bit.Belemetry turns it back on).
 
 ## Performance
