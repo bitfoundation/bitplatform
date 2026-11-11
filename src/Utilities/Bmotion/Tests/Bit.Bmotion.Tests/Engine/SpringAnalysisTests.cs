@@ -184,6 +184,13 @@ public class SpringAnalysisTests
     }
 
     [TestMethod]
+    public void Analyze_RejectsANonFiniteMass()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = 100, Damping = 10, Mass = double.PositiveInfinity }.Analyze());
+        Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = 100, Damping = 10, Mass = double.NaN }.Analyze());
+    }
+
+    [TestMethod]
     public void Analyze_RejectsANegativeStiffness()
     {
         Assert.ThrowsExactly<ArgumentException>(() => new BmSpring { Stiffness = -5, Damping = 10, Mass = 1 }.Analyze());
@@ -209,6 +216,6 @@ public class SpringAnalysisTests
         Assert.IsTrue(Settle(BmSprings.Responsive()) < Settle(BmSprings.Stiff()));
         Assert.IsTrue(Settle(BmSprings.Stiff()) < Settle(BmSprings.Smooth()));
         Assert.IsTrue(Settle(BmSprings.Smooth()) < Settle(BmSprings.Gentle()));
-        Assert.IsTrue(Settle(BmSprings.Gentle()) < Settle(BmSprings.Heavy()) + 1, "heavy is the slow one");
+        Assert.IsTrue(Settle(BmSprings.Gentle()) < Settle(BmSprings.Heavy()), "heavy is the slow one");
     }
 }

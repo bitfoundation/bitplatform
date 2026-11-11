@@ -81,8 +81,12 @@ public sealed partial class BmotionAnimationEngine
     /// Reports a part of an animation starting and, once <paramref name="end"/> resolves, ending - <c>true</c> for a
     /// natural finish. A part with no completion to watch (nobody waits for it) reports its start alone. A running
     /// part of the same element that animates any of these properties ends first, as interrupted.
+    /// <para>
+    /// Returns <c>false</c> when a handler of the start unregistered the element: the part then ends at once, as
+    /// interrupted, and the caller starts nothing more for it (and settles its completion as interrupted).
+    /// </para>
     /// </summary>
-    private void ReportPart(
+    private bool ReportPart(
         string elementId, IEnumerable<string> keys, BmPlaybackStrategy strategy, string? reason, Task<bool>? end)
     {
         string[] properties = [.. keys];
@@ -96,17 +100,26 @@ public sealed partial class BmotionAnimationEngine
             if (s_started.Enabled) s_started.Add(1, new KeyValuePair<string, object?>("bmotion.strategy", StrategyTag(strategy)));
             Raise(new BmotionAnimationEvent(BmAnimationEventKind.Started, elementId, properties, strategy, reason));
 
-            if (end is null) return;
+            // A handler runs inline and may have unregistered the element (which ended its running parts already):
+            // this part ends with it rather than being tracked for an element that is gone.
+            if (!_elements.ContainsKey(elementId))
+            {
+                EndPart(part, finished: false);
+                return false;
+            }
+
+            if (end is null) return true;
             if (end.IsCompleted)
             {
                 EndPart(part, end.IsCompletedSuccessfully && end.Result);
-                return;
+                return true;
             }
             // Fetched again: ending the superseded parts may have dropped the element's list.
             if (!_runningParts.TryGetValue(elementId, out running)) _runningParts[elementId] = running = new List<ReportedPart>();
             running.Add(part);
         }
         ((Task)end).OnCallerContext(_ => EndPart(part, end.IsCompletedSuccessfully && end.Result));
+        return true;
     }
 
     /// <summary>Reports <paramref name="part"/> ending, once: a later end of an already ended part is ignored.</summary>

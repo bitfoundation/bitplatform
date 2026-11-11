@@ -50,6 +50,21 @@ public class MotionValueCombineTests
     }
 
     [TestMethod]
+    public void ANullInput_IsRejectedBeforeAnyInputIsSubscribedTo()
+    {
+        var source = Bm.Value(1.0);
+        int computed = 0;
+
+        Assert.ThrowsExactly<ArgumentNullException>(() => Bm.Combine(() => { computed++; return source.Value; }, source, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => Bm.Template(() => { computed++; return $"{source.Value}"; }, source, null!));
+        Assert.AreEqual(0, computed, "a rejected composite is never computed");
+
+        source.Value = 2;
+
+        Assert.AreEqual(0, computed, "the source keeps no subscription to a composite that was never handed out");
+    }
+
+    [TestMethod]
     public void DisposingACombinedValue_DetachesItFromItsInputs()
     {
         var a = Bm.Value(1.0);

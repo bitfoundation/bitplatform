@@ -2065,7 +2065,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private async Task<bool> ReconcileScrollTimelineAsync()
     {
-        var timeline = Timeline;
+        // An element that lands everything at once under reduced motion (ReducedMotion="Instant") gives up its
+        // scroll-driven animation too, transforms and opacity alike: the time-based path then lands the target.
+        // Compared like the timeline itself, so a change of ReducedMotion detaches or re-attaches it.
+        var timeline = ReducedMotionBehavior == BmReducedMotionBehavior.Instant && IsMotionReduced() ? null : Timeline;
         var target = timeline is null ? null : EffectiveAnimate;
 
         if (BmScrollTimeline.AreEquivalent(_attachedTimeline, timeline) &&

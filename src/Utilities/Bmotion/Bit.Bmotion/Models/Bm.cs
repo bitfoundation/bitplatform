@@ -189,13 +189,10 @@ public static class Bm
     public static BmValue<string> Template(Func<string> format, params BmValue<double>[] inputs)
     {
         ArgumentNullException.ThrowIfNull(format);
-        ArgumentNullException.ThrowIfNull(inputs);
+        ThrowIfAnyNull(inputs);
         var composed = new BmValue<string>($"mv_{Guid.NewGuid():N}", format());
         foreach (var input in inputs)
-        {
-            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
             composed.AttachUpstream(SubscribeWeak(input, composed, format));
-        }
         return composed;
     }
 
@@ -217,14 +214,20 @@ public static class Bm
     public static BmValue<double> Combine(Func<double> compute, params BmValue<double>[] inputs)
     {
         ArgumentNullException.ThrowIfNull(compute);
-        ArgumentNullException.ThrowIfNull(inputs);
+        ThrowIfAnyNull(inputs);
         var combined = new BmValue<double>($"mv_{Guid.NewGuid():N}", compute());
         foreach (var input in inputs)
-        {
-            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
             combined.AttachUpstream(SubscribeWeak(input, combined, compute));
-        }
         return combined;
+    }
+
+    // Every input is checked before the first is subscribed to: a null one found half-way would leave the inputs
+    // before it subscribed to a composite the caller never received, recomputing it on each of their changes.
+    private static void ThrowIfAnyNull(BmValue<double>[] inputs)
+    {
+        ArgumentNullException.ThrowIfNull(inputs);
+        foreach (var input in inputs)
+            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
     }
 
     /// <summary>

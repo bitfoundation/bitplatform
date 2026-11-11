@@ -99,14 +99,32 @@ public static class BmotionMotionLab
 
         // A spring's character is in its physics, which the recording only shows: the library's own analysis gives the
         // damping ratio and period it runs with (derived from bounce/duration when those were given).
+        // A value the analysis can't give as a finite number is left out with a warning instead: JSON has no NaN or
+        // infinity, so one would fail the whole response, and the measured motion above stands on its own.
         if (transition is BmSpring spring && from != to)
         {
-            var physics = spring.Analyze(from, to);
+            BmSpringAnalysis? physics;
+            try { physics = spring.Analyze(from, to); }
+            catch (ArgumentException) { physics = null; }
+
+            var ratio = physics is not null && double.IsFinite(physics.DampingRatio) ? Round(physics.DampingRatio) : (double?)null;
+            double? period = physics?.OscillationPeriod is { } p && double.IsFinite(p) ? Round(p) : null;
+            bool periodLost = physics?.OscillationPeriod is { } lost && double.IsFinite(lost) is false;
+
+            if (physics is null || ratio is null || periodLost)
+            {
+                measured = measured with
+                {
+                    Warnings = [.. measured.Warnings, "The spring's physics (damping ratio, oscillation period) could not be " +
+                                                      "given as finite numbers for this configuration, so they are left out."]
+                };
+            }
+
             measured = measured with
             {
-                DampingRatio = Round(physics.DampingRatio),
-                Damping = physics.DampingKind.ToString(),
-                OscillationPeriodSeconds = physics.OscillationPeriod is { } period ? Round(period) : null,
+                DampingRatio = ratio,
+                Damping = ratio is null ? null : physics!.DampingKind.ToString(),
+                OscillationPeriodSeconds = period,
             };
         }
 

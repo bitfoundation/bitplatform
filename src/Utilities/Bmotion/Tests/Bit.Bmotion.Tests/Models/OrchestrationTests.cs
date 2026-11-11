@@ -47,6 +47,19 @@ public class OrchestrationTests
     }
 
     [TestMethod]
+    public void OverdampedSpring_EstimatesItsSlowCreep()
+    {
+        // stiffness 300, damping 70: ζω₀ = 35 would say 0.11 s, but the slow mode decays at ω₀(ζ - √(ζ²-1)) ≈ 4.57/s.
+        var spring = Bm.Spring(stiffness: 300, damping: 70);
+        double estimate = spring.ToConfig().EstimatedDurationSeconds();
+
+        double omega0 = Math.Sqrt(300), zeta = 70 / (2 * Math.Sqrt(300));
+        Assert.AreEqual(4 / (omega0 * (zeta - Math.Sqrt((zeta * zeta) - 1))), estimate, 1e-9);
+        // Within reach of when the driver actually rests, rather than a fraction of it.
+        Assert.IsTrue(estimate > spring.Analyze().SettlingTime * 0.5, $"estimate {estimate}, rests {spring.Analyze().SettlingTime}");
+    }
+
+    [TestMethod]
     public void StifferSpring_EstimatesShorter()
     {
         double loose = Bm.Spring(stiffness: 100, damping: 10).ToConfig().EstimatedDurationSeconds();

@@ -6,10 +6,17 @@ public enum BmSpringDamping
     /// <summary>Damping ratio below 1: it overshoots the target and oscillates around it before it rests.</summary>
     Underdamped,
 
-    /// <summary>Damping ratio of 1 (within 0.1 %): the fastest approach that doesn't overshoot.</summary>
+    /// <summary>
+    /// Damping ratio of 1 (within 0.1 %) - a classification of the ratio alone. Started from rest it is the fastest
+    /// approach that doesn't overshoot; started with a velocity towards the target (a throw, an interrupted
+    /// animation) it can still pass the target once.
+    /// </summary>
     CriticallyDamped,
 
-    /// <summary>Damping ratio above 1: it creeps onto the target, slower than critical damping and without overshoot.</summary>
+    /// <summary>
+    /// Damping ratio above 1: it creeps onto the target, slower than critical damping - without overshoot when it
+    /// starts from rest, though a strong enough initial velocity can still carry it past once.
+    /// </summary>
     Overdamped,
 }
 
@@ -96,6 +103,11 @@ internal static class BmotionSpringAnalyzer
     {
         if (!double.IsFinite(from) || !double.IsFinite(to))
             throw new ArgumentException("A spring is analysed between two finite values.", nameof(from));
+
+        // The driver checks the rest of the configuration and falls back from a mass <= 0, but takes an infinite one -
+        // a spring that never moves, so never rests - and a NaN mass is no configuration to measure either.
+        if (!double.IsFinite(spring.Mass))
+            throw new ArgumentException("A spring is analysed with a finite mass.", nameof(spring));
 
         // One pass, starting at once: repeats and delays aren't the spring's motion.
         var config = spring.ToConfig();

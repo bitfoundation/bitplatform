@@ -924,7 +924,12 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
                 foreach (var key in landsOnAuto)
                     if (instantValues.ContainsKey(key)) instantValues[key] = "auto";
             state.SetInstant(instantValues);
-            if (observed) ReportPart(elementId, instantValues.Keys, BmPlaybackStrategy.Instant, null, Task.FromResult(true));
+            // A handler of the start may unregister the element: nothing more is started for it then.
+            if (observed && !ReportPart(elementId, instantValues.Keys, BmPlaybackStrategy.Instant, null, Task.FromResult(true)))
+            {
+                tcs?.TrySetResult(false);
+                return;
+            }
         }
 
         WaapiOffload? offload = null;
@@ -974,9 +979,14 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             offload.Plan.Completion = Part();
             if (observed)
             {
-                ReportPart(elementId, browserValues!.Keys,
-                    offload.Recorded ? BmPlaybackStrategy.BrowserRecorded : BmPlaybackStrategy.BrowserTimeline,
-                    null, offload.Plan.Completion?.Task);
+                if (!ReportPart(elementId, browserValues!.Keys,
+                        offload.Recorded ? BmPlaybackStrategy.BrowserRecorded : BmPlaybackStrategy.BrowserTimeline,
+                        null, offload.Plan.Completion?.Task))
+                {
+                    offload.Plan.Completion?.TrySetResult(false);
+                    tcs?.TrySetResult(false);
+                    return;
+                }
                 // An interruption of some of its keys hands the rest to frame-loop drivers: from then on they are a
                 // frame-loop part (which ends the browser part, as interrupted).
                 offload.Plan.HandOff = (keys, carried) =>
@@ -992,10 +1002,14 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             // Without a frame loop this collapses to an instant change: warned once, so it is diagnosable.
             WarnIfDegradingOnServer(elementId, loopValues, transition);
             var loopPart = Part();
-            if (observed)
-                ReportPart(elementId, loopValues.Keys,
+            if (observed && !ReportPart(elementId, loopValues.Keys,
                     _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
-                    loopReason ?? (browserDeclined ? BrowserDeclinedReason : "it needs the frame loop"), loopPart?.Task);
+                    loopReason ?? (browserDeclined ? BrowserDeclinedReason : "it needs the frame loop"), loopPart?.Task))
+            {
+                loopPart?.TrySetResult(false);
+                tcs?.TrySetResult(false);
+                return;
+            }
             state.AnimateTo(loopValues, transition, loopPart);
         }
 
@@ -1814,10 +1828,13 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             // part from now on (which ends the browser part, as interrupted).
             try
             {
-                if (IsObserved)
-                    ReportPart(elementId, values.Keys,
+                if (IsObserved && !ReportPart(elementId, values.Keys,
                         _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
-                        NeverStartedReason, tcs?.Task);
+                        NeverStartedReason, tcs?.Task))
+                {
+                    tcs?.TrySetResult(false);
+                    return;
+                }
                 state.AnimateTo(values, transition, tcs);
                 await EnsureTickingAsync(elementId, state);
             }

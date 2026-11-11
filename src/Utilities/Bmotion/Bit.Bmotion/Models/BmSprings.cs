@@ -9,13 +9,14 @@ namespace Bit.Bmotion;
 /// The durations below are when the motion visibly arrives; a spring then takes a little longer to come to rest
 /// (its completion). The duration-based ones (all but <see cref="Heavy"/>) use the <c>bounce</c>/<c>duration</c>
 /// model, so they take the same time over any distance; <see cref="BmSpring.Analyze"/> gives the exact settling time,
-/// overshoot and trace of any of them. Like every spring they keep a thrown or interrupted element's velocity.
+/// overshoot and trace of any of them. Like every spring they keep a thrown or interrupted element's velocity - so
+/// the critically damped ones promise no overshoot only from rest: a velocity towards the target can carry them past once.
 /// </summary>
 public static class BmSprings
 {
     /// <summary>
-    /// Critically damped, arriving in about 0.5 s without overshoot - the safe default for interface chrome (menus,
-    /// panels, tabs).
+    /// Critically damped, arriving in about 0.5 s without overshoot from rest - the safe default for interface chrome
+    /// (menus, panels, tabs).
     /// </summary>
     public static BmSpring Smooth() => Bm.Spring(bounce: 0, duration: 0.5);
 
@@ -36,11 +37,14 @@ public static class BmSprings
     /// </summary>
     public static BmSpring Gentle() => Bm.Spring(bounce: 0.1, duration: 0.8);
 
-    /// <summary>Fast and firm, arriving in about 0.2 s without overshoot - small state changes that must not draw attention.</summary>
+    /// <summary>
+    /// Fast and firm, arriving in about 0.2 s without overshoot from rest - small state changes that must not draw
+    /// attention.
+    /// </summary>
     public static BmSpring Stiff() => Bm.Spring(bounce: 0, duration: 0.2);
 
     /// <summary>
-    /// A heavy mass that takes a moment to get going and settles without wobble in about a second - drawers, sheets,
+    /// A heavy mass that takes a moment to get going and, from rest, settles without wobble in about a second - drawers, sheets,
     /// things with weight. A physical spring (stiffness 120, mass 3 and the critical damping 2·√(120·3) ≈ 37.95)
     /// rather than a duration-based one.
     /// </summary>

@@ -100,7 +100,8 @@ public sealed class BmSequence
     /// Estimated visual length of a segment, used to place default-positioned successors.
     /// Tweens are exact; springs use their visual duration, or for a physical spring the settling estimate the
     /// engine schedules children with (4 / (ζ·ω₀): 0.8 s for the default spring, 0.2 s for a stiff critically damped
-    /// one); inertia decays are approximated as three time constants.
+    /// one; an overdamped spring's slow creep, 4 / (ω₀·(ζ - √(ζ²-1))), for one past critical damping); inertia decays
+    /// are approximated as three time constants.
     /// </summary>
     private static double EstimateDuration(BmTransition? transition) => transition switch
     {

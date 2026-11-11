@@ -353,4 +353,56 @@ public class AnimationEventTests
         Assert.IsTrue(started.Contains("browser_timeline"));
         Assert.IsTrue(ended.Contains(("browser_timeline", "finished")));
     }
+
+    // A handler runs inline with the start, so it can unregister the element there and then: nothing more is started
+    // for it, the part it just heard start ends as interrupted, and the caller's completion settles without a finish.
+    private static async Task<(bool Completed, BmotionAnimationEvent[] Events)> StartWhileAHandlerUnregistersAsync(
+        BmotionAnimationEngine engine, ConcurrentQueue<BmotionAnimationEvent> events, BmotionTransitionConfig transition)
+    {
+        engine.RegisterElement("el");
+        engine.AnimationEvent += e => { if (e.Kind == BmAnimationEventKind.Started) engine.UnregisterElement("el"); };
+        var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool completed = false;
+
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), transition,
+            onComplete: () => { completed = true; return Task.CompletedTask; },
+            onSettled: () => settled.TrySetResult());
+        RunFrames(engine, 500);
+        await settled.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        return (completed, [.. events]);
+    }
+
+    [TestMethod]
+    public async Task AHandlerUnregisteringTheElementOnABrowserStart_StopsThePlayback()
+    {
+        var (engine, interop, events) = NewEngine();
+        await using var __ = engine;
+
+        var (completed, seen) = await StartWhileAHandlerUnregistersAsync(engine, events, Bm.Tween(0.3).ToConfig());
+
+        Assert.IsFalse(completed, "an animation of an element that is gone doesn't finish");
+        Assert.AreEqual(0, interop.CountOf("playWaapiAnimation"), "nothing is handed to the browser for it");
+        CollectionAssert.AreEqual(
+            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
+        Assert.IsTrue(seen.All(e => e.Strategy == BmPlaybackStrategy.BrowserTimeline));
+    }
+
+    [TestMethod]
+    public async Task AHandlerUnregisteringTheElementOnAFrameLoopStart_StartsNoDriver()
+    {
+        var (engine, _, events) = NewEngine();
+        await using var __ = engine;
+        var transition = Bm.Tween(0.1);
+        int frames = 0;
+        transition.OnUpdate = _ => frames++;
+
+        var (completed, seen) = await StartWhileAHandlerUnregistersAsync(engine, events, transition.ToConfig());
+
+        Assert.IsFalse(completed);
+        Assert.AreEqual(0, frames, "no driver runs for an element that is gone");
+        CollectionAssert.AreEqual(
+            new[] { BmAnimationEventKind.Started, BmAnimationEventKind.Interrupted }, seen.Select(e => e.Kind).ToArray());
+        Assert.IsTrue(seen.All(e => e.Strategy == BmPlaybackStrategy.FrameLoop));
+    }
 }
