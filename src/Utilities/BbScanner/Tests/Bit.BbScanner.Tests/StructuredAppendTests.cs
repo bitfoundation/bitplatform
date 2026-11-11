@@ -352,6 +352,26 @@ public class StructuredAppendTests
         Assert.IsEmpty(assembler.Pending);
     }
 
+    private static BbBarcodeResult MicroPdf417(string part, int index, int[] fileId, int? count = null, bool last = false) =>
+        Decode(MicroPdf417Encoder.Encode(part, columns: 3, macro: (index, fileId, count, last)), BbBarcodeFormat.MicroPdf417);
+
+    [TestMethod]
+    public void AMacroMicroPdf417FileIsPutBackTogether()
+    {
+        var assembler = new BbStructuredAppendAssembler();
+
+        Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(MicroPdf417("SECOND", 1, FileA, last: true), out _));
+
+        // A PDF417 segment of the same file ID is not part of it: a file ID tells files apart within one symbology.
+        Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(Pdf417("PDF", 1, FileA, last: true), out _));
+        Assert.AreEqual(BbStructuredAppendStatus.Completed, assembler.Add(MicroPdf417("FIRST ", 0, FileA), out var message));
+
+        Assert.IsNotNull(message);
+        Assert.AreEqual("FIRST SECOND", message.Text);
+        Assert.AreEqual(BbBarcodeFormat.MicroPdf417, message.Format);
+        Assert.HasCount(1, assembler.Pending);
+    }
+
     [TestMethod]
     public void AMacroPdf417SegmentWithoutAFileIdIsRejected()
     {

@@ -297,7 +297,7 @@ internal static class BbGs1Dictionary
             }
 
             var comma = part.IndexOf(',', StringComparison.Ordinal);
-            var check = comma < 0 ? null : part[(comma + 1)..];
+            string[] checks = comma < 0 ? [] : part[(comma + 1)..].Split(',');
             var shape = comma < 0 ? part : part[..comma];
 
             var charset = shape[0] switch
@@ -322,7 +322,7 @@ internal static class BbGs1Dictionary
                 max = int.Parse(lengths[(range + 2)..], System.Globalization.CultureInfo.InvariantCulture);
             }
 
-            components[i] = new BbGs1Component(charset, min, max, optional, check);
+            components[i] = new BbGs1Component(charset, min, max, optional, checks);
         }
 
         return components;
@@ -347,7 +347,8 @@ internal enum BbGs1Charset
     Cset64,
 }
 
-internal sealed record BbGs1Component(BbGs1Charset Charset, int MinLength, int MaxLength, bool Optional, string? Check)
+// Checks holds the names of the checks the value has to pass, split once here rather than on every validation.
+internal sealed record BbGs1Component(BbGs1Charset Charset, int MinLength, int MaxLength, bool Optional, string[] Checks)
 {
     public bool IsFixed => MinLength == MaxLength;
 }

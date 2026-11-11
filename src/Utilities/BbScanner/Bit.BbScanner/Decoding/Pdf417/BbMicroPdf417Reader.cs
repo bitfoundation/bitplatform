@@ -555,10 +555,6 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
     }
 
     /// <summary>
-    /// Fits the segments the lines of one direction read to every symbol size, and decodes the grid of the sizes that
-    /// explain them best.
-    /// </summary>
-    /// <summary>
     /// Splits what the lines of one direction read into the symbols it came from - segments near each other across the
     /// lines and overlapping along them belong together - and assembles each, the one most was read of first. Two
     /// symbols of one size side by side or one above the other would otherwise vote into the same grid, and neither read.
@@ -659,6 +655,10 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
         return null;
     }
 
+    /// <summary>
+    /// Fits the segments the lines of one direction read to every symbol size, and decodes the grid of the sizes that
+    /// explain them best.
+    /// </summary>
     private BbSymbolDecodeResult? AssembleSymbol(List<Segment> segments, Vector2 along)
     {
         _segments = segments;
@@ -903,24 +903,11 @@ public sealed class BbMicroPdf417Reader : IBbMatrixDecoder
         var stream = new int[dataCount + 1];
         stream[0] = dataCount + 1;
         Array.Copy(codewords, 0, stream, 1, dataCount);
-        var parsed = BbPdf417BitStreamParser.Decode(stream, variant.Rows, columns, 0, corrected);
-        if (parsed is null)
+        var payload = BbPdf417BitStreamParser.DecodeMicroPdf417(stream, variant.Rows, columns, corrected);
+        if (payload is null)
         {
             return null;
         }
-
-        var payload = new BbDecoderResult(parsed.RawBytes, parsed.Text)
-        {
-            SymbolVersion = $"{columns}x{variant.Rows}",
-            ErrorsCorrected = parsed.ErrorsCorrected,
-            Rows = variant.Rows,
-            Columns = columns,
-            Eci = parsed.Eci,
-            StructuredAppendIndex = parsed.StructuredAppendIndex,
-            StructuredAppendCount = parsed.StructuredAppendCount,
-            StructuredAppendFileId = parsed.StructuredAppendFileId,
-            StructuredAppendIsLast = parsed.StructuredAppendIsLast,
-        };
 
         var module = moduleCount > 0 ? moduleSum / moduleCount : 1f;
         _edgesRead = moduleCount;

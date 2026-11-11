@@ -3,7 +3,7 @@
 namespace Bit.BbScanner;
 
 /// <summary>
-/// Puts the symbols of a structured append sequence - a QR Code, Data Matrix or Macro PDF417 message split over
+/// Puts the symbols of a structured append sequence - a QR Code, Data Matrix, Macro PDF417 or Macro MicroPDF417 message split over
 /// several symbols - back together, whatever order they are scanned in.
 /// </summary>
 /// <remarks>
@@ -11,7 +11,7 @@ namespace Bit.BbScanner;
 /// Hand it every result a scanner reports, from <c>OnScan</c> or from <see cref="BbBarcodeDecoder"/>; a result that
 /// is not part of a sequence is answered with <see cref="BbStructuredAppendStatus.NotStructuredAppend"/> and left
 /// for the application to handle as it is. A sequence is told apart from every other by its symbology, its count and
-/// what its symbols share: QR Code's parity byte, Data Matrix's file identification, the Macro PDF417 file ID. Its
+/// what its symbols share: QR Code's parity byte, Data Matrix's file identification, the Macro PDF417 (or MicroPDF417) file ID. Its
 /// message is returned once each of its symbols has been read; a symbol read again is ignored - after its message
 /// has been returned too, until <see cref="Timeout"/> passes without it - and two different
 /// symbols claiming the same place in one sequence end that sequence rather than being combined. QR Code's parity -
@@ -243,13 +243,15 @@ public sealed class BbStructuredAppendAssembler
                 count = total;
                 return true;
 
-            case BbBarcodeFormat.Pdf417 when metadata.StructuredAppendFileId is { } file:
+            // MicroPDF417 shares Macro PDF417's control block; the two are kept apart, a file ID being unique only
+            // among the segments of one symbology.
+            case BbBarcodeFormat.Pdf417 or BbBarcodeFormat.MicroPdf417 when metadata.StructuredAppendFileId is { } file:
                 if (index < 0 || metadata.StructuredAppendCount is <= 0 || (metadata.StructuredAppendCount is { } segments && index >= segments))
                 {
                     return false;
                 }
 
-                key = "P|" + file;
+                key = (result.Format == BbBarcodeFormat.Pdf417 ? "P|" : "M|") + file;
                 position = index;
                 count = metadata.StructuredAppendCount;
                 return true;
@@ -307,6 +309,7 @@ public sealed class BbStructuredAppendAssembler
         private readonly SortedDictionary<int, BbBarcodeResult> _segments = [];
         private int? _count;
         private int? _last;
+        private int _highest = -1;
 
         public DateTimeOffset Updated { get; set; }
 
@@ -331,7 +334,7 @@ public sealed class BbStructuredAppendAssembler
             // where every symbol read so far sits.
             var knownCount = count ?? _count;
             var knownLast = isLast ? position : _last;
-            var highest = _segments.Count > 0 ? Math.Max(position, _segments.Keys.Last()) : position;
+            var highest = Math.Max(position, _highest);
             if ((count is not null && _count is not null && count != _count) ||
                 (isLast && _last is not null && _last != position) ||
                 (knownCount is not null && highest >= knownCount) ||
@@ -344,6 +347,7 @@ public sealed class BbStructuredAppendAssembler
             _count = knownCount;
             _last = knownLast;
             _segments.Add(position, result);
+            _highest = highest;
             return BbStructuredAppendStatus.Added;
         }
 

@@ -65,8 +65,8 @@ public sealed class BbBarcodeResult
 
     /// <summary>
     /// Parses <see cref="Text"/> as a GS1 element string, for a symbol that declares one
-    /// (<see cref="BbBarcodeResultMetadata.IsGs1"/>): GS1-128, GS1 DataMatrix, GS1 QR Code, GS1 Aztec and the GS1
-    /// DataBar family. Parsed on the first call; <see cref="Text"/> and <see cref="RawBytes"/> stay as they are.
+    /// (<see cref="BbBarcodeResultMetadata.IsGs1"/>): GS1-128, GS1 DataMatrix, GS1 QR Code, GS1 Aztec, GS1
+    /// MicroPDF417 and the GS1 DataBar family. Parsed on the first call; <see cref="Text"/> and <see cref="RawBytes"/> stay as they are.
     /// </summary>
     /// <param name="elements">The elements, or <see langword="null"/>.</param>
     /// <returns>

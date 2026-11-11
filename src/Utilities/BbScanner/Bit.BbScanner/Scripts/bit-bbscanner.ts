@@ -216,6 +216,13 @@ const IMAGE_TOO_MANY_PIXELS = -5;
  */
 const MAX_IMAGE_PIXELS = 268_435_456;
 
+/**
+ * How long a start waits for the camera to switch to continuous focus. A camera whose applyConstraints never settles
+ * would otherwise hold the start forever - in-process there is no watchdog to recover it - so past this the start
+ * returns and the focus is left to arrive, or not, on its own.
+ */
+const FOCUS_TIMEOUT_MS = 1000;
+
 /** poll flags, above the 24 bits of change versions; the values of BbScannerBridge's Poll constants. */
 const POLL_HIDDEN = 1 << 24;
 const POLL_ENDED = 1 << 25;
@@ -862,7 +869,16 @@ async function preferContinuousFocus(track: MediaStreamTrack): Promise<void> {
         const modes = (track.getCapabilities() as { focusMode?: unknown }).focusMode;
         const current = (track.getSettings() as { focusMode?: unknown }).focusMode;
         if (Array.isArray(modes) && modes.includes('continuous') && current !== 'continuous') {
-            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] });
+            const applied = track.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] });
+
+            // A refusal that comes after the wait has ended is still caught.
+            applied.catch(() => { });
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            try {
+                await Promise.race([applied, new Promise<void>(resolve => { timer = setTimeout(resolve, FOCUS_TIMEOUT_MS); })]);
+            } finally {
+                clearTimeout(timer);
+            }
         }
     } catch {
         // A track stopped meanwhile, or a camera that rejects the mode: scanning goes on with the focus there is.

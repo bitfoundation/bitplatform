@@ -95,7 +95,7 @@ public sealed class BbGs1Element
         }
 
         var value = Value.AsSpan();
-        var fourDigitYear = _definition.Components[0].Check is "yyyymmdd" or "yyyymmddhhmi";
+        var fourDigitYear = _definition.Components[0].Checks is ["yyyymmdd"] or ["yyyymmddhhmi"];
         int year;
         if (fourDigitYear)
         {

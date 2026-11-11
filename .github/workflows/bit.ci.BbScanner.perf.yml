@@ -1,0 +1,47 @@
+name: bit platform CI - BbScanner performance
+
+# The performance gate: each standard frame's decode time and allocations against the baseline in
+# src/Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks/budgets.json. Timings measured on a shared runner against a
+# baseline from a developer's machine are not something a pull request should fail on, so it runs only when started
+# by hand or from All Utilities CI. See src/Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks/README.md.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  perf:
+    name: BbScanner performance budgets
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/Utilities/BbScanner && dotnet workload restore
+
+    - name: performance budgets (decode time and allocations per frame)
+      # Release, because a Debug build's timings say nothing. Fails when a frame decodes far slower, or allocates
+      # more, than Tests/Bit.BbScanner.Benchmarks/budgets.json allows; see BudgetCheck.cs there.
+      run: cd src/Utilities/BbScanner && dotnet run -c Release --project Tests/Bit.BbScanner.Benchmarks -- --budget

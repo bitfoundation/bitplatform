@@ -228,6 +228,98 @@ public class MicroPdf417Tests
         Assert.AreEqual(content, Decode(image, still: false)?.Text);
     }
 
+    // "0109501101530003" and "17260101": a GTIN and an expiry date, the GS1 element string of a healthcare label.
+    private static readonly int[] Gs1Numeric = [2, 313, 580, 888, 484, 449, 736, 111, 201];
+
+    // "0109501101530003" in text compaction's Mixed sub-mode, two digits to a codeword.
+    private static readonly int[] Gs1Mixed = [1, 9, 150, 31, 1, 153, 0, 3];
+
+    [TestMethod]
+    public void ACode128EmulationCodewordWithFnc1InFirstPositionMakesAGs1Symbol()
+    {
+        // 904 implies a latch to numeric compaction, 903 to text compaction's Mixed sub-mode.
+        using var numeric = MicroPdf417Encoder.EncodeCodewords([904, .. Gs1Numeric], columns: 2);
+        using var image = SyntheticImage.FromMatrix(numeric, scale: 3);
+        var result = Decode(image, still: false);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("010950110153000317260101", result.Text);
+        Assert.IsTrue(result.Metadata?.IsGs1);
+        Assert.IsTrue(result.TryGetGs1(out var elements));
+        Assert.AreEqual("(01)09501101530003(17)260101", elements.ToBracketedString());
+
+        var mixed = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, 903, .. Gs1Mixed], 8, 2, 0);
+        Assert.IsNotNull(mixed);
+        Assert.AreEqual("0109501101530003", mixed.Text);
+        Assert.IsTrue(mixed.IsGs1);
+    }
+
+    [TestMethod]
+    [DataRow(908)]
+    [DataRow(910)]
+    public void ACode128EmulationCodewordWithoutFnc1InFirstPositionIsNotGs1(int flag)
+    {
+        var result = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, flag, .. Gs1Mixed], 8, 2, 0);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("0109501101530003", result.Text);
+        Assert.IsFalse(result.IsGs1);
+    }
+
+    [TestMethod]
+    [DataRow(909)]
+    [DataRow(911)]
+    public void ACode128EmulationCodewordCanImplyNumericCompaction(int flag)
+    {
+        var result = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("010950110153000317260101", result.Text);
+        Assert.IsFalse(result.IsGs1);
+    }
+
+    [TestMethod]
+    [DataRow(905)]
+    [DataRow(906)]
+    [DataRow(907)]
+    [DataRow(912)]
+    [DataRow(914)]
+    [DataRow(915)]
+    [DataRow(920)]
+    public void AnEmulationCodewordThisReaderDoesNotInterpretIsNotGuessedAt(int flag)
+    {
+        // 905 leaves out an AI it implies, and the others open the two-dimensional part of a composite symbol: read
+        // as anything else they would be misread.
+        Assert.IsNull(BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0));
+    }
+
+    [TestMethod]
+    public void Code128EmulationIsMicroPdf417sAlone()
+    {
+        // In PDF417 the same codewords are reserved.
+        Assert.IsNull(BbPdf417BitStreamParser.Decode([1 + 1 + Gs1Numeric.Length, 904, .. Gs1Numeric], 3, 4, 0, 0));
+    }
+
+    [TestMethod]
+    public void AMicroPdf417ResultReportsWhatTheParserRead()
+    {
+        int[] codewords = [5, 900, (7 * 30) + 4, 928, 111, 105, 17, 300, 922];
+        codewords[0] = codewords.Length;
+
+        var result = BbPdf417BitStreamParser.DecodeMicroPdf417(codewords, 10, 3, 2);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("HE", result.Text);
+        Assert.AreEqual("3x10", result.SymbolVersion);
+        Assert.AreEqual(10, result.Rows);
+        Assert.AreEqual(3, result.Columns);
+        Assert.AreEqual(2, result.ErrorsCorrected);
+        Assert.IsNull(result.ErrorCorrectionLevel, "MicroPDF417 has no security level.");
+        Assert.AreEqual(5, result.StructuredAppendIndex);
+        Assert.IsTrue(result.StructuredAppendIsLast);
+        Assert.IsNotNull(result.StructuredAppendFileId);
+    }
+
     [TestMethod]
     [DoNotParallelize]
     public void PipelineLeavesMicroPdf417DisabledWhenARegisteredTableIsNotTheSpecification()

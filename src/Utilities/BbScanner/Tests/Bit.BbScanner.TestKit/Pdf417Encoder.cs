@@ -43,23 +43,7 @@ public static class Pdf417Encoder
         var data = BuildDataCodewords(content);
         if (macro is { } block)
         {
-            // Numbers in the control block are two codewords of base 900 holding the value with a leading 1.
-            static IEnumerable<int> Number(int value) => [(100000 + value) / 900, (100000 + value) % 900];
-
-            data.Add(928);
-            data.AddRange(Number(block.SegmentIndex));
-            data.AddRange(block.FileId);
-            if (block.SegmentCount is { } count)
-            {
-                data.Add(923);
-                data.Add(1);
-                data.AddRange(Number(count));
-            }
-
-            if (block.Last)
-            {
-                data.Add(922);
-            }
+            AppendMacro(data, block);
         }
 
         var numEc = BbPdf417ErrorCorrection.GetErrorCorrectionCodewordCount(errorCorrectionLevel);
@@ -94,6 +78,28 @@ public static class Pdf417Encoder
         }
 
         return Render(all, rows, columns, errorCorrectionLevel, rowHeightModules, quietZoneModules);
+    }
+
+    /// <summary>Appends a Macro PDF417 control block, which MicroPDF417 shares.</summary>
+    internal static void AppendMacro(List<int> data, (int SegmentIndex, int[] FileId, int? SegmentCount, bool Last) block)
+    {
+        // Numbers in the control block are two codewords of base 900 holding the value with a leading 1.
+        static IEnumerable<int> Number(int value) => [(100000 + value) / 900, (100000 + value) % 900];
+
+        data.Add(928);
+        data.AddRange(Number(block.SegmentIndex));
+        data.AddRange(block.FileId);
+        if (block.SegmentCount is { } count)
+        {
+            data.Add(923);
+            data.Add(1);
+            data.AddRange(Number(count));
+        }
+
+        if (block.Last)
+        {
+            data.Add(922);
+        }
     }
 
     internal static List<int> BuildDataCodewords(string content)

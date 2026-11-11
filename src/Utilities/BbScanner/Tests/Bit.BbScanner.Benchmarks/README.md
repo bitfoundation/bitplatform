@@ -29,7 +29,9 @@ dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmar
 
 ## The performance gate
 
-`--budget` is a check quick enough for every pull request, and `bit.ci.BbScanner.yml` runs it: each standard frame - and the
+`--budget` is a quick check, and `bit.ci.BbScanner.perf.yml` runs it - when started by hand (Actions > "bit platform CI -
+BbScanner performance" > Run workflow) or from All Utilities CI, not on pull requests, whose runners' timings are too
+noisy to fail on: each standard frame - and the
 empty frame under the live and the still image defaults, and the still image ones with every symbology - is decoded the
 way a live scanner decodes it, four frames to a sample so that work done every few frames is counted, and its time and
 allocations are compared with the baseline in `budgets.json`. Time is measured as a multiple of a fixed piece of work

@@ -16,15 +16,40 @@ public static class MicroPdf417Encoder
     /// <param name="content">The text; uppercase letters and spaces use text compaction, anything else byte compaction.</param>
     /// <param name="columns">The data columns, 1 to 4, or 0 for the narrowest symbol the content fits.</param>
     /// <param name="minimumRows">The fewest rows, to choose a taller symbol than the content needs.</param>
-    public static BbBitMatrix Encode(string content, int columns = 0, int minimumRows = 0)
+    /// <param name="macro">Writes a Macro PDF417 control block after the data, as <see cref="Pdf417Encoder.Encode"/> does.</param>
+    public static BbBitMatrix Encode(
+        string content,
+        int columns = 0,
+        int minimumRows = 0,
+        (int SegmentIndex, int[] FileId, int? SegmentCount, bool Last)? macro = null)
     {
         ArgumentNullException.ThrowIfNull(content);
-        ArgumentOutOfRangeException.ThrowIfNegative(columns);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(columns, 4);
 
         // PDF417's data codewords without its symbol length descriptor, which MicroPDF417 does not have.
         var data = Pdf417Encoder.BuildDataCodewords(content);
         data.RemoveAt(0);
+        if (macro is { } block)
+        {
+            Pdf417Encoder.AppendMacro(data, block);
+        }
+
+        return EncodeCodewords(data, columns, minimumRows);
+    }
+
+    /// <summary>
+    /// Writes the given data codewords into a MicroPDF417 module grid as they are - for a stream the text and byte
+    /// compaction of <see cref="Encode"/> does not write, such as one opening with a Code 128 emulation codeword.
+    /// </summary>
+    /// <param name="dataCodewords">The data codewords, without a symbol length descriptor; padded to the symbol's capacity.</param>
+    /// <param name="columns">The data columns, 1 to 4, or 0 for the narrowest symbol the codewords fit.</param>
+    /// <param name="minimumRows">The fewest rows, to choose a taller symbol than the codewords need.</param>
+    public static BbBitMatrix EncodeCodewords(IEnumerable<int> dataCodewords, int columns = 0, int minimumRows = 0)
+    {
+        ArgumentNullException.ThrowIfNull(dataCodewords);
+        ArgumentOutOfRangeException.ThrowIfNegative(columns);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(columns, 4);
+
+        var data = new List<int>(dataCodewords);
 
         BbMicroPdf417Tables.Variant? chosen = null;
         foreach (var variant in BbMicroPdf417Tables.Variants)
@@ -38,7 +63,7 @@ public static class MicroPdf417Encoder
             }
         }
 
-        var size = chosen ?? throw new ArgumentException("The content does not fit in any MicroPDF417 symbol of that shape.", nameof(content));
+        var size = chosen ?? throw new ArgumentException("The codewords do not fit in any MicroPDF417 symbol of that shape.", nameof(dataCodewords));
         var dataCount = (size.Columns * size.Rows) - size.EcCodewords;
         while (data.Count < dataCount)
         {

@@ -1,7 +1,7 @@
 name: bit platform CI - BbScanner
 
 # Build, decoder and component tests, and MCP server tests. The browser suite lives in bit.ci.BbScanner.e2e.yml
-# and runs on demand only.
+# and the performance gate in bit.ci.BbScanner.perf.yml; both run on demand only.
 
 on:
   workflow_dispatch:
@@ -62,8 +62,3 @@ jobs:
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.Mcp && dotnet test --no-build
-
-    - name: performance budgets (decode time and allocations per frame)
-      # Release, because a Debug build's timings say nothing. Fails when a frame decodes far slower, or allocates
-      # more, than Tests/Bit.BbScanner.Benchmarks/budgets.json allows; see BudgetCheck.cs there.
-      run: cd src/Utilities/BbScanner && dotnet run -c Release --project Tests/Bit.BbScanner.Benchmarks -- --budget

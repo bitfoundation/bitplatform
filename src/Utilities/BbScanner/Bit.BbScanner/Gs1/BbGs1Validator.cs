@@ -50,15 +50,12 @@ internal static class BbGs1Validator
                 return false;
             }
 
-            if (component.Check is not null)
+            foreach (var check in component.Checks)
             {
-                foreach (var check in component.Check.Split(','))
+                if (!Check(check, part))
                 {
-                    if (!Check(check, part))
-                    {
-                        error = $"'{value}' fails its {CheckName(check)} check.";
-                        return false;
-                    }
+                    error = $"'{value}' fails its {CheckName(check)} check.";
+                    return false;
                 }
             }
 
