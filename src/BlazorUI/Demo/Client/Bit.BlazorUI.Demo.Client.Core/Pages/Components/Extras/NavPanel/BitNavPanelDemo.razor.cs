@@ -347,6 +347,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoLazyDrawer",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the content of the drawer of a small screen while it is still closed. By default an interactive render leaves the header, the search box, the nav and the footer of a drawer that has never been opened out until it first opens, and keeps them from then on, so the start of the app does not build what is not on screen; a prerender and a static SSR page always render them. Turn it off when the app reads something of the nav before the drawer has been opened, such as the SelectedItem the automatic NavMode reads off the URL.",
+        },
+        new()
+        {
             Name = "NoOverlay",
             Type = "bool",
             DefaultValue = "false",

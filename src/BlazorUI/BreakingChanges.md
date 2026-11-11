@@ -5,6 +5,15 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitNavPanel` renders the content of its drawer the first time it opens ([#14866](https://github.com/bitfoundation/bitplatform/issues/14866))
+
+Below its `DrawerBreakpoint` the panel is an off-canvas drawer, and an interactive render now leaves its content out
+(the header, the search box, the `BitNav` and the footer) until the drawer first opens. It keeps the content from then on.
+A prerender and a static SSR page still render the content, so the links stay in the HTML. On a wide screen the panel is
+a column and renders as before. **An app that reads something of the nav before the drawer has been opened**, such as
+the `SelectedItem` the automatic `NavMode` takes from the URL, or a template's side effects, sets `NoLazyDrawer` (or
+`BitNavPanelParams.NoLazyDrawer`) to render the content at once, as before.
+
 ### Seekable PDF sources defer forms and tagged structure ([#13702](https://github.com/bitfoundation/bitplatform/issues/13702))
 
 For a `BitPdfViewer` loaded with `BitPdfSource.FromStreamFactory`, `FormFields` and `StructureTree` now return empty

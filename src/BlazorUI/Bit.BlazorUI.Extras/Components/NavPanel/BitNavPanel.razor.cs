@@ -47,6 +47,13 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool _isDrawer;
     private bool _isFocused;
     private bool _screenChecked;
+    // Whether the content of the panel has been rendered once (see _RendersContent), after which it stays.
+    private bool _contentRendered;
+    // Whether the browser has said, before the first render, that the screen is one the panel is a drawer on (see
+    // IsDrawerAtStart). Only read until the media query reports the shape for itself.
+    private bool _drawerAtStart;
+    private bool _drawerAtStartAsked;
+    private bool? _isStaticRender;
     private int _focusOutToken;
     private bool _scrollLocked;
     private bool _focusTrapped;
@@ -74,6 +81,11 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     // which in a shell is the region the shell scrolls rather than the document.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    // The theme of an enclosing BitThemeProvider, whose breakpoints win over the stylesheet's ones: the media query the
+    // panel renders reads them off it too, so the shape asked for before the first render is asked of the same scale.
+    [CascadingParameter]
+    private BitTheme? CascadingTheme { get; set; }
 
     /// <summary>
     /// Gets or sets the cascading parameters for the nav panel component.
@@ -358,6 +370,22 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// is rendered in, so a panel with <see cref="NoOverlay"/> never holds it in the first place.
     /// </summary>
     [Parameter] public bool NoFocusTrap { get; set; }
+
+    /// <summary>
+    /// Renders the content of the drawer of a small screen while it is still closed, rather than the first time
+    /// it opens.
+    /// </summary>
+    /// <remarks>
+    /// Below <see cref="DrawerBreakpoint"/> the panel is a drawer nobody sees until it is opened, so by default an
+    /// interactive render leaves its content - the header, the search box, the nav and the footer - out until the
+    /// drawer first opens, and keeps it from then on, so the start of the app does not build what is not on
+    /// screen. A prerender and a static SSR page always render it, so the links are in the HTML that is sent.
+    /// <br />
+    /// Turn it off when the app reads something of the nav while the drawer has never been opened: the nav that
+    /// is not rendered reports no <see cref="SelectedItem"/> (which, in the automatic <see cref="NavMode"/>, it
+    /// reads off the current URL) and calls no template.
+    /// </remarks>
+    [Parameter] public bool NoLazyDrawer { get; set; }
 
     /// <summary>
     /// Removes the overlay that is rendered behind the open nav panel in small screens.
@@ -787,6 +815,13 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
             _isDrawer = isDrawer;
             _screenChecked = true;
+        }
+
+        // Asked once, before the first render, which is the one it decides (see _RendersContent).
+        if (_drawerAtStartAsked is false)
+        {
+            _drawerAtStartAsked = true;
+            _drawerAtStart = IsDrawerAtStart();
         }
 
         // The Items collection is re-read here rather than only when the parameter is assigned a new
@@ -1297,6 +1332,59 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         BitNavPanelBreakpoint.Xl => BitScreenQuery.LtXl,
         _ => BitScreenQuery.LtMd,
     };
+
+    // Whether the content of the panel is rendered. A drawer nobody has opened yet is off the screen, so an interactive
+    // render leaves the content out until the drawer first opens (see NoLazyDrawer), and keeps it from then on: its
+    // open and close transitions play on the root, which is always there, and the parts of the content keep their
+    // state. Until the browser has reported the shape, the content is left out only when it said before the first
+    // render that the screen is a drawer's, so a column is never rendered empty while the answer is on its way.
+    private bool _RendersContent
+    {
+        get
+        {
+            if (_contentRendered || NoLazyDrawer || IsOpen) return true;
+
+            // What a prerender or a static SSR page sends is all there is of it until the page is interactive (and all
+            // a search engine reads), so it holds the links whatever the screen.
+            if (_isStaticRender ??= IsStaticRender(_js)) return true;
+
+            return _screenChecked ? _isDrawer is false : _drawerAtStart is false;
+        }
+    }
+
+    // Whether the screen is one the panel is a drawer on, asked before the first render - which the media query only
+    // answers after - so a phone's start does not render the content of a drawer it does not show. Only a WebAssembly
+    // app can ask the browser synchronously, and only while its script is in the page already: the bundle has it from
+    // the start, where a lazy script would be imported first. Everywhere else the first render keeps the content, and
+    // the media query reports the shape as before. The answer is only ever a hint: a drawer reported as a column has
+    // its content rendered (as it always had), and a column reported as a drawer gets its content once the media
+    // query reports it.
+    private bool IsDrawerAtStart()
+    {
+        if (NoLazyDrawer || _ScreenQuery is null) return false;
+        if (_js is not IJSInProcessRuntime || BitBlazorUIScripts.LazyScriptsEnabled) return false;
+        if (_isStaticRender ??= IsStaticRender(_js)) return false;
+
+        var breakpoints = CascadingTheme?.Layout?.Breakpoints;
+        var (key, themed) = DrawerBreakpoint switch
+        {
+            BitNavPanelBreakpoint.Sm => ("sm", breakpoints?.Sm),
+            BitNavPanelBreakpoint.Lg => ("lg", breakpoints?.Lg),
+            BitNavPanelBreakpoint.Xl => ("xl", breakpoints?.Xl),
+            _ => ("md", breakpoints?.Md),
+        };
+
+        try
+        {
+            var answer = _js.BitNavPanelIsDrawer(key, themed);
+
+            return answer.IsCompletedSuccessfully && answer.Result;
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
 
     // The panel is a modal drawer while it covers the page: only on a small screen, only while it is open,
     // and only with the overlay that is what makes it cover anything at all.
