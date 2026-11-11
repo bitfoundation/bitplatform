@@ -46,7 +46,7 @@ domain and the services of section 5. Then go through the steps with them.
 <!--#endif-->
 - **The landing page is a service of its own** in the same Compose project, `landingpage`, on a hostname of its own,
   often the bare domain with the app on a subdomain such as `app.`. It needs no database, and its settings come from
-  the `LANDINGPAGE_SETTINGS` secret.
+  `LANDINGPAGE__` secrets and variables, one per setting (section 6).
 <!--#if (cloudflare == true)-->
 - **Cloudflare is strongly recommended, and it is free.** Its free plan covers the tunnel, the DNS, the certificates,
   the cache and DDoS protection, so tell the user they need no paid plan to start. If they still don't want it, Caddy
@@ -122,8 +122,8 @@ domain and the services of section 5. Then go through the steps with them.
   project runs.
 - Install Docker Engine with its Compose plugin from Docker's own repository, have it start on boot, and create a user
   for the runner that can use Docker. Nothing else: the VM gets no SDK and no source code, only images.
-- Install curl and openssl too: the deploy job checks the public address with curl, and reads the app certificate with
-  openssl.
+- Install curl, openssl and jq too: the deploy job checks the public address with curl, reads the app certificate with
+  openssl, and picks the apps' settings out of the environment's variables and secrets with jq.
 - Point the VM at public DNS resolvers (`1.1.1.1` and `9.9.9.9`, through `systemd-resolved`) when the provider's own
   time out, which shows up as image pulls and `curl` failing now and then.
 - Never retry a failing SSH sign-in in a loop: fail2ban or the provider bans your address after a few, often for longer
@@ -279,9 +279,13 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **File storage**: the files stay on disk, in a volume of the app's container. Once they outgrow the VM, suggest
   S3-compatible storage such as Cloudflare R2.
 <!--#endif-->
-- **Email**: a real SMTP provider. Mailpit is for development only. `Email__DefaultFromEmail` in the api's settings
-  secret has to be an address that provider has verified. Left at its default, the provider rejects the mail or it lands
-  in spam.
+- **Email**: a real SMTP provider. Mailpit is for development only. `Email:DefaultFromEmail`
+<!--#if (api == "Standalone")-->
+  (`SERVERAPI__EMAIL__DEFAULTFROMEMAIL`) has to be an address that provider has verified. Left at its default, the
+<!--#else-->
+  (`SERVERWEB__EMAIL__DEFAULTFROMEMAIL`) has to be an address that provider has verified. Left at its default, the
+<!--#endif-->
+  provider rejects the mail or it lands in spam.
 - **SMS**: a Twilio account, or another provider SmsBridge supports, only if the app sends text messages.
 <!--#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")-->
 - **AI**: an OpenAI-compatible endpoint for chat and embeddings, with its key. That can be OpenAI itself or any
@@ -327,10 +331,24 @@ there, and the setting or secret that carries it. Every environment gets its own
 - Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
   --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
-  word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
-  line each.
-- The landing page's settings go into `LANDINGPAGE_SETTINGS` the same way: the `smtp` connection string its waitlist
-  emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+  word.
+<!--#if (api == "Standalone")-->
+- Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERAPI__`,
+  `SERVERWEB__` or `LANDINGPAGE__`, then the key with `__` between its parts, such as
+  `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for the api's `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per
+  setting, so changing one never means rewriting the others. A key is a secret, from the git-ignored file like the
+  rest. A model name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so
+  a secret holding `true` hides every "true" there.
+<!--#else-->
+- Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERWEB__`
+  (the api runs inside the web app) or `LANDINGPAGE__`, then the key with `__` between its parts, such as
+  `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per setting, so
+  changing one never means rewriting the others. A key is a secret, from the git-ignored file like the rest. A model
+  name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so a secret
+  holding `true` hides every "true" there.
+<!--#endif-->
+- The landing page's settings are `LANDINGPAGE__` secrets and variables, such as the chat's AI key. Its waitlist
+  emails go through the app's own `SMTP_CONNECTION_STRING`. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
 - The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
   to a trusted address, and any other address gets a 400, so both have to be the real public addresses.
@@ -371,8 +389,8 @@ have taken requests, so a failure from then on leaves the database ahead and und
   the Test CD runs by hand on any branch, and the Production CD on `main`, on a push only once section 9 has turned
   that on.
 - Set every variable and secret the CD reads for this project's options (section 6).
-- Carry what section 4 decided into the settings: prerendering and the caching flags go into the apps' settings
-  secrets.
+- Carry what section 4 decided into the settings: prerendering and the caching flags, each a secret of its own
+  (section 6).
 - If section 4 chose a static host for the client, add a job that publishes `src/Client/Boilerplate.Client.Web` and
   uploads its `wwwroot` there.
 - The first deployment needs the project's first migration, which `bit new` creates as `Initial`.

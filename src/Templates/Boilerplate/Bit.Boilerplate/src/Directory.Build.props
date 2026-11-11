@@ -35,6 +35,7 @@
 
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
+        <BlazorWebAssemblyOmitDebugProxyOutput Condition="'$(Environment)' != 'Development'">true</BlazorWebAssemblyOmitDebugProxyOutput>
 
         <IncludeSourceRevisionInInformationalVersion Condition="$(Configuration.Contains('Debug'))">false</IncludeSourceRevisionInInformationalVersion>
         <EnableSourceLink Condition="$(Configuration.Contains('Debug'))">false</EnableSourceLink>

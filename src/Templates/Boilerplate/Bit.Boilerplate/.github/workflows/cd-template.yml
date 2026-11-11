@@ -148,10 +148,12 @@ jobs:
           SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
           APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
           APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
-          SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
-          LANDINGPAGE_SETTINGS: ${{ secrets.LANDINGPAGE_SETTINGS }}
-#if (api == "Standalone")
-          SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
+          # Every variable and secret of the environment, for the settings no parameter carries: one each (see below).
+          VARIABLES: ${{ toJSON(vars) }}
+          SECRETS: ${{ toJSON(secrets) }}
+#if (cloudflare == true)
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
 #endif
 #if (database == "SqlServer")
           SQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
@@ -232,9 +234,26 @@ jobs:
           fi
           mv "$deploy_dir/.env.new" "$deploy_dir/.env"
 
-          # The settings no parameter carries - serverweb.env, landingpage.env (and serverapi.env) - from KEY=value lines, the same way.
+          # The settings no parameter carries go into each app's own settings file - serverweb.env, landingpage.env (and
+          # serverapi.env) - one KEY='value' line each. Setting the same key twice is a mistake, not an override, so it stops
+          # the deployment.
+          declare -A settings_file=() set_by=()
+          setting() {
+            local file="$1" key="$2" value="$3" source="$4" id="$1:${2^^}"
+            if [[ -n "${set_by[$id]:-}" ]]; then
+              echo "::error::${source^} sets $key in $file, which ${set_by[$id]} already sets. Keep one of them."
+              exit 1
+            fi
+            if [[ "$value" == *"'"* || "$value" == *$'\n'* ]]; then
+              echo "::error::${source^} holds a single quote or a line break, which $file can't carry."
+              exit 1
+            fi
+            set_by[$id]="$source"
+            printf "%s='%s'\n" "$key" "$value" >> "$deploy_dir/$file"
+          }
+
           while IFS= read -r file; do
-            settings="$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')_SETTINGS"
+            settings_file[$(printf '%s' "${file%.env}" | tr '[:lower:]-' '[:upper:]_')]="$file"
             : > "$deploy_dir/$file"
 
             # Each app first trusts its own public address. The Host header is the client's to write, so the apps link
@@ -252,34 +271,63 @@ jobs:
             fi
             # Index 100 adds the address after the TrustedOrigins of appsettings.json (the binder keeps the order and skips
             # the missing indexes) instead of replacing its first entry. The lines below can still add more.
-            printf "TrustedOrigins__100='%s'\n" "$origin" >> "$deploy_dir/$file"
+            setting "$file" TrustedOrigins__100 "$origin" "this deployment"
+            #if (api == "Standalone")
             # An OAuth client, such as an MCP client signing in to /dev-mcp, reaches a standalone api with no origin, so the api
             # takes the consent page's address from WebAppUrl. Without it, the client lands on the api's own host.
             if [[ "$file" == "serverapi.env" ]]; then
-              printf "WebAppUrl='%s'\n" "$origin" >> "$deploy_dir/$file"
-              printf "TrustedOrigins__101='%s'\n" "$api_origin" >> "$deploy_dir/$file"
+              setting "$file" WebAppUrl "$origin" "this deployment"
+              setting "$file" TrustedOrigins__101 "$api_origin" "this deployment"
             fi
+            #endif
             #if (cloudflare == true)
             # The landing page's browser posts its telemetry to its own address, where the tunnel sends /v1/ to the dashboard.
             #else
             # The landing page's browser posts its telemetry to its own address, where Caddy sends /v1/ to the dashboard.
             #endif
             if [[ "$file" == "landingpage.env" ]]; then
-              printf "Belemetry__OtlpEndpoint='%s'\n" "$origin" >> "$deploy_dir/$file"
+              setting "$file" Belemetry__OtlpEndpoint "$origin" "this deployment"
             fi
-
-            while IFS= read -r line; do
-              line="${line%$'\r'}"
-              if [[ -z "$line" || "$line" == "#"* ]]; then
-                continue
-              fi
-              if [[ "$line" != *=* || "${line#*=}" == *"'"* ]]; then
-                echo "::error::$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
-                exit 1
-              fi
-              printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
-            done <<< "${!settings:-}"
           done < <(grep -E '^ +- "?[a-z0-9-]+\.env"?$' compose/docker-compose.yaml | grep -oE '[a-z0-9-]+\.env' | sort -u)
+          #if (api != "Standalone")
+          # The api runs inside serverweb, so its settings go there, whether their secret starts with SERVERWEB__ or SERVERAPI__.
+          settings_file[SERVERAPI]="${settings_file[SERVERWEB]}"
+          #endif
+          #if (cloudflare == true)
+
+          # The api purges Cloudflare's cache by tag with the token and zone this deployment purges it with, rather than a
+          # second copy of them.
+          if [[ -n "$CLOUDFLARE_TOKEN" && -n "$CLOUDFLARE_ZONE" ]]; then
+            setting "${settings_file[SERVERAPI]}" Cloudflare__ApiToken "$CLOUDFLARE_TOKEN" CLOUDFLARE_TOKEN
+            setting "${settings_file[SERVERAPI]}" Cloudflare__ZoneIds__0 "$CLOUDFLARE_ZONE" CLOUDFLARE_ZONE
+          fi
+          #endif
+
+          # Every other setting is a variable or a secret of its own, named <SERVICE>__<Section>__<Key>:
+          # SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN is the api's Sms:Providers:Twilio:AuthToken. A secret for a key, a
+          # variable for what isn't secret, such as a model name or a flag: GitHub blanks a secret's value out of every log, so
+          # a secret holding `true` would hide every "true" there. GitHub keeps their names in upper case, which .NET's
+          # configuration doesn't mind, and changing one setting changes it alone. jq reads them out of toJSON(vars) and
+          # toJSON(secrets).
+          if ! command -v jq > /dev/null; then
+            echo "::error::Install jq on this server (sudo apt-get install -y jq). The deployment reads the apps' settings out of the environment's variables and secrets with it."
+            exit 1
+          fi
+          while IFS=$'\t' read -r kind name value; do
+            prefix="${name%%__*}"
+            file=""
+            if [[ -n "$prefix" && -n "${name#*__}" ]]; then
+              file="${settings_file[${prefix^^}]:-}"
+            fi
+            if [[ -z "$file" ]]; then
+              echo "::error::The $kind $name isn't <SERVICE>__<Section>__<Key> with a SERVICE of this deployment: ${!settings_file[*]}."
+              exit 1
+            fi
+            setting "$file" "${name#*__}" "$(printf '%s' "$value" | base64 -d)" "the $kind $name"
+          done < <(
+            jq -r 'to_entries[] | select(.key | contains("__")) | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
+            jq -r 'to_entries[] | select(.key | contains("__")) | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
+          )
           #if (cloudflare != true)
 
           # Anyone can post to the landing page's /v1/ paths, so each request's body is capped. A rate limit needs a Caddy
