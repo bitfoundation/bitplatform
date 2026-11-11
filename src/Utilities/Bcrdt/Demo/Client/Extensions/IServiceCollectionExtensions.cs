@@ -24,9 +24,12 @@ public static class IServiceCollectionExtensions
         // Its store is the browser's IndexedDB, so a live document - and what was typed into it offline - survives a
         // reload or a closed tab. Like the transport, it is touched only once a document is opened, and the live
         // page opens its document only when it runs in the browser.
+        // Cross-tab sync lets the live page's tabs of one browser follow each other, offline too; a no-op on the server.
         services.AddScoped<LiveRelay>();
         services.AddScoped<IBcrdtTransportFactory>(sp => sp.GetRequiredService<LiveRelay>());
-        services.AddBitBcrdtServices(collaboration => collaboration.UseIndexedDbStore("bit-bcrdt-demo"));
+        services.AddBitBcrdtServices(collaboration => collaboration
+            .UseIndexedDbStore("bit-bcrdt-demo")
+            .UseCrossTabSync("bit-bcrdt-demo"));
 
         // One workspace for the whole session. It owns each demo replica's private document store, so
         // navigating away from a page and back finds the document where it was left rather than empty.

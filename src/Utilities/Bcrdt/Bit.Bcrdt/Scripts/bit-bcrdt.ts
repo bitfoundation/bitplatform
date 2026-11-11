@@ -1,8 +1,8 @@
-﻿// Text control bridge for the collaborative input components, and the browser store.
+﻿// Text control bridge for the collaborative input components, the browser store and the channel between tabs.
 //
 // The CRDT engine, the synchronization protocol, the presence system and every data structure are pure C# and never
-// call into here. This module exists for the two things .NET cannot reach in a browser: a text control's caret and
-// value - read, and updated without overwriting what the user typed a moment ago - and IndexedDB.
+// call into here. This module exists for the three things .NET cannot reach in a browser: a text control's caret and
+// value - read, and updated without overwriting what the user typed a moment ago - IndexedDB, and a BroadcastChannel.
 //
 // Positions are UTF-16 code units throughout, which is what both the browser's selection API and .NET strings use.
 
@@ -464,6 +464,48 @@ export async function idbList(name: string): Promise<string[]> {
         request.onerror = () => reject(request.error);
     });
     return ids;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Cross-tab channel
+//
+// A BroadcastChannel per document, which reaches every other tab of the same origin that has the document open - while
+// the browser is offline too. The channel knows nothing about what the bytes mean: each is one protocol message, posted
+// as a Uint8Array and handed to .NET the same way.
+// ---------------------------------------------------------------------------------------------------------------------
+
+interface ChannelHandle {
+    post(data: Uint8Array): void;
+    close(): void;
+}
+
+// Joins a channel and reports what other tabs post on it to `receiver`'s OnChannelMessage. Never hears the tab's own
+// posts - a BroadcastChannel delivers to every other object of the same name - and nothing at all once closed.
+export function openChannel(name: string, receiver: DotNetReference): ChannelHandle {
+    const channel = new BroadcastChannel(name);
+    let open = true;
+
+    channel.onmessage = (event: MessageEvent) => {
+        // Anything else on the channel - a message from some other script that picked the same name - is not ours.
+        if (!open || !(event.data instanceof Uint8Array)) return;
+        try {
+            const pending = receiver.invokeMethodAsync('OnChannelMessage', event.data);
+            if (pending && typeof pending.catch === 'function') pending.catch(() => { });
+        } catch {
+            // The .NET side has gone away; there is nobody left to tell.
+        }
+    };
+
+    return {
+        post: (data: Uint8Array) => {
+            if (open) channel.postMessage(data);
+        },
+        close: () => {
+            open = false;
+            channel.onmessage = null;
+            channel.close();
+        },
+    };
 }
 
 // Stops reporting a control's input. Safe to call for a control that was never attached.

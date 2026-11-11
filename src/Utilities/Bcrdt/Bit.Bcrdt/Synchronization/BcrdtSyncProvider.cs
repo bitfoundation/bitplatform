@@ -73,6 +73,41 @@ public sealed class BcrdtSyncProviderOptions
     /// Defaults to <see cref="BcrdtSyncProtocol.DefaultMaxMessageSize"/>.
     /// </remarks>
     public int MaxMessageSize { get; init; } = BcrdtSyncProtocol.DefaultMaxMessageSize;
+
+    private Func<BcrdtUpdateEventArgs, bool>? _shouldForward;
+
+    /// <summary>
+    /// Which of the document's changes the provider sends on to its peers. <see langword="null"/> - the default -
+    /// sends every change but the ones this provider received itself, which are never sent back whatever this says.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Worth setting when one document has two providers, each over its own transport to its own peers - a
+    /// server, and the other tabs of the same browser. A change one of them received is a change the other's peers
+    /// may well have received too: the other tabs are in the server's room as well. Sent on, every tab would hand
+    /// the server back each change another tab made, multiplying its traffic by the number of tabs. Excluding the
+    /// other provider (<c>args =&gt; args.Origin != otherProvider</c>) leaves each provider sending this replica's
+    /// own changes; what it misses meanwhile, the next handshake on either side brings. The collaboration service
+    /// does exactly that when cross-tab sync is on: see <see cref="BcrdtCollaborationBuilder.UseCrossTabSync"/>.
+    /// </para>
+    /// <para>
+    /// It runs on the document's thread for every change, so keep it cheap; it never affects the handshake, which
+    /// always reconciles everything.
+    /// </para>
+    /// </remarks>
+    public Func<BcrdtUpdateEventArgs, bool>? ShouldForward { get => _shouldForward; init => _shouldForward = value; }
+
+    /// <summary>A copy of these settings that also leaves out the changes <paramref name="filter"/> refuses.</summary>
+    /// <remarks>
+    /// A member-wise copy, so a setting added later is carried over without being listed here.
+    /// </remarks>
+    internal BcrdtSyncProviderOptions AndForwardOnly(Func<BcrdtUpdateEventArgs, bool> filter)
+    {
+        var copy = (BcrdtSyncProviderOptions)MemberwiseClone();
+        Func<BcrdtUpdateEventArgs, bool>? own = _shouldForward;
+        copy._shouldForward = own is null ? filter : args => own(args) && filter(args);
+        return copy;
+    }
 }
 
 /// <summary>
@@ -148,6 +183,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private bool _repairResyncPending;
     private long _handshakeStarted;
     private long _lastSynced;
+    private Activity? _handshakeSpan;
     private BcrdtStateVector? _awaitedVector;
     private List<(BcrdtStateVector Vector, ulong Digest)>? _deferredAnswers;
     private IReadOnlyDictionary<string, object?>? _stashedPresence;
@@ -178,6 +214,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         _context = SynchronizationContext.Current;
 
         _doc.Updated += OnDocumentUpdated;
+        _doc.PendingUpdatesDiscarded += OnPendingUpdatesDiscarded;
         _transport.MessageReceived += OnMessageReceived;
         _transport.StateChanged += OnTransportStateChanged;
 
@@ -357,6 +394,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
             _stopRequested = true;
             CancelPendingConnects();
             _handshakeGeneration++;
+            EndHandshakeSpan("disconnected");
             SayGoodbye();
         }, cancellationToken).ConfigureAwait(false);
 
@@ -395,6 +433,9 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     {
         // Never echo a peer's own update back to it.
         if (ReferenceEquals(args.Origin, this)) return;
+
+        // Left to another provider of the same document, by the application's choice.
+        if (_options.ShouldForward is { } shouldForward && !shouldForward(args)) return;
 
         if (IsReadOnly)
         {
@@ -461,6 +502,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
                 // that handshake's progress or its timeout.
                 if (_transport.State == BcrdtTransportState.Connected) break;
 
+                EndHandshakeSpan("disconnected", change.Error);
                 _handshakeGeneration++;
                 _awaitedVector = null;
                 _deferredAnswers = null;
@@ -482,6 +524,8 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private void BeginHandshake()
     {
         int generation = ++_handshakeGeneration;
+        EndHandshakeSpan("restarted");
+        _handshakeSpan = BcrdtDiagnostics.StartDetached(BcrdtDiagnostics.HandshakeSpan);
         _handshakeStarted = Stopwatch.GetTimestamp();
         _handshakeRetries = 0;
         _handshakeAnswered = false;
@@ -561,6 +605,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         if (!_handshakeAnswered)
         {
             // Nobody answered: there is no peer to be behind, so this replica's state is the shared one.
+            EndHandshakeSpan("timeout");
             SetStatus(BcrdtConnectionStatus.Synced);
             return;
         }
@@ -632,14 +677,22 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     {
         List<byte[]> replies = [];
         BcrdtSyncExchangeResult result = default;
+        Activity? span = BcrdtDiagnostics.StartUpdateApply(message, _handshakeSpan);
         try
         {
             result = BcrdtSyncExchange.Handle(_doc, message, this, replies, _options.MaxMessageSize, deferDeletionAnswer: true);
             if (result.DeferredDigest != 0) HoldBackAnswer(result.PeerStateVector!, result.DeferredDigest);
             else if (result.AppliedDelta) AnswerDeferred(replies);
         }
+        catch (Exception ex)
+        {
+            BcrdtDiagnostics.Fail(span, ex);
+            throw;
+        }
         finally
         {
+            BcrdtDiagnostics.Stop(span);
+
             // A reader answers nobody. Its content would be dropped by the relay, and its statement of what
             // it holds would promise others content they will never receive - a local edit it made, or one
             // it made offline before it learned it was read-only - so they would wait for it for ever. It
@@ -804,6 +857,7 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         _stopRequested = true;
         CancelPendingConnects();
         _handshakeGeneration++;
+        EndHandshakeSpan("refused");
         _awaitedVector = null;
         SetStatus(BcrdtConnectionStatus.Faulted);
         Defer(() => AuthorizationDenied?.Invoke(reason));
@@ -868,20 +922,30 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
     private async Task ReconnectAsync(CancellationTokenSource attempt, int number)
     {
         Exception? failure = null;
+        Activity? span = null;
         try
         {
             await Task.Delay(_options.Reconnect.NextDelay(number), attempt.Token).ConfigureAwait(false);
+            span = BcrdtDiagnostics.StartReconnect(number);
             await _transport.ConnectAsync(attempt.Token).ConfigureAwait(false);
+            BcrdtDiagnostics.SetOutcome(span, "connected");
         }
         catch (OperationCanceledException) when (attempt.IsCancellationRequested)
         {
             // Disposed, or the application disconnected while this attempt was pending.
+            BcrdtDiagnostics.SetOutcome(span, "cancelled");
         }
         catch (Exception ex)
         {
             // Including an OperationCanceledException the transport raised for reasons of its own -
             // a handshake or negotiation timeout - which is a failed attempt, not a shutdown.
             failure = ex;
+            BcrdtDiagnostics.SetOutcome(span, "failed");
+            BcrdtDiagnostics.Fail(span, ex);
+        }
+        finally
+        {
+            span?.Stop();
         }
 
         try
@@ -1065,6 +1129,10 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
         if (CurrentStatus == value) return;
         Volatile.Write(ref _status, (int)value);
 
+        // Whatever moves the connection on from handshaking ends the handshake's span, if nothing more
+        // specific ended it first.
+        if (value != BcrdtConnectionStatus.Handshaking) EndHandshakeSpan(BcrdtDiagnostics.HandshakeOutcome(value));
+
         // A connection that got as far as a completed handshake was a success; the next drop starts
         // the backoff afresh.
         if (value == BcrdtConnectionStatus.Synced)
@@ -1085,6 +1153,10 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
             if (value == BcrdtConnectionStatus.Synced) Synced?.Invoke();
         });
     }
+
+    /// <summary>Ends the span of the handshake under way, if there is one; it ends once, whichever path gets there first.</summary>
+    private void EndHandshakeSpan(string outcome, Exception? error = null) =>
+        BcrdtDiagnostics.EndHandshake(ref _handshakeSpan, outcome, _handshakeRetries, error);
 
     private void Send(byte[] message)
     {
@@ -1120,6 +1192,13 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
             Post(ScheduleRepair);
         }
     }
+
+    /// <summary>
+    /// The document dropped changes that waited for something they build on, because they outgrew its
+    /// bound. Nothing asks for them again by itself - the deletions among them in particular never show in
+    /// a state vector - so a handshake does.
+    /// </summary>
+    private void OnPendingUpdatesDiscarded(BcrdtDocument _) => Post(ScheduleRepair);
 
     /// <summary>Re-runs the handshake soon, once, however many sends failed meanwhile.</summary>
     private void ScheduleRepair()
@@ -1342,7 +1421,11 @@ public sealed class BcrdtSyncProvider : IAsyncDisposable
 
         _disposed = true;
 
+        // Also when the context never ran the goodbye: a handshake under way ends with the provider.
+        lock (_gate) EndHandshakeSpan("disposed");
+
         _doc.Updated -= OnDocumentUpdated;
+        _doc.PendingUpdatesDiscarded -= OnPendingUpdatesDiscarded;
         _transport.MessageReceived -= OnMessageReceived;
         _transport.StateChanged -= OnTransportStateChanged;
         if (_awareness is not null) _awareness.Updated -= OnAwarenessUpdated;

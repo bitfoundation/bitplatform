@@ -100,6 +100,39 @@ public sealed class LazyLoadingTests : BcrdtTest
         AssertNoProblems();
     }
 
+    [TestMethod]
+    public async Task Two_tabs_of_one_browser_share_the_notes_directly()
+    {
+        var room = "e2e-" + Guid.NewGuid().ToString("N")[..12];
+        var browser = await NewContextAsync();
+
+        var first = await NewPageAsync(browser);
+        _problems.Add(TrackProblems(first, BaseUrl));
+        await GotoAsync(first, $"/notes/{room}");
+        await WaitForInteractiveAsync(first);
+        await WaitForSyncedAsync(first);
+
+        // The second tab's socket to the relay is answered by nobody, so it sits alone in a room of its own: whatever
+        // reaches it comes from the first tab, over the BroadcastChannel the layout's UseCrossTabSync() opened - in the
+        // trimmed, lazy loaded library.
+        var second = await NewPageAsync(browser);
+        _problems.Add(TrackProblems(second, BaseUrl));
+        await second.RouteWebSocketAsync(new System.Text.RegularExpressions.Regex("/ws/bcrdt/"), _ => { });
+        await GotoAsync(second, $"/notes/{room}");
+        await WaitForInteractiveAsync(second);
+        await WaitForSyncedAsync(second);
+
+        await TypeAtEndAsync(Editor(first), Written);
+        await Expect(Editor(second)).ToHaveValueAsync(Written);
+
+        await TypeAtEndAsync(Editor(second), Answered);
+        await Expect(Editor(first)).ToHaveValueAsync(Written + Answered);
+
+        // Presence crosses only the network, and the second tab has none.
+        await Expect(Presence(first)).Not.ToContainTextAsync(await NameAsync(second));
+        AssertNoProblems();
+    }
+
     /// <summary>
     /// Two people on the same notes, each in a browser of their own: each lists the other, and what either types reaches
     /// the other - through the trimmed library's WebSocket transport, which the layout configured without a

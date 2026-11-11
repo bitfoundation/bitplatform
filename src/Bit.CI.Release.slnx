@@ -288,6 +288,12 @@
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.BlazeDb/Bit.Bcrdt.BlazeDb.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Butil/Bit.Bcrdt.Butil.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Bink/Bit.Bcrdt.Bink.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Blow/Bit.Bcrdt.Blow.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Borm/Bit.Bcrdt.Borm.csproj" />
+    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Blex/Bit.Bcrdt.Blex.csproj" />
     <Project Path="Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bcrdt/Samples/" />

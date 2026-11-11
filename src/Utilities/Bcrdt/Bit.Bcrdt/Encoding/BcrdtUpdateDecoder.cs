@@ -35,12 +35,28 @@ public static class BcrdtUpdateDecoder
     {
         ArgumentNullException.ThrowIfNull(doc);
 
+        // Raised by the outermost call alone, once the update - and any waiting changes it released - is
+        // applied, so a subscriber never sees the document halfway through.
+        bool discarded = false;
+        try
+        {
+            ApplyUpdateCore(doc, update, origin, ref discarded);
+        }
+        finally
+        {
+            if (discarded) doc.OnPendingDiscarded();
+        }
+    }
+
+    private static void ApplyUpdateCore(BcrdtDocument doc, ReadOnlyMemory<byte> update, object? origin, ref bool discarded)
+    {
         var reader = new BcrdtBufferReader(update);
         Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
         BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
         BcrdtUpdateCodec.RefuseFarClocks(groups, doc.Store);
 
         Exception? integrationFailure = null;
+        bool discardedPending = false;
 
         doc.Transact(transaction =>
         {
@@ -85,9 +101,16 @@ public static class BcrdtUpdateDecoder
                 byte[] pending = store.PendingUpdate!;
                 store.PendingUpdate = null;
                 store.PendingMissing = null;
-                ApplyUpdate(doc, pending, origin);
+                ApplyUpdateCore(doc, pending, origin, ref discardedPending);
             }
+
+            // What still waits is bounded, or a peer could grow this replica's memory at will by
+            // sending changes that build on nothing it will ever receive. Nothing in it was applied,
+            // so dropping it loses nothing a handshake cannot bring back.
+            if (doc.TrimPending()) discardedPending = true;
         }, origin, local: false);
+
+        discarded |= discardedPending;
 
         if (integrationFailure is not null)
         {

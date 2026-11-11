@@ -13,10 +13,10 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// what each replica held before, what they all hold after, and the size of every update on the way.
 /// <para>
 /// Nothing here models the CRDT. The documents, the updates and the merge are Bit.Bcrdt's own, so the outcome
-/// reported is the outcome an application gets - including the cases people do not expect: a nested text two
-/// replicas both created while apart (one of the two wins, and what was typed into the other is gone), an add
-/// to a set that already held the element (a no-op, so a concurrent remove takes it out), two moves of one
-/// element (two copies).
+/// reported is the outcome an application gets - including the cases people do not expect: a nested text or
+/// counter two replicas both created while apart (one of the two wins, and what was written into the other is
+/// gone), an add to a set that already held the element (a no-op, so a concurrent remove takes it out), two
+/// moves of one element (two copies).
 /// </para>
 /// </summary>
 public static class BcrdtMergeLab
@@ -37,7 +37,7 @@ public static class BcrdtMergeLab
     /// <summary>The client id the shared starting state is written under, apart from every replica's.</summary>
     private const ulong BaseClientId = 1000;
 
-    public static readonly string[] Kinds = ["text", "map", "array", "set"];
+    public static readonly string[] Kinds = ["text", "map", "array", "set", "counter"];
 
     /// <summary>What runs when no operations are passed: one contested map key and one contested text.</summary>
     public const string SampleOperations = """
@@ -54,7 +54,8 @@ public static class BcrdtMergeLab
         "text <name> insert <index> \"text\" [{attributes}] | delete <index> <length> | format <index> <length> {attributes}; " +
         "map <name> set <key> <value> | delete <key>; " +
         "array <name> insert <index> <value>... | push <value>... | delete <index> [<length>] | move <from> <to>; " +
-        "set <name> add <value> | remove <value>. " +
+        "set <name> add <value> | remove <value>; " +
+        "counter <name> add <amount> | increment | decrement. " +
         "Replicas are any labels (A, B, ...), two to four of them; 'base:' lines build the state every replica starts from. " +
         "A name 'root/key' is the type nested at that key of the root map 'root', created there if it is not one yet. " +
         "A JSON object { \"base\": [...], \"A\": [...], \"B\": [...] } of operation lists works too.";
@@ -208,7 +209,7 @@ public static class BcrdtMergeLab
                 }
             }
 
-            var decisions = Decide(replicas, before, merged);
+            var decisions = Decide(replicas, baseState, before, merged);
 
             return new BcrdtMergeReportDto
             {
@@ -263,6 +264,7 @@ public static class BcrdtMergeLab
                 "text" => (BcrdtAbstractType)document.GetText(name),
                 "array" => document.GetArray(name),
                 "set" => document.GetSet(name),
+                "counter" => document.GetCounter(name),
                 _ => document.GetMap(name)
             };
         }
@@ -314,7 +316,8 @@ public static class BcrdtMergeLab
                 {
                     document.Transact(_ => Apply(document, operation));
                 }
-                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException or InvalidCastException)
+                // OverflowException: a counter refuses a change that would overflow this replica's share.
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException or InvalidCastException or OverflowException)
                 {
                     var who = label == BaseLabel ? "while building the starting state" : $"on replica {label}";
                     var hint = ex is ArgumentOutOfRangeException
@@ -340,6 +343,7 @@ public static class BcrdtMergeLab
         "text" => value is BcrdtText,
         "array" => value is BcrdtArray,
         "set" => value is BcrdtSet,
+        "counter" => value is BcrdtCounter,
         _ => value is BcrdtMap
     };
 
@@ -382,6 +386,15 @@ public static class BcrdtMergeLab
             case ("set", "remove"):
                 Set(document, op).Remove(a[0]);
                 break;
+            case ("counter", "add"):
+                Counter(document, op).Add((long)a[0]!);
+                break;
+            case ("counter", "increment"):
+                Counter(document, op).Increment();
+                break;
+            case ("counter", "decrement"):
+                Counter(document, op).Decrement();
+                break;
         }
     }
 
@@ -393,14 +406,24 @@ public static class BcrdtMergeLab
 
     private static BcrdtSet Set(BcrdtDocument document, Operation op) => op.Key is null ? document.GetSet(op.Root) : document.GetMap(op.Root).EnsureSet(op.Key);
 
+    private static BcrdtCounter Counter(BcrdtDocument document, Operation op) => op.Key is null ? document.GetCounter(op.Root) : document.GetMap(op.Root).EnsureCounter(op.Key);
+
+    /// <summary>How much a counter operation changes the counter by.</summary>
+    private static long Amount(Operation op) => op.Action switch
+    {
+        "add" => (long)op.Arguments[0]!,
+        "increment" => 1,
+        _ => -1
+    };
+
     // ---- What the merge decided -------------------------------------------------------------------------
 
     /// <summary>
-    /// A decision for everything more than one replica changed: each map key, each text, array and set. A map key
+    /// A decision for everything more than one replica changed: each map key, each text, array, set and counter. A map key
     /// is also contested when a replica created a nested type at it - an operation on 'root/key' while the key held
     /// no such type - because that creation is a write to the key like any other.
     /// </summary>
-    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, Dictionary<string, JsonNode?> before, JsonNode? merged)
+    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, JsonNode? start, Dictionary<string, JsonNode?> before, JsonNode? merged)
     {
         var decisions = new List<BcrdtMergeDecisionDto>();
         var steps = replicas.SelectMany(replica => replica.Steps).ToArray();
@@ -433,6 +456,7 @@ public static class BcrdtMergeLab
             {
                 "text" => DecideText(group.Key.Path, editors, [.. group], merged),
                 "array" => DecideArray(group.Key.Path, editors, [.. group], before, merged),
+                "counter" => DecideCounter(group.Key.Path, editors, [.. group], start, merged),
                 _ => DecideSet(group.Key.Path, editors, [.. group], merged)
             });
         }
@@ -480,6 +504,13 @@ public static class BcrdtMergeLab
         detail.Append(created.Length > 0
             ? $" A nested {created[0].Operation.Kind} created while apart is a value of '{key}' like any other, so everything written into a losing one went with it. Create the nested type once, before people edit it - a 'base:' line here - and concurrent edits inside it merge."
             : " If both edits must survive, make the value a nested BcrdtText (or map) created once before people edit it, or give each writer a key of its own.");
+
+        // A whole number several people write is usually a count read, changed and written back - the write that
+        // loses all but one of the concurrent changes a counter would have summed.
+        if (created.Length == 0 && writes.All(step => step.Operation is { Kind: "map", Action: "set" } op && op.Arguments[1] is long))
+        {
+            detail.Append(" If the number is a count people change - votes, likes, a quantity - make it a BcrdtCounter ('counter <name> add <amount>' here): every concurrent change to one is summed.");
+        }
 
         return new BcrdtMergeDecisionDto
         {
@@ -583,6 +614,54 @@ public static class BcrdtMergeLab
         };
     }
 
+    /// <summary>
+    /// A counter more than one replica changed. Every change is summed - each replica's changes live under a key of its
+    /// own - so the total is the starting value plus every replica's contribution, unless the changes went into a nested
+    /// counter that lost a race for its map key, which the total then shows by falling short.
+    /// </summary>
+    private static BcrdtMergeDecisionDto DecideCounter(string path, string[] editors, Step[] steps, JsonNode? start, JsonNode? merged)
+    {
+        string[] segments = path.Split('/');
+
+        var initial = Number(start, segments) ?? 0;
+        var total = Number(merged, segments);
+        TryGet(merged, segments, out var value);
+
+        var contributions = editors.ToDictionary(label => label, label => steps.Where(step => step.Operation.Label == label).Aggregate(0L, (sum, step) => unchecked(sum + Amount(step.Operation))), StringComparer.Ordinal);
+        var expected = unchecked(initial + contributions.Values.Aggregate(0L, (sum, amount) => unchecked(sum + amount)));
+
+        var described = editors.Select(label => $"{label} {string.Join(", ", steps.Where(step => step.Operation.Label == label).Select(step => Describe(step, null, null)))}").ToArray();
+        var shares = Join(editors.Select(label => $"{label} {Signed(contributions[label])}"));
+        var detail = new StringBuilder($"{Join(described)} while apart.");
+
+        if (total == expected)
+        {
+            detail.Append($" Every change is summed: the counter started at {initial}, {shares}, and every replica now holds {total}. ");
+            detail.Append("Each replica's changes accumulate under a key of its own - its client id - so no change overwrites another; a number in a map key written back as count + 1 would have kept one replica's write and lost the others'.");
+        }
+        else
+        {
+            var creators = steps.Where(step => step.Created).Select(step => step.Operation.Label).Distinct(StringComparer.Ordinal).ToArray();
+
+            detail.Append($" Their changes - {shares} on a counter that started at {initial} - add up to {expected}, but every replica holds {Render(value)}: ");
+            detail.Append(creators.Length > 1
+                ? $"{Join(creators)} each created the counter while apart, one of those won its map key, and what was added into the others is gone (see that decision). Create a nested counter once, before people change it - a 'base:' line here - and every change is summed."
+                : "the map key that held the counter was written over concurrently, and the changes made inside the counter went with it. Change a nested counter through the counter, never by writing its key.");
+        }
+
+        return new BcrdtMergeDecisionDto
+        {
+            Target = $"counter '{path}'",
+            Replicas = editors,
+            Outcome = total == expected ? "every change is summed" : "a change is lost with its map key",
+            Detail = detail.ToString()
+        };
+
+        static long? Number(JsonNode? node, string[] segments) => TryGet(node, segments, out var value) && value is JsonValue number && number.TryGetValue<long>(out var result) ? result : null;
+
+        static string Signed(long amount) => amount < 0 ? $"{amount}" : $"+{amount}";
+    }
+
     private static BcrdtMergeDecisionDto DecideSet(string path, string[] editors, Step[] steps, JsonNode? merged)
     {
         TryGet(merged, path.Split('/'), out var value);
@@ -658,6 +737,9 @@ public static class BcrdtMergeLab
             ("array", "delete") => $"deleted {(a.Count > 1 ? a[1] : 1)} at {a[0]}",
             ("array", _) => $"moved {a[0]} to {a[1]}",
             ("set", "add") => $"added {Render(ToNode(a[0]))}",
+            ("counter", "add") => (long)a[0]! < 0 ? $"subtracted {((long)a[0]!).ToString(CultureInfo.InvariantCulture)[1..]}" : $"added {a[0]}",
+            ("counter", "increment") => "incremented it",
+            ("counter", _) => "decremented it",
             _ => $"removed {Render(ToNode(a[0]))}"
         };
     }
@@ -686,10 +768,11 @@ public static class BcrdtMergeLab
         if (kinds.Contains("text")) notes.Add("BcrdtText: every concurrent insertion survives, each author's run contiguous. Write an input's new value with BcrdtTextSynchronizer.Apply (BcrdtTextArea does), never by replacing the whole text, or every concurrent edit is lost.");
         if (kinds.Contains("array")) notes.Add("BcrdtArray: concurrent insertions all survive. Replace and Move are a delete plus an insert, so a concurrent edit to that element is lost and two concurrent moves of one element leave two copies - mutate a nested type in place when that matters.");
         if (kinds.Contains("set")) notes.Add("BcrdtSet: an add wins over a concurrent remove of an entry the adder had not seen. Adding an element already present is a no-op, so it does not save that element from a concurrent remove.");
+        if (kinds.Contains("counter")) notes.Add("BcrdtCounter: every concurrent increment and decrement is summed - each replica's changes live under a key of its own, its client id, so none overwrites another, where a number in a BcrdtMap written back as count + 1 keeps one of two concurrent writes. A nested counter, like a nested text, is created once, before people change it.");
 
         if (decisions.Length == 0)
         {
-            notes.Add("No key, text, array or set was changed by more than one replica, so nothing was contested: the merge simply combines the edits.");
+            notes.Add("No key, text, array, set or counter was changed by more than one replica, so nothing was contested: the merge simply combines the edits.");
         }
 
         notes.Add("deltaBytes is what each replica sends a peer holding only the starting state - its whole session as one delta, however many updates it made; mergedBytes is the whole document encoded, what a new peer is sent. Decode any update with InspectBcrdtUpdate.");
@@ -873,6 +956,10 @@ public static class BcrdtMergeLab
             ? value
             : throw Error($"'{token}' is not a whole number.");
 
+        long Long(string token) => long.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : throw Error($"'{token}' is not a whole number a counter can add - one from {long.MinValue} to {long.MaxValue}.");
+
         string Quoted(string token) => Value(token) is string value ? value : throw Error($"{token} is not a JSON string - write text in double quotes, e.g. \"Hello\".");
 
         IReadOnlyDictionary<string, object?> Attributes(string token) => Value(token) as Dictionary<string, object?>
@@ -908,6 +995,8 @@ public static class BcrdtMergeLab
             ("array", "move") => Args(t => Int(t), t => Int(t)),
             ("set", "add") => Args(Value),
             ("set", "remove") => Args(Value),
+            ("counter", "add") => Args(t => Long(t)),
+            ("counter", "increment" or "decrement") => Args(),
             _ => throw Error($"'{tokens[2]}' is not something a {kind} does; a {kind} can {Actions(kind)}.")
         };
 
@@ -919,6 +1008,7 @@ public static class BcrdtMergeLab
         "text" => "insert, delete or format",
         "map" => "set or delete",
         "array" => "insert, push, delete or move",
+        "counter" => "add, increment or decrement",
         _ => "add or remove"
     };
 

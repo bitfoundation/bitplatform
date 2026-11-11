@@ -337,6 +337,161 @@ public class AccessAndHostingTests
     }
 
     [TestMethod]
+    public async Task Revoking_a_connection_ends_its_access_at_once_and_leaves_the_others_alone()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        await using LoopbackHost host = await HostedWebSocketAsync(documentHost);
+
+        using var keptDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        using var revokedDoc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        await using var keptTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
+        await using var revokedTransport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/shared"));
+        await using BcrdtSyncProvider kept = await ProviderAsync(keptDoc, keptTransport);
+        await using BcrdtSyncProvider revoked = await ProviderAsync(revokedDoc, revokedTransport);
+        int denied = 0;
+        revoked.AuthorizationDenied += _ => Interlocked.Increment(ref denied);
+
+        await kept.ConnectAsync();
+        await AssertEventuallyAsync(() => kept.IsSynced, "the first client connected");
+
+        await revoked.ConnectAsync();
+        await AssertEventuallyAsync(() => revoked.IsSynced, "the second client connected");
+
+        keptDoc.GetText("body").Insert(0, "shared ");
+        await AssertEventuallyAsync(() => revokedDoc.GetText("body").ToString() == "shared ", "both edit together until revoked");
+
+        IBcrdtHostConnection? first = null;
+        Assert.AreEqual(1, await documentHost.RevokeAsync("shared", connection =>
+        {
+            // The connections are offered in the order they joined: keep the first, revoke the second.
+            if (first is null)
+            {
+                first = connection;
+                return false;
+            }
+            return true;
+        }));
+
+        await AssertEventuallyAsync(() => denied == 1, "the revoked client must be told");
+        Assert.AreEqual(BcrdtConnectionStatus.Faulted, revoked.Status);
+
+        revokedDoc.GetText("body").Insert(0, "too late ");
+        keptDoc.GetText("body").Insert(7, "still");
+        await AssertEventuallyAsync(
+            async () => await documentHost.ReadAsync("shared", doc => doc.GetText("body").ToString()) == "shared still",
+            "the remaining client goes on editing");
+        await Task.Delay(QuietPeriod);
+        Assert.AreEqual("shared still", keptDoc.GetText("body").ToString(), "nothing the revoked client wrote reaches anyone");
+        Assert.AreEqual("too late shared ", revokedDoc.GetText("body").ToString(), "and nothing more reaches it");
+    }
+
+    [TestMethod]
+    public async Task A_client_that_said_goodbye_takes_its_presence_back_on_a_new_connection_at_once()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        var before = new RefusableConnection("before");
+        var after = new RefusableConnection("after");
+        using BcrdtHostSession first = await documentHost.JoinAsync("doc", before);
+        using BcrdtHostSession second = await documentHost.JoinAsync("doc", after);
+
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? published = null;
+        presence.Updated += update => published = update;
+
+        presence.SetLocalField("name", "Ada");
+        Assert.IsTrue(await first.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+
+        // Anonymous, and the old connection was active a moment ago: without the goodbye this is a forgery.
+        presence.SetLocalField("name", "Ada elsewhere");
+        Assert.IsFalse(await second.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+
+        // A deliberate disconnection withdraws the entry first, and the client comes back on a new connection
+        // before the server has noticed the old one close.
+        presence.SetLocalState(null);
+        Assert.IsTrue(await first.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+        presence.SetLocalField("name", "Ada again");
+        Assert.IsTrue(
+            await second.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)),
+            "an identity its owner gave up is free to take back at a later clock");
+
+        // Taken back, it belongs to the new connection: the old one may no longer speak for it.
+        presence.SetLocalField("name", "stale");
+        Assert.IsFalse(await first.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+    }
+
+    [TestMethod]
+    public async Task A_revoked_connection_is_refused_sent_nothing_more_and_its_messages_are_dropped()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        var alice = new RefusableConnection("alice");
+        var bob = new RefusableConnection("bob");
+        using BcrdtHostSession aliceSession = await documentHost.JoinAsync("doc", alice);
+        using BcrdtHostSession bobSession = await documentHost.JoinAsync("doc", bob);
+        using BcrdtHostSession bobElsewhere = await documentHost.JoinAsync("other", bob);
+
+        // Bob is on everyone's participant list.
+        using var bobPresence = new BcrdtAwarenessStore(42);
+        byte[]? published = null;
+        bobPresence.Updated += update => published = update;
+        bobPresence.SetLocalField("name", "Bob");
+        Assert.IsTrue(await bobSession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+        alice.Sent.Clear();
+
+        Assert.AreEqual(0, await documentHost.RevokeAsync("missing", _ => true), "a document that is not loaded has nobody to revoke");
+        Assert.AreEqual(1, await documentHost.RevokeAsync("doc", connection => connection.UserId == "bob", "Removed from the document."));
+        Assert.AreEqual("Removed from the document.", bob.RefusedWith);
+        Assert.IsNull(alice.RefusedWith);
+        Assert.AreEqual(0, await documentHost.RevokeAsync("doc", connection => connection.UserId == "bob"), "revoking twice does nothing");
+
+        // ... and taken off it the moment access ends, not when the relay gets round to closing the connection.
+        var observed = new BcrdtAwarenessStore(99);
+        observed.ApplyUpdate(published!);
+        Assert.AreEqual("Bob", observed.GetField(42, "name"));
+        BcrdtSyncMessage departure = alice.Sent.Select(message => BcrdtSyncProtocol.Decode(message)).Single(message => message.Kind == BcrdtSyncMessageKind.AwarenessUpdate);
+        observed.ApplyUpdate(departure.Payload);
+        Assert.IsNull(observed.GetField(42, "name"), "a revoked user's presence is withdrawn at once");
+
+        using var author = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 7 });
+        author.GetText("body").Insert(0, "from bob");
+        Assert.IsFalse(await bobSession.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(author.EncodeStateAsUpdate())));
+        Assert.AreEqual("", await documentHost.ReadAsync("doc", doc => doc.GetText("body").ToString()));
+
+        bob.Sent.Clear();
+        Assert.IsFalse(await bobSession.ReceiveAsync(BcrdtSyncProtocol.EncodeSyncStep1(new BcrdtStateVector())));
+        Assert.IsEmpty(bob.Sent, "a revoked connection's handshake is not answered");
+
+        bob.Sent.Clear();
+        alice.Sent.Clear();
+        await documentHost.EditAsync("doc", doc => doc.GetText("body").Insert(0, "server"));
+        Assert.IsNotEmpty(alice.Sent);
+        Assert.IsEmpty(bob.Sent, "a revoked connection hears nothing more of the document");
+
+        // The other document is untouched until it is revoked too, across every document at once.
+        Assert.IsTrue(await bobElsewhere.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(author.EncodeStateAsUpdate())));
+        Assert.AreEqual(1, await documentHost.RevokeAsync((documentId, connection) => connection.UserId == "bob"));
+        Assert.AreEqual(BcrdtDocumentHost.DefaultRevocationReason, bob.RefusedWith);
+    }
+
+    private sealed class RefusableConnection(string userId) : IBcrdtHostConnection
+    {
+        public ConcurrentQueue<byte[]> Sent { get; } = new();
+
+        public string? RefusedWith { get; private set; }
+
+        public string Id => userId;
+
+        public BcrdtDocumentAccess Access => BcrdtDocumentAccess.ReadWrite;
+
+        public string? UserId => userId;
+
+        public string Relay => "test";
+
+        public void Send(byte[] message) => Sent.Enqueue(message);
+
+        public void Refuse(string reason) => RefusedWith = reason;
+    }
+
+    [TestMethod]
     public async Task A_change_the_host_rejects_refuses_its_sender_and_reaches_nobody()
     {
         await using var documentHost = new BcrdtDocumentHost(new BcrdtDocumentHostOptions

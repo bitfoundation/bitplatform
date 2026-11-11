@@ -1,0 +1,142 @@
+﻿@namespace Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+@using System.Globalization
+
+@if (_snapshot is null)
+{
+    @* No document yet - a scope still opening it, say. Nothing is said rather than a guess. *@
+}
+else if (ChildContent is not null)
+{
+    @ChildContent(_snapshot)
+}
+else
+{
+    <span class="@Class" data-status="@StatusName(_snapshot)"
+          style="display:inline-flex;align-items:center;flex-wrap:wrap;column-gap:.6em;row-gap:.3em">
+        @* The live region holds the words only: a button inside it would be announced with every change of its label.
+           The words carry the whole state, so the colour is never the only signal. *@
+        <span role="status" aria-live="polite" aria-atomic="true"
+              title="@(_snapshot.IsLocalOnly ? "No transport is configured: the document is kept on this device only." : null)"
+              style="display:inline-flex;align-items:center;column-gap:.4em">
+            <span aria-hidden="true" style="@DotStyle(_snapshot)"></span>
+            <span>@Describe(_snapshot, CultureInfo.CurrentCulture)</span>
+        </span>
+        @if (ShowToggle && _snapshot.HasTransport && RendererInfo.IsInteractive)
+        {
+            @* aria-disabled rather than disabled while a toggle is in flight: disabling a button drops the keyboard
+               focus that pressed it. *@
+            <button type="button" class="@ToggleClass" aria-disabled="@(_toggling ? "true" : null)" @onclick="ToggleAsync">
+                @(_snapshot.IsOffline ? "Go online" : "Go offline")
+            </button>
+        }
+    </span>
+}
+
+@code {
+    private BcrdtCollaborativeDocument? _document;
+    private BcrdtSyncProvider? _trackedSync;
+    private IDisposable? _syncSubscription;
+    private BcrdtSyncStatusSnapshot? _snapshot;
+    private bool _toggling;
+
+    /// <summary>
+    /// The document whose connection to show. Without it, the document an enclosing
+    /// <see cref="BcrdtCollaborationScope"/> cascades; without either, nothing is rendered.
+    /// </summary>
+    [Parameter]
+    public BcrdtCollaborativeDocument? Document { get; set; }
+
+    /// <summary>
+    /// Whether to offer a button that takes the document offline on purpose and brings it back. Off by default: going
+    /// offline is a choice an application offers deliberately, not one every status line should.
+    /// </summary>
+    /// <remarks>
+    /// The button reads the connection rather than remembering its last click: one the server refused, or that gave up,
+    /// offers to reconnect, and one still retrying offers to stop. It is not rendered while the page is prerendered,
+    /// when nothing would answer a click, nor for a document without a transport.
+    /// </remarks>
+    [Parameter]
+    public bool ShowToggle { get; set; }
+
+    /// <summary>CSS classes for the toggle's button - your design system's button classes, say.</summary>
+    [Parameter]
+    public string? ToggleClass { get; set; }
+
+    /// <summary>
+    /// Invoked once the toggle has connected the document (<see langword="true"/>) or disconnected it
+    /// (<see langword="false"/>).
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OnToggled { get; set; }
+
+    /// <summary>CSS classes for the default rendering.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Replaces the default rendering entirely, toggle included.
+    /// </summary>
+    /// <remarks>
+    /// The built-in markup is deliberately plain - a dot and a sentence, with no stylesheet - so that the connection
+    /// is visible in five minutes. Supply this to render the snapshot however the application wants; it is taken again
+    /// on every change of the connection, coalesced like every render of <see cref="BcrdtComponentBase"/>. A template
+    /// that offers to go offline calls the document's <c>ConnectAsync</c> and <c>DisconnectAsync</c> itself.
+    /// </remarks>
+    [Parameter]
+    public RenderFragment<BcrdtSyncStatusSnapshot>? ChildContent { get; set; }
+
+    /// <summary>The document opened by an enclosing <see cref="BcrdtCollaborationScope"/>, if any.</summary>
+    [CascadingParameter]
+    private BcrdtCollaborativeDocument? CascadedDocument { get; set; }
+
+    protected override void OnParametersSet() => Refresh();
+
+    protected override bool ShouldRender()
+    {
+        Refresh();
+        return true;
+    }
+
+    private void Refresh()
+    {
+        _document = Document ?? CascadedDocument;
+
+        // Follow the document's provider rather than the one first seen: a scope switching documents hands over a
+        // different document, and the old provider's events must stop rendering this one - and stop keeping it alive.
+        if (!ReferenceEquals(_trackedSync, _document?.Sync))
+        {
+            _syncSubscription?.Dispose();
+            _syncSubscription = null;
+            _trackedSync = _document?.Sync;
+            if (_trackedSync is not null) _syncSubscription = Track(_trackedSync);
+        }
+
+        _snapshot = _document is null ? null : BcrdtSyncStatusSnapshot.Of(_document);
+    }
+
+    private async Task ToggleAsync()
+    {
+        // A second press while the first is in flight would undo it before it took effect.
+        if (_toggling || _document is not { Sync: not null } document) return;
+
+        bool connect = BcrdtSyncStatusSnapshot.Of(document).IsOffline;
+        _toggling = true;
+        try
+        {
+            if (connect) await document.ConnectAsync();
+            else await document.DisconnectAsync();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Closed while the button was on screen: there is no connection left to change.
+            return;
+        }
+        finally
+        {
+            _toggling = false;
+        }
+
+        if (OnToggled.HasDelegate) await OnToggled.InvokeAsync(connect);
+    }
+}

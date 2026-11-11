@@ -26,6 +26,12 @@
         <ProjectReference Include="..\..\Bit.Bcrdt.SignalR\Bit.Bcrdt.SignalR.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.Server\Bit.Bcrdt.Server.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.Testing\Bit.Bcrdt.Testing.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.Borm\Bit.Bcrdt.Borm.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.Blex\Bit.Bcrdt.Blex.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.BlazeDb\Bit.Bcrdt.BlazeDb.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.Butil\Bit.Bcrdt.Butil.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.Bink\Bit.Bcrdt.Bink.csproj" />
+        <ProjectReference Include="..\..\Bit.Bcrdt.Blow\Bit.Bcrdt.Blow.csproj" />
     </ItemGroup>
 
     <!-- The demo client is a Blazor WebAssembly app and only targets net11.0, so the tests of its replica

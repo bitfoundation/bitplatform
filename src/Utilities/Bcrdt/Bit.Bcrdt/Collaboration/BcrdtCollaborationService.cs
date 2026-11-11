@@ -110,6 +110,11 @@ public interface IBcrdtCollaborationService : IAsyncDisposable
 /// renderer's. A document is not thread-safe, and this is what keeps network traffic from touching
 /// it at the same time as the UI. A failed open is not remembered: the next call tries again.
 /// </para>
+/// <para>
+/// Given a factory for connections to the other tabs of this browser, each document gets a second provider
+/// over one of them (<see cref="BcrdtCollaborativeDocument.CrossTabSync"/>), and each of the two sends on only
+/// the changes made in this tab. See <see cref="BcrdtCollaborationBuilder.UseCrossTabSync"/>.
+/// </para>
 /// </remarks>
 public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
 {
@@ -119,6 +124,7 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
     private readonly BcrdtCollaborationOptions _options;
     private readonly IBcrdtTransportFactory? _transports;
     private readonly IBcrdtDocumentStore? _store;
+    private readonly IBcrdtTransportFactory? _crossTabTransports;
     private bool _disposed;
 
     /// <summary>Creates a service.</summary>
@@ -134,10 +140,30 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
         BcrdtCollaborationOptions? options = null,
         IBcrdtTransportFactory? transports = null,
         IBcrdtDocumentStore? store = null)
+        : this(options, transports, store, crossTabTransports: null)
+    {
+    }
+
+    /// <summary>Creates a service whose documents also sync with the other tabs - or windows - of this device.</summary>
+    /// <param name="options">Application-wide settings.</param>
+    /// <param name="transports">Where connections to the server come from, or <see langword="null"/> for none.</param>
+    /// <param name="store">Where documents are kept, or <see langword="null"/> for nowhere.</param>
+    /// <param name="crossTabTransports">
+    /// Where connections to the other tabs come from - <see cref="BcrdtBroadcastChannelTransportFactory"/> in a
+    /// browser - or <see langword="null"/> for none. Each document gets a second sync provider over one of them,
+    /// <see cref="BcrdtCollaborativeDocument.CrossTabSync"/>, next to the one over <paramref name="transports"/>; see
+    /// <see cref="BcrdtCollaborationBuilder.UseCrossTabSync"/> for how the two share the work.
+    /// </param>
+    public BcrdtCollaborationService(
+        BcrdtCollaborationOptions? options,
+        IBcrdtTransportFactory? transports,
+        IBcrdtDocumentStore? store,
+        IBcrdtTransportFactory? crossTabTransports)
     {
         _options = options ?? new BcrdtCollaborationOptions();
         _transports = transports;
         _store = store;
+        _crossTabTransports = crossTabTransports;
     }
 
     /// <inheritdoc/>
@@ -270,11 +296,24 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
 
             if (options.User is not null) document.Presence.SetUser(options.User);
 
+            // With a second provider to the other tabs, each sends on only what neither received: this replica's
+            // own changes. A change the server sent reached the other tabs from the server too, and one another tab
+            // sent was sent to the server by that tab - passed on, every tab would hand the server each change again,
+            // multiplying its traffic by the number of tabs. What is not passed on that way - the server's changes to
+            // a tab that is offline, a change made in an offline tab to the server - follows with that tab's next
+            // handshake, when it reconnects. Presence crosses only the network: see
+            // BcrdtCollaborationBuilder.UseCrossTabSync.
+            BcrdtSyncProvider? network = null;
+            BcrdtSyncProvider? tabs = null;
+
             if (_transports is not null)
             {
                 IBcrdtTransport transport = _transports.Create(documentId);
                 document.Own(transport);
-                document.Sync = new BcrdtSyncProvider(crdt, transport, awareness, _options.Sync);
+                network = new BcrdtSyncProvider(crdt, transport, awareness, _crossTabTransports is null
+                    ? _options.Sync
+                    : _options.Sync.AndForwardOnly(args => tabs is null || !ReferenceEquals(args.Origin, tabs)));
+                document.Sync = network;
 
                 if (options.Connect ?? _options.ConnectOnOpen)
                 {
@@ -282,8 +321,21 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
                     // captive network - a stalled negotiate, a connect timeout - must not hold it back.
                     // The handshake reconciles whatever happens in the meantime, and the status shows
                     // how far the connection has got.
-                    _ = ConnectInBackgroundAsync(document.Sync);
+                    _ = ConnectInBackgroundAsync(network);
                 }
+            }
+
+            if (_crossTabTransports is not null)
+            {
+                IBcrdtTransport transport = _crossTabTransports.Create(documentId);
+                document.Own(transport);
+                tabs = new BcrdtSyncProvider(crdt, transport, awareness: null,
+                    _options.Sync.AndForwardOnly(args => network is null || !ReferenceEquals(args.Origin, network)));
+                document.CrossTabSync = tabs;
+
+                // Whatever Connect says: the other tabs are not the network, and an offline start is exactly when
+                // they matter. DisconnectAsync on the document leaves them connected for the same reason.
+                _ = ConnectInBackgroundAsync(tabs);
             }
 
             // Everyone who asked for the document gave up while it was being built.
