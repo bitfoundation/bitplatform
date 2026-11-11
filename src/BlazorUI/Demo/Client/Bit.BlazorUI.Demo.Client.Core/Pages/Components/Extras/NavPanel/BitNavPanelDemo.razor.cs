@@ -347,6 +347,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "NoLazyDrawer",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the content of the drawer of a small screen while it is still closed. By default the header, the search box, the nav and the footer of a drawer that has never been opened are left out until it first opens, and kept from then on, so the start of the app does not build what is not on screen. That needs the shape of the panel before its first render, which only a WebAssembly app can ask the browser synchronously; on Server, Hybrid and the first page of a lazy-scripts app the content is rendered as before, and a prerender and a static SSR page always render it. The content is also rendered at once while the app listens to the selection of the automatic NavMode (SelectedItemChanged, @bind-SelectedItem, OnSelectItem), and the moment a method that acts on the nav (SelectItem, ExpandItem, IsItemExpanded, ...) is called. Set it to true when the app reads any other navigation state before the drawer has ever been opened, such as the side effects of a template: a nav that is not rendered calls no template.",
+        },
+        new()
+        {
             Name = "NoOverlay",
             Type = "bool",
             DefaultValue = "false",

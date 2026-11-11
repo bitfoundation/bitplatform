@@ -47,6 +47,35 @@
         // fractional media-query bound and one is not always enough to stay below the edge.
         private static _rangeEpsilon = 0.02;
 
+        // The --bit-bp-* tokens each element resolves, read once per task rather than once per query: a render pass
+        // builds the queries of every media query it sets up (and the ones matchNow answers before it) in one task, and
+        // each read of the computed style there forces the style of the page to be recalculated. Emptied as the task
+        // ends, so a theme applied afterwards is read anew; a theme re-valuing the tokens later in the same task is
+        // caught by the theme observer, whose refresh runs once the cache has been emptied.
+        private static _tokenReads: Map<Element, Partial<Record<BreakpointKey, string>>> | null = null;
+
+        /**
+         * Whether a query matches right now, answered synchronously - for a component that has to decide what to
+         * render before it has rendered anything, ahead of the first report of setup. Built exactly the way setup
+         * builds it, off the body (no element of the component exists yet). Answers null whenever it cannot tell: no
+         * matchMedia, nothing to build, or a query the browser cannot parse.
+         */
+        public static matchNow(query: string | null, screenQuery: string | null, breakpoints: { [key: string]: string } | null): boolean | null {
+            try {
+                if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return null;
+
+                const resolvedQuery = query || (screenQuery ? MediaQuery.buildScreenQuery(screenQuery, null, breakpoints) : '');
+                if (!resolvedQuery) return null;
+
+                const queryList = window.matchMedia(resolvedQuery);
+                if (queryList.media === 'not all' && resolvedQuery.trim() !== 'not all') return null;
+
+                return queryList.matches;
+            } catch {
+                return null;
+            }
+        }
+
         /**
          * @param key          The listener key. The component's own unique id rather than the id of
          *                     an element, so two components sharing an explicit Id cannot collide.
@@ -194,6 +223,8 @@
         // Coalesces a burst of mutations (a theme applies dozens of properties one by one) into one
         // pass, taken once the style has settled.
         private static scheduleThemeRefresh() {
+            MediaQuery._tokenReads = null;
+
             if (MediaQuery._themeFrame) return;
 
             MediaQuery._themeFrame = requestAnimationFrame(() => {
@@ -357,21 +388,51 @@
         // there is no element - in no-wrapper mode, and when nothing is rendered at all (an
         // OnChange-only usage with no content) - rather than the root: it inherits everything the
         // root declares, and it is where BitThemeManager applies a theme unless told otherwise.
+        // Each breakpoint is resolved as the query asks for it, so the computed style is only read for a token the
+        // given breakpoints leave out - and only once per task for every query built off the same element.
         private static resolveBreakpoints(elementId: string | null, breakpoints: { [key: string]: string } | null): Record<BreakpointKey, string> {
             const element = (elementId ? document.getElementById(elementId) : null) ?? document.body ?? document.documentElement;
-            const styles = typeof getComputedStyle === 'function'
-                ? getComputedStyle(element)
-                : null;
 
             const read = (key: BreakpointKey) => {
                 const themed = breakpoints?.[key]?.trim();
                 if (themed) return themed;
 
-                const value = styles?.getPropertyValue(`--bit-bp-${key}`)?.trim();
-                return value || MediaQuery._defaultBreakpoints[key];
+                return MediaQuery.readToken(element, key) || MediaQuery._defaultBreakpoints[key];
             };
 
-            return { xs: read('xs'), sm: read('sm'), md: read('md'), lg: read('lg'), xl: read('xl'), xxl: read('xxl') };
+            const resolved = {} as Record<BreakpointKey, string>;
+            (Object.keys(MediaQuery._defaultBreakpoints) as BreakpointKey[]).forEach(key => {
+                Object.defineProperty(resolved, key, { get: () => read(key), enumerable: true });
+            });
+
+            return resolved;
+        }
+
+        // The --bit-bp-* token an element resolves, or an empty string when it is set nowhere (see _tokenReads).
+        private static readToken(element: Element, key: BreakpointKey): string {
+            if (!MediaQuery._tokenReads) {
+                const reads = new Map<Element, Partial<Record<BreakpointKey, string>>>();
+                MediaQuery._tokenReads = reads;
+                queueMicrotask(() => {
+                    if (MediaQuery._tokenReads === reads) MediaQuery._tokenReads = null;
+                });
+            }
+
+            let tokens = MediaQuery._tokenReads.get(element);
+            if (!tokens) {
+                tokens = {};
+                MediaQuery._tokenReads.set(element, tokens);
+            }
+
+            let value = tokens[key];
+            if (value === undefined) {
+                value = typeof getComputedStyle === 'function'
+                    ? (getComputedStyle(element).getPropertyValue(`--bit-bp-${key}`) ?? '').trim()
+                    : '';
+                tokens[key] = value;
+            }
+
+            return value;
         }
 
         // Returns the value just below `value`, for exclusive max-width bounds. A unitless or px
