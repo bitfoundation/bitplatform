@@ -123,6 +123,56 @@ public class BmotionInteropTests
     }
 
     [TestMethod]
+    public async Task RafLoop_KeysEachReference_SoAStopFindsTheEngineItsStartRegistered()
+    {
+        // Blazor revives a new JS wrapper every time it marshals a reference, so the module can't
+        // match a stop to its start by the wrapper: it is handed a key that stays the same for
+        // the reference across every start and stop, and differs from any other reference's.
+        var (ctx, module, interop) = Create();
+        await using var _ = ctx;
+        module.SetupVoid("startRafLoop", _ => true).SetVoidResult();
+        module.SetupVoid("stopRafLoop", _ => true).SetVoidResult();
+        using var engine = DotNetObjectReference.Create(new Target());
+        using var other = DotNetObjectReference.Create(new Target());
+
+        await interop.StartRafLoopAsync(engine);
+        await interop.StopRafLoopAsync(engine);
+        await interop.StartRafLoopAsync(engine);
+        await interop.StartRafLoopAsync(other);
+        await interop.StopRafLoopAsync<Target>();
+
+        var starts = module.Invocations["startRafLoop"];
+        var stops = module.Invocations["stopRafLoop"];
+        var key = starts[0].Arguments[0] as string;
+        Assert.IsFalse(string.IsNullOrEmpty(key));
+        Assert.AreSame(engine, starts[0].Arguments[1], "the reference JS ticks through");
+        Assert.AreEqual(key, stops[0].Arguments[0], "the stop names the engine its start registered");
+        Assert.AreEqual(1, stops[0].Arguments.Count, "the stop needs only the key");
+        Assert.AreEqual(key, starts[1].Arguments[0], "a restart replaces the registration instead of adding one");
+        Assert.AreNotEqual(key, starts[2].Arguments[0], "another engine gets a key of its own");
+        Assert.IsNull(stops[1].Arguments[0], "no reference still stops every engine");
+    }
+
+    [TestMethod]
+    public async Task ReducedMotionWatch_KeysTheReference_SoUnwatchFindsTheWatcher()
+    {
+        var (ctx, module, interop) = Create();
+        await using var _ = ctx;
+        module.SetupVoid("watchReducedMotion", _ => true).SetVoidResult();
+        module.SetupVoid("unwatchReducedMotion", _ => true).SetVoidResult();
+        using var engine = DotNetObjectReference.Create(new Target());
+
+        await interop.WatchReducedMotionAsync(engine);
+        await interop.UnwatchReducedMotionAsync(engine);
+
+        var watch = module.VerifyInvoke("watchReducedMotion");
+        var unwatch = module.VerifyInvoke("unwatchReducedMotion");
+        Assert.AreSame(engine, watch.Arguments[1]);
+        Assert.AreEqual(watch.Arguments[0], unwatch.Arguments[0]);
+        Assert.AreEqual(1, unwatch.Arguments.Count);
+    }
+
+    [TestMethod]
     public async Task TeardownCalls_BeforeTheModuleLoaded_NeverImportIt()
     {
         var (ctx, _, interop) = Create();

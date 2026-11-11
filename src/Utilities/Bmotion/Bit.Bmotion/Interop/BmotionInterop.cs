@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Bit.Bmotion;
 /// <summary>
@@ -104,20 +105,35 @@ public sealed class BmotionInterop : IBmotionInterop
 
     private async ValueTask<IJSObjectReference> Module() => await _moduleTask.Value;
 
+    // The key the module's engine registries (the rAF loop, the reduced-motion watchers) know a reference by.
+    // Blazor hands JS a brand-new DotNetObject wrapper every time it marshals the same DotNetObjectReference,
+    // so a registry holding the wrappers themselves could never find the one to remove: a stopped engine would
+    // keep being ticked, and every restart would add another. Shared across interop instances (and so across
+    // Blazor roots, which share the one JS module), and released with the reference.
+    private static readonly ConditionalWeakTable<object, string> _refKeys = new();
+    private static long _lastRefKey;
+
+    private static string KeyOf(object dotnetRef)
+        => _refKeys.GetValue(dotnetRef, static _ => Interlocked.Increment(ref _lastRefKey).ToString(System.Globalization.CultureInfo.InvariantCulture));
+
     // ── rAF loop ──────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Start the JS rAF loop. The loop calls <c>dotnetRef.invokeMethod('ComputeFrame', timestamp)</c>
-    /// synchronously each tick (Blazor WASM) and applies the returned style updates.
+    /// synchronously each tick (Blazor WASM) and applies the returned style updates. Starting it again with
+    /// the same reference keeps a single registration.
     /// </summary>
     public async ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync("startRafLoop", dotnetRef);
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
+        await (await Module()).InvokeVoidAsync("startRafLoop", KeyOf(dotnetRef), dotnetRef);
+    }
 
     /// <summary>Stop the JS rAF loop for the given engine reference (or all engines when null).</summary>
     public async ValueTask StopRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T>? dotnetRef = null) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
-        await (await Module()).InvokeVoidAsync("stopRafLoop", dotnetRef);
+        await (await Module()).InvokeVoidAsync("stopRafLoop", dotnetRef is null ? null : KeyOf(dotnetRef));
     }
 
     // ── Reduced motion (accessibility) ────────────────────────────────────────
@@ -133,13 +149,16 @@ public sealed class BmotionInterop : IBmotionInterop
     /// <c>OnReducedMotionChanged(bool)</c> on the engine ref whenever the OS preference changes.
     /// </summary>
     public async ValueTask WatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
-        => await (await Module()).InvokeVoidAsync("watchReducedMotion", dotnetRef);
+    {
+        ArgumentNullException.ThrowIfNull(dotnetRef);
+        await (await Module()).InvokeVoidAsync("watchReducedMotion", KeyOf(dotnetRef), dotnetRef);
+    }
 
     /// <summary>Unsubscribes the engine ref from <c>prefers-reduced-motion</c> change notifications.</summary>
     public async ValueTask UnwatchReducedMotionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
         if (!_moduleTask.IsValueCreated) return;
-        await (await Module()).InvokeVoidAsync("unwatchReducedMotion", dotnetRef);
+        await (await Module()).InvokeVoidAsync("unwatchReducedMotion", KeyOf(dotnetRef));
     }
 
     // ── Style application ─────────────────────────────────────────────────────
