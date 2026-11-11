@@ -134,6 +134,12 @@ public sealed class BlowRunner
     }
 
     /// <summary>
+    /// A node id as one part of a run id or an idempotency key: escaped, so it holds no '/' or ':' and the parts of a
+    /// nested path cannot run into each other - node "a/1/b" and node "b" in sub-run 1 of node "a" stay apart.
+    /// </summary>
+    internal static string IdPart(string nodeId) => Uri.EscapeDataString(nodeId);
+
+    /// <summary>
     /// A wait a timer can take: <see cref="Timeout.InfiniteTimeSpan"/> and anything longer than a timer takes are null
     /// (no limit), any other negative wait is none.
     /// </summary>
@@ -152,6 +158,7 @@ public sealed class BlowRunner
         private readonly BlowRunnerOptions _options;
         private readonly TimeProvider _time;
         private readonly StrongBox<int> _counter;
+        private readonly Budget _budget;
         private readonly object _eventGate = new();
         private readonly object _dispatchGate = new();
         private readonly List<BlowRunEvent> _events = [];
@@ -170,7 +177,7 @@ public sealed class BlowRunner
         private CancellationTokenSource? _stop;
 
         public Execution(BlowRunner runner, IEnumerable<BlowNode> nodes, IEnumerable<BlowEdge> edges, BlowRunRequest request,
-            int depth, ConcurrentDictionary<string, object?>? variables, StrongBox<int>? counter)
+            int depth, ConcurrentDictionary<string, object?>? variables, StrongBox<int>? counter, Budget? budget = null)
         {
             _runner = runner;
             _options = runner.Options;
@@ -179,11 +186,30 @@ public sealed class BlowRunner
             Depth = depth;
             Variables = variables ?? new ConcurrentDictionary<string, object?>(StringComparer.Ordinal);
             _counter = counter ?? new StrongBox<int>();
+            _budget = budget ?? new Budget(Math.Max(1, _options.MaxConcurrency));
             RunId = request.RunId ?? request.Resume?.RunId ?? Guid.NewGuid().ToString("N");
 
-            var include = request.Include;
-            Graph = new BlowGraphIndex(include is null ? nodes : nodes.Where(include), edges);
+            // The edges are copied: the run is scheduled by the ends each edge had when it started, even if the canvas
+            // reconnects the edge meanwhile, and the index and the hand-off between nodes read the same copy.
+            var all = nodes.ToList();
+            var edgeList = edges.Select(e => e.Clone()).ToList();
+            if (request.Include is { } include)
+            {
+                var kept = all.Where(include).ToList();
+                var keptIds = kept.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
+                // An edge to a node left out on purpose goes with it; one to a node that was never there stays, for validators to see.
+                var left = all.Select(n => n.Id).Where(id => !keptIds.Contains(id)).ToHashSet(StringComparer.Ordinal);
+                if (left.Count > 0) edgeList.RemoveAll(e => left.Contains(e.Source) || left.Contains(e.Target));
+                all = kept;
+            }
+            _sourceNodes = all;
+            _sourceEdges = edgeList;
+            Graph = new BlowGraphIndex(all, edgeList);
         }
+
+        /// <summary>The nodes and edges taking part, as given - duplicates included, for the validator to report.</summary>
+        private readonly List<BlowNode> _sourceNodes;
+        private readonly List<BlowEdge> _sourceEdges;
 
         public BlowRunRequest Request { get; }
 
@@ -266,7 +292,7 @@ public sealed class BlowRunner
 
             if (Request.Validator is { } validator)
             {
-                problems.AddRange(validator.Validate(Graph.Nodes, Graph.Edges).Issues.Where(i => i.Severity == BlowValidationSeverity.Error));
+                problems.AddRange(validator.Validate(_sourceNodes, _sourceEdges).Issues.Where(i => i.Severity == BlowValidationSeverity.Error));
             }
             return problems;
         }
@@ -334,7 +360,7 @@ public sealed class BlowRunner
                 if (pending.Remaining == 0 && _records[id].Status == BlowRunStatus.Queued && !pending.Decided && Decide(id)) Settle(id);
             }
 
-            var running = new Dictionary<Task<Outcome>, BlowNode>();
+            var running = new Dictionary<Task<Outcome>, (BlowNode Node, Slot Slot)>();
             Task? resumed = null;
             var interrupted = false;
             try
@@ -342,16 +368,35 @@ public sealed class BlowRunner
                 while (true)
                 {
                     var paused = Request.Control?.IsPaused == true;
-                    while (!paused && !token.IsCancellationRequested && running.Count < Math.Max(1, _options.MaxConcurrency)
-                           && _ready.TryDequeue(out var next, out _))
+                    // Every run of the tree draws on one budget of slots; with none free, the run waits for one.
+                    Task? freed = null;
+                    while (!paused && !token.IsCancellationRequested && _ready.Count > 0)
                     {
-                        running[ExecuteAsync(next, token)] = next;
+                        if (!_budget.TryTake(out var wait))
+                        {
+                            freed = wait;
+                            break;
+                        }
+                        _ready.TryDequeue(out var next, out _);
+                        var slot = new Slot(_budget);
+                        running[ExecuteAsync(next!, slot, token)] = (next!, slot);
                     }
                     Deliver();
 
                     if (running.Count == 0)
                     {
                         if (token.IsCancellationRequested || _ready.Count == 0) break;
+                        if (freed is not null)
+                        {
+                            try
+                            {
+                                await freed.WaitAsync(token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                            }
+                            continue;
+                        }
                         // Paused with nothing working: wait for the resume, one wait per pause.
                         resumed ??= Request.Control!.WhenResumedAsync(token);
                         try
@@ -365,21 +410,20 @@ public sealed class BlowRunner
                         continue;
                     }
 
-                    Task done;
+                    var waits = running.Keys.Cast<Task>();
                     if (paused && _ready.Count > 0 && !token.IsCancellationRequested)
                     {
                         resumed ??= Request.Control!.WhenResumedAsync(token);
-                        done = await Task.WhenAny(running.Keys.Cast<Task>().Append(resumed));
-                        if (resumed.IsCompleted) resumed = null;
+                        waits = waits.Append(resumed);
                     }
-                    else
-                    {
-                        done = await Task.WhenAny(running.Keys);
-                    }
+                    if (freed is not null) waits = waits.Append(freed);
+                    var done = await Task.WhenAny(waits);
+                    if (resumed?.IsCompleted == true) resumed = null;
 
-                    if (done is Task<Outcome> finished && running.Remove(finished, out var node))
+                    if (done is Task<Outcome> finished && running.Remove(finished, out var entry))
                     {
-                        Complete(node, await finished);
+                        entry.Slot.Release();
+                        Complete(entry.Node, await finished);
                     }
                 }
             }
@@ -388,6 +432,7 @@ public sealed class BlowRunner
                 // A bug of the runner's own, not a node's: stop everything and let it surface, after the working nodes are done.
                 stop.Cancel();
                 await Task.WhenAll(running.Keys.Select(t => t.ContinueWith(static _ => { }, TaskScheduler.Default)));
+                foreach (var (_, slot) in running.Values) slot.Release();
                 throw;
             }
 
@@ -531,6 +576,14 @@ public sealed class BlowRunner
 
             if (skip is null)
             {
+                // The values arrived in the order their sources finished; the handler reads them in the order of its edges.
+                if (pending.Inputs.Count > 1)
+                {
+                    var edgesIn = Graph.Incoming(id);
+                    var position = new Dictionary<string, int>(edgesIn.Count, StringComparer.Ordinal);
+                    for (var i = 0; i < edgesIn.Count; i++) position[edgesIn[i].Id] = i;
+                    pending.Inputs.Sort((a, b) => position[a.Edge.Id].CompareTo(position[b.Edge.Id]));
+                }
                 _ready.Enqueue(node, _rank[id]);
                 return false;
             }
@@ -544,7 +597,7 @@ public sealed class BlowRunner
         }
 
         /// <summary>Runs every attempt of one node. Never throws: everything that can go wrong is in the outcome.</summary>
-        private async Task<Outcome> ExecuteAsync(BlowNode node, CancellationToken runToken)
+        private async Task<Outcome> ExecuteAsync(BlowNode node, Slot slot, CancellationToken runToken)
         {
             // Yield first, so the scheduler starts every ready node before any of them runs its first synchronous part.
             await Task.Yield();
@@ -586,7 +639,7 @@ public sealed class BlowRunner
 
                     using var attemptTimeout = limit is { } t ? new CancellationTokenSource(t, _time) : null;
                     using var attemptToken = CancellationTokenSource.CreateLinkedTokenSource(runToken, attemptTimeout?.Token ?? CancellationToken.None);
-                    var context = new BlowNodeRunContext(this, node, inputs, attempt, attemptToken.Token);
+                    var context = new BlowNodeRunContext(this, node, inputs, attempt, slot, attemptToken.Token);
 
                     Exception error;
                     string message;
@@ -700,7 +753,7 @@ public sealed class BlowRunner
         public void Resumed(string nodeId, int attempt)
             => Emit(NodeEvent(BlowRunEventKind.NodeStarted, nodeId, BlowRunStatus.Running, null, attempt));
 
-        public async Task<BlowRunResult> RunSubgraphAsync(string nodeId, int number, IEnumerable<BlowNode> nodes, IEnumerable<BlowEdge> edges,
+        public async Task<BlowRunResult> RunSubgraphAsync(string nodeId, int number, Slot slot, IEnumerable<BlowNode> nodes, IEnumerable<BlowEdge> edges,
             object? input, BlowRunRequest? request, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(nodes);
@@ -708,7 +761,7 @@ public sealed class BlowRunner
             var inner = new BlowRunRequest
             {
                 // Numbered within the attempt, so a retry or a resumed run gives the inner nodes the same idempotency keys.
-                RunId = request?.RunId ?? request?.Resume?.RunId ?? $"{RunId}/{nodeId}/{number}",
+                RunId = request?.RunId ?? request?.Resume?.RunId ?? $"{RunId}/{IdPart(nodeId)}/{number}",
                 Input = input,
                 Include = request?.Include,
                 StartAt = request?.StartAt,
@@ -718,7 +771,16 @@ public sealed class BlowRunner
                 Control = request?.Control ?? Request.Control,
                 Services = request?.Services ?? Request.Services,
             };
-            return await new Execution(_runner, nodes, edges, inner, Depth + 1, Variables, _counter).RunAsync(cancellationToken);
+            // The node waits while the inner run works, so its slot goes to the inner nodes meanwhile and is taken back after.
+            slot.Lend();
+            try
+            {
+                return await new Execution(_runner, nodes, edges, inner, Depth + 1, Variables, _counter, _budget).RunAsync(cancellationToken);
+            }
+            finally
+            {
+                await slot.ReclaimAsync(cancellationToken);
+            }
         }
 
         private BlowRunEvent NodeEvent(BlowRunEventKind kind, string nodeId, BlowRunStatus status, string? message = null, int attempt = 0)
@@ -768,6 +830,97 @@ public sealed class BlowRunner
         }
 
         private string Name(BlowNode node) => string.IsNullOrWhiteSpace(node.Label) ? node.Id : node.Label!;
+
+        /// <summary>
+        /// The slots a run and every run its nodes start draw on - <see cref="BlowRunnerOptions.MaxConcurrency"/> of
+        /// them for the whole tree, so nested runs do not multiply it.
+        /// </summary>
+        internal sealed class Budget(int max)
+        {
+            private readonly object _gate = new();
+            private int _used;
+            private TaskCompletionSource _freed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            /// <summary>Takes a slot when one is free; otherwise hands back a task that completes when one is given back.</summary>
+            public bool TryTake(out Task freed)
+            {
+                lock (_gate)
+                {
+                    freed = _freed.Task;
+                    if (_used >= max) return false;
+                    _used++;
+                    return true;
+                }
+            }
+
+            public void Give()
+            {
+                TaskCompletionSource freed;
+                lock (_gate)
+                {
+                    _used--;
+                    freed = _freed;
+                    _freed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+                freed.TrySetResult();
+            }
+
+            public async Task TakeAsync(CancellationToken cancellationToken)
+            {
+                while (!TryTake(out var freed)) await freed.WaitAsync(cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// The slot one running node holds: lent to the runs it starts while it waits for them, and given back for good
+        /// when the node is done - also when an abandoned handler takes it back late.
+        /// </summary>
+        internal sealed class Slot(Budget budget)
+        {
+            private readonly object _gate = new();
+            private bool _held = true;
+            private bool _released;
+            private int _lent;
+
+            public void Lend()
+            {
+                bool give;
+                lock (_gate)
+                {
+                    give = _lent++ == 0 && _held;
+                    if (give) _held = false;
+                }
+                if (give) budget.Give();
+            }
+
+            public async Task ReclaimAsync(CancellationToken cancellationToken)
+            {
+                lock (_gate)
+                {
+                    if (--_lent > 0 || _held || _released) return;
+                }
+                await budget.TakeAsync(cancellationToken);
+                bool keep;
+                lock (_gate)
+                {
+                    keep = _lent == 0 && !_held && !_released;
+                    if (keep) _held = true;
+                }
+                if (!keep) budget.Give();
+            }
+
+            public void Release()
+            {
+                bool give;
+                lock (_gate)
+                {
+                    give = _held;
+                    _held = false;
+                    _released = true;
+                }
+                if (give) budget.Give();
+            }
+        }
 
         private sealed class Pending(int remaining)
         {

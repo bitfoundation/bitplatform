@@ -12,7 +12,7 @@ public sealed record BlowNodeChange(BlowNode Before, BlowNode After, IReadOnlyLi
 /// <summary>An edge present in both graphs with something about it changed.</summary>
 /// <param name="Before">The edge as it was.</param>
 /// <param name="After">The edge as it is.</param>
-/// <param name="Properties">The names of the <see cref="BlowEdge"/> properties that differ: "Target", "Label", ...</param>
+/// <param name="Properties">The names of the <see cref="BlowEdge"/> properties that differ: "Target", "Label", "MarkerEnd", ...</param>
 public sealed record BlowEdgeChange(BlowEdge Before, BlowEdge After, IReadOnlyList<string> Properties);
 
 /// <summary>How <see cref="BlowGraphDiff"/> tells a change from none.</summary>
@@ -123,11 +123,18 @@ public sealed class BlowGraphDiff
 
         var removedNodes = RemovedNodes.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
         var removedEdges = RemovedEdges.Select(e => e.Id).ToHashSet(StringComparer.Ordinal);
+        var changedEdges = ChangedEdges.ToDictionary(c => c.After.Id, c => c.After, StringComparer.Ordinal);
         nodes.RemoveAll(n => removedNodes.Contains(n.Id));
-        edges.RemoveAll(e => removedEdges.Contains(e.Id) || removedNodes.Contains(e.Source) || removedNodes.Contains(e.Target));
+        // A changed edge is judged by the ends it is getting, not the ones it had: one moved off a removed node stays.
+        edges.RemoveAll(e =>
+        {
+            if (removedEdges.Contains(e.Id)) return true;
+            var end = changedEdges.GetValueOrDefault(e.Id) ?? e;
+            return removedNodes.Contains(end.Source) || removedNodes.Contains(end.Target);
+        });
 
         Replace(nodes, ChangedNodes.ToDictionary(c => c.After.Id, c => c.After, StringComparer.Ordinal), n => n.Id, n => n.Clone());
-        Replace(edges, ChangedEdges.ToDictionary(c => c.After.Id, c => c.After, StringComparer.Ordinal), e => e.Id, e => e.Clone());
+        Replace(edges, changedEdges, e => e.Id, e => e.Clone());
 
         var nodeIds = nodes.Select(n => n.Id).ToHashSet(StringComparer.Ordinal);
         nodes.AddRange(AddedNodes.Where(n => nodeIds.Add(n.Id)).Select(n => n.Clone()));
@@ -230,11 +237,18 @@ public sealed class BlowGraphDiff
         Check(nameof(BlowEdge.Reconnectable), a.Reconnectable == b.Reconnectable);
         Check(nameof(BlowEdge.Stroke), a.Stroke == b.Stroke);
         Check(nameof(BlowEdge.StrokeWidth), a.StrokeWidth == b.StrokeWidth);
-        Check("Markers", a.MarkerEnd == b.MarkerEnd && a.MarkerStart == b.MarkerStart && a.MarkerType == b.MarkerType
-                         && a.MarkerColor == b.MarkerColor && a.MarkerWidth == b.MarkerWidth && a.MarkerHeight == b.MarkerHeight);
-        Check("LabelStyle", a.LabelStyle == b.LabelStyle && a.LabelShowBg == b.LabelShowBg && a.LabelBgStyle == b.LabelBgStyle
-                            && a.LabelBgPaddingX == b.LabelBgPaddingX && a.LabelBgPaddingY == b.LabelBgPaddingY
-                            && a.LabelBgBorderRadius == b.LabelBgBorderRadius);
+        Check(nameof(BlowEdge.MarkerEnd), a.MarkerEnd == b.MarkerEnd);
+        Check(nameof(BlowEdge.MarkerStart), a.MarkerStart == b.MarkerStart);
+        Check(nameof(BlowEdge.MarkerType), a.MarkerType == b.MarkerType);
+        Check(nameof(BlowEdge.MarkerColor), a.MarkerColor == b.MarkerColor);
+        Check(nameof(BlowEdge.MarkerWidth), a.MarkerWidth == b.MarkerWidth);
+        Check(nameof(BlowEdge.MarkerHeight), a.MarkerHeight == b.MarkerHeight);
+        Check(nameof(BlowEdge.LabelStyle), a.LabelStyle == b.LabelStyle);
+        Check(nameof(BlowEdge.LabelShowBg), a.LabelShowBg == b.LabelShowBg);
+        Check(nameof(BlowEdge.LabelBgStyle), a.LabelBgStyle == b.LabelBgStyle);
+        Check(nameof(BlowEdge.LabelBgPaddingX), a.LabelBgPaddingX == b.LabelBgPaddingX);
+        Check(nameof(BlowEdge.LabelBgPaddingY), a.LabelBgPaddingY == b.LabelBgPaddingY);
+        Check(nameof(BlowEdge.LabelBgBorderRadius), a.LabelBgBorderRadius == b.LabelBgBorderRadius);
         Check(nameof(BlowEdge.Class), a.Class == b.Class);
         Check(nameof(BlowEdge.Style), a.Style == b.Style);
         Check(nameof(BlowEdge.InteractionWidth), a.InteractionWidth == b.InteractionWidth);

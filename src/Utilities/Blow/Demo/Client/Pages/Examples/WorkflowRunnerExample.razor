@@ -23,7 +23,8 @@
                     AriaLabel="Data pipeline"
                     RunStates="_shown" Validation="_validation"
                     DefaultEdgeType="BlowEdgeType.SmoothStep"
-                    EdgesChanged="_ => Validate()" NodesChanged="_ => Validate()">
+                    EdgesChanged="_ => Validate()" NodesChanged="_ => Validate()"
+                    OnSelectionChange="_ => StateHasChanged()">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>

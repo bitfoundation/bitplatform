@@ -89,8 +89,17 @@ public static partial class BlowMermaidFormat
         foreach (var edge in document.Edges)
         {
             if ((!o.IncludeHidden && edge.Hidden) || !ids.TryGetValue(edge.Source, out var s) || !ids.TryGetValue(edge.Target, out var t)) continue;
-            var arrow = edge.Animated ? (edge.MarkerEnd ? "-.->" : "-.-") : edge.MarkerEnd ? "-->" : "---";
-            if (edge.MarkerStart && edge.MarkerEnd && !edge.Animated) arrow = "<-->";
+            // Mermaid has no link with a head at its start only: that one is written the other way round, head at the end.
+            if (edge.MarkerStart && !edge.MarkerEnd) (s, t) = (t, s);
+            var arrow = (edge.Animated, edge.MarkerStart && edge.MarkerEnd, edge.MarkerStart || edge.MarkerEnd) switch
+            {
+                (true, true, _) => "<-.->",
+                (true, false, true) => "-.->",
+                (true, false, false) => "-.-",
+                (false, true, _) => "<-->",
+                (false, false, true) => "-->",
+                _ => "---",
+            };
             text.Append("    ").Append(s).Append(' ').Append(arrow);
             if (!string.IsNullOrWhiteSpace(edge.Label)) text.Append("|\"").Append(Escape(edge.Label!)).Append("\"|");
             text.Append(' ').Append(t).Append('\n');
@@ -421,6 +430,11 @@ public static partial class BlowMermaidFormat
             if (_byId.TryGetValue(id, out var node))
             {
                 if (label is not null) node.Label = label;
+                // A node named before the subgraph it is listed in joins it, as in Mermaid: one outside every subgraph,
+                // or in one around this one, moves in; one already in another subgraph stays in the first. A subgraph
+                // named inside itself or a subgraph within it is not moved into it.
+                if (_groups.Count > 0 && (node.ParentId is null || _groups.Contains(node.ParentId)) && !Encloses(node.Id, _groups.Peek()))
+                    node.ParentId = _groups.Peek();
                 return node;
             }
             if (Nodes.Count >= limits.MaxNodes)
@@ -433,6 +447,21 @@ public static partial class BlowMermaidFormat
             _byId[id] = node;
             Nodes.Add(node);
             return node;
+        }
+
+        /// <summary>
+        /// True when the group is the node or inside it, so moving the node into the group would make a loop of parents.
+        /// A chain longer than nesting allows counts as one, so a hostile text cannot make each reference walk far.
+        /// </summary>
+        private bool Encloses(string nodeId, string groupId)
+        {
+            string? at = groupId;
+            for (var steps = 0; at is not null; steps++)
+            {
+                if (at == nodeId || steps > limits.MaxDepth) return true;
+                at = _byId.GetValueOrDefault(at)?.ParentId;
+            }
+            return false;
         }
 
         private void Edge(BlowNode source, BlowNode target, string arrow, string? label)

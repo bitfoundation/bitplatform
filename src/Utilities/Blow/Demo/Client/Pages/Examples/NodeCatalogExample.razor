@@ -238,7 +238,7 @@
         <span aria-hidden="true">@definition.Icon</span>
         <span>@definition.DisplayName<small>@definition.Category</small></span>
         <button class="nc__star" aria-pressed="@_favourites.Contains(definition.Type)" aria-label="Favourite @definition.DisplayName"
-                @onclick:stopPropagation="true" @onclick="() => ToggleFavourite(definition.Type)">@(_favourites.Contains(definition.Type) ? "★" : "☆")</button>
+                @onclick:stopPropagation="true" @onkeydown:stopPropagation="true" @onclick="() => ToggleFavourite(definition.Type)">@(_favourites.Contains(definition.Type) ? "★" : "☆")</button>
     </div>;
 
     private IEnumerable<BlowNodeDefinition> Offered()

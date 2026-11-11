@@ -1934,7 +1934,7 @@ An edge that carries nothing leaves its target waiting for nothing: a node no va
 everything only it reaches - which is how a branch drops the path not taken. A node's `Join` says how its inputs
 combine: `Any` (the default) runs it when at least one incoming edge carried a value, the join after a branch;
 `All` runs it only when every one did, the join after a parallel split. Independent nodes run at once, up to
-`MaxConcurrency`. The graph must be acyclic; a run over a cycle is refused before anything starts.
+`MaxConcurrency` - shared with the runs its nodes start, a node waiting for its sub-run giving its slot to the inner nodes. The graph must be acyclic; a run over a cycle is refused before anything starts.
 
 ### Failures, retries and timeouts
 
@@ -2277,7 +2277,7 @@ Demo: `/examples/save-restore` (local storage, file download and upload, a migra
 | Format | Out | In |
 | --- | --- | --- |
 | Mermaid flowchart | `BlowMermaidFormat.Export(document, options)`: nodes (a shape per node), groups as subgraphs, links with labels, dashed for animated edges. | `BlowMermaidFormat.Import(text)`: every bracket shape, quoted and plain text, `&` lists and chains, every arrow kind with a piped label or `-- label -->`, subgraphs as groups. Laid out, as Mermaid has no positions. |
-| Graphviz DOT | `BlowDotFormat.Export(document, options)`: clusters for groups, ports, labels, arrowheads; positions pinned for `neato -n` with `IncludePositions`. | - |
+| Graphviz DOT | `BlowDotFormat.Export(document, options)`: clusters for groups, labels, arrowheads (edges attach to the node, as a box has no ports); positions pinned for `neato -n` with `IncludePositions`. | - |
 | GraphML | `BlowGraphMLFormat.Export(document)`: label, type, position, size and JSON data per node, nested graphs for groups, ports, edge labels and data. | `BlowGraphMLFormat.Import(xml)`: that, plain GraphML from other tools, and yEd's geometry and labels; unknown attributes kept in the element's data; laid out when it has no positions. |
 
 Mermaid is the one to paste into Markdown, a pull request or a chat that renders it; DOT feeds Graphviz; GraphML

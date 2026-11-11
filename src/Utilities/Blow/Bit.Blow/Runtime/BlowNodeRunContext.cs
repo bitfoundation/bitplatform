@@ -9,13 +9,16 @@ namespace Bit.Blow;
 public sealed class BlowNodeRunContext
 {
     private readonly BlowRunner.Execution _execution;
-    private volatile bool _closed;
+    private readonly BlowRunner.Execution.Slot _slot;
+    private readonly object _gate = new();
+    private bool _closed;
     private int _subRuns;
 
     internal BlowNodeRunContext(BlowRunner.Execution execution, BlowNode node, IReadOnlyList<BlowRunInput> inputs,
-        int attempt, CancellationToken cancellationToken)
+        int attempt, BlowRunner.Execution.Slot slot, CancellationToken cancellationToken)
     {
         _execution = execution;
+        _slot = slot;
         Node = node;
         Inputs = inputs;
         Attempt = attempt;
@@ -35,7 +38,8 @@ public sealed class BlowNodeRunContext
     /// The same for every attempt of this node in this run, and in a run resumed from its checkpoint: a key for an
     /// external service to recognise a request it has already carried out.
     /// </summary>
-    public string IdempotencyKey => $"{RunId}:{Node.Id}";
+    /// <remarks>The run's id, a colon and the node's id, escaped as a URI component so that no two nodes of a tree of runs share one.</remarks>
+    public string IdempotencyKey => $"{RunId}:{BlowRunner.IdPart(Node.Id)}";
 
     /// <summary>The attempt, starting at 1.</summary>
     public int Attempt { get; }
@@ -87,20 +91,32 @@ public sealed class BlowNodeRunContext
     /// <remarks>Ignored once the attempt is over - a handler abandoned after a timeout cannot change what it left behind.</remarks>
     public void Report(string? message, double? progress = null)
     {
-        if (!_closed) _execution.Report(Node.Id, Attempt, message, progress);
+        lock (_gate)
+        {
+            if (!_closed) _execution.Report(Node.Id, Attempt, message, progress);
+        }
     }
 
-    /// <summary>Ends the attempt: what the handler reports from now on is ignored.</summary>
-    internal void Close() => _closed = true;
+    /// <summary>Ends the attempt: what the handler reports from now on is ignored, and a report under way is finished first.</summary>
+    internal void Close()
+    {
+        lock (_gate) _closed = true;
+    }
 
     private void Waiting(string? message)
     {
-        if (!_closed) _execution.Waiting(Node.Id, Attempt, message);
+        lock (_gate)
+        {
+            if (!_closed) _execution.Waiting(Node.Id, Attempt, message);
+        }
     }
 
     private void Resumed()
     {
-        if (!_closed) _execution.Resumed(Node.Id, Attempt);
+        lock (_gate)
+        {
+            if (!_closed) _execution.Resumed(Node.Id, Attempt);
+        }
     }
 
     /// <summary>
@@ -140,7 +156,8 @@ public sealed class BlowNodeRunContext
 
     /// <summary>
     /// Runs a graph of its own with the same handlers - a sub-flow, one iteration of a loop - and hands back its result.
-    /// It shares this run's variables, services and limits, and is cancelled with this attempt. Its events are not part
+    /// It shares this run's variables, services and limits - <see cref="BlowRunnerOptions.MaxConcurrency"/> included: the
+    /// node's own slot goes to the inner nodes while it waits for them - and is cancelled with this attempt. Its events are not part
     /// of this run's; pass a request with <see cref="BlowRunRequest.OnEvent"/> to watch them - with a
     /// <see cref="BlowRunStates"/> of their own, as each run starts by clearing the states it is given. The inner run's
     /// id is this run's, the node's and the call's number within the attempt, so a retried attempt or a resumed run
@@ -152,5 +169,5 @@ public sealed class BlowNodeRunContext
     /// <param name="request">More about the inner run; its <see cref="BlowRunRequest.Input"/> is replaced by <paramref name="input"/>.</param>
     public Task<BlowRunResult> RunSubgraphAsync(IEnumerable<BlowNode> nodes, IEnumerable<BlowEdge> edges,
         object? input = null, BlowRunRequest? request = null)
-        => _execution.RunSubgraphAsync(Node.Id, Interlocked.Increment(ref _subRuns), nodes, edges, input, request, CancellationToken);
+        => _execution.RunSubgraphAsync(Node.Id, Interlocked.Increment(ref _subRuns), _slot, nodes, edges, input, request, CancellationToken);
 }

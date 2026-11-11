@@ -303,7 +303,7 @@ public class McpFlowLabTests
         Assert.IsTrue(execution.Runnable);
         Assert.AreEqual("a", execution.Order[0]);
         Assert.AreEqual(3, execution.Stages);
-        Assert.AreEqual(2, execution.MaxParallel);
+        Assert.AreEqual(2, execution.WidestStage);
         CollectionAssert.AreEqual(new[] { "a" }, execution.Roots);
         CollectionAssert.AreEqual(new[] { "d" }, execution.Leaves);
 

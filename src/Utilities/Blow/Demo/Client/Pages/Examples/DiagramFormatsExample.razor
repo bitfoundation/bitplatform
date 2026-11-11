@@ -113,7 +113,8 @@
         MarkBaseline();
     }
 
-    private BlowDocument Document() => _flow?.ToDocument() ?? new BlowDocument { Nodes = _nodes, Edges = _edges };
+    // The page's lists, which an import has just replaced before the canvas sees them; the canvas only adds its viewport.
+    private BlowDocument Document() => new() { Nodes = _nodes, Edges = _edges, Viewport = _flow?.ToDocument().Viewport };
 
     private string Export() => _format switch
     {

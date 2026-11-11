@@ -233,8 +233,12 @@ public record BlowFlowExecutionDto
     /// <summary>The number of steps the longest dependency chain takes - the least a run can take, in nodes one after another.</summary>
     public required int Stages { get; init; }
 
-    /// <summary>The most nodes that could run at once (the widest stage), for choosing BlowRunnerOptions.MaxConcurrency.</summary>
-    public required int MaxParallel { get; init; }
+    /// <summary>
+    /// The most nodes in one stage - nodes whose longest chain of dependencies is equally long, so none waits for another.
+    /// A lower bound on how many could run at once (nodes of different stages can overlap too), for choosing
+    /// BlowRunnerOptions.MaxConcurrency.
+    /// </summary>
+    public required int WidestStage { get; init; }
 
     /// <summary>Where runs start (no incoming edge) and end (no outgoing edge).</summary>
     public required string[] Roots { get; init; }

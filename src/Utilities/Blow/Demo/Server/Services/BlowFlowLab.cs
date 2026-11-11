@@ -284,7 +284,7 @@ public static class BlowFlowLab
             Refusals = [.. refusals.Take(MaxListed).Select(Issue)],
             Order = [.. order.Order.Take(50).Select(n => n.Id)],
             Stages = stage.Count == 0 ? 0 : stage.Values.Max(),
-            MaxParallel = stage.Count == 0 ? 0 : stage.Values.GroupBy(s => s).Max(g => g.Count()),
+            WidestStage = stage.Count == 0 ? 0 : stage.Values.GroupBy(s => s).Max(g => g.Count()),
             Roots = [.. BlowGraphAlgorithms.GetRoots(graph).Take(50).Select(n => n.Id)],
             Leaves = [.. BlowGraphAlgorithms.GetLeaves(graph).Take(50).Select(n => n.Id)],
             Validation = [.. validation.Issues.Take(50).Select(Issue)],

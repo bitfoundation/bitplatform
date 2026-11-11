@@ -200,7 +200,10 @@ public sealed record BlowNodeRunOptions
 /// <summary>The settings of a <see cref="BlowRunner"/>.</summary>
 public sealed class BlowRunnerOptions
 {
-    /// <summary>The most nodes working at once. 1 runs one node at a time in dependency order. At least 1; 4 by default.</summary>
+    /// <summary>
+    /// The most nodes working at once - in a run and the runs its nodes start together, a node waiting for its sub-run
+    /// counting as none. 1 runs one node at a time in dependency order. At least 1; 4 by default.
+    /// </summary>
     public int MaxConcurrency { get; set; } = 4;
 
     /// <summary>
@@ -411,7 +414,7 @@ public sealed class BlowNodeResult
 }
 
 /// <summary>A value arriving at a node along one of its incoming edges.</summary>
-/// <param name="Edge">The edge it came along.</param>
+/// <param name="Edge">The edge it came along, as it was when the run started (a copy, so a reconnect during the run changes nothing).</param>
 /// <param name="Value">What it carries.</param>
 public readonly record struct BlowRunInput(BlowEdge Edge, object? Value)
 {

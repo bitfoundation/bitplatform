@@ -20,9 +20,9 @@ public sealed class BlowDotExportOptions
 }
 
 /// <summary>
-/// Graphviz DOT out: nodes, edges, labels, ports and groups (as clusters), for Graphviz's layouts and renderers and the
-/// many tools that read DOT. Every id and label is written as a quoted, escaped string, so no input can break out of
-/// it.
+/// Graphviz DOT out: nodes, edges, labels and groups (as clusters), for Graphviz's layouts and renderers and the many
+/// tools that read DOT. Every id and label is written as a quoted, escaped string, so no input can break out of it.
+/// Nodes are plain boxes, which have no named ports, so edges attach to the node rather than to a handle.
 /// </summary>
 public static class BlowDotFormat
 {
@@ -40,6 +40,9 @@ public static class BlowDotFormat
         var clusters = new Dictionary<string, (string Name, string Inner)>(StringComparer.Ordinal);
         var body = new StringBuilder();
         var open = new Stack<(string Id, string Name)>();
+        // Where each open group is in document space: a position is relative to the parent, and the canvas that would
+        // resolve it into an absolute one has not run on a document read from a file.
+        var origins = new Stack<BlowXYPosition>();
         var cluster = 0;
         foreach (var (node, depth, step) in BlowDiagramText.Walk(nodes))
         {
@@ -49,11 +52,14 @@ public static class BlowDotFormat
                 case BlowDiagramText.Step.Enter:
                     var name = $"cluster_{cluster++}";
                     open.Push((node.Id, name));
+                    var origin = origins.Count > 0 ? origins.Peek() : default;
+                    origins.Push(new BlowXYPosition(origin.X + node.Position.X, origin.Y + node.Position.Y));
                     body.Append(indent).Append("subgraph ").Append(Quote(name)).Append(" {\n");
                     body.Append(indent).Append("    label=").Append(Quote(Name(node))).Append(";\n");
                     break;
                 case BlowDiagramText.Step.Exit:
                     open.Pop();
+                    origins.Pop();
                     body.Append(indent).Append("}\n");
                     break;
                 default:
@@ -62,7 +68,8 @@ public static class BlowDotFormat
                     body.Append(indent).Append(Quote(node.Id)).Append(" [label=").Append(Quote(Name(node)));
                     if (o.IncludePositions)
                     {
-                        var p = node.AbsolutePosition;
+                        var parent = origins.Count > 0 ? origins.Peek() : default;
+                        var p = new BlowXYPosition(parent.X + node.Position.X, parent.Y + node.Position.Y);
                         var size = node.EffectiveSize;
                         // Graphviz places a node by its centre, in points, with y growing upwards.
                         body.Append(", pos=").Append(Quote(string.Create(CultureInfo.InvariantCulture,
@@ -85,10 +92,9 @@ public static class BlowDotFormat
             if ((!o.IncludeHidden && edge.Hidden) || !present.Contains(edge.Source) || !present.Contains(edge.Target)) continue;
             var from = clusters.GetValueOrDefault(edge.Source);
             var to = clusters.GetValueOrDefault(edge.Target);
+            // No ":port": a box declares none, and Graphviz warns about, then ignores, a port a node does not have.
             text.Append("    ").Append(Quote(from.Inner ?? edge.Source));
-            if (from.Inner is null && !string.IsNullOrEmpty(edge.SourceHandle)) text.Append(':').Append(Quote(edge.SourceHandle));
             text.Append(" -> ").Append(Quote(to.Inner ?? edge.Target));
-            if (to.Inner is null && !string.IsNullOrEmpty(edge.TargetHandle)) text.Append(':').Append(Quote(edge.TargetHandle));
 
             var attributes = new List<string>();
             if (from.Name is not null) attributes.Add("ltail=" + Quote(from.Name));

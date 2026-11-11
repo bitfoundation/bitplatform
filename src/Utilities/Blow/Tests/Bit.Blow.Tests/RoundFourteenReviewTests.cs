@@ -349,18 +349,40 @@ public class RoundFourteenReviewTests
             $"imported {levels} levels of nesting with MaxDepth {new BlowImportLimits().MaxDepth}, no too-deep issue");
     }
 
+    /// <summary>
+    /// Scaling, not a deadline: four times the groups and four times the edges take about four times as long when the
+    /// work is linear, and sixteen times when every group scans every edge - whatever the machine's speed.
+    /// </summary>
     [TestMethod]
     public void Mermaid_ArrangingManyGroupsWithManyEdgesIsNotQuadratic()
     {
-        var text = new StringBuilder("graph TD\n");
-        for (var i = 0; i < 4000; i++) text.Append("subgraph g").Append(i).Append("\nx").Append(i).Append("\nend\n");
-        for (var i = 0; i < 50_000; i++) text.Append("p-->q\n");
+        static string Text(int groups, int edges)
+        {
+            var text = new StringBuilder("graph TD\n");
+            for (var i = 0; i < groups; i++) text.Append("subgraph g").Append(i).Append("\nx").Append(i).Append("\nend\n");
+            for (var i = 0; i < edges; i++) text.Append("p-->q\n");
+            return text.ToString();
+        }
 
-        var watch = Stopwatch.StartNew();
-        var result = BlowMermaidFormat.Import(text.ToString(), new BlowDiagramImportOptions { Layout = new BlowLayeredLayoutOptions() });
-        watch.Stop();
+        // The best of a few runs, so a pause of the machine's own does not count as the import's.
+        static double Time(string text)
+        {
+            var options = new BlowDiagramImportOptions { Layout = new BlowLayeredLayoutOptions() };
+            BlowMermaidFormat.Import(text, options);
+            var best = double.MaxValue;
+            for (var run = 0; run < 3; run++)
+            {
+                var watch = Stopwatch.StartNew();
+                BlowMermaidFormat.Import(text, options);
+                best = Math.Min(best, watch.Elapsed.TotalMilliseconds);
+            }
+            return best;
+        }
 
-        Assert.IsTrue(watch.ElapsedMilliseconds < 3000, $"{watch.ElapsedMilliseconds} ms for {result.Document!.Nodes.Count} nodes and {result.Document.Edges.Count} edges");
+        var small = Time(Text(1000, 12_500));
+        var large = Time(Text(4000, 50_000));
+
+        Assert.IsTrue(large < small * 10, $"{small:0} ms for 1,000 groups and 12,500 edges, {large:0} ms for four times both");
     }
 
     // ---- GraphML ----
