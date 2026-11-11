@@ -94,7 +94,8 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             // from the attribute that caused it; "no name given" is what it means.
             TableName = string.IsNullOrWhiteSpace(tableName) ? typeName : tableName!,
         };
-        model.HintName = (model.Namespace is null ? "" : model.Namespace + ".") + typeName + ".BlazeDb.g.cs";
+        // A namespace part that is a keyword is displayed escaped (App.@event), and '@' is not allowed in a hint name.
+        model.HintName = (model.Namespace is null ? "" : model.Namespace.Replace("@", "") + ".") + typeName + ".BlazeDb.g.cs";
 
         var usedNumbers = new HashSet<int>();
         var pendingAuto = new List<BlazeDbPropModel>();
@@ -107,9 +108,12 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
         foreach (var member in symbol.GetMembers())
         {
             ct.ThrowIfCancellationRequested();
+            // An explicit interface implementation (string IHasTenant.Tenant) cannot be named on the row, so it
+            // is not a column: CanBeReferencedByName leaves it out, as it does compiler-generated members.
             if (member is IPropertySymbol prop &&
                 !prop.IsStatic &&
                 !prop.IsIndexer &&
+                prop.CanBeReferencedByName &&
                 prop.GetMethod is not null &&
                 !prop.IsImplicitlyDeclared &&
                 !HasAttribute(prop.GetAttributes(), IgnoreAttributeName))
@@ -140,6 +144,15 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             var orderedAttr = FindAttribute(attrs, OrderedIndexAttributeName);
             if (indexOnly && indexAttr is null && orderedAttr is null && !compoundMembers.Contains(prop.Name))
             {
+                // A computed property (=> ...) is rightly left out. A get-only auto-property holds a value of its
+                // own - from a constructor or an initializer - that a reload would not restore, which is worth a
+                // word: a struct, whose parameterless constructor is always the one rows are built with, or a
+                // class that also declares one, loses it without any other sign.
+                if (IsAutoProperty(symbol, prop))
+                {
+                    result.Diagnostics.Add(new BlazeDbDiagnosticInfo(
+                        BlazeDbDiagnostics.UnstoredGetOnlyProperty, prop.Locations.FirstOrDefault() ?? location, typeName, prop.Name));
+                }
                 continue;
             }
 
@@ -162,6 +175,9 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             }
 
             propModel.Name = prop.Name;
+            // A struct's string is null whenever the row was made with new S { ... } without it - the compiler does not
+            // warn about that - so a struct keeps storing such a null as empty, as it always did.
+            propModel.RejectsNull &= symbol.TypeKind != TypeKind.Struct;
             propModel.IndexOnly = indexOnly;
             propModel.BoundByConstructor = bound;
             propModel.IsRequired = prop.IsRequired;
@@ -406,7 +422,12 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
     /// The first property a table type inherits that a reader would expect to be persisted. The
     /// generator only walks a type's own members, so an inherited one would be left out of every
     /// row without a word - refusing the type is the lesser evil. <c>[BlazeDbIgnore]</c> on the
-    /// base property says the omission is intended.
+    /// base property says the omission is intended. A public setter counts wherever the base type is
+    /// declared. A non-public one counts when the base type is declared in source, where the property
+    /// can be marked: a table's own <c>{ get; private set; }</c> property is stored, so an inherited
+    /// <c>{ get; protected set; }</c> one - the usual audit-field base class - is just as much data.
+    /// A base type from a referenced assembly cannot be marked, so refusing it would leave no way to
+    /// use the table at all; its non-public setters are left alone, as before.
     /// </summary>
     private static IPropertySymbol? FindInheritedProperty(INamedTypeSymbol symbol)
     {
@@ -421,10 +442,13 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
                         IsStatic: false,
                         IsIndexer: false,
                         IsImplicitlyDeclared: false,
-                        DeclaredAccessibility: Accessibility.Public,
+                        CanBeReferencedByName: true,
+                        DeclaredAccessibility: not Accessibility.Private,
                         GetMethod: not null,
-                        SetMethod: { DeclaredAccessibility: Accessibility.Public },
+                        SetMethod: { } setter,
                     } prop &&
+                    (setter.DeclaredAccessibility == Accessibility.Public && prop.DeclaredAccessibility == Accessibility.Public ||
+                     prop.Locations.Any(l => l.IsInSource)) &&
                     !HasAttribute(prop.GetAttributes(), IgnoreAttributeName) &&
                     Categorize(prop.Type) is not null)
                 {
@@ -535,6 +559,7 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
             return new BlazeDbPropModel
             {
                 Category = isAnnotatedRef ? BlazeDbPropCategory.NullableRefScalar : BlazeDbPropCategory.Scalar,
+                RejectsNull = type.IsReferenceType && type.NullableAnnotation == NullableAnnotation.NotAnnotated,
                 Kind = kind.Value,
                 TypeDisplay = BlazeDbTypeMap.Display(type),
                 ScalarTypeDisplay = BlazeDbTypeMap.Display(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),

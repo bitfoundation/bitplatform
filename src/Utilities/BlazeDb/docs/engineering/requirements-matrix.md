@@ -37,11 +37,15 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Index-only computed properties (**new**) | verified | P2 | `BlazeDbPropModel.IndexOnly` | `DataModelingTests.Index_Only_*` | Must be recomputed from stored values; same live-row rule |
 | Nested objects / embedded documents | out of scope (deferred) | P2 | - | - | ADR-010; alternatives documented in README "Modeling data" |
 | Unique constraints (single, compound; null semantics) | verified | P0 | `ValidateUnique` | `ConstraintTests`, `ModelBasedTests` | - |
-| Required fields / validation hooks | missing | P3 | - | - | Validate before writing; the serializer refuses a null non-nullable string at commit when persisting |
+| Required fields / validation hooks | missing | P3 | - | - | Validate before writing |
+| Null in a non-nullable `string`/`byte[]` refused when persisted (**round 13**) | verified | P0 | `BlazeDbPropModel.RejectsNull`, emitter | `GeneratorEdgeCaseTests.A_Null_In_A_Non_Nullable_*`, `A_Persisted_Write_With_A_Null_*` | Before: written as absent, read back as `""` (ADR-018); nullable-oblivious code and struct tables keep the old behavior; snapshots stay lenient (`GeneratorEdgeCaseTests.A_Row_Changed_In_Place_*`) |
+| Strings that are not valid UTF-16 refused (**round 13**) | verified | P0 | `BlazeDbBufferWriter.WriteString` (strict UTF-8) | `GeneratorEdgeCaseTests.A_String_With_An_Unpaired_Surrogate_*` | Before: stored as U+FFFD, two keys could merge into one on reload (ADR-018) |
+| Keyword names, `@` namespaces, explicit interface members, tuple-member-named compound properties (**round 13**) | verified | P1 | emitter `Identifier`/`Access`, `CanBeReferencedByName`, `BlazeDbCompoundIndexModel.TupleType` | `GeneratorEdgeCaseModels.cs` compiles; `GeneratorEdgeCaseTests.Keyword_Names_*` | Before: uncompilable generated code, or the whole generator crashing (CS8785) |
+| Signed/unsigned integer type changes | documented | P1 | README "Schema evolution" | - | Same wire type, different encoding: needs a new field number and a migration |
 | Referential integrity / cascades | out of scope | - | - | - | Relationships are key properties; documented |
 | Schema evolution (field numbers, tolerant reader, BLZ013) | verified | P0 | generator | `SchemaEvolutionTests` | - |
 | Data migrations with a stored version (**new**) | verified | P1 | `UserVersion`, `AddMigration`, `BlazeDbMetaTable` | `BackupAndMigrationTests` | - |
-| Compile-time diagnostics for every unsupported shape | verified | P1 | `BlazeDbDiagnostics` BLZ001-018 (BLZ017, BLZ018 **new**) | MCP `McpInspectorTests` (every catalog sample) | BLZ004 now means "no constructor rows can be built with" |
+| Compile-time diagnostics for every unsupported shape | verified | P1 | `BlazeDbDiagnostics` BLZ001-020 (BLZ017, BLZ018 **new**; BLZ020 and BLZ012 for non-public setters **round 13**) | MCP `McpInspectorTests` (every catalog sample) | BLZ004 now means "no constructor rows can be built with"; BLZ012 now also refuses an inherited `{ get; protected set; }` property declared in source, which was silently dropped (a base type from a referenced assembly cannot be marked `[BlazeDbIgnore]`, so its non-public setters are still not reported) |
 | `required` members taken by the constructor (**new**) | verified | P2 | emitter sets them in the initializer too | `ReviewRegressionTests.A_Required_Member_*` | - |
 
 ## C. CRUD and bulk
@@ -118,6 +122,12 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Backup / restore, single-file export/import (**new**) | verified | P1 | `ExportAsync`, `ImportAsync` | `BackupAndMigrationTests` (damaged files, overwrite refusal, stale log), `ReviewFollowUpTests` (export after a failed undo, import from a memory stream) | Import holds the whole file in memory, once |
 | Format versioning, older snapshot formats | verified | P1 | `BlazeDbSnapshotFormat` | `DurabilityTests` | - |
 | Quota awareness, eviction risk documented | verified | P1 | `IBlazeDbQuotaAwareStorage` | `QuotaTests`; README "Persistence guarantees" | Browser eviction cannot be prevented |
+| Browser `QuotaExceededError` handled like a predicted refusal (**round 13**) | verified (engine) / implemented (browser) | P1 | `BlazeDbBrowserQuota`, `markQuota` in both modules, `BlazeDbWalManager.FlushAsync` | `PersistenceHardeningTests.A_Storage_That_Runs_Out_Of_Room_*`, `A_Storage_Refusal_Compaction_Cannot_Fix_*` | The browser mapping itself needs a full origin to exercise; E2E covers the estimate-driven path (ADR-019) |
+| Durable directory entries on Unix (**round 13**) | implemented | P0 | `BlazeDbDirectorySync` (`fsync` of the directory after a create or replace) | `PersistenceHardeningTests.The_File_Storage_*` (behavior), review (durability) | Best effort: a file system that refuses directory `fsync` keeps the old behavior; power-loss testing not done here |
+| IndexedDB flushes durable when acknowledged (**round 13**) | implemented | P0 | `{ durability: 'strict' }` on write transactions | E2E `BrowserModuleTests` | Before: Chromium's relaxed default completed transactions before they were flushed |
+| Superseded generations reclaimed after a crash (**round 13**) | verified | P1 | `SweepUnreferencedFilesAsync` at writer open; OPFS and IndexedDB backends enumerable | `PersistenceHardeningTests.Opening_For_Writing_Removes_*` | Before: files a closed tab left behind leaked quota for good, and `DeleteAsync` left them (ADR-020) |
+| Replica catches a checkpoint made between its open and its subscription (**round 13**) | verified (engine) | P2 | `HasNewerGenerationAsync`, `BlazeDbTabSync.CreateReplicaAsync` | `PersistenceHardeningTests.A_Replica_Can_Tell_*` | - |
+| Failed module import can be retried (**round 13**) | implemented | P1 | `BlazeDbBrowserModules.ImportAsync` (fetch probe first) | E2E (every page boots through it) | The runtime caches a rejected `import()` per module name for the page's life; the probe keeps network failures from reaching it |
 | Encryption at rest | verified | P2 | `BlazeDbEncryptedStorage` | `EncryptionTests` | No rollback protection, no key rotation (documented) |
 
 ## I. Runtimes
@@ -178,7 +188,8 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Diagnostics without data exposure | verified | P1 | `Explain` omits values | `IndexQueryTests.Explain_*` | Exception messages name keys (as before) |
 | Actionable exceptions | verified | P1 | `BlazeDbException` family | `Errors` demo page, tests | - |
 | Background failure surfaced | verified | P1 | `LastBackgroundError` | `QuotaTests` | - |
-| Timing/slow-query listeners | missing | P3 | - | - | Hot-path cost not justified |
+| Persistence and commit metrics, OpenTelemetry-compatible (**round 13**) | verified | P2 | `BlazeDbDiagnostics` (meter `Bit.BlazeDb`) | `DiagnosticsTests` | No content in any tag (ADR-017) |
+| Timing/slow-query listeners | out of scope | - | - | - | Reads are method calls on memory; timing them costs more than they do (ADR-017) |
 
 ## Q-T. Developer experience, testing, benchmarks, docs
 

@@ -213,3 +213,62 @@ Undo can only fail when an index selector or comparer throws. When it does, memo
 never recorded, and the next checkpoint would make it durable. The database records the failure and refuses
 further writes and checkpoints with an exception that says to reopen; committed records already buffered are
 still flushed, and disposal still closes the log before rethrowing the undo's exception.
+
+## ADR-017 - Metrics on System.Diagnostics.Metrics, for the write and durability path only
+
+**Decision.** One static meter, `Bit.BlazeDb` (`BlazeDbDiagnostics`), with counters and histograms for commits,
+rollbacks, log flushes, checkpoints, recovery, storage failures and quota refusals - the Bcrdt convention.
+No database name, table name, key or value in any tag; a failure is tagged with the operation and the
+exception's type, never its message.
+
+**Why.** Whether data is safe, and how far durability lags a commit, is what production needs to see, and the
+standard API reaches OpenTelemetry, Belemetry and `dotnet-counters` with no dependency. An instrument nobody
+listens to costs one field read, so the commit counter can sit on the write path.
+
+**Rejected.** Read and query timing: a point read is about a nanosecond, so measuring it would cost more than
+the read. An `ActivitySource` per flush: a span every 100 ms is noise; the histograms carry the same facts.
+
+## ADR-018 - Refuse what cannot be read back as written
+
+**Decision.** The generated writer throws for a null in a `string` or `byte[]` declared non-nullable (nullable
+context enabled), and `WriteString` throws for text with an unpaired surrogate. Either fails the write that
+would persist it - an autocommit write is undone, a transaction's commit rolls back - with a message naming
+the property, never the value.
+
+**Why.** Both used to be stored as something else: a null as an absent field that reads back as `""` or an
+empty array, a broken surrogate as U+FFFD. The row then matched different queries after a restart than
+before, and two keys differing only in the broken character became one, losing a row. Nullable-oblivious
+code keeps storing null as empty, since its annotations say nothing, and so do struct tables: a struct's
+string is null whenever a row is built without it, and the compiler does not warn.
+
+The checks guard writes only. Snapshots and exports encode with a lenient writer
+(`BlazeDbBufferWriter.Lenient`): a row changed in place after its write was refused - an EF Core entity whose
+save failed is still the table's row object - would otherwise fail every checkpoint from then on, and the
+quota path's compaction with it. Generated writers call `writer.RejectNull(...)`, which throws on a write and
+leaves the field out in a snapshot.
+
+**Rejected.** Preserving the null: an absent field is also what a row written before the property existed
+holds, and reading those as null would put nulls into non-nullable properties everywhere. WTF-8 for lone
+surrogates: a second string encoding to keep in step with every reader, for input no application means.
+
+## ADR-019 - The storage's own quota refusal is the engine's quota refusal
+
+**Decision.** The browser modules mark a `QuotaExceededError` (only the message survives into a
+`JSException`), the storages rethrow it as `BlazeDbStorageQuotaExceededException`, and a flush that meets one
+compacts once - a completed checkpoint has made every buffered commit durable - before calling
+`OnQuotaPressure` (once per episode) and rethrowing.
+
+**Why.** The estimate the engine checks covers the whole origin and can be stale or missing, so the real limit
+can be reached anyway. Before, that surfaced as a raw `JSException`, skipped the compaction that might have
+fixed it (the flusher loop's checkpoint never ran after a failed flush) and never told the application.
+
+## ADR-020 - The writer reclaims unreferenced generations when it opens
+
+**Decision.** On open, a writer whose storage can list its files deletes every `snapshot-*.blz` and `wal-*.blz`
+the manifest does not name. The OPFS and IndexedDB backends implement `IBlazeDbEnumerableStorage`.
+
+**Why.** A checkpoint deletes the generation it replaced after publishing the new manifest, and remembers the
+files it could not delete in memory only; a tab or process that ended in between leaked them, which in the
+browser counts against the origin's quota. Only the writer sweeps, never the current generation, and only names
+the engine writes; a replica reading a generation that disappears sees the manifest moved and starts over, as
+after any checkpoint.

@@ -2,7 +2,9 @@
 
 /// <summary>
 /// File-system storage backend for desktop hosts and integration tests. Atomic writes go
-/// through a temp file + replace; appends fsync before returning.
+/// through a temp file + replace; appends fsync before returning, and on Unix-like systems the
+/// directory is flushed as well whenever a file is created or replaced, so the new name is as durable
+/// as its contents.
 /// <para>
 /// Opening a directory for writing takes an exclusive lock on it, which is the same single-writer
 /// guarantee the browser backends get from the Web Locks API: two processes appending to one log
@@ -113,14 +115,28 @@ public sealed class BlazeDbFileStorage : IBlazeDbEnumerableStorage, IDisposable
         {
             File.Move(tempPath, path);
         }
+        // The new contents are on disk, but on Unix the rename that put them under this name is not until
+        // the directory is flushed - and a checkpoint deletes the previous generation's files right after
+        // replacing the manifest, so a lost rename could leave a manifest that names files no longer there.
+        BlazeDbDirectorySync.Flush(_directory);
     }
 
     public async ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
-        await using var stream = new FileStream(PathOf(name), FileMode.Append, FileAccess.Write, FileShare.Read);
-        await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
-        stream.Flush(flushToDisk: true);
+        var path = PathOf(name);
+        var created = !File.Exists(path);
+        await using (var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read))
+        {
+            await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
+            stream.Flush(flushToDisk: true);
+        }
+        if (created)
+        {
+            // A generation's log is created by its first append; its name has to be as durable as the
+            // records in it, or a power loss could leave the records on disk under no name at all.
+            BlazeDbDirectorySync.Flush(_directory);
+        }
     }
 
     public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default)

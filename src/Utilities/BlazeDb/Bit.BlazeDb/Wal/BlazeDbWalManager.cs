@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Storage;
 
@@ -183,9 +184,27 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         try
         {
             await EnsureQuotaHeadroomAsync(ct).ConfigureAwait(false);
+            bool flushed;
+            try
+            {
+                flushed = await FlushPendingAsync(ct).ConfigureAwait(false);
+            }
+            catch (BlazeDbStorageQuotaExceededException refusal)
+            {
+                // The storage itself ran out of room - the estimate EnsureQuotaHeadroomAsync relies on covers
+                // the whole origin and can be stale or missing. Handled as a refusal the estimate predicted:
+                // compact, which on success has made every buffered commit durable in the new snapshot, and
+                // otherwise report the pressure and rethrow.
+                if (!await TryCompactAsync(ct).ConfigureAwait(false))
+                {
+                    ReportQuotaPressure(refusal.Quota);
+                    throw;
+                }
+                flushed = true;
+            }
             // Cleared only when something actually reached storage, as in the loop: a flush with
             // nothing buffered proves nothing and must not hide a checkpoint that keeps failing.
-            if (await FlushPendingAsync(ct).ConfigureAwait(false))
+            if (flushed)
             {
                 _fault = null;
             }
@@ -241,41 +260,62 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
         // A checkpoint replaces the WAL with a compact snapshot and deletes the superseded files,
         // which is usually enough to get back under the limit.
+        if (await TryCompactAsync(ct).ConfigureAwait(false))
+        {
+            lock (_db.SyncRoot)
+            {
+                pendingBytes = _pending.Length;
+            }
+            neededBytes = SpaceNeededFor(quotaAware, pendingBytes);
+            if (pendingBytes == 0 ||
+                await HasRoomForAsync(quotaAware, neededBytes, pendingBytes, ct).ConfigureAwait(false))
+            {
+                return;
+            }
+        }
+
+        var quota = _lastQuota ?? default;
+        _lastQuota = null; // Force a fresh estimate next time; space may have been freed since.
+        ReportQuotaPressure(quota);
+        throw new BlazeDbStorageQuotaExceededException(quota, neededBytes);
+    }
+
+    /// <summary>
+    /// Checkpoints to free space after a write was, or would have been, refused for lack of it; true when the
+    /// checkpoint completed. A checkpoint that itself runs out of room is not an error of its own here - the
+    /// caller goes on to report the refusal - but an engine-level error (a checkpoint that succeeded but whose
+    /// announcement failed) is not a quota problem and propagates as itself.
+    /// </summary>
+    private async ValueTask<bool> TryCompactAsync(CancellationToken ct)
+    {
         try
         {
             if (await CheckpointCoreAsync(ct).ConfigureAwait(false))
             {
                 _lastQuota = null;
-                lock (_db.SyncRoot)
-                {
-                    pendingBytes = _pending.Length;
-                }
-                neededBytes = SpaceNeededFor(quotaAware, pendingBytes);
-                if (pendingBytes == 0 ||
-                    await HasRoomForAsync(quotaAware, neededBytes, pendingBytes, ct).ConfigureAwait(false))
-                {
-                    return;
-                }
+                return true;
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException and not BlazeDbException)
+        catch (Exception ex) when (ex is not OperationCanceledException &&
+                                   (ex is not BlazeDbException || ex is BlazeDbStorageQuotaExceededException))
         {
-            // Compaction itself ran out of room; fall through to the deliberate failure below. (An
-            // engine-level error - a checkpoint that succeeded but whose announcement failed - is
-            // not a quota problem and propagates as itself.)
         }
+        return false;
+    }
 
-        var quota = _lastQuota ?? default;
-        _lastQuota = null; // Force a fresh estimate next time; space may have been freed since.
+    /// <summary>
+    /// Tells the application that a flush was refused for lack of space. Once per episode: the flusher retries
+    /// every tick, and an application that is asked to prompt the user does not want to be asked again 100 ms
+    /// later. A successful flush or checkpoint ends the episode, so a later refusal is reported afresh.
+    /// </summary>
+    private void ReportQuotaPressure(BlazeDbStorageQuota quota)
+    {
+        BlazeDbDiagnostics.QuotaRefusals.Add(1);
         if (!_quotaPressureReported)
         {
-            // Once per episode: the flusher retries every tick, and an application that is asked to
-            // prompt the user does not want to be asked again 100 ms later. A successful flush ends
-            // the episode, so a later refusal is reported afresh.
             _quotaPressureReported = true;
             _options.OnQuotaPressure?.Invoke(quota);
         }
-        throw new BlazeDbStorageQuotaExceededException(quota, neededBytes);
     }
 
     /// <summary>
@@ -391,14 +431,19 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             {
                 return false;
             }
+            var started = Stopwatch.GetTimestamp();
             try
             {
                 await _storage.AppendAsync(_walFile, chunk, ct).ConfigureAwait(false);
                 _walSize += chunk.Length;
                 _quotaPressureReported = false;
+                BlazeDbDiagnostics.WalFlushes.Add(1);
+                BlazeDbDiagnostics.WalFlushedBytes.Add(chunk.Length);
+                BlazeDbDiagnostics.WalFlushDuration.Record(BlazeDbDiagnostics.ElapsedMilliseconds(started));
             }
-            catch
+            catch (Exception ex)
             {
+                BlazeDbDiagnostics.RecordFailure(BlazeDbDiagnostics.FlushOperation, ex);
                 // The append may have got part of the chunk onto storage before it failed, so the
                 // log has to be trimmed back to whole records before these bytes are written again.
                 _walNeedsRepair = true;
@@ -483,6 +528,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     private async ValueTask<bool> CheckpointCoreAsync(CancellationToken ct)
     {
         await _ioLock.WaitAsync(ct).ConfigureAwait(false);
+        var started = Stopwatch.GetTimestamp();
         try
         {
             ReadOnlyMemory<byte> snapshotBytes;
@@ -531,8 +577,9 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                     BuildManifest(newGeneration, newSnapshotFile, newWalFile, snapshotLsn),
                     ct).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                BlazeDbDiagnostics.RecordFailure(BlazeDbDiagnostics.CheckpointOperation, ex);
                 // The manifest still points at the previous generation, so those records are the
                 // only record of these commits: put them back ahead of anything committed since.
                 lock (_db.SyncRoot)
@@ -556,6 +603,9 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             _walSize = 0;
             _walNeedsRepair = false; // The new generation's log is a fresh file with nothing to trim.
             _quotaPressureReported = false; // Compaction freed space; the next refusal is a new episode.
+            BlazeDbDiagnostics.Checkpoints.Add(1);
+            BlazeDbDiagnostics.CheckpointSnapshotBytes.Record(snapshotBytes.Length);
+            BlazeDbDiagnostics.CheckpointDuration.Record(BlazeDbDiagnostics.ElapsedMilliseconds(started));
 
             // The checkpoint is in place - the manifest names the new generation - so removing the
             // previous one is cleanup, and a failure there must not read as a failed checkpoint: not
@@ -663,6 +713,21 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
 
     private async ValueTask RecoverAsync(CancellationToken ct)
     {
+        var started = Stopwatch.GetTimestamp();
+        try
+        {
+            await RecoverCoreAsync(ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            BlazeDbDiagnostics.RecordFailure(BlazeDbDiagnostics.RecoveryOperation, ex);
+            throw;
+        }
+        BlazeDbDiagnostics.RecoveryDuration.Record(BlazeDbDiagnostics.ElapsedMilliseconds(started));
+    }
+
+    private async ValueTask RecoverCoreAsync(CancellationToken ct)
+    {
         var manifestBytes = await _storage.ReadAsync(ManifestFile, ct).ConfigureAwait(false);
         if (manifestBytes is null)
         {
@@ -675,12 +740,14 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             {
                 await _storage.WriteAtomicAsync(
                     ManifestFile, BuildManifest(_generation, _snapshotFile, _walFile, _snapshotLsn), ct).ConfigureAwait(false);
+                await SweepUnreferencedFilesAsync(ct).ConfigureAwait(false);
             }
             return;
         }
 
         var loaded = await LoadGenerationAsync(manifestBytes, ct).ConfigureAwait(false);
         ApplyGeneration(loaded);
+        BlazeDbDiagnostics.RecoveryReplayedCommits.Add(loaded.Log.Commits.Count);
 
         if (loaded.WalBytes is not null && loaded.Log.ValidLength < loaded.WalBytes.Length && !_options.ReadOnly)
         {
@@ -689,6 +756,64 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             // be a commit the writer is in the middle of appending.
             await _storage.WriteAtomicAsync(_walFile, loaded.WalBytes.AsMemory(0, loaded.Log.ValidLength), ct).ConfigureAwait(false);
         }
+        if (!_options.ReadOnly)
+        {
+            await SweepUnreferencedFilesAsync(ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Removes the snapshots and logs the manifest no longer names, when the backend can list its files.
+    /// <para>
+    /// A checkpoint deletes the generation it replaces once the new manifest is in place, and remembers the
+    /// files it could not delete for the next checkpoint - in memory. A process or tab that ends between the
+    /// manifest and the deletions, or before a retry, leaves those files behind for good: unreferenced, so
+    /// harmless to the data, but taking space that in the browser counts against the origin's quota. The
+    /// writer therefore clears them when it opens. Only names the engine writes are touched, and never the
+    /// current generation's; a replica part-way through reading a generation that disappears notices the
+    /// manifest moved and starts again, as it does after a checkpoint. A backend that cannot list, or a
+    /// failure to delete, leaves things as they were - the files cost space, not correctness.
+    /// </para>
+    /// </summary>
+    private async ValueTask SweepUnreferencedFilesAsync(CancellationToken ct)
+    {
+        if (_storage is not IBlazeDbEnumerableStorage enumerable)
+        {
+            return;
+        }
+        IReadOnlyCollection<string> names;
+        try
+        {
+            names = await enumerable.ListAsync(ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return;
+        }
+        foreach (var name in names)
+        {
+            if (IsGenerationFile(name) && name != _snapshotFile && name != _walFile && !_staleFiles.Contains(name))
+            {
+                _staleFiles.Add(name);
+            }
+        }
+        await DeleteStaleFilesAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>Whether <paramref name="name"/> is one of the snapshot or log files a generation is made of.</summary>
+    internal static bool IsGenerationFile(string name) =>
+        name.EndsWith(".blz", StringComparison.Ordinal) &&
+        (name.StartsWith("snapshot-", StringComparison.Ordinal) || name.StartsWith("wal-", StringComparison.Ordinal));
+
+    /// <summary>
+    /// Whether storage holds a newer generation than the one memory was loaded from - a checkpoint the writer
+    /// made since. A replica that subscribes to checkpoint announcements after opening asks this once, so a
+    /// checkpoint that landed in between is not missed until the next one.
+    /// </summary>
+    public async ValueTask<bool> HasNewerGenerationAsync(CancellationToken ct)
+    {
+        var manifestBytes = await _storage.ReadAsync(ManifestFile, ct).ConfigureAwait(false);
+        return manifestBytes is not null && TryParseManifest(manifestBytes, out var info) && info.Generation != _generation;
     }
 
     /// <summary>
@@ -959,8 +1084,10 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     /// </summary>
     internal static ReadOnlyMemory<byte> BuildSnapshot(IReadOnlyList<IBlazeDbTableInternal> tables, long lsn, int sizeHint)
     {
-        var writer = new BlazeDbBufferWriter(sizeHint);
-        var scratch = new BlazeDbBufferWriter(1024);
+        // Lenient: a snapshot stores memory as it is, even a row changed in place into something a write would
+        // refuse (see BlazeDbBufferWriter.Lenient) - failing would stop every checkpoint from then on.
+        var writer = new BlazeDbBufferWriter(sizeHint) { Lenient = true };
+        var scratch = new BlazeDbBufferWriter(1024) { Lenient = true };
         writer.WriteRaw(SnapshotMagic);
         writer.WriteByte(BlazeDbSnapshotFormat.Current);
         writer.WriteVarUInt((ulong)lsn);

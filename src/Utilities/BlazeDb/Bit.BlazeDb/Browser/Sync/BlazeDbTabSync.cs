@@ -52,7 +52,9 @@ public sealed class BlazeDbTabSync : IAsyncDisposable
     /// <summary>
     /// Subscribes <paramref name="replica"/> to the writer tab's checkpoints, reloading it each
     /// time one lands. <paramref name="onChanged"/> runs after a successful reload - use it to
-    /// re-run queries and refresh the UI.
+    /// re-run queries and refresh the UI. A checkpoint the writer made between the replica's open and
+    /// this call would otherwise go unheard until the next one, so the replica is reloaded once here
+    /// when storage already holds a newer generation than the one it opened.
     /// </summary>
     public static async ValueTask<BlazeDbTabSync> CreateReplicaAsync(
         string databaseName,
@@ -70,6 +72,18 @@ public sealed class BlazeDbTabSync : IAsyncDisposable
             // next checkpoint anyway.
             _ = sync.OnCheckpointAnnouncedAsync();
         });
+        try
+        {
+            if (await replica.HasNewerGenerationAsync().ConfigureAwait(false))
+            {
+                await sync.OnCheckpointAnnouncedAsync().ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is not ObjectDisposedException)
+        {
+            // Subscribed regardless: the next announcement reloads it, and LastError says it is behind.
+            sync.LastError = ex;
+        }
         return sync;
     }
 

@@ -235,6 +235,13 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         DeliverChanges();
     }
 
+    /// <summary>Whether storage holds a checkpoint newer than the state this database was loaded from; see <see cref="BlazeDbWalManager.HasNewerGenerationAsync"/>.</summary>
+    internal ValueTask<bool> HasNewerGenerationAsync(CancellationToken cancellationToken = default)
+    {
+        CheckDisposed();
+        return _wal?.HasNewerGenerationAsync(cancellationToken) ?? ValueTask.FromResult(false);
+    }
+
     public BlazeDbTable<TKey, TRow> GetTable<TKey, TRow>(BlazeDbTableDescriptor<TKey, TRow> descriptor)
         where TKey : notnull
     {
@@ -512,6 +519,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             _disposed = true;
             if (_activeTransaction is { } open)
             {
+                BlazeDbDiagnostics.Rollbacks.Add(1);
                 try
                 {
                     RevertOps(open.Ops);
@@ -642,6 +650,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             {
                 _singleOpScratch[0] = null!;
             }
+            BlazeDbDiagnostics.Commits.Add(1);
             if (changes is not null)
             {
                 QueueChanges(changes);
@@ -662,6 +671,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             {
                 // Rolling part of it back failed, so it still holds writes that were meant to be gone. Committing
                 // would journal them and report them to subscribers; it is rolled back instead.
+                BlazeDbDiagnostics.Rollbacks.Add(1);
                 RevertKeepingCause(transaction.Ops);
                 _activeTransaction = null;
                 ActiveTransactionOwner = null;
@@ -687,6 +697,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                 // Memory must never run ahead of what the log will replay, exactly as for an
                 // autocommit write: a batch that could not be journaled is undone here and now,
                 // and the transaction ends, rather than staying applied until someone disposes it.
+                BlazeDbDiagnostics.Rollbacks.Add(1);
                 RevertKeepingCause(transaction.Ops);
                 throw;
             }
@@ -694,6 +705,10 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
             {
                 _activeTransaction = null;
                 ActiveTransactionOwner = null;
+            }
+            if (transaction.Ops.Count > 0)
+            {
+                BlazeDbDiagnostics.Commits.Add(1);
             }
             if (changes is not null)
             {
@@ -707,6 +722,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         lock (SyncRoot)
         {
             VerifyActive(transaction);
+            BlazeDbDiagnostics.Rollbacks.Add(1);
             try
             {
                 RevertOps(transaction.Ops);

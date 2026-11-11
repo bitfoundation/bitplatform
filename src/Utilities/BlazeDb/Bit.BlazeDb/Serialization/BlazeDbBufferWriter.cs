@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.ComponentModel;
 using System.Text;
 
 namespace Bit.BlazeDb.Serialization;
@@ -26,6 +27,33 @@ public sealed class BlazeDbBufferWriter
     public byte[] ToArray() => WrittenSpan.ToArray();
 
     public void Reset() => _pos = 0;
+
+    /// <summary>
+    /// Set on the writers a snapshot or an export encodes rows with. A write refuses a row it could not read back
+    /// as written (see <see cref="WriteString"/> and <see cref="RejectNull"/>), so such a row never reaches the log.
+    /// A snapshot encodes whatever memory holds, though, and a row changed in place after its write was refused -
+    /// an EF Core entity whose save failed is still the table's row object - must not make every later checkpoint
+    /// fail, and with it compaction: memory is then stored the way it was before these checks existed.
+    /// </summary>
+    internal bool Lenient { get; set; }
+
+    /// <summary>
+    /// Called by generated row writers for a <c>string</c> or <c>byte[]</c> property that is declared non-nullable
+    /// but holds null: an absent field reads back as an empty value, so the write is refused with a message naming
+    /// <paramref name="property"/> of <paramref name="table"/>. While encoding a snapshot the field is left out instead.
+    /// Not meant to be called by application code.
+    /// </summary>
+    /// <exception cref="BlazeDbException">Always, outside a snapshot.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void RejectNull(string table, string property)
+    {
+        if (!Lenient)
+        {
+            throw new BlazeDbException(
+                $"Property '{property}' of table '{table}' is null, but its type is not nullable, so the null cannot be stored: " +
+                "it would read back as an empty value. Declare the property nullable to store null, or give it a value.");
+        }
+    }
 
     /// <summary>Drops everything written after the first <paramref name="length"/> bytes.</summary>
     internal void Truncate(int length)
@@ -120,13 +148,42 @@ public sealed class BlazeDbBufferWriter
 
     public void WriteDouble(double value) => WriteFixed64(BitConverter.DoubleToUInt64Bits(value));
 
-    /// <summary>Length-delimited UTF-8 string.</summary>
+    // Throws on an unpaired surrogate instead of writing U+FFFD in its place, as Encoding.UTF8 does.
+    private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+    /// <summary>
+    /// Length-delimited UTF-8 string. A string that is not valid UTF-16 - it holds a surrogate without its pair,
+    /// as one cut in the middle of an emoji does - has no exact UTF-8 encoding, and the lenient encoder would
+    /// store U+FFFD in its place: the row would read back different from what was written, and two such keys
+    /// that differ only in the broken character would become one, so one row would vanish on the next open.
+    /// The write is refused instead.
+    /// </summary>
+    /// <exception cref="BlazeDbException">The string holds an unpaired surrogate.</exception>
     public void WriteString(string value)
     {
-        var byteCount = Encoding.UTF8.GetByteCount(value);
+        if (Lenient)
+        {
+            var count = Encoding.UTF8.GetByteCount(value);
+            WriteVarUInt((ulong)count);
+            Ensure(count);
+            Encoding.UTF8.GetBytes(value, _buffer.AsSpan(_pos));
+            _pos += count;
+            return;
+        }
+        int byteCount;
+        try
+        {
+            byteCount = StrictUtf8.GetByteCount(value);
+        }
+        catch (EncoderFallbackException ex)
+        {
+            throw new BlazeDbException(
+                $"A string to be stored holds an unpaired UTF-16 surrogate at index {ex.Index}, so it is not valid text " +
+                "and could not be read back as written. Repair or drop the broken character before writing it.", ex);
+        }
         WriteVarUInt((ulong)byteCount);
         Ensure(byteCount);
-        Encoding.UTF8.GetBytes(value, _buffer.AsSpan(_pos));
+        StrictUtf8.GetBytes(value, _buffer.AsSpan(_pos));
         _pos += byteCount;
     }
 

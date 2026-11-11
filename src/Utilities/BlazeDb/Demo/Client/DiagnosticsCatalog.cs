@@ -258,11 +258,11 @@ public static class DiagnosticsCatalog
 
         new("BLZ012", "Table type inherits properties", true,
             "partial class Foo : HasProps",
-            "The generator serializes a table type's own properties only, so a property inherited from a base class would silently never be persisted. Declare it on the table type, or mark the base property <code>[BlazeDbIgnore]</code> when leaving it out is intended.",
+            "The generator serializes a table type's own properties only, so a settable property inherited from a base class - whatever its setter's accessibility - would silently never be persisted. Declare it on the table type, or mark the base property <code>[BlazeDbIgnore]</code> when leaving it out is intended.",
             """
             public abstract class Entity
             {
-                public DateTime CreatedAt { get; set; }
+                public DateTime CreatedAt { get; protected set; }
             }
 
             [BlazeDbTable("notes")]
@@ -422,6 +422,26 @@ public static class DiagnosticsCatalog
             {
                 [BlazeDbKey] public int Id { get; set; }
                 public int TableNumber { get; set; }
+            }
+            """),
+
+        new("BLZ020", "Get-only auto-property is not stored", false,
+            "public DateTime CreatedAt { get; } = DateTime.UtcNow;",
+            "A row is read back through one constructor - the parameterless one whenever the type has it, which every struct does - and then its setters. A get-only auto-property that constructor does not take has no setter to restore it with, so it is left out of the row bytes, and after a reload it holds whatever the constructor or its initializer gives it: the time of the reload rather than of the write, say. A computed property (<code>=&gt; ...</code>) is not reported; it is rebuilt from the stored ones.",
+            """
+            [BlazeDbTable("orders")]
+            public partial class Order
+            {
+                [BlazeDbKey] public Guid Id { get; set; }
+                public DateTime CreatedAt { get; } = DateTime.UtcNow;   // BLZ020
+            }
+            """,
+            """
+            [BlazeDbTable("orders")]
+            public partial class Order
+            {
+                [BlazeDbKey] public Guid Id { get; set; }
+                public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
             }
             """),
     ];

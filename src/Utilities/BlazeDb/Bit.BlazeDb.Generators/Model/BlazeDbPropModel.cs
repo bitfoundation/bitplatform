@@ -26,6 +26,13 @@ internal sealed class BlazeDbPropModel
 
     /// <summary>A <c>required</c> member: the reader's object initializer has to set it even when a constructor took it too.</summary>
     public bool IsRequired;
+
+    /// <summary>
+    /// A reference-type scalar (<c>string</c>, <c>byte[]</c>) declared non-nullable in a nullable-enabled context:
+    /// the writer refuses a null in it, which would otherwise read back as an empty value. Nullable-oblivious
+    /// declarations keep the old behavior.
+    /// </summary>
+    public bool RejectsNull;
     public string? HashIndexName;
     public bool HashIndexUnique;
     public string? OrderedIndexName;

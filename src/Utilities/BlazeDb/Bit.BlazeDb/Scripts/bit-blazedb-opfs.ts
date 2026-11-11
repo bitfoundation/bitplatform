@@ -14,6 +14,10 @@ interface HeldLock {
 const heldLocks = new Map<string, HeldLock>();
 // Locks this document believed it held but can no longer vouch for. See revalidateLocks.
 const lostLocks = new Set<string>();
+// Set from the moment a restored document starts asking who holds its locks until the answer is in. The
+// question is asynchronous and the flusher's timer fires as soon as the page is back, so without this a
+// write could slip in while another tab holds the lock and before this one has noticed.
+let revalidating = false;
 
 export function hasWebLocks(): boolean {
     return !!navigator.locks;
@@ -34,18 +38,30 @@ export async function acquireLock(lockName: string, allowWithoutWebLocks: boolea
 }
 
 async function requestLock(lockName: string): Promise<boolean> {
+    let entry: HeldLock | undefined;
     const granted = await new Promise<boolean>((resolve) => {
-        navigator.locks.request(lockName, { ifAvailable: true }, (lock) => {
+        const request = navigator.locks.request(lockName, { ifAvailable: true }, (lock) => {
             if (lock === null) {
                 resolve(false);
                 return null;
             }
             // Hold the lock until releaseLock is called (or the document goes away).
             const holding = new Promise<void>((release) => {
-                heldLocks.set(lockName, { release, clientId: null });
+                entry = { release, clientId: null };
+                heldLocks.set(lockName, entry);
             });
             resolve(true);
             return holding;
+        });
+        // The request settles when the lock is let go. It rejects when another context took the lock away
+        // with { steal: true }: from then on writes from this document would interleave with the new
+        // holder's, so the lock is marked lost. A release of our own leaves no entry, and is not marked.
+        // Only this request's own entry: one re-taken under the same name since (see revalidateLocks) is not lost.
+        request.then(undefined, () => {
+            if (entry !== undefined && heldLocks.get(lockName) === entry) {
+                lostLocks.add(lockName);
+            }
+            resolve(false);
         });
     });
     if (granted) {
@@ -84,7 +100,7 @@ export function releaseLock(lockName: string): void {
 // written after the lock was lost could interleave with another tab's. Synchronous on purpose, so
 // the check costs the engine nothing measurable per flush.
 export function isLockHeld(lockName: string): boolean {
-    return heldLocks.has(lockName) && !lostLocks.has(lockName);
+    return !revalidating && heldLocks.has(lockName) && !lostLocks.has(lockName);
 }
 
 // A document restored from the back/forward cache may have had its locks released while it was
@@ -135,12 +151,26 @@ async function revalidateLocks(): Promise<void> {
 if (typeof window !== 'undefined') {
     window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
-            void revalidateLocks();
+            void beginRevalidation();
         }
     });
     document.addEventListener('resume', () => {
-        void revalidateLocks();
+        void beginRevalidation();
     });
+}
+
+// Writes are refused synchronously, before the first await, until the locks have been checked; a refused
+// flush is retried on the flusher's next tick, so the commits it carried are only delayed.
+async function beginRevalidation(): Promise<void> {
+    if (heldLocks.size === 0) {
+        return;
+    }
+    revalidating = true;
+    try {
+        await revalidateLocks();
+    } finally {
+        revalidating = false;
+    }
 }
 
 // Whether this context can write OPFS files. createWritable() is the only write API available on
@@ -176,18 +206,37 @@ export async function openExistingDatabaseDirectory(databaseName: string): Promi
     }
 }
 
-// Returns the file contents as a Uint8Array, or null if the file does not exist.
+// Returns the file contents as a Uint8Array, or null if the file does not exist. A File is a snapshot,
+// and reading one the writer tab has replaced since getFile() - its flusher rewrites the log every
+// FlushInterval - fails with NotReadableError; a replica simply takes a fresh snapshot and reads again.
 export async function readFile(directory: FileSystemDirectoryHandle, name: string): Promise<Uint8Array | null> {
-    try {
-        const handle = await directory.getFileHandle(name);
-        const file = await handle.getFile();
-        return new Uint8Array(await file.arrayBuffer());
-    } catch (error) {
-        if (isNotFound(error)) {
-            return null;
+    for (let attempt = 0; ; attempt++) {
+        try {
+            const handle = await directory.getFileHandle(name);
+            const file = await handle.getFile();
+            return new Uint8Array(await file.arrayBuffer());
+        } catch (error) {
+            if (isNotFound(error)) {
+                return null;
+            }
+            if (attempt < 4 && (error as { name?: string } | null)?.name === 'NotReadableError') {
+                continue;
+            }
+            throw error;
         }
-        throw error;
     }
+}
+
+// The names of every file in the database's directory, joined with '/' - a character no OPFS name can
+// hold - so one string crosses into .NET.
+export async function listFiles(directory: FileSystemDirectoryHandle): Promise<string> {
+    const names: string[] = [];
+    for await (const [name, handle] of (directory as unknown as AsyncIterable<[string, FileSystemHandle]>)) {
+        if (handle.kind === 'file') {
+            names.push(name);
+        }
+    }
+    return names.join('/');
 }
 
 // Copies a staged Uint8Array into a .NET-provided span (zero extra allocations on the JS side).
@@ -215,8 +264,12 @@ async function writeStream(handle: FileSystemFileHandle, options: FileSystemCrea
 }
 
 export async function writeAtomic(directory: FileSystemDirectoryHandle, name: string, bytes: Uint8Array): Promise<void> {
-    const handle = await directory.getFileHandle(name, { create: true });
-    await writeStream(handle, undefined, bytes as Uint8Array<ArrayBuffer>);
+    try {
+        const handle = await directory.getFileHandle(name, { create: true });
+        await writeStream(handle, undefined, bytes as Uint8Array<ArrayBuffer>);
+    } catch (error) {
+        throw markQuota(error);
+    }
 }
 
 // On the main thread the only writable API is createWritable(), which stages the whole file in a
@@ -224,9 +277,23 @@ export async function writeAtomic(directory: FileSystemDirectoryHandle, name: st
 // with the WAL - fine at the default checkpoint size, and the reason the engine compacts the log
 // rather than letting it grow. (Sync access handles would avoid the copy but exist only in workers.)
 export async function appendFile(directory: FileSystemDirectoryHandle, name: string, bytes: Uint8Array): Promise<void> {
-    const handle = await directory.getFileHandle(name, { create: true });
-    const file = await handle.getFile();
-    await writeStream(handle, { keepExistingData: true }, { type: 'write', position: file.size, data: bytes as Uint8Array<ArrayBuffer> });
+    try {
+        const handle = await directory.getFileHandle(name, { create: true });
+        const file = await handle.getFile();
+        await writeStream(handle, { keepExistingData: true }, { type: 'write', position: file.size, data: bytes as Uint8Array<ArrayBuffer> });
+    } catch (error) {
+        throw markQuota(error);
+    }
+}
+
+// The browser reports a full origin as a DOMException named QuotaExceededError, which reaches .NET as a
+// JSException carrying only the message. The marker in front lets the storage turn it into
+// BlazeDbStorageQuotaExceededException, so the engine compacts and reports quota pressure for it as it does
+// when its own estimate says the write would not fit.
+function markQuota(error: unknown): unknown {
+    return (error as { name?: string } | null)?.name === 'QuotaExceededError'
+        ? new Error('BLAZEDB_QUOTA_EXCEEDED: ' + ((error as { message?: string }).message ?? 'storage quota exceeded'))
+        : error;
 }
 
 // { usage, quota } for this origin, or null when the browser does not implement estimate().

@@ -50,9 +50,18 @@ export async function openExistingDatabase(databaseName: string): Promise<IDBDat
     });
 }
 
+// Writes ask for strict durability: under the default ('relaxed' in Chromium since version 121) a
+// transaction completes once the data is with the operating system, before it is flushed to disk, and a
+// power loss can then take back a flush the engine already acknowledged.
+function transaction(db: IDBDatabase, mode: IDBTransactionMode): IDBTransaction {
+    return mode === 'readwrite'
+        ? db.transaction(STORE, mode, { durability: 'strict' })
+        : db.transaction(STORE, mode);
+}
+
 function run<T>(db: IDBDatabase, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T | undefined> {
     return new Promise<T | undefined>((resolve, reject) => {
-        const tx = db.transaction(STORE, mode);
+        const tx = transaction(db, mode);
         const store = tx.objectStore(STORE);
         let result: IDBRequest<T> | undefined;
         try {
@@ -62,10 +71,10 @@ function run<T>(db: IDBDatabase, mode: IDBTransactionMode, action: (store: IDBOb
             return;
         }
         // Resolve on transaction completion, not on request success: for writes that is the point at
-        // which the data is durable, which is what the engine's flush contract promises.
+        // which the data is durable (see transaction above), which is what the engine's flush contract promises.
         tx.oncomplete = () => resolve(result ? result.result : undefined);
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted.'));
+        tx.onerror = () => reject(markQuota(tx.error));
+        tx.onabort = () => reject(markQuota(tx.error) ?? new Error('IndexedDB transaction aborted.'));
     });
 }
 
@@ -85,7 +94,7 @@ export async function writeAtomic(db: IDBDatabase, name: string, bytes: Uint8Arr
 
 export async function appendFile(db: IDBDatabase, name: string, bytes: Uint8Array): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readwrite');
+        const tx = transaction(db, 'readwrite');
         const store = tx.objectStore(STORE);
         const existing = store.get(name);
         existing.onsuccess = () => {
@@ -101,9 +110,24 @@ export async function appendFile(db: IDBDatabase, name: string, bytes: Uint8Arra
             store.put(merged, name);
         };
         tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted.'));
+        tx.onerror = () => reject(markQuota(tx.error));
+        tx.onabort = () => reject(markQuota(tx.error) ?? new Error('IndexedDB transaction aborted.'));
     });
+}
+
+// The names of every record, joined with '/' (which no name the engine writes contains), so one string
+// crosses into .NET.
+export async function listFiles(db: IDBDatabase): Promise<string> {
+    const keys = await run<IDBValidKey[]>(db, 'readonly', (store) => store.getAllKeys());
+    return (keys ?? []).filter((key): key is string => typeof key === 'string').join('/');
+}
+
+// See the OPFS module: a full origin aborts the transaction with a QuotaExceededError, marked here so the
+// storage can report it as BlazeDbStorageQuotaExceededException.
+function markQuota(error: DOMException | null): Error | null {
+    return error?.name === 'QuotaExceededError'
+        ? new Error('BLAZEDB_QUOTA_EXCEEDED: ' + (error.message || 'storage quota exceeded'))
+        : error;
 }
 
 export async function deleteFile(db: IDBDatabase, name: string): Promise<void> {
