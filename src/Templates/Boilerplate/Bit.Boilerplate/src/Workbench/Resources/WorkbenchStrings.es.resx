@@ -1939,10 +1939,49 @@
         <value>Comprobar esta vista</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>Se ejecutan en la vista seleccionada, con su dispositivo, tema, idioma y datos: una prueba de accesibilidad (axe-core) y una búsqueda de colores que no vienen del tema.</value>
+        <value>Se ejecutan en la vista seleccionada, con su dispositivo, tema, idioma y datos, y en cada una de sus pestañas, paneles y menús por turno: una prueba de accesibilidad (axe-core) y una búsqueda de colores que no vienen del tema.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Ejecutar pruebas</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Exportar todo</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Copia un solo prompt para un agente de IA con todos los hallazgos: qué está mal y dónde.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Copiado</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Pedido</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Se detuvo tras {0} pruebas, así que algunas partes de la página no se abrieron.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Pruebas de la página {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>El Workbench probó la página {0} en la vista {1}, que fija su dispositivo, tema, idioma y datos. Abrió una a una las pestañas, paneles y menús de la página, y un hallazgo encontrado en uno de ellos dice en cuál.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Corrige lo que causa el propio marcado de la página y luego ejecuta {0} para comprobarlo de nuevo. Informa de un hallazgo que venga de dentro de un componente de bit BlazorUI o del marco de la app en lugar de esquivarlo en la página. Un color que representa datos, como el de una categoría, va en una propiedad personalizada --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Dónde: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Regla: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>Por ejemplo {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>La pestaña Pruebas encontró aquí este problema de accesibilidad. Corrígelo si lo causa el propio marcado de la página; si viene de dentro de un componente de bit BlazorUI o del marco de la app, dímelo en su lugar.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>La pestaña Pruebas encontró aquí este color, que no coincide con ninguno del tema. Usa un color del tema en su lugar; si representa datos, como el de una categoría, ponlo en una propiedad personalizada --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>No se pudieron ejecutar las pruebas en esta vista. Espera a que termine de cargar y vuelve a intentarlo.</value>

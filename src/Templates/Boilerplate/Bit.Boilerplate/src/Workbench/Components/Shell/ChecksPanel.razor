@@ -9,11 +9,28 @@
             @if (isRunning)
             {
                 <BitRingLoading Size="BitSize.Small" />
+                @if (checkedCount > 0)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@($"{progress ?? PageTitle} · {checkedCount}")</BitText>
+                }
+            }
+            else if (result is { } found && (found.Accessibility.Length > 0 || found.Theme.Length > 0))
+            {
+                <BitButton Variant="BitVariant.Outline"
+                           IconName="@(isExported ? BitIconName.CheckMark : BitIconName.Copy)"
+                           Title="@Localizer[nameof(WorkbenchStrings.ChecksExportHint)]"
+                           OnClick="ExportAll">
+                    @Localizer[isExported ? nameof(WorkbenchStrings.ChecksExported) : nameof(WorkbenchStrings.ChecksExportAll)]
+                </BitButton>
             }
         </div>
         @if (hasFailed)
         {
             <BitText Typography="BitTypography.Caption1" Color="BitColor.Error">@Localizer[nameof(WorkbenchStrings.ChecksFailed)]</BitText>
+        }
+        @if (result is { IsComplete: false } cut)
+        {
+            <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning">@Localizer[nameof(WorkbenchStrings.ChecksStopped), cut.Checked]</BitText>
         }
     </section>
 
@@ -28,16 +45,39 @@
             }
             @foreach (var finding in result.Accessibility)
             {
+                var isAsked = asked.Contains(finding);
+
                 <div class="finding">
-                    <span class="impact impact-@finding.Impact">@Localizer[$"Impact{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(finding.Impact)}"]</span>
-                    <span class="finding-text">@finding.Help <span class="count">× @finding.Count</span></span>
-                    <span class="finding-actions">
-                        @if (finding.Targets.Length > 0)
-                        {
-                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => Highlight(finding.Targets[0])">@Localizer[nameof(WorkbenchStrings.ShowOnPage)]</BitButton>
-                        }
-                        <BitLink Href="@finding.HelpUrl" Target="_blank">@Localizer[nameof(WorkbenchStrings.LearnMore)]</BitLink>
+                    <span class="impact impact-@finding.Impact">@ImpactOf(finding)</span>
+                    @if (finding.Where is not null)
+                    {
+                        <span class="where" title="@finding.Where">@finding.Where</span>
+                    }
+                    <span class="finding-text">
+                        @finding.Help
+                        <span class="count">
+                            × @finding.Count
+                            <BitLink Href="@finding.HelpUrl" Target="_blank" Class="help" AriaLabel="@Localizer[nameof(WorkbenchStrings.LearnMore)]" title="@Localizer[nameof(WorkbenchStrings.LearnMore)]">
+                                <BitIcon IconName="@BitIconName.Help" Size="BitSize.Small" />
+                            </BitLink>
+                        </span>
                     </span>
+                    @if (finding.Nodes.Length > 0)
+                    {
+                        <span class="finding-actions">
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => Highlight(finding.Nodes[0].Target, finding.Steps)">@Localizer[nameof(WorkbenchStrings.ShowOnPage)]</BitButton>
+                            @if (AskAgent is not null)
+                            {
+                                <BitButton Size="BitSize.Small"
+                                           Variant="BitVariant.Text"
+                                           IconName="@(isAsked ? BitIconName.CheckMark : BitIconName.Comment)"
+                                           Disabled="isAsked || isAsking"
+                                           OnClick="() => Ask(finding)">
+                                    @Localizer[isAsked ? nameof(WorkbenchStrings.ChecksAsked) : nameof(WorkbenchStrings.AskTheAgent)]
+                                </BitButton>
+                            }
+                        </span>
+                    }
                 </div>
             }
         </section>
@@ -47,9 +87,28 @@
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeFindingsHint)]</BitText>
             @foreach (var finding in result.Theme)
             {
+                var isAsked = asked.Contains(finding);
+
                 <div class="finding">
                     <span class="swatch" style="--wb-swatch:@finding.Color"></span>
+                    @if (finding.Where is not null)
+                    {
+                        <span class="where" title="@finding.Where">@finding.Where</span>
+                    }
                     <span class="finding-text">@finding.Property @finding.Color <span class="count">× @finding.Count</span><span class="example">@finding.Example</span></span>
+                    <span class="finding-actions">
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => Highlight(finding.Target, finding.Steps)">@Localizer[nameof(WorkbenchStrings.ShowOnPage)]</BitButton>
+                        @if (AskAgent is not null)
+                        {
+                            <BitButton Size="BitSize.Small"
+                                       Variant="BitVariant.Text"
+                                       IconName="@(isAsked ? BitIconName.CheckMark : BitIconName.Comment)"
+                                       Disabled="isAsked || isAsking"
+                                       OnClick="() => Ask(finding)">
+                                @Localizer[isAsked ? nameof(WorkbenchStrings.ChecksAsked) : nameof(WorkbenchStrings.AskTheAgent)]
+                            </BitButton>
+                        }
+                    </span>
                 </div>
             }
         </section>

@@ -10,7 +10,7 @@ namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme.Sections;
 public partial class ExtrasSection
 {
     /// <summary>The questions the Several selected sample of the accordion list opens together.</summary>
-    private static readonly string[] multipleKeys = ["delivery", "returns"];
+    private static readonly string[] multipleKeys = ["returns", "payment"];
 
     /// <summary>The orders of the grid's loading and empty samples.</summary>
     private static readonly ExtrasOrder[] noOrders = [];

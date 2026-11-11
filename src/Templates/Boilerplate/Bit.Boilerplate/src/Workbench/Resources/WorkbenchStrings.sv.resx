@@ -1939,10 +1939,49 @@
         <value>Kontrollera den här vyn</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>Körs på den valda vyn, med dess enhet, tema, språk och data: en tillgänglighetskontroll (axe-core) och en sökning efter färger som inte kommer från temat.</value>
+        <value>Körs på den valda vyn, med dess enhet, tema, språk och data, och i tur och ordning på var och en av dess flikar, paneler och menyer: en tillgänglighetskontroll (axe-core) och en sökning efter färger som inte kommer från temat.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Kör kontroller</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Exportera alla</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Kopierar en prompt för en AI-agent med alla fynd: vad som är fel och var.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Kopierat</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Frågat</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Stoppade efter {0} kontroller, så vissa delar av sidan öppnades inte.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Kontroller av sidan {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Workbench kontrollerade sidan {0} i vyn {1}, som anger dess enhet, tema, språk och data. Den öppnade sidans flikar, paneler och menyer en i taget, och ett fynd som hittades i en av dem säger vilken.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Rätta det som sidans egen markup orsakar och kör sedan {0} igen. Rapportera ett fynd som kommer inifrån en bit BlazorUI-komponent eller appramen i stället för att gå runt det på sidan. En färg som står för data, som en kategoris, hör hemma i en anpassad egenskap --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Var: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Regel: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>Till exempel {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>Fliken Kontroller hittade det här tillgänglighetsproblemet här. Rätta det om sidans egen markup orsakar det; om det kommer inifrån en bit BlazorUI-komponent eller appramen, säg det till mig i stället.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>Fliken Kontroller hittade den här färgen här, som inte matchar någon av temats. Använd en temafärg i stället; om den står för data, som en kategoris, lägg den i en anpassad egenskap --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>Kontrollerna kunde inte köras på den här vyn. Vänta tills den har laddats och försök igen.</value>

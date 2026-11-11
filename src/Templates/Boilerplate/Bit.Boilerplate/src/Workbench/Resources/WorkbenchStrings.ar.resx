@@ -1939,10 +1939,49 @@
         <value>التحقق من هذا العرض</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>يُجرى على العرض المحدد، بجهازه ومظهره ولغته وبياناته: تحقّق من إمكانية الوصول (axe-core) وبحث عن الألوان التي لا تأتي من المظهر.</value>
+        <value>يُجرى على العرض المحدد، بجهازه ومظهره ولغته وبياناته، وعلى كل علامة تبويب ولوحة وقائمة فيه بالتناوب: تحقّق من إمكانية الوصول (axe-core) وبحث عن الألوان التي لا تأتي من المظهر.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>بدء التحقق</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>تصدير الكل</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>ينسخ موجّهًا واحدًا لوكيل ذكاء اصطناعي فيه كل النتائج: ما الخطأ وأين.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>تم النسخ</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>تم الطلب</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>توقّف التحقق بعد {0} فحصًا، فلم تُفتح بعض أجزاء الصفحة.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>نتائج التحقق لصفحة {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>تحقّقت Workbench من صفحة {0} في العرض {1}، الذي يحدد جهازها ومظهرها ولغتها وبياناتها. وفتحت علامات تبويب الصفحة ولوحاتها وقوائمها واحدة تلو الأخرى، والنتيجة التي وُجدت في إحداها تذكر أيّها.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>أصلِح ما تسببه شيفرة الصفحة نفسها، ثم شغّل {0} للتحقق مرة أخرى. أبلِغ عن أي نتيجة تأتي من داخل أحد مكوّنات bit BlazorUI أو من إطار التطبيق بدل الالتفاف عليها في الصفحة. اللون الذي يمثّل بيانات، مثل لون فئة، يوضع في خاصية مخصّصة --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>المكان: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>القاعدة: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>مثلًا {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>وجد تبويب التحقق مشكلة إمكانية الوصول هذه هنا. أصلِحها إن كانت شيفرة الصفحة نفسها سببها، وإن كانت تأتي من داخل أحد مكوّنات bit BlazorUI أو من إطار التطبيق فأخبرني بدلًا من ذلك.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>وجد تبويب التحقق هذا اللون هنا، وهو لا يطابق أيًّا من ألوان المظهر. استخدم لونًا من المظهر بدلًا منه، وإن كان يمثّل بيانات، مثل لون فئة، فضعه في خاصية مخصّصة --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>تعذّر إجراء التحقق على هذا العرض. انتظر حتى يكتمل تحميله ثم حاول مرة أخرى.</value>

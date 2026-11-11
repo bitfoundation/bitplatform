@@ -1,5 +1,5 @@
-import { highlight, parseColor, runChecks } from './checks';
-import { connectFrames, inspectAgain, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { highlight, isSweepingNow, parseColor, reveal, runChecks } from './checks';
+import { anchorInView, connectFrames, inspectAgain, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
@@ -636,9 +636,14 @@ host.workbench = {
         return callPreview<void>(undefined, 'ResetState');
     },
 
-    /** Records a scenario change made in the page: in the address bar when the page already shows it, else by a reload, and tells the shell. */
+    /**
+     * Records a scenario change made in the page: in the address bar when the page already shows it, else by a reload, and
+     * tells the shell. A change the checks make while they open the page's tabs one by one isn't the user's, so it stays out.
+     */
     reportScenario(url: string, query: string, isApplied: boolean) {
         const hasShell = window.parent !== window;
+
+        if (isSweepingNow()) return;
 
         if (isApplied) {
             history.replaceState(history.state, '', url);
@@ -688,9 +693,9 @@ host.workbench = {
         anchor.remove();
     },
 
-    /** Runs the checks on this preview's page, in the inner screen when there is one. */
-    runChecks() {
-        return workbenchOf(screenFrame())?.runChecks() ?? runChecks();
+    /** Runs the checks on this preview's page and on each part of it they can open, in the inner screen when there is one. */
+    runChecks(options?: Parameters<typeof runChecks>[0]) {
+        return workbenchOf(screenFrame())?.runChecks(options) ?? runChecks(options);
     },
 
     forceStates() {
@@ -717,19 +722,51 @@ host.workbench = {
         document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]').forEach(reloadFrame);
     },
 
-    /** Flashes an element of this preview's page, in the inner screen when there is one. */
-    highlight(selector: string) {
-        return workbenchOf(screenFrame())?.highlight(selector) ?? highlight(selector);
+    /** Flashes an element of this preview's page, in the inner screen when there is one, after opening what it was found in. */
+    highlight(selector: string, steps: Parameters<typeof highlight>[1] = []) {
+        return workbenchOf(screenFrame())?.highlight(selector, steps) ?? highlight(selector, steps);
     },
 
-    /** Runs the accessibility and theme checks inside a view, giving up after 30 seconds. */
-    async checkFrame(paneId: string) {
-        return await withTimeout(workbenchOf(findFrame(paneId))?.runChecks() ?? Promise.resolve(null), 30000);
+    /** Brings an element of this preview's page into sight, in the inner screen when there is one, after opening what it was found in. */
+    reveal(selector: string, steps: Parameters<typeof reveal>[1] = []) {
+        return workbenchOf(screenFrame())?.reveal(selector, steps) ?? reveal(selector, steps);
     },
 
-    /** Scrolls to and flashes an element in a view, for a check finding. */
-    highlightInFrame(paneId: string, selector: string) {
-        return workbenchOf(findFrame(paneId))?.highlight(selector) ?? false;
+    /**
+     * Runs the accessibility and theme checks inside a view and each part of it they can open, telling the panel's .NET
+     * object where they are; gives up after 10 minutes.
+     */
+    async checkFrame(paneId: string, progress: any = null) {
+        const onProgress = (where: string, checked: number) => {
+            progress?.invokeMethodAsync('ShowProgress', where, checked).catch(() => undefined);
+        };
+
+        return await withTimeout(workbenchOf(findFrame(paneId))?.runChecks({ onProgress }) ?? Promise.resolve(null), 600000);
+    },
+
+    /** Scrolls to and flashes an element in a view, for a check finding, after opening what it was found in. */
+    async highlightInFrame(paneId: string, selector: string, steps: Parameters<typeof highlight>[1] = []) {
+        return await (workbenchOf(findFrame(paneId))?.highlight(selector, steps) ?? false);
+    },
+
+    /** Opens what a check finding was found in and returns where a comment on its element is pinned, or null when it isn't there. */
+    async anchorInFrame(paneId: string, selector: string, steps: Parameters<typeof reveal>[1] = []) {
+        const frame = findFrame(paneId);
+        const isThere = await (workbenchOf(frame)?.reveal(selector, steps) ?? false);
+
+        return isThere && frame ? anchorInView(frame, selector) : null;
+    },
+
+    /** Saves a text as a file of the name. */
+    saveText(fileName: string, text: string) {
+        const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }));
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
     },
 
     /** Gives Inspect mode the component name of each root class and the label for colors outside the theme. */

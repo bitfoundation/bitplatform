@@ -1,8 +1,9 @@
 namespace Boilerplate.WorkbenchTests.Features.Checks;
 
 /// <summary>
-/// The checks an agent runs through <c>/api/checks/&lt;page&gt;</c>: every page the Workbench ships passes the search
-/// for colors outside the theme, and none has a critical accessibility finding, on a phone and on a desktop.
+/// The checks an agent runs through <c>/api/checks/&lt;page&gt;</c>, which open each tab, panel and menu of the page in
+/// turn: every page the Workbench ships passes the search for colors outside the theme, and none has a critical
+/// accessibility finding, on a phone and on a desktop.
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
 public class ChecksApiTests
@@ -11,23 +12,15 @@ public class ChecksApiTests
 
     public static IEnumerable<object[]> Views => WorkbenchPageCatalog.Pages.SelectMany(page => new[] { new object[] { page.Key, DevicePresets.DefaultKey }, [page.Key, "desktop-1536"] });
 
-    /// <summary>The theme page shows one tab at a time, so each tab past the one it opens on is checked on its own.</summary>
-    public static IEnumerable<object[]> ThemeTabs => WorkbenchPageCatalog.Find("theme")!.Switches.Single(pageSwitch => pageSwitch.Key == "section").Options.Skip(1)
-        .SelectMany(tab => new[] { new object[] { tab.Value, DevicePresets.DefaultKey }, [tab.Value, "desktop-1536"] });
-
     [TestMethod]
     [DynamicData(nameof(Views))]
-    public Task EveryPage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string pageKey, string device) => ExpectNoFinding(pageKey, $"?device={device}");
-
-    [TestMethod]
-    [DynamicData(nameof(ThemeTabs))]
-    public Task EveryTabOfTheThemePage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string tab, string device) => ExpectNoFinding("theme", $"?device={device}&sw-section={tab}");
-
-    private async Task ExpectNoFinding(string pageKey, string query)
+    public async Task EveryPage_Should_UseOnlyTheThemesColorsAndHaveNoCriticalFinding(string pageKey, string device)
     {
         var server = await WorkbenchTestsInitializer.SharedServer;
         using var client = server.CreateClient();
-        client.Timeout = TimeSpan.FromMinutes(2);
+        // The theme page shows every component, so going through each of its tabs, panels and menus takes minutes.
+        client.Timeout = TimeSpan.FromMinutes(10);
+        var query = $"?device={device}";
 
         var response = await client.GetAsync($"api/checks/{pageKey}{query}", TestContext.CancellationToken);
 
@@ -37,6 +30,7 @@ public class ChecksApiTests
         var theme = result["theme"]!.AsArray();
         var accessibility = result["accessibility"]!.AsArray();
 
+        Assert.IsTrue((bool)result["isComplete"]!, "The checks stopped before they opened every part of the page.");
         Assert.IsEmpty(theme, $"Colors outside the theme: {theme.ToJsonString()}");
         Assert.DoesNotContain(finding => (string?)finding!["impact"] == "critical", accessibility, accessibility.ToJsonString());
 

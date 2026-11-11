@@ -1939,10 +1939,49 @@
         <value>Deze weergave controleren</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>Voor de geselecteerde weergave, met het apparaat, thema, de taal en de gegevens ervan: een toegankelijkheidscontrole (axe-core) en een zoektocht naar kleuren die niet uit het thema komen.</value>
+        <value>Voor de geselecteerde weergave, met het apparaat, thema, de taal en de gegevens ervan, en om de beurt voor elk van de tabbladen, panelen en menu's: een toegankelijkheidscontrole (axe-core) en een zoektocht naar kleuren die niet uit het thema komen.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Controles uitvoeren</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Alles exporteren</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Kopieert één prompt voor een AI-agent met alle bevindingen: wat er mis is en waar.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Gekopieerd</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Gevraagd</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Gestopt na {0} controles, dus sommige delen van de pagina zijn niet geopend.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Controles van de pagina {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>De Workbench heeft de pagina {0} gecontroleerd in de weergave {1}, die het apparaat, thema, de taal en de gegevens bepaalt. Hij opende de tabbladen, panelen en menu's van de pagina een voor een, en een bevinding uit een ervan zegt welke.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Herstel wat de eigen opmaak van de pagina veroorzaakt en voer daarna {0} opnieuw uit. Meld een bevinding die uit een bit BlazorUI-component of het app-kader komt, in plaats van er in de pagina omheen te werken. Een kleur die voor gegevens staat, zoals die van een categorie, hoort in een custom property --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Waar: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Regel: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>Bijvoorbeeld {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>Het tabblad Controles vond hier dit toegankelijkheidsprobleem. Herstel het als de eigen opmaak van de pagina het veroorzaakt; komt het uit een bit BlazorUI-component of het app-kader, laat het me dan weten.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>Het tabblad Controles vond hier deze kleur, die bij geen enkele themakleur past. Gebruik in plaats daarvan een themakleur; staat ze voor gegevens, zoals die van een categorie, zet haar dan in een custom property --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>De controles konden niet draaien op deze weergave. Wacht tot die geladen is en probeer het opnieuw.</value>

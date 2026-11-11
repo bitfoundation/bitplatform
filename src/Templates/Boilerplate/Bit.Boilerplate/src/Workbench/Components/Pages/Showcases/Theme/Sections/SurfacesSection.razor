@@ -104,19 +104,19 @@
 
     <ComponentStates Name="BitCollapse" Wide>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
-            <BitCollapse Expanded>
+            <BitCollapse Expanded AriaLabel="@($"{nameof(BitCollapse)} ({Localizer[nameof(WorkbenchStrings.ThemeStateExpanded)]})")">
                 <div class="collapse-body">@SampleText</div>
             </BitCollapse>
         </StateSample>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesCollapsedToAPeek)]">
-            <BitCollapse CollapsedSize="1.5rem">
+            <BitCollapse CollapsedSize="1.5rem" AriaLabel="@($"{nameof(BitCollapse)} ({Localizer[nameof(WorkbenchStrings.ThemeSurfacesCollapsedToAPeek)]})")">
                 <div class="collapse-body">@SampleText @SampleText</div>
             </BitCollapse>
         </StateSample>
         <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]">
             <div class="column">
                 <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="() => isCollapseOpen = !isCollapseOpen">@(isCollapseOpen ? Localizer[nameof(WorkbenchStrings.ThemeSurfacesShowLess)] : Localizer[nameof(WorkbenchStrings.ThemeSurfacesShowMore)])</BitButton>
-                <BitCollapse Expanded="isCollapseOpen">
+                <BitCollapse Expanded="isCollapseOpen" AriaLabel="@($"{nameof(BitCollapse)} ({Localizer[nameof(WorkbenchStrings.ThemeSurfacesOpensFromAButton)]})")">
                     <div class="collapse-body">@SampleText</div>
                 </BitCollapse>
             </div>

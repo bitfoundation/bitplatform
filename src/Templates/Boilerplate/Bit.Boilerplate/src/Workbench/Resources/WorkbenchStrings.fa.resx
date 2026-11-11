@@ -1939,10 +1939,49 @@
         <value>بررسی این نما</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>روی نمای انتخاب‌شده با همان دستگاه، پوسته، زبان و داده‌اش اجرا می‌شود: یک بررسی دسترس‌پذیری (axe-core) و جست‌وجوی رنگ‌هایی که از پوسته نمی‌آیند.</value>
+        <value>روی نمای انتخاب‌شده با همان دستگاه، پوسته، زبان و داده‌اش و به نوبت روی هر زبانه، پنل و منوی آن اجرا می‌شود: یک بررسی دسترس‌پذیری (axe-core) و جست‌وجوی رنگ‌هایی که از پوسته نمی‌آیند.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>اجرای بررسی‌ها</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>خروجی همه</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>یک پرامپت برای عامل هوش مصنوعی با همهٔ یافته‌ها کپی می‌کند: چه چیزی مشکل دارد و کجا.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>درخواست شد</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>بعد از {0} بررسی متوقف شد، پس بعضی بخش‌های صفحه باز نشدند.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>بررسی‌های صفحهٔ {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Workbench صفحهٔ {0} را در نمای {1} بررسی کرد که دستگاه، پوسته، زبان و داده‌اش را تعیین می‌کند. زبانه‌ها، پنل‌ها و منوهای صفحه را یکی‌یکی باز کرد و یافته‌ای که در یکی از آن‌ها پیدا شده، می‌گوید کدام.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>آنچه را نشانه‌گذاری خود صفحه باعث شده درست کنید، بعد {0} را دوباره اجرا کنید. یافته‌ای را که از درون یک کامپوننت bit BlazorUI یا قاب برنامه می‌آید گزارش کنید، به‌جای این‌که در صفحه دورش بزنید. رنگی که نمایندهٔ داده است، مثل رنگ یک دسته، در ویژگی سفارشی --data-color قرار می‌گیرد.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>کجا: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>قاعده: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>برای نمونه {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>زبانهٔ بررسی‌ها این مشکل دسترس‌پذیری را این‌جا پیدا کرد. اگر نشانه‌گذاری خود صفحه باعثش شده درستش کنید؛ اگر از درون یک کامپوننت bit BlazorUI یا قاب برنامه می‌آید، به‌جایش به من بگویید.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>زبانهٔ بررسی‌ها این رنگ را این‌جا پیدا کرد که با هیچ‌کدام از رنگ‌های پوسته جور نیست. به‌جایش یک رنگ پوسته بگذارید؛ اگر نمایندهٔ داده است، مثل رنگ یک دسته، آن را در ویژگی سفارشی --data-color بگذارید.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>بررسی‌ها روی این نما اجرا نشدند. صبر کنید بارگذاری‌اش تمام شود و دوباره امتحان کنید.</value>

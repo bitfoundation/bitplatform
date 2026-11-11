@@ -228,7 +228,12 @@ else
                 }
                 else if (store.Column == WorkbenchModes.ChecksColumn)
                 {
-                    <ChecksPanel PaneId="@store.SelectedPane.Id" View="@($"{pageInfo.Key}{store.SelectedPane.Scenario.ToQueryString()}")" />
+                    <ChecksPanel PaneId="@store.SelectedPane.Id"
+                                 PageKey="@pageInfo.Key"
+                                 PageTitle="@Localizer[pageInfo.TitleKey]"
+                                 Query="@store.SelectedPane.Scenario.ToQueryString()"
+                                 InPageSwitches="inPageSwitches"
+                                 AskAgent="AskAgentAboutFindingCallback" />
                 }
                 else if (store.Column == WorkbenchModes.FlowsColumn)
                 {
