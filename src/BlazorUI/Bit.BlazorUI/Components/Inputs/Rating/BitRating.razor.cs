@@ -124,8 +124,9 @@ public partial class BitRating : BitInputBase<double>
     /// </summary>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about - a server that refused the rating, a rule spanning
-    /// two fields. A rating inside an <c>EditForm</c> already gets its messages from the cascading EditContext
-    /// through the <c>ValidationMessage</c> component.
+    /// two fields. A rating inside an <c>EditForm</c> already gets its messages from the cascading EditContext,
+    /// which <see cref="ShowValidationMessage"/> shows in this same place - giving way to this message while it is
+    /// set - or the <c>ValidationMessage</c> component shows wherever the page puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -343,6 +344,21 @@ public partial class BitRating : BitInputBase<double>
     /// The icon name should be from the Fluent UI icon set. For external icon libraries, use <see cref="SelectedIcon"/> instead.
     /// </summary>
     [Parameter] public string? SelectedIconName { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
+    /// those of any other validator of the form - under the items, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside the rating. The rating references them
+    /// through its aria-describedby attribute, so they are read out whenever the rating is entered.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the rating: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the rating that takes the focus says what is wrong with it. A rating that
+    /// validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// Size of the rating, which scales the item glyphs, the label and the description together.
@@ -708,7 +724,8 @@ public partial class BitRating : BitInputBase<double>
     /// <remarks>
     /// The error line comes ahead of the description, in the order the two sit under the items: what is wrong with
     /// the value is the first thing to hear about it. A label stands in for an error template, which may well be a
-    /// bare icon with no text to describe the rating with at all.
+    /// bare icon with no text to describe the rating with at all. The forced state's label gives way to a message of
+    /// the EditContext on screen, which is the text the reader can see.
     /// </remarks>
     private string? _AriaDescribedBy
     {
@@ -717,7 +734,9 @@ public partial class BitRating : BitInputBase<double>
             var describedBy = string.Join(' ', new[]
             {
                 GetSplattedAttribute("aria-describedby"),
-                HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+                HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                    : HasErrorLine ? _errorId
+                    : null,
                 HasDescription ? _descriptionId : null,
             }.Where(id => id.HasValue()));
 
@@ -729,6 +748,13 @@ public partial class BitRating : BitInputBase<double>
     /// Whether the rating carries a visible error message, which is what the error line is rendered for.
     /// </summary>
     private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the items is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
 
     /// <summary>
     /// Whether the app itself has rejected the value of the rating, by the flag or by a message saying why.

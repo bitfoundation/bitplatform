@@ -258,9 +258,8 @@ private void HandleOnChanging(BitRatingChangeArgs args)
 
     <BitRating Required AllowZeroStars
                Label=""Your rate""
-               aria-describedby=""rating-validation-message""
+               ShowValidationMessage
                @bind-Value=""ValidationModel.Value"" />
-    <ValidationMessage id=""rating-validation-message"" For=""@(() => ValidationModel.Value)"" />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
@@ -295,14 +294,6 @@ private void HandleInvalidSubmit() { }
 
 
 private double reviewRating = 5;";
-    private const string example13ScssCode = @"
-.validation-message {
-    color: $bit-color-error;
-}";
-    private readonly DemoCodeFile[] example13CodeFiles =
-    [
-        new("BitRatingDemo.razor.scss", example13ScssCode),
-    ];
 
     private readonly string example14RazorCode = @"
 <BitRating AllowClear

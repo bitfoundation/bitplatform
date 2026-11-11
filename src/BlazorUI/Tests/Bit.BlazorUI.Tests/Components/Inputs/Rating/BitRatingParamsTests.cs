@@ -206,6 +206,7 @@ public class BitRatingParamsTests : BunitTestContext
             Precision = 0.5,
             SelectedIcon = selectedIcon,
             SelectedIconName = "HeartFill",
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             Styles = new BitRatingClassStyles { Root = "color: red;" },
             UnselectedIcon = unselectedIcon,
@@ -243,6 +244,7 @@ public class BitRatingParamsTests : BunitTestContext
         Assert.AreEqual(0.5, instance.Precision);
         Assert.AreSame(selectedIcon, instance.SelectedIcon);
         Assert.AreEqual("HeartFill", instance.SelectedIconName);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreSame(@params.Styles, instance.Styles);
         Assert.AreSame(unselectedIcon, instance.UnselectedIcon);

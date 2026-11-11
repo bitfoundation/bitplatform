@@ -178,6 +178,13 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
     public string? SelectedIconName { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the items, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside the
+    /// rating. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -343,6 +350,11 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
         if (SelectedIconName.HasValue())
         {
             bitRating.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static r => r.SelectedIconName, static (r, v) => r.SelectedIconName = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitRating.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static r => r.ShowValidationMessage, static (r, v) => r.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)
