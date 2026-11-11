@@ -582,7 +582,16 @@ public sealed class BcrdtBinkBinding : IDisposable
         {
             if (Document.TryGetLayer(id, out BinkLayer? layer))
             {
-                if (!BcrdtAnyCodec.DeepEquals(LayerFields(layer.Properties), LayerFields(properties))) TryApply(new BinkUpdateLayerOperation(id, properties));
+                // A layer this participant is in the middle of changing keeps its own unwritten properties; only those
+                // the shared change touched are taken from it - and none, when it touched another layer.
+                BinkLayerProperties target = properties;
+                if (_dirtyLayers.Contains(id))
+                {
+                    if (!change.LayerKeys.TryGetValue(id, out HashSet<string>? keys)) continue;
+                    target = OverlayLayer(layer.Properties, properties, keys);
+                }
+
+                if (!BcrdtAnyCodec.DeepEquals(LayerFields(layer.Properties), LayerFields(target))) TryApply(new BinkUpdateLayerOperation(id, target));
             }
             else if (TryApply(new BinkAddLayerOperation(id, properties)))
             {
@@ -664,6 +673,23 @@ public sealed class BcrdtBinkBinding : IDisposable
         }
         return fields;
     }
+
+    /// <summary>
+    /// A layer's local properties with the ones a shared change touched taken from the shared state - all of them when
+    /// the change replaced the whole entry (<paramref name="keys"/> is null).
+    /// </summary>
+    private static BinkLayerProperties OverlayLayer(BinkLayerProperties local, BinkLayerProperties shared, HashSet<string>? keys) =>
+        keys is null
+            ? shared
+            : new BinkLayerProperties
+            {
+                Name = keys.Contains("name") ? shared.Name : local.Name,
+                IsVisible = keys.Contains("visible") ? shared.IsVisible : local.IsVisible,
+                IsLocked = keys.Contains("locked") ? shared.IsLocked : local.IsLocked,
+                Opacity = keys.Contains("opacity") ? shared.Opacity : local.Opacity,
+                BlendMode = keys.Contains("blend") ? shared.BlendMode : local.BlendMode,
+                Metadata = keys.Contains("metadata") ? shared.Metadata : local.Metadata,
+            };
 
     private void ArrangeElements(Guid layerId)
     {
@@ -774,7 +800,15 @@ public sealed class BcrdtBinkBinding : IDisposable
         key.StartsWith(ElementPrefix, StringComparison.Ordinal) || key.StartsWith(LayerPrefix, StringComparison.Ordinal) ||
         key.StartsWith(SettingPrefix, StringComparison.Ordinal) || key.StartsWith(MetadataPrefix, StringComparison.Ordinal));
 
-    private static bool IsEmpty(BinkDocument document) => document.ElementCount == 0 && document.Layers.Count == 1 && document.Metadata.Count == 0;
+    /// <summary>
+    /// Whether a document holds nothing of its own: no element, no metadata, the default page, and one layer with the
+    /// properties a new document gives it. Anything else - a page sized for the drawing, a renamed layer - is content
+    /// to start the shared drawing from, not to be replaced by the shared default layer.
+    /// </summary>
+    private static bool IsEmpty(BinkDocument document) =>
+        document.ElementCount == 0 && document.Layers.Count == 1 && document.Metadata.Count == 0 &&
+        document.Settings == BinkDocumentSettings.Default &&
+        BcrdtAnyCodec.DeepEquals(LayerFields(document.Layers[0].Properties), LayerFields(DefaultLayerProperties));
 
     private static string Key(Guid id) => id.ToString("D", CultureInfo.InvariantCulture);
 
@@ -843,6 +877,9 @@ public sealed class BcrdtBinkBinding : IDisposable
     {
         public bool Layers;
         public bool Settings;
+
+        /// <summary>Each layer touched, with the properties that changed, or null when the whole entry did.</summary>
+        public readonly Dictionary<Guid, HashSet<string>?> LayerKeys = [];
         public readonly HashSet<string> Metadata = new(StringComparer.Ordinal);
 
         /// <summary>Each element touched, with the properties that changed, or null when the whole entry did.</summary>
@@ -857,7 +894,14 @@ public sealed class BcrdtBinkBinding : IDisposable
                 else if (!Elements.TryGetValue(id, out HashSet<string>? known)) Elements[id] = new HashSet<string>(properties, StringComparer.Ordinal);
                 else known?.UnionWith(properties);
             }
-            else if (key.StartsWith(LayerPrefix, StringComparison.Ordinal)) Layers = true;
+            else if (key.StartsWith(LayerPrefix, StringComparison.Ordinal))
+            {
+                Layers = true;
+                if (!Guid.TryParse(key.AsSpan(LayerPrefix.Length), out Guid id)) return;
+                if (properties is null) LayerKeys[id] = null;
+                else if (!LayerKeys.TryGetValue(id, out HashSet<string>? known)) LayerKeys[id] = new HashSet<string>(properties, StringComparer.Ordinal);
+                else known?.UnionWith(properties);
+            }
             else if (key.StartsWith(SettingPrefix, StringComparison.Ordinal)) Settings = true;
             else if (key.StartsWith(MetadataPrefix, StringComparison.Ordinal)) Metadata.Add(key[MetadataPrefix.Length..]);
         }

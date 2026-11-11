@@ -58,59 +58,66 @@ public static class BcrdtUpdateDecoder
         Exception? integrationFailure = null;
         bool discardedPending = false;
 
-        doc.Transact(transaction =>
+        try
         {
-            // Whatever the enclosing transaction was, the content arriving here was authored
-            // elsewhere. The index caches rely on knowing that: a remote change can land anywhere, so
-            // positions cached on the assumption of purely local edits are void. Local is left alone,
-            // because an update applied inside a local transaction does not make that transaction's
-            // own edits any less local.
-            transaction.IntegratedRemoteContent = true;
-
-            BcrdtStructStore store = doc.Store;
-            BcrdtUpdateCodec.ResolveRoots(groups, doc);
-
-            DeferredBlocks? deferred;
-            bool wasIntegrating = transaction.IntegratingRemoteBlocks;
-            transaction.IntegratingRemoteBlocks = true;
-            try
+            doc.Transact(transaction =>
             {
-                deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
-            }
-            finally
-            {
-                transaction.IntegratingRemoteBlocks = wasIntegrating;
-            }
-            bool retryDeferred = MergeDeferred(store, deferred);
+                // Whatever the enclosing transaction was, the content arriving here was authored
+                // elsewhere. The index caches rely on knowing that: a remote change can land anywhere, so
+                // positions cached on the assumption of purely local edits are void. Local is left alone,
+                // because an update applied inside a local transaction does not make that transaction's
+                // own edits any less local.
+                transaction.IntegratedRemoteContent = true;
 
-            BcrdtDeleteSet? unapplied = ApplyDeleteSet(transaction, deleteSet);
+                BcrdtStructStore store = doc.Store;
+                BcrdtUpdateCodec.ResolveRoots(groups, doc);
 
-            if (store.PendingDeleteSet is { } pendingDeletes)
-            {
-                store.PendingDeleteSet = null;
-                BcrdtDeleteSet? stillUnapplied = ApplyDeleteSet(transaction, pendingDeletes);
-                store.PendingDeleteSet = CombineUnapplied(unapplied, stillUnapplied);
-            }
-            else
-            {
-                store.PendingDeleteSet = unapplied;
-            }
+                DeferredBlocks? deferred;
+                bool wasIntegrating = transaction.IntegratingRemoteBlocks;
+                transaction.IntegratingRemoteBlocks = true;
+                try
+                {
+                    deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
+                }
+                finally
+                {
+                    transaction.IntegratingRemoteBlocks = wasIntegrating;
+                }
+                bool retryDeferred = MergeDeferred(store, deferred);
 
-            if (retryDeferred)
-            {
-                byte[] pending = store.PendingUpdate!;
-                store.PendingUpdate = null;
-                store.PendingMissing = null;
-                ApplyUpdateCore(doc, pending, origin, ref discardedPending);
-            }
+                BcrdtDeleteSet? unapplied = ApplyDeleteSet(transaction, deleteSet);
 
-            // What still waits is bounded, or a peer could grow this replica's memory at will by
-            // sending changes that build on nothing it will ever receive. Nothing in it was applied,
-            // so dropping it loses nothing a handshake cannot bring back.
-            if (doc.TrimPending()) discardedPending = true;
-        }, origin, local: false);
+                if (store.PendingDeleteSet is { } pendingDeletes)
+                {
+                    store.PendingDeleteSet = null;
+                    BcrdtDeleteSet? stillUnapplied = ApplyDeleteSet(transaction, pendingDeletes);
+                    store.PendingDeleteSet = CombineUnapplied(unapplied, stillUnapplied);
+                }
+                else
+                {
+                    store.PendingDeleteSet = unapplied;
+                }
 
-        discarded |= discardedPending;
+                if (retryDeferred)
+                {
+                    byte[] pending = store.PendingUpdate!;
+                    store.PendingUpdate = null;
+                    store.PendingMissing = null;
+                    ApplyUpdateCore(doc, pending, origin, ref discardedPending);
+                }
+
+                // What still waits is bounded, or a peer could grow this replica's memory at will by
+                // sending changes that build on nothing it will ever receive. Nothing in it was applied,
+                // so dropping it loses nothing a handshake cannot bring back.
+                if (doc.TrimPending()) discardedPending = true;
+            }, origin, local: false);
+        }
+        finally
+        {
+            // Even when the retry of what was waiting threw: what it discarded on the way is gone either way, and
+            // the outermost call still has to say so.
+            discarded |= discardedPending;
+        }
 
         if (integrationFailure is not null)
         {

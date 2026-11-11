@@ -129,6 +129,12 @@ public sealed class BcrdtBlowBinding : IDisposable
     private readonly BlowSerializerOptions _serializerOptions;
     private readonly IDisposable _subscription;
 
+    // Entries the shared state holds that this replica could not read - over a limit, or not a graph this version
+    // understands - and so left out of its lists. Missing from the lists is not deleted: a commit leaves them for the
+    // replicas that can show them.
+    private readonly HashSet<string> _rejectedNodes = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _rejectedEdges = new(StringComparer.Ordinal);
+
     private BlowXYPosition? _cursor;
     private bool _disposed;
 
@@ -358,7 +364,7 @@ public sealed class BcrdtBlowBinding : IDisposable
         foreach ((string id, Dictionary<string, object?> fields) in nodes) wrote |= WriteEntry(NodePrefix + id, fields, NodeProperties);
         foreach (string id in SharedIds(NodePrefix))
         {
-            if (localNodes.Contains(id)) continue;
+            if (localNodes.Contains(id) || _rejectedNodes.Contains(id)) continue;
             Root.Delete(NodePrefix + id);
             deletedNodes.Add(id);
             wrote = true;
@@ -378,6 +384,10 @@ public sealed class BcrdtBlowBinding : IDisposable
             bool joined = source is not null && target is not null && localNodes.Contains(source) && localNodes.Contains(target);
             bool orphaned = (source is not null && deletedNodes.Contains(source)) || (target is not null && deletedNodes.Contains(target));
             if (entry is not null && !joined && !orphaned) continue;
+
+            // One this replica could not read is missing for that reason, whatever its nodes - unless one of them
+            // was deleted now, which takes the edge with it here as it would anywhere.
+            if (_rejectedEdges.Contains(id) && !orphaned) continue;
 
             Root.Delete(EdgePrefix + id);
             wrote = true;
@@ -490,6 +500,10 @@ public sealed class BcrdtBlowBinding : IDisposable
             int index = IndexOf(_nodes, id, static node => node.Id);
             if (!sharedNodes.TryGetValue(id, out BlowNode? shared))
             {
+                // Still in the shared state, but not readable here: left out, and not taken for a deletion.
+                if (Root.GetMap(NodePrefix + id) is not null) _rejectedNodes.Add(id);
+                else _rejectedNodes.Remove(id);
+
                 if (index < 0) continue;
                 _nodes.RemoveAt(index);
                 removedNodes.Add(id);
@@ -497,6 +511,7 @@ public sealed class BcrdtBlowBinding : IDisposable
                 continue;
             }
 
+            _rejectedNodes.Remove(id);
             if (keys is null || keys.Contains(BcrdtIntegrationOrder.Key)) arrangeNodes = true;
             if (index < 0)
             {
@@ -539,7 +554,11 @@ public sealed class BcrdtBlowBinding : IDisposable
         foreach ((string id, HashSet<string>? keys) in change.Edges)
         {
             int index = IndexOf(_edges, id, static edge => edge.Id);
-            if (!sharedEdges.TryGetValue(id, out BlowEdge? shared) || !nodeIds.Contains(shared.Source) || !nodeIds.Contains(shared.Target))
+            bool read = sharedEdges.TryGetValue(id, out BlowEdge? shared);
+            if (read || Root.GetMap(EdgePrefix + id) is null) _rejectedEdges.Remove(id);
+            else _rejectedEdges.Add(id);
+
+            if (!read || !nodeIds.Contains(shared!.Source) || !nodeIds.Contains(shared.Target))
             {
                 if (index < 0) continue;
                 _edges.RemoveAt(index);
@@ -595,7 +614,7 @@ public sealed class BcrdtBlowBinding : IDisposable
     private Dictionary<string, BlowNode> ReadNodes(IEnumerable<string> ids)
     {
         var result = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
-        if (Read(ids, NodePrefix, "nodes") is { } document)
+        foreach (BlowDocument document in Read(ids, NodePrefix, "nodes"))
         {
             foreach (BlowNode node in document.Nodes) result.TryAdd(node.Id, node);
         }
@@ -605,7 +624,7 @@ public sealed class BcrdtBlowBinding : IDisposable
     private Dictionary<string, BlowEdge> ReadEdges(IEnumerable<string> ids)
     {
         var result = new Dictionary<string, BlowEdge>(StringComparer.Ordinal);
-        if (Read(ids, EdgePrefix, "edges") is { } document)
+        foreach (BlowDocument document in Read(ids, EdgePrefix, "edges"))
         {
             foreach (BlowEdge edge in document.Edges) result.TryAdd(edge.Id, edge);
         }
@@ -616,10 +635,34 @@ public sealed class BcrdtBlowBinding : IDisposable
     /// Reads entries back through Blow's own reader, as one document, so they get exactly the validation, limits and
     /// data mappings a file would.
     /// </summary>
-    private BlowDocument? Read(IEnumerable<string> ids, string prefix, string property)
+    /// <remarks>
+    /// Blow refuses a document whole when it is over a limit - larger than <c>MaxBytes</c>, more nodes than
+    /// <c>MaxNodes</c> - and a batch of entries can be over one that no entry is by itself. Such a batch is read again
+    /// one entry at a time, so the entries that are fine are shown and only one over a limit by itself is left out.
+    /// </remarks>
+    private List<BlowDocument> Read(IEnumerable<string> ids, string prefix, string property)
+    {
+        List<string> present = [.. ids.Where(id => Root.GetMap(prefix + id) is not null)];
+        if (present.Count == 0) return [];
+
+        BlowImportResult result = ReadBatch(present, prefix, property);
+        if (result.Document is null && present.Count > 1)
+        {
+            List<BlowDocument> documents = [];
+            foreach (string id in present)
+            {
+                if (ReadBatch([id], prefix, property).Document is { } single) documents.Add(single);
+            }
+            return documents;
+        }
+
+        return result.Document is { } document ? [document] : [];
+    }
+
+    /// <summary>Reads entries as one document, and reports what of it could not be read.</summary>
+    private BlowImportResult ReadBatch(IReadOnlyList<string> ids, string prefix, string property)
     {
         var buffer = new ArrayBufferWriter<byte>(1024);
-        int count = 0;
         using (var writer = new Utf8JsonWriter(buffer))
         {
             writer.WriteStartObject();
@@ -632,19 +675,20 @@ public sealed class BcrdtBlowBinding : IDisposable
             {
                 if (Root.GetMap(prefix + id) is not { } entry) continue;
                 BcrdtIntegrationFields.WriteObject(writer, "id", id, BcrdtIntegrationFields.Read(entry));
-                count++;
             }
             writer.WriteEndArray();
             writer.WriteEndObject();
         }
-        if (count == 0) return null;
 
         BlowImportResult result = BlowSerializer.Deserialize(buffer.WrittenSpan, _serializerOptions);
+
+        // A batch refused whole is read again entry by entry, which reports what is wrong with each.
+        if (result.Document is null && ids.Count > 1) return result;
         foreach (BlowImportIssue issue in result.Issues)
         {
             if (issue.Severity == BlowValidationSeverity.Error) RemoteChangeRejected?.Invoke($"{issue.Path}: {issue.Message}");
         }
-        return result.Document;
+        return result;
     }
 
     // ---- Helpers -------------------------------------------------------------------------------------------------

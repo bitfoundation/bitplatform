@@ -199,6 +199,37 @@ public class CrossTabTests
     }
 
     [TestMethod]
+    public async Task An_edit_in_a_tab_with_read_access_only_reaches_neither_another_tab_nor_the_server()
+    {
+        var network = new BcrdtInMemoryNetwork();
+        await using Peer server = await Peer.JoinAsync(network);
+
+        // The reader meets its server in a room of its own, where the grant it is given reaches nobody else.
+        await using BcrdtCollaborationService writer = Tab(network);
+        await using var reader = new BcrdtCollaborationService(
+            new BcrdtCollaborationOptions { Sync = SyncOptions(), CreateUndoManager = false },
+            new Rooms(network, "reader:"),
+            store: null,
+            new Rooms(network, "tabs:"));
+        BcrdtCollaborativeDocument[] tabs = await OpenAsync([writer, reader]);
+        BcrdtCollaborativeDocument writing = tabs[0], reading = tabs[1];
+
+        await using IBcrdtTransport grantor = network.CreateTransport("reader:" + DocumentId);
+        await grantor.ConnectAsync();
+        await grantor.SendAsync(BcrdtSyncProtocol.EncodeAuth(BcrdtDocumentAccess.ReadOnly, null));
+        await AssertEventuallyAsync(() => reading.Sync!.Access == BcrdtDocumentAccess.ReadOnly, "the reader should be told");
+
+        reading.Crdt.GetText("body").Insert(0, "not accepted");
+        writing.Crdt.GetText("body").Insert(0, "accepted ");
+        await AssertEventuallyAsync(() => server.Doc.GetText("body").ToString() == "accepted ", "the writer's edit should reach the server");
+        await AssertEventuallyAsync(() => reading.Crdt.GetText("body").ToString().Contains("accepted ", StringComparison.Ordinal), "and the reader's tab");
+        await Task.Delay(200);
+
+        Assert.AreEqual("accepted ", writing.Crdt.GetText("body").ToString(), "the reader's edit does not reach another tab");
+        Assert.AreEqual("accepted ", server.Doc.GetText("body").ToString(), "nor the server");
+    }
+
+    [TestMethod]
     public async Task Without_the_forwarding_filter_every_tab_would_hand_the_server_each_change_again()
     {
         // What the collaboration service avoids: two providers per document, both with the default of passing on

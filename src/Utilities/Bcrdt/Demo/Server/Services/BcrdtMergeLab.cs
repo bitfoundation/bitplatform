@@ -164,6 +164,7 @@ public static class BcrdtMergeLab
             string? reference = null;
             JsonNode? merged = null;
             JsonNode? mergedFormatting = null;
+            HashSet<string> mergedCounters = [];
             var mergedBytes = 0;
             var diverged = new List<string>();
 
@@ -194,6 +195,7 @@ public static class BcrdtMergeLab
                             reference = snapshot;
                             merged = state;
                             mergedFormatting = formatting;
+                            mergedCounters = Counters(receiver.Document, operations);
                             mergedBytes = receiver.Document.EncodeStateAsUpdate().Length;
                         }
                         else if (snapshot != reference)
@@ -209,7 +211,7 @@ public static class BcrdtMergeLab
                 }
             }
 
-            var decisions = Decide(replicas, baseState, before, merged);
+            var decisions = Decide(replicas, baseState, before, merged, mergedCounters);
 
             return new BcrdtMergeReportDto
             {
@@ -423,7 +425,7 @@ public static class BcrdtMergeLab
     /// is also contested when a replica created a nested type at it - an operation on 'root/key' while the key held
     /// no such type - because that creation is a write to the key like any other.
     /// </summary>
-    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, JsonNode? start, Dictionary<string, JsonNode?> before, JsonNode? merged)
+    private static BcrdtMergeDecisionDto[] Decide(Replica[] replicas, JsonNode? start, Dictionary<string, JsonNode?> before, JsonNode? merged, HashSet<string> counters)
     {
         var decisions = new List<BcrdtMergeDecisionDto>();
         var steps = replicas.SelectMany(replica => replica.Steps).ToArray();
@@ -456,7 +458,7 @@ public static class BcrdtMergeLab
             {
                 "text" => DecideText(group.Key.Path, editors, [.. group], merged),
                 "array" => DecideArray(group.Key.Path, editors, [.. group], before, merged),
-                "counter" => DecideCounter(group.Key.Path, editors, [.. group], start, merged),
+                "counter" => DecideCounter(group.Key.Path, editors, [.. group], start, merged, counters.Contains(group.Key.Path)),
                 _ => DecideSet(group.Key.Path, editors, [.. group], merged)
             });
         }
@@ -619,7 +621,11 @@ public static class BcrdtMergeLab
     /// own - so the total is the starting value plus every replica's contribution, unless the changes went into a nested
     /// counter that lost a race for its map key, which the total then shows by falling short.
     /// </summary>
-    private static BcrdtMergeDecisionDto DecideCounter(string path, string[] editors, Step[] steps, JsonNode? start, JsonNode? merged)
+    /// <param name="isCounter">
+    /// Whether the merged document still holds a counter at <paramref name="path"/>. A counter projects as a plain number,
+    /// so a number written over its map key that happens to equal the sum would otherwise read as the counter.
+    /// </param>
+    private static BcrdtMergeDecisionDto DecideCounter(string path, string[] editors, Step[] steps, JsonNode? start, JsonNode? merged, bool isCounter)
     {
         string[] segments = path.Split('/');
 
@@ -634,7 +640,9 @@ public static class BcrdtMergeLab
         var shares = Join(editors.Select(label => $"{label} {Signed(contributions[label])}"));
         var detail = new StringBuilder($"{Join(described)} while apart.");
 
-        if (total == expected)
+        var summed = isCounter && total == expected;
+
+        if (summed)
         {
             detail.Append($" Every change is summed: the counter started at {initial}, {shares}, and every replica now holds {total}. ");
             detail.Append("Each replica's changes accumulate under a key of its own - its client id - so no change overwrites another; a number in a map key written back as count + 1 would have kept one replica's write and lost the others'.");
@@ -643,7 +651,7 @@ public static class BcrdtMergeLab
         {
             var creators = steps.Where(step => step.Created).Select(step => step.Operation.Label).Distinct(StringComparer.Ordinal).ToArray();
 
-            detail.Append($" Their changes - {shares} on a counter that started at {initial} - add up to {expected}, but every replica holds {Render(value)}: ");
+            detail.Append($" Their changes - {shares} on a counter that started at {initial} - add up to {expected}, but every replica holds {Render(value)}{(isCounter ? "" : ", and not as a counter")}: ");
             detail.Append(creators.Length > 1
                 ? $"{Join(creators)} each created the counter while apart, one of those won its map key, and what was added into the others is gone (see that decision). Create a nested counter once, before people change it - a 'base:' line here - and every change is summed."
                 : "the map key that held the counter was written over concurrently, and the changes made inside the counter went with it. Change a nested counter through the counter, never by writing its key.");
@@ -653,7 +661,7 @@ public static class BcrdtMergeLab
         {
             Target = $"counter '{path}'",
             Replicas = editors,
-            Outcome = total == expected ? "every change is summed" : "a change is lost with its map key",
+            Outcome = summed ? "every change is summed" : "a change is lost with its map key",
             Detail = detail.ToString()
         };
 
@@ -661,6 +669,13 @@ public static class BcrdtMergeLab
 
         static string Signed(long amount) => amount < 0 ? $"{amount}" : $"+{amount}";
     }
+
+    /// <summary>The paths the operations change a counter at that still hold one in <paramref name="document"/>.</summary>
+    private static HashSet<string> Counters(BcrdtDocument document, List<Operation> operations) =>
+        [.. operations
+            .Where(op => op.Kind == "counter")
+            .Where(op => op.Key is null || document.GetMap(op.Root).Get(op.Key) is BcrdtCounter)
+            .Select(op => op.Path)];
 
     private static BcrdtMergeDecisionDto DecideSet(string path, string[] editors, Step[] steps, JsonNode? merged)
     {

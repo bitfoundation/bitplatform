@@ -293,6 +293,25 @@ public class McpMergeLabTests
     }
 
     [TestMethod]
+    public async Task A_number_written_over_a_counter_is_not_taken_for_the_sum_when_it_happens_to_equal_it()
+    {
+        var report = await InspectAsync("""
+            base: counter post/likes increment
+            A: counter post/likes add 2
+            B: counter post/likes add 3
+            C: map post set likes 6
+            """);
+
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual(6, report.Merged!["post"]!["likes"]!.GetValue<long>());
+
+        var counter = report.Decisions!.Single(decision => decision.Target == "counter 'post/likes'");
+        Assert.AreEqual("a change is lost with its map key", counter.Outcome);
+        Assert.Contains("add up to 6, but every replica holds 6, and not as a counter", counter.Detail);
+        Assert.Contains("was written over concurrently", counter.Detail);
+    }
+
+    [TestMethod]
     public async Task A_count_written_into_a_map_key_points_at_a_counter()
     {
         var report = await InspectAsync("""

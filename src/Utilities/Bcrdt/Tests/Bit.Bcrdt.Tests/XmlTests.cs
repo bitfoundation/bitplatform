@@ -440,6 +440,31 @@ public class XmlTests
     }
 
     [TestMethod]
+    public void A_deep_event_after_an_ignored_entry_gives_the_child_index_the_tree_uses()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtXmlFragment tree = doc.GetXmlFragment("tree");
+        var text = new BcrdtXmlText("abc");
+        var paragraph = new BcrdtXmlElement("p");
+        paragraph.Push(text);
+        tree.Push(new BcrdtXmlElement("h1"), paragraph);
+
+        // What a misbehaving peer could put between the two children: plain values the tree does not count.
+        doc.Transact(transaction => BcrdtTypeOperations.ListInsert(transaction, tree, 1, ["loose", 42L]));
+        Assert.AreSame(paragraph, tree[1]);
+
+        List<string> paths = [];
+        using IDisposable subscription = tree.ObserveDeep((events, _) =>
+        {
+            foreach (BcrdtEvent e in events) paths.Add(string.Join("/", e.Path));
+        });
+
+        text.Insert(3, "d");
+
+        CollectionAssert.AreEqual(new[] { "1/0" }, paths);
+    }
+
+    [TestMethod]
     public void A_fragment_nests_inside_a_map()
     {
         using BcrdtDocument doc = Doc(1);
@@ -493,6 +518,42 @@ public class XmlTests
         peer.ApplyUpdate(doc.EncodeStateAsUpdate());
         Assert.AreEqual(BcrdtAbstractType.MaxNestingDepth, peer.GetXmlFragment("tree").Descendants().Count());
         BcrdtConvergenceHarness.AssertConverged(doc, peer);
+    }
+
+    [TestMethod]
+    public void A_detached_tree_too_deep_for_where_it_goes_is_refused_before_any_of_it_is_placed()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtXmlContainer container = doc.GetXmlFragment("tree");
+        var levels = new List<BcrdtXmlContainer>();
+        for (int depth = 1; depth <= BcrdtAbstractType.MaxNestingDepth - 2; depth++)
+        {
+            var element = new BcrdtXmlElement("div");
+            container.Push(element);
+            levels.Add(container = element);
+        }
+
+        // Four levels: three elements and a text. Under the deepest element, at 126, the text would be at 130.
+        var detached = new BcrdtXmlElement("section");
+        var inner = new BcrdtXmlElement("p");
+        var innermost = new BcrdtXmlElement("em");
+        innermost.Push(new BcrdtXmlText("deep"));
+        inner.Push(innermost);
+        detached.Push(inner);
+
+        long clock = doc.GetStateVector().Get(doc.ClientId);
+        string markup = detached.ToXmlString();
+        Assert.ThrowsExactly<InvalidOperationException>(() => container.Push(detached));
+        Assert.AreEqual(clock, doc.GetStateVector().Get(doc.ClientId), "nothing of it was placed");
+        Assert.AreEqual(0, container.Count);
+        Assert.IsFalse(detached.IsAttached);
+        Assert.AreEqual(markup, detached.ToXmlString(), "and it is intact");
+        Assert.AreEqual(1, innermost.Count);
+
+        // Two levels up, at 124, the text lands at 128: as deep as a type goes.
+        levels[^3].Push(detached);
+        Assert.IsTrue(detached.IsAttached);
+        Assert.AreEqual("deep", innermost.ToArray().OfType<BcrdtXmlText>().Single().ToString());
     }
 
     // ---------------------------------------------------------------- the wire

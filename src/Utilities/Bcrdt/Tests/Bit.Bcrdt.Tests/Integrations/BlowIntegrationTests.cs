@@ -23,7 +23,7 @@ public class BlowIntegrationTests
 
     private sealed class Replica : IDisposable
     {
-        public Replica(ulong clientId, IEnumerable<BlowNode>? nodes = null, IEnumerable<BlowEdge>? edges = null, Func<Action, Task>? scope = null)
+        public Replica(ulong clientId, IEnumerable<BlowNode>? nodes = null, IEnumerable<BlowEdge>? edges = null, Func<Action, Task>? scope = null, BlowSerializerOptions? serializer = null)
         {
             Doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = clientId });
             Nodes = [.. nodes ?? []];
@@ -35,7 +35,7 @@ public class BlowIntegrationTests
             {
                 if (ReferenceEquals(args.Origin, origin)) Transactions++;
             };
-            Binding = new BcrdtBlowBinding(Doc.GetMap("flow"), Nodes, Edges, new BcrdtBlowBindingOptions { Origin = origin, RemoteEditScope = scope });
+            Binding = new BcrdtBlowBinding(Doc.GetMap("flow"), Nodes, Edges, new BcrdtBlowBindingOptions { Origin = origin, RemoteEditScope = scope, SerializerOptions = serializer });
             Binding.RemoteChanged += _ => RemoteChanges++;
         }
 
@@ -492,6 +492,51 @@ public class BlowIntegrationTests
         Assert.AreEqual("Renamed", a.Node("1").Label, "The rest of the change still applies.");
         Assert.AreEqual(1, a.Transactions, "Nothing is written back over it.");
         Assert.IsFalse(a.Binding.Commit());
+    }
+
+    [TestMethod]
+    public void A_batch_over_a_limit_shows_what_fits_and_a_commit_keeps_what_did_not()
+    {
+        string wide = new('w', 1200);
+        string huge = new('h', 3000);
+        using var a = new Replica(1,
+            [Node("1"), Node("2", 100), Node("wide1", label: wide), Node("wide2", label: wide), Node("huge", label: huge)],
+            [Edge("e1-2", "1", "2"), Labelled(Edge("ewide", "2", "1"), wide), Labelled(Edge("ehuge", "1", "2"), huge), Edge("e-huge", "1", "huge")]);
+
+        // Every entry but the huge ones fits this replica's limit by itself; together they do not.
+        using var b = new Replica(2, serializer: new BlowSerializerOptions { Limits = new BlowImportLimits { MaxBytes = 2000 } });
+        var reasons = new List<string>();
+        b.Binding.RemoteChangeRejected += reasons.Add;
+        Sync(a.Doc, b.Doc);
+
+        CollectionAssert.AreEquivalent(new[] { "1", "2", "wide1", "wide2" }, b.Nodes.Select(node => node.Id).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "e1-2", "ewide" }, b.Edges.Select(edge => edge.Id).ToArray());
+        Assert.HasCount(2, reasons, string.Join('\n', reasons));
+
+        // What this replica could not read is not a deletion: a commit here leaves it for the others.
+        b.Node("1").Position = new BlowXYPosition(5, 5);
+        Assert.IsTrue(b.Binding.Commit());
+        Sync(b.Doc, a.Doc);
+
+        Assert.AreEqual(new BlowXYPosition(5, 5), a.Node("1").Position);
+        CollectionAssert.AreEquivalent(new[] { "1", "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "e1-2", "ewide", "ehuge", "e-huge" }, a.Edges.Select(edge => edge.Id).ToArray());
+
+        // A real deletion still goes through, and takes the edges to the deleted node with it.
+        b.Nodes.RemoveAll(node => node.Id == "1");
+        b.Edges.RemoveAll(edge => edge.Source == "1" || edge.Target == "1");
+        Assert.IsTrue(b.Binding.Commit());
+        Sync(b.Doc, a.Doc);
+
+        CollectionAssert.AreEquivalent(new[] { "2", "wide1", "wide2", "huge" }, a.Nodes.Select(node => node.Id).ToArray());
+        Assert.IsEmpty(a.Edges);
+        Assert.IsNull(a.Doc.GetMap("flow").Get("e:ehuge"));
+
+        static BlowEdge Labelled(BlowEdge edge, string label)
+        {
+            edge.Label = label;
+            return edge;
+        }
     }
 
     [TestMethod]

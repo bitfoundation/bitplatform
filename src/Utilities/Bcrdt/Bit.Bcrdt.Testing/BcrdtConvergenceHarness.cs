@@ -114,7 +114,13 @@ public static class BcrdtConvergenceHarness
         var builder = new StringBuilder();
         foreach (string name in doc.RootTypes.Keys.OrderBy(key => key, StringComparer.Ordinal))
         {
-            object projection = doc.RootTypes[name].ToJson();
+            BcrdtAbstractType root = doc.RootTypes[name];
+
+            // A counter that nobody ever changed projects as 0 where it is declared and is absent where it is not;
+            // one with changes that sum to 0 holds replicated state, and is compared.
+            if (root is BcrdtCounter { KeyIndex.Count: 0 }) continue;
+
+            object projection = root.ToJson();
             if (IsEmpty(projection)) continue;
 
             builder.Append(name).Append(": ");

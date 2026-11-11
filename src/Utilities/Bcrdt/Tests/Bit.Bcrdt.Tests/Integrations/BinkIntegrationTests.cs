@@ -353,6 +353,47 @@ public class BinkIntegrationTests
     }
 
     [TestMethod]
+    public void A_drawing_with_only_a_custom_page_or_layer_seeds_rather_than_being_replaced()
+    {
+        var page = new BinkDocument(BinkDocumentSettings.Default with { Width = 1920, Height = 1080 });
+        using var a = new Replica(1, page);
+        Assert.AreEqual(1, a.Transactions, "A sized page is content to start from.");
+        Assert.AreEqual(1920f, a.Drawing.Settings.Width);
+
+        var renamed = new BinkDocument();
+        renamed.UpdateLayer(renamed.Layers[0].Id, properties => properties with { Name = "Sketch" });
+        using var b = new Replica(2, renamed);
+        Assert.AreEqual(1, b.Transactions, "So is a renamed layer.");
+        Assert.AreEqual("Sketch", b.Drawing.Layers.Single().Name);
+    }
+
+    [TestMethod]
+    public void A_remote_change_to_a_layer_being_changed_here_keeps_the_local_properties_still_to_write()
+    {
+        using var a = new Replica(1, history: static drawing => new BinkHistoryManager(drawing));
+        using var b = new Replica(2);
+        BinkLayer layer = a.Drawing.AddLayer("Notes");
+        SyncAll(a, b);
+
+        using (a.History!.BeginGroup("Adjust"))
+        {
+            a.Drawing.UpdateLayer(layer.Id, properties => properties with { Opacity = 0.5f });
+            Assert.IsTrue(a.Binding.HasPendingChanges);
+
+            b.Drawing.UpdateLayer(layer.Id, properties => properties with { Name = "Renamed" });
+            Sync(b.Doc, a.Doc);
+
+            Assert.AreEqual("Renamed", a.Drawing.GetLayer(layer.Id).Name, "the property the collaborator changed arrives");
+            Assert.AreEqual(0.5f, a.Drawing.GetLayer(layer.Id).Opacity, "and the one still to write stays");
+        }
+
+        SyncAll(a, b);
+        AssertConverged("after both layer changes", a, b);
+        Assert.AreEqual("Renamed", b.Drawing.GetLayer(layer.Id).Name);
+        Assert.AreEqual(0.5f, b.Drawing.GetLayer(layer.Id).Opacity);
+    }
+
+    [TestMethod]
     public void A_change_made_by_a_handler_of_another_is_written_with_the_step_it_belongs_to()
     {
         var drawing = new BinkDocument();

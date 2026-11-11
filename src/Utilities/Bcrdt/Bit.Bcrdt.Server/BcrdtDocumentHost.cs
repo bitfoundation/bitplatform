@@ -632,6 +632,10 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
         long now = Environment.TickCount64;
         lock (document.Connections)
         {
+            // Revoked since HandleAsync looked: revoking released this connection's claims under this same lock,
+            // and a claim made now would outlive it - an identity nobody can take over, announced to nobody as gone.
+            if (document.Revoked.Contains(connection)) return Drop("revoked");
+
             int owned = 0;
             foreach (AwarenessClaim claim in document.AwarenessClaims.Values)
             {

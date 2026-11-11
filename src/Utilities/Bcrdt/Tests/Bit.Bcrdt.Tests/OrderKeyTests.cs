@@ -40,6 +40,7 @@ public class OrderKeyTests
     [DataRow("zzzzzzzzzzzzzzzzzzzzzzzzzzy", null, "zzzzzzzzzzzzzzzzzzzzzzzzzzz")]
     [DataRow("zzzzzzzzzzzzzzzzzzzzzzzzzzz", null, "zzzzzzzzzzzzzzzzzzzzzzzzzzzV")]
     [DataRow(null, "A000000000000000000000000001", "A000000000000000000000000000V")]
+    [DataRow(null, "A00000000000000000000000001", "A00000000000000000000000000V")]
     public void Keys_match_the_fractional_indexing_reference(string? before, string? after, string expected)
     {
         Assert.AreEqual(expected, BcrdtOrderKey.Between(before, after));

@@ -209,7 +209,11 @@ public static class BcrdtOrderKey
 
             // A key with a fraction sorts after its own integer part, which is then free.
             if (integerAfter.Length < after.Length) return integerAfter;
-            return Decrement(integerAfter) ?? throw new InvalidOperationException("No integer precedes the smallest one.");
+
+            // The smallest integer is not a key - nothing could ever precede it - so the step down to it takes a
+            // fraction above it instead, which still sorts below 'after' and leaves room before it.
+            string previous = Decrement(integerAfter) ?? throw new InvalidOperationException("No integer precedes the smallest one.");
+            return string.Equals(previous, SmallestInteger, StringComparison.Ordinal) ? previous + Midpoint("", null) : previous;
         }
 
         string integerBefore = before[..IntegerLength(before[0])];

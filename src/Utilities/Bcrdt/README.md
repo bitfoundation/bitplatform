@@ -354,8 +354,9 @@ BcrdtMap card = board.Add(fields =>
     fields.EnsureText("title").Insert(0, "Write the release notes");
 }, InColumn("todo"));
 
-// Dropped second in "doing": the column field and the order key, written in one transaction.
-board.Move(board.IdOf(card)!, 1, InColumn("doing"), moved => moved.Set("column", "doing"));
+// Dropped into the empty "doing" column, at its top: the column field and the order key, written in one transaction.
+// The index counts the cards already in the target column, from 0 up to how many there are.
+board.Move(board.IdOf(card)!, 0, InColumn("doing"), moved => moved.Set("column", "doing"));
 
 foreach (BcrdtOrderedEntry entry in board.GetOrdered(InColumn("doing")))
 {
@@ -622,7 +623,7 @@ enum it reports; a component of the same name would make every `BcrdtConnectionS
 
 <BcrdtSyncStatus Context="status">
     <span class="@(status.IsSynced ? "text-success" : "text-warning")">
-        @(status.IsLocalOnly ? "Saved on this device" : status.IsSynced ? "All changes saved" : "Changes will sync when you reconnect")
+        @(status.IsLocalOnly ? "Not connected to a server" : status.IsSynced ? "Up to date with the server" : "Changes will sync when you reconnect")
     </span>
 </BcrdtSyncStatus>
 ```

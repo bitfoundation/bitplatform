@@ -96,6 +96,12 @@ public abstract class BcrdtAbstractType
         }
     }
 
+    /// <summary>
+    /// How many levels of types a detached type brings with it, itself included: one, unless it holds detached
+    /// types of its own waiting to be inserted with it. Stops counting past <paramref name="limit"/>.
+    /// </summary>
+    internal virtual int PendingHeight(int limit) => 1;
+
     /// <summary>Whether this sequence has ever carried a rich-text mark.</summary>
     /// <remarks>
     /// A plain-text document should not pay for attribute tracking it never uses, so the readers
@@ -312,11 +318,21 @@ public abstract class BcrdtAbstractType
             }
             else
             {
+                // An XML container's indices count its child nodes only, so an entry it ignores - a plain
+                // value a peer put among them - shifts no path, just as it shifts no index of the container.
+                bool xml = item.Parent is BcrdtXmlContainer;
                 int index = 0;
                 BcrdtItem? cursor = (item.Parent as BcrdtAbstractType)?.Start;
                 while (cursor is not null && cursor != item)
                 {
-                    if (!cursor.Deleted && cursor.Countable) index += cursor.Length;
+                    if (xml)
+                    {
+                        if (BcrdtXmlContainer.IsChild(cursor)) index++;
+                    }
+                    else if (!cursor.Deleted && cursor.Countable)
+                    {
+                        index += cursor.Length;
+                    }
                     cursor = cursor.Right;
                 }
                 path.Insert(0, index);

@@ -427,6 +427,29 @@ public class BlazeDbDocumentStoreTests
     }
 
     [TestMethod]
+    public async Task A_retried_delete_that_finds_nothing_left_is_not_reported_durable_before_its_flush()
+    {
+        var storage = new FailingStorage();
+        await using BlazeDbDatabase database = await OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
+        var store = new BcrdtBlazeDbDocumentStore(database);
+        await store.AppendUpdateAsync("doc", CreateUpdate("stored"));
+
+        storage.Failing = true;
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc"));
+
+        // The first attempt committed the deletion, so the retry finds no rows: it still waits for the flush.
+        Assert.IsEmpty(Rows(database, "doc"));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.DeleteAsync("doc"));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await store.CompactAsync("doc"));
+
+        storage.Failing = false;
+        await store.DeleteAsync("doc");
+
+        await using BlazeDbDatabase recovered = await OpenAsync(storage.Inner.Clone());
+        Assert.IsNull((await new BcrdtBlazeDbDocumentStore(recovered).LoadAsync("doc")).Update);
+    }
+
+    [TestMethod]
     public async Task The_application_lock_serializes_the_store_with_the_application()
     {
         await using BlazeDbDatabase database = await OpenAsync();

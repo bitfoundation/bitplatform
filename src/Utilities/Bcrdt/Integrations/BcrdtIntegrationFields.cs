@@ -37,8 +37,9 @@ internal static class BcrdtIntegrationFields
     {
         JsonValueKind.String => element.GetString(),
         // Integers stay integers, so a value written as 120 compares equal to itself after a round trip; the value
-        // model compares a long and a double numerically in any case.
-        JsonValueKind.Number => element.TryGetInt64(out long integer) ? integer : element.GetDouble(),
+        // model compares a long and a double numerically in any case. Boxed apart: as one conditional expression, long
+        // and double meet at double, and every integer - one past 2^53 losing its exact value - would be stored as a float.
+        JsonValueKind.Number => element.TryGetInt64(out long integer) ? (object)integer : element.GetDouble(),
         JsonValueKind.True => true,
         JsonValueKind.False => false,
         JsonValueKind.Array => element.EnumerateArray().Select(FromJson).ToList(),

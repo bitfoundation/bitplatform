@@ -214,7 +214,7 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
             gate.Release();
         }
 
-        await FinishAsync(database, state, handlerFailure, cancellationToken).ConfigureAwait(false);
+        await FinishAsync(database, state, wrote: true, handlerFailure, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -223,7 +223,8 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
         Validate(documentId);
 
         (BlazeDbDatabase database, DatabaseState state, SemaphoreSlim gate) = await EnterAsync(cancellationToken).ConfigureAwait(false);
-        BlazeDbChangeHandlerException? handlerFailure;
+        BlazeDbChangeHandlerException? handlerFailure = null;
+        bool wrote = false;
         try
         {
             RequireWritable(database);
@@ -233,23 +234,25 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
 
             // Several smaller records are better than one the log refuses. A record that could not be merged is
             // not among those kept, and stays exactly where it is.
-            if (merged is null || kept.Count <= 1 || merged.Length > MaxRecordSize) return;
-
-            // The merged record takes the place of the first one it replaces, so it stays ahead of any record it
-            // could not merge - which is then measured against it, rather than the other way round, on every load.
-            long first = kept.Min(record => record.Id);
-            handlerFailure = Commit(database, () =>
+            if (merged is not null && kept.Count > 1 && merged.Length <= MaxRecordSize)
             {
-                table.DeleteMany([.. kept.Select(record => record.Id)]);
-                table.Insert(new BcrdtBlazeDbUpdateRecord { Id = first, DocumentId = documentId, Update = merged });
-            });
+                // The merged record takes the place of the first one it replaces, so it stays ahead of any record it
+                // could not merge - which is then measured against it, rather than the other way round, on every load.
+                long first = kept.Min(record => record.Id);
+                handlerFailure = Commit(database, () =>
+                {
+                    table.DeleteMany([.. kept.Select(record => record.Id)]);
+                    table.Insert(new BcrdtBlazeDbUpdateRecord { Id = first, DocumentId = documentId, Update = merged });
+                });
+                wrote = true;
+            }
         }
         finally
         {
             gate.Release();
         }
 
-        await FinishAsync(database, state, handlerFailure, cancellationToken).ConfigureAwait(false);
+        await FinishAsync(database, state, wrote, handlerFailure, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -258,22 +261,25 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
         Validate(documentId);
 
         (BlazeDbDatabase database, DatabaseState state, SemaphoreSlim gate) = await EnterAsync(cancellationToken).ConfigureAwait(false);
-        BlazeDbChangeHandlerException? handlerFailure;
+        BlazeDbChangeHandlerException? handlerFailure = null;
+        bool wrote = false;
         try
         {
             BlazeDbTable<long, BcrdtBlazeDbUpdateRecord> table = TableOf(database);
             long[] ids = [.. table.Lookup(BcrdtBlazeDbUpdateRecord.Indexes.DocumentId, documentId).Select(record => record.Id)];
-            if (ids.Length == 0) return;
-
-            RequireWritable(database);
-            handlerFailure = Commit(database, () => table.DeleteMany(ids));
+            if (ids.Length > 0)
+            {
+                RequireWritable(database);
+                handlerFailure = Commit(database, () => table.DeleteMany(ids));
+                wrote = true;
+            }
         }
         finally
         {
             gate.Release();
         }
 
-        await FinishAsync(database, state, handlerFailure, cancellationToken).ConfigureAwait(false);
+        await FinishAsync(database, state, wrote, handlerFailure, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -477,11 +483,16 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
     private async ValueTask FinishAsync(
         BlazeDbDatabase database,
         DatabaseState state,
+        bool wrote,
         BlazeDbChangeHandlerException? handlerFailure,
         CancellationToken cancellationToken)
     {
         if (handlerFailure is not null) ChangeHandlerFailed?.Invoke(handlerFailure);
-        if (_options.WaitForDurability) await FlushAsync(database, state, cancellationToken).ConfigureAwait(false);
+
+        // Also when the operation found nothing left to do: a retry finds nothing because its first attempt was
+        // committed, and if that commit's flush failed, reporting success now would claim it durable. With nothing
+        // committed and unflushed, a no-op stays one - a read-only replica is never asked to flush.
+        if (_options.WaitForDurability && (wrote || state.Unflushed)) await FlushAsync(database, state, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Waits for the database to put what it has committed into its storage.</summary>

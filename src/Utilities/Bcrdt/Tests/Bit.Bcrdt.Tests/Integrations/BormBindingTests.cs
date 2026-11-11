@@ -477,6 +477,58 @@ public class BormBindingTests
     }
 
     [TestMethod]
+    public void Publish_writes_a_change_Borm_did_not_report_inside_a_row_the_document_already_holds()
+    {
+        using BcrdtDocument a = Doc(1);
+        using BcrdtDocument b = Doc(2);
+        using var first = new Replica(a, new BormTicket { Lines = [new() { Product = "A", Quantity = 1 }] });
+        Sync(a, b);
+        using var second = new Replica(b);
+
+        first.Model.Lines[0].Product = "Edited behind the form";   // raises no FieldChanged
+        first.Model.Lines[0].Quantity = 9;
+        first.Binding.Publish();
+        Sync(a, b);
+
+        Assert.AreEqual("Edited behind the form", second.Model.Lines[0].Product);
+        Assert.AreEqual(9, second.Model.Lines[0].Quantity);
+        Assert.AreEqual(Json(first.Model), Json(second.Model));
+    }
+
+    [TestMethod]
+    public void A_deleted_key_leaves_no_stale_value_for_Publish_to_write_back()
+    {
+        using BcrdtDocument a = Doc(1);
+        using BcrdtDocument b = Doc(2);
+        using var first = new Replica(a, new BormTicket { Title = "Start", Estimate = 5 });
+        Sync(a, b);
+        using var second = new Replica(b);
+
+        // Other code - an undo of the write that created them, say - takes the keys away.
+        BcrdtMap ticket = a.GetMap("ticket");
+        a.Transact(_ =>
+        {
+            ticket.Delete("Title");
+            ticket.Delete("Estimate");
+        });
+        Sync(a, b);
+
+        foreach (Replica replica in new[] { first, second })
+        {
+            Assert.AreNotEqual("Start", replica.Model.Title);
+            Assert.AreEqual(0, replica.Model.Estimate);
+        }
+
+        first.Binding.Publish();
+        second.Binding.Publish();
+        Sync(a, b);
+
+        Assert.AreNotEqual("Start", ticket.Get("Title"));
+        Assert.AreNotEqual(5L, ticket.Get("Estimate"));
+        Assert.AreEqual(Json(first.Model), Json(second.Model));
+    }
+
+    [TestMethod]
     public void Undo_tracking_the_binding_takes_back_only_the_local_users_change()
     {
         using BcrdtDocument a = Doc(1);

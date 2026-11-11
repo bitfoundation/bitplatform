@@ -144,7 +144,20 @@ public class BcrdtBlexStore<TState> : BlexStoreBase
         if (ReferenceEquals(transaction.Origin, Origin) && _acting > 0) return;
         if (ReferenceEquals(transaction.Origin, Origin) && EqualityComparer<TState>.Default.Equals(_state, _project())) return;
 
-        Dispatch(RemoteActionName, Project, null);
+        bool projected = false;
+        Dispatch(RemoteActionName, () =>
+        {
+            projected = true;
+            Project();
+        }, null);
+        if (projected) return;
+
+        // A filter vetoed the action. The change is in the document all the same - a veto cannot take back what a
+        // collaborator did - so the state follows it, and subscribers hear of it, without the action.
+        TState next = _project();
+        if (EqualityComparer<TState>.Default.Equals(_state, next)) return;
+        _state = next;
+        NotifyRestored();
     }
 
     /// <inheritdoc/>

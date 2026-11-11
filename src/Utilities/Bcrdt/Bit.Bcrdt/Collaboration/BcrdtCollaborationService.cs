@@ -329,8 +329,13 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
             {
                 IBcrdtTransport transport = _crossTabTransports.Create(documentId);
                 document.Own(transport);
+                // Nor, while the server grants this tab read access only, an edit made here: the server will never
+                // take it, so passed to the other tabs it would show them a change nobody else - the server, the
+                // other people in the document - will ever have.
                 tabs = new BcrdtSyncProvider(crdt, transport, awareness: null,
-                    _options.Sync.AndForwardOnly(args => network is null || !ReferenceEquals(args.Origin, network)));
+                    _options.Sync.AndForwardOnly(args => network is null ||
+                        (!ReferenceEquals(args.Origin, network) &&
+                         !(args.Transaction.Local && network.Access == BcrdtDocumentAccess.ReadOnly))));
                 document.CrossTabSync = tabs;
 
                 // Whatever Connect says: the other tabs are not the network, and an offline start is exactly when

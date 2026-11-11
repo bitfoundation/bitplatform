@@ -93,6 +93,20 @@ public abstract class BcrdtXmlContainer : BcrdtAbstractType, IEnumerable<IBcrdtX
         }
     }
 
+    /// <inheritdoc/>
+    internal override int PendingHeight(int limit)
+    {
+        if (_pendingChildren is not { Count: > 0 } children || limit <= 1) return 1;
+
+        int deepest = 0;
+        foreach (IBcrdtXmlNode child in children)
+        {
+            deepest = Math.Max(deepest, ((BcrdtAbstractType)child).PendingHeight(limit - 1));
+            if (deepest >= limit) break;
+        }
+        return 1 + deepest;
+    }
+
     protected internal override BcrdtEvent CreateEvent(BcrdtTransaction transaction, HashSet<string?> changedKeys) =>
         new BcrdtXmlEvent(this, transaction);
 

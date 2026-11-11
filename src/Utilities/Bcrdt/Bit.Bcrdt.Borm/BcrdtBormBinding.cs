@@ -219,7 +219,8 @@ public sealed class BcrdtBormBinding : IDisposable
 
         if (FromStable(stable) is { } path && TryLocate(path, out Location location) && location.Row is null)
         {
-            Apply(() => ApplyField(location.Container, location.Field, location.Path));
+            // Past the form's opening, so a key that is missing now was deleted while it was held back.
+            Apply(() => ApplyField(location.Container, location.Field, location.Path, deleted: true));
         }
         Changed?.Invoke();
     }
@@ -426,6 +427,13 @@ public sealed class BcrdtBormBinding : IDisposable
                 row = CreateRow(template, BormPath.Combine(path, i));
                 rows.Set(id, row);
             }
+            else if (_publishing)
+            {
+                // A change Borm did not report - a reset, a restored draft - can be inside a row the document
+                // already holds. Only when comparing the whole form: a row added or removed is no reason to
+                // write the others' fields, which would revert a change held back for the field being edited.
+                WriteFields(row, template.Children, BormPath.Combine(path, i), onlyMissing: false);
+            }
 
             ids.Add(id);
             entries.Add(row);
@@ -461,7 +469,15 @@ public sealed class BcrdtBormBinding : IDisposable
 
     private void OnDocumentChanged(IReadOnlyList<BcrdtEvent> events, BcrdtTransaction transaction)
     {
-        if (_disposed || ReferenceEquals(transaction.Origin, Origin)) return;
+        if (_disposed) return;
+
+        // The form's own change is already in the form. A row it removed may have taken a text with it, though,
+        // whose binding goes with it.
+        if (ReferenceEquals(transaction.Origin, Origin))
+        {
+            PruneTextBindings();
+            return;
+        }
 
         Apply(() =>
         {
@@ -518,13 +534,24 @@ public sealed class BcrdtBormBinding : IDisposable
         {
             if (KindOf(field) == FieldKind.Ignored) continue;
             if (keys is not null && !keys.ContainsKey(field.Name)) continue;
-            ApplyField(container, field, BormPath.Combine(prefix, field.Name));
+            ApplyField(container, field, BormPath.Combine(prefix, field.Name), deleted: keys is not null);
         }
     }
 
-    private void ApplyField(BcrdtMap container, BormFieldDefinition field, string path)
+    /// <param name="container">The map holding the field.</param>
+    /// <param name="field">The field.</param>
+    /// <param name="path">The field's path in the form.</param>
+    /// <param name="deleted">
+    /// Whether a key missing from <paramref name="container"/> was deleted by the change being applied, rather than
+    /// never written - which is what a missing key means as the form opens, when the form seeds it.
+    /// </param>
+    private void ApplyField(BcrdtMap container, BormFieldDefinition field, string path, bool deleted = false)
     {
-        if (!container.TryGetValue(field.Name, out object? stored)) return;
+        if (!container.TryGetValue(field.Name, out object? stored))
+        {
+            if (deleted) ClearField(field, path);
+            return;
+        }
 
         switch (KindOf(field))
         {
@@ -557,6 +584,28 @@ public sealed class BcrdtBormBinding : IDisposable
         }
 
         State.SetValueQuietly(path, BcrdtBormValues.FromDocument(stored, field));
+    }
+
+    /// <summary>
+    /// Takes back a value whose key was deleted - an undo of the write that created it, other code removing it - by
+    /// putting the field's default back. Left as it was, the value would be one the document no longer holds, and
+    /// <see cref="Publish"/> would write it back.
+    /// </summary>
+    /// <remarks>
+    /// A nested object or a repeater whose map went is left as it is: its fields go with whatever replaces it.
+    /// </remarks>
+    private void ClearField(BormFieldDefinition field, string path)
+    {
+        if (KindOf(field) is not (FieldKind.Value or FieldKind.Text)) return;
+        if (BcrdtBormValues.Same(State.GetValue(path), BcrdtBormValues.ToDocument(field.DefaultValue))) return;
+
+        if (IsEditing(path))
+        {
+            _held = true;
+            return;
+        }
+
+        State.SetValueQuietly(path, field.DefaultValue);
     }
 
     /// <summary>

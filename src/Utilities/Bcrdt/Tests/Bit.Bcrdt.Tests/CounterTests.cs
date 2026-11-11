@@ -50,6 +50,24 @@ public class CounterTests
     }
 
     [TestMethod]
+    public void The_harness_takes_an_untouched_counter_for_an_absent_one_but_compares_one_that_was_changed()
+    {
+        using BcrdtDocument declared = Doc(1);
+        using BcrdtDocument absent = Doc(2);
+        declared.GetCounter("votes");
+
+        BcrdtConvergenceHarness.AssertConverged(declared, absent);
+
+        // Changes that sum to zero are still replicated state, which the other replica does not have.
+        declared.GetCounter("votes").Increment();
+        declared.GetCounter("votes").Decrement();
+        Assert.ThrowsExactly<BcrdtConvergenceException>(() => BcrdtConvergenceHarness.AssertConverged(declared, absent));
+
+        Sync(declared, absent);
+        BcrdtConvergenceHarness.AssertConverged(declared, absent);
+    }
+
+    [TestMethod]
     public void Adding_zero_writes_nothing()
     {
         using BcrdtDocument doc = Doc(1);

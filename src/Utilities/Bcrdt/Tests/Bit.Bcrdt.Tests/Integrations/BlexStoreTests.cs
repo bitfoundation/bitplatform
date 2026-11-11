@@ -230,6 +230,28 @@ public class BlexStoreTests
     }
 
     [TestMethod]
+    public void A_vetoed_remote_change_still_reaches_the_state_and_its_subscribers()
+    {
+        using BcrdtDocument a = Doc(1);
+        using BcrdtDocument b = Doc(2);
+        Seed(a);
+        Sync(a, b);
+        using var local = new BlexBoardStore(a.GetMap("board"));
+        using var remote = new BlexBoardStore(b.GetMap("board"));
+        var manager = new BlexManager([new BlexFilterMiddleware(context => context.ActionName != "Remote change")]);
+        manager.Register(remote);
+
+        List<string> titles = [];
+        using IDisposable subscription = remote.Subscribe(() => remote.State.Title, titles.Add);
+
+        local.Rename("Roadmap");
+        Sync(a, b);
+
+        Assert.AreEqual("Roadmap", remote.State.Title, "a filter cannot take back what a collaborator did");
+        CollectionAssert.AreEqual(new[] { "Roadmap" }, titles);
+    }
+
+    [TestMethod]
     public void A_text_store_merges_concurrent_typing()
     {
         using BcrdtDocument a = Doc(1);
