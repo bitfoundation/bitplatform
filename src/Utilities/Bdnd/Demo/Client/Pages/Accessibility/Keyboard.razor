@@ -11,7 +11,9 @@
         <kbd>Escape</kbd> to cancel. A live region tells screen readers what happens, using each source's and target's
         <code>Label</code>; the panel under the board shows what it said. The arrow buttons on each card are the
         single-pointer alternative WCAG 2.5.7 asks for: the same move, without dragging. The columns are styled from
-        the <code>data-bit-bdnd-*</code> attributes alone.
+        the <code>data-bit-bdnd-*</code> attributes alone. With letter keys on, the provider's
+        <code>KeyBindings</code> add <kbd>H</kbd>, <kbd>J</kbd>, <kbd>K</kbd> and <kbd>L</kbd> to the arrows, and the
+        instructions screen readers read say so.
     </p>
 </div>
 
@@ -30,9 +32,13 @@
         <label class="bb-check">
             <input type="checkbox" @bind="_doneLocked" /> Lock Done (<code>Disabled</code>)
         </label>
+        <label class="bb-check">
+            <input type="checkbox" @bind="_letterKeys" /> Letter keys H J K L (<code>KeyBindings</code>)
+        </label>
     </div>
 
-    <BdndProvider Announcements="@(_german ? _germanTexts : _englishTexts)" AllowKeyboard="_allowKeyboard">
+    <BdndProvider Announcements="@_texts[(_german, _letterKeys)]" AllowKeyboard="_allowKeyboard"
+                  KeyBindings="@(_letterKeys ? LetterKeys : BdndKeyBindings.Default)">
         <div class="kanban">
             @foreach (var column in Columns)
             {
@@ -116,6 +122,16 @@
     private bool _german;
     private bool _allowKeyboard = true;
     private bool _doneLocked;
+    private bool _letterKeys;
+
+    // The arrows, and the letters vi and many keyboard-driven apps move with: H left, J down, K up, L right.
+    private static readonly BdndKeyBindings LetterKeys = new()
+    {
+        Left = ["ArrowLeft", "h"],
+        Down = ["ArrowDown", "j"],
+        Up = ["ArrowUp", "k"],
+        Right = ["ArrowRight", "l"],
+    };
 
     // The texts in German - every one replaceable, the rest kept from BdndAnnouncements.Default.
     private static readonly BdndAnnouncements German = new()
@@ -128,20 +144,24 @@
         Cancelled = a => $"Ziehen von {a.SourceLabel} abgebrochen.",
     };
 
-    private readonly BdndAnnouncements _englishTexts;
-    private readonly BdndAnnouncements _germanTexts;
+    private readonly Dictionary<(bool German, bool Letters), BdndAnnouncements> _texts = [];
     private readonly List<string> _heard = [];
 
     public Keyboard()
     {
-        _englishTexts = Transcribed(BdndAnnouncements.Default);
-        _germanTexts = Transcribed(German);
+        // the instructions name the keys: with the letters bound too, they say so
+        _texts[(false, false)] = Transcribed(BdndAnnouncements.Default, BdndAnnouncements.Default.Instructions);
+        _texts[(false, true)] = Transcribed(BdndAnnouncements.Default,
+            BdndAnnouncements.Default.Instructions + " H, J, K and L move like the arrow keys.");
+        _texts[(true, false)] = Transcribed(German, German.Instructions);
+        _texts[(true, true)] = Transcribed(German, German.Instructions + " H, J, K und L bewegen wie die Pfeiltasten.");
     }
 
     // Only for the panel under the board: the same texts, each also written down as it is announced.
-    private BdndAnnouncements Transcribed(BdndAnnouncements texts) => new()
+    private BdndAnnouncements Transcribed(BdndAnnouncements texts, string instructions) => new()
     {
-        Instructions = texts.Instructions,
+        Instructions = instructions,
+        CountItems = texts.CountItems,
         UnnamedSource = texts.UnnamedSource,
         UnnamedTarget = texts.UnnamedTarget,
         DragStarted = a => Heard(texts.DragStarted(a)),

@@ -237,4 +237,48 @@ public class BdndListMoveTests
         Assert.IsFalse(move.Apply());
         Assert.AreSequenceEqual(new[] { "a", "b", "c" }, list);
     }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void AListThatIsNotAListOfTMovesAndRevertsTheSame(bool sameList)
+    {
+        // a List<T> is moved in one pass; any other IList<T> one item at a time - with the same outcome
+        string[] start = ["a", "b", "c", "d", "e", "f", "g"];
+        List<string> fast = [.. start];
+        var slow = new System.Collections.ObjectModel.Collection<string>([.. start]);
+        List<string> fastOther = ["x", "y"];
+        var slowOther = new System.Collections.ObjectModel.Collection<string>(["x", "y"]);
+
+        var fastMove = BdndList.PlanMove(fast, [6, 1, 3], sameList ? fast : fastOther, sameList ? 5 : 1)!;
+        var slowMove = BdndList.PlanMove(slow, [6, 1, 3], sameList ? slow : slowOther, sameList ? 5 : 1)!;
+
+        Assert.IsTrue(fastMove.Apply());
+        Assert.IsTrue(slowMove.Apply());
+        Assert.AreSequenceEqual(slow, fast);
+        Assert.AreSequenceEqual(slowOther, fastOther);
+        Assert.AreSequenceEqual(sameList ? new[] { "a", "c", "e", "b", "d", "g", "f" } : new[] { "a", "c", "e", "f" }, fast);
+
+        Assert.IsTrue(fastMove.Revert());
+        Assert.IsTrue(slowMove.Revert());
+        Assert.AreSequenceEqual(start, fast);
+        Assert.AreSequenceEqual(start, slow);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, fastOther);
+        Assert.AreSequenceEqual(new[] { "x", "y" }, slowOther);
+    }
+
+    [TestMethod]
+    public void ASelectionAtTheStartAndTheEndOfALongListGoesBackWhereItWas()
+    {
+        List<int> list = [.. Enumerable.Range(0, 1000)];
+        int[] selection = [0, 1, 500, 998, 999];
+
+        var move = BdndList.PlanMove(list, selection, list, 250)!;
+        Assert.IsTrue(move.Apply());
+        Assert.AreSequenceEqual(new[] { 0, 1, 500, 998, 999 }, list.Skip(move.FinishIndex).Take(5));
+        Assert.HasCount(1000, list);
+
+        Assert.IsTrue(move.Revert());
+        Assert.AreSequenceEqual(Enumerable.Range(0, 1000), list);
+    }
 }

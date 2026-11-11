@@ -97,6 +97,34 @@ public sealed class BdndDragDropManager : IBdndMonitor
     private bool _allowKeyboard = true;
 
     /// <summary>
+    /// The keys that pick up, move, drop and cancel keyboard drags of this manager's sources. Defaults to
+    /// <see cref="BdndKeyBindings.Default"/>, the WAI-ARIA keys. A <see cref="BdndProvider"/> given
+    /// <see cref="BdndProvider.KeyBindings"/> sets it.
+    /// </summary>
+    /// <exception cref="ArgumentException">A command lists no key it needs, or a key is bound to two commands.</exception>
+    public BdndKeyBindings KeyBindings
+    {
+        get => _keyBindings;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (ReferenceEquals(value, _keyBindings)) return;
+            var map = value.ToModuleMap(); // validates
+            _keyBindings = value;
+            // the same keys again (an instance created on every render of the page): nothing for the sources to do
+            if (BdndKeyBindings.SameMap(map, KeyMap)) return;
+            KeyMap = map;
+            // the sources hand the keys to the module with their registration
+            NotifyStateChanged();
+        }
+    }
+
+    private BdndKeyBindings _keyBindings = BdndKeyBindings.Default;
+
+    /// <summary>The keys of <see cref="KeyBindings"/> by command, as the module reads them; null for the default ones.</summary>
+    internal Dictionary<string, string[]>? KeyMap { get; private set; }
+
+    /// <summary>
     /// The id of the (hidden) element holding <see cref="BdndAnnouncements.Instructions"/>, which keyboard-draggable
     /// sources reference through <c>aria-describedby</c>. Derived from the text, so providers with the same
     /// instructions share one element.

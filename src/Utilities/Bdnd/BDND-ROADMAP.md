@@ -71,6 +71,7 @@ adversarially review, update this plan and the matrix, decide whether to continu
 | 9 | Cross-browser validation and release readiness | Full E2E on Chromium, Firefox and WebKit; the remaining failures fixed or recorded; documentation, MCP catalogue and file hygiene; the release recommendation. |
 | 10 | What remained | Blazor Hybrid under E2E (a WinForms BlazorWebView harness), folder drops, a release outside the window, touch on every engine, screen-reader semantics in the accessibility tree, forced colors, native edge scrolling, the virtualized keyboard walk, a page builder demo; a checklist for what only people and devices can check. |
 | 14 | The improvement plan of November 2026 | A gap analysis of that plan against the code (below); moves worked out before they are made - one item or a selection, applied and reverted for undo (`BdndList.PlanMove`, `BdndListMove<T>`); tree moves that refuse cycles (`BdndTree`); the boundaries with the other bit utilities, documented. |
+| 15 | The candidates round 14 left | Announcements that count the items of a multi-item drag (`BdndAnnouncement.ItemCount`, `BdndAnnouncements.CountItems`); configurable keys (`BdndKeyBindings`); a BenchmarkDotNet harness for the .NET side of a drag, and the one-pass `List<T>` move it led to. |
 
 The scope of later rounds is revised at the end of every round from what the round found.
 
@@ -110,7 +111,7 @@ and AOT gate; lazy loading; Hybrid under E2E; an MCP catalogue reflected from th
   without recursion.
 - Nothing said where Bdnd stops and the other utilities begin: the README's "Bdnd and the other bit utilities".
 
-**Missing, appropriate, not done yet** (candidates for the next round, in order):
+**Missing, appropriate, not done yet** (candidates for the next round, in order - all three done in round 15):
 
 1. Announcements of a drag that carries several items speak the grabbed source's label ("Picked up Charlie."); a
    count ("Picked up 2 items.") needs the announcement to see the item - a field on `BdndAnnouncement`.

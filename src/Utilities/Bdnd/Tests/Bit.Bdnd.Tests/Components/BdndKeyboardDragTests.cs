@@ -480,6 +480,48 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task ADragOfSeveralItemsIsAnnouncedWithHowManyItCarries()
+    {
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<IReadOnlyList<string>>>(d => d
+                .Add(x => x.Type, "cards")
+                .Add(x => x.Item, (IReadOnlyList<string>)["alpha", "bravo", "charlie"]))
+            .AddChildContent<BdndDropTarget<IReadOnlyList<string>>>(t => t
+                .Add(x => x.Accept, "cards")
+                .Add(x => x.Label, "Archive")));
+        var source = cut.FindComponent<BdndDraggable<IReadOnlyList<string>>>();
+        var archive = cut.FindComponent<BdndDropTarget<IReadOnlyList<string>>>();
+        PlanCount(1);
+        PlanMove(null, "next", TargetIdOf(archive));
+
+        await StartAsync(source, "Charlie");
+        await CommandAsync(source, "next");
+        await CommandAsync(source, "drop");
+
+        Assert.AreSequenceEqual(new[]
+        {
+            "Picked up Charlie and 2 other items. 1 drop target is available.",
+            "3 items are over Archive.",
+            "3 items were dropped on Archive.",
+        }, Announcements);
+    }
+
+    [TestMethod]
+    public async Task AnItemCountedAsOneIsAnnouncedByItsSourcesName()
+    {
+        Manager.Announcements = new BdndAnnouncements { CountItems = _ => 1 };
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<IReadOnlyList<string>>>(d => d
+                .Add(x => x.Type, "cards")
+                .Add(x => x.Item, (IReadOnlyList<string>)["alpha", "bravo"])));
+        PlanCount(0);
+
+        await StartAsync(cut.FindComponent<BdndDraggable<IReadOnlyList<string>>>(), "Charlie");
+
+        Assert.AreSequenceEqual(new[] { "Picked up Charlie. There is no drop target for it; press Escape to cancel." }, Announcements);
+    }
+
+    [TestMethod]
     public async Task AnAnnouncementThatThrowsIsReportedAndTheDragGoesOn()
     {
         Manager.Announcements = new BdndAnnouncements { DragStarted = _ => throw new InvalidOperationException("bad text") };
@@ -536,6 +578,46 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         Assert.AreEqual("0", HostOf(Source(cut)).GetAttribute("tabindex"));
         Assert.IsTrue(SourceUpdates.Last().Keyboard);
+    }
+
+    [TestMethod]
+    public void TheDefaultKeysAreTheModulesOwnAndSendNothing()
+    {
+        RenderDustbin();
+
+        Assert.IsNull(SourceRegistrations.Last().Keys);
+    }
+
+    [TestMethod]
+    public void TheKeysAProviderBindsReachEverySourceAndGoBackToTheDefault()
+    {
+        var keys = new BdndKeyBindings { Down = ["ArrowDown", "j"], Up = ["ArrowUp", "k"] };
+        var cut = RenderDustbin();
+
+        cut.Render(p => p.Add(x => x.KeyBindings, keys));
+
+        Assert.AreSame(keys, Manager.KeyBindings);
+        var sent = SourceUpdates.Last().Keys;
+        Assert.IsNotNull(sent);
+        Assert.AreSequenceEqual(new[] { "ArrowDown", "j" }, sent["down"]);
+        Assert.AreSequenceEqual(new[] { "ArrowUp", "k" }, sent["up"]);
+        Assert.AreSequenceEqual(new[] { " ", "Enter" }, sent["pickUp"]);
+        Assert.AreSequenceEqual(new[] { "Escape", "Esc" }, sent["cancel"]);
+
+        cut.Render(p => p.Add(x => x.KeyBindings, BdndKeyBindings.Default));
+
+        Assert.IsNull(SourceUpdates.Last().Keys);
+    }
+
+    [TestMethod]
+    public void KeysAlikeTheDefaultOnesSendNothingAndASourceOutOfKeyboardDraggingNone()
+    {
+        var cut = RenderDustbin();
+        cut.Render(p => p.Add(x => x.KeyBindings, new BdndKeyBindings()));
+        Assert.IsNull(SourceRegistrations.Concat(SourceUpdates).Last().Keys);
+
+        cut.Render(p => p.Add(x => x.KeyBindings, new BdndKeyBindings { Last = ["End", "G"] }).Add(x => x.AllowKeyboard, false));
+        Assert.IsNull(SourceUpdates.Last().Keys);
     }
 
     [TestMethod]

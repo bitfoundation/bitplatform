@@ -37,6 +37,8 @@ public partial class McpSearchTests
         ("move several selected items", "Moves you can check, apply and undo"),
         ("prevent dropping a node into its own children", "Trees"),
         ("bortable or bdnd", "Bdnd and the other bit utilities"),
+        ("change the keyboard shortcuts", "Choosing the keys"),
+        ("KeyBindings", "BdndProvider.KeyBindings"),
     ];
 
     [TestMethod]

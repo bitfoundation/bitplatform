@@ -33,6 +33,13 @@ internal sealed record BdndDragSourceOptions
     /// <summary>The keyboard instructions, which the module puts in the element <see cref="InstructionsId"/> names.</summary>
     public string? Instructions { get; init; }
 
+    /// <summary>
+    /// The keys of keyboard drags by command (<c>pickUp</c>, <c>drop</c>, <c>cancel</c>, <c>up</c>, <c>down</c>,
+    /// <c>left</c>, <c>right</c>, <c>first</c>, <c>last</c>), or null for the module's own - the WAI-ARIA keys. The
+    /// manager's instance, so unchanged options compare equal.
+    /// </summary>
+    public Dictionary<string, string[]>? Keys { get; init; }
+
     /// <summary>Which pointers drag through pointer events: <c>touch</c> (touch and pen), <c>all</c> or <c>none</c>.</summary>
     public string PointerDrag { get; init; } = "touch";
 

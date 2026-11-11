@@ -781,3 +781,31 @@ places among the cards before the archive: the existing keyboard test goes to th
 The full E2E suite, the hybrid harness and the trim gate were not run this round: the library change is C# that
 crosses no interop boundary, and the demo pages it touched were run on all three engines.
 
+## Round 15 - the candidates round 14 left
+
+| Gap | Change | Tests |
+| --- | --- | --- |
+| A drag that carried a selection was announced by the grabbed card's name alone: "Picked up Charlie." for three cards. | `BdndAnnouncement.ItemCount`, counted by `BdndAnnouncements.CountItems` (an `ICollection`'s `Count`, else one; replaceable). The English texts name the grabbed source and count the rest at the pickup ("Picked up Charlie and 2 other items."), then say "3 items are/were/stay", in agreement. | `BdndAnnouncementsTests` (every text, singular and plural); two keyboard component tests (a list item, and `CountItems = _ => 1`); the multi-select E2E keyboard tests on all three engines. |
+| The keys were WAI-ARIA's and fixed in the module. | `BdndKeyBindings` (pick up, drop, cancel, up, down, left, right, first, last; each a list of `KeyboardEvent.key` values) on `BdndProvider.KeyBindings` and `BdndDragDropManager.KeyBindings`. Setting them validates them (a key bound to two commands of a drag, or no key to pick up or drop, is an `ArgumentException`) and computes the map once; a source sends it with its registration only when it differs from the defaults the module knows, so a provider that keeps them adds nothing to any payload; an instance binding the keys already bound (one created on every render of the page) notifies no source. The keyboard demo has a switch that adds H, J, K and L, with instructions that say so. | `BdndKeyBindingsTests` (equal keys in a new instance included); three component tests (nothing sent by default or for equal keys, the map sent and taken back, none for a source out of keyboard dragging); E2E: the letters do nothing until bound, then move and drop, and the description names them - all three engines. |
+| No measurement of the .NET side of a drag, which on Blazor Server runs per user. | `Tests/Bit.Bdnd.Benchmarks` (BenchmarkDotNet, a headless renderer as Blow's harness has): drag start and end, an edge change, a hover moving on and a keyboard move on 100 and 1,000 rows; list and tree moves on 1,000 and 10,000 items. Results and what they say in its README. | The harness itself. |
+| Found by the harness: moving a selection of 100 items in a 10,000-item `List<T>` and back took 113 µs - the items went out and back one at a time, each shifting the rest of the list. | `BdndListMove<T>` takes a `List<T>`'s selection out and puts it back in one pass, and inserts and removes the moved block as a range: 18 µs. Other `IList<T>`s keep the item-at-a-time path, so their change notifications are unchanged. | A `Collection<T>` and a `List<T>` moved and reverted alike, same list and across; a selection at both ends of a 1,000-item list. |
+
+What the harness showed beyond that is recorded in its README: an edge or hover change renders the rows involved and
+no others at any list size, while the start and the end of a drag render every row whose `CanDrop` changes (about
+10 µs a row, once per drag) - the price of a target's content being a `RenderFragment`.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Build | `dotnet build Bit.Bdnd.slnx` | Succeeded but for the MAUI sample, whose Android workload is not installed on this machine. |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 463 passed on each of net10.0 and net11.0 (926). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 161 passed (two new search questions). |
+| E2E Chromium | keyboard, multi-select, screen reader, indicators, tree, grid and page builder classes | 48 passed. |
+| E2E Firefox, WebKit | keyboard, multi-select and tree classes | 21 passed on each. |
+| Benchmarks | `dotnet run -c Release --project Tests/Bit.Bdnd.Benchmarks -- --filter "*" --job short --inProcess` | Ran; numbers in its README. |
+| Trim gate | `bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh <out>` | No trim/AOT analysis warnings originate in Bit.Bdnd. |
+| E2E on the trimmed publish | `BDND_E2E_PUBLISHED_HOST=<out> dotnet test` - the key bindings, multi-select and keyboard dustbin tests | 8 passed: the new `Dictionary<string, string[]>` of the source options survives trimming. |
+
+Not run: the full E2E suite and the hybrid harness.
+

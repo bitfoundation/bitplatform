@@ -1,4 +1,6 @@
-﻿namespace Bit.Bdnd;
+﻿using System.Collections;
+
+namespace Bit.Bdnd;
 
 /// <summary>
 /// The texts Bdnd gives screen readers about a keyboard drag: the instructions every keyboard-draggable source is
@@ -27,42 +29,65 @@ public sealed class BdndAnnouncements
     public Func<int, int, string> UnnamedTarget { get; init; } =
         static (position, count) => $"drop target {position} of {count}";
 
+    /// <summary>
+    /// How many things a dragged item stands for (<see cref="BdndAnnouncement.ItemCount"/>): the number of elements of
+    /// an item that is a collection (an <see cref="ICollection"/> - a list or an array of the selected cards, say), and
+    /// one for any other item. Replace it for an item that counts otherwise - a selection object, or a collection that
+    /// is one thing (<c>_ =&gt; 1</c>).
+    /// </summary>
+    public Func<object?, int> CountItems { get; init; } = static item => item is ICollection collection ? collection.Count : 1;
+
     /// <summary>Read when a keyboard drag begins.</summary>
-    public Func<BdndAnnouncement, string?> DragStarted { get; init; } = static a => a.TargetCount switch
+    public Func<BdndAnnouncement, string?> DragStarted { get; init; } = static a =>
     {
-        0 => $"Picked up {a.SourceLabel}. There is no drop target for it; press Escape to cancel.",
-        1 => $"Picked up {a.SourceLabel}. 1 drop target is available.",
-        var count => $"Picked up {a.SourceLabel}. {count} drop targets are available.",
+        var picked = a.ItemCount > 1
+            ? $"Picked up {a.SourceLabel} and {a.ItemCount - 1} other {(a.ItemCount == 2 ? "item" : "items")}."
+            : $"Picked up {a.SourceLabel}.";
+        return a.TargetCount switch
+        {
+            0 => $"{picked} There is no drop target for {(a.ItemCount > 1 ? "them" : "it")}; press Escape to cancel.",
+            1 => $"{picked} 1 drop target is available.",
+            var count => $"{picked} {count} drop targets are available.",
+        };
     };
 
     /// <summary>Read when the keyboard moves the item onto another drop target, or to another edge of one.</summary>
     public Func<BdndAnnouncement, string?> DraggedOver { get; init; } = static a => a switch
     {
-        { TargetLabel: null } => $"{a.SourceLabel} is not over a drop target.",
-        { Before: true } => $"{a.SourceLabel} is before {a.TargetLabel}.",
-        { Before: false } => $"{a.SourceLabel} is after {a.TargetLabel}.",
-        _ => $"{a.SourceLabel} is over {a.TargetLabel}.",
+        { TargetLabel: null } => $"{Subject(a)} {Is(a)} not over a drop target.",
+        { Before: true } => $"{Subject(a)} {Is(a)} before {a.TargetLabel}.",
+        { Before: false } => $"{Subject(a)} {Is(a)} after {a.TargetLabel}.",
+        _ => $"{Subject(a)} {Is(a)} over {a.TargetLabel}.",
     };
 
     /// <summary>Read when a keyboard move finds no further place in that direction; the drag stays where it is.</summary>
     public Func<BdndAnnouncement, string?> NoFurtherTarget { get; init; } = static a => a switch
     {
         { TargetLabel: null } => "There is no drop target in that direction.",
-        { Before: true } => $"There is nothing further in that direction: {a.SourceLabel} stays before {a.TargetLabel}.",
-        { Before: false } => $"There is nothing further in that direction: {a.SourceLabel} stays after {a.TargetLabel}.",
+        { Before: true } => $"There is nothing further in that direction: {Subject(a)} {Stays(a)} before {a.TargetLabel}.",
+        { Before: false } => $"There is nothing further in that direction: {Subject(a)} {Stays(a)} after {a.TargetLabel}.",
         _ => $"{a.TargetLabel} is the last drop target in that direction.",
     };
 
     /// <summary>Read when a keyboard drag ends with a drop on a target.</summary>
     public Func<BdndAnnouncement, string?> Dropped { get; init; } = static a => a.Before switch
     {
-        true => $"{a.SourceLabel} was dropped before {a.TargetLabel}.",
-        false => $"{a.SourceLabel} was dropped after {a.TargetLabel}.",
-        _ => $"{a.SourceLabel} was dropped on {a.TargetLabel}.",
+        true => $"{Subject(a)} {Was(a)} dropped before {a.TargetLabel}.",
+        false => $"{Subject(a)} {Was(a)} dropped after {a.TargetLabel}.",
+        _ => $"{Subject(a)} {Was(a)} dropped on {a.TargetLabel}.",
     };
 
     /// <summary>Read when a keyboard drag is cancelled, or dropped while it was over no target.</summary>
-    public Func<BdndAnnouncement, string?> Cancelled { get; init; } = static a => $"Dragging {a.SourceLabel} was cancelled.";
+    public Func<BdndAnnouncement, string?> Cancelled { get; init; } = static a => $"Dragging {Subject(a)} was cancelled.";
+
+    // what the English texts call the dragged item: its source's name, or how many things it carries
+    private static string Subject(BdndAnnouncement a) => a.ItemCount > 1 ? $"{a.ItemCount} items" : a.SourceLabel;
+
+    private static string Is(BdndAnnouncement a) => a.ItemCount > 1 ? "are" : "is";
+
+    private static string Stays(BdndAnnouncement a) => a.ItemCount > 1 ? "stay" : "stays";
+
+    private static string Was(BdndAnnouncement a) => a.ItemCount > 1 ? "were" : "was";
 }
 
 /// <summary>What an announcement of <see cref="BdndAnnouncements"/> is about.</summary>
@@ -101,4 +126,10 @@ public sealed class BdndAnnouncement
 
     /// <summary>The dragged item.</summary>
     public object? Item { get; init; }
+
+    /// <summary>
+    /// How many things the dragged item stands for, as <see cref="BdndAnnouncements.CountItems"/> counts them: more
+    /// than one for a drag of several selected items, whose texts say "3 items" rather than the grabbed source's name.
+    /// </summary>
+    public int ItemCount { get; init; } = 1;
 }

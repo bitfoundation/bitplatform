@@ -1169,6 +1169,8 @@ A draggable that can drag is focusable (`tabindex="0"`, unless it was given a `t
 | <kbd>Space</kbd> or <kbd>Enter</kbd> | Drops it on the target it is over - or, over none, cancels. |
 | <kbd>Escape</kbd> | Cancels. Moving the focus away (<kbd>Tab</kbd>, a click) cancels too. |
 
+These are the default keys; a provider can bind others ([choosing the keys](#choosing-the-keys)).
+
 A keyboard drag is the manager's like any other. The targets it moves onto report `IsOver` (with their enclosing
 targets) and `IsOverShallow`, their `OnHover` runs with the pointer at the middle of the target, the drop runs the
 `OnDrop` chain innermost first, and the source's `OnEnd` gets `DidDrop` and the drop result. Only targets the
@@ -1204,6 +1206,47 @@ the keyboard drag ends as a cancel, and the exception reaches the renderer (see
 drag that begins before .NET has handled that cancel ends the keyboard drag first (its `OnEnd` runs with
 `DidDrop` false), so every `OnBegin` is followed by its `OnEnd`.
 
+### Choosing the keys
+
+The keys are WAI-ARIA's, and `BdndKeyBindings` changes them for a provider - for an app whose users move with letters,
+or one where the arrows already do something else. Each command lists `KeyboardEvent.key` values (`" "` for Space,
+`"Enter"`, `"j"`), pressed without Ctrl, Alt or Meta; set the commands to change and keep the rest:
+
+```razor
+<BdndProvider KeyBindings="_keys" Announcements="_texts">...</BdndProvider>
+
+@code {
+    private static readonly BdndKeyBindings _keys = new()
+    {
+        Down = ["ArrowDown", "j"],
+        Up = ["ArrowUp", "k"],
+    };
+
+    // the instructions name the keys: say what was added
+    private static readonly BdndAnnouncements _texts = new()
+    {
+        Instructions = BdndAnnouncements.Default.Instructions + " J and K move like the down and up arrows.",
+    };
+}
+```
+
+| `BdndKeyBindings` | Default | Does |
+| --- | --- | --- |
+| `PickUp` | <kbd>Space</kbd>, <kbd>Enter</kbd> | Picks the focused source up. |
+| `Drop` | <kbd>Space</kbd>, <kbd>Enter</kbd> | Drops (or, over no target, cancels). |
+| `Cancel` | <kbd>Escape</kbd> | Cancels. |
+| `Up`, `Down` | <kbd>↑</kbd>, <kbd>↓</kbd> | A row up or down in a wrapping layout, else the previous or next place. |
+| `Left`, `Right` | <kbd>←</kbd>, <kbd>→</kbd> | The previous or next place (swapped right to left). |
+| `First`, `Last` | <kbd>Home</kbd>, <kbd>End</kbd> | The first or last place. |
+
+Each key of a drag in progress does one thing: a key listed for two of `Drop`, `Cancel` and the moves is refused with
+an `ArgumentException` when the bindings are set, and so are a `PickUp` or a `Drop` without a key - a drag must stay
+possible from the keyboard. `PickUp` may share its keys with `Drop`, as the defaults do. <kbd>Tab</kbd> always ends a
+drag by moving the focus. The default keys are the module's own, so a provider that keeps them sends nothing for
+them; one that changes them sends the keys with each source's registration. The instructions screen readers read name
+the default keys - change `BdndAnnouncements.Instructions` with them. The
+[keyboard demo](https://bdnd.bitplatform.dev/accessibility/keyboard) has a switch that adds H, J, K and L.
+
 ### What screen readers hear
 
 Every keyboard-draggable source is described (`aria-describedby`) by instructions, and a live region announces the
@@ -1235,6 +1278,16 @@ one answering `null` is not read out:
     };
 }
 ```
+
+A drag that carries several items - a [selection](#dragging-several-items) whose item is a list - is announced by how
+many it carries rather than by the grabbed source's name alone:
+
+> Picked up Charlie and 2 other items. 1 drop target is available. · 3 items are over the archive. · 3 items were dropped on the archive.
+
+`BdndAnnouncements.CountItems` decides how many things an item stands for - by default the `Count` of an item that
+is a collection (`ICollection`: lists and arrays), and one for anything else - and every announcement gets it as
+`ItemCount`. Replace it for an item that counts otherwise (a selection object of your own), or with `_ => 1` for a
+collection that is one thing.
 
 The live region and the instructions are elements the module adds to the end of the `body` - one region per
 document, one hidden element per distinct instruction text - so a provider's own markup is unchanged. Mouse drags
@@ -1553,6 +1606,7 @@ instead of arriving in `drop`.
 | `Manager` | `BdndDragDropManager?` | `null` | An externally-owned manager. When omitted, one is created for the subtree. Cannot change once set. |
 | `Announcements` | `BdndAnnouncements?` | `null` | The keyboard instructions and screen-reader announcements; sets the manager's (`BdndAnnouncements.Default` otherwise). |
 | `AllowKeyboard` | `bool?` | `null` | `false` takes every draggable of the context out of keyboard dragging; sets the manager's (`true` otherwise). |
+| `KeyBindings` | `BdndKeyBindings?` | `null` | The keys that pick up, move, drop and cancel keyboard drags; sets the manager's (`BdndKeyBindings.Default`, the WAI-ARIA keys, otherwise). |
 | `OnDragStart` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context began: runs once the drag is published and its source's `OnBegin` started. |
 | `OnDragEnd` | `EventCallback<BdndDragEventArgs>` | | Any drag of the context ended, with `DidDrop` and the drop result. |
 | `ChildContent` | `RenderFragment?` | | The drag-and-drop content. |

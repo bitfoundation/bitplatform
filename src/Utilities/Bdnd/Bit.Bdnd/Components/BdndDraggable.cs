@@ -205,7 +205,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             IsDraggingOverride?.Invoke(monitor) ?? monitor.IsDragging(_handlerId),
             EffectiveCanDrag,
             Manager.InstructionsId,
-            Manager.AllowKeyboard);
+            Manager.AllowKeyboard,
+            Manager.KeyMap);
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -274,6 +275,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             Keyboard = keyboard,
             InstructionsId = keyboard ? manager.InstructionsId : null,
             Instructions = keyboard ? manager.Announcements.Instructions : null,
+            Keys = keyboard ? manager.KeyMap : null,
             PointerDrag = PointerDrag switch
             {
                 BdndPointerDrag.All => "all",
@@ -768,6 +770,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         string? text;
         try
         {
+            item ??= manager.GetItem();
             text = announcement(new BdndAnnouncement
             {
                 SourceLabel = _keyboardLabel,
@@ -782,7 +785,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
                 TargetPosition = place is { Id.Length: > 0 } ? place.Position : 0,
                 TargetCount = place?.Count ?? manager.GetDroppableTargets().Count,
                 ItemType = type ?? manager.GetItemType() ?? Type,
-                Item = item ?? manager.GetItem(),
+                Item = item,
+                ItemCount = manager.Announcements.CountItems(item),
             });
         }
         catch (Exception exception)
@@ -851,5 +855,6 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     /// The state a render hands the content, besides the monitor - and the instructions it is described by, and whether
     /// its provider lets the keyboard drag.
     /// </summary>
-    private readonly record struct Collected(bool AnyDragging, bool IsDragging, bool CanDrag, string InstructionsId, bool KeyboardAllowed);
+    private readonly record struct Collected(bool AnyDragging, bool IsDragging, bool CanDrag, string InstructionsId, bool KeyboardAllowed,
+        Dictionary<string, string[]>? KeyMap);
 }

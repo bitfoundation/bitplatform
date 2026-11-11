@@ -65,8 +65,10 @@ public sealed class BdndListMove<T>
         if (IsApplied || Holds(Source, _sourceIndexes) is false) return false;
         // checked before anything changes: a list half moved is worse than a move refused
         if (FinishIndex > Destination.Count - (IsReorder ? _items.Length : 0)) return false;
-        for (var i = _sourceIndexes.Length - 1; i >= 0; i--) Source.RemoveAt(_sourceIndexes[i]);
-        for (var i = 0; i < _items.Length; i++) Destination.Insert(FinishIndex + i, _items[i]);
+        if (Source is List<T> source) RemoveAt(source, _sourceIndexes);
+        else for (var i = _sourceIndexes.Length - 1; i >= 0; i--) Source.RemoveAt(_sourceIndexes[i]);
+        if (Destination is List<T> destination) destination.InsertRange(FinishIndex, _items);
+        else for (var i = 0; i < _items.Length; i++) Destination.Insert(FinishIndex + i, _items[i]);
         IsApplied = true;
         return true;
     }
@@ -85,10 +87,43 @@ public sealed class BdndListMove<T>
         {
             if (_sourceIndexes[i] > count + i) return false;
         }
-        for (var i = 0; i < _items.Length; i++) Destination.RemoveAt(FinishIndex);
-        for (var i = 0; i < _items.Length; i++) Source.Insert(_sourceIndexes[i], _items[i]);
+        if (Destination is List<T> destination) destination.RemoveRange(FinishIndex, _items.Length);
+        else for (var i = 0; i < _items.Length; i++) Destination.RemoveAt(FinishIndex);
+        if (Source is List<T> source) InsertAt(source, _sourceIndexes, _items);
+        else for (var i = 0; i < _items.Length; i++) Source.Insert(_sourceIndexes[i], _items[i]);
         IsApplied = false;
         return true;
+    }
+
+    // A List<T> takes a selection out, or puts it back, in one pass over the elements after the first index: removing
+    // or inserting the items one at a time shifts the rest of the list once per item.
+
+    // takes out the elements at these ascending indexes, closing up the rest
+    private static void RemoveAt(List<T> list, int[] indexes)
+    {
+        var write = indexes[0];
+        for (int read = indexes[0], next = 0; read < list.Count; read++)
+        {
+            if (next < indexes.Length && read == indexes[next])
+            {
+                next++;
+                continue;
+            }
+            list[write++] = list[read];
+        }
+        list.RemoveRange(write, list.Count - write);
+    }
+
+    // puts the items at these ascending indexes of the list they leave once inserted, moving the rest up
+    private static void InsertAt(List<T> list, int[] indexes, T[] items)
+    {
+        var read = list.Count - 1;
+        list.AddRange(items); // room for them at the end
+        for (int write = list.Count - 1, next = indexes.Length - 1; next >= 0; write--)
+        {
+            if (write == indexes[next]) list[write] = items[next--];
+            else list[write] = list[read--];
+        }
     }
 
     // whether the items sit at these indexes of the list

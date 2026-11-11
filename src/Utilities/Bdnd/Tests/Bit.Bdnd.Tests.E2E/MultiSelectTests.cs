@@ -73,10 +73,10 @@ public sealed class MultiSelectTests : BdndTest
         await Card(page, "Charlie").FocusAsync();
 
         await page.Keyboard.PressAsync("Space");
-        await Expect(live).ToContainTextAsync("Picked up Charlie.");
+        await Expect(live).ToContainTextAsync("Picked up Charlie and 1 other item.");
         // the archive is the last place: the rows before it are places among the cards
         await page.Keyboard.PressAsync("End");
-        await Expect(live).ToHaveTextAsync("Charlie is over the archive.");
+        await Expect(live).ToHaveTextAsync("2 items are over the archive.");
         await page.Keyboard.PressAsync("Enter");
 
         await Expect(Archived(page)).ToHaveTextAsync("Archived: Alpha, Charlie");
@@ -133,9 +133,9 @@ public sealed class MultiSelectTests : BdndTest
         await Card(page, "Charlie").FocusAsync();
 
         await page.Keyboard.PressAsync("Space");
-        await Expect(live).ToContainTextAsync("Picked up Charlie.");
+        await Expect(live).ToContainTextAsync("Picked up Charlie and 1 other item.");
         await page.Keyboard.PressAsync("End");
-        await Expect(live).ToHaveTextAsync("Charlie is over the archive.");
+        await Expect(live).ToHaveTextAsync("2 items are over the archive.");
         // back from the archive: the place after the last card
         await page.Keyboard.PressAsync("ArrowUp");
         await Expect(live).ToContainTextAsync("after Foxtrot");

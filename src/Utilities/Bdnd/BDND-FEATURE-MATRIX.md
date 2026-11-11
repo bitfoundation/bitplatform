@@ -134,7 +134,8 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Capability | Baseline | Status | Plan / notes |
 | --- | --- | --- | --- |
 | Keyboard pick-up, move, drop, cancel | **Missing (P0)** | Verified | Round 1; sortable lists move one place per key. |
-| Live-region announcements | **Missing (P0)** | Verified | `BdndAnnouncements`, replaceable per provider. Round 10: role, liveness and atomicity checked on every engine and in Chromium's accessibility tree. A listening pass with screen readers is a person's: checklist in the E2E README. |
+| Configurable keys | Missing (P3) | Verified | Round 15: `BdndKeyBindings` on the provider or the manager - validated (one command per key, pick-up and drop required), sent only when not the defaults (unit; E2E on the keyboard demo's letter keys, all engines). |
+| Live-region announcements | **Missing (P0)** | Verified | `BdndAnnouncements`, replaceable per provider. Round 10: role, liveness and atomicity checked on every engine and in Chromium's accessibility tree. A listening pass with screen readers is a person's: checklist in the E2E README. Round 15: a drag of several items is announced by its count ("3 items are over the archive"), `CountItems` replaceable (unit; E2E on the multi-select demo). |
 | Screen-reader instructions | **Missing (P0)** | Verified | `aria-describedby` on hosts and handles; round 10 checks the computed description on every engine and in Chromium's accessibility tree. |
 | Focus kept and restored | Missing (P0) | Verified | Kept through re-renders, handed to the draggable showing the same item. `ItemFactory` sources cannot be matched. |
 | Non-drag alternatives | Missing (P1) | Verified | Documented pattern + kanban demo (move buttons, E2E). Programmatic drops: Excluded - the app's own method is the API. |
@@ -150,4 +151,4 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Blazor Hybrid | Untested | Verified | Round 10: a WinForms `BlazorWebView` harness on WebView2, driven over the DevTools protocol - native, keyboard, pointer and touch drags, a drag layer, edges, file contents (8 E2E); a CI job on windows-2025. MAUI's Android and iOS web views are not driven. |
 | Prerendering | Verified | Verified | |
 | Trimming / AOT | Verified | Verified | Publish gate + `BdndTrimmingTests`. |
-| Measured performance | Missing (P2) | Verified | `PerfTests` baseline vs current (frames, long tasks, mutations); round 7: circuit messages per drag on Blazor Server asserted (16 for a 120-move native or pointer drag; a pointer drag sent 250 before `BdndDragLayer.Accept`). |
+| Measured performance | Missing (P2) | Verified | `PerfTests` baseline vs current (frames, long tasks, mutations); round 7: circuit messages per drag on Blazor Server asserted (16 for a 120-move native or pointer drag; a pointer drag sent 250 before `BdndDragLayer.Accept`). Round 15: `Tests/Bit.Bdnd.Benchmarks` measures the .NET side - drag start and end, edge and hover changes, keyboard moves on 100 and 1,000 rows, list and tree moves - and found the selection move a `List<T>` makes one item at a time (fixed: one pass). |
