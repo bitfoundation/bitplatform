@@ -259,7 +259,7 @@ public class BcrdtHub : Hub
         // the host rejected - or a change from a connection that may not write. A revocation waits for a
         // message that got past here to go wherever it is going.
         HubHostConnection connection = joined.Connection;
-        if (!connection.TryBeginRelay(message)) return;
+        if (connection.TryBeginRelay(message) is not { } relaying) return;
 
         Task relayed;
         try
@@ -275,7 +275,7 @@ public class BcrdtHub : Hub
         }
         finally
         {
-            connection.EndRelay();
+            relaying.End();
         }
 
         await relayed.ConfigureAwait(false);

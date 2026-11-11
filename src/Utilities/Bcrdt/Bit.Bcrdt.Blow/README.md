@@ -41,8 +41,9 @@ nested map - holding the element's properties in Blow's own file format, one key
 - **Different properties of one node all survive.** One person dragging a node, another renaming it and a third
   editing its data keeps all three, because position, label and data are different keys. Two changes to the same
   property resolve to one of them, the same one on every replica.
-- **List order is a field.** Each entry carries `$order`, a number its neighbours are sorted by (ties broken by id),
-  so `BringToFrontAsync` and `SendToBackAsync` are one field write per moved element and concurrent reorders converge.
+- **List order is a field.** Each entry carries `$order`, a fractional order key (`BcrdtOrderKey`) its neighbours are
+  sorted by (ties broken by id), so `BringToFrontAsync` and `SendToBackAsync` are one field write per moved element,
+  concurrent reorders converge, and nothing is ever renumbered.
 - **Selection, measured sizes, handle anchors and drag state are never shared.** They are each participant's own;
   selection travels through presence.
 - **An edge is shown only while both of its nodes are.** One drawn to a node a collaborator deleted at the same time

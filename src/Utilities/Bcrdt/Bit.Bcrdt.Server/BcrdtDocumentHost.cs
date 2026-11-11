@@ -645,12 +645,13 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                 {
                     if (ReferenceEquals(claim.Owner, connection)) continue;
 
-                    // A client that lost its connection comes back on a new one before the server has
-                    // noticed the old one is gone, publishing the same identity at a later clock.
-                    // Or it said goodbye on purpose and reconnects on a new connection, which can happen
-                    // before the server has noticed the old one close: the identity it gave up is its own
-                    // to take back, at a later clock than the goodbye.
-                    if (online && clock > claim.Clock && (claim.Released || CanTakeOver(claim, connection, now, takeoverAfterMilliseconds)))
+                    // A client that lost its connection, or said goodbye on purpose, comes back on a new one
+                    // before the server has noticed the old one is gone, publishing the same identity at a
+                    // later clock. Withdrawing an entry does not free it for anybody else: the owner's
+                    // connection is still open - a tab merely hidden withdraws its entry and publishes it
+                    // again when shown - so the identity changes hands only as any held one does, to the
+                    // same signed-in user at once and to anyone else once the holder has gone quiet.
+                    if (online && clock > claim.Clock && CanTakeOver(claim, connection, now, takeoverAfterMilliseconds))
                     {
                         (claiming ??= []).Add(clientId);
                         continue;
@@ -675,9 +676,6 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
                     claim.Owner = connection;
                     claim.LastActive = now;
                     if (clock > claim.Clock) claim.Clock = clock;
-
-                    // The owner withdrawing its own entry releases it; publishing it again takes it back.
-                    claim.Released = !online;
                 }
                 else if (online)
                 {
@@ -804,18 +802,26 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
             // change that added to what is waiting: a SyncStep2 is already the sender's answer to such a
             // question, and asking again whenever anything at all is waiting would trade handshakes
             // with every client for as long as something nobody has stays unresolved.
-            // What was waiting may also have just outgrown its bound and been discarded; the sender is
-            // asked all the same, because the deletions that waited with it come back only in an answer.
+            // What was waiting may also have just outgrown its bound and been discarded. What was thrown
+            // away came from any of the connections, not only the one whose change crossed the bound, and
+            // the deletions that waited with it come back only in an answer: every connection is asked.
             bool discarded = document.Crdt.PendingDiscards != discardsBefore;
             if (discarded)
             {
                 _logger.LogWarning("Document {DocumentId} discarded changes waiting for their dependencies after connection {ConnectionId} outgrew the bound.", document.LogId, connection.Id);
+
+                IBcrdtHostConnection[] everyone;
+                lock (document.Connections) everyone = [.. document.Connections];
+
+                byte[] announcement = BcrdtSyncExchange.CreateAnnouncement(document.Crdt);
+                foreach (IBcrdtHostConnection other in everyone) other.Send(announcement);
+                return true;
             }
 
             bool newlyWaiting =
                 !ReferenceEquals(pendingBefore, store.PendingUpdate) ||
                 pendingDeletionsBefore != Digest(store.PendingDeleteSet);
-            if (message.Kind == BcrdtSyncMessageKind.Update && ((newlyWaiting && document.Crdt.HasPendingUpdates) || discarded))
+            if (message.Kind == BcrdtSyncMessageKind.Update && newlyWaiting && document.Crdt.HasPendingUpdates)
             {
                 connection.Send(BcrdtSyncExchange.CreateAnnouncement(document.Crdt));
             }
@@ -1132,12 +1138,6 @@ public sealed class BcrdtDocumentHost : IAsyncDisposable
 
         /// <summary>When the owner last published this identity, by <see cref="Environment.TickCount64"/>.</summary>
         public long LastActive { get; set; }
-
-        /// <summary>
-        /// Whether the owner announced its own departure - a deliberate disconnection - so the identity is
-        /// free for whichever connection next publishes it at a later clock.
-        /// </summary>
-        public bool Released { get; set; }
     }
 
     /// <summary>One loaded document: the replica, its writer, and who is connected to it.</summary>

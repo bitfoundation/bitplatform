@@ -286,6 +286,34 @@ public class BlazeDbDocumentStoreTests
     }
 
     [TestMethod]
+    public async Task An_oldest_record_that_merges_with_nothing_is_the_one_skipped()
+    {
+        await using BlazeDbDatabase database = await OpenAsync();
+        var store = new BcrdtBlazeDbDocumentStore(database);
+        var skipped = new List<string>();
+        store.UnreadableRecordSkipped += skipped.Add;
+
+        // The oldest record reads on its own but merges with none of the later ones, which all merge with each other.
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 10 + (ulong)BcrdtUpdateCodec.MaxClockGap));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 0));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 1));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 2));
+
+        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        using var reloaded = new BcrdtDocument();
+        reloaded.ApplyUpdate(stored.Update!);
+
+        Assert.AreEqual(3, stored.RecordCount, "the healthy history loads, not the bad record alone");
+        Assert.AreEqual(3L, reloaded.GetStateVector().Get(7));
+        Assert.HasCount(1, skipped);
+
+        await store.CompactAsync("doc");
+        List<BcrdtBlazeDbUpdateRecord> rows = Rows(database, "doc");
+        Assert.HasCount(2, rows);
+        Assert.IsTrue(rows.Any(row => row.Id == 1), "the record that could not be merged stays where it is");
+    }
+
+    [TestMethod]
     public async Task A_write_never_joins_a_transaction_the_application_has_open()
     {
         await using BlazeDbDatabase database = await OpenAsync();

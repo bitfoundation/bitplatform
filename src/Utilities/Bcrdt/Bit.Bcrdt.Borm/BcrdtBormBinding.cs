@@ -20,11 +20,12 @@ namespace Bit.Bcrdt.Borm;
 /// </para>
 /// <para>
 /// A repeater's rows are not stored by position. Each row gets an identifier the first time the
-/// binding sees it, and the repeater is stored as an <c>order</c> list of those identifiers beside a
-/// <c>rows</c> map holding each row's fields under its identifier. A field written into "row 2" by one
-/// person while another inserts a row above it therefore lands on the row it was typed into, not on
-/// whatever moved into second place; and moving a row moves an identifier, so an edit made inside the
-/// row at the same moment is kept rather than left behind on a deleted copy. A row's identity is the
+/// binding sees it, and the repeater is stored as a <c>rows</c> map holding each row's fields under its
+/// identifier, with the row's position a fractional order key (<see cref="BcrdtOrderKey"/>) in its
+/// <c>$order</c> field. A field written into "row 2" by one person while another inserts a row above it
+/// therefore lands on the row it was typed into, not on whatever moved into second place; and moving a
+/// row writes one field of it, so an edit made inside the row at the same moment is kept, and two people
+/// moving one row at once leave it in one place, not two. A row's identity is the
 /// row object itself - the model instance, or the dictionary of a form bound to one - which Borm keeps
 /// for as long as the row exists, across moves, swaps and undo.
 /// </para>
@@ -58,7 +59,6 @@ namespace Bit.Bcrdt.Borm;
 /// </remarks>
 public sealed class BcrdtBormBinding : IDisposable
 {
-    private const string OrderKey = "order";
     private const string RowsKey = "rows";
 
     private readonly BcrdtBormOptions _options;
@@ -379,15 +379,15 @@ public sealed class BcrdtBormBinding : IDisposable
     }
 
     /// <summary>
-    /// Makes the repeater's <c>order</c> list and <c>rows</c> map hold exactly the form's rows, in the
-    /// form's order, with the fewest changes to <c>order</c>.
+    /// Makes the repeater's <c>rows</c> map hold exactly the form's rows, and their order keys sort them
+    /// in the form's order, with the fewest keys written.
     /// </summary>
     /// <remarks>
-    /// The identifiers that keep their relative order - the longest run of them in the form's order -
-    /// stay where they are, and every other one is taken out and put back where it now belongs. A moved
-    /// row is therefore one identifier deleted and inserted, not every row between its old and new
-    /// places. Duplicates two concurrent moves of one row left behind, and identifiers whose row a
-    /// concurrent removal took, go at the same time.
+    /// The rows whose keys already sort in the form's order - the longest run of them - keep their keys,
+    /// and every other one gets a key between its new neighbours'. A moved row is therefore one field of
+    /// that row written, not every row between its old and new places - and never a copy of the row, so
+    /// two concurrent moves of one row leave it once, at one of the two places, and an edit made inside it
+    /// meanwhile is kept.
     /// </remarks>
     private void WriteRows(BcrdtMap container, BormFieldDefinition field, string path, bool onlyMissing)
     {
@@ -398,121 +398,46 @@ public sealed class BcrdtBormBinding : IDisposable
         if (container.Get(field.Name) is not BcrdtMap holder)
         {
             holder = new BcrdtMap();
-            var newOrder = new BcrdtArray();
-            var newRows = new BcrdtMap();
-            for (int i = 0; i < count; i++)
-            {
-                if (list![i] is not { } item) continue;
-                string id = IdFor(item);
-                newRows.Set(id, CreateRow(template, BormPath.Combine(path, i)));
-                newOrder.Push(id);
-            }
-            holder.Set(OrderKey, newOrder);
-            holder.Set(RowsKey, newRows);
             container.Set(field.Name, holder);
+        }
+        else if (onlyMissing)
+        {
             return;
         }
 
-        if (onlyMissing) return;
-
-        if (holder.Get(OrderKey) is not BcrdtArray order)
-        {
-            order = new BcrdtArray();
-            holder.Set(OrderKey, order);
-        }
         if (holder.Get(RowsKey) is not BcrdtMap rows)
         {
             rows = new BcrdtMap();
             holder.Set(RowsKey, rows);
         }
 
-        List<string> target = new(count);
-        var targetIndex = new Dictionary<string, int>(StringComparer.Ordinal);
+        var ids = new List<string>(count);
+        var known = new HashSet<string>(StringComparer.Ordinal);
+        var entries = new List<BcrdtMap>(count);
+        var orders = new List<string?>(count);
         for (int i = 0; i < count; i++)
         {
             if (list![i] is not { } item) continue;
             string id = IdFor(item);
-            if (!targetIndex.TryAdd(id, target.Count)) continue;
-            target.Add(id);
-            if (rows.Get(id) is not BcrdtMap) rows.Set(id, CreateRow(template, BormPath.Combine(path, i)));
-        }
+            if (!known.Add(id)) continue;
 
-        // The first occurrence of each identifier the form still has, by position in `order`; the rest go.
-        List<object?> current = order.ToArray();
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        List<(int Position, int Target)> candidates = [];
-        for (int position = 0; position < current.Count; position++)
-        {
-            if (current[position] is string id && targetIndex.TryGetValue(id, out int at) && seen.Add(id))
+            if (rows.Get(id) is not BcrdtMap row)
             {
-                candidates.Add((position, at));
-            }
-        }
-
-        HashSet<int> kept = LongestIncreasingRun(candidates);
-        for (int position = current.Count - 1; position >= 0;)
-        {
-            if (kept.Contains(position))
-            {
-                position--;
-                continue;
+                row = CreateRow(template, BormPath.Combine(path, i));
+                rows.Set(id, row);
             }
 
-            int end = position;
-            while (position >= 0 && !kept.Contains(position)) position--;
-            order.Delete(position + 1, end - position);
+            ids.Add(id);
+            entries.Add(row);
+            orders.Add(BcrdtIntegrationOrder.Read(row));
         }
 
-        List<string> remaining = [.. candidates.Where(c => kept.Contains(c.Position)).Select(c => (string)current[c.Position]!)];
-        int next = 0;
-        int insertAt = 0;
-        for (int i = 0; i < target.Count;)
-        {
-            if (next < remaining.Count && string.Equals(remaining[next], target[i], StringComparison.Ordinal))
-            {
-                next++;
-                insertAt++;
-                i++;
-                continue;
-            }
-
-            // A run of identifiers that belong here goes in as one insertion.
-            int start = i;
-            while (i < target.Count && !(next < remaining.Count && string.Equals(remaining[next], target[i], StringComparison.Ordinal))) i++;
-            order.Insert(insertAt, [.. target.Skip(start).Take(i - start).Cast<object?>()]);
-            insertAt += i - start;
-        }
+        foreach ((int index, string order) in BcrdtIntegrationOrder.Assign(ids, orders)) entries[index].Set(BcrdtIntegrationOrder.Key, order);
 
         foreach (string id in rows.Keys.ToList())
         {
-            if (!targetIndex.ContainsKey(id)) rows.Delete(id);
+            if (!known.Contains(id)) rows.Delete(id);
         }
-    }
-
-    /// <summary>The positions of the longest run of <paramref name="candidates"/> whose targets increase.</summary>
-    private static HashSet<int> LongestIncreasingRun(List<(int Position, int Target)> candidates)
-    {
-        // Patience sorting: tails[k] is the index of the smallest target ending a run of length k + 1.
-        var tails = new List<int>();
-        var previous = new int[candidates.Count];
-        for (int i = 0; i < candidates.Count; i++)
-        {
-            int low = 0, high = tails.Count;
-            while (low < high)
-            {
-                int middle = (low + high) / 2;
-                if (candidates[tails[middle]].Target < candidates[i].Target) low = middle + 1;
-                else high = middle;
-            }
-
-            previous[i] = low > 0 ? tails[low - 1] : -1;
-            if (low == tails.Count) tails.Add(i);
-            else tails[low] = i;
-        }
-
-        var kept = new HashSet<int>();
-        for (int i = tails.Count > 0 ? tails[^1] : -1; i >= 0; i = previous[i]) kept.Add(candidates[i].Position);
-        return kept;
     }
 
     private BcrdtMap CreateRow(BormFieldDefinition template, string rowPath)
@@ -540,6 +465,9 @@ public sealed class BcrdtBormBinding : IDisposable
 
         Apply(() =>
         {
+            // Rows whose order keys changed are put in order once every field has been applied: a row's form
+            // path is its index, which reordering changes.
+            List<RepeaterOf>? reordered = null;
             foreach (BcrdtEvent change in events)
             {
                 // Typing in a text field reaches the form through that text's binding.
@@ -552,8 +480,17 @@ public sealed class BcrdtBormBinding : IDisposable
                         break;
                     case { Fields: { } fields } target:
                         ApplyFields(target.Container, fields, target.Path, change.Keys);
+                        if (target.RowOf is { } repeater && change.Keys.ContainsKey(BcrdtIntegrationOrder.Key) && !(reordered ??= []).Contains(repeater))
+                        {
+                            reordered.Add(repeater);
+                        }
                         break;
                 }
+            }
+
+            foreach (RepeaterOf repeater in reordered ?? [])
+            {
+                if (repeater.Container.Get(repeater.Field.Name) is BcrdtMap holder) ApplyRows(holder, repeater.Field, repeater.Path);
             }
         });
 
@@ -629,14 +566,15 @@ public sealed class BcrdtBormBinding : IDisposable
     /// </summary>
     private void ApplyRows(BcrdtMap holder, BormFieldDefinition field, string path)
     {
-        if (holder.Get(OrderKey) is not BcrdtArray order || holder.Get(RowsKey) is not BcrdtMap rows) return;
+        if (holder.Get(RowsKey) is not BcrdtMap rows) return;
 
-        List<string> target = [];
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (object? entry in order.ToArray())
+        var ordered = new List<(string Id, string? Order)>();
+        foreach ((string id, object? value) in rows)
         {
-            if (entry is string id && seen.Add(id) && rows.Get(id) is BcrdtMap) target.Add(id);
+            if (value is BcrdtMap row) ordered.Add((id, BcrdtIntegrationOrder.Read(row)));
         }
+        ordered.Sort(static (left, right) => BcrdtIntegrationOrder.Compare(left.Order, left.Id, right.Order, right.Id));
+        List<string> target = [.. ordered.Select(entry => entry.Id)];
 
         BormFieldDefinition template = field.ItemTemplate!;
         for (int i = 0; i < target.Count; i++)
@@ -832,7 +770,14 @@ public sealed class BcrdtBormBinding : IDisposable
     /// <param name="Path">The form path of that map, or of the repeater.</param>
     /// <param name="Fields">The fields of a changed map.</param>
     /// <param name="Rows">The repeater, when the change is to its rows.</param>
-    private readonly record struct Target(BcrdtMap Container, string Path, IEnumerable<BormFieldDefinition>? Fields, BormFieldDefinition? Rows);
+    /// <param name="RowOf">
+    /// When the changed map is itself a row, the repeater it is a row of - whose order a change to the row's order
+    /// key changes - as a target of its own.
+    /// </param>
+    private readonly record struct Target(BcrdtMap Container, string Path, IEnumerable<BormFieldDefinition>? Fields, BormFieldDefinition? Rows, RepeaterOf? RowOf = null);
+
+    /// <summary>A repeater, and the map that holds it.</summary>
+    private sealed record RepeaterOf(BcrdtMap Container, string Path, BormFieldDefinition Field);
 
     /// <summary>
     /// Follows a route from <see cref="Map"/> - as <see cref="BcrdtEvent.Path"/> gives it - back to the
@@ -843,9 +788,11 @@ public sealed class BcrdtBormBinding : IDisposable
         IEnumerable<BormFieldDefinition> fields = State.Definition.Fields;
         BcrdtMap container = Map;
         string prefix = string.Empty;
+        RepeaterOf? rowOf = null;
 
         for (int i = 0; i < route.Count; i++)
         {
+            rowOf = null;
             if (route[i] is not string key) return null;
             BormFieldDefinition? field = fields.FirstOrDefault(f => string.Equals(f.Name, key, StringComparison.Ordinal));
             if (field is null) return null;
@@ -861,7 +808,7 @@ public sealed class BcrdtBormBinding : IDisposable
                     continue;
 
                 case FieldKind.Rows:
-                    // The holder, its order or its row map changed: the rows themselves.
+                    // The holder or its row map changed: the rows themselves.
                     if (i + 2 >= route.Count || !Equals(route[i + 1], RowsKey)) return new Target(container, fieldPath, null, field);
 
                     if (route[i + 2] is not string id || IndexOfRow(fieldPath, id) is not int index ||
@@ -870,6 +817,7 @@ public sealed class BcrdtBormBinding : IDisposable
                         return new Target(container, fieldPath, null, field);
                     }
 
+                    rowOf = new RepeaterOf(container, fieldPath, field);
                     container = row;
                     fields = field.ItemTemplate!.Children;
                     prefix = BormPath.Combine(fieldPath, index);
@@ -881,7 +829,8 @@ public sealed class BcrdtBormBinding : IDisposable
             }
         }
 
-        return new Target(container, prefix, fields, null);
+        // Still set only when the route ended at the row itself.
+        return new Target(container, prefix, fields, null, rowOf);
     }
 
     /// <summary>The form path of a text in the document, or <see langword="null"/> if the form has no place for it.</summary>

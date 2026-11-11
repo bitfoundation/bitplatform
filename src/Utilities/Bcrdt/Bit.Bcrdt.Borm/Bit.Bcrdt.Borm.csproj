@@ -21,8 +21,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- Shared with Bit.Bcrdt.Bink and Bit.Bcrdt.Blow: the row order is the same field-and-key order theirs is. -->
+        <Compile Include="..\Integrations\BcrdtIntegrationOrder.cs" Link="Integrations\%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="Bit.Bcrdt" />
         <Using Include="Bit.Borm" />
+        <Using Include="Bit.Bcrdt.Integrations" />
     </ItemGroup>
 
 </Project>

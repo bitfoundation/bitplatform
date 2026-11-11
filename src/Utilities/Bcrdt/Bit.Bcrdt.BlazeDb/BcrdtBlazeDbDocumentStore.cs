@@ -368,22 +368,54 @@ public sealed class BcrdtBlazeDbDocumentStore : IBcrdtDocumentStore
             // Some record does not merge with the ones before it; find it, and any other.
         }
 
-        List<BcrdtBlazeDbUpdateRecord> merging = [kept[0]];
-        byte[] merged = kept[0].Update;
-        foreach (BcrdtBlazeDbUpdateRecord record in kept.Skip(1))
+        // Merged one at a time from the oldest record, the run keeps whatever merges with it. If the oldest record is
+        // itself the one that merges with nothing, that run keeps it alone; a run started from a record it refused
+        // then keeps the rest. A few such restarts at most: the bad records are a crafted handful, not the history.
+        (List<BcrdtBlazeDbUpdateRecord> Records, byte[] Merged) best = MergeFrom(kept, 0);
+        for (int attempt = 0; attempt < MaxMergeRestarts && best.Records.Count * 2 <= kept.Count; attempt++)
         {
+            int start = kept.FindIndex(record => !best.Records.Contains(record));
+            if (start < 0) break;
+
+            (List<BcrdtBlazeDbUpdateRecord> Records, byte[] Merged) run = MergeFrom(kept, start);
+            if (run.Records.Count <= best.Records.Count) break;
+            best = run;
+        }
+
+        for (int skipped = kept.Count - best.Records.Count; skipped > 0; skipped--) UnreadableRecordSkipped?.Invoke(documentId);
+
+        return (best.Records, best.Records.Count == 1 ? (byte[])best.Merged.Clone() : best.Merged);
+    }
+
+    /// <summary>How many times <see cref="Select"/> starts its record-at-a-time merge over from another record.</summary>
+    private const int MaxMergeRestarts = 3;
+
+    /// <summary>
+    /// Merges the records one at a time, starting from <paramref name="start"/> and leaving out each one that does
+    /// not merge with those taken so far.
+    /// </summary>
+    /// <returns>The records merged, in the order they were written, and their merge.</returns>
+    private static (List<BcrdtBlazeDbUpdateRecord> Records, byte[] Merged) MergeFrom(List<BcrdtBlazeDbUpdateRecord> records, int start)
+    {
+        // Merging does not depend on the order of the updates, so the records before the start are taken after it.
+        List<BcrdtBlazeDbUpdateRecord> merging = [records[start]];
+        byte[] merged = records[start].Update;
+        for (int i = 0; i < records.Count; i++)
+        {
+            if (i == start) continue;
             try
             {
-                merged = BcrdtUpdateOperations.Merge(merged, record.Update);
-                merging.Add(record);
+                merged = BcrdtUpdateOperations.Merge(merged, records[i].Update);
+                merging.Add(records[i]);
             }
             catch (BcrdtFormatException)
             {
-                UnreadableRecordSkipped?.Invoke(documentId);
+                // Left out.
             }
         }
 
-        return (merging, merging.Count == 1 ? (byte[])merged.Clone() : merged);
+        merging.Sort((a, b) => a.Id.CompareTo(b.Id));
+        return (merging, merged);
     }
 
     private static bool IsDecodable(byte[] update)

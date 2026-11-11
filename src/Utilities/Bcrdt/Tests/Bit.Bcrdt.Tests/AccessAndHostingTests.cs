@@ -389,8 +389,8 @@ public class AccessAndHostingTests
     public async Task A_client_that_said_goodbye_takes_its_presence_back_on_a_new_connection_at_once()
     {
         await using var documentHost = new BcrdtDocumentHost();
-        var before = new RefusableConnection("before");
-        var after = new RefusableConnection("after");
+        var before = new RefusableConnection("ada", "before");
+        var after = new RefusableConnection("ada", "after");
         using BcrdtHostSession first = await documentHost.JoinAsync("doc", before);
         using BcrdtHostSession second = await documentHost.JoinAsync("doc", after);
 
@@ -401,10 +401,6 @@ public class AccessAndHostingTests
         presence.SetLocalField("name", "Ada");
         Assert.IsTrue(await first.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
 
-        // Anonymous, and the old connection was active a moment ago: without the goodbye this is a forgery.
-        presence.SetLocalField("name", "Ada elsewhere");
-        Assert.IsFalse(await second.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
-
         // A deliberate disconnection withdraws the entry first, and the client comes back on a new connection
         // before the server has noticed the old one close.
         presence.SetLocalState(null);
@@ -412,11 +408,49 @@ public class AccessAndHostingTests
         presence.SetLocalField("name", "Ada again");
         Assert.IsTrue(
             await second.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)),
-            "an identity its owner gave up is free to take back at a later clock");
+            "the same signed-in user takes its identity back at a later clock");
 
-        // Taken back, it belongs to the new connection: the old one may no longer speak for it.
-        presence.SetLocalField("name", "stale");
-        Assert.IsFalse(await first.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+        // Nobody else may speak for it, even right after it changed hands.
+        var other = new RefusableConnection("grace");
+        using BcrdtHostSession third = await documentHost.JoinAsync("doc", other);
+        presence.SetLocalField("name", "not Ada");
+        Assert.IsFalse(await third.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+    }
+
+    [TestMethod]
+    public async Task A_withdrawn_presence_identity_is_not_free_for_another_user_while_its_owner_is_connected()
+    {
+        await using var documentHost = new BcrdtDocumentHost();
+        var ada = new RefusableConnection("ada");
+        var mallory = new RefusableConnection("mallory");
+        BcrdtHostSession adaSession = await documentHost.JoinAsync("doc", ada);
+        using BcrdtHostSession mallorySession = await documentHost.JoinAsync("doc", mallory);
+
+        using var presence = new BcrdtAwarenessStore(42);
+        byte[]? published = null;
+        presence.Updated += update => published = update;
+
+        presence.SetLocalField("name", "Ada");
+        Assert.IsTrue(await adaSession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+
+        // Ada's tab is hidden: it withdraws her entry, but her connection stays open.
+        presence.SetLocalState(null);
+        Assert.IsTrue(await adaSession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+
+        presence.SetLocalField("name", "Not Ada");
+        byte[] forged = published!;
+        Assert.IsFalse(
+            await mallorySession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(forged)),
+            "another user may not take an identity its owner withdrew while still connected");
+
+        // Shown again, Ada's own connection still speaks for her.
+        presence.SetLocalField("name", "Ada");
+        Assert.IsTrue(await adaSession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
+
+        // Once her connection is gone, the identity is free.
+        adaSession.Dispose();
+        presence.SetLocalField("name", "Someone new");
+        Assert.IsTrue(await mallorySession.ReceiveAsync(BcrdtSyncProtocol.EncodeAwarenessUpdate(published!)));
     }
 
     [TestMethod]
@@ -472,13 +506,13 @@ public class AccessAndHostingTests
         Assert.AreEqual(BcrdtDocumentHost.DefaultRevocationReason, bob.RefusedWith);
     }
 
-    private sealed class RefusableConnection(string userId) : IBcrdtHostConnection
+    private sealed class RefusableConnection(string userId, string? id = null) : IBcrdtHostConnection
     {
         public ConcurrentQueue<byte[]> Sent { get; } = new();
 
         public string? RefusedWith { get; private set; }
 
-        public string Id => userId;
+        public string Id => id ?? userId;
 
         public BcrdtDocumentAccess Access => BcrdtDocumentAccess.ReadWrite;
 

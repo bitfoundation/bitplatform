@@ -118,9 +118,71 @@ public abstract class BcrdtXmlContainer : BcrdtAbstractType, IEnumerable<IBcrdtX
     public void Insert(int index, params IBcrdtXmlNode[] nodes)
     {
         ArgumentNullException.ThrowIfNull(nodes);
-        ValidateIndex(index, Count, inclusive: true);
-        if (nodes.Length == 0) return;
+        if (_pendingChildren is not null)
+        {
+            ValidateIndex(index, _pendingChildren.Count, inclusive: true);
+            object?[] pending = ToValues(nodes);
+            if (pending.Length == 0) return;
 
+            BcrdtTypeOperations.PreparePendingValues(pending, this);
+            _pendingChildren.InsertRange(index, nodes);
+            return;
+        }
+
+        // One walk finds both the block to insert after and whether the index is in range.
+        BcrdtItem? left = null;
+        if (index > 0)
+        {
+            left = FindChild(index - 1);
+            if (left is null) ValidateIndex(index, Count, inclusive: true);
+        }
+        else
+        {
+            ValidateIndex(index, 0, inclusive: true);
+        }
+
+        object?[] values = ToValues(nodes);
+        if (values.Length == 0) return;
+
+        Doc.Transact(transaction =>
+        {
+            // Only this type's own operations keep index caches in step, and they never consult them.
+            InvalidateSearchMarkers();
+            BcrdtTypeOperations.ListInsertAfter(transaction, this, left, values);
+        });
+    }
+
+    /// <summary>Appends child nodes.</summary>
+    /// <remarks>
+    /// The nodes go after the last block of the sequence, as Yjs's <c>push</c> places them, found from where the
+    /// previous append ended rather than by counting the children: building an element one child at a time
+    /// costs a step per child, not a walk of the whole list.
+    /// </remarks>
+    /// <exception cref="ArgumentException">A node is null, or is not an element or a text.</exception>
+    /// <exception cref="InvalidOperationException">A node already belongs somewhere else.</exception>
+    public void Push(params IBcrdtXmlNode[] nodes)
+    {
+        ArgumentNullException.ThrowIfNull(nodes);
+        object?[] values = ToValues(nodes);
+        if (values.Length == 0) return;
+
+        if (_pendingChildren is not null)
+        {
+            BcrdtTypeOperations.PreparePendingValues(values, this);
+            _pendingChildren.AddRange(nodes);
+            return;
+        }
+
+        Doc.Transact(transaction =>
+        {
+            InvalidateSearchMarkers();
+            BcrdtTypeOperations.ListInsertAfter(transaction, this, Tail(), values);
+        });
+    }
+
+    /// <summary>Checks that every node can be a child, and returns them as sequence values.</summary>
+    private static object?[] ToValues(IBcrdtXmlNode[] nodes)
+    {
         object?[] values = new object?[nodes.Length];
         for (int i = 0; i < nodes.Length; i++)
         {
@@ -133,27 +195,24 @@ public abstract class BcrdtXmlContainer : BcrdtAbstractType, IEnumerable<IBcrdtX
                     nameof(nodes)),
             };
         }
-
-        if (_pendingChildren is not null)
-        {
-            BcrdtTypeOperations.PreparePendingValues(values, this);
-            _pendingChildren.InsertRange(index, nodes);
-            return;
-        }
-
-        Doc.Transact(transaction =>
-        {
-            // Only this type's own operations keep index caches in step, and they never consult them.
-            InvalidateSearchMarkers();
-            BcrdtItem? left = index == 0 ? null : FindChild(index - 1);
-            BcrdtTypeOperations.ListInsertAfter(transaction, this, left, values);
-        });
+        return values;
     }
 
-    /// <summary>Appends child nodes.</summary>
-    /// <exception cref="ArgumentException">A node is null, or is not an element or a text.</exception>
-    /// <exception cref="InvalidOperationException">A node already belongs somewhere else.</exception>
-    public void Push(params IBcrdtXmlNode[] nodes) => Insert(Count, nodes);
+    // Where the sequence ended when it was last looked for: a hint, checked before use, since a block that
+    // was merged into its left neighbour is no longer in the list.
+    private BcrdtItem? _tailHint;
+
+    /// <summary>The last block of the sequence, deleted or not, or null when it is empty.</summary>
+    private BcrdtItem? Tail()
+    {
+        BcrdtItem? item = _tailHint is { } hint && IsLinked(hint) ? hint : Start;
+        if (item is null) return null;
+        while (item.Right is not null) item = item.Right;
+        return _tailHint = item;
+    }
+
+    private bool IsLinked(BcrdtItem item) =>
+        ReferenceEquals(item.Parent, this) && (item.Left is null ? ReferenceEquals(Start, item) : ReferenceEquals(item.Left.Right, item));
 
     /// <summary>Removes a run of child nodes, and everything inside them.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The run extends outside the children.</exception>

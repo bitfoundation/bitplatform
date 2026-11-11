@@ -46,11 +46,11 @@ settings are `s:width`, `s:height` and `s:background`; document metadata is `m:{
   both, because the transform and the style are different keys. Two changes to the same property resolve to one of
   them, the same one on every replica.
 - **A finished stroke's points are one value.** They never change after the pen lifts, so there is nothing to merge.
-- **Stacking order and layer membership are fields.** Each entry carries `$order`, a number its neighbours are sorted
-  by (ties broken by identifier), and an element carries `$layer`. Bringing an element to the front or moving it to
-  another layer is one field write, so concurrent reorders converge on one order instead of Bink's index-based
-  operations leaving replicas stacked differently. Repeatedly inserting at the same place halves the gap each time;
-  when it runs out the layer is renumbered, which writes every element in it.
+- **Stacking order and layer membership are fields.** Each entry carries `$order`, a fractional order key
+  (`BcrdtOrderKey`, the keys `BcrdtOrderedCollection` uses) its neighbours are sorted by (ties broken by identifier),
+  and an element carries `$layer`. Bringing an element to the front or moving it to another layer is one field write,
+  so concurrent reorders converge on one order instead of Bink's index-based operations leaving replicas stacked
+  differently. There is always room for another key between two, so nothing is ever renumbered.
 - **A deleted layer takes its elements with it**, including any a collaborator drew into it concurrently: such an
   element stays in the shared state but no replica shows it.
 

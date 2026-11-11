@@ -164,17 +164,36 @@ public class BrowserLifecycleTests
         notes.Text("body").Insert(0, "saved before the page went away");
         other.Text("body").Insert(0, "and this");
 
-        // Hidden twice while the first flush is still waiting: one flush, not two.
+        // Hidden, then edited and signalled twice more while the first flush is still waiting: the first flush
+        // does not cover the edit, so one more follows it - one, not one per signal.
         Task first = browser.RaiseAsync(BcrdtBrowserSignal.Hidden);
+        notes.Text("body").Insert(0, "and what came after: ");
         Task second = browser.RaiseAsync(BcrdtBrowserSignal.Freeze);
-        await Task.WhenAll(first, second);
+        Task third = browser.RaiseAsync(BcrdtBrowserSignal.Hidden);
+        await Task.WhenAll(first, second, third);
 
-        Assert.AreEqual("saved before the page went away", seenByAfterFlush);
+        Assert.AreEqual("and what came after: saved before the page went away", seenByAfterFlush);
         Assert.AreEqual("and this", Text((await store.LoadAsync("other")).Update!));
-        Assert.AreEqual(1, afterFlushes);
+        Assert.AreEqual(2, afterFlushes);
 
         await browser.RaiseAsync(BcrdtBrowserSignal.PageHide);
-        Assert.AreEqual(2, afterFlushes);
+        Assert.AreEqual(3, afterFlushes);
+    }
+
+    [TestMethod]
+    public async Task Disposing_while_starting_stops_the_subscription_the_start_was_waiting_for()
+    {
+        await using BcrdtCollaborationService client = CreateClient(connect: false);
+        var browser = new FakeBrowser { HoldSubscription = new TaskCompletionSource() };
+        var lifecycle = new BcrdtBrowserLifecycle(client, browser, null);
+
+        ValueTask starting = lifecycle.StartAsync();
+        await lifecycle.DisposeAsync();
+        browser.HoldSubscription.SetResult();
+        await starting;
+
+        Assert.AreEqual(0, browser.Subscriptions, "a subscription made after disposal must not be left listening");
+        Assert.IsFalse(lifecycle.IsStarted);
     }
 
     [TestMethod]
@@ -334,17 +353,21 @@ public class BrowserLifecycleTests
 
         public int Subscriptions { get; private set; }
 
+        /// <summary>When set, subscribing waits for it, as the round trip to JavaScript does.</summary>
+        public TaskCompletionSource? HoldSubscription { get; set; }
+
         /// <summary>Raises a signal the way the page would, and returns what the lifecycle made of it.</summary>
         public Task RaiseAsync(BcrdtBrowserSignal signal) => (_handler ?? throw new InvalidOperationException("Nothing is listening.")).Invoke(signal);
 
         /// <summary>Raises a signal at whatever last subscribed, even after it stopped listening.</summary>
         public Task Raise(BcrdtBrowserSignal signal) => _last?.Invoke(signal) ?? Task.CompletedTask;
 
-        public ValueTask<IAsyncDisposable> SubscribeAsync(Func<BcrdtBrowserSignal, Task> handler, CancellationToken cancellationToken)
+        public async ValueTask<IAsyncDisposable> SubscribeAsync(Func<BcrdtBrowserSignal, Task> handler, CancellationToken cancellationToken)
         {
+            if (HoldSubscription is { } hold) await hold.Task;
             _handler = _last = handler;
             Subscriptions++;
-            return ValueTask.FromResult<IAsyncDisposable>(new Unsubscribe(this));
+            return new Unsubscribe(this);
         }
 
         public ValueTask<bool> IsOnlineAsync(CancellationToken cancellationToken) => ValueTask.FromResult(Online);

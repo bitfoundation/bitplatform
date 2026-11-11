@@ -213,9 +213,10 @@ internal abstract class BcrdtRelayConnection : IBcrdtHostConnection
     private int _refused;
     private BcrdtRelayConnections? _registry;
 
-    // Messages the relay is passing on for this connection right now, and whoever waits for them to be done.
-    private int _relaying;
-    private TaskCompletionSource? _settled;
+    // The messages the relay is passing on for this connection, counted by when they began: a wait for those begun
+    // before it retires the current generation and starts a new one, so messages that keep overlapping it - a
+    // chatty client on a hub that runs several of its invocations at once - cannot keep it waiting.
+    private RelayGeneration _relaying = new();
 
     protected BcrdtRelayConnection(string documentId, string id, BcrdtDocumentAccess access, string? userId, string relay)
     {
@@ -267,43 +268,33 @@ internal abstract class BcrdtRelayConnection : IBcrdtHostConnection
         Interlocked.CompareExchange(ref _access, (int)BcrdtDocumentAccess.ReadOnly, (int)BcrdtDocumentAccess.ReadWrite) == (int)BcrdtDocumentAccess.ReadWrite;
 
     /// <summary>
-    /// Starts passing on a message the client sent, or reports that it must be dropped: the connection was refused,
-    /// or the message is a change and the connection may not write. Pair every <see langword="true"/> with
-    /// <see cref="EndRelay"/>.
+    /// Starts passing on a message the client sent, or reports that it must be dropped - <see langword="null"/>: the
+    /// connection was refused, or the message is a change and the connection may not write. Call
+    /// <see cref="RelayGeneration.End"/> on what it returns once the message has gone wherever it was going.
     /// </summary>
     /// <remarks>
     /// Counted before the grant is read, and a grant is changed before the count is read, so either this sees the
     /// change or <see cref="SettledAsync"/> waits for this message.
     /// </remarks>
-    public bool TryBeginRelay(byte[] message)
+    public RelayGeneration? TryBeginRelay(byte[] message)
     {
-        Interlocked.Increment(ref _relaying);
-        if (!Refused && (Access == BcrdtDocumentAccess.ReadWrite || !BcrdtSyncProtocol.IsWrite(message))) return true;
+        RelayGeneration generation;
+        do generation = Volatile.Read(ref _relaying);
+        while (!generation.TryEnter());
 
-        EndRelay();
-        return false;
-    }
+        if (!Refused && (Access == BcrdtDocumentAccess.ReadWrite || !BcrdtSyncProtocol.IsWrite(message))) return generation;
 
-    /// <summary>Ends what <see cref="TryBeginRelay"/> started: the message has gone wherever it was going.</summary>
-    public void EndRelay()
-    {
-        if (Interlocked.Decrement(ref _relaying) == 0) Interlocked.Exchange(ref _settled, null)?.TrySetResult();
+        generation.End();
+        return null;
     }
 
     /// <summary>Completes once no message the relay began passing on before this call is still on its way.</summary>
+    /// <remarks>Messages begun after it are not waited for, however many of them overlap.</remarks>
     public Task SettledAsync()
     {
-        var waiter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        TaskCompletionSource settled = Interlocked.CompareExchange(ref _settled, waiter, null) ?? waiter;
-
-        // Nothing in flight, or the last one ended before the waiter was in place to hear it.
-        if (Volatile.Read(ref _relaying) == 0)
-        {
-            Interlocked.CompareExchange(ref _settled, null, settled);
-            settled.TrySetResult();
-        }
-
-        return settled.Task;
+        RelayGeneration retired = Interlocked.Exchange(ref _relaying, new RelayGeneration());
+        retired.End();
+        return retired.Ended;
     }
 
     /// <summary>Remembers the list this connection is on, so a refusal takes it off.</summary>
@@ -311,4 +302,39 @@ internal abstract class BcrdtRelayConnection : IBcrdtHostConnection
 
     /// <summary>Takes the connection off the list it is on, if any: it left or disconnected.</summary>
     public void Unlist() => Volatile.Read(ref _registry)?.Remove(this);
+
+    /// <summary>
+    /// The messages a connection began passing on between two waits for them, and when the last of them is done.
+    /// </summary>
+    /// <remarks>
+    /// The connection holds one count of its current generation, released when the generation is retired, so the
+    /// count reaches zero - and stays there - only once it is retired and every message in it has ended.
+    /// </remarks>
+    internal sealed class RelayGeneration
+    {
+        private readonly TaskCompletionSource _ended = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _count = 1;
+
+        /// <summary>Completes once the generation is retired and every message in it has ended.</summary>
+        public Task Ended => _ended.Task;
+
+        /// <summary>Counts a message in, unless the generation is over and a newer one is taking messages.</summary>
+        public bool TryEnter()
+        {
+            int count = Volatile.Read(ref _count);
+            while (count != 0)
+            {
+                int seen = Interlocked.CompareExchange(ref _count, count + 1, count);
+                if (seen == count) return true;
+                count = seen;
+            }
+            return false;
+        }
+
+        /// <summary>Counts a message out: it has gone wherever it was going.</summary>
+        public void End()
+        {
+            if (Interlocked.Decrement(ref _count) == 0) _ended.TrySetResult();
+        }
+    }
 }

@@ -20,7 +20,8 @@ namespace Bit.Bcrdt.Blow;
 /// </para>
 /// <para>
 /// List order - what Blow draws by among peers, and what <c>BringToFrontAsync</c> and <c>SendToBackAsync</c> change -
-/// is a number in each entry (<c>$order</c>), so reordering is one field write per moved element. Selection, measured
+/// is a fractional order key in each entry (<c>$order</c>, a <see cref="BcrdtOrderKey"/>), so reordering is one field
+/// write per moved element. Selection, measured
 /// sizes, handle anchors and drag state are each participant's own and never shared; selection travels through
 /// presence instead.
 /// </para>
@@ -399,7 +400,7 @@ public sealed class BcrdtBlowBinding : IDisposable
     {
         var entries = new List<BcrdtMap>(items.Count);
         var ids = new List<string>(items.Count);
-        var orders = new List<double?>(items.Count);
+        var orders = new List<string?>(items.Count);
         foreach ((string id, _) in items)
         {
             if (Root.GetMap(prefix + id) is not { } entry) continue;
@@ -408,8 +409,8 @@ public sealed class BcrdtBlowBinding : IDisposable
             orders.Add(BcrdtIntegrationOrder.Read(entry));
         }
 
-        List<(int Index, double Order)> moves = BcrdtIntegrationOrder.Assign(ids, orders);
-        foreach ((int index, double order) in moves) entries[index].Set(BcrdtIntegrationOrder.Key, order);
+        List<(int Index, string Order)> moves = BcrdtIntegrationOrder.Assign(ids, orders);
+        foreach ((int index, string order) in moves) entries[index].Set(BcrdtIntegrationOrder.Key, order);
         return moves.Count > 0;
     }
 

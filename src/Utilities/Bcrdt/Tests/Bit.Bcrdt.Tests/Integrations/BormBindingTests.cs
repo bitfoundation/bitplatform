@@ -305,8 +305,25 @@ public class BormBindingTests
         Assert.AreSame(moved, first.Model.Lines[0], "a row keeps its object across moves");
 
         BcrdtMap holder = a.GetMap("ticket").GetMap("Lines")!;
-        Assert.AreEqual(3, holder.GetArray("order")!.Count, "a move is one identifier deleted and inserted, not a copy");
-        Assert.AreEqual(3, holder.GetMap("rows")!.Count);
+        Assert.AreEqual(3, holder.GetMap("rows")!.Count, "a move writes the row's order key, not a copy of the row");
+        Assert.IsNull(holder.Get("order"));
+    }
+
+    [TestMethod]
+    public void Moving_a_row_writes_only_its_own_order_key()
+    {
+        using BcrdtDocument a = Doc(1);
+        using var first = new Replica(a, new BormTicket { Lines = [new() { Product = "A" }, new() { Product = "B" }, new() { Product = "C" }, new() { Product = "D" }] });
+
+        BcrdtMap rows = a.GetMap("ticket").GetMap("Lines")!.GetMap("rows")!;
+        Dictionary<string, object?> before = rows.Keys.ToDictionary(id => id, id => rows.GetMap(id)!.Get("$order"));
+        Assert.IsTrue(before.Values.All(order => BcrdtOrderKey.IsValid(order as string)));
+
+        first.State.MoveArrayItem("Lines", 3, 0);
+
+        string[] changed = [.. rows.Keys.Where(id => !Equals(before[id], rows.GetMap(id)!.Get("$order")))];
+        Assert.HasCount(1, changed, "the rows that kept their relative order keep their keys");
+        CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray());
     }
 
     [TestMethod]
@@ -396,11 +413,11 @@ public class BormBindingTests
         Assert.AreEqual(3, first.Model.Lines.Count);
         CollectionAssert.AreEquivalent(new[] { "A", "B", "C" }, first.Model.Lines.Select(l => l.Product).ToArray());
 
-        // The next local change tidies the duplicate identifier both moves left in the order list.
+        // A move is a write of the row's order key: one of the two won, and there is nothing to tidy.
+        Assert.AreEqual(3, a.GetMap("ticket").GetMap("Lines")!.GetMap("rows")!.Count);
         first.State.SetValue("Lines[0].Quantity", 1);
         first.State.MoveArrayItem("Lines", 0, 1);
         Sync(a, b);
-        Assert.AreEqual(3, a.GetMap("ticket").GetMap("Lines")!.GetArray("order")!.Count);
         Assert.AreEqual(Json(first.Model), Json(second.Model));
     }
 

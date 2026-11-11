@@ -328,7 +328,7 @@ public static class BcrdtWebSocketEndpoint
 
                     // What a reader writes reaches nobody, nor anything from a connection refused while this
                     // waited for it. A revocation waits for a message that got past here to go where it is going.
-                    if (!connection.TryBeginRelay(message)) continue;
+                    if (connection.TryBeginRelay(message) is not { } relaying) continue;
 
                     List<byte[]>? answer = null;
                     try
@@ -357,7 +357,7 @@ public static class BcrdtWebSocketEndpoint
                     }
                     finally
                     {
-                        connection.EndRelay();
+                        relaying.End();
                     }
 
                     // What the host answered is queued before this client is heard again, so however

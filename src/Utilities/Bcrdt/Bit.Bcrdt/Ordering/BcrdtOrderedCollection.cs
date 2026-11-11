@@ -173,13 +173,7 @@ public sealed class BcrdtOrderedCollection : IEnumerable<BcrdtOrderedEntry>
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(index, ordered.Count);
 
-            string key = MakeRoom(ordered, index);
-
-            var item = new BcrdtMap();
-            item.Set(OrderField, key);
-            Items.Set(id, item);
-            initialize?.Invoke(item);
-            return item;
+            return Create(ordered, index, initialize, id);
         });
     }
 
@@ -190,7 +184,23 @@ public sealed class BcrdtOrderedCollection : IEnumerable<BcrdtOrderedEntry>
         id ??= Guid.NewGuid().ToString("N");
         if (Items.ContainsKey(id)) throw new ArgumentException($"An entry '{id}' already exists.", nameof(id));
 
-        return Items.Doc.Transact(_ => Insert(Snapshot(group, excludedId: null).Count, initialize, group, id));
+        return Items.Doc.Transact(_ =>
+        {
+            List<BcrdtOrderedEntry> ordered = Snapshot(group, excludedId: null);
+            return Create(ordered, ordered.Count, initialize, id);
+        });
+    }
+
+    /// <summary>Creates an item at <paramref name="index"/> of <paramref name="ordered"/>. Call inside a transaction.</summary>
+    private BcrdtMap Create(List<BcrdtOrderedEntry> ordered, int index, Action<BcrdtMap>? initialize, string id)
+    {
+        string key = MakeRoom(ordered, index);
+
+        var item = new BcrdtMap();
+        item.Set(OrderField, key);
+        Items.Set(id, item);
+        initialize?.Invoke(item);
+        return item;
     }
 
     /// <summary>Moves an item to <paramref name="index"/>, as a single transaction.</summary>

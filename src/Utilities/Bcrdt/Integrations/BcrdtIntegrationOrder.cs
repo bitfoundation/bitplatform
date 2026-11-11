@@ -1,8 +1,8 @@
 ﻿namespace Bit.Bcrdt.Integrations;
 
 /// <summary>
-/// Stacking order for objects kept in a collaborative map: each entry carries a number, and the objects are drawn in
-/// the order of that number, ties broken by identifier.
+/// Order for objects kept in a collaborative map: each entry carries a <see cref="BcrdtOrderKey"/>, and the objects
+/// are listed in the order of that key, ties broken by identifier.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -13,11 +13,12 @@
 /// two moves of the same object resolve like any other field - one wins, on every replica.
 /// </para>
 /// <para>
-/// The numbers are doubles placed between their neighbours. Two people inserting at the same place concurrently get
-/// the same number and are ordered by identifier, the same way everywhere. Repeated insertion at one place halves
-/// the gap each time, and when the gap runs out the whole sequence is renumbered - a write to every object in it,
-/// which is the price of a representation this simple. A dense, unbounded key (a fractional index over strings) would
-/// never need renumbering; this is deliberately the simplest deterministic scheme.
+/// The keys are the fractional order keys <see cref="BcrdtOrderedCollection"/> uses, so there is always room for
+/// another key between two different ones and nothing is ever renumbered. Two people inserting at the same place
+/// concurrently mostly get different keys - a single insertion takes a random point of the gap - and when they do
+/// tie they are ordered by identifier, the same way everywhere, until the next write near them gives one of them a
+/// key of its own. An entry without a valid key - written by something else, or by a misbehaving peer - sorts after
+/// every entry with one, and gets one the next time its list is written.
 /// </para>
 /// </remarks>
 internal static class BcrdtIntegrationOrder
@@ -26,22 +27,23 @@ internal static class BcrdtIntegrationOrder
     public const string Key = "$order";
 
     /// <summary>Reads an entry's position, or null when it has none a replica can use.</summary>
-    public static double? Read(BcrdtMap? map) => map?.Get(Key) switch
-    {
-        double number when double.IsFinite(number) => number,
-        float number when float.IsFinite(number) => number,
-        long number => number,
-        _ => null,
-    };
+    public static string? Read(BcrdtMap? map) => map?.Get(Key) is string key && BcrdtOrderKey.IsValid(key) ? key : null;
 
     /// <summary>
     /// Compares two entries the way every replica sorts them: by position, then by identifier. An entry without a
     /// position sorts after every entry with one.
     /// </summary>
-    public static int Compare(double? leftOrder, string leftId, double? rightOrder, string rightId)
+    public static int Compare(string? leftOrder, string leftId, string? rightOrder, string rightId)
     {
-        int byOrder = (leftOrder ?? double.PositiveInfinity).CompareTo(rightOrder ?? double.PositiveInfinity);
+        int byOrder = CompareOrder(leftOrder, rightOrder);
         return byOrder != 0 ? byOrder : string.CompareOrdinal(leftId, rightId);
+    }
+
+    /// <summary>Compares two positions alone; a missing one sorts last.</summary>
+    private static int CompareOrder(string? left, string? right)
+    {
+        if ((left is null) != (right is null)) return left is null ? 1 : -1;
+        return string.CompareOrdinal(left, right);
     }
 
     /// <summary>
@@ -52,16 +54,19 @@ internal static class BcrdtIntegrationOrder
     /// <param name="orders">Each one's current position, or null when it has none yet.</param>
     /// <returns>The index into <paramref name="ids"/> and the new position of each entry that has to move.</returns>
     /// <remarks>
-    /// The entries already in sorted order relative to each other - the longest such run - keep their positions, and
-    /// only the others are placed between them. Bringing one object to the front therefore writes one position, not
-    /// one per object above it.
+    /// The entries whose keys already increase in the order given - the longest such run - keep their positions, and
+    /// only the others get keys between them. Bringing one object to the front therefore writes one position, not
+    /// one per object above it. Of entries that tie on a key only one can be kept, so the others get keys of their
+    /// own, and every gap the rest are placed in is a real one.
     /// </remarks>
-    public static List<(int Index, double Order)> Assign(IReadOnlyList<string> ids, IReadOnlyList<double?> orders)
+    public static List<(int Index, string Order)> Assign(IReadOnlyList<string> ids, IReadOnlyList<string?> orders)
     {
-        int count = ids.Count;
-        bool[] keep = LongestSortedRun(ids, orders);
+        ArgumentOutOfRangeException.ThrowIfNotEqual(orders.Count, ids.Count);
 
-        var result = new List<(int Index, double Order)>();
+        int count = ids.Count;
+        bool[] keep = LongestIncreasingRun(count, orders);
+
+        var result = new List<(int Index, string Order)>();
         int previous = -1;
         for (int index = 0; index <= count; index++)
         {
@@ -71,33 +76,41 @@ internal static class BcrdtIntegrationOrder
             int gap = index - start;
             if (gap > 0)
             {
-                double? low = previous >= 0 ? orders[previous] : null;
-                double? high = index < count ? orders[index] : null;
-                if (!TryFill(low, high, gap, out double[] values)) return Renumber(orders);
-                for (int k = 0; k < gap; k++) result.Add((start + k, values[k]));
+                string? low = previous >= 0 ? orders[previous] : null;
+                string? high = index < count ? orders[index] : null;
+
+                // A single move or insertion takes a random point of its gap, so two replicas doing the same at
+                // once rarely tie; a run of them is spread evenly, which keeps the keys short.
+                if (gap == 1) result.Add((start, BcrdtOrderKey.Between(low, high, Random.Shared)));
+                else
+                {
+                    IReadOnlyList<string> values = BcrdtOrderKey.BetweenMany(low, high, gap);
+                    for (int k = 0; k < gap; k++) result.Add((start + k, values[k]));
+                }
             }
             previous = index;
         }
         return result;
     }
 
-    /// <summary>Marks the longest run of entries whose positions are already in sorted order.</summary>
-    private static bool[] LongestSortedRun(IReadOnlyList<string> ids, IReadOnlyList<double?> orders)
+    /// <summary>
+    /// Marks the longest run of entries whose positions strictly increase in the order given, by patience sorting.
+    /// </summary>
+    private static bool[] LongestIncreasingRun(int count, IReadOnlyList<string?> orders)
     {
-        int count = ids.Count;
         var keep = new bool[count];
         var tails = new List<int>();
         var previous = new int[count];
 
         for (int index = 0; index < count; index++)
         {
-            if (orders[index] is null) continue;
+            if (orders[index] is not { } order) continue;
 
             int low = 0, high = tails.Count;
             while (low < high)
             {
                 int middle = (low + high) / 2;
-                if (Compare(orders[tails[middle]], ids[tails[middle]], orders[index], ids[index]) < 0) low = middle + 1;
+                if (string.CompareOrdinal(orders[tails[middle]], order) < 0) low = middle + 1;
                 else high = middle;
             }
 
@@ -110,41 +123,6 @@ internal static class BcrdtIntegrationOrder
         return keep;
     }
 
-    /// <summary>Spreads <paramref name="count"/> positions strictly between two neighbours, either of which may be missing.</summary>
-    private static bool TryFill(double? low, double? high, int count, out double[] values)
-    {
-        values = new double[count];
-        for (int k = 0; k < count; k++)
-        {
-            values[k] = (low, high) switch
-            {
-                (null, null) => k + 1,
-                (null, { } h) => h - count + k,
-                ({ } l, null) => l + k + 1,
-                ({ } l, { } h) => l + ((h - l) * (k + 1) / (count + 1)),
-            };
-        }
-
-        // Halving a gap often enough exhausts a double's precision, and the values collapse onto their neighbours.
-        double floor = low ?? double.NegativeInfinity;
-        for (int k = 0; k < count; k++)
-        {
-            if (!double.IsFinite(values[k]) || values[k] <= floor) return false;
-            floor = values[k];
-        }
-        return high is null || floor < high.Value;
-    }
-
-    private static List<(int Index, double Order)> Renumber(IReadOnlyList<double?> orders)
-    {
-        var result = new List<(int Index, double Order)>();
-        for (int index = 0; index < orders.Count; index++)
-        {
-            if (orders[index] != index + 1) result.Add((index, index + 1));
-        }
-        return result;
-    }
-
     /// <summary>
     /// Rearranges a sequence so the entries the shared state knows about are in shared order, leaving the others -
     /// local changes not yet written - where they are.
@@ -153,10 +131,10 @@ internal static class BcrdtIntegrationOrder
     /// <param name="items">The local sequence.</param>
     /// <param name="key">The shared position and identifier of an item, or null for one the shared state does not order.</param>
     /// <returns>The sequence in its new order.</returns>
-    public static List<T> Arrange<T>(IReadOnlyList<T> items, Func<T, (double? Order, string Id)?> key)
+    public static List<T> Arrange<T>(IReadOnlyList<T> items, Func<T, (string? Order, string Id)?> key)
     {
         var slots = new List<int>();
-        var known = new List<(T Item, double? Order, string Id)>();
+        var known = new List<(T Item, string? Order, string Id)>();
         for (int index = 0; index < items.Count; index++)
         {
             if (key(items[index]) is not { } position) continue;

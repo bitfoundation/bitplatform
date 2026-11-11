@@ -183,6 +183,28 @@ public class PendingBoundTests
         }
     }
 
+    [TestMethod]
+    public async Task A_document_host_that_discards_what_waits_asks_every_connection_for_it()
+    {
+        await using var host = new BcrdtDocumentHost(new BcrdtDocumentHostOptions { MaxPendingSize = 1024 });
+        var flooder = new RecordingConnection("flooder");
+        var bystander = new RecordingConnection("bystander");
+        using BcrdtHostSession flooding = await host.JoinAsync("bounded", flooder);
+        using BcrdtHostSession waiting = await host.JoinAsync("bounded", bystander);
+        bystander.Sent.Clear();
+
+        (BcrdtDocument author, _, byte[] second) = TwoUpdates(2, length: 4000);
+        using (author)
+        {
+            Assert.IsTrue(await flooding.ReceiveAsync(BcrdtSyncProtocol.EncodeUpdate(second)));
+
+            Assert.IsTrue(await host.ReadAsync("bounded", doc => doc.PendingDiscards == 1));
+            Assert.IsTrue(
+                bystander.Sent.Select(message => BcrdtSyncProtocol.Decode(message)).Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1),
+                "what was discarded may have come from any connection, so every one is asked");
+        }
+    }
+
     private static async Task<bool> EventuallyAsync(Func<bool> condition)
     {
         var clock = Stopwatch.StartNew();
@@ -194,11 +216,11 @@ public class PendingBoundTests
         return true;
     }
 
-    private sealed class RecordingConnection : IBcrdtHostConnection
+    private sealed class RecordingConnection(string id = "recording") : IBcrdtHostConnection
     {
         public ConcurrentQueue<byte[]> Sent { get; } = new();
 
-        public string Id => "recording";
+        public string Id => id;
 
         public BcrdtDocumentAccess Access => BcrdtDocumentAccess.ReadWrite;
 

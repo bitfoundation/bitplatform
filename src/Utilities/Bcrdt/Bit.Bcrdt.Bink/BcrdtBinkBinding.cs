@@ -22,7 +22,8 @@ namespace Bit.Bcrdt.Bink;
 /// stroke's points never change, so they are one value.
 /// </para>
 /// <para>
-/// Stacking order is a number in each entry (<c>$order</c>), and an element's layer is another (<c>$layer</c>): moving an
+/// Stacking order is a fractional order key in each entry (<c>$order</c>, a <see cref="BcrdtOrderKey"/>), and an
+/// element's layer is another field (<c>$layer</c>): moving an
 /// element up, down or to another layer is one field write, which merges like any other. Concurrent moves of the same
 /// element resolve to one of them, the same one everywhere.
 /// </para>
@@ -459,7 +460,7 @@ public sealed class BcrdtBinkBinding : IDisposable
     {
         var entries = new List<BcrdtMap>(items.Count);
         var ids = new List<string>(items.Count);
-        var orders = new List<double?>(items.Count);
+        var orders = new List<string?>(items.Count);
         foreach (T item in items)
         {
             string key = Key(id(item));
@@ -469,7 +470,7 @@ public sealed class BcrdtBinkBinding : IDisposable
             orders.Add(BcrdtIntegrationOrder.Read(entry));
         }
 
-        foreach ((int index, double order) in BcrdtIntegrationOrder.Assign(ids, orders)) entries[index].Set(BcrdtIntegrationOrder.Key, order);
+        foreach ((int index, string order) in BcrdtIntegrationOrder.Assign(ids, orders)) entries[index].Set(BcrdtIntegrationOrder.Key, order);
     }
 
     private void WriteSettings()

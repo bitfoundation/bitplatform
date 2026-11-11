@@ -478,9 +478,9 @@ using var binding = new BcrdtBormBinding(state, document.Crdt.GetMap("ticket"),
 ```
 
 Every field is its own key, so two people answering different questions both keep their answers; text areas are
-nested `BcrdtText`, so two people typing in one both keep what they typed; and a repeater is an `order` list of row
-identifiers beside a `rows` map, so an edit lands on the row it was typed into while somebody inserts or moves rows
-around it. A change from elsewhere to the field the local user is in (`BeginEditing` / `EndEditing`) waits until they
+nested `BcrdtText`, so two people typing in one both keep what they typed; and a repeater is a `rows` map keyed by
+row identifier, each row ordered by a `BcrdtOrderKey` in its `$order` field, so an edit lands on the row it was typed
+into while somebody inserts or moves rows around it. A change from elsewhere to the field the local user is in (`BeginEditing` / `EndEditing`) waits until they
 leave it rather than replacing their input box, and `Editors` says who is in which field. Computed fields, files and
 passwords are never stored, and validation stays Borm's. See its [README](Bit.Bcrdt.Borm/README.md).
 
@@ -528,10 +528,10 @@ Both lay the model out the same way, which is the [Choosing a data type](#choosi
   node are different keys, and both survive; only two writes of the same property compete. Reusing the library's file
   format keeps its validation, limits and versioning, and a finished stroke's points - which never change - are a
   single value.
-- **Order is a field.** Stacking order and list order are a number in each entry (`$order`), sorted with the
-  identifier as tie-break, so reordering is a field write rather than a `BcrdtArray.Move` - whose copy would lose a
-  concurrent edit of the moved object. The numbers are placed between their neighbours and renumbered when a gap runs
-  out of precision: the simplest deterministic scheme, at the cost of an occasional write to every object in a layer.
+- **Order is a field.** Stacking order and list order are a fractional order key in each entry (`$order`, a
+  `BcrdtOrderKey` - the keys `BcrdtOrderedCollection` uses), sorted with the identifier as tie-break, so reordering is
+  a field write rather than a `BcrdtArray.Move` - whose copy would lose a concurrent edit of the moved object. There is
+  always room for another key between two, so a layer is never renumbered.
 - **One transaction per gesture, tagged with the binding's origin.** Bink's history marks where a drag ends; Blow's
   canvas reports finished edits through `OnGraphChanged`. Everything else that changes the map is applied to the
   model as a remote change - `BinkChangeOrigin.Remote`, or `BlowChangeOrigin.Remote` with `recordHistory: false` - which

@@ -94,6 +94,7 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
     private readonly object _gate = new();
     private IAsyncDisposable? _subscription;
     private Task _flush = Task.CompletedTask;
+    private Task? _queuedFlush;
     private bool _starting;
     private bool _disposed;
 
@@ -185,7 +186,21 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
         try
         {
             // Listening first, so a change between reading the state and subscribing is not missed.
-            _subscription = await _browser.SubscribeAsync(OnSignalAsync, cancellationToken).ConfigureAwait(false);
+            IAsyncDisposable subscription = await _browser.SubscribeAsync(OnSignalAsync, cancellationToken).ConfigureAwait(false);
+
+            // Disposed while the subscription was being made: nobody else will ever stop it.
+            bool disposed;
+            lock (_gate)
+            {
+                disposed = _disposed;
+                if (!disposed) _subscription = subscription;
+            }
+            if (disposed)
+            {
+                await subscription.DisposeAsync().ConfigureAwait(false);
+                return;
+            }
+
             SetOnline(await _browser.IsOnlineAsync(cancellationToken).ConfigureAwait(false));
 
             if (_options.RequestPersistentStorage)
@@ -193,15 +208,18 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
                 IsStoragePersistent = await _browser.RequestPersistentStorageAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            IsStarted = true;
+            lock (_gate) IsStarted = !_disposed;
         }
         catch
         {
-            IAsyncDisposable? subscription = _subscription;
-            _subscription = null;
+            IAsyncDisposable? subscription;
+            lock (_gate)
+            {
+                subscription = _subscription;
+                _subscription = null;
+                _starting = false;
+            }
             if (subscription is not null) await subscription.DisposeAsync().ConfigureAwait(false);
-
-            lock (_gate) _starting = false;
             throw;
         }
     }
@@ -295,7 +313,9 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
     /// <summary>Waits for every open document's changes to reach its store, then runs the store's own flush.</summary>
     /// <remarks>
     /// One at a time: a store that keeps failing keeps a flush waiting, and a page hidden and shown repeatedly
-    /// meanwhile must not stack up more of them.
+    /// meanwhile must not stack up more of them. But a flush already running covers only what was written before
+    /// it began, so a signal arriving meanwhile gets one more flush after it - shared by every signal until it
+    /// starts, which is later than all of them.
     /// </remarks>
     private Task FlushAsync()
     {
@@ -303,9 +323,25 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
 
         lock (_gate)
         {
-            if (!_flush.IsCompleted) return _flush;
-            return _flush = FlushOpenDocumentsAsync();
+            if (_flush.IsCompleted) return _flush = FlushOpenDocumentsAsync();
+            return _queuedFlush ??= FlushAfterAsync(_flush);
         }
+    }
+
+    private async Task FlushAfterAsync(Task running)
+    {
+        // Out from under the caller's lock before anything else, so the queued flush is recorded before it
+        // can be taken off the queue.
+        await Task.Yield();
+        await running.ConfigureAwait(false);
+
+        Task next;
+        lock (_gate)
+        {
+            _queuedFlush = null;
+            next = _flush = FlushOpenDocumentsAsync();
+        }
+        await next.ConfigureAwait(false);
     }
 
     private async Task FlushOpenDocumentsAsync()
@@ -351,12 +387,18 @@ public sealed class BcrdtBrowserLifecycle : IAsyncDisposable
     /// <remarks>Stops listening. The documents are the collaboration service's, and are left as they are.</remarks>
     public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
-        _disposed = true;
-        IsStarted = false;
+        IAsyncDisposable? subscription;
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            IsStarted = false;
 
-        IAsyncDisposable? subscription = _subscription;
-        _subscription = null;
+            // A start still waiting on its subscription sees this and stops the subscription itself.
+            subscription = _subscription;
+            _subscription = null;
+        }
+
         if (subscription is not null) await subscription.DisposeAsync().ConfigureAwait(false);
     }
 }

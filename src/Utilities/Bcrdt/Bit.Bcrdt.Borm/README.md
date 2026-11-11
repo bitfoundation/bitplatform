@@ -48,10 +48,11 @@ validation. The binding only moves answers between the form and the document. Gi
   is better left as a value, because two concurrent edits of an email address merged character by character are an
   address neither person typed.
 - **Nested objects** are nested maps.
-- **Repeater rows are kept by identity, not position.** Each row gets an identifier, and the repeater is stored as an
-  `order` list of identifiers beside a `rows` map of each row's fields. An edit made in a row while somebody inserts
-  a row above it lands on the row it was typed into; moving a row moves its identifier, so an edit made inside the row
-  at the same moment is kept. A row's identity is its object - the model instance, or a dictionary form's dictionary -
+- **Repeater rows are kept by identity, not position.** Each row gets an identifier, and the repeater is stored as a
+  `rows` map of each row's fields under its identifier, the row's position a fractional order key (`BcrdtOrderKey`)
+  in its `$order` field. An edit made in a row while somebody inserts a row above it lands on the row it was typed
+  into; moving a row writes that one field, so an edit made inside the row at the same moment is kept, and two people
+  moving one row at once leave it once, in one place. A row's identity is its object - the model instance, or a dictionary form's dictionary -
   so rows must be reference types. A repeater inside a row is laid out the same way.
 - **Not stored:** computed fields (every replica computes them), files, headings, and passwords and fields marked
   `Sensitive()` unless `IncludeSensitive` says so - a document is replicated, persisted and relayed, which is the wrong
