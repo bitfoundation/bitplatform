@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +27,13 @@ namespace Bit.BlazorUI;
 /// <para>
 /// The request and the events cross the hub as JSON values (<see cref="JsonElement"/>) the package writes and reads
 /// itself, so they need nothing of the hub protocol's settings and stay the same with any of them that carries JSON
-/// (the JSON protocol, the default). An exception of <see cref="StreamAsync"/> ends the stream with a terminal
-/// <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its own text never reaches the browser.
+/// (the JSON protocol, the default). An exception of <see cref="StreamAsync"/>, or an event the wire format cannot write,
+/// ends the stream with a terminal <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its own text
+/// never reaches the browser.
+/// </para>
+/// <para>
+/// A decision on a tool call is taken only on a call a reply streaming on the same connection asked about (with a
+/// <see cref="BitAiToolApprovalRequestedEvent"/>), and once, as the WebSocket endpoint takes it.
 /// </para>
 /// </remarks>
 public abstract class BitAiHub : Hub
@@ -37,6 +43,9 @@ public abstract class BitAiHub : Hub
 
     /// <summary>The name of the hub method taking a decision on a tool call.</summary>
     public const string ApprovalMethodName = nameof(SendBitAiApproval);
+
+    // The key of the calls a connection was asked about, in its Items.
+    private static readonly object AskedCallsKey = new();
 
     /// <summary>Serializer hooks, for custom parts, and the JSON settings, for the app's own types.</summary>
     protected virtual BitAiConversationSerializerOptions? SerializerOptions => null;
@@ -68,10 +77,28 @@ public abstract class BitAiHub : Hub
         }
 
         var logger = services.GetService<ILoggerFactory>()?.CreateLogger(GetType().FullName ?? nameof(BitAiHub));
+        var connectionCalls = AskedCalls(Context);
+        var expected = new BitAiAskedCalls(services.GetService<BitAiApprovalBroker>());
+        var asked = new List<string>();
 
-        await foreach (var evt in BitAiServerStreams.Guard(() => StreamAsync(bitRequest, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
+        try
         {
-            yield return BitAiWireSerializer.SerializeToElement(evt, options);
+            await foreach (var evt in BitAiServerStreams.Guard(() => StreamAsync(bitRequest, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
+            {
+                // Recorded before it is sent: a decision is taken only on a call this connection was asked about, and the
+                // broker keeps one that arrives before the reply waits for it.
+                if (evt is BitAiToolApprovalRequestedEvent approval && connectionCalls.TryAdd(approval.ToolCallId, 0)) asked.Add(approval.ToolCallId);
+                expected.Record(evt);
+
+                var written = BitAiServerStreams.TryWrite(evt, e => BitAiWireSerializer.SerializeToElement(e, options), logger, out var json);
+                yield return json;
+                if (!written) yield break;
+            }
+        }
+        finally
+        {
+            foreach (var toolCallId in asked) connectionCalls.TryRemove(toolCallId, out _);
+            expected.Forget();
         }
     }
 
@@ -81,8 +108,26 @@ public abstract class BitAiHub : Hub
     /// <param name="response">The decision, in the wire format.</param>
     /// <param name="services">The services of the invocation, injected by SignalR.</param>
     /// <returns>Whether a held call was waiting for it.</returns>
-    public async Task<bool> SendBitAiApproval(JsonElement response, [BitAiFromServices] IServiceProvider services) =>
-        await OnApprovalAsync(BitAiWireSerializer.DeserializeApproval(response, SerializerOptions), services, Context.ConnectionAborted).ConfigureAwait(false);
+    /// <remarks>
+    /// Only a decision on a call a reply streaming on this very connection asked about is acted on, and once: one on any
+    /// other call is answered <see langword="false"/>, so a client can never decide a call of someone else's reply.
+    /// </remarks>
+    public async Task<bool> SendBitAiApproval(JsonElement response, [BitAiFromServices] IServiceProvider services)
+    {
+        BitAiApprovalResponse decision;
+        try
+        {
+            decision = BitAiWireSerializer.DeserializeApproval(response, SerializerOptions);
+        }
+        catch (JsonException exception)
+        {
+            throw new HubException($"The message is not a BitAi decision: {exception.Message}");
+        }
+
+        if (!AskedCalls(Context).TryRemove(decision.ToolCallId, out _)) return false;
+
+        return await OnApprovalAsync(decision, services, Context.ConnectionAborted).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Produces the reply to a request.
@@ -94,7 +139,8 @@ public abstract class BitAiHub : Hub
 
     /// <summary>
     /// Acts on a decision on a tool call this server holds. By default, hands it to the app's
-    /// <see cref="BitAiApprovalBroker"/>, when one is registered.
+    /// <see cref="BitAiApprovalBroker"/>, when one is registered. Called only for a call a reply streaming on the same
+    /// connection asked about, and once per call.
     /// </summary>
     /// <param name="response">The decision.</param>
     /// <param name="services">The services of the invocation.</param>
@@ -102,6 +148,22 @@ public abstract class BitAiHub : Hub
     /// <returns>Whether a held call was waiting for it.</returns>
     protected virtual ValueTask<bool> OnApprovalAsync(BitAiApprovalResponse response, IServiceProvider services, CancellationToken cancellationToken) =>
         ValueTask.FromResult(services.GetService<BitAiApprovalBroker>()?.TrySubmit(response) ?? false);
+
+    // The calls the replies streaming on a connection asked about, kept with the connection: a hub instance lives for one
+    // invocation, and the decision comes in an invocation of its own.
+    private static ConcurrentDictionary<string, byte> AskedCalls(HubCallerContext context)
+    {
+        var items = context.Items;
+        lock (items)
+        {
+            if (items.TryGetValue(AskedCallsKey, out var existing) && existing is ConcurrentDictionary<string, byte> calls) return calls;
+
+            calls = new ConcurrentDictionary<string, byte>(StringComparer.Ordinal);
+            items[AskedCallsKey] = calls;
+            return calls;
+        }
+    }
+
 }
 
 /// <summary>

@@ -42,12 +42,7 @@ internal static class BitAiServerStreams
                 catch (Exception exception)
                 {
                     logger?.LogError(exception, "The AI reply failed on the server.");
-                    failure = new BitAiErrorEvent(new BitAiError("The reply could not be generated.")
-                    {
-                        Code = "server_error",
-                        Kind = exception is TimeoutException ? BitAiErrorKind.Timeout : BitAiErrorKind.Provider,
-                        IsRetryable = true,
-                    });
+                    failure = Failure(exception);
                 }
 
                 if (failure is not null)
@@ -63,5 +58,62 @@ internal static class BitAiServerStreams
         {
             if (enumerator is not null) await enumerator.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Writes an event for the wire, or - when the wire format cannot write it (a <see cref="BitAiCustomEvent"/> holding
+    /// an app type the settings have no metadata for, an event type the format does not define) - logs why and writes
+    /// the terminal error event that ends the reply in its place, as <see cref="Guard"/> does for a failing handler.
+    /// </summary>
+    /// <returns><see langword="true"/> when the event itself was written; <see langword="false"/> when the error was, and the reply ends.</returns>
+    internal static bool TryWrite<T>(BitAiEvent evt, Func<BitAiEvent, T> write, ILogger? logger, out T written)
+    {
+        try
+        {
+            written = write(evt);
+            return true;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger?.LogError(exception, "An AI event of type '{Type}' could not be written in the wire format.", evt.Type);
+            written = write(Failure(exception));
+            return false;
+        }
+    }
+
+    // Only a generic message reaches the browser; the exception itself is logged where it is caught.
+    private static BitAiErrorEvent Failure(Exception exception) => new(new BitAiError("The reply could not be generated.")
+    {
+        Code = "server_error",
+        Kind = exception is TimeoutException ? BitAiErrorKind.Timeout : BitAiErrorKind.Provider,
+        IsRetryable = true,
+    });
+}
+
+/// <summary>
+/// The calls one reply asked the browser about, told to the app's <see cref="BitAiApprovalBroker"/> (when one is
+/// registered) before each <see cref="BitAiToolApprovalRequestedEvent"/> is sent, and forgotten when the reply ends.
+/// </summary>
+internal sealed class BitAiAskedCalls(BitAiApprovalBroker? broker)
+{
+    private readonly List<string> _asked = [];
+
+    /// <summary>Records the call of an approval request, before the event is sent.</summary>
+    public void Record(BitAiEvent evt)
+    {
+        if (evt is not BitAiToolApprovalRequestedEvent approval) return;
+
+        broker?.Expect(approval.ToolCallId);
+        lock (_asked) _asked.Add(approval.ToolCallId);
+    }
+
+    /// <summary>Lets the broker forget every call of the reply that nothing is waiting on any more.</summary>
+    public void Forget()
+    {
+        if (broker is null) return;
+
+        string[] asked;
+        lock (_asked) asked = [.. _asked];
+        foreach (var toolCallId in asked) broker.Forget(toolCallId);
     }
 }

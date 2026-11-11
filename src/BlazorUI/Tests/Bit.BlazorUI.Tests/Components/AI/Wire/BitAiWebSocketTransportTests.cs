@@ -104,6 +104,69 @@ public class BitAiWebSocketTransportTests
     }
 
     [TestMethod]
+    public async Task ADecisionSentBeforeTheServerWaitsIsKeptForIt()
+    {
+        var waiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var taken = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var app = await Host(a => a.MapBitAiWebSocket(
+            Path,
+            (_, http, ct) => BitAiTransportEndToEndTests.HeldCall(http.RequestServices.GetRequiredService<BitAiApprovalBroker>(), ct, waiting.Task),
+            new BitAiWebSocketEndpointOptions
+            {
+                OnApproval = (response, http, _) =>
+                {
+                    taken.TrySetResult(http.RequestServices.GetRequiredService<BitAiApprovalBroker>().TrySubmit(response));
+                    return ValueTask.FromResult(true);
+                },
+            }));
+        var broker = app.Services.GetRequiredService<BitAiApprovalBroker>();
+
+        var transport = new BitAiWebSocketTransport(Address(app));
+        var events = new List<BitAiEvent>();
+        await foreach (var evt in transport.StreamAsync(new BitAiRequest([])))
+        {
+            events.Add(evt);
+            if (evt is not BitAiToolApprovalRequestedEvent) continue;
+
+            // Sent while the handler has not got to WaitAsync yet: the broker keeps it for the handler.
+            await transport.SendApprovalAsync(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved));
+            Assert.IsTrue(await taken.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+            waiting.SetResult();
+        }
+
+        Assert.AreEqual("Deleted after approved", events.OfType<BitAiToolResultEvent>().Single().Outcome.GetDisplayText());
+        Assert.AreEqual(0, broker.PendingCount);
+    }
+
+    [TestMethod]
+    public async Task AnEventTheWireFormatCannotWriteIsATerminalError()
+    {
+        await using var app = await Host(a => a.MapBitAiWebSocket(Path, (_, _, _) => BitAiTransportEndToEndTests.Unwritable()));
+
+        await using var session = new BitAiChatSession(new BitAiWebSocketTransport(Address(app)), null, Options);
+        await session.SubmitAsync("hi");
+
+        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
+    }
+
+    [TestMethod]
+    public async Task AMessageOfOneReadLargerThanTheLimitFailsTheTurn()
+    {
+        // 4 KB is below the 16 KB a single receive reads, so the event arrives whole in one read.
+        await using var app = await Host(MapChatClient, new BitAiFakeChatClient(BitAiFakeChatClient.Text(new string('x', 10_000))));
+
+        await using var session = new BitAiChatSession(
+            new BitAiWebSocketTransport(Address(app), new BitAiWebSocketTransportOptions { MaxMessageSize = 4096 }),
+            null,
+            Options);
+        await session.SubmitAsync("hi");
+
+        Assert.IsNotNull(session.LastError);
+        Assert.AreNotEqual(10_000, session.Conversation.Messages[1].GetText().Length);
+    }
+
+    [TestMethod]
     public async Task ADecisionOnACallTheReplyDidNotAskAboutIsDropped()
     {
         var decided = new List<string>();

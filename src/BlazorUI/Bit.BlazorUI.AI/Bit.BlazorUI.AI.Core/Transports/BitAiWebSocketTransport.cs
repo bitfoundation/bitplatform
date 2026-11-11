@@ -197,7 +197,17 @@ public sealed class BitAiWebSocketTransport : IBitAiTransport, IBitAiApprovalTra
         ArrayBufferWriter<byte>? message = null;
         while (true)
         {
-            var result = await socket.ReceiveAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+            ValueWebSocketReceiveResult result;
+            try
+            {
+                result = await socket.ReceiveAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+            }
+            catch (WebSocketException exception) when (cancellationToken.IsCancellationRequested)
+            {
+                // A cancellation aborts the socket; one that lands as a receive completes leaves the next one to find it
+                // aborted. Either way the reply was stopped, and says so.
+                throw new OperationCanceledException("The reply was stopped.", exception, cancellationToken);
+            }
 
             if (result.MessageType is WebSocketMessageType.Close)
             {
@@ -210,18 +220,15 @@ public sealed class BitAiWebSocketTransport : IBitAiTransport, IBitAiApprovalTra
 
             if (message is null && result.EndOfMessage)
             {
-                // The common case, an event that fits one read: decoded straight from the buffer.
+                // The common case, an event that fits one read: decoded straight from the buffer - within the limit too,
+                // which can be smaller than one read.
+                if (result.Count > _options.MaxMessageSize) throw TooLarge();
                 if (result.MessageType is WebSocketMessageType.Text) return Encoding.UTF8.GetString(buffer, 0, result.Count);
                 continue;
             }
 
             message ??= new ArrayBufferWriter<byte>(ReceiveChunkSize * 2);
-            if (message.WrittenCount + result.Count > _options.MaxMessageSize)
-            {
-                throw new WebSocketException(
-                    WebSocketError.Faulted,
-                    $"The AI endpoint sent a message larger than {_options.MaxMessageSize} bytes (BitAiWebSocketTransportOptions.MaxMessageSize).");
-            }
+            if (message.WrittenCount + result.Count > _options.MaxMessageSize) throw TooLarge();
 
             message.Write(buffer.AsSpan(0, result.Count));
             if (!result.EndOfMessage) continue;
@@ -231,6 +238,10 @@ public sealed class BitAiWebSocketTransport : IBitAiTransport, IBitAiApprovalTra
             if (text is not null) return text;
         }
     }
+
+    private WebSocketException TooLarge() => new(
+        WebSocketError.Faulted,
+        $"The AI endpoint sent a message larger than {_options.MaxMessageSize} bytes (BitAiWebSocketTransportOptions.MaxMessageSize).");
 
     // A reply the server finished is closed back; one the app stopped (a break out of the enumeration, a disposed
     // session) is closed from here, which the server takes as the stop. A socket that cannot close in time is aborted,

@@ -56,7 +56,9 @@ public sealed class BitAiConversationSerializerOptions
     /// <remarks>
     /// <para>
     /// The metadata comes from the package's source-generated context, and the package's enumerations are written as
-    /// camelCase strings by a <see cref="JsonStringEnumConverter{TEnum}"/> each. A snapshot property the JSON leaves out
+    /// camelCase strings by a converter each, which reads a member this version does not know (one a newer version added)
+    /// as the member that says the least - <c>unknown</c> where there is one, a rejection for an approval decision, a
+    /// destructive risk for a tool - rather than failing what holds it. A snapshot property the JSON leaves out
     /// keeps the value it starts with (<c>schemaVersion</c> 1, an empty list, an attachment's
     /// <see cref="BitAiAttachmentStatus.Ready"/> status, ...), as the reflection-based serializer left it.
     /// </para>
@@ -72,19 +74,21 @@ public sealed class BitAiConversationSerializerOptions
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters =
         {
-            new JsonStringEnumConverter<BitAiMessageStatus>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiFeedbackKind>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiFinishReason>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiErrorKind>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiAttachmentKind>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiAttachmentStatus>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiSourceKind>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiToolRisk>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiToolCallStatus>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiApprovalDecision>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiAgentRunStatus>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiAgentStepStatus>(JsonNamingPolicy.CamelCase),
-            new JsonStringEnumConverter<BitAiResponseFormatKind>(JsonNamingPolicy.CamelCase),
+            // A member this version does not know (one a newer server or snapshot added) reads as the one that says the
+            // least, rather than failing the event or the conversation holding it; an unknown decision is a rejection.
+            new BitAiLenientEnumConverter<BitAiMessageStatus>(BitAiMessageStatus.Complete),
+            new BitAiLenientEnumConverter<BitAiFeedbackKind>(BitAiFeedbackKind.None),
+            new BitAiLenientEnumConverter<BitAiFinishReason>(BitAiFinishReason.Unknown),
+            new BitAiLenientEnumConverter<BitAiErrorKind>(BitAiErrorKind.Unknown),
+            new BitAiLenientEnumConverter<BitAiAttachmentKind>(BitAiAttachmentKind.File),
+            new BitAiLenientEnumConverter<BitAiAttachmentStatus>(BitAiAttachmentStatus.Ready),
+            new BitAiLenientEnumConverter<BitAiSourceKind>(BitAiSourceKind.Unknown),
+            new BitAiLenientEnumConverter<BitAiToolRisk>(BitAiToolRisk.Destructive),
+            new BitAiLenientEnumConverter<BitAiToolCallStatus>(BitAiToolCallStatus.Cancelled),
+            new BitAiLenientEnumConverter<BitAiApprovalDecision>(BitAiApprovalDecision.Rejected),
+            new BitAiLenientEnumConverter<BitAiAgentRunStatus>(BitAiAgentRunStatus.Completed),
+            new BitAiLenientEnumConverter<BitAiAgentStepStatus>(BitAiAgentStepStatus.Completed),
+            new BitAiLenientEnumConverter<BitAiResponseFormatKind>(BitAiResponseFormatKind.Text),
         },
         WriteIndented = false,
         TypeInfoResolver = BitAiSnapshotJson.Resolver,

@@ -18,6 +18,12 @@ namespace Bit.BlazorUI;
 /// they return the <see cref="IEndpointConventionBuilder"/> of the route for the app's own conventions - put the stream
 /// and the approvals behind the same authorization (<c>.RequireAuthorization()</c>) and rate limits.
 /// </para>
+/// <para>
+/// Both read a JSON body only: a request whose <c>Content-Type</c> is not JSON is answered <c>415</c>. A browser sends a
+/// cross-site <c>POST</c> without asking the server first only for the "simple" content types (<c>text/plain</c>, a form),
+/// so a page of another site cannot get the endpoints to act as a user signed in by cookie; a JSON one has to pass the
+/// app's CORS policy first.
+/// </para>
 /// </remarks>
 public static class BitAiSseEndpointRouteBuilderExtensions
 {
@@ -40,14 +46,20 @@ public static class BitAiSseEndpointRouteBuilderExtensions
     /// <remarks>
     /// <para>
     /// Each event is written as <c>event: {type}</c> and <c>data: {json}</c> and flushed as it comes, with response
-    /// buffering turned off. A body that is not a request is answered <c>400</c>. An exception of the handler ends the
-    /// stream with a terminal <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its own text never
-    /// reaches the browser.
+    /// buffering turned off. A body that is not JSON is answered <c>415</c>, and one that is not a request <c>400</c>. An
+    /// exception of the handler, or an event the wire format cannot write, ends the stream with a terminal
+    /// <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its own text never reaches the browser.
     /// </para>
     /// <para>
     /// Everything in the request comes from the browser: <c>ToChatOptions</c> (Bit.BlazorUI.AI.ChatClient) lets the
     /// server's options win over what it asks for, and <see cref="BitAiWireSerializer.ToRequest"/> hands the handler no
-    /// message with a role above the user's (a <c>system</c> message the browser sent arrives as a user message).
+    /// message with a role above the user's (a <c>system</c> message the browser sent arrives as a user message), no
+    /// system prompt and no choice forcing a tool the browser did not declare.
+    /// </para>
+    /// <para>
+    /// The call of every <see cref="BitAiToolApprovalRequestedEvent"/> is told to the app's
+    /// <see cref="BitAiApprovalBroker"/> (when one is registered) before the event is sent, so a decision the browser posts
+    /// before the handler gets to <see cref="BitAiApprovalBroker.WaitAsync"/> is kept for it.
     /// </para>
     /// </remarks>
     public static IEndpointConventionBuilder MapBitAiSse(
@@ -72,7 +84,10 @@ public static class BitAiSseEndpointRouteBuilderExtensions
     /// <param name="handler">Acts on a decision; returns whether a held call was waiting for it.</param>
     /// <param name="options">The JSON settings.</param>
     /// <returns>The endpoint's convention builder.</returns>
-    /// <remarks>Answers <c>204</c> when the decision was taken, <c>404</c> when no call was waiting for it, and <c>400</c> for a body that is not a decision.</remarks>
+    /// <remarks>
+    /// Answers <c>204</c> when the decision was taken, <c>404</c> when no call was waiting for it, <c>415</c> for a body
+    /// that is not JSON and <c>400</c> for one that is not a decision.
+    /// </remarks>
     public static IEndpointConventionBuilder MapBitAiApprovals(
         this IEndpointRouteBuilder endpoints,
         string pattern,
@@ -85,6 +100,8 @@ public static class BitAiSseEndpointRouteBuilderExtensions
 
         return endpoints.MapPost(pattern, async http =>
         {
+            if (!IsJson(http)) return;
+
             BitAiApprovalResponse response;
             try
             {
@@ -119,6 +136,8 @@ public static class BitAiSseEndpointRouteBuilderExtensions
     {
         var cancellationToken = http.RequestAborted;
 
+        if (!IsJson(http)) return;
+
         BitAiRequest request;
         try
         {
@@ -138,6 +157,7 @@ public static class BitAiSseEndpointRouteBuilderExtensions
 
         var logger = http.RequestServices.GetService<ILoggerFactory>()?.CreateLogger(typeof(BitAiSseEndpointRouteBuilderExtensions).FullName!);
         var body = http.Response.Body;
+        var asked = new BitAiAskedCalls(http.RequestServices.GetService<BitAiApprovalBroker>());
 
         try
         {
@@ -145,14 +165,32 @@ public static class BitAiSseEndpointRouteBuilderExtensions
 
             await foreach (var evt in BitAiServerStreams.Guard(() => handler(request, http, cancellationToken), logger, cancellationToken).ConfigureAwait(false))
             {
-                await body.WriteAsync(Encoding.UTF8.GetBytes(FormatEvent(evt, options)), cancellationToken).ConfigureAwait(false);
+                // Recorded before it is sent, so a decision posted the moment it arrives is already expected.
+                asked.Record(evt);
+
+                var written = BitAiServerStreams.TryWrite(evt, e => FormatEvent(e, options), logger, out var text);
+                await body.WriteAsync(Encoding.UTF8.GetBytes(text), cancellationToken).ConfigureAwait(false);
                 await body.FlushAsync(cancellationToken).ConfigureAwait(false);
+                if (!written) break;
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // The browser stopped the reply, or went away.
         }
+        finally
+        {
+            asked.Forget();
+        }
+    }
+
+    // A JSON body, or a 415: a cross-site "simple" POST (text/plain, a form) is not read at all.
+    private static bool IsJson(HttpContext http)
+    {
+        if (http.Request.HasJsonContentType()) return true;
+
+        http.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+        return false;
     }
 
     /// <summary>

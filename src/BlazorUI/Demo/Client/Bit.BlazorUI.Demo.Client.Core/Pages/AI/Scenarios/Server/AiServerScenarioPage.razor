@@ -70,9 +70,12 @@
             </ol>
             <p>
                 The request comes from the browser, so it never overrides the server: the chat options the server passes win,
-                and the request only fills in what they leave unset. Pin the model and the limits on the server. A failure on
-                the server ends the stream with a terminal error event and a generic message - the exception is logged, never
-                sent. The model behind this page is scripted, so it costs nothing to call; an app registers its provider's
+                and the request only fills in what they leave unset. Pin the model and the limits on the server. A system
+                prompt the browser sends is dropped, and so is a tool choice forcing a tool it did not declare: the
+                instructions and the server's functions are the server's alone. The endpoints read a JSON body only, so a
+                page of another site cannot post to them as a user signed in by cookie without passing the app's CORS policy.
+                A failure on the server, or an event the wire format cannot write, ends the stream with a terminal error
+                event and a generic message - the exception is logged, never sent. The model behind this page is scripted, so it costs nothing to call; an app registers its provider's
                 chat client instead, and nothing else changes.
             </p>
         </DocSection>
@@ -130,7 +133,9 @@
                 endpoint of <code>MapBitAiApprovals</code>, up the WebSocket, or to the hub - and handed to the stream waiting
                 for it through a
                 <code>BitAiApprovalBroker</code> (<code>await approvals.WaitAsync(toolCallId, cancellationToken)</code>), in
-                the same reply.
+                the same reply. The endpoints and the hub tell the broker about the call before they send its event, so a
+                decision that arrives before the reply gets to <code>WaitAsync</code> is kept for it. The WebSocket and the hub
+                take a decision only on a call their own connection was asked about, and only once.
             </p>
         </DocSection>
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.AI;
@@ -184,6 +185,100 @@ public class BitAiTransportEndToEndTests
     }
 
     [TestMethod]
+    public async Task ADecisionPostedBeforeTheServerWaitsIsKeptForIt()
+    {
+        var waiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var app = await Host(new BitAiFakeChatClient(), a =>
+        {
+            a.MapBitAiSse("/api/ai/chat", (_, http, ct) => HeldCall(http.RequestServices.GetRequiredService<BitAiApprovalBroker>(), ct, waiting.Task));
+            a.MapBitAiApprovals("/api/ai/chat/approvals");
+        });
+
+        var client = app.GetTestClient();
+        var events = new List<BitAiEvent>();
+        await foreach (var evt in Sse(app).StreamAsync(new BitAiRequest([])))
+        {
+            events.Add(evt);
+            if (evt is not BitAiToolApprovalRequestedEvent) continue;
+
+            // The handler has not got to WaitAsync yet: the decision is kept for it rather than refused.
+            using var answer = await client.PostAsync("/api/ai/chat/approvals", new StringContent(
+                BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved)),
+                Encoding.UTF8,
+                "application/json"));
+            Assert.AreEqual(HttpStatusCode.NoContent, answer.StatusCode);
+
+            waiting.SetResult();
+        }
+
+        Assert.AreEqual("Deleted after approved", events.OfType<BitAiToolResultEvent>().Single().Outcome.GetDisplayText());
+        Assert.AreEqual(0, app.Services.GetRequiredService<BitAiApprovalBroker>().PendingCount);
+    }
+
+    [TestMethod]
+    public async Task ADecisionOnACallNobodyAskedAboutIsNotFound()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), MapSse);
+
+        using var answer = await app.GetTestClient().PostAsync("/api/ai/chat/approvals", new StringContent(
+            BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved)),
+            Encoding.UTF8,
+            "application/json"));
+
+        Assert.AreEqual(HttpStatusCode.NotFound, answer.StatusCode);
+    }
+
+    [TestMethod]
+    [DataRow("/api/ai/chat", "text/plain")]
+    [DataRow("/api/ai/chat", "application/x-www-form-urlencoded")]
+    [DataRow("/api/ai/chat/approvals", "text/plain")]
+    public async Task ABodyThatIsNotJsonIsNotRead(string path, string contentType)
+    {
+        // What a page of another site can post without the browser asking the server first.
+        var chatClient = new BitAiFakeChatClient(BitAiFakeChatClient.Text("Hi"));
+        await using var app = await Host(chatClient, MapSse);
+
+        var body = path.EndsWith("approvals", StringComparison.Ordinal)
+            ? BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved))
+            : """{"messages":[{"messageId":"m1","parts":[{"partId":"p1","kind":"text","text":"hi"}]}]}""";
+        using var response = await app.GetTestClient().PostAsync(path, new StringContent(body, Encoding.UTF8, contentType));
+
+        Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        Assert.AreEqual(0, chatClient.Messages.Count, "The model was never called.");
+    }
+
+    [TestMethod]
+    public async Task AnEventTheWireFormatCannotWriteIsATerminalErrorOverSse()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), a => a.MapBitAiSse("/api/ai/chat", (_, _, _) => Unwritable()));
+
+        await using var session = new BitAiChatSession(Sse(app), null, Options);
+        await session.SubmitAsync("hi");
+
+        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
+    }
+
+    [TestMethod]
+    public async Task TheApprovalEndpointKeepsTheStreamsQueryString()
+    {
+        string? tenant = null;
+        await using var app = await Host(new BitAiFakeChatClient(), a =>
+        {
+            a.MapBitAiSse("/api/ai/chat", (_, http, ct) => HeldCall(http.RequestServices.GetRequiredService<BitAiApprovalBroker>(), ct));
+            a.MapBitAiApprovals("/api/ai/chat/approvals", (response, http, _) =>
+            {
+                tenant = http.Request.Query["tenant"];
+                return ValueTask.FromResult(http.RequestServices.GetRequiredService<BitAiApprovalBroker>().TrySubmit(response));
+            });
+        });
+
+        await AssertHeldCallIsDecided(new BitAiSseTransport(app.GetTestClient(), new BitAiSseTransportOptions { Endpoint = "/api/ai/chat?tenant=42" }));
+
+        Assert.AreEqual("42", tenant);
+    }
+
+    [TestMethod]
     public async Task AChatClientsReplyStreamsOverSignalR()
     {
         var chatClient = new BitAiFakeChatClient(BitAiFakeChatClient.Text("Hello "), BitAiFakeChatClient.Text("over SignalR"));
@@ -234,6 +329,44 @@ public class BitAiTransportEndToEndTests
     }
 
     [TestMethod]
+    public async Task AnEventTheWireFormatCannotWriteIsATerminalErrorOverSignalR()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), a => a.MapHub<UnwritableHub>("/hubs/ai"));
+        await using var connection = await Connect(app);
+
+        await using var session = new BitAiChatSession(new BitAiSignalRTransport(connection), null, Options);
+        await session.SubmitAsync("hi");
+
+        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
+    }
+
+    [TestMethod]
+    public async Task AConnectionDecidesOnlyTheCallsItWasAskedAbout()
+    {
+        await using var app = await Host(new BitAiFakeChatClient(), a => a.MapHub<HeldCallHub>("/hubs/ai"));
+        await using var owner = await Connect(app);
+        await using var other = await Connect(app);
+        var decision = System.Text.Json.JsonSerializer.SerializeToElement(new { toolCallId = "t1", toolName = "delete_file", decision = "approved" });
+
+        var transport = new BitAiSignalRTransport(owner);
+        var events = new List<BitAiEvent>();
+        await foreach (var evt in transport.StreamAsync(new BitAiRequest([])))
+        {
+            events.Add(evt);
+            if (evt is not BitAiToolApprovalRequestedEvent) continue;
+
+            Assert.IsFalse(await other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision), "Another connection cannot decide the call.");
+            await Assert.ThrowsAsync<HubException>(() => other.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, System.Text.Json.JsonSerializer.SerializeToElement(new { nope = 1 })));
+
+            Assert.IsTrue(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision));
+            Assert.IsFalse(await owner.InvokeAsync<bool>(BitAiHub.ApprovalMethodName, decision), "A call is decided once.");
+        }
+
+        Assert.AreEqual("Deleted after approved", events.OfType<BitAiToolResultEvent>().Single().Outcome.GetDisplayText());
+    }
+
+    [TestMethod]
     public async Task TheBrokerLeavesNothingBehindACancelledWait()
     {
         var broker = new BitAiApprovalBroker();
@@ -271,11 +404,24 @@ public class BitAiTransportEndToEndTests
         Assert.AreEqual("Deleted after approved", session.Conversation.Messages[1].FindToolCall("t1")!.Result!.GetDisplayText());
     }
 
-    internal static async IAsyncEnumerable<BitAiEvent> HeldCall(BitAiApprovalBroker approvals, [EnumeratorCancellation] CancellationToken cancellationToken)
+    // An event of an app type the wire format has no metadata for, after one it writes.
+    internal static async IAsyncEnumerable<BitAiEvent> Unwritable()
+    {
+        await Task.Yield();
+        yield return new BitAiTextDeltaEvent("Before");
+        yield return new BitAiCustomEvent("app.point", new AppPoint(1, 2));
+        yield return new BitAiTextDeltaEvent("After");
+    }
+
+    internal static async IAsyncEnumerable<BitAiEvent> HeldCall(
+        BitAiApprovalBroker approvals,
+        [EnumeratorCancellation] CancellationToken cancellationToken,
+        Task? beforeWaiting = null)
     {
         yield return new BitAiToolCallStartedEvent("t1", "delete_file") { Arguments = System.Text.Json.JsonDocument.Parse("{}").RootElement.Clone() };
         yield return new BitAiToolApprovalRequestedEvent("t1");
 
+        if (beforeWaiting is not null) await beforeWaiting.WaitAsync(cancellationToken);
         var decision = await approvals.WaitAsync("t1", cancellationToken);
 
         yield return new BitAiToolResultEvent("t1", BitAiToolOutcome.FromText($"Deleted after {decision.ToString().ToLowerInvariant()}"));
@@ -292,6 +438,11 @@ public class BitAiTransportEndToEndTests
     {
         protected override IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken) =>
             throw new InvalidOperationException("No IChatClient: secret");
+    }
+
+    private sealed class UnwritableHub : BitAiHub
+    {
+        protected override IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, CancellationToken cancellationToken) => Unwritable();
     }
 
     private sealed class HeldCallHub(BitAiApprovalBroker approvals) : BitAiHub

@@ -287,6 +287,73 @@ public class BitAiChatClientAdapterTests
     }
 
     [TestMethod]
+    public async Task WhatFollowsACallWithItsResultGoesAfterThatResult()
+    {
+        // The reply of a function invoking client: a round with server-run calls, then the model's answer.
+        var assistant = new BitAiMessage(BitAiRole.Assistant);
+        assistant.AddPart(new BitAiReasoningPart("look it up") { Signature = "sig1" });
+        assistant.AddPart(new BitAiTextPart("Searching."));
+        var first = assistant.AddPart(new BitAiToolCallPart("call1", "search"));
+        first.CompleteArguments(SearchArguments);
+        first.SetResult(BitAiToolOutcome.FromText("3 hits"));
+        var second = assistant.AddPart(new BitAiToolCallPart("call2", "search"));
+        second.CompleteArguments(SearchArguments);
+        second.SetResult(BitAiToolOutcome.FromText("1 hit"));
+        assistant.AddPart(new BitAiReasoningPart("got them") { Signature = "sig2" });
+        assistant.AddPart(new BitAiTextPart("Found 4."));
+
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([User("go"), assistant]);
+
+        CollectionAssert.AreEqual(
+            new[] { ChatRole.User, ChatRole.Assistant, ChatRole.Tool, ChatRole.Assistant },
+            messages.Select(m => m.Role).ToArray());
+
+        Assert.AreEqual("sig1", messages[1].Contents.OfType<TextReasoningContent>().Single().ProtectedData);
+        CollectionAssert.AreEqual(new[] { "call1", "call2" }, messages[1].Contents.OfType<FunctionCallContent>().Select(c => c.CallId).ToArray(),
+            "The calls of one round stay in one message.");
+        Assert.IsFalse(messages[1].Contents.OfType<TextContent>().Any(t => t.Text == "Found 4."), "The answer is not replayed ahead of the results it read.");
+
+        CollectionAssert.AreEqual(new[] { "call1", "call2" }, messages[2].Contents.OfType<FunctionResultContent>().Select(r => r.CallId).ToArray());
+
+        Assert.AreEqual("sig2", messages[3].Contents.OfType<TextReasoningContent>().Single().ProtectedData);
+        Assert.AreEqual("Found 4.", messages[3].Contents.OfType<TextContent>().Single().Text);
+        Assert.AreEqual(assistant.MessageId, messages[3].MessageId);
+    }
+
+    [TestMethod]
+    [DataRow("/uploads/a.png")]
+    [DataRow("uploads/a.png")]
+    [DataRow("//cdn.example.com/a.png")]
+    [DataRow("file:///etc/passwd")]
+    [DataRow(@"C:\uploads\a.png")]
+    [DataRow(@"\\server\share\a.png")]
+    public async Task AnAddressTheProviderCannotFetchIsLeftOutOnEveryPlatform(string url)
+    {
+        var user = User("look");
+        user.AddPart(new BitAiImagePart(url));
+        user.AddAttachment(new BitAiAttachment("a1", "a.png") { ContentType = "image/png", Url = url });
+
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user]);
+
+        Assert.AreEqual("look", messages.Single().Contents.OfType<TextContent>().Single().Text);
+        Assert.IsFalse(messages.Single().Contents.OfType<UriContent>().Any(), url);
+    }
+
+    [TestMethod]
+    public async Task AnAbsoluteAddressReachesTheProvider()
+    {
+        var user = User("look");
+        user.AddAttachment(new BitAiAttachment("a1", "a.png") { ContentType = "image/png", Url = "https://example.com/a.png" });
+        user.AddAttachment(new BitAiAttachment("a2", "b.pdf") { ContentType = "application/pdf", Url = "gs://bucket/b.pdf" });
+
+        var messages = await BitAiChatClientExtensions.ToChatMessagesAsync([user]);
+
+        CollectionAssert.AreEqual(
+            new[] { "https://example.com/a.png", "gs://bucket/b.pdf" },
+            messages.Single().Contents.OfType<UriContent>().Select(u => u.Uri.ToString()).ToArray());
+    }
+
+    [TestMethod]
     public async Task TheChatClientTransportDrivesASession()
     {
         var client = new BitAiFakeChatClient(BitAiFakeChatClient.Text("Hi "), BitAiFakeChatClient.Text("there"));

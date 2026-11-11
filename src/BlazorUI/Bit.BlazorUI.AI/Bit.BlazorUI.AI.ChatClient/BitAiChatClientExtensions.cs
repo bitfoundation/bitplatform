@@ -188,11 +188,16 @@ public static class BitAiChatClientExtensions
     /// <see cref="TextContent"/>, reasoning as <see cref="TextReasoningContent"/> (its signature as the protected data a
     /// provider may need back), an image as <see cref="DataContent"/> or <see cref="UriContent"/>, any other textual part
     /// (structured output, a custom part) as its text. The message's attachments follow as <see cref="DataContent"/>
-    /// (inline data, a data URL) or <see cref="UriContent"/> (an address).
+    /// (inline data, a data URL) or <see cref="UriContent"/> (an absolute address). An image or an attachment known only
+    /// by a relative address or a file path is left out, since the provider cannot fetch it: give it its data
+    /// (<see cref="BitAiAttachment.Data"/>, or a <see cref="BitAiAttachment.ContentFactory"/> read here) or an absolute
+    /// address.
     /// </para>
     /// <para>
     /// A tool call becomes a <see cref="FunctionCallContent"/> of its message, and its result - on the call, or a tool
-    /// result part - a <see cref="FunctionResultContent"/> in a tool message right after it, as the providers expect. A
+    /// result part - a <see cref="FunctionResultContent"/> in a tool message right after it, as the providers expect; what
+    /// the message holds after a call with its result (the model's answer once a server-run function returned) goes into
+    /// a message of the same role after that tool message, so every round reads in the order it happened. A
     /// call nothing answers (stopped, rejected, cancelled) gets a result saying so, since a provider refuses a transcript
     /// with an unanswered call.
     /// </para>
@@ -209,25 +214,41 @@ public static class BitAiChatClientExtensions
         var result = new List<ChatMessage>();
         foreach (var message in transcript)
         {
+            var role = new ChatRole(message.Role.Value);
             var contents = new List<AIContent>();
             var results = new List<AIContent>();
 
-            foreach (var part in message.Parts) AddPart(part, contents, results, answered);
+            foreach (var part in message.Parts)
+            {
+                // A reply of a function invoking client is one message over several model calls: the calls a round
+                // made, their results, then what the model said after reading them. What follows a call that has its
+                // result goes after that result, in a message of its own, as the model produced it.
+                if (results.Count > 0 && part is not (BitAiToolCallPart or BitAiToolResultPart))
+                {
+                    Flush(result, role, message.MessageId, contents, results);
+                    contents = [];
+                    results = [];
+                }
+
+                AddPart(part, contents, results, answered);
+            }
 
             foreach (var attachment in message.Attachments)
             {
                 if (await ToContentAsync(attachment, cancellationToken).ConfigureAwait(false) is { } content) contents.Add(content);
             }
 
-            if (contents.Count > 0)
-            {
-                result.Add(new ChatMessage(new ChatRole(message.Role.Value), contents) { MessageId = message.MessageId });
-            }
-
-            if (results.Count > 0) result.Add(new ChatMessage(ChatRole.Tool, results));
+            Flush(result, role, message.MessageId, contents, results);
         }
 
         return result;
+    }
+
+    // One round of a message: its contents, then a tool message with the results of the calls among them.
+    private static void Flush(List<ChatMessage> messages, ChatRole role, string messageId, List<AIContent> contents, List<AIContent> results)
+    {
+        if (contents.Count > 0) messages.Add(new ChatMessage(role, contents) { MessageId = messageId });
+        if (results.Count > 0) messages.Add(new ChatMessage(ChatRole.Tool, results));
     }
 
     /// <summary>
@@ -244,6 +265,12 @@ public static class BitAiChatClientExtensions
     /// <see cref="BitAiRequestOptions"/> only fill the settings left unset (<see cref="BitAiRequestOptions.SystemPrompt"/>
     /// fills <see cref="ChatOptions.Instructions"/>). Pin every setting the client must not choose. The request's
     /// <see cref="BitAiRequestOptions.Extra"/> is never forwarded.
+    /// </para>
+    /// <para>
+    /// A request a server reads off the wire (<see cref="BitAiWireSerializer.ToRequest"/>, which every endpoint of
+    /// Bit.BlazorUI.AI.Server goes through) carries no system prompt, and no tool choice forcing a tool the browser did not
+    /// declare: those are the server's alone to set. Only a request the app builds where its own code runs
+    /// (<see cref="BitAiChatClientTransport"/> in a Blazor Server circuit or a Hybrid app) still has them.
     /// </para>
     /// <para>
     /// Each tool of <see cref="BitAiRequest.Tools"/> is declared to the model (<see cref="AIFunctionFactory.CreateDeclaration"/>),
@@ -366,10 +393,16 @@ public static class BitAiChatClientExtensions
         return null;
     }
 
+    // An address the provider can fetch itself: a data URL, or an absolute one. A relative address ('/uploads/a.png',
+    // which .NET on Linux would take for file:///uploads/a.png, and on Windows for nothing) means nothing to the provider,
+    // and neither does a file path, so both are left out on every platform; the app reads such a file into the
+    // attachment's data instead.
     private static AIContent? ToContent(string url, string mediaType)
     {
         if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) return new DataContent(url);
-        return Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new UriContent(uri, mediaType) : null;
+        if (url.StartsWith('/') || url.StartsWith('\\')) return null;
+
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri) && !uri.IsFile && !uri.IsUnc ? new UriContent(uri, mediaType) : null;
     }
 
     private static string MediaType(BitAiAttachment attachment) =>

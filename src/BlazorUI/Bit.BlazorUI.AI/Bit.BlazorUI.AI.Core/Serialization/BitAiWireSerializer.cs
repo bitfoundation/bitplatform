@@ -153,7 +153,11 @@ public static class BitAiWireSerializer
     /// <para>
     /// The snapshot comes from the browser, so no message of it speaks with more authority than the user: an assistant
     /// message stays one, and every other role (<c>system</c>, <c>developer</c>, <c>tool</c>, a custom one) comes back as
-    /// a <see cref="BitAiRole.User"/> message. The server's instructions belong in its own chat options.
+    /// a <see cref="BitAiRole.User"/> message. For the same reason the request's <see cref="BitAiRequestOptions.SystemPrompt"/>
+    /// is dropped, and a <see cref="BitAiToolChoice"/> forcing a specific tool is kept only when that tool is one of the
+    /// request's own <see cref="BitAiRequest.Tools"/> (a tool the browser runs): the browser can neither speak with the
+    /// authority of the system nor force a function of the server. The server's instructions and tool choice belong in its
+    /// own chat options.
     /// </para>
     /// </remarks>
     public static BitAiRequest ToRequest(
@@ -166,6 +170,7 @@ public static class BitAiWireSerializer
 
         try
         {
+            var tools = snapshot.Tools?.Where(t => t is not null).ToArray() ?? [];
             var messages = (snapshot.Messages ?? [])
                 .Select(m => BitAiConversationSerializer.ToMessage(FromBrowser(m), options, conversation: null))
                 .ToArray();
@@ -173,8 +178,8 @@ public static class BitAiWireSerializer
             return new BitAiRequest(messages)
             {
                 ConversationId = snapshot.ConversationId,
-                Options = snapshot.Options,
-                Tools = snapshot.Tools?.Where(t => t is not null).ToArray() ?? [],
+                Options = FromBrowser(snapshot.Options, tools),
+                Tools = tools,
                 Services = services,
                 Context = BitAiConversationSerializer.FromJsonDictionary(snapshot.Context),
             };
@@ -185,6 +190,19 @@ public static class BitAiWireSerializer
             // from the browser that is a bad request, never a server error.
             throw new JsonException($"The JSON is not a valid BitAi request: {exception.Message}", exception);
         }
+    }
+
+    // What the browser asked for, less what only the server may decide: a system prompt, and forcing a tool of its own.
+    private static BitAiRequestOptions? FromBrowser(BitAiRequestOptions? options, BitAiToolDefinition[] tools)
+    {
+        if (options is null) return null;
+
+        var forcesServerTool = options.ToolChoice is { ToolName: { } toolName }
+                               && !tools.Any(t => string.Equals(t.Name, toolName, StringComparison.Ordinal));
+
+        if (options.SystemPrompt is null && !forcesServerTool) return options;
+
+        return options with { SystemPrompt = null, ToolChoice = forcesServerTool ? null : options.ToolChoice };
     }
 
     // What the browser sent, with the collections a JSON null can leave unset filled in and the role capped at the user's.

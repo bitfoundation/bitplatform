@@ -188,6 +188,36 @@ public class BitAiWireFormatTests
     }
 
     [TestMethod]
+    public void AMemberOfANewerVersionReadsAsTheOneThatSaysTheLeast()
+    {
+        // A newer server adds a member to an enumeration: an addition, which an older reader skips rather than failing on.
+        var completed = (BitAiMessageCompletedEvent)BitAiWireSerializer.Deserialize("""{"type":"message.completed","finishReason":"paused"}""")!;
+        Assert.AreEqual(BitAiFinishReason.Unknown, completed.FinishReason);
+
+        var error = (BitAiErrorEvent)BitAiWireSerializer.Deserialize("""{"type":"error","error":{"message":"boom","kind":"quantum"}}""")!;
+        Assert.AreEqual("boom", error.Error.Message);
+        Assert.AreEqual(BitAiErrorKind.Unknown, error.Error.Kind);
+
+        var step = (BitAiAgentStepCompletedEvent)BitAiWireSerializer.Deserialize("""{"type":"agent.step.completed","runId":"r","stepId":"s","status":"deferred"}""")!;
+        Assert.AreEqual(BitAiAgentStepStatus.Completed, step.Status);
+
+        var undefinedNumber = (BitAiMessageCompletedEvent)BitAiWireSerializer.Deserialize("""{"type":"message.completed","finishReason":99}""")!;
+        Assert.AreEqual(BitAiFinishReason.Unknown, undefinedNumber.FinishReason);
+
+        Assert.AreEqual(BitAiFinishReason.ContentFilter,
+            ((BitAiMessageCompletedEvent)BitAiWireSerializer.Deserialize("""{"type":"message.completed","finishReason":"contentFilter"}""")!).FinishReason,
+            "A member this version knows still reads as itself.");
+    }
+
+    [TestMethod]
+    public void AnUnknownDecisionIsARejection()
+    {
+        var approval = BitAiWireSerializer.DeserializeApproval("""{"toolCallId":"t1","toolName":"delete","decision":"approvedOnce"}""");
+
+        Assert.AreEqual(BitAiApprovalDecision.Rejected, approval.Decision);
+    }
+
+    [TestMethod]
     public void WhatIsNotWireDataIsLeftOut()
     {
         var error = new BitAiError("boom") { Exception = new InvalidOperationException("secret") };

@@ -101,19 +101,22 @@ public static class BitAiWebSocketEndpointRouteBuilderExtensions
     /// <para>
     /// The socket is closed normally after the last event. A first message that is not a request closes it with
     /// <see cref="WebSocketCloseStatus.InvalidPayloadData"/>, and one too large with
-    /// <see cref="WebSocketCloseStatus.MessageTooBig"/>. An exception of the handler ends the stream with a terminal
-    /// <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its own text never reaches the client.
+    /// <see cref="WebSocketCloseStatus.MessageTooBig"/>. An exception of the handler, or an event the wire format cannot
+    /// write, ends the stream with a terminal <see cref="BitAiErrorEvent"/> holding a generic message, and is logged; its
+    /// own text never reaches the client.
     /// </para>
     /// <para>
     /// A decision the client sends on a call this reply asked about goes to <see cref="BitAiWebSocketEndpointOptions.OnApproval"/>
     /// (the app's <see cref="BitAiApprovalBroker"/> by default), which the handler is typically awaiting
     /// (<see cref="BitAiApprovalBroker.WaitAsync"/>). The decision arrives on the connection streaming the call, so the
-    /// broker of the instance holding the call takes it, with no sticky session.
+    /// broker of the instance holding the call takes it, with no sticky session; and the broker is told about the call
+    /// before its <see cref="BitAiToolApprovalRequestedEvent"/> is sent, so a decision arriving before the handler waits
+    /// for it is kept for it.
     /// </para>
     /// <para>
     /// Everything in the request comes from the client: <c>ToChatOptions</c> (Bit.BlazorUI.AI.ChatClient) lets the
     /// server's options win over what it asks for, and <see cref="BitAiWireSerializer.ToRequest"/> hands the handler no
-    /// message with a role above the user's.
+    /// message with a role above the user's, no system prompt and no choice forcing a tool the client did not declare.
     /// </para>
     /// </remarks>
     public static IEndpointConventionBuilder MapBitAiWebSocket(
@@ -227,15 +230,21 @@ public static class BitAiWebSocketEndpointRouteBuilderExtensions
         var onApproval = options.OnApproval ?? SubmitToBroker;
         var receiving = ReceiveDecisionsAsync(socket, http, asked, onApproval, options.Serializer, logger, stop);
 
+        // Told to the broker even when an app's own OnApproval takes the decisions, which typically hands them to it too.
+        var expected = new BitAiAskedCalls(http.RequestServices.GetService<BitAiApprovalBroker>());
+
         try
         {
             await foreach (var evt in BitAiServerStreams.Guard(() => handler(request, http, stop.Token), logger, stop.Token).ConfigureAwait(false))
             {
-                // Recorded before it is sent, so a decision made the moment it arrives is already expected.
+                // Recorded before it is sent, so a decision made the moment it arrives is already expected - here and by
+                // the broker, which keeps it until the handler waits for it.
                 if (evt is BitAiToolApprovalRequestedEvent approval) asked.TryAdd(approval.ToolCallId, 0);
+                expected.Record(evt);
 
-                var json = Encoding.UTF8.GetBytes(BitAiWireSerializer.Serialize(evt, options.Serializer));
+                var written = BitAiServerStreams.TryWrite(evt, e => Encoding.UTF8.GetBytes(BitAiWireSerializer.Serialize(e, options.Serializer)), logger, out var json);
                 await socket.SendAsync(json, WebSocketMessageType.Text, endOfMessage: true, stop.Token).ConfigureAwait(false);
+                if (!written) break;
             }
 
             await CloseAsync(socket, WebSocketCloseStatus.NormalClosure, null).ConfigureAwait(false);
@@ -251,6 +260,7 @@ public static class BitAiWebSocketEndpointRouteBuilderExtensions
             await Task.WhenAny(receiving, Task.Delay(CloseTimeout, CancellationToken.None)).ConfigureAwait(false);
             await stop.CancelAsync().ConfigureAwait(false);
             await receiving.ConfigureAwait(false);
+            expected.Forget();
         }
     }
 

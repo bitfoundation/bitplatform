@@ -20,7 +20,9 @@ public sealed record BitAiSseTransportOptions
     /// <summary>
     /// The address of the approval endpoint
     /// (<c>MapBitAiApprovals</c> of the Bit.BlazorUI.AI.Server package),
-    /// or <see langword="null"/> for <see cref="Endpoint"/> with <c>/approvals</c> appended.
+    /// or <see langword="null"/> for <see cref="Endpoint"/> with <c>/approvals</c> appended to its path (ahead of its query
+    /// string, which the approval endpoint is sent too: <c>api/ai/chat?tenant=42</c> posts to
+    /// <c>api/ai/chat/approvals?tenant=42</c>).
     /// </summary>
     public string? ApprovalEndpoint { get; init; }
 
@@ -125,7 +127,7 @@ public sealed class BitAiSseTransport : IBitAiTransport, IBitAiApprovalTransport
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        using var message = new HttpRequestMessage(HttpMethod.Post, _options.ApprovalEndpoint ?? _options.Endpoint.TrimEnd('/') + "/approvals")
+        using var message = new HttpRequestMessage(HttpMethod.Post, _options.ApprovalEndpoint ?? ApprovalAddress(_options.Endpoint))
         {
             Content = new StringContent(BitAiWireSerializer.SerializeApproval(response, _options.Serializer), Encoding.UTF8, "application/json"),
         };
@@ -135,5 +137,15 @@ public sealed class BitAiSseTransport : IBitAiTransport, IBitAiApprovalTransport
 
         // 404: no call was waiting for it any more (its stream ended), which the session treats as nothing to do.
         if (answer.StatusCode is not System.Net.HttpStatusCode.NotFound) answer.EnsureSuccessStatusCode();
+    }
+
+    // The stream endpoint with /approvals appended to its path, keeping its query string and fragment after it.
+    internal static string ApprovalAddress(string endpoint)
+    {
+        var end = endpoint.IndexOfAny(['?', '#']);
+        var path = end < 0 ? endpoint : endpoint[..end];
+        var rest = end < 0 ? string.Empty : endpoint[end..];
+
+        return path.TrimEnd('/') + "/approvals" + rest;
     }
 }
