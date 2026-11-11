@@ -229,6 +229,17 @@ public sealed class IcoCodecTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => IcoEncoder.CreateFavicon(big, [0]));
     }
 
+    [TestMethod]
+    public async Task TheEncoderFitsALargeImageInsideAnIcon()
+    {
+        // The IImageEncoder path is what a capability check promises: it fits the image rather than refusing it.
+        using var photo = ImageBuffer.Create(1024, 512, new Rgba32(10, 20, 30));
+        var encoded = await new IcoEncoder().EncodeAsync(photo, new ImageExportOptions { Format = ImageFormat.Ico });
+        var entry = IcoDecoder.ReadDirectory(encoded.Data)[0];
+        Assert.AreEqual(256, entry.Width);
+        Assert.AreEqual(128, entry.Height);
+    }
+
     /// <summary>An icon whose one image is a bitmap: the header, an optional palette, bottom-up rows, and the mask.</summary>
     private static byte[] BitmapIcon(int width, int height, int bpp, Func<int, int, byte[]> pixel, Func<int, int, bool> transparent, Rgba32[]? palette = null, bool withMask = true)
     {

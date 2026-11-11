@@ -88,7 +88,7 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
         var nativeDecodable = decodable.ToHashSet();
         var nativeEncodable = encodable.ToHashSet();
         decodable.UnionWith(ImageCapabilities.ManagedDecodableFormats);
-        if (environment == ImageEnvironment.BrowserWebAssembly) encodable.UnionWith([ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.Ico]);
+        if (environment == ImageEnvironment.BrowserWebAssembly) encodable.UnionWith(ImageCapabilities.ManagedOnlyEncodableFormats);
         else encodable.UnionWith(ImageCapabilities.ManagedEncodableFormats);
 
         var maxDimension = report.MaxCanvasDimension > 0 ? report.MaxCanvasDimension : 4096;

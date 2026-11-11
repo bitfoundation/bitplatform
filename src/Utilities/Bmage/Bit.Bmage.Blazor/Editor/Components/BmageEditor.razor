@@ -186,7 +186,8 @@
     /// The tools the editor offers, or null for every one. The built-in toolbar shows only these, in this order, and
     /// <see cref="SetTool"/> selects no other: a cropper is <c>[EditorToolKind.Crop, EditorToolKind.Pan]</c>, an
     /// annotation tool leaves the painting and selection tools out. The editor starts with <see cref="EditorToolKind.Select"/>
-    /// when it is offered, and otherwise with the first tool listed.
+    /// when it is offered, and otherwise with the first tool listed. An empty list offers no tool: the pointer then edits
+    /// nothing, though the panels and the public actions still work.
     /// </summary>
     [Parameter] public IReadOnlyList<EditorToolKind>? Tools { get; set; }
 
@@ -295,8 +296,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        // A tool taken away while active gives way to the default one.
-        if (!IsToolOffered(_tool)) SelectTool(DefaultTool);
+        // A tool taken away while active gives way to the default one (a white-balance pick keeps its eyedropper).
+        if (!IsToolUsable && _tool != DefaultTool) SelectTool(DefaultTool);
         if (Image is not null && !ReferenceEquals(_loadedParameter, Image))
         {
             _loadedParameter = Image;
@@ -575,7 +576,8 @@
 
     private async Task OnDragStart(CanvasPointerArgs e)
     {
-        if (_session is null) return;
+        // With no tool offered (an empty Tools list) the pointer edits nothing.
+        if (_session is null || !IsToolUsable) return;
         // The original is only to look at: everything but panning waits until the comparison ends.
         if (_comparing && _tool != EditorToolKind.Pan) return;
         // Crop works on the preview (ApplyCropAsync maps it to full resolution); everything else edits the document.
@@ -1408,7 +1410,14 @@
     public bool IsToolOffered(EditorToolKind tool) => Tools is not { } tools || tools.Contains(tool);
 
     /// <summary>The tool the editor returns to after a crop or a pick: select when offered, else the first one offered.</summary>
+    /// <remarks>With no tool offered it stays <see cref="EditorToolKind.Select"/>, which <see cref="IsToolUsable"/> then keeps from acting.</remarks>
     private EditorToolKind DefaultTool => IsToolOffered(EditorToolKind.Select) || Tools is not { Count: > 0 } tools ? EditorToolKind.Select : tools[0];
+
+    /// <summary>
+    /// True when the active tool may act on the pointer: it is offered, or it is the eyedropper of a white-balance pick,
+    /// which the Adjust tab starts whether or not the eyedropper is offered as a tool.
+    /// </summary>
+    private bool IsToolUsable => IsToolOffered(_tool) || (_pickingWhiteBalance && _tool == EditorToolKind.Eyedropper);
 
     /// <summary>Switches the active tool. A tool the editor does not offer (see <see cref="Tools"/>) is not selected.</summary>
     public void SetTool(EditorToolKind tool)

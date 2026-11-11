@@ -40,8 +40,9 @@ internal sealed class LuminancePlane
         int across = Math.Min(factor, area.Width), down = Math.Min(factor, area.Height);
         int width = area.Width / across, height = area.Height / down;
         var values = new byte[width * height];
-        var sums = new int[width];
-        var count = across * down * 256;
+        // A block of a large image at a small analysis size holds tens of thousands of pixels: its sum outgrows an int.
+        var sums = new long[width];
+        var count = (long)across * down * 256;
         for (var y = 0; y < height; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();

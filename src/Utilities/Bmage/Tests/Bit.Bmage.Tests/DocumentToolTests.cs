@@ -284,6 +284,16 @@ public sealed class ImageSharpnessTests
     }
 
     [TestMethod]
+    public void ALargeBlockAveragesWithoutOverflowing()
+    {
+        // 250 x 250 white pixels a block sum to about 4e9, past an int: the average must still be white.
+        using var white = ImageBuffer.Create(4000, 2000, Rgba32.White);
+        var plane = LuminancePlane.Create(white, new Rectangle(0, 0, white.Width, white.Height), 16, CancellationToken.None);
+        Assert.AreEqual(250, plane.Factor);
+        Assert.IsTrue(plane.Values.All(v => v == 255), "Every block of a white image is white.");
+    }
+
+    [TestMethod]
     public void APhotoAndItsReductionToTheAnalysisSizeScoreAlike()
     {
         using var large = Pages.Text(1024, 768);

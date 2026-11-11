@@ -215,9 +215,18 @@ public sealed class IcoEncoder : IImageEncoder
 
     public IReadOnlyCollection<ImageFormat> Formats => SupportedFormats;
 
-    /// <summary>Writes <paramref name="image"/> as a one-image icon file.</summary>
+    /// <summary>
+    /// Writes <paramref name="image"/> as a one-image icon file. An image larger than 256 pixels either way is first
+    /// scaled down, keeping its shape, to fit inside 256 x 256; <see cref="CreateFavicon"/> makes square icons.
+    /// </summary>
     public ValueTask<EncodedImage> EncodeAsync(ImageBuffer image, ImageExportOptions options, CancellationToken cancellationToken = default)
-        => new(Encode([image], options, cancellationToken));
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (image.Width <= MaxSize && image.Height <= MaxSize) return new(Encode([image], options, cancellationToken));
+        using var fitted = new ResizeOperation(MaxSize, MaxSize, ResizeMode.Max, ResamplingFilter.Auto, Anchor.Center, Rgba32.Transparent)
+            .Apply(image, new OperationContext(cancellationToken: cancellationToken));
+        return new(Encode([fitted], options, cancellationToken));
+    }
 
     /// <summary>Writes the images, one entry each, into an icon file; each is at most 256 pixels either way.</summary>
     /// <exception cref="ArgumentException">No images were given, more than 256, or one is larger than 256 pixels.</exception>

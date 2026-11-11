@@ -251,6 +251,8 @@
 
     private async Task UseSample()
     {
+        // A run still reads the current source; it is not swapped out (and disposed) under it.
+        if (_busy) return;
         _error = null;
         await SetSourceAsync(SamplePage());
     }
@@ -311,7 +313,8 @@
         finally
         {
             _busy = false;
-            StateHasChanged();
+            if (_disposed) ReleaseImages();
+            else StateHasChanged();
         }
     }
 
@@ -370,7 +373,16 @@
         return new BlurFilter(0.8f).Apply(tilted, OperationContext.Default);
     }
 
+    private bool _disposed;
+
     public void Dispose()
+    {
+        _disposed = true;
+        // A run under way still reads the source: it releases the images itself once it is done.
+        if (!_busy) ReleaseImages();
+    }
+
+    private void ReleaseImages()
     {
         _source?.Dispose();
         _result?.Dispose();

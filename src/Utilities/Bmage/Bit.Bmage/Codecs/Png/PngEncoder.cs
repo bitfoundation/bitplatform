@@ -85,26 +85,26 @@ public sealed class PngEncoder : IImageEncoder
     {
         var width = image.Width;
         var height = image.Height;
-            var metadata = image.Metadata?.Apply(options.Metadata, width, height);
-            if (metadata is { IsEmpty: false })
+        var metadata = image.Metadata?.Apply(options.Metadata, width, height);
+        if (metadata is { IsEmpty: false })
+        {
+            if (!metadata.IccProfile.IsEmpty)
             {
-                if (!metadata.IccProfile.IsEmpty)
-                {
-                    var body = new MemoryStream();
-                    body.Write("ICC Profile\0\0"u8);
-                    using (var zs = new ZLibStream(body, CompressionLevel.Optimal, leaveOpen: true)) zs.Write(metadata.IccProfile.Span);
-                    PngContainer.WriteChunk(ms, "iCCP", body.ToArray());
-                }
-                if (metadata.Exif is { IsEmpty: false } exif) PngContainer.WriteChunk(ms, "eXIf", exif.ToTiff());
-                if (!metadata.Xmp.IsEmpty)
-                {
-                    var body = new MemoryStream();
-                    body.Write("XML:com.adobe.xmp\0"u8);
-                    body.Write([0, 0, 0, 0]);
-                    body.Write(metadata.Xmp.Span);
-                    PngContainer.WriteChunk(ms, "iTXt", body.ToArray());
-                }
+                var body = new MemoryStream();
+                body.Write("ICC Profile\0\0"u8);
+                using (var zs = new ZLibStream(body, CompressionLevel.Optimal, leaveOpen: true)) zs.Write(metadata.IccProfile.Span);
+                PngContainer.WriteChunk(ms, "iCCP", body.ToArray());
             }
+            if (metadata.Exif is { IsEmpty: false } exif) PngContainer.WriteChunk(ms, "eXIf", exif.ToTiff());
+            if (!metadata.Xmp.IsEmpty)
+            {
+                var body = new MemoryStream();
+                body.Write("XML:com.adobe.xmp\0"u8);
+                body.Write([0, 0, 0, 0]);
+                body.Write(metadata.Xmp.Span);
+                PngContainer.WriteChunk(ms, "iTXt", body.ToArray());
+            }
+        }
     }
 
     /// <summary>

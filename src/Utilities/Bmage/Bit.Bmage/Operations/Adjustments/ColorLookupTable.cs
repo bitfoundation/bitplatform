@@ -79,7 +79,8 @@ public sealed class ColorLookupTable
 
     /// <summary>
     /// Reads a table in the <c>.cube</c> format (Adobe, DaVinci Resolve, most grading tools): <c>LUT_3D_SIZE</c>,
-    /// optional <c>TITLE</c>, <c>DOMAIN_MIN</c> and <c>DOMAIN_MAX</c>, then one <c>r g b</c> line per entry.
+    /// optional <c>TITLE</c>, <c>DOMAIN_MIN</c> and <c>DOMAIN_MAX</c> (or Resolve's <c>LUT_3D_INPUT_RANGE min max</c>,
+    /// one domain for all three channels), then one <c>r g b</c> line per entry.
     /// </summary>
     /// <remarks>
     /// A domain other than [0,1] is folded into the values, so the table always takes inputs in [0,1]. One-dimensional
@@ -95,6 +96,7 @@ public sealed class ColorLookupTable
         float[]? values = null;
         var count = 0;
         var lineNumber = 0;
+        Span<float> inputRange = stackalloc float[2];
         foreach (var raw in text.AsSpan().EnumerateLines())
         {
             lineNumber++;
@@ -128,7 +130,14 @@ public sealed class ColorLookupTable
                 {
                     domainMax = ReadTriple(rest, lineNumber);
                 }
-                // Other keywords (LUT_3D_INPUT_RANGE and vendor extensions) do not change the table's values.
+                else if (keyword.SequenceEqual("LUT_3D_INPUT_RANGE"))
+                {
+                    // Resolve's spelling of the domain: one range for every channel.
+                    ReadNumbers(rest, lineNumber, inputRange);
+                    domainMin = new Vector3(inputRange[0]);
+                    domainMax = new Vector3(inputRange[1]);
+                }
+                // Other keywords (vendor extensions) do not change the table's values.
                 continue;
             }
             if (values is null) throw Error(lineNumber, "Values come before LUT_3D_SIZE.");
@@ -208,18 +217,26 @@ public sealed class ColorLookupTable
     private static Vector3 ReadTriple(ReadOnlySpan<char> text, int lineNumber)
     {
         Span<float> parts = stackalloc float[3];
+        ReadNumbers(text, lineNumber, parts);
+        return new Vector3(parts[0], parts[1], parts[2]);
+    }
+
+    /// <summary>Reads exactly <c>parts.Length</c> finite numbers from <paramref name="text"/> into <paramref name="parts"/>.</summary>
+    private static void ReadNumbers(ReadOnlySpan<char> text, int lineNumber, Span<float> parts)
+    {
         var found = 0;
         foreach (var range in text.SplitAny(' ', '\t'))
         {
             var part = text[range];
             if (part.IsEmpty) continue;
-            if (found == 3 || !float.TryParse(part, NumberStyles.Float, CultureInfo.InvariantCulture, out parts[found]) || !float.IsFinite(parts[found]))
-                throw Error(lineNumber, "Expected three numbers.");
+            if (found == parts.Length || !float.TryParse(part, NumberStyles.Float, CultureInfo.InvariantCulture, out parts[found]) || !float.IsFinite(parts[found]))
+                throw Error(lineNumber, ExpectedNumbers(parts.Length));
             found++;
         }
-        if (found != 3) throw Error(lineNumber, "Expected three numbers.");
-        return new Vector3(parts[0], parts[1], parts[2]);
+        if (found != parts.Length) throw Error(lineNumber, ExpectedNumbers(parts.Length));
     }
+
+    private static string ExpectedNumbers(int count) => count == 3 ? "Expected three numbers." : "Expected two numbers.";
 
     private static FormatException Error(int line, string message) => new($"Line {line} of the .cube text: {message}");
 }

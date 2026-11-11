@@ -252,6 +252,18 @@ public sealed class ColorLutTests
     }
 
     [TestMethod]
+    public void ResolvesInputRangeIsTheDomain()
+    {
+        // Resolve writes the domain as LUT_3D_INPUT_RANGE: [0,2] here, so an input of 1 is half way along each axis.
+        var text = "LUT_3D_SIZE 3\nLUT_3D_INPUT_RANGE 0.0 2.0\n" + string.Concat(
+            from b in Enumerable.Range(0, 3) from g in Enumerable.Range(0, 3) from r in Enumerable.Range(0, 3)
+            select $"{r / 2.0} {g / 2.0} {b / 2.0}\n");
+        var table = ColorLookupTable.ParseCube(text);
+        Assert.AreEqual(0.5f, table.Lookup(Vector3.One).X, 1e-5);
+        Assert.AreEqual(0.25f, table.Lookup(new Vector3(0.5f, 0.5f, 0.5f)).Y, 1e-5);
+    }
+
+    [TestMethod]
     [DataRow("0 0 0\n", "before LUT_3D_SIZE")]
     [DataRow("LUT_3D_SIZE 1\n", "between")]
     [DataRow("LUT_3D_SIZE 99\n", "between")]

@@ -29,8 +29,10 @@ public sealed record QuantizedImage(Rgba32[] Palette, byte[] Indices, bool IsExa
 /// until there are as many boxes as colours allowed, and each box becomes the mean of the pixels in it.
 /// </para>
 /// <para>
-/// The extra memory is a byte per pixel for the indices, about a megabyte of tables, and with dithering two rows of
-/// error terms.
+/// The extra memory is a byte per pixel for the indices and, with dithering, two rows of error terms. An image that
+/// needs a palette chosen (more colours than allowed) also takes about 9.5 MB of tables for each call: a count and
+/// four channel sums for each of the 2^18 cells (1 MB and 8 MB) and a nearest-entry cache of the same cells (0.5 MB).
+/// An image with few enough colours to keep them all needs none of these.
 /// </para>
 /// </remarks>
 internal static class ColorQuantizer

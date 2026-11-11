@@ -22,7 +22,13 @@ public sealed record ImageCapabilities
     /// <summary>What the managed encoders write, in any environment.</summary>
     internal static IReadOnlySet<ImageFormat> ManagedEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Gif, ImageFormat.Ico };
 
-    /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP and WebP, and GIF and AVIF decoding.</summary>
+    /// <summary>
+    /// The part of <see cref="ManagedEncodableFormats"/> a browser canvas does not write, so the managed
+    /// encoders write it in every environment, WebAssembly included, and no browser encoder is registered for it.
+    /// </summary>
+    internal static IReadOnlySet<ImageFormat> ManagedOnlyEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.Ico };
+
+    /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP, WebP, GIF and ICO, and AVIF decoding.</summary>
     public static ImageCapabilities Managed { get; } = new()
     {
         Environment = ImageEnvironment.Server,
