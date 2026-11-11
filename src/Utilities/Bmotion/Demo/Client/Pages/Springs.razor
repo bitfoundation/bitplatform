@@ -75,6 +75,45 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Named springs, measured</h3>
+    <p>
+        <strong>BmSprings</strong> names the springs interfaces reach for - <em>Smooth</em> for chrome,
+        <em>Snappy</em> for clicks, <em>Bouncy</em> for lively entrances, <em>Gentle</em> for large surfaces,
+        <em>Stiff</em> for small state changes, <em>Heavy</em> for things with weight and <em>Responsive</em> for
+        following input. <strong>spring.Analyze()</strong> runs the engine's own spring driver on a virtual clock and
+        reports what it does on screen: when it comes to rest, how far it overshoots, its damping ratio and a 60 Hz
+        trace (drawn under each box). Use it to choose between springs on evidence, or to time something else to one.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var named in _named)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">BmSprings.@(named.Name)()</span>
+                <Bmotion Animate="@(_namedOn ? Bm.To(x: 80) : Bm.To(x: 0))" Transition="@named.Spring">
+                    <div class="box box-sm" />
+                </Bmotion>
+                <svg viewBox="0 0 100 40" width="120" height="48" aria-hidden="true">
+                    <line x1="0" y1="10" x2="100" y2="10" stroke="currentColor" stroke-opacity=".25" stroke-dasharray="2 2" />
+                    <polyline fill="none" stroke="currentColor" stroke-width="1.5" points="@Trace(named.Analysis)" />
+                </svg>
+                <span class="demo-label">
+                    rests @named.Analysis.SettlingTime.ToString("0.00")s ·
+                    @(named.Analysis.Overshoot > 0.001 ? $"{named.Analysis.Overshoot:P0} past" : "no overshoot") ·
+                    ζ @named.Analysis.DampingRatio.ToString("0.00")
+                </span>
+            </div>
+        }
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _namedOn = !_namedOn)">@(_namedOn ? "Send back" : "Animate")</button>
+    </div>
+
+    <CodeSnippet Code="@_namedCode" />
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Mass and a starting push</h3>
     <p>
         <strong>mass</strong> is the inertia the spring has to move. With the stiffness and damping held, a heavier
@@ -245,6 +284,58 @@
     ];
 
     void Remount() => _mountKey++;
+
+    private bool _namedOn;
+
+    private record NamedSpring(string Name, BmSpring Spring, BmSpringAnalysis Analysis);
+
+    private static NamedSpring Named(string name, BmSpring spring) => new(name, spring, spring.Analyze());
+
+    private readonly NamedSpring[] _named =
+    [
+        Named(nameof(BmSprings.Smooth), BmSprings.Smooth()),
+        Named(nameof(BmSprings.Snappy), BmSprings.Snappy()),
+        Named(nameof(BmSprings.Bouncy), BmSprings.Bouncy()),
+        Named(nameof(BmSprings.Gentle), BmSprings.Gentle()),
+        Named(nameof(BmSprings.Stiff), BmSprings.Stiff()),
+        Named(nameof(BmSprings.Heavy), BmSprings.Heavy()),
+        Named(nameof(BmSprings.Responsive), BmSprings.Responsive()),
+    ];
+
+    // The trace on a shared 1.5 s axis, so the springs compare at a glance: 0 at the bottom, the target on the dashed line.
+    private static string Trace(BmSpringAnalysis a)
+    {
+        const double axisSeconds = 1.5;
+        var points = new System.Text.StringBuilder();
+        for (int i = 0; i < a.Samples.Count; i++)
+        {
+            double x = Math.Min(100, i / (double)a.SampleRate / axisSeconds * 100);
+            double y = 40 - (a.Samples[i] * 30);
+            points.Append(System.FormattableString.Invariant($"{x:0.##},{y:0.##} "));
+            if (x >= 100) break;
+        }
+        return points.ToString();
+    }
+
+    private const string _namedCode = """
+        @using Bit.Bmotion
+
+        @* A named spring: say how it should feel, not how stiff it is. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))" Transition="BmSprings.Snappy()">
+            <div class="box-sm" />
+        </Bmotion>
+
+        @code {
+            private bool _on;
+
+            // Measured, not guessed: the engine's own driver, stepped at 60 Hz as on screen.
+            private readonly BmSpringAnalysis _bouncy = BmSprings.Bouncy().Analyze();
+            // _bouncy.SettlingTime  - seconds until it rests (its completion)
+            // _bouncy.Overshoot     - fraction of the distance it travels past the target
+            // _bouncy.DampingRatio  - 1 = critical; below 1 it bounces
+            // _bouncy.Samples       - its value 60 times a second, for a chart
+        }
+        """;
 
     private const string _massCode = """
         @using Bit.Bmotion

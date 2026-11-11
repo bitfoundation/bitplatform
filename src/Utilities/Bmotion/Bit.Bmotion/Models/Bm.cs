@@ -197,6 +197,34 @@ public static class Bm
     }
 
     /// <summary>
+    /// A numeric motion value computed from several others, recomputed whenever any of them changes - motion.dev's
+    /// <c>useTransform(() =&gt; ...)</c> form. It tracks its own velocity, so it can feed a spring follower, another
+    /// range map or a binding like any value:
+    /// <code>
+    /// var x = Bm.Value(0.0);
+    /// var y = Bm.Value(0.0);
+    /// var distance = Bm.Combine(() =&gt; Math.Sqrt(x.Value * x.Value + y.Value * y.Value), x, y);
+    /// var glow = distance.Transform([0, 300], [0, 1]);
+    /// </code>
+    /// A change of one input recomputes it once; setting several inputs in a row recomputes it once per change. Dispose
+    /// it to detach it from its inputs.
+    /// </summary>
+    /// <param name="compute">Produces the value; read the inputs' <c>Value</c> inside.</param>
+    /// <param name="inputs">The motion values that trigger a recomputation when they change.</param>
+    public static BmValue<double> Combine(Func<double> compute, params BmValue<double>[] inputs)
+    {
+        ArgumentNullException.ThrowIfNull(compute);
+        ArgumentNullException.ThrowIfNull(inputs);
+        var combined = new BmValue<double>($"mv_{Guid.NewGuid():N}", compute());
+        foreach (var input in inputs)
+        {
+            ArgumentNullException.ThrowIfNull(input, nameof(inputs));
+            combined.AttachUpstream(input.Subscribe(_ => combined.SetSync(compute())));
+        }
+        return combined;
+    }
+
+    /// <summary>
     /// A derived motion value carrying <paramref name="source"/>'s velocity in units per second -
     /// motion.dev's <c>useVelocity</c>. Feed it into a range map to drive skew-on-scroll,
     /// speed-reactive blur and similar effects:

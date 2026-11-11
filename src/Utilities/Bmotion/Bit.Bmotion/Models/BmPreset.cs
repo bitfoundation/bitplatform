@@ -42,9 +42,15 @@ public sealed record BmPreset
     public BmTransition? Transition { get; init; }
 
     /// <summary>
+    /// What the element does when motion is reduced (<see cref="Bmotion.ReducedMotion"/>, which wins when set);
+    /// <c>null</c> is <see cref="BmReducedMotionBehavior.Reduce"/>.
+    /// </summary>
+    public BmReducedMotionBehavior? ReducedMotion { get; init; }
+
+    /// <summary>
     /// Layers <paramref name="over"/> onto <paramref name="under"/>: each target merges property by property (the
     /// right-hand side's value wins where both set one - so a fade plus a slide fades <em>and</em> slides), and the
-    /// right-hand side's transition and viewport win when it has them.
+    /// right-hand side's transition, viewport and reduced-motion behaviour win when it has them.
     /// </summary>
     public static BmPreset operator +(BmPreset under, BmPreset over)
     {
@@ -61,6 +67,7 @@ public sealed record BmPreset
             WhileInView = BmProps.Merge(under.WhileInView, over.WhileInView),
             Viewport = over.Viewport ?? under.Viewport,
             Transition = over.Transition ?? under.Transition,
+            ReducedMotion = over.ReducedMotion ?? under.ReducedMotion,
         };
     }
 }

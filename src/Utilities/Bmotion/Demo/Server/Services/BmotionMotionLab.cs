@@ -95,7 +95,22 @@ public static class BmotionMotionLab
                          "which cannot be configured into a spring that never settles.");
         }
 
-        return Measure(parsed.Canonical, KindOf(transition), from, to, frames, warnings);
+        var measured = Measure(parsed.Canonical, KindOf(transition), from, to, frames, warnings);
+
+        // A spring's character is in its physics, which the recording only shows: the library's own analysis gives the
+        // damping ratio and period it runs with (derived from bounce/duration when those were given).
+        if (transition is BmSpring spring && from != to)
+        {
+            var physics = spring.Analyze(from, to);
+            measured = measured with
+            {
+                DampingRatio = Round(physics.DampingRatio),
+                Damping = physics.DampingKind.ToString(),
+                OscillationPeriodSeconds = physics.OscillationPeriod is { } period ? Round(period) : null,
+            };
+        }
+
+        return measured;
     }
 
     /// <summary>

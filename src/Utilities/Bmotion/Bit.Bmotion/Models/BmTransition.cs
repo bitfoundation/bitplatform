@@ -321,6 +321,22 @@ public sealed class BmSpring : BmTransition
     /// </summary>
     public double? Duration { get; set; }
 
+    /// <summary>
+    /// Measures how this spring moves from <paramref name="from"/> to <paramref name="to"/> - settling time,
+    /// overshoot, peak velocity, damping ratio, oscillation period and a 60 Hz trace - by running the engine's own
+    /// spring driver on a virtual clock, so the numbers are what the animation does on screen. Its
+    /// <see cref="Velocity"/> is the initial velocity; delays and repeats are left out.
+    /// <code>
+    /// var a = BmSprings.Bouncy().Analyze();
+    /// // a.SettlingTime ≈ 0.83 s, a.Overshoot ≈ 0.11 (11 % past the target), a.TargetCrossings == 3
+    /// </code>
+    /// Use it to match a CSS transition or a sequence to a spring, to choose between springs, or to chart one.
+    /// </summary>
+    /// <param name="from">Where the motion starts. Default 0.</param>
+    /// <param name="to">Where it ends. Default 1, so <see cref="BmSpringAnalysis.PeakVelocity"/> reads as distances per second.</param>
+    /// <exception cref="ArgumentException">A value or the spring's configuration isn't finite.</exception>
+    public BmSpringAnalysis Analyze(double from = 0, double to = 1) => BmotionSpringAnalyzer.Analyze(this, from, to);
+
     private protected override BmotionTransitionConfig CreateConfig()
     {
         var c = new BmotionTransitionConfig

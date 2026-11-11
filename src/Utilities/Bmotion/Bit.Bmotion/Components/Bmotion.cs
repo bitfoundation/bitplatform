@@ -109,6 +109,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public BmPreset? Preset { get; set; }
 
     /// <summary>
+    /// What this element does when motion is reduced (see <see cref="BitBmotionOptions.ReducedMotion"/> and
+    /// <see cref="BmotionConfig"/>): <see cref="BmReducedMotionBehavior.Reduce"/> - the default - lands movement,
+    /// scaling, rotation and size changes at once and keeps fades, colours and filters;
+    /// <see cref="BmReducedMotionBehavior.Instant"/> lands everything at once, fades too (decorative motion, a large
+    /// crossfade); <see cref="BmReducedMotionBehavior.Full"/> keeps the whole animation (motion that carries
+    /// information: a progress bar filling, an element following a drag). Unset, the <see cref="Preset"/>'s applies.
+    /// It decides <em>how</em> motion is reduced here, never <em>whether</em> it is - that stays the user's and the app's.
+    /// </summary>
+    [Parameter] public BmReducedMotionBehavior? ReducedMotion { get; set; }
+
+    /// <summary>
     /// Drives <see cref="Animate"/> from <b>scroll position instead of time</b>, on the browser's
     /// native <c>ScrollTimeline</c>/<c>ViewTimeline</c> where available - so the animation runs off
     /// the main thread with no scroll handler and no per-frame interop:
@@ -759,7 +770,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (EffectiveTransition is { When: BmWhen.AfterChildren } && Variants != null)
                 return (props, InstantTransition(), InstantTransition());
             var normal = BuildNormalTransition(props);
-            return (props, normal, BuildReducedTransition(normal));
+            return (props, normal, ReducedVariant(normal));
         }
 
         if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
@@ -770,10 +781,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // The reduced transition animates its retained properties with the normal one itself,
             // so the delay goes on a copy.
             var normal = BuildNormalTransition(props);
-            var reduced = BuildReducedTransition(normal);
             var full = normal?.Clone() ?? new BmotionTransitionConfig();
             double delay = VariantCtx.GetChildDelay(_variantChildIndex);
             if (delay > 0) full.Delay += delay;
+            // Motion that is kept in full keeps its stagger too.
+            var reduced = ReducedMotionBehavior == BmReducedMotionBehavior.Full ? full : ReducedVariant(normal);
             return (props, full, reduced);
         }
         return null;
@@ -822,6 +834,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private BmotionPrerenderMotionPolicy PrerenderMotionPolicy()
     {
+        if (ReducedMotionBehavior == BmReducedMotionBehavior.Full) return BmotionPrerenderMotionPolicy.Full;
         if (ConfigCtx?.ReduceMotion is bool configReduce)
             return configReduce ? BmotionPrerenderMotionPolicy.Reduced : BmotionPrerenderMotionPolicy.Full;
 
@@ -1839,9 +1852,24 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null, BmTransition? explicitTransition = null)
     {
         var normal = BuildNormalTransition(props, explicitTransition);
-        // Reduced motion: snap transforms/layout but keep opacity/color animating.
-        return ShouldReduceMotion() ? BuildReducedTransition(normal) : normal;
+        // Reduced motion: snap transforms/layout but keep opacity/color animating (or what ReducedMotion says).
+        return IsMotionReduced() ? ReducedVariant(normal) : normal;
     }
+
+    /// <summary>How this element reduces its motion: its own <see cref="ReducedMotion"/>, else its preset's.</summary>
+    private BmReducedMotionBehavior ReducedMotionBehavior
+        => ReducedMotion ?? Preset?.ReducedMotion ?? BmReducedMotionBehavior.Reduce;
+
+    /// <summary>Whether motion is reduced here, and this element gives any of it up (it isn't kept in full).</summary>
+    private bool IsMotionReduced() => ReducedMotionBehavior != BmReducedMotionBehavior.Full && ShouldReduceMotion();
+
+    /// <summary>The transition <paramref name="normal"/> becomes when motion is reduced, by <see cref="ReducedMotionBehavior"/>.</summary>
+    private BmotionTransitionConfig? ReducedVariant(BmotionTransitionConfig? normal) => ReducedMotionBehavior switch
+    {
+        BmReducedMotionBehavior.Full => normal,
+        BmReducedMotionBehavior.Instant => InstantTransition(),
+        _ => BuildReducedTransition(normal),
+    };
 
     /// <summary>
     /// Applies <see cref="BmWhen.AfterChildren"/> to this container's own animation by delaying it
@@ -1852,7 +1880,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private BmotionTransitionConfig? ApplyAfterChildren(BmotionTransitionConfig? config)
     {
         if (EffectiveTransition is not { When: BmWhen.AfterChildren }) return config;
-        if (_ownVariantCtx is null || ShouldReduceMotion()) return config;
+        if (_ownVariantCtx is null || IsMotionReduced()) return config;
         double wait = _ownVariantCtx.MaxChildFinishSeconds();
         if (wait <= 0) return config;
         // BuildNormalTransition already returned a fresh instance, so mutating is safe; a null one
@@ -1901,7 +1929,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private BmotionTransitionConfig BuildEffectiveTransitionWithDelay(double extraDelay, BmProps? props = null)
     {
         // Reduced motion: keep opacity/color animating but skip the stagger delay (accessibility).
-        if (ShouldReduceMotion()) return BuildReducedTransition(BuildNormalTransition(props));
+        if (IsMotionReduced()) return ReducedVariant(BuildNormalTransition(props)) ?? new BmotionTransitionConfig();
 
         // BuildNormalTransition returns a fresh instance (or none existed), so mutating is safe.
         var t = BuildNormalTransition(props) ?? new BmotionTransitionConfig();

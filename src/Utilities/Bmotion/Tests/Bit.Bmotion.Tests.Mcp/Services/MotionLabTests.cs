@@ -517,4 +517,33 @@ public class MotionLabTests
         Assert.AreEqual("Not analysed", result.Path);
         Assert.IsNotNull(result.Error);
     }
+
+    [TestMethod]
+    public async Task Simulate_ASpring_ReportsItsPhysics()
+    {
+        var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 100, damping: 10)", 0, 100);
+
+        Assert.AreEqual(0.5, result.DampingRatio);
+        Assert.AreEqual("Underdamped", result.Damping);
+        Assert.AreEqual(2 * Math.PI / (10 * Math.Sqrt(0.75)), result.OscillationPeriodSeconds!.Value, 1e-3);
+
+        var tween = await BmotionMotionLab.SimulateAsync("tween(0.3)", 0, 100);
+        Assert.IsNull(tween.DampingRatio, "only a spring has a damping ratio");
+        Assert.IsNull(tween.Damping);
+    }
+
+    [TestMethod]
+    [DataRow("spring(stiffness: 300, damping: 20)")]
+    [DataRow("spring(bounce: 0.4, duration: 0.6)")]
+    [DataRow("spring(stiffness: 120, damping: 38, mass: 3)")]
+    public async Task TheLibrarysSpringAnalysis_AgreesWithTheEngineRunOffScreen(string spec)
+    {
+        // Two independent measurements of one spring: the lab plays it through a whole engine and records the frames,
+        // BmSpring.Analyze steps the driver alone. They must agree on when it rests and how far it overshoots.
+        var lab = await BmotionMotionLab.SimulateAsync(spec, 0, 100);
+        var analysis = ((BmSpring)BmotionTransitionSpec.Parse(spec).Transition!).Analyze(0, 100);
+
+        Assert.AreEqual(analysis.SettlingTime, lab.SettleSeconds, 2.0 / 60, $"{spec}: analysis {analysis.SettlingTime}s, engine {lab.SettleSeconds}s");
+        Assert.AreEqual(analysis.Overshoot * 100, lab.OvershootPercent, 1, $"{spec}: analysis {analysis.Overshoot:P2}, engine {lab.OvershootPercent}%");
+    }
 }
