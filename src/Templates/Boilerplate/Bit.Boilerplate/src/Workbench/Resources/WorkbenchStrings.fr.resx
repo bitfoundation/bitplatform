@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Chargement d’autres commandes...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Chargement du planning...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Voilà toutes les commandes du jour.</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Souligné</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Cochez cette case pour continuer.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Joignez un PDF de 5 Mo maximum.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Choisissez au moins une étoile.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Saisissez au moins trois lettres.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Restez à 80 ou moins.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Activez les notifications pour suivre vos commandes.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Avec texte allumé et éteint</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Intégré</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Trop clair pour être lisible sur du blanc.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Restez au moins deux nuits.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Ouvre à</value>

@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Meer bestellingen laden...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Rooster laden...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Dat zijn alle bestellingen van vandaag.</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Onderstreept</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Vink dit aan om door te gaan.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Voeg een pdf van maximaal 5 MB toe.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Kies minstens één ster.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Typ minstens drie letters.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Houd het op 80 of lager.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Zet meldingen aan voor updates over je bestellingen.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Met tekst voor aan en uit</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Inline</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Te licht om op wit te lezen.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Blijf minstens twee nachten.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Opent om</value>

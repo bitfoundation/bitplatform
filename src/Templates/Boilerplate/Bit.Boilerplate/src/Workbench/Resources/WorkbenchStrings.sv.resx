@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Laddar fler beställningar...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Laddar schemat...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Det var alla beställningar för i dag.</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Understruken</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Markera det här för att fortsätta.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Bifoga en PDF på högst 5 MB.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Välj minst en stjärna.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Skriv minst tre bokstäver.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Håll det på 80 eller lägre.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Slå på aviseringar för att få uppdateringar om beställningar.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Med text för på och av</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Inbäddad</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>För ljus för att läsas mot vitt.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Stanna minst två nätter.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Öppnar kl.</value>

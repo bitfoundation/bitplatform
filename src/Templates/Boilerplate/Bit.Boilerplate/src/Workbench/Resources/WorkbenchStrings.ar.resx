@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>جارٍ تحميل المزيد من الطلبات...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>جارٍ تحميل الجدول...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>هذه كل طلبات اليوم.</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>مسطّر</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>حدّد هذا الخيار للمتابعة.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>أرفق ملف PDF لا يتجاوز 5 ميغابايت.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>اختر نجمة واحدة على الأقل.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>اكتب ثلاثة أحرف على الأقل.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>اجعلها 80 أو أقل.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>فعّل الإشعارات لتصلك تحديثات الطلبات.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>مع نص للتشغيل والإيقاف</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>مضمّن</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>فاتح جدًا بحيث لا يُقرأ على الأبيض.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>أقم ليلتين على الأقل.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>يفتح الساعة</value>

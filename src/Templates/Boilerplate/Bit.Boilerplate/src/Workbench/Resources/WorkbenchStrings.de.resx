@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Weitere Bestellungen werden geladen...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Der Dienstplan wird geladen...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Das sind alle Bestellungen von heute.</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Unterstrichen</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Aktivieren Sie dies, um fortzufahren.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Hängen Sie eine PDF-Datei mit höchstens 5 MB an.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Wählen Sie mindestens einen Stern.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Geben Sie mindestens drei Buchstaben ein.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Bleiben Sie bei höchstens 80.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Aktivieren Sie Benachrichtigungen, um über Bestellungen informiert zu werden.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Mit Text für Ein und Aus</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Eingebettet</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Zu hell, um auf Weiß lesbar zu sein.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Bleiben Sie mindestens zwei Nächte.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Öffnet um</value>

@@ -222,7 +222,7 @@ public class ThemePageUITests : ShowcaseUITest
             (WorkbenchStrings.ThemeSurfaces, ["BitAccordion", "BitCallout", "BitCard", "BitCollapse", "BitDialog", "BitModal", "BitModalService", "BitPanel", "BitScrollablePane", "BitSplitter", "BitTooltip"]),
             (WorkbenchStrings.ThemeUtilities, ["BitElement", "BitIcon", "BitImage", "BitLink", "BitMediaQuery", "BitOverlay", "BitPullToRefresh", "BitSeparator", "BitSticky", "BitSwipeTrap", "BitText"]),
             (WorkbenchStrings.ThemeExtras, ["BitAccordionList", "BitChart", "BitCountryPicker", "BitDataGrid", "BitErrorBoundary", "BitFlag", "BitFullCalendar", "BitInfiniteScrolling", "BitMap",
-                                            "BitMarkdownEditor", "BitMarkdownViewer", "BitMessageBox", "BitNavPanel", "BitPdfViewer", "BitPhoneInput", "BitRichTextEditor", "BitTextShimmer",
+                                            "BitMarkdownEditor", "BitMarkdownViewer", "BitMessageBox", "BitNavPanel", "BitPdfViewer", "BitPhoneInput", "BitResourceTimeline", "BitRichTextEditor", "BitTextShimmer",
                                             "BitTimeZonePicker", "BitVirtualize"]),
             (WorkbenchStrings.ThemeAi, ["BitAiAgentRunView", "BitAiAgentStatusBadge", "BitAiAgentStepView", "BitAiArtifactPartView", "BitAiArtifactView", "BitAiAttachmentChip", "BitAiChat",
                                         "BitAiChatMessage", "BitAiCitationMarker", "BitAiCodeBlockView", "BitAiCollapsible", "BitAiContextMeter", "BitAiConversationList", "BitAiCopyButton",

@@ -3798,6 +3798,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>और ऑर्डर लोड हो रहे हैं...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>शेड्यूल लोड हो रहा है...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>आज के सारे ऑर्डर बस इतने ही हैं।</value>
     </data>
@@ -4119,6 +4122,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>अंडरलाइन वाला</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>आगे बढ़ने के लिए इसे चुनें।</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>5 MB तक की एक PDF फ़ाइल संलग्न करें।</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>कम से कम एक सितारा चुनें।</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>कम से कम तीन अक्षर लिखें।</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>इसे 80 या उससे कम रखें।</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>ऑर्डर की जानकारी पाने के लिए सूचनाएँ चालू करें।</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>चालू और बंद टेक्स्ट के साथ</value>
     </data>
@@ -4400,6 +4421,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>इनलाइन</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>सफ़ेद पर पढ़ने के लिए बहुत हल्का है।</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>कम से कम दो रातें रुकें।</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>खुलने का समय</value>
