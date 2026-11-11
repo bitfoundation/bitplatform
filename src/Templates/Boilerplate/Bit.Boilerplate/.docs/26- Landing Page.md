@@ -153,9 +153,11 @@ sites; and the App Store is asked only about the samples' own apps. It needs no 
 
 The server's settings are in
 [`appsettings.json`](/src/LandingPage/Boilerplate.LandingPage.Server/appsettings.json), and a deployment reads each one
-from a secret of its own, such as `LANDINGPAGE__CONNECTIONSTRINGS__SMTP` for `ConnectionStrings:smtp`, or a variable for
-what isn't secret
-([Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md)).
+from a secret of its own, such as `LANDINGPAGE__AI__OPENAI__CHATAPIKEY` for `AI:OpenAI:ChatApiKey`, or a variable for
+what isn't secret, except `ConnectionStrings:smtp`, which it gets from `SMTP_CONNECTION_STRING` like the app's server
+([Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md)). The client's settings are built into its
+assembly, so what the browser reads, such as its `Belemetry:AzureMonitorConnectionString`, is set in its own
+`appsettings.json`.
 
 ## Languages
 

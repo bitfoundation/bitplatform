@@ -347,8 +347,8 @@ there, and the setting or secret that carries it. Every environment gets its own
   name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so a secret
   holding `true` hides every "true" there.
 <!--#endif-->
-- The landing page's settings are `LANDINGPAGE__` secrets: the `smtp` connection string its waitlist
-  emails go through, and the chat's AI key. Set the `LANDING_PAGE_ADDRESS`
+- The landing page's settings are `LANDINGPAGE__` secrets and variables, such as the chat's AI key. Its waitlist
+  emails go through the app's own `SMTP_CONNECTION_STRING`. Set the `LANDING_PAGE_ADDRESS`
   variable to its public address, and the deployment checks that it answers.
 - The deployment adds `SERVER_ADDRESS` and `LANDING_PAGE_ADDRESS` to the apps' `TrustedOrigins`. Their emails link only
   to a trusted address, and any other address gets a 400, so both have to be the real public addresses.

@@ -142,7 +142,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id. Each environment has an id and a name of its own, so the Test and Production apps install side by side |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with; without it a missing translation fails the deploy |
 <!--#if (aspire == true)-->
-| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
+| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app and the landing page send email through |
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
 <!--#if (api == "Standalone")-->
@@ -203,10 +203,10 @@ server, so changing one setting changes it and nothing else:
 | `WebAppRender:PrerenderEnabled` | `SERVERWEB__WEBAPPRENDER__PRERENDERENABLED` | variable |
 | The second item of the `TrustedOrigins` array | `SERVERWEB__TRUSTEDORIGINS__1` | variable |
 <!--#endif-->
-| The landing page's `ConnectionStrings:smtp` | `LANDINGPAGE__CONNECTIONSTRINGS__SMTP` | secret |
+| The landing page's `AI:OpenAI:ChatApiKey` | `LANDINGPAGE__AI__OPENAI__CHATAPIKEY` | secret |
 
 ```bash
-gh secret set LANDINGPAGE__CONNECTIONSTRINGS__SMTP --env Production   # asks for the value
+gh secret set LANDINGPAGE__AI__OPENAI__CHATAPIKEY --env Production   # asks for the value
 gh variable set SERVERWEB__WEBAPPRENDER__PRERENDERENABLED --env Production --body true
 ```
 
