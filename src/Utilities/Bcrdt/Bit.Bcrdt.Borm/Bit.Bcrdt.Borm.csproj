@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.Bcrdt.Borm</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Bit.Borm reads and writes the bound model through property paths resolved at run time, so it is
+             neither trimming nor AOT safe, and neither is anything that drives it. Left untrimmed, as Borm is. -->
+        <IsAotCompatible>false</IsAotCompatible>
+        <IsTrimmable>false</IsTrimmable>
+        <Description>Collaborative forms for bit Bcrdt and bit Borm: binds a Borm form's state to a Bcrdt map with field-level writes, merging text fields, repeater rows keyed by stable row ids, and presence that says which field each collaborator is editing. Validation stays Borm's.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;CRDT;Collaboration;Realtime;Forms;Borm</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+        <ProjectReference Include="..\..\Borm\Bit.Borm\Bit.Borm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Shared with Bit.Bcrdt.Bink and Bit.Bcrdt.Blow: the row order is the same field-and-key order theirs is. -->
+        <Compile Include="..\Integrations\BcrdtIntegrationOrder.cs" Link="Integrations\%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+        <Using Include="Bit.Borm" />
+        <Using Include="Bit.Bcrdt.Integrations" />
+    </ItemGroup>
+
+</Project>

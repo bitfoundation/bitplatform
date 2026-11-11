@@ -112,6 +112,11 @@
     color: var(--bb-text);
 }
 
+/* The connection read-out sits under the presence line; its button keeps the size it had in the title bar. */
+.panel-presence.live-connection {
+    margin-top: -.75rem;
+}
+
 .presence-empty {
     color: var(--bb-text-soft);
     font-style: italic;

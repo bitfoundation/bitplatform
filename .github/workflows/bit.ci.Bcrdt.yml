@@ -9,6 +9,13 @@ on:
   pull_request:
     paths:
     - 'src/Utilities/Bcrdt/**'
+    # The integration packages build - and their tests run - against these libraries.
+    - 'src/Utilities/BlazeDb/**'
+    - 'src/Utilities/Bink/**'
+    - 'src/Utilities/Blex/**'
+    - 'src/Utilities/Blow/**'
+    - 'src/Utilities/Borm/**'
+    - 'src/Butil/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -76,7 +83,7 @@ jobs:
     # on disk).
     - name: dotnet pack
       run: |
-        for project in Bit.Bcrdt Bit.Bcrdt.SignalR Bit.Bcrdt.Server Bit.Bcrdt.Testing; do
+        for project in Bit.Bcrdt Bit.Bcrdt.SignalR Bit.Bcrdt.Server Bit.Bcrdt.Testing Bit.Bcrdt.BlazeDb Bit.Bcrdt.Butil Bit.Bcrdt.Bink Bit.Bcrdt.Blow Bit.Bcrdt.Borm Bit.Bcrdt.Blex; do
           dotnet build src/Utilities/Bcrdt/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
           dotnet pack src/Utilities/Bcrdt/$project/$project.csproj --output ./packages --configuration Release
         done

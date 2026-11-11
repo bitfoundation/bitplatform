@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.Bcrdt.Bink</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>bit Bcrdt as the collaboration backend for bit Bink: BcrdtBinkBinding keeps a BinkDocument and a collaborative map in step in both directions - every layer and element an entry of its own, keyed by id, one key per property, so concurrent edits of different elements or of different properties of one element all survive - with one transaction per gesture, no echo, selective collaborative undo and cursor and selection presence.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;CRDT;Collaboration;Realtime;Drawing;Ink;Whiteboard</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+        <ProjectReference Include="..\..\Bink\Bit.Bink\Bit.Bink.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Shared with Bit.Bcrdt.Blow: the field and stacking-order mapping every integration uses. -->
+        <Compile Include="..\Integrations\*.cs" Link="Integrations\%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+    </ItemGroup>
+
+</Project>

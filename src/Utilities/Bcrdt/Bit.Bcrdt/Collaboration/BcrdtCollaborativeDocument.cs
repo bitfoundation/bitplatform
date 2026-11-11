@@ -50,6 +50,24 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
     /// <summary>The synchronization provider, when the document is connected to a peer.</summary>
     public BcrdtSyncProvider? Sync { get; internal set; }
 
+    /// <summary>
+    /// The synchronization provider to the other tabs of this browser that have the document open, when cross-tab
+    /// sync is on (<see cref="BcrdtCollaborationBuilder.UseCrossTabSync"/>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// It is not the network: <see cref="ConnectionStatus"/>, <see cref="IsSynced"/>, <see cref="Access"/>,
+    /// <see cref="ConnectAsync"/> and <see cref="DisconnectAsync"/> are all about <see cref="Sync"/>, and this one
+    /// stays connected while the document is open - taking the document offline is exactly when the other tabs
+    /// matter. Its <see cref="BcrdtSyncProvider.IsSynced"/> says this tab has caught up with the others, or found
+    /// none within the handshake timeout.
+    /// </para>
+    /// <para>
+    /// It carries the document and nothing else: presence goes through <see cref="Sync"/> alone.
+    /// </para>
+    /// </remarks>
+    public BcrdtSyncProvider? CrossTabSync { get; internal set; }
+
     /// <summary>The persistence binding, when the document is backed by a store.</summary>
     public BcrdtDocumentPersistence? Persistence { get; internal set; }
 
@@ -112,6 +130,12 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
 
     /// <summary>A named root set.</summary>
     public BcrdtSet Set(string name) => Scoped(Crdt.GetSet(name));
+
+    /// <summary>A named root counter.</summary>
+    public BcrdtCounter Counter(string name) => Scoped(Crdt.GetCounter(name));
+
+    /// <summary>A named root XML fragment: the tree a structured editor binds its document to.</summary>
+    public BcrdtXmlFragment XmlFragment(string name) => Scoped(Crdt.GetXmlFragment(name));
 
     /// <summary>Raised whenever anything in the document changes, locally or remotely.</summary>
     public event Action<BcrdtUpdateEventArgs>? Changed
@@ -180,6 +204,7 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
     }
 
     /// <summary>Disconnects and stops reconnecting, leaving the document editable offline.</summary>
+    /// <remarks>The other tabs of this browser stay connected: see <see cref="CrossTabSync"/>.</remarks>
     public ValueTask DisconnectAsync(CancellationToken cancellationToken = default) =>
         Sync?.DisconnectAsync(cancellationToken) ?? ValueTask.CompletedTask;
 
@@ -212,28 +237,8 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
 
         List<Exception>? failures = null;
 
-        if (Sync is not null)
-        {
-            // Bounded: disconnecting waits for the provider's synchronization context, and one that no
-            // longer runs posted work - an application shutting down - must not cost the store the
-            // writes flushed below.
-            using (var grace = new CancellationTokenSource(DisconnectGracePeriod))
-            {
-                try
-                {
-                    await Sync.DisconnectAsync(grace.Token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (grace.IsCancellationRequested)
-                {
-                    // Out of time; disposing the provider below tears the connection down regardless.
-                }
-                catch (Exception ex)
-                {
-                    (failures ??= []).Add(ex);
-                }
-            }
-            await Attempt(Sync.DisposeAsync).ConfigureAwait(false);
-        }
+        if (Sync is not null) await Close(Sync).ConfigureAwait(false);
+        if (CrossTabSync is not null) await Close(CrossTabSync).ConfigureAwait(false);
 
         for (int i = _ownedAsync.Count - 1; i >= 0; i--)
         {
@@ -259,6 +264,29 @@ public sealed class BcrdtCollaborativeDocument : IAsyncDisposable
         if (failures is not null)
         {
             throw new AggregateException($"Document '{Id}' did not close cleanly.", failures);
+        }
+
+        async ValueTask Close(BcrdtSyncProvider provider)
+        {
+            // Bounded: disconnecting waits for the provider's synchronization context, and one that no
+            // longer runs posted work - an application shutting down - must not cost the store the
+            // writes flushed below.
+            using (var grace = new CancellationTokenSource(DisconnectGracePeriod))
+            {
+                try
+                {
+                    await provider.DisconnectAsync(grace.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (grace.IsCancellationRequested)
+                {
+                    // Out of time; disposing the provider below tears the connection down regardless.
+                }
+                catch (Exception ex)
+                {
+                    (failures ??= []).Add(ex);
+                }
+            }
+            await Attempt(provider.DisposeAsync).ConfigureAwait(false);
         }
 
         async ValueTask Attempt(Func<ValueTask> step)

@@ -15,5 +15,6 @@
     // On the server, which registers Bcrdt's services, it returns that registration without calling the configuration.
     protected override void OnInitialized() => Services.GetBcrdtCollaborationService(collaboration => collaboration
         .UseTransport(new BcrdtWebSocketTransportFactory(Navigation.BaseUri + "ws/bcrdt/{documentId}"))
-        .UseIndexedDbStore());
+        .UseIndexedDbStore()
+        .UseCrossTabSync());
 }

@@ -2,7 +2,8 @@
    renders this component -
        builder.Services.AddBitBcrdtServices(collaboration => collaboration
            .UseTransport(new BcrdtSignalRTransportFactory(hubUrl))   // the server's BcrdtHub
-           .UseIndexedDbStore());                                    // a reload starts where it left off
+           .UseIndexedDbStore()                                      // a reload starts where it left off
+           .UseCrossTabSync());                                      // this browser's tabs sync directly, offline too
    - and every tab that opens the same room is another replica. *@
 @using Bit.Bcrdt
 @using Bit.Bcrdt.Blazor
@@ -27,10 +28,9 @@
 
         <footer>
             @document.Presence.Others.Count other tab(s) on this document
-            @if (document.IsReadOnly)
-            {
-                <em>read-only - this tab follows the others but cannot edit</em>
-            }
+            @* Synced, reconnecting or offline - with when it last synced, and "read-only" when the server granted this
+               tab read access only - and a button that takes the tab offline and back. *@
+            <BcrdtSyncStatus ShowToggle="true" />
         </footer>
     </ChildContent>
 </BcrdtCollaborationScope>

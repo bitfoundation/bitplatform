@@ -14,7 +14,7 @@ public static class BcrdtServerInstructions
 {
     /// <summary>
     /// The release the answers come from, so the text names it rather than claiming to be timeless:
-    /// the version the four packages ship as on NuGet. It is written down here because no assembly
+    /// the version the packages ship as on NuGet. It is written down here because no assembly
     /// carries it - a Debug build stamps 1.0.0, a Release build the four-part 1.2.0.03 for 1.2.0-pre-03 -
     /// and the build checks it against ReleaseVersion in Bit.Build.props (see the ReleaseVersionLiteral
     /// item in the .csproj), so a release cannot forget it.
@@ -23,11 +23,11 @@ public static class BcrdtServerInstructions
 
     public static readonly string Text = $"""
         Bit.Bcrdt is real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine
-        (BcrdtText, BcrdtArray, BcrdtMap, BcrdtSet), a symmetric sync protocol over pluggable transports (SignalR, WebSocket,
+        (BcrdtText, BcrdtArray, BcrdtMap, BcrdtSet, BcrdtCounter, and the BcrdtXmlFragment tree), a symmetric sync protocol over pluggable transports (SignalR, WebSocket,
         in-memory), presence, offline-first persistence, selective undo and Blazor components - no JavaScript CRDT library.
 
         Every answer here is read out of Bit.Bcrdt {BcrdtVersion} as it is loaded in this server - the compiled XML
-        documentation of its four packages, its README, its real engine and decoders, and the demo's source files. Where
+        documentation of its ten packages, its README, its real engine and decoders, and the demo's source files. Where
         what you remember (of Yjs, say) and what these tools say disagree, the tools are describing the build in front of you.
 
         Working rules:
@@ -42,8 +42,9 @@ public static class BcrdtServerInstructions
           the .NET SignalR client needs an absolute hub URL; the server calls `AddBitBcrdtHub` (a bare AddSignalR's 32 KB
           limit drops clients) and `UseWebSockets` before `MapBitBcrdtWebSocket`. Each mistake compiles and fails at runtime.
         - Choose the data type for what a concurrent edit should do: in a `BcrdtMap` one value wins and the other is lost, a
-          `BcrdtText` keeps both. Prose belongs in a nested text, created once before people edit it. Run the edits through
-          `InspectBcrdtMerge` - it runs the real engine - before building on what you think the merge decides.
+          `BcrdtText` keeps both, a `BcrdtCounter` sums them. Prose belongs in a nested text, created once before people edit
+          it. Run the edits through `InspectBcrdtMerge` - it runs the real engine - before building on what you think the
+          merge decides.
         - A document is not thread-safe, and pairs every `OpenAsync` with a `CloseAsync`. `InspectBcrdtUpdate` decodes an
           update or protocol message, and says why a malformed one is rejected.
 
