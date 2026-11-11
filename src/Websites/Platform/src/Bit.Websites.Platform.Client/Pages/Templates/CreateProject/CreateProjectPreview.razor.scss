@@ -1,0 +1,328 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.cp-preview {
+    display: grid;
+    gap: rem2(14px);
+    margin: 0;
+    min-width: 0;
+}
+
+.cp-preview-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) rem2(104px);
+    gap: rem2(14px);
+    align-items: end;
+}
+
+.cp-browser {
+    overflow: hidden;
+    border: $bit-shape-border-width solid $bit-color-border-secondary;
+    border-radius: rem2(12px);
+    background: $bit-color-background-primary;
+    box-shadow: $bit-box-shadow-callout;
+}
+
+.cp-browser-bar {
+    display: flex;
+    align-items: center;
+    gap: rem2(6px);
+    padding: rem2(9px) rem2(12px);
+    border-bottom: $bit-shape-border-width solid $bit-color-border-secondary;
+    background: $bit-color-background-secondary;
+}
+
+.cp-dot {
+    width: rem2(8px);
+    height: rem2(8px);
+    border-radius: 50%;
+    background: $bit-color-border-primary;
+}
+
+.cp-browser-address {
+    flex: 1;
+    height: rem2(14px);
+    margin-inline-start: rem2(10px);
+    border-radius: 9999px;
+    background: $bit-color-background-tertiary;
+}
+
+.cp-app {
+    position: relative;
+    display: grid;
+    gap: rem2(12px);
+    min-height: rem2(196px);
+    padding: rem2(12px) rem2(14px) rem2(52px);
+}
+
+.cp-app-top {
+    display: flex;
+    align-items: center;
+    gap: rem2(8px);
+    min-width: 0;
+    font-size: rem2(12px);
+
+    &.is-phone {
+        padding: 0 rem2(2px);
+    }
+}
+
+.cp-app-logo {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: rem2(22px);
+    height: rem2(22px);
+    border-radius: rem2(4px);
+    background: $bit-color-primary;
+    color: $bit-color-primary-text;
+    font-size: rem2(11px);
+    font-weight: 700;
+}
+
+.cp-app-name {
+    overflow: hidden;
+    min-width: 0;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cp-app-tenant {
+    display: inline-flex;
+    justify-self: start;
+    font-size: rem2(12px);
+    align-items: center;
+    gap: rem2(2px);
+    padding: rem2(2px) rem2(8px);
+    border: $bit-shape-border-width solid $bit-color-border-secondary;
+    border-radius: 9999px;
+    color: $bit-color-foreground-secondary;
+}
+
+.cp-app-gap {
+    flex: 1;
+}
+
+.cp-app-bell {
+    display: inline-flex;
+    position: relative;
+    color: $bit-color-foreground-secondary;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: -1px;
+        inset-inline-end: -2px;
+        width: rem2(6px);
+        height: rem2(6px);
+        border-radius: 50%;
+        background: $bit-color-error;
+    }
+}
+
+.cp-app-avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: rem2(22px);
+    height: rem2(22px);
+    border-radius: 50%;
+    background: $bit-color-background-tertiary;
+    font-size: rem2(11px);
+    font-weight: 600;
+}
+
+.cp-app-body {
+    display: grid;
+    gap: rem2(10px);
+    align-content: start;
+}
+
+.cp-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: rem2(8px);
+}
+
+.cp-tile {
+    display: grid;
+    gap: rem2(2px);
+    min-width: 0;
+    padding: rem2(6px) rem2(8px);
+    border-radius: rem2(6px);
+    background: $bit-color-background-secondary;
+
+    span {
+        overflow: hidden;
+        color: $bit-color-foreground-secondary;
+        font-size: rem2(10px);
+        text-overflow: ellipsis;
+    }
+
+    b {
+        font-size: rem2(12px);
+    }
+}
+
+.cp-chart {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: rem2(6px);
+    height: rem2(86px);
+    padding: rem2(10px);
+    border-radius: rem2(6px);
+    background: $bit-color-background-secondary;
+
+    > span:not(.cp-live) {
+        flex: 1;
+        height: var(--bar);
+        border-radius: rem2(2px) rem2(2px) 0 0;
+        background: $bit-color-foreground-primary;
+        opacity: .8;
+    }
+
+    &.is-phone {
+        height: rem2(56px);
+    }
+}
+
+.cp-live {
+    position: absolute;
+    top: rem2(8px);
+    inset-inline-end: rem2(8px);
+    display: inline-flex;
+    align-items: center;
+    gap: rem2(5px);
+    padding: rem2(2px) rem2(8px);
+    border-radius: 9999px;
+    background: $bit-color-background-primary;
+    font-size: rem2(11px);
+    font-weight: 600;
+}
+
+.cp-live-dot {
+    width: rem2(6px);
+    height: rem2(6px);
+    border-radius: 50%;
+    background: $bit-color-success;
+}
+
+.cp-products {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: rem2(8px);
+}
+
+.cp-product {
+    display: grid;
+    gap: rem2(5px);
+}
+
+.cp-product-photo {
+    aspect-ratio: 4 / 3;
+    border-radius: rem2(6px);
+    background: $bit-color-background-tertiary;
+}
+
+.cp-line {
+    height: rem2(6px);
+    border-radius: 9999px;
+    background: $bit-color-background-tertiary;
+
+    &.is-short {
+        width: 55%;
+    }
+}
+
+.cp-welcome {
+    display: grid;
+    gap: rem2(8px);
+    padding: rem2(12px);
+    border-radius: rem2(6px);
+    background: $bit-color-background-secondary;
+    font-size: rem2(12px);
+
+    b {
+        font-size: rem2(14px);
+    }
+}
+
+.cp-row {
+    display: flex;
+    align-items: center;
+    gap: rem2(8px);
+    color: $bit-color-foreground-secondary;
+
+    &::before {
+        content: "";
+        flex: none;
+        width: rem2(6px);
+        height: rem2(6px);
+        border-radius: 50%;
+        background: $bit-color-border-primary;
+    }
+}
+
+.cp-sample {
+    justify-self: start;
+    padding: rem2(2px) rem2(8px);
+    border: $bit-shape-border-width dashed $bit-color-border-primary;
+    border-radius: 9999px;
+    color: $bit-color-foreground-secondary;
+    font-size: rem2(11px);
+}
+
+.cp-chat {
+    position: absolute;
+    inset-inline-end: rem2(12px);
+    bottom: rem2(12px);
+    display: inline-flex;
+    align-items: center;
+    gap: rem2(6px);
+    padding: rem2(6px) rem2(12px);
+    border-radius: 9999px;
+    background: $bit-color-primary;
+    color: $bit-color-primary-text;
+    font-size: rem2(11px);
+    box-shadow: $bit-box-shadow-callout;
+}
+
+.cp-phone {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: rem2(8px);
+    width: rem2(104px);
+    height: rem2(190px);
+    padding: rem2(18px) rem2(8px) rem2(10px);
+    border: rem2(4px) solid $bit-color-foreground-primary;
+    border-radius: rem2(22px);
+    background: $bit-color-background-primary;
+    box-shadow: $bit-box-shadow-callout;
+}
+
+.cp-phone-notch {
+    position: absolute;
+    top: rem2(6px);
+    left: 50%;
+    width: rem2(30px);
+    height: rem2(5px);
+    border-radius: 9999px;
+    background: $bit-color-foreground-primary;
+    transform: translateX(-50%);
+}
+
+.cp-phone-body {
+    display: grid;
+    gap: rem2(8px);
+}
+
+.cp-phone-hello {
+    font-size: rem2(11px);
+}
+
+.cp-app-tenant ::deep .bit-icon {
+    font-size: rem2(8px);
+}
