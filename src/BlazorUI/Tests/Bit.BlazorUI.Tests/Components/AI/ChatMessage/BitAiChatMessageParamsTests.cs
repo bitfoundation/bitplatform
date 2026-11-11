@@ -54,7 +54,7 @@ public class BitAiChatMessageParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiChatMessageParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiChatMessage", BitAiChatMessageParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiChatMessage", new BitAiChatMessageParams().Name);
         Assert.AreEqual(BitAiChatMessageParams.ParamName, new BitAiChatMessageParams().Name);
     }
 

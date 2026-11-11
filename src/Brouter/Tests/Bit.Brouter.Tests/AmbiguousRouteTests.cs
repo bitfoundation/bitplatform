@@ -3,6 +3,8 @@ using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Brouter.Tests;
 
 /// <summary>
@@ -28,7 +30,7 @@ public class AmbiguousRouteTests : BunitTestContext
     {
         var ex = Assert.ThrowsExactly<InvalidOperationException>(() => RenderPair("/users", "/users"));
 
-        StringAssert.Contains(ex.Message, "ambiguous");
+        Assert.Contains("ambiguous", ex.Message);
     }
 
     [TestMethod]

@@ -9,6 +9,8 @@ using AssemblyDefinition = Mono.Cecil.AssemblyDefinition;
 using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
 using ModuleDefinition = Mono.Cecil.ModuleDefinition;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Minifier.Tests;
 
 public enum Level
@@ -67,12 +69,12 @@ public class AssemblyMinifierTests
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var members = module.GetTypes().SelectMany(t => t.Methods.Cast<ICustomAttributeProvider>().Concat(t.Fields).Concat(t.Properties)).ToList();
-        Assert.IsFalse(members.Any(m => HasAttribute(m, "CompilerGeneratedAttribute")));
-        Assert.IsFalse(module.GetTypes().Cast<ICustomAttributeProvider>().Concat(members).Any(m => HasAttribute(m, "NullableAttribute") || HasAttribute(m, "NullableContextAttribute")));
-        Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "NotNullWhenAttribute")));
+        Assert.DoesNotContain(m => HasAttribute(m, "CompilerGeneratedAttribute"), members);
+        Assert.DoesNotContain(m => HasAttribute(m, "NullableAttribute") || HasAttribute(m, "NullableContextAttribute"), module.GetTypes().Cast<ICustomAttributeProvider>().Concat(members));
+        Assert.DoesNotContain(p => HasAttribute(p, "NotNullWhenAttribute"), module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters));
 
         // types keep it, whatever they are called by now: debuggers tell closures and state machines apart by it
-        Assert.IsTrue(module.GetTypes().Any(t => t.IsNested && HasAttribute(t, "CompilerGeneratedAttribute")));
+        Assert.Contains(t => t.IsNested && HasAttribute(t, "CompilerGeneratedAttribute"), module.GetTypes());
     }
 
     [TestMethod]
@@ -87,7 +89,7 @@ public class AssemblyMinifierTests
         {
             Assert.IsTrue(HasNullableMetadata(module));
         }
-        CollectionAssert.AreEqual(expected, Nullability(minified));
+        Assert.AreSequenceEqual(expected, Nullability(minified));
 
         List<string> Nullability(string directory)
         {
@@ -110,17 +112,17 @@ public class AssemblyMinifierTests
         string[] handWritten = ["AddAsync", "Doubles", "CountAsync", "Multiplier", "SumWhere", "Label", "Total"];
         foreach (var name in handWritten)
         {
-            CollectionAssert.Contains(names, name);
-            Assert.IsFalse(names.Any(n => n.StartsWith($"<{name}>", StringComparison.Ordinal)), $"<{name}> was not shortened");
+            Assert.Contains(name, names);
+            Assert.DoesNotContain(n => n.StartsWith($"<{name}>", StringComparison.Ordinal), names, $"<{name}> was not shortened");
         }
 
         // where a generated name survives, the kind marker survives with it, so debuggers still recognize it
-        Assert.IsTrue(names.Any(n => n.EndsWith(">k__BackingField", StringComparison.Ordinal)));
+        Assert.Contains(n => n.EndsWith(">k__BackingField", StringComparison.Ordinal), names);
 
         // hoisted locals and captured variables keep the names the debugger shows
         Assert.IsTrue(names.Contains("offset") || names.Any(n => n.StartsWith("<offset>", StringComparison.Ordinal)));
-        Assert.IsTrue(names.Any(n => n.StartsWith("<before>5__", StringComparison.Ordinal)));
-        Assert.IsTrue(names.Contains("<>4__this"));
+        Assert.Contains(n => n.StartsWith("<before>5__", StringComparison.Ordinal), names);
+        Assert.Contains("<>4__this", names);
     }
 
     [TestMethod]
@@ -134,8 +136,8 @@ public class AssemblyMinifierTests
 
         Minify(level);
 
-        CollectionAssert.AreEqual(expected, await Drive(minified));
-        if (exercised is not null) CollectionAssert.AreEqual(exercised, await Exercise(minified));
+        Assert.AreSequenceEqual(expected, await Drive(minified));
+        if (exercised is not null) Assert.AreSequenceEqual(exercised, await Exercise(minified));
     }
 
     [TestMethod]
@@ -148,7 +150,7 @@ public class AssemblyMinifierTests
         Minify(level);
         var actual = FailureStackTrace(minified);
 
-        StringAssert.Contains(expected[0], "Calculator.cs:line");
+        Assert.Contains("Calculator.cs:line", expected[0]);
         Assert.HasCount(expected.Length, actual);
         for (int i = 0; i < expected.Length; i++)
         {
@@ -169,19 +171,19 @@ public class AssemblyMinifierTests
         using (var library = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(library);
-            foreach (var name in new[] { "Calculator", "AddAsync", "Record", "ShiftAmount", "_history", "_limit" }) CollectionAssert.Contains(names, name);
+            foreach (var name in new[] { "Calculator", "AddAsync", "Record", "ShiftAmount", "_history", "_limit" }) Assert.Contains(name, names);
             // the generated ones too: an async frame is named after the method it belongs to
-            Assert.IsTrue(names.Any(n => n.StartsWith("<AddAsync>d__", StringComparison.Ordinal)));
+            Assert.Contains(n => n.StartsWith("<AddAsync>d__", StringComparison.Ordinal), names);
             // what no stack trace shows still goes
             Assert.IsFalse(HasNullableMetadata(library));
         }
         Assert.AreEqual(0, results.Single(r => r.Name == Library).RenamedMembers);
-        Assert.IsTrue(results.Single(r => r.Name == Library).RemovedAttributes > 0);
-        Assert.IsTrue(results.Single(r => r.Name == Friend).RenamedMembers > 0);
+        Assert.IsGreaterThan(0, results.Single(r => r.Name == Library).RemovedAttributes);
+        Assert.IsGreaterThan(0, results.Single(r => r.Name == Friend).RenamedMembers);
 
         // the frames of the app's own code read as its source wrote them, and it all still runs
-        CollectionAssert.AreEqual(expected, FailureStackTrace(minified));
-        if (exercised is not null) CollectionAssert.AreEqual(exercised, await Exercise(minified));
+        Assert.AreSequenceEqual(expected, FailureStackTrace(minified));
+        if (exercised is not null) Assert.AreSequenceEqual(exercised, await Exercise(minified));
     }
 
     [TestMethod]
@@ -190,7 +192,7 @@ public class AssemblyMinifierTests
         // it is a package wherever it isn't built alongside the app, and safe for every rule either way
         var results = Minify(Level.Default, own: [Library, Friend], full: [Library]);
 
-        Assert.IsTrue(results.Single(r => r.Name == Library).RenamedMembers > 0);
+        Assert.IsGreaterThan(0, results.Single(r => r.Name == Library).RenamedMembers);
         Assert.AreEqual(0, results.Single(r => r.Name == Friend).RenamedMembers);
     }
 
@@ -199,7 +201,7 @@ public class AssemblyMinifierTests
     {
         var results = Minify(Level.Default, own: [Library, Friend], full: ["Bit.Minifier.Tests.*", "!*.Friend"]);
 
-        Assert.IsTrue(results.Single(r => r.Name == Library).RenamedMembers > 0);
+        Assert.IsGreaterThan(0, results.Single(r => r.Name == Library).RenamedMembers);
         Assert.AreEqual(0, results.Single(r => r.Name == Friend).RenamedMembers);
     }
 
@@ -216,7 +218,7 @@ public class AssemblyMinifierTests
 
         // only the names come back: a parameter name aggressive cleared is in no map
         static string Frame(string line) => line[..line.IndexOf('(', StringComparison.Ordinal)] + line[line.LastIndexOf(" in ", StringComparison.Ordinal)..];
-        CollectionAssert.AreEqual(expected.Select(Frame).ToList(), decoded.Split(Environment.NewLine).Select(Frame).ToList());
+        Assert.AreSequenceEqual(expected.Select(Frame).ToList(), decoded.Split(Environment.NewLine).Select(Frame).ToList());
     }
 
     [TestMethod]
@@ -227,7 +229,7 @@ public class AssemblyMinifierTests
         Minify(Level.Default, mapFile: mapFile);
 
         Assert.AreEqual($"# Bit.Minifier {AssemblyMinifier.Version}", File.ReadLines(mapFile).First());
-        StringAssert.Matches(AssemblyMinifier.Version, new System.Text.RegularExpressions.Regex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$"), AssemblyMinifier.Version);
     }
 
     [TestMethod]
@@ -246,7 +248,7 @@ public class AssemblyMinifierTests
         Assert.AreEqual(before.SequencePoints, after.SequencePoints);
         Assert.AreEqual(before.MethodsWithSequencePoints, after.MethodsWithSequencePoints);
         Assert.AreEqual(0, after.SequencePointsOutsideBody);
-        CollectionAssert.AreEquivalent(before.LocalNames, after.LocalNames);
+        Assert.AreSequenceEqual(before.LocalNames, after.LocalNames, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(before.StateMachineMethods, after.StateMachineMethods);
     }
 
@@ -258,14 +260,14 @@ public class AssemblyMinifierTests
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
-            CollectionAssert.DoesNotContain(names, "Record");
-            CollectionAssert.DoesNotContain(names, "_history");
-            CollectionAssert.DoesNotContain(names, "InternalSquare");
-            CollectionAssert.DoesNotContain(names, "InternalCounter");
-            CollectionAssert.DoesNotContain(names, "Rounding");
+            Assert.DoesNotContain("Record", names);
+            Assert.DoesNotContain("_history", names);
+            Assert.DoesNotContain("InternalSquare", names);
+            Assert.DoesNotContain("InternalCounter", names);
+            Assert.DoesNotContain("Rounding", names);
             // protected and public members are API
-            CollectionAssert.Contains(names, "Shift");
-            CollectionAssert.Contains(names, "AddAsync");
+            Assert.Contains("Shift", names);
+            Assert.Contains("AddAsync", names);
         }
     }
 
@@ -277,14 +279,14 @@ public class AssemblyMinifierTests
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
-            CollectionAssert.DoesNotContain(names, "Record");
-            CollectionAssert.Contains(names, "InternalSquare");
-            CollectionAssert.Contains(names, "InternalCounter");
+            Assert.DoesNotContain("Record", names);
+            Assert.Contains("InternalSquare", names);
+            Assert.Contains("InternalCounter", names);
             // and the friend's nested internal type
-            CollectionAssert.Contains(names, "Rounding");
+            Assert.Contains("Rounding", names);
         }
 
-        CollectionAssert.AreEqual(await Exercise(original), await Exercise(minified));
+        Assert.AreSequenceEqual(await Exercise(original), await Exercise(minified));
     }
 
     [TestMethod]
@@ -306,9 +308,9 @@ public class AssemblyMinifierTests
 
         Assert.IsEmpty(results);
         var skipped = Assert.ContainsSingle(minifier.Skipped);
-        StringAssert.Contains(skipped, Library);
-        StringAssert.Contains(skipped, Friend);
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.Contains(Library, skipped);
+        Assert.Contains(Friend, skipped);
+        Assert.AreSequenceEqual(before, Snapshot(minified));
     }
 
     [TestMethod]
@@ -335,11 +337,11 @@ public class AssemblyMinifierTests
         var results = Minify(Level.Default, assemblies: [Library, Extra]);
 
         // one assembly costing the whole publish its savings is what this must never do
-        CollectionAssert.AreEqual(new[] { Extra }, results.Select(r => r.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { Extra }, results.Select(r => r.Name).ToArray());
         var skipped = Assert.ContainsSingle(minifier.Skipped);
-        StringAssert.Contains(skipped, Library);
-        StringAssert.Contains(skipped, Friend);
-        CollectionAssert.Contains(Snapshot(minified), library);
+        Assert.Contains(Library, skipped);
+        Assert.Contains(Friend, skipped);
+        Assert.Contains(library, Snapshot(minified));
     }
 
     [TestMethod]
@@ -359,7 +361,7 @@ public class AssemblyMinifierTests
             Assert.Throws<IOException>(() => Minify(level, mapFile: map));
         }
 
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.AreSequenceEqual(before, Snapshot(minified));
         Assert.IsFalse(File.Exists(map));
     }
 
@@ -371,7 +373,7 @@ public class AssemblyMinifierTests
         var results = Minify(assemblies: ["Not.There"]);
 
         Assert.IsEmpty(results);
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.AreSequenceEqual(before, Snapshot(minified));
     }
 
     [TestMethod]
@@ -388,7 +390,7 @@ public class AssemblyMinifierTests
         Assert.AreEqual(library.MinifiedSize, new FileInfo(Path.Combine(minified, Library + ".dll")).Length);
 
         var lines = File.ReadAllLines(map)[1..];
-        Assert.IsTrue(lines.Any(l => l.StartsWith($"{Library}\tT\t", StringComparison.Ordinal) && l.Contains("<AddAsync>d__", StringComparison.Ordinal)));
+        Assert.Contains(l => l.StartsWith($"{Library}\tT\t", StringComparison.Ordinal) && l.Contains("<AddAsync>d__", StringComparison.Ordinal), lines);
         Assert.IsTrue(lines.All(l => l.Split('\t').Length == 4));
     }
 
@@ -401,7 +403,7 @@ public class AssemblyMinifierTests
         Minify();
 
         // a folder that is minified again is minified, not broken: the second pass reads what the first left
-        CollectionAssert.AreEqual(expected, await Exercise(minified));
+        Assert.AreSequenceEqual(expected, await Exercise(minified));
     }
 
     [TestMethod]
@@ -412,7 +414,7 @@ public class AssemblyMinifierTests
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         Assert.IsTrue(HasNullableMetadata(module));
         // nullable metadata doesn't make a name observable: these go just as they do without it
-        foreach (var name in new[] { "Record", "Select", "_history", "Satchel`1", "Pallet" }) CollectionAssert.DoesNotContain(AllNames(module), name);
+        foreach (var name in new[] { "Record", "Select", "_history", "Satchel`1", "Pallet" }) Assert.DoesNotContain(name, AllNames(module));
         var select = module.GetType("Bit.Minifier.Tests.Library.Box`1").Methods.Single(m => m.IsPrivate && m.Parameters.Count == 1 && m.Parameters[0].ParameterType.Name.StartsWith("Func", StringComparison.Ordinal));
         Assert.AreEqual("", select.Parameters[0].Name);
     }
@@ -432,7 +434,7 @@ public class AssemblyMinifierTests
         {
             var parameters = module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters.Cast<ICustomAttributeProvider>().Append(m.MethodReturnType)).ToList();
             // reflection's own binder reads [ParamArray] too (Type.InvokeMember, Activator.CreateInstance)
-            Assert.IsTrue(parameters.Any(p => HasAttribute(p, "ParamArrayAttribute")));
+            Assert.Contains(p => HasAttribute(p, "ParamArrayAttribute"), parameters);
             Assert.AreEqual(dynamicPublished, parameters.Any(p => HasAttribute(p, "DynamicAttribute")));
             // and [Extension], to find the extension methods of a dynamic receiver - the names are the level's
             if (level == Level.Default)
@@ -441,7 +443,7 @@ public class AssemblyMinifierTests
                 Assert.AreEqual(dynamicPublished, HasAttribute(describe, "ExtensionAttribute"));
             }
         }
-        if (dynamicPublished) CollectionAssert.AreEqual(expected, await Drive(minified));
+        if (dynamicPublished) Assert.AreSequenceEqual(expected, await Drive(minified));
     }
 
     [TestMethod]
@@ -459,7 +461,7 @@ public class AssemblyMinifierTests
 
         var results = Minify(level);
 
-        Assert.IsTrue(results.Any(r => r.Name == Library));
+        Assert.Contains(r => r.Name == Library, results);
         Assert.IsFalse(File.Exists(Path.ChangeExtension(libraryPath, ".pdb")));
         using (var pe = new PEReader(File.OpenRead(libraryPath)))
         {
@@ -491,10 +493,10 @@ public class AssemblyMinifierTests
 
         CollectionAssert.IsSubsetOf(new[] { Library, Friend }, results.Select(r => r.Name).ToList());
         // the runtime's ReadyToRun images can't be written back, so they are skipped
-        CollectionAssert.DoesNotContain(results.Select(r => r.Name).ToList(), "System.Private.CoreLib");
+        Assert.DoesNotContain("System.Private.CoreLib", results.Select(r => r.Name).ToList());
         // a type-forwarding facade has no names of its own, but its assembly attributes go like everything else
-        CollectionAssert.Contains(results.Select(r => r.Name).ToList(), "System.Runtime");
-        CollectionAssert.AreEqual(expected, await Exercise(minified));
+        Assert.Contains("System.Runtime", results.Select(r => r.Name).ToList());
+        Assert.AreSequenceEqual(expected, await Exercise(minified));
     }
 
     [TestMethod]
@@ -505,26 +507,26 @@ public class AssemblyMinifierTests
 
         new AssemblyMinifier(new MinifierOptions { Directory = minified, Assemblies = [Library, Friend], FullyMinified = [] }).Run();
 
-        CollectionAssert.AreEqual(expected, await Exercise(minified));
+        Assert.AreSequenceEqual(expected, await Exercise(minified));
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
             // public API, and what serializers see
-            foreach (var name in new[] { "Calculator", "AddAsync", "Fail", "Label", "Total", "Point", "Length", "Box`1", "Shade" }) CollectionAssert.Contains(names, name);
+            foreach (var name in new[] { "Calculator", "AddAsync", "Fail", "Label", "Total", "Point", "Length", "Box`1", "Shade" }) Assert.Contains(name, names);
             // everything else is short
-            foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "_limit", "Select" }) CollectionAssert.DoesNotContain(names, name);
-            CollectionAssert.AreEqual(new[] { "offsetByName" }, module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Where(p => p.Name.Length > 0).Select(p => p.Name).ToList());
+            foreach (var name in new[] { "Record", "ShiftAmount", "ThrowFromHelper", "_history", "_limit", "Select" }) Assert.DoesNotContain(name, names);
+            Assert.AreSequenceEqual(new[] { "offsetByName" }, module.GetTypes().SelectMany(t => t.Methods).Where(m => m.IsPrivate && m.HasCustomAttributes is false).SelectMany(m => m.Parameters).Where(p => p.Name.Length > 0).Select(p => p.Name).ToList());
             // what the app itself may read of its own metadata stays: Assembly.GetCustomAttribute is an About page
-            Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyCompanyAttribute"));
-            Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyFileVersionAttribute"));
+            Assert.Contains(a => a.AttributeType.Name == "AssemblyCompanyAttribute", module.Assembly.CustomAttributes);
+            Assert.Contains(a => a.AttributeType.Name == "AssemblyFileVersionAttribute", module.Assembly.CustomAttributes);
             // only on generic parameters, where DI compares them
             Assert.IsTrue(HasAttribute(module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters[0], "DynamicallyAccessedMembersAttribute"));
-            Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "DynamicallyAccessedMembersAttribute")));
+            Assert.DoesNotContain(p => HasAttribute(p, "DynamicallyAccessedMembersAttribute"), module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters));
         }
         // the public frame keeps its name, and every frame its line
         var actual = FailureStackTrace(minified);
         Assert.HasCount(stackTrace.Length, actual);
-        StringAssert.Contains(actual[1], "Calculator.Fail()");
+        Assert.Contains("Calculator.Fail()", actual[1]);
         for (int i = 0; i < actual.Length; i++) Assert.AreEqual(LineOf(stackTrace[i]), LineOf(actual[i]));
     }
 
@@ -535,10 +537,10 @@ public class AssemblyMinifierTests
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         // "total is {0}" in Calculator.ThrowFromHelper names nothing, but GetMethod(nameof(ShiftAmount)) would: see Reflected
-        CollectionAssert.Contains(AllNames(module), "ReflectedByName");
-        CollectionAssert.Contains(AllNames(module), "_reflectedField");
+        Assert.Contains("ReflectedByName", AllNames(module));
+        Assert.Contains("_reflectedField", AllNames(module));
         // a compiled model, say, reaches backing fields this way
-        CollectionAssert.Contains(AllNames(module), "<Note>k__BackingField");
+        Assert.Contains("<Note>k__BackingField", AllNames(module));
     }
 
     [TestMethod]
@@ -548,8 +550,8 @@ public class AssemblyMinifierTests
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         var names = AllNames(module);
-        CollectionAssert.Contains(names, "<Note>k__BackingField");
-        CollectionAssert.DoesNotContain(names, "<Label>k__BackingField");
+        Assert.Contains("<Note>k__BackingField", names);
+        Assert.DoesNotContain("<Label>k__BackingField", names);
     }
 
     [TestMethod]
@@ -563,20 +565,20 @@ public class AssemblyMinifierTests
         var names = AllNames(module);
         foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Mensuration", "Crate", "Count", "IComponent", "get_HistoryCount", "add_Added" })
         {
-            CollectionAssert.Contains(names, name);
+            Assert.Contains(name, names);
         }
         // namespaces, event metadata and generic parameter names stay
         Assert.IsTrue(module.Types.Where(t => t.Name.StartsWith('<') is false).All(t => t.Namespace.Length > 0));
-        CollectionAssert.AreEquivalent(new[] { "Added", "Recorded" }, module.GetType("Bit.Minifier.Tests.Library.Calculator").Events.Select(e => e.Name).ToArray());
-        CollectionAssert.AreEqual(new[] { "T" }, module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters.Select(p => p.Name).ToArray());
-        Assert.IsTrue(module.GetTypes().SelectMany(t => t.GenericParameters).Any(p => p.Name == "TSelf"));
+        Assert.AreSequenceEqual(new[] { "Added", "Recorded" }, module.GetType("Bit.Minifier.Tests.Library.Calculator").Events.Select(e => e.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "T" }, module.GetType("Bit.Minifier.Tests.Library.Box`1").GenericParameters.Select(p => p.Name).ToArray());
+        Assert.Contains(p => p.Name == "TSelf", module.GetTypes().SelectMany(t => t.GenericParameters));
         // and so do public parameter names and the attributes only aggressive removes
         var count = module.GetType("Bit.Minifier.Tests.Shelf.Crate").Methods.Single(m => m.Name == "Count");
-        CollectionAssert.AreEqual(new[] { "rows", "columns" }, count.Parameters.Select(p => p.Name).ToArray());
-        Assert.IsTrue(module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters).Any(p => HasAttribute(p, "EnumeratorCancellationAttribute")));
+        Assert.AreSequenceEqual(new[] { "rows", "columns" }, count.Parameters.Select(p => p.Name).ToArray());
+        Assert.Contains(p => HasAttribute(p, "EnumeratorCancellationAttribute"), module.GetTypes().SelectMany(t => t.Methods).SelectMany(m => m.Parameters));
 
         var lines = File.ReadAllLines(map)[1..].Select(l => l.Split('\t')).ToList();
-        Assert.IsFalse(lines.Any(l => l[1] == "G"));
+        Assert.DoesNotContain(l => l[1] == "G", lines);
         // a renamed top-level type stays in its namespace
         foreach (var line in lines.Where(l => l[1] == "T" && l[2].Contains('/') is false))
         {
@@ -594,7 +596,7 @@ public class AssemblyMinifierTests
         Minify(level);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
-        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "NeutralResourcesLanguageAttribute"));
+        Assert.Contains(a => a.AttributeType.Name == "NeutralResourcesLanguageAttribute", module.Assembly.CustomAttributes);
         // the internal type an embedded resource is named after keeps its full name
         Assert.AreEqual("Bit.Minifier.Tests.Library", module.GetTypes().Single(t => t.Name == "Glossary").Namespace);
         Assert.AreEqual("Bit.Minifier.Tests.Library.Glossary.txt", module.Resources.Single().Name);
@@ -611,15 +613,15 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(args);
 
         Assert.AreEqual(0, exitCode, output);
-        StringAssert.Contains(output, "2 assemblies in");
+        Assert.Contains("2 assemblies in", output);
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
             // both levels take the internal names; only aggressive takes the public ones
-            CollectionAssert.DoesNotContain(names, "Record");
+            Assert.DoesNotContain("Record", names);
             Assert.AreEqual(level == Level.Default, names.Contains("Calculator"));
         }
-        CollectionAssert.AreEqual(expected, await Drive(minified));
+        Assert.AreSequenceEqual(expected, await Drive(minified));
     }
 
     [TestMethod]
@@ -641,7 +643,7 @@ public class AssemblyMinifierTests
         Assert.AreEqual(0, exitCode, output);
         // the file is the one replaced - and reading it a second time as an assembly of its own would have left
         // every reference into it pointing at that other copy
-        StringAssert.Contains(output, "2 assemblies in");
+        Assert.Contains("2 assemblies in", output);
         Assert.DoesNotContain("BITMIN001", output);
         Assert.IsLessThan(before, new FileInfo(Path.Combine(minified, file + ".dll")).Length);
 
@@ -649,7 +651,7 @@ public class AssemblyMinifierTests
         Assert.AreEqual(Library, module.Assembly.Name.Name);
         // the friend still reaches it: its reference names the assembly, which the file name never was
         using var friend = ModuleDefinition.ReadModule(Path.Combine(minified, Friend + ".dll"));
-        CollectionAssert.Contains(friend.AssemblyReferences.Select(r => r.Name).ToList(), Library);
+        Assert.Contains(Library, friend.AssemblyReferences.Select(r => r.Name).ToList());
     }
 
     [TestMethod]
@@ -665,8 +667,8 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine([minified, .. options.Split(' ')]);
 
         Assert.AreEqual(2, exitCode);
-        StringAssert.StartsWith(output, "usage: ");
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.StartsWith("usage: ", output);
+        Assert.AreSequenceEqual(before, Snapshot(minified));
     }
 
     [TestMethod]
@@ -685,7 +687,7 @@ public class AssemblyMinifierTests
         // nothing a publish produces may depend on the order a folder happens to be enumerated in: a map read
         // against a release has to be the map that release's own publish would have written, wherever it ran
         Assert.IsNotEmpty(File.ReadAllLines(first));
-        CollectionAssert.AreEqual(File.ReadAllLines(first), File.ReadAllLines(second));
+        Assert.AreSequenceEqual(File.ReadAllLines(first), File.ReadAllLines(second));
     }
 
     [TestMethod]
@@ -697,7 +699,7 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(["--decode", .. rest]);
 
         Assert.AreEqual(2, exitCode);
-        StringAssert.Contains(output, expected);
+        Assert.Contains(expected, output);
     }
 
     [TestMethod]
@@ -709,7 +711,7 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(["--decode", map, Path.Combine(root, "not-a-trace")]);
 
         Assert.AreEqual(2, exitCode);
-        StringAssert.Contains(output, "no stack trace at ");
+        Assert.Contains("no stack trace at ", output);
     }
 
     [TestMethod]
@@ -720,8 +722,8 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(["--aggressive", minified]);
 
         Assert.AreEqual(2, exitCode);
-        StringAssert.StartsWith(output, "usage: ");
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.StartsWith("usage: ", output);
+        Assert.AreSequenceEqual(before, Snapshot(minified));
     }
 
     [TestMethod]
@@ -739,9 +741,9 @@ public class AssemblyMinifierTests
 
         // MSBuild shows it as a warning
         Assert.AreEqual(0, exitCode, output);
-        StringAssert.StartsWith(output, "Bit.Minifier : warning BITMIN001: ");
-        StringAssert.Contains(output, "The assemblies were left unminified.");
-        CollectionAssert.AreEqual(before, Snapshot(minified));
+        Assert.StartsWith("Bit.Minifier : warning BITMIN001: ", output);
+        Assert.Contains("The assemblies were left unminified.", output);
+        Assert.AreSequenceEqual(before, Snapshot(minified));
         Assert.IsFalse(File.Exists(map));
     }
 
@@ -758,9 +760,9 @@ public class AssemblyMinifierTests
         var (exitCode, output) = RunCommandLine(args);
 
         Assert.AreEqual(0, exitCode, output);
-        StringAssert.Contains(output, "warning BITMIN001: left unminified: " + Library);
+        Assert.Contains("warning BITMIN001: left unminified: " + Library, output);
         // the other one was minified, and the report counts it alone
-        StringAssert.Contains(output, "1 assembly in");
+        Assert.Contains("1 assembly in", output);
         Assert.AreEqual(libraryBefore, new FileInfo(Path.Combine(minified, Library + ".dll")).Length);
     }
 
@@ -775,26 +777,26 @@ public class AssemblyMinifierTests
         var names = AllNames(module);
         foreach (var name in new[] { "Calculator", "AddAsync", "Doubles", "Multiplier", "SumWhere", "Tally", "Shade", "GetAsync", "NoteAccess", "Shapes", "Mensuration", "Record", "_history", "InternalSquare", "IComponent" })
         {
-            CollectionAssert.DoesNotContain(names, name, name);
+            Assert.DoesNotContain(name, names, name);
         }
         // types that attribute blobs name by string, too
-        Assert.IsFalse(module.GetTypes().Any(t => t.Name is "Flavor" or "Satchel`1" or "Lattice"));
-        Assert.IsTrue(module.GetTypes().Any(t => t.Name == "Knot"));
+        Assert.DoesNotContain(t => t.Name is "Flavor" or "Satchel`1" or "Lattice", module.GetTypes());
+        Assert.Contains(t => t.Name == "Knot", module.GetTypes());
         // properties keep their names, their accessors don't: metadata ties them together
         var historyCount = module.GetTypes().SelectMany(t => t.Properties).Single(p => p.Name == "HistoryCount");
         Assert.AreNotEqual("get_HistoryCount", historyCount.GetMethod.Name);
-        CollectionAssert.DoesNotContain(names, "get_HistoryCount");
+        Assert.DoesNotContain("get_HistoryCount", names);
         // the assembly metadata an app may read of itself, which only this level takes
-        Assert.IsFalse(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name is "AssemblyCompanyAttribute" or "AssemblyFileVersionAttribute" or "AssemblyProductAttribute"));
+        Assert.DoesNotContain(a => a.AttributeType.Name is "AssemblyCompanyAttribute" or "AssemblyFileVersionAttribute" or "AssemblyProductAttribute", module.Assembly.CustomAttributes);
         // except the version, the one an app has to have something to show
-        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "AssemblyInformationalVersionAttribute"));
+        Assert.Contains(a => a.AttributeType.Name == "AssemblyInformationalVersionAttribute", module.Assembly.CustomAttributes);
         // and the InternalsVisibleTo the runtime reads to let a friend touch an internal member
-        Assert.IsTrue(module.Assembly.CustomAttributes.Any(a => a.AttributeType.Name == "InternalsVisibleToAttribute"));
+        Assert.Contains(a => a.AttributeType.Name == "InternalsVisibleToAttribute", module.Assembly.CustomAttributes);
         // event metadata goes, generic parameters get short names
-        Assert.IsFalse(module.GetTypes().Any(t => t.HasEvents));
-        Assert.IsFalse(module.GetTypes().SelectMany(t => t.GenericParameters).Any(p => p.Name == "TSelf"));
+        Assert.DoesNotContain(t => t.HasEvents, module.GetTypes());
+        Assert.DoesNotContain(p => p.Name == "TSelf", module.GetTypes().SelectMany(t => t.GenericParameters));
         // and the attributes only the compiler reads
-        Assert.IsFalse(module.GetTypes().SelectMany(t => t.Methods).Any(m => HasAttribute(m, "EnumeratorCancellationAttribute") || m.Parameters.Any(p => HasAttribute(p, "EnumeratorCancellationAttribute"))));
+        Assert.DoesNotContain(m => HasAttribute(m, "EnumeratorCancellationAttribute") || m.Parameters.Any(p => HasAttribute(p, "EnumeratorCancellationAttribute")), module.GetTypes().SelectMany(t => t.Methods));
 
         var lines = File.ReadAllLines(map)[1..];
         // a renamed type leaves its namespace behind, unless a string names it (Type.GetType("Bit.Minifier.Tests.Library.Plugin"))
@@ -803,8 +805,8 @@ public class AssemblyMinifierTests
         Assert.AreEqual("", module.GetType(crate).Namespace);
         // public parameters lose their names, unless a string mentions them
         Assert.IsTrue(module.GetType(crate).Methods.Where(m => m.IsConstructor is false).SelectMany(m => m.Parameters).All(p => p.Name.Length == 0));
-        Assert.IsTrue(lines.Any(l => l.StartsWith($"{Library}\tT\tBit.Minifier.Tests.Library.Calculator\tBit.Minifier.Tests.Library._", StringComparison.Ordinal)));
-        Assert.IsTrue(lines.Any(l => l.StartsWith($"{Library}\tG\t", StringComparison.Ordinal)));
+        Assert.Contains(l => l.StartsWith($"{Library}\tT\tBit.Minifier.Tests.Library.Calculator\tBit.Minifier.Tests.Library._", StringComparison.Ordinal), lines);
+        Assert.Contains(l => l.StartsWith($"{Library}\tG\t", StringComparison.Ordinal), lines);
         Assert.IsTrue(lines.All(l => l.Split('\t').Length == 4));
     }
 
@@ -819,25 +821,25 @@ public class AssemblyMinifierTests
             // named by a string (Type.GetType, GetMethod, nameof, a record's ToString), virtual, or a property
             foreach (var name in new[] { "Plugin", "Hello", "ReflectedByName", "_reflectedField", "Describe", "Point", "Dark", "Shift", "Label", "Total", "X", "Length", "<Note>k__BackingField" })
             {
-                CollectionAssert.Contains(names, name);
+                Assert.Contains(name, names);
             }
             Assert.AreEqual("Bit.Minifier.Tests.Library", module.GetTypes().Single(t => t.Name == "Plugin").Namespace);
             // Blazor components, and the types of their parameters, which a prerendering server names
-            CollectionAssert.Contains(names, "Widget");
-            CollectionAssert.Contains(names, "Palette");
+            Assert.Contains("Widget", names);
+            Assert.Contains("Palette", names);
             Assert.AreEqual("Bit.Minifier.Tests.Library", module.GetTypes().Single(t => t.Name == "Palette").Namespace);
             // reached by reflection conventions no string spells out
-            foreach (var name in new[] { "Florin", "AbacusException", "ShouldSerializeMemo" }) CollectionAssert.Contains(names, name);
+            foreach (var name in new[] { "Florin", "AbacusException", "ShouldSerializeMemo" }) Assert.Contains(name, names);
             // a public field an attribute's named argument sets: the blob names it
-            CollectionAssert.Contains(names, "Heat");
+            Assert.Contains("Heat", names);
             // a name a longer string mentions, in any script
-            CollectionAssert.Contains(names, "Περίμετρος");
+            Assert.Contains("Περίμετρος", names);
             Assert.AreEqual("multiplicand", module.GetTypes().SelectMany(t => t.Methods).Single(m => m.DeclaringType.IsInterface && m.Parameters.Count == 1 && m.ReturnType.MetadataType == MetadataType.Int32).Parameters[0].Name);
             // public instance fields go when nothing serializes fields by default
-            CollectionAssert.DoesNotContain(names, "Tally");
+            Assert.DoesNotContain("Tally", names);
         }
         using var friend = ModuleDefinition.ReadModule(Path.Combine(minified, Friend + ".dll"));
-        CollectionAssert.Contains(AllNames(friend), "RunAsync");
+        Assert.Contains("RunAsync", AllNames(friend));
     }
 
     [TestMethod]
@@ -848,7 +850,7 @@ public class AssemblyMinifierTests
         Minify(Level.Aggressive);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
-        CollectionAssert.Contains(AllNames(module), "Tally");
+        Assert.Contains("Tally", AllNames(module));
     }
 
     [TestMethod]
@@ -869,7 +871,7 @@ public class AssemblyMinifierTests
         using var module = ModuleDefinition.ReadModule(libraryPath);
         var startup = module.EntryPoint.DeclaringType;
         Assert.AreEqual("<Main>", module.EntryPoint.Name);
-        Assert.IsTrue(startup.Methods.Any(m => m.Name == "Main"));
+        Assert.Contains(m => m.Name == "Main", startup.Methods);
     }
 
     [TestMethod]
@@ -883,11 +885,11 @@ public class AssemblyMinifierTests
         using (var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll")))
         {
             var names = AllNames(module);
-            foreach (var name in new[] { "Calculator", "AddAsync", "Tally", "InternalSquare" }) CollectionAssert.Contains(names, name);
-            CollectionAssert.DoesNotContain(names, "Record");
+            foreach (var name in new[] { "Calculator", "AddAsync", "Tally", "InternalSquare" }) Assert.Contains(name, names);
+            Assert.DoesNotContain("Record", names);
         }
-        CollectionAssert.AreEqual(expected, await Exercise(minified));
-        CollectionAssert.AreEqual(driven, await Drive(minified));
+        Assert.AreSequenceEqual(expected, await Exercise(minified));
+        Assert.AreSequenceEqual(driven, await Drive(minified));
     }
 
     [TestMethod]
@@ -985,7 +987,7 @@ public class AssemblyMinifierTests
         Minify(Level.Aggressive);
 
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
-        CollectionAssert.Contains(AllNames(module), "Ledger");
+        Assert.Contains("Ledger", AllNames(module));
     }
 
     [TestMethod]
@@ -1016,7 +1018,7 @@ public class AssemblyMinifierTests
         Assert.IsNotEmpty(results);
         using var module = ModuleDefinition.ReadModule(Path.Combine(minified, Library + ".dll"));
         // the reader reaches Ledger by name, so it keeps it, and the forwarder keeps leading there
-        CollectionAssert.Contains(AllNames(module), "Ledger");
+        Assert.Contains("Ledger", AllNames(module));
         using var forwarded = ModuleDefinition.ReadModule(Path.Combine(minified, Facade + ".dll"));
         Assert.AreEqual("Bit.Minifier.Tests.Library.Ledger", forwarded.ExportedTypes.Single().FullName);
     }

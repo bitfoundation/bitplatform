@@ -100,7 +100,7 @@ public class StoreBehaviorTests
 
         var task = store.LoadData(); // sets Label="loading" synchronously, then awaits
         Assert.AreEqual("loading", store.Label);
-        Assert.IsTrue(raised >= 1); // UI was notified before completion
+        Assert.IsGreaterThanOrEqualTo(1, raised); // UI was notified before completion
 
         await task;
         Assert.AreEqual("loaded", store.Label);

@@ -43,8 +43,8 @@ public class McpConcurrencyTests
 
         foreach (var (tool, texts) in answers)
         {
-            Assert.AreEqual(6, texts.Count);
-            Assert.AreEqual(1, texts.Distinct(StringComparer.Ordinal).Count(), $"'{tool}' answered the same question differently under load.");
+            Assert.HasCount(6, texts);
+            Assert.ContainsSingle(texts.Distinct(StringComparer.Ordinal), $"'{tool}' answered the same question differently under load.");
         }
     }
 
@@ -59,17 +59,17 @@ public class McpConcurrencyTests
         {
             var indexes = await Task.WhenAll(clients.Select(async client =>
             {
-                var result = await client.CallToolAsync("GetBrouterApi");
+                var result = await client.CallToolAsync("GetBrouterApi", cancellationToken: TestContext.CancellationToken);
 
                 return string.Join('\n', result.Content.OfType<ModelContextProtocol.Protocol.TextContentBlock>().Select(block => block.Text));
             }));
 
-            Assert.AreEqual(1, indexes.Distinct(StringComparer.Ordinal).Count(), "Two sessions were served different API indexes.");
+            Assert.ContainsSingle(indexes.Distinct(StringComparer.Ordinal), "Two sessions were served different API indexes.");
 
             foreach (var client in clients)
             {
                 Assert.AreEqual("bit-brouter", client.ServerInfo.Name);
-                Assert.AreEqual(McpToolSurfaceTests.ExpectedTools.Length, (await client.ListToolsAsync()).Count);
+                Assert.HasCount(McpToolSurfaceTests.ExpectedTools.Length, await client.ListToolsAsync(cancellationToken: TestContext.CancellationToken));
             }
         }
         finally
@@ -87,4 +87,6 @@ public class McpConcurrencyTests
             EnableStandaloneGetStream = false,
         }, McpTestHost.CreateHttpClient(), loggerFactory: null, ownsHttpClient: true));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

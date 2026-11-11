@@ -116,7 +116,7 @@ public class ScopedHistoryTests
         scoped.Store.Add(3);
         profile.SignIn("ada");
 
-        CollectionAssert.AreEqual(new[] { "counter:side/Add", "counter/Increment" }, history.UndoLabels.ToArray());
+        Assert.AreSequenceEqual(new[] { "counter:side/Add", "counter/Increment" }, history.UndoLabels.ToArray());
 
         history.Jump(-2);
         Assert.AreEqual(0, counter.Count);

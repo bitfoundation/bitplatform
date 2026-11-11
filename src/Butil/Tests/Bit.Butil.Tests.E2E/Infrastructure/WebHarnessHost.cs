@@ -1,10 +1,10 @@
-namespace Bit.Butil.Tests.E2E.Infrastructure;
+﻿namespace Bit.Butil.Tests.E2E.Infrastructure;
 
 /// <summary>
 /// One running Bit.Butil.Tests.Harness.Web process: a render mode and a script-loading mode, fixed for the
 /// life of the process.
 /// </summary>
-public sealed class WebHarnessHost : IAsyncDisposable
+internal sealed class WebHarnessHost : IAsyncDisposable
 {
     private readonly ChildProcess _process;
 

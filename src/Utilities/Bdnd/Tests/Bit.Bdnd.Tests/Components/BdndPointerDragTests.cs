@@ -165,7 +165,7 @@ public class BdndPointerDragTests : BdndComponentTestBase
 
         Assert.IsFalse(await StartAsync(Source(cut)));
 
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("no item", error.Message);
         Assert.IsFalse(Manager.IsDragging());
     }
@@ -177,7 +177,7 @@ public class BdndPointerDragTests : BdndComponentTestBase
 
         Assert.IsTrue(await StartAsync(Source(cut)));
 
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("begin failed", error.Message);
     }
 
@@ -271,4 +271,6 @@ public class BdndPointerDragTests : BdndComponentTestBase
 
         Assert.AreSequenceEqual(new[] { true, false }, TargetRegistrations.Select(o => o.Hover).ToArray());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

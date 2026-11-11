@@ -32,12 +32,12 @@ public class BitSplitterE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"spl-basic\"");
-        StringAssert.Contains(html, "role=\"separator\"");
-        StringAssert.Contains(html, "id=\"spl-basic-first\"");
-        StringAssert.Contains(html, "id=\"spl-basic-second\"");
+        Assert.Contains("id=\"spl-basic\"", html);
+        Assert.Contains("role=\"separator\"", html);
+        Assert.Contains("id=\"spl-basic-first\"", html);
+        Assert.Contains("id=\"spl-basic-second\"", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"spl-limits\"[^>]*--bit-spl-fpn-size:200px"), "The first panel size is not prerendered.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await Expect(El("ev-ends")).ToHaveTextAsync("1");
         await Expect(El("ev-end")).ToHaveTextAsync("65.83");
         await Expect(El("ev-cancels")).ToHaveTextAsync("0");
-        Assert.IsTrue(int.Parse((await El("ev-resizes").TextContentAsync())!, CultureInfo.InvariantCulture) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await El("ev-resizes").TextContentAsync())!, CultureInfo.InvariantCulture));
         await Expect(Gutter("spl-basic")).ToHaveAttributeAsync("aria-valuenow", "65.83");
         await Expect(El("spl-basic")).Not.ToHaveClassAsync(HasClass("bit-spl-drg"));
         await Expect(Page.Locator("body")).Not.ToHaveClassAsync(HasClass("bit-spl-drg-bdy"));
@@ -139,7 +139,7 @@ public class BitSplitterE2ETests : E2ETestBase
 
         // A key move is a resize like a drag: it is opened, and closed once the keys come back up.
         await Expect(El("ev-ends")).Not.ToHaveTextAsync("0");
-        Assert.IsTrue(int.Parse((await El("ev-starts").TextContentAsync())!, CultureInfo.InvariantCulture) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await El("ev-starts").TextContentAsync())!, CultureInfo.InvariantCulture));
         await Expect(Gutter("spl-basic")).ToHaveAttributeAsync("aria-valuenow", "0");
     }
 
@@ -166,7 +166,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await Expect(Gutter(root)).ToHaveAttributeAsync("aria-orientation", "horizontal");
         await Expect(Gutter(root)).ToHaveCSSAsync("cursor", "row-resize");
         Near(145, await HeightAsync(First(root)), "the top panel");
-        Assert.IsTrue((await BoxAsync(Second(root))).Y > (await BoxAsync(First(root))).Y);
+        Assert.IsGreaterThan((await BoxAsync(First(root))).Y, (await BoxAsync(Second(root))).Y);
 
         await DragGutterAsync(root, 0, 50);
         Near(195, await HeightAsync(First(root)), "dragged down");
@@ -296,7 +296,7 @@ public class BitSplitterE2ETests : E2ETestBase
             Near(295, await WidthAsync(First(root)), "the panels stay put during a lazy drag");
             var line = await BoxAsync(preview);
             var gutter = await BoxAsync(Gutter(root));
-            Assert.IsTrue(line.X > gutter.X + 50, $"The preview line ({line.X}) did not follow the pointer past the gutter ({gutter.X}).");
+            Assert.IsGreaterThan(gutter.X + 50, line.X, $"The preview line ({line.X}) did not follow the pointer past the gutter ({gutter.X}).");
         });
 
         await Expect(preview).Not.ToHaveClassAsync(HasClass("bit-spl-prv-on"));
@@ -617,7 +617,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await Expect(Gutter(root)).Not.ToHaveAttributeAsync("tabindex", new Regex(".*"));
         await Expect(Gutter(root)).ToHaveCSSAsync("cursor", "default");
         // Dimmed as a whole, the panels with it; a read-only one is not.
-        Assert.IsTrue(double.Parse(await StyleAsync(El(root), "opacity"), CultureInfo.InvariantCulture) < 1);
+        Assert.IsLessThan(1, double.Parse(await StyleAsync(El(root), "opacity"), CultureInfo.InvariantCulture));
         await Expect(El("spl-ro")).ToHaveCSSAsync("opacity", "1");
 
         await DragGutterAsync(root, 100, 0);
@@ -733,7 +733,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await Expect(El(root)).ToHaveAttributeAsync("dir", "rtl");
         var first = await BoxAsync(First(root));
         var second = await BoxAsync(Second(root));
-        Assert.IsTrue(first.X > second.X, "The first panel is not on the right.");
+        Assert.IsGreaterThan(second.X, first.X, "The first panel is not on the right.");
         Near(200, first.Width, "FirstPanelSize");
 
         await DragGutterAsync(root, -100, 0);
@@ -755,7 +755,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var root = "spl-rtl-inh";
-        Assert.IsTrue((await BoxAsync(First(root))).X > (await BoxAsync(Second(root))).X, "The first panel is not on the right.");
+        Assert.IsGreaterThan((await BoxAsync(Second(root))).X, (await BoxAsync(First(root))).X, "The first panel is not on the right.");
         await DragGutterAsync(root, -50, 0);
         Near(250, await WidthAsync(First(root)), "dragging left grows the first panel");
     }
@@ -766,7 +766,7 @@ public class BitSplitterE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(El("spl-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(El("spl-vis-hidden"))).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("spl-vis-hidden"))).Height);
         await Expect(El("spl-vis-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -865,7 +865,7 @@ public class BitSplitterE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

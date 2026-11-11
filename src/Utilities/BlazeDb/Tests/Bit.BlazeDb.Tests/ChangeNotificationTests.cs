@@ -44,7 +44,7 @@ public class ChangeNotificationTests
         recorder.Events.Clear();
         Assert.IsFalse(people.Delete(1));
         Assert.IsFalse(people.TryUpdate(new Person(1, "Ghost", 0)));
-        Assert.AreEqual(0, recorder.Events.Count, "A write that changes nothing reports nothing.");
+        Assert.IsEmpty(recorder.Events, "A write that changes nothing reports nothing.");
     }
 
     [TestMethod]
@@ -64,12 +64,12 @@ public class ChangeNotificationTests
             people.Delete(2);
             people.Insert(new Person(2, "Grace Hopper", 46));  // deleted and back: an update
             people.Delete(3);
-            Assert.AreEqual(0, recorder.Events.Count, "Nothing is reported before the commit.");
+            Assert.IsEmpty(recorder.Events, "Nothing is reported before the commit.");
             txn.Commit();
         }
 
         var changes = recorder.Events.Single().Changes;
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             new BlazeDbRowChange<int, Person>(BlazeDbChangeKind.Updated, 1, new Person(1, "Ada", 36), new Person(1, "Ada Lovelace", 38)),
             new BlazeDbRowChange<int, Person>(BlazeDbChangeKind.Updated, 2, new Person(2, "Grace", 45), new Person(2, "Grace Hopper", 46)),
@@ -102,7 +102,7 @@ public class ChangeNotificationTests
             txn.Commit();
         }
 
-        Assert.AreEqual(1, recorder.Events.Count);
+        Assert.ContainsSingle(recorder.Events);
         Assert.AreEqual(3, recorder.Single().Key);
     }
 
@@ -120,14 +120,14 @@ public class ChangeNotificationTests
                 PersonTable.Descriptor.RowWriter(w, p);
             },
             PersonTable.Descriptor.RowReader, PersonTable.Descriptor.KeyWriter, PersonTable.Descriptor.KeyReader);
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(fragile));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(fragile), TestContext.CancellationToken);
         var table = db.GetTable(fragile);
         var recorder = new Recorder<int, Person>(table);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => table.Insert(new Person(1, "boom", 0)));
         Assert.ThrowsExactly<InvalidOperationException>(() => table.InsertMany([new Person(2, "fine", 0), new Person(3, "boom", 0)]));
 
-        Assert.AreEqual(0, recorder.Events.Count);
+        Assert.IsEmpty(recorder.Events);
     }
 
     [TestMethod]
@@ -138,23 +138,23 @@ public class ChangeNotificationTests
         var recorder = new Recorder<int, Person>(people);
 
         people.InsertMany(Enumerable.Range(1, 5).Select(i => new Person(i, $"P{i}", i)));
-        Assert.AreEqual(1, recorder.Events.Count);
-        Assert.AreEqual(5, recorder.Events[0].Changes.Count);
+        Assert.ContainsSingle(recorder.Events);
+        Assert.HasCount(5, recorder.Events[0].Changes);
 
         db.RunInTransaction(() =>
         {
             people.DeleteMany([1, 2]);
             db.RunInTransaction(() => people.Upsert(new Person(3, "Changed", 3)));
-            Assert.AreEqual(1, recorder.Events.Count, "Nested units report with the outermost commit.");
+            Assert.ContainsSingle(recorder.Events, "Nested units report with the outermost commit.");
         });
-        Assert.AreEqual(2, recorder.Events.Count);
-        Assert.AreEqual(3, recorder.Events[1].Changes.Count);
+        Assert.HasCount(2, recorder.Events);
+        Assert.HasCount(3, recorder.Events[1].Changes);
     }
 
     [TestMethod]
     public async Task The_Database_Event_Follows_Every_Table_After_Their_Own()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(Setting.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(PersonTable.Descriptor).AddTable(Setting.Table), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         var settings = db.GetTable(Setting.Table);
         var order = new List<string>();
@@ -169,8 +169,8 @@ public class ChangeNotificationTests
             people.Insert(new Person(1, "Ada", 36));
         });
 
-        CollectionAssert.AreEqual(new[] { "settings", "people", "database" }, order);
-        CollectionAssert.AreEqual(new[] { "Setting", "people" }, all.Single().Changes.Select(c => c.Table).ToArray());
+        Assert.AreSequenceEqual(new[] { "settings", "people", "database" }, order);
+        Assert.AreSequenceEqual(new[] { "Setting", "people" }, all.Single().Changes.Select(c => c.Table).ToArray());
         Assert.AreEqual(1, all[0].Changes[1].Key);
         Assert.AreEqual(BlazeDbChangeKind.Inserted, all[0].Changes[1].Kind);
         Assert.IsNull(all[0].Changes[1].OldRow);
@@ -189,13 +189,13 @@ public class ChangeNotificationTests
             if (e.Changes[0].Key == 1)
             {
                 people.Insert(new Person(2, "Follow-up", 0));
-                Assert.AreEqual(1, seen.Count);
+                Assert.ContainsSingle(seen);
             }
         };
 
         people.Insert(new Person(1, "Ada", 36));
 
-        CollectionAssert.AreEqual(new[] { (1, 1), (2, 2) }, seen);
+        Assert.AreSequenceEqual(new[] { (1, 1), (2, 2) }, seen);
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class ChangeNotificationTests
 
         var error = Assert.ThrowsExactly<BlazeDbChangeHandlerException>(() => people.Insert(new Person(1, "Ada", 36)));
 
-        StringAssert.Contains(error.Message, "committed");
+        Assert.Contains("committed", error.Message);
         Assert.IsInstanceOfType<InvalidOperationException>(error.InnerException);
         Assert.IsTrue(people.Contains(1));
         Assert.AreEqual(2, reached, "The other table handler and the database handler both heard of the commit.");
@@ -220,8 +220,8 @@ public class ChangeNotificationTests
     public async Task A_Replica_Reports_A_Reload_As_A_Reset()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using var writer = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor));
-        await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor));
+        await using var writer = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
+        await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage, ReadOnly = true }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         var replicaPeople = replica.GetTable(PersonTable.Descriptor);
         var recorder = new Recorder<int, Person>(replicaPeople);
         var databaseResets = 0;
@@ -229,11 +229,11 @@ public class ChangeNotificationTests
         using var count = replicaPeople.Watch(t => t.Count);
 
         writer.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await writer.FlushAsync();
-        await replica.ReloadAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(recorder.Events.Single().IsReset);
-        Assert.AreEqual(0, recorder.Events[0].Changes.Count);
+        Assert.IsEmpty(recorder.Events[0].Changes);
         Assert.AreEqual(1, databaseResets);
         Assert.AreEqual(1, count.Result);
     }
@@ -241,7 +241,7 @@ public class ChangeNotificationTests
     [TestMethod]
     public async Task A_Live_Query_Refreshes_Only_For_Relevant_Commits()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(TodoItem.Table), TestContext.CancellationToken);
         var todos = db.GetTable(TodoItem.Table);
         var work = Guid.NewGuid();
         todos.Insert(new TodoItem { Id = work, Title = "Write", Category = "work" });
@@ -249,16 +249,16 @@ public class ChangeNotificationTests
         using var live = todos.Watch(t => t.Lookup(TodoItem.Indexes.Category, "work").Select(x => x.Title).ToList(), relevantTo: t => t.Category == "work");
         var raised = 0;
         live.Changed += (_, _) => raised++;
-        CollectionAssert.AreEqual(new[] { "Write" }, live.Result);
+        Assert.AreSequenceEqual(new[] { "Write" }, live.Result);
 
         todos.Insert(new TodoItem { Id = Guid.NewGuid(), Title = "Shop", Category = "home" });
         Assert.AreEqual(0, live.Version, "A row the query cannot see does not re-run it.");
 
         todos.Update(new TodoItem { Id = work, Title = "Write more", Category = "work" });
-        CollectionAssert.AreEqual(new[] { "Write more" }, live.Result);
+        Assert.AreSequenceEqual(new[] { "Write more" }, live.Result);
 
         todos.Update(new TodoItem { Id = work, Title = "Write more", Category = "home" }); // leaves the result: the old row was relevant
-        Assert.AreEqual(0, live.Result.Count);
+        Assert.IsEmpty(live.Result);
         Assert.AreEqual(2, raised);
 
         live.Dispose();
@@ -281,8 +281,8 @@ public class ChangeNotificationTests
         ada.Age = 37;
         context.SaveChanges();
 
-        Assert.AreEqual(2, recorder.Events.Count);
-        Assert.AreEqual(2, recorder.Events[0].Changes.Count);
+        Assert.HasCount(2, recorder.Events);
+        Assert.HasCount(2, recorder.Events[0].Changes);
         var update = recorder.Events[1].Changes.Single();
         Assert.AreEqual(BlazeDbChangeKind.Updated, update.Kind);
         Assert.AreEqual(36, update.OldRow!.Age);
@@ -303,9 +303,11 @@ public class ChangeNotificationTests
             {
                 people.Insert(new Person(writer * 1000 + i, "x", i));
             }
-        })));
+        }, TestContext.CancellationToken)));
 
         Assert.AreEqual(2000, people.Count);
         Assert.AreEqual(2000, reported);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

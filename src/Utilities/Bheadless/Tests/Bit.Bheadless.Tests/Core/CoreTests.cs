@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Bheadless.Tests.Core;
 
 [TestClass]
@@ -52,9 +54,9 @@ public class FilterTests
         var none = BitBhFilter.Score("Profile", "xyz");
 
         Assert.AreEqual(1, exact);
-        Assert.IsTrue(prefix > inside, $"{prefix} > {inside}");
-        Assert.IsTrue(inside > 0);
-        Assert.IsTrue(fuzzy > 0);
+        Assert.IsGreaterThan(inside, prefix, $"{prefix} > {inside}");
+        Assert.IsGreaterThan(0, inside);
+        Assert.IsGreaterThan(0, fuzzy);
         Assert.AreEqual(0, none);
         Assert.AreEqual(1, BitBhFilter.Score("anything", " "));
     }
@@ -120,11 +122,11 @@ public class TypeaheadTests
     }
 
     [TestMethod]
-    public void Buffer_expires()
+    public async global::System.Threading.Tasks.Task Buffer_expires()
     {
         var t = new BitBhTypeahead { Timeout = TimeSpan.Zero };
         t.SearchIndex(Items.Length, "c", -1, i => Items[i], _ => false);
-        Thread.Sleep(5);
+        await global::System.Threading.Tasks.Task.Delay(5, TestContext.CancellationToken);
         Assert.AreEqual(string.Empty, t.Buffer);
         Assert.IsFalse(t.IsActive);
     }
@@ -137,6 +139,7 @@ public class TypeaheadTests
     [DataRow("a", false, true, false)]
     public void Typeahead_keys(string key, bool ctrl, bool alt, bool expected)
         => Assert.AreEqual(expected, BitBhTypeahead.IsTypeaheadKey(key, ctrl, alt));
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }
 
 [TestClass]

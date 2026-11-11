@@ -9,7 +9,7 @@ namespace Bit.Bsqlite.EntityFrameworkCore.Tests;
 /// usable or blocked, so a new sync-only EF path shows up as a failing expectation naming the frame.
 /// </summary>
 [TestClass]
-public sealed class SyncSurfaceAudit
+internal sealed class SyncSurfaceAudit
 {
     public TestContext TestContext { get; set; } = null!;
 
@@ -32,7 +32,7 @@ public sealed class SyncSurfaceAudit
         return ctx;
     }
 
-    public static IEnumerable<(string Name, Expectation Expected, Func<ProductContext, CancellationToken, Task> Operation)> DataOperations =>
+    internal static IEnumerable<(string Name, Expectation Expected, Func<ProductContext, CancellationToken, Task> Operation)> DataOperations =>
     [
         ("ToListAsync", Expectation.Works, (ctx, ct) => ctx.Products.ToListAsync(ct)),
         ("FirstOrDefaultAsync", Expectation.Works, (ctx, ct) => ctx.Products.FirstOrDefaultAsync(ct)),
@@ -166,7 +166,7 @@ public sealed class SyncSurfaceAudit
         ),
     ];
 
-    public static IEnumerable<(string Name, Expectation Expected, Func<ProductContext, CancellationToken, Task> Operation)> SchemaOperations =>
+    internal static IEnumerable<(string Name, Expectation Expected, Func<ProductContext, CancellationToken, Task> Operation)> SchemaOperations =>
     [
         ("EnsureCreatedAsync", Expectation.Works, (ctx, ct) => ctx.Database.EnsureCreatedAsync(ct)),
         ("EnsureDeletedAsync", Expectation.Works, (ctx, ct) => ctx.Database.EnsureDeletedAsync(ct)),

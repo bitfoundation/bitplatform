@@ -136,7 +136,7 @@ public abstract class BonboardingTest
         "() => { const e = document.activeElement; return e ? `${e.tagName.toLowerCase()}.${e.className}|${(e.getAttribute('aria-label') || e.textContent || '').trim()}` : ''; }");
 
     protected static void AssertNear(double expected, double actual, double tolerance, string what) =>
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what} is {actual}, expected {expected} (±{tolerance}).");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what} is {actual}, expected {expected} (±{tolerance}).");
 
     /// <summary>Fails with every console error the test's pages logged.</summary>
     protected void AssertNoConsoleErrors(string where) =>

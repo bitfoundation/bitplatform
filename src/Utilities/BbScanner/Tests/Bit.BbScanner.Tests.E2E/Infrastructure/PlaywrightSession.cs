@@ -18,7 +18,7 @@ namespace Bit.BbScanner.Tests.E2E.Infrastructure;
 /// <see cref="Session.Unavailable"/>, so every test reports it without waiting out the same timeout again.
 /// </para>
 /// </remarks>
-public static class PlaywrightSession
+internal static class PlaywrightSession
 {
     private static readonly Lazy<Task<Session>> _session = new(StartAsync);
 
@@ -113,7 +113,7 @@ public static class PlaywrightSession
     }
 
     /// <summary>The shared driver, demo and clips, or the reason the suite cannot run.</summary>
-    public sealed record Session(IPlaywright? Playwright, BrowserTypeLaunchOptions? Launch, DemoHost? Host, CameraClips? Clips, string? Unavailable)
+    internal sealed record Session(IPlaywright? Playwright, BrowserTypeLaunchOptions? Launch, DemoHost? Host, CameraClips? Clips, string? Unavailable)
     {
         public static Session Fail(string reason) => new(null, null, null, null, reason);
     }

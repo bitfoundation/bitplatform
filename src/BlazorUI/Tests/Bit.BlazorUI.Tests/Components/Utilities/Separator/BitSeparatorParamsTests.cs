@@ -42,8 +42,8 @@ public class BitSeparatorParamsTests : BunitTestContext
     [TestMethod]
     public void BitSeparatorParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSeparator)}", BitSeparatorParams.ParamName);
-        Assert.AreEqual("BitParams.BitSeparator", BitSeparatorParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSeparator)}", new BitSeparatorParams().Name);
+        Assert.AreEqual("BitParams.BitSeparator", new BitSeparatorParams().Name);
     }
 
     [TestMethod]
@@ -115,11 +115,11 @@ public class BitSeparatorParamsTests : BunitTestContext
 
         var style = component.Find(".bit-spr").GetAttribute("style");
 
-        StringAssert.Contains(style, "margin: 1rem;");
-        StringAssert.Contains(style, "width:auto");
-        StringAssert.Contains(style, "--bit-spr-siz:3px");
-        StringAssert.Contains(style, "--bit-spr-ofs:2rem");
-        StringAssert.Contains(style, "--bit-spr-ins:1rem 0");
+        Assert.Contains("margin: 1rem;", style!);
+        Assert.Contains("width:auto", style);
+        Assert.Contains("--bit-spr-siz:3px", style);
+        Assert.Contains("--bit-spr-ofs:2rem", style);
+        Assert.Contains("--bit-spr-ins:1rem 0", style);
         Assert.AreEqual("color: red;", component.Find(".bit-spr-cnt").GetAttribute("style"));
     }
 

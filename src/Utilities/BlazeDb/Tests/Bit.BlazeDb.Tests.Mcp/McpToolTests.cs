@@ -57,7 +57,8 @@ public class McpToolTests
         Assert.Contains("Lazy loading on WebAssembly", headings);
         foreach (var heading in headings)
         {
-            Assert.IsTrue(BlazeDbSourceCatalog.GetGuideSection(heading)?.TrimStart('#').TrimStart().StartsWith(heading, StringComparison.Ordinal) is true, $"'{heading}' is not a section of the guide.");
+            var startsWithHeading = BlazeDbSourceCatalog.GetGuideSection(heading)?.TrimStart('#').TrimStart().StartsWith(heading, StringComparison.Ordinal);
+            Assert.IsTrue(startsWithHeading, $"'{heading}' is not a section of the guide.");
         }
     }
 

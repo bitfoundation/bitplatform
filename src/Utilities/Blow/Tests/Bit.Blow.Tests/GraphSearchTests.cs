@@ -22,29 +22,29 @@ public class GraphSearchTests
     {
         // Equal to the query, starting with it, a word starting with it, then the query anywhere.
         // Ties keep the graph's order.
-        CollectionAssert.AreEqual(new[] { "n2", "parse", "n6", "n1", "n3", "n5" }, Ids(BlowGraphSearch.FindNodes(Nodes, "parse")));
+        Assert.AreSequenceEqual(new[] { "n2", "parse", "n6", "n1", "n3", "n5" }, Ids(BlowGraphSearch.FindNodes(Nodes, "parse")));
     }
 
     [TestMethod]
     public void CaseAndAccentsAreIgnored()
     {
-        CollectionAssert.AreEqual(new[] { "n1" }, Ids(BlowGraphSearch.FindNodes(Nodes, "RESUME")));
+        Assert.AreSequenceEqual(new[] { "n1" }, Ids(BlowGraphSearch.FindNodes(Nodes, "RESUME")));
     }
 
     [TestMethod]
     public void EveryWordHasToMatchSomewhere()
     {
-        CollectionAssert.AreEqual(new[] { "n4" }, Ids(BlowGraphSearch.FindNodes(Nodes, "sum left")));
+        Assert.AreSequenceEqual(new[] { "n4" }, Ids(BlowGraphSearch.FindNodes(Nodes, "sum left")));
         Assert.IsEmpty(BlowGraphSearch.FindNodes(Nodes, "sum right"));
     }
 
     [TestMethod]
     public void PortsAndTextOfYourOwnAreSearched()
     {
-        CollectionAssert.AreEqual(new[] { "n4" }, Ids(BlowGraphSearch.FindNodes(Nodes, "number")));
+        Assert.AreSequenceEqual(new[] { "n4" }, Ids(BlowGraphSearch.FindNodes(Nodes, "number")));
 
         var found = BlowGraphSearch.FindNodes(Nodes, "matrix ops", n => n.Id == "n5" ? "linear algebra ops" : null);
-        CollectionAssert.AreEqual(new[] { "n5" }, Ids(found));
+        Assert.AreSequenceEqual(new[] { "n5" }, Ids(found));
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class GraphSearchTests
     {
         var nodes = new List<BlowNode> { new() { Id = "x", Label = "a.b" }, new() { Id = "y", Label = "axb" } };
 
-        CollectionAssert.AreEqual(new[] { "x" }, Ids(BlowGraphSearch.FindNodes(nodes, "a.b")));
+        Assert.AreSequenceEqual(new[] { "x" }, Ids(BlowGraphSearch.FindNodes(nodes, "a.b")));
         Assert.IsEmpty(BlowGraphSearch.FindNodes(nodes, "(a+)+$"));
     }
 
@@ -74,11 +74,11 @@ public class GraphSearchTests
         var names = new Dictionary<string, string> { ["n2"] = "Parse", ["n4"] = "Sum", ["n7"] = "Report" };
         string[] Find(string query) => BlowGraphSearch.FindEdges(edges, query, id => names[id]).Select(e => e.Id).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "e1", "e2" }, Find("sum"));
-        CollectionAssert.AreEqual(new[] { "e2" }, Find("total"));
-        CollectionAssert.AreEqual(new[] { "e1" }, Find("parse sum"));
+        Assert.AreSequenceEqual(new[] { "e1", "e2" }, Find("sum"));
+        Assert.AreSequenceEqual(new[] { "e2" }, Find("total"));
+        Assert.AreSequenceEqual(new[] { "e1" }, Find("parse sum"));
 
         // Without names, by the ids of the nodes.
-        CollectionAssert.AreEqual(new[] { "e2" }, BlowGraphSearch.FindEdges(edges, "n7").Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "e2" }, BlowGraphSearch.FindEdges(edges, "n7").Select(e => e.Id).ToArray());
     }
 }

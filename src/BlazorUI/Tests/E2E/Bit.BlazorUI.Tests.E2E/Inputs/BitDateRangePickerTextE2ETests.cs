@@ -179,7 +179,7 @@ public class BitDateRangePickerTextE2ETests : BitDatePickersE2ETestBase
 
         var first = await BoxAsync(Day(pid, 2024, 6, 10));
         var next = await BoxAsync(Day(pid, 2024, 6, 11));
-        Assert.IsTrue(next.X < first.X, "The days of a week run from right to left.");
+        Assert.IsLessThan(first.X, next.X, "The days of a week run from right to left.");
     }
 
     [TestMethod]

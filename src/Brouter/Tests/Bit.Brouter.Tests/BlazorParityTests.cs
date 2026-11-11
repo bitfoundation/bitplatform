@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,7 +33,7 @@ public class BlazorParityTests : BunitTestContext
         // Framework parity: "/products/{culture?}/list" never matches "/products/list" - the
         // built-in router ignores optional-ness for non-trailing parameters.
         var cut = RenderAt("/products/list");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=products]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=products]")));
     }
 
     [TestMethod]
@@ -47,7 +47,7 @@ public class BlazorParityTests : BunitTestContext
     public void Constrained_middle_optional_rejects_a_file_name_segment()
     {
         var cut = RenderAt("/style.css/home");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=home]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=home]")));
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class BlazorParityTests : BunitTestContext
     {
         // "report." must not match "{name}.{ext?}" (framework parity).
         var cut = RenderAt("/files/report.");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=file]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=file]")));
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class BlazorParityTests : BunitTestContext
     public void Complex_segment_typed_parameter_rejects_a_non_matching_value()
     {
         var cut = RenderAt("/api/vX-10");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=version]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=version]")));
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class BlazorParityTests : BunitTestContext
     public void Nonfile_catch_all_rejects_a_file_name_remainder()
     {
         var cut = RenderAt("/static/app.js");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=static]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=static]")));
     }
 
     [TestMethod]
@@ -144,6 +144,6 @@ public class BlazorParityTests : BunitTestContext
     public void Validation_constraints_reject_out_of_range_values(string url)
     {
         var cut = RenderAt(url);
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=rate]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=rate]")));
     }
 }

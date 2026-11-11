@@ -186,13 +186,13 @@ public class ScriptDeliveryTests : McpTestBase
             Assert.Contains("modulesPath", lazy!.Signature ?? string.Empty);
             Assert.Contains("= null", lazy.Signature ?? string.Empty);
 
-            Assert.IsTrue(members.Any(member => member.Name == "UseBundledScripts"),
+            Assert.Contains(member => member.Name == "UseBundledScripts", members,
                 "BitButil.UseBundledScripts is not in the reference, so nothing documents how to override the switch back.");
 
             // The overload is what makes options reachable at all: without it in the reference, an
             // agent reading AddBitButilServices sees a no-argument call and stops there.
-            Assert.IsTrue(members.Any(member => member.Name == "AddBitButilServices"
-                                             && (member.Signature ?? string.Empty).Contains("BitButilOptions", StringComparison.Ordinal)),
+            Assert.Contains(member => member.Name == "AddBitButilServices"
+                                             && (member.Signature ?? string.Empty).Contains("BitButilOptions", StringComparison.Ordinal), members,
                 "No AddBitButilServices overload taking BitButilOptions is in the reference.");
         }
     }

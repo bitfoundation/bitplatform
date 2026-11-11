@@ -113,7 +113,7 @@ public class BitAiCopyButtonTests : BitAiTestBase
 
         button.Render(p => p.Add(c => c.ShowLabel, true));
 
-        StringAssert.Contains(button.Find("button").TextContent, "Copy code");
+        Assert.Contains("Copy code", button.Find("button").TextContent);
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class BitAiCopyButtonTests : BitAiTestBase
         Assert.AreEqual("copy", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(button.Find(".bit-aicpb-liv").ClassList.Contains("live-class"));
         Assert.AreEqual("color: red", button.Find(".bit-aicpb-liv").GetAttribute("style"));
         Assert.IsTrue(button.Find("button").ClassList.Contains("button-class"));
@@ -199,14 +199,14 @@ public class BitAiCopyButtonTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
     [TestMethod]
     public void BitAiCopyButtonParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiCopyButton", BitAiCopyButtonParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiCopyButton", new BitAiCopyButtonParams().Name);
         Assert.AreEqual(BitAiCopyButtonParams.ParamName, new BitAiCopyButtonParams().Name);
     }
 
@@ -229,7 +229,7 @@ public class BitAiCopyButtonTests : BitAiTestBase
                                                 .Where(n => baseParameters.Contains(n) is false && notCascaded.Contains(n) is false)
                                                 .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -261,7 +261,7 @@ public class BitAiCopyButtonTests : BitAiTestBase
         var roots = component.FindAll(".bit-aicpb");
 
         Assert.IsTrue(roots[0].ClassList.Contains("cascaded"));
-        StringAssert.Contains(roots[0].QuerySelector("button")!.TextContent, "Copy");
+        Assert.Contains("Copy", roots[0].QuerySelector("button")!.TextContent);
         Assert.IsTrue(roots[0].QuerySelector(".bit-aicpb-liv")!.ClassList.Contains("cascaded-live"));
         Assert.AreEqual(string.Empty, roots[1].QuerySelector("button")!.TextContent.Trim());
     }

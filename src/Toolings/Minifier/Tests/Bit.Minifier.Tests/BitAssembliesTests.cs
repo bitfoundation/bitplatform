@@ -19,9 +19,9 @@ public class BitAssembliesTests
             .Where(name => name.EndsWith("Generators", StringComparison.Ordinal) is false)
             .ToList();
 
-        Assert.IsTrue(packages.Count > 30);
+        Assert.IsGreaterThan(30, packages.Count);
         var missed = packages.Where(name => MinifierOptions.Matches(MinifierOptions.BitAssemblies, name) is false).ToList();
-        Assert.AreEqual(0, missed.Count, $"Packages the bit assemblies' patterns miss: {string.Join(", ", missed)}");
+        Assert.IsEmpty(missed, $"Packages the bit assemblies' patterns miss: {string.Join(", ", missed)}");
     }
 
     [TestMethod]
@@ -34,9 +34,9 @@ public class BitAssembliesTests
             .Select(AssemblyName)
             .ToList();
 
-        Assert.IsTrue(apps.Count > 100);
+        Assert.IsGreaterThan(100, apps.Count);
         var matched = apps.Where(name => MinifierOptions.Matches(MinifierOptions.BitAssemblies, name)).ToList();
-        Assert.AreEqual(0, matched.Count, $"Apps the bit assemblies' patterns take for packages: {string.Join(", ", matched)}");
+        Assert.IsEmpty(matched, $"Apps the bit assemblies' patterns take for packages: {string.Join(", ", matched)}");
     }
 
     [TestMethod]

@@ -31,7 +31,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = query, ["limit"] = 6 });
 
-            Assert.IsTrue(result.Hits.Any(hit => hit.Title.Contains(expected, StringComparison.OrdinalIgnoreCase)),
+            Assert.Contains(hit => hit.Title.Contains(expected, StringComparison.OrdinalIgnoreCase), result.Hits,
                 $"'{query}' did not find '{expected}' among: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
         }
     }
@@ -87,7 +87,7 @@ public partial class McpSearchTests
         // Deconstruct names every property it has, so it answers a question about any one of them first.
         var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = query, ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        Assert.DoesNotContain(IsObjectPlumbing, result.Hits, $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public partial class McpSearchTests
 
         var possessive = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = "what's the tour's target", ["limit"] = 6 });
 
-        Assert.IsFalse(possessive.Hits.Any(hit => hit.Title.Contains("library's", StringComparison.Ordinal)), string.Join(" | ", possessive.Hits.Select(hit => hit.Title)));
+        Assert.DoesNotContain(hit => hit.Title.Contains("library's", StringComparison.Ordinal), possessive.Hits, string.Join(" | ", possessive.Hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public partial class McpSearchTests
         // "speed" is not "spe" + "ed": cut that far, it found every section that says "specific".
         var result = await McpCall.StructuredAsync<BonboardingSearchResultDto>("SearchBonboarding", new() { ["query"] = "speed", ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(hit => $"{hit.Title} {hit.Snippet}".Contains("speed", StringComparison.OrdinalIgnoreCase) is false),
+        Assert.DoesNotContain(hit => $"{hit.Title} {hit.Snippet}".Contains("speed", StringComparison.OrdinalIgnoreCase) is false, result.Hits,
             string.Join(" | ", result.Hits.Select(hit => hit.Title)));
     }
 
@@ -182,7 +182,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = match.Groups["name"].Success
                 ? new Dictionary<string, object?> { [match.Groups["name"].Value] = match.Groups["value"].Value }

@@ -79,7 +79,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         // The wrapper must not introduce a layout box of its own; display:contents keeps it
         // transparent to the surrounding layout while the CSS vars still cascade to descendants.
-        StringAssert.StartsWith(style, "display:contents", StringComparison.Ordinal);
+        Assert.StartsWith("display:contents", style, StringComparison.Ordinal);
         Assert.IsTrue(style.Contains("--bit-clr-pri:#ABCDEF", StringComparison.Ordinal),
             $"CSS vars must still be emitted after the layout-neutral display. Actual: {style}");
     }
@@ -102,8 +102,8 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         // The user's style is appended last, so on the conflicting `display` property it wins
         // (last declaration in an inline style block takes effect).
-        StringAssert.StartsWith(style, "display:contents", StringComparison.Ordinal);
-        StringAssert.EndsWith(style, "display:flex;gap:8px", StringComparison.Ordinal);
+        Assert.StartsWith("display:contents", style, StringComparison.Ordinal);
+        Assert.EndsWith("display:flex;gap:8px", style, StringComparison.Ordinal);
         Assert.IsTrue(style.Contains("--bit-clr-pri:#ABCDEF", StringComparison.Ordinal));
     }
 
@@ -145,7 +145,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         // The outer provider applies a Theme so it renders exactly one wrapper element. The inner
         // provider (Theme null, no ThemeName) must NOT add a second wrapper - it relies on the
         // ancestor's existing unnamed cascade - while the probe still resolves the parent theme.
-        Assert.AreEqual(1, component.FindAll("div").Count);
+        Assert.ContainsSingle(component.FindAll("div"));
         Assert.AreEqual(ParentPrimary, component.Find("span").GetAttribute("data-primary"));
     }
 
@@ -185,7 +185,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
             parameters.AddChildContent<ThemeProbeConsumer>();
         });
 
-        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#111111");
+        Assert.Contains("--bit-clr-pri:#111111", component.Find("section").GetAttribute("style")!);
 
         // Mutating the held BitTheme instance in place is reflected in the emitted CSS variables on
         // the next render: the provider rebuilds its inline style from the current token values
@@ -198,7 +198,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
             parameters.AddChildContent<ThemeProbeConsumer>();
         });
 
-        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#222222");
+        Assert.Contains("--bit-clr-pri:#222222", component.Find("section").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
         // The inline CSS variables (the other propagation surface) must reflect the first theme too.
-        StringAssert.Contains(component.Find("div").GetAttribute("style"), "--bit-clr-pri:#111111");
+        Assert.Contains("--bit-clr-pri:#111111", component.Find("div").GetAttribute("style")!);
 
         // A new reference is a real change even when Frozen: the provider must rebuild and propagate.
         var second = new BitTheme();
@@ -256,7 +256,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
 
         Assert.AreEqual("#222222", component.Find("span").GetAttribute("data-primary"));
         // Both surfaces must update on the reference change, not just the cascade.
-        StringAssert.Contains(component.Find("div").GetAttribute("style"), "--bit-clr-pri:#222222");
+        Assert.Contains("--bit-clr-pri:#222222", component.Find("div").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -273,7 +273,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
             parameters.AddChildContent<ThemeProbeConsumer>();
         });
 
-        StringAssert.Contains(component.Find("section").GetAttribute("style"), "--bit-clr-pri:#111111");
+        Assert.Contains("--bit-clr-pri:#111111", component.Find("section").GetAttribute("style")!);
         // The cascade (the other propagation surface) must also reflect the first value.
         Assert.AreEqual("#111111", component.Find("span").GetAttribute("data-primary"));
 
@@ -290,7 +290,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
         });
 
         var style = component.Find("section").GetAttribute("style") ?? string.Empty;
-        StringAssert.Contains(style, "--bit-clr-pri:#111111");
+        Assert.Contains("--bit-clr-pri:#111111", style);
         Assert.IsFalse(style.Contains("--bit-clr-pri:#222222", StringComparison.Ordinal),
             $"Frozen provider should not pick up in-place mutations. Actual: {style}");
         // The cascade must likewise keep serving the original value; the frozen reference is unchanged
@@ -303,7 +303,7 @@ public sealed class BitThemeProviderTests : BunitTestContext
     /// CascadingParameter wiring. The outer provider casts its theme; the inner provider receives
     /// it via [CascadingParameter] and either layers an InnerTheme or re-cascades the parent.
     /// </summary>
-    public sealed class BitThemeProviderTestHost : ComponentBase
+    internal sealed class BitThemeProviderTestHost : ComponentBase
     {
         [Parameter] public BitTheme? OuterTheme { get; set; }
         [Parameter] public BitTheme? InnerTheme { get; set; }

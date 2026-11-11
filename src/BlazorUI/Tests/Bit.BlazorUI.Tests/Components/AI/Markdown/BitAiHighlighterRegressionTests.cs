@@ -34,9 +34,9 @@ public class BitAiHighlighterRegressionTests
         var tokens = BitAiSyntaxHighlighter.Highlight(code, "rust");
         string[] Texts(BitAiTokenKind kind) => tokens.Where(t => t.Kind == kind).Select(t => t.Slice(code).ToString()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "'a", "'a", "'static", "'outer", "'outer" }, Texts(BitAiTokenKind.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "'a", "'a", "'static", "'outer", "'outer" }, Texts(BitAiTokenKind.Label).ToArray());
         Assert.DoesNotContain(t => t.StartsWith('\''), Texts(BitAiTokenKind.Type));
-        CollectionAssert.AreEqual(new[] { "'a'", "'\\n'" }, Texts(BitAiTokenKind.String).ToArray());
+        Assert.AreSequenceEqual(new[] { "'a'", "'\\n'" }, Texts(BitAiTokenKind.String).ToArray());
         Assert.Contains("str", Texts(BitAiTokenKind.Type));
         Assert.Contains("loop", Texts(BitAiTokenKind.Keyword));
     }
@@ -47,9 +47,8 @@ public class BitAiHighlighterRegressionTests
         const string code = "#![allow(dead_code)]\n#[derive(Debug, Clone)]\nstruct S;\n#[tokio::main]\nasync fn main() {}";
         var tokens = BitAiSyntaxHighlighter.Highlight(code, "rust");
 
-        CollectionAssert.AreEqual(
-            new[] { "#![allow", "#[derive", "#[tokio::main" },
-            tokens.Where(t => t.Kind is BitAiTokenKind.Attribute).Select(t => t.Slice(code).ToString()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "#![allow", "#[derive", "#[tokio::main" }, tokens.Where(t => t.Kind is BitAiTokenKind.Attribute).Select(t => t.Slice(code).ToString()).ToArray());
         Assert.Contains(t => t.Kind is BitAiTokenKind.Type && t.Slice(code).ToString() == "Debug", tokens);
     }
 
@@ -73,7 +72,7 @@ public class BitAiHighlighterRegressionTests
         const string code = "// header\n.a { background: url(https://x.dev/a.png); } // trailing\n.b { color: red; }";
         var tokens = BitAiSyntaxHighlighter.Highlight(code, "scss");
 
-        CollectionAssert.AreEqual(new[] { "// header", "// trailing" }, tokens.Where(t => t.Kind is BitAiTokenKind.Comment).Select(t => t.Slice(code).ToString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "// header", "// trailing" }, tokens.Where(t => t.Kind is BitAiTokenKind.Comment).Select(t => t.Slice(code).ToString()).ToArray());
         Assert.Contains(t => t.Kind is BitAiTokenKind.Property && t.Slice(code).ToString() == "color", tokens);
     }
 

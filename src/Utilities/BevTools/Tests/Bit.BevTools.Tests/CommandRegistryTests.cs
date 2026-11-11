@@ -54,7 +54,7 @@ public class CommandRegistryTests
     {
         var registry = Create();
         var results = registry.Search("", limit: 100);
-        Assert.AreEqual(registry.Commands.Count, results.Count);
+        Assert.HasCount(registry.Commands.Count, results);
         Assert.AreSequenceEqual(results.Select(r => r.Command.Category).OrderBy(c => c), results.Select(r => r.Command.Category));
     }
 

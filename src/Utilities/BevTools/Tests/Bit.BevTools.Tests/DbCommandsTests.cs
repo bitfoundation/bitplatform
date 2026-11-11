@@ -15,7 +15,7 @@ namespace Bit.BevTools.Tests;
 [TestClass]
 public class DbCommandsTests
 {
-    public sealed class Order
+    internal sealed class Order
     {
         public int Id { get; set; }
 
@@ -69,8 +69,8 @@ public class DbCommandsTests
             var first = commands[0];
             Assert.AreEqual(BevDbCommands.Category, first.Category);
             Assert.AreEqual(BevDbCommands.ExecutedEventId, first.EventId);
-            StringAssert.Contains(first.DbCommand!.CommandText, "SELECT");
-            StringAssert.Contains(first.DbCommand.CommandText, "FROM \"Orders\"");
+            Assert.Contains("SELECT", first.DbCommand!.CommandText!);
+            Assert.Contains("FROM \"Orders\"", first.DbCommand.CommandText);
             Assert.IsNotNull(first.DbCommand.ElapsedMs);
             Assert.IsFalse(first.DbCommand.Failed);
 
@@ -79,8 +79,8 @@ public class DbCommandsTests
 
             session.Diagnostics.Evaluate(force: true);
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "db.per-item", session.Diagnostics.Findings).Diagnostic;
-            StringAssert.Contains(finding.Title, "ran 12 times");
-            StringAssert.Contains(finding.Evidence, "12 executions of one command");
+            Assert.Contains("ran 12 times", finding.Title);
+            Assert.Contains("12 executions of one command", finding.Evidence);
 
             using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "logs" } }));
             Assert.AreEqual(12, json.RootElement.GetProperty("dbCommands")[0].GetProperty("executions").GetInt32());
@@ -150,8 +150,8 @@ public class DbCommandsTests
 
             session.Diagnostics.Evaluate(force: true);
             var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "db.slow", session.Diagnostics.Findings).Diagnostic;
-            StringAssert.StartsWith(finding.Title, "A database command took");
-            StringAssert.Contains(finding.Evidence, "COUNT(*)");
+            Assert.StartsWith("A database command took", finding.Title);
+            Assert.Contains("COUNT(*)", finding.Evidence);
         }
     }
 
@@ -232,11 +232,11 @@ public class DatabaseViewTests : BunitContext
         panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Database").Click();
         var rows = panel.FindAll(".bev-body tbody tr.bev-row");
         Assert.HasCount(2, rows);
-        StringAssert.Contains(rows[0].TextContent, "WHERE");
-        StringAssert.Contains(rows[0].TextContent, "3");
+        Assert.Contains("WHERE", rows[0].TextContent);
+        Assert.Contains("3", rows[0].TextContent);
 
         rows[0].QuerySelector("button")!.Click();
         Assert.HasCount(3, panel.FindAll(".bev-body tbody tr.bev-row"), "the command's executions");
-        StringAssert.Contains(panel.Markup, "Show every entry");
+        Assert.Contains("Show every entry", panel.Markup);
     }
 }

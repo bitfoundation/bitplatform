@@ -94,13 +94,13 @@ public class BitAiDataTableE2ETests : E2ETestBase
 
         await Expect(root).ToHaveCSSAsync("overflow-x", "auto");
         var widths = await root.EvaluateAsync<double[]>("e => [e.scrollWidth, e.clientWidth]");
-        Assert.IsTrue(widths[0] > widths[1], $"The table scrolls sideways inside it: {widths[0]} > {widths[1]}.");
+        Assert.IsGreaterThan(widths[1], widths[0], $"The table scrolls sideways inside it: {widths[0]} > {widths[1]}.");
 
         // The header cells keep to one line, so the columns are as wide as their names.
         await Expect(HeaderCells("dtb-wide").First).ToHaveCSSAsync("white-space", "nowrap");
 
         await root.EvaluateAsync("e => e.scrollLeft = e.scrollWidth");
-        Assert.IsTrue(await root.EvaluateAsync<double>("e => e.scrollLeft") > 0);
+        Assert.IsGreaterThan(0, await root.EvaluateAsync<double>("e => e.scrollLeft"));
         Assert.AreEqual(0, await Page.EvaluateAsync<double>("() => window.scrollX"), "The page itself did not scroll.");
     }
 
@@ -143,7 +143,7 @@ public class BitAiDataTableE2ETests : E2ETestBase
         // The first column is the rightmost one, and each cell starts at its right edge.
         var first = await HeaderCells(id).Nth(0).RectAsync();
         var second = await HeaderCells(id).Nth(1).RectAsync();
-        Assert.IsTrue(first.Left >= second.Right - 1, "First Name is to the right of Age.");
+        Assert.IsGreaterThanOrEqualTo(second.Right - 1, first.Left, "First Name is to the right of Age.");
 
         var text = await HeaderCells(id).Nth(0).EvaluateAsync<double[]>(
             "e => { const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect(); return [b.left, b.right]; }");

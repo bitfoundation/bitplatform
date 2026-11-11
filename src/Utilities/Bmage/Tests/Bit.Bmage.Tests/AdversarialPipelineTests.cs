@@ -58,7 +58,7 @@ public sealed class AdversarialPipelineTests
         // The resize-elision rule deliberately removes an intermediate resample, so pixels may differ; the framing
         // must not. A mean difference this small cannot hide a shifted or differently cropped image.
         var mean = TestImages.MeanChannelDifference(unoptimised, optimised);
-        Assert.IsTrue(mean <= 12, $"optimiser moved the image (mean difference {mean:0.0}) for [{pipeline}]");
+        Assert.IsLessThanOrEqualTo(12, mean, $"optimiser moved the image (mean difference {mean:0.0}) for [{pipeline}]");
     }
 
     /// <summary>
@@ -224,6 +224,7 @@ public sealed class AdversarialPipelineTests
 
             using var src = Noise(48, 36, iteration);
             ImageBuffer? result = null;
+            var invalidCrop = false;
             try
             {
                 result = pipeline.Execute(src);
@@ -239,17 +240,20 @@ public sealed class AdversarialPipelineTests
                 // Acceptable: a random crop can fall entirely outside the image the previous step produced. What is
                 // not acceptable is disagreement, so the size query must also report the pipeline as inapplicable
                 // rather than the optimiser quietly substituting a region the caller never asked for.
-                Assert.IsFalse(pipeline.TryGetOutputSize(src.Size, out var predicted),
-                    $"[{pipeline}] failed at execution but the size query reported {predicted}");
+                invalidCrop = true;
             }
             catch (Exception ex)
             {
-                Assert.Fail($"pipeline [{pipeline}] threw {ex.GetType().Name}: {ex.Message}");
+                throw new global::System.InvalidOperationException($"pipeline [{pipeline}] threw {ex.GetType().Name}: {ex.Message}", ex);
             }
             finally
             {
                 result?.Dispose();
             }
+
+            if (invalidCrop)
+                Assert.IsFalse(pipeline.TryGetOutputSize(src.Size, out var predicted),
+                    $"[{pipeline}] failed at execution but the size query reported {predicted}");
         }
     }
 
@@ -263,7 +267,7 @@ public sealed class AdversarialPipelineTests
         for (var i = 0; i < 50; i++)
             history.Push(doc.AddOperation(new BrightnessAdjustment(i / 100f)), $"step {i}");
 
-        Assert.IsTrue(history.Entries.Count <= 5, $"history grew to {history.Entries.Count} entries with maxDepth 5");
+        Assert.IsLessThanOrEqualTo(5, history.Entries.Count, $"history grew to {history.Entries.Count} entries with maxDepth 5");
         Assert.AreEqual("Original", history.Entries[0].Label);
         Assert.AreEqual(history.Entries.Count - 1, history.Position);
     }
@@ -300,8 +304,8 @@ public sealed class AdversarialPipelineTests
         var history = new EditHistory(doc, maxDepth: 100);
         for (var i = 0; i < 1000; i++)
             history.Push(history.Current.AddOperation(new BrightnessAdjustment(0.001f)), $"e{i}");
-        Assert.IsTrue(history.EstimatedMemory < 10_000_000, $"history estimated at {history.EstimatedMemory} bytes");
-        Assert.IsTrue(history.Entries.Count <= 100);
+        Assert.IsLessThan(10_000_000, history.EstimatedMemory, $"history estimated at {history.EstimatedMemory} bytes");
+        Assert.IsLessThanOrEqualTo(100, history.Entries.Count);
     }
 
     // ------------------------------------------------------------------ session
@@ -318,15 +322,15 @@ public sealed class AdversarialPipelineTests
         {
             tasks.Add(Task.Run(async () =>
             {
-                try { await session.RenderPreviewAsync(); }
+                try { await session.RenderPreviewAsync(TestContext.CancellationToken); }
                 catch (OperationCanceledException) { /* expected: superseded by a newer render */ }
                 catch (Exception ex) { lock (failures) failures.Add(ex); }
-            }));
+            }, TestContext.CancellationToken));
         }
         await Task.WhenAll(tasks);
-        Assert.IsTrue(failures.Count == 0, $"concurrent previews threw: {string.Join("; ", failures.Select(f => f.GetType().Name + ": " + f.Message))}");
+        Assert.IsEmpty(failures, $"concurrent previews threw: {string.Join("; ", failures.Select(f => f.GetType().Name + ": " + f.Message))}");
 
-        var final = await session.RenderPreviewAsync();
+        var final = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.IsFalse(final.IsDisposed);
         Assert.IsFalse(session.IsPreviewStale);
     }
@@ -338,7 +342,7 @@ public sealed class AdversarialPipelineTests
         using var session = new ImageEditSession(Noise(1000, 500, 43), new ImageEditSessionOptions { MaxProxyDimension = 100 });
         Assert.IsTrue(session.UsesProxy, "UsesProxy is false before the first render for a 1000px image with a 100px proxy limit");
         Assert.AreEqual(0.1, session.ProxyScale, 0.5e-3);
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.IsTrue(session.UsesProxy);
         Assert.AreEqual(0.1, session.ProxyScale, 0.5e-3);
     }
@@ -351,7 +355,7 @@ public sealed class AdversarialPipelineTests
         await cts.CancelAsync();
         await Assert.ThrowsAsync<OperationCanceledException>(async () => await session.RenderPreviewAsync(cts.Token));
 
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.IsFalse(preview.IsDisposed);
     }
 
@@ -367,11 +371,11 @@ public sealed class AdversarialPipelineTests
         var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault(), allocator);
         using (var seed = Noise(400, 400, 51))
         {
-            var encoded = (await processor.EncodeAsync(seed, ImageExportOptions.Png)).Data;
+            var encoded = (await processor.EncodeAsync(seed, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
 
             for (var i = 0; i < 40; i++)
             {
-                using var decoded = await processor.DecodeAsync(encoded);
+                using var decoded = await processor.DecodeAsync(encoded, cancellationToken: TestContext.CancellationToken);
                 using var session = new ImageEditSession(decoded.Clone(allocator), new ImageEditSessionOptions
                 {
                     MaxProxyDimension = 200,
@@ -379,15 +383,15 @@ public sealed class AdversarialPipelineTests
                 });
                 session.AddOperation(new BrightnessAdjustment(0.05f));
                 session.AddOperation(new CropOperation(10, 10, 100, 100));
-                await session.RenderPreviewAsync();
-                using var full = await session.RenderFullAsync();
-                _ = await processor.EncodeAsync(full, ImageExportOptions.Jpeg);
+                await session.RenderPreviewAsync(TestContext.CancellationToken);
+                using var full = await session.RenderFullAsync(cancellationToken: TestContext.CancellationToken);
+                _ = await processor.EncodeAsync(full, ImageExportOptions.Jpeg, TestContext.CancellationToken);
             }
         }
 
-        Assert.IsTrue(allocator.Rented > 100, $"the probe only exercised {allocator.Rented} rentals");
+        Assert.IsGreaterThan(100, allocator.Rented, $"the probe only exercised {allocator.Rented} rentals");
         Assert.AreEqual(0, allocator.Outstanding);
-        Assert.IsTrue(allocator.Peak < 20, $"peak concurrent buffers was {allocator.Peak}, so intermediates are accumulating within a cycle");
+        Assert.IsLessThan(20, allocator.Peak, $"peak concurrent buffers was {allocator.Peak}, so intermediates are accumulating within a cycle");
     }
 
     /// <summary>Counts rentals against returns so buffer leaks are visible independently of pool retention.</summary>
@@ -427,13 +431,13 @@ public sealed class AdversarialPipelineTests
         session.AddOperation(new Bit.Bmage.Operations.Filters.BlurFilter(8f));
         var render = Task.Run(async () =>
         {
-            try { await session.RenderPreviewAsync(); }
+            try { await session.RenderPreviewAsync(TestContext.CancellationToken); }
             catch (OperationCanceledException) { }
             catch (ObjectDisposedException) { }
-        });
+        }, TestContext.CancellationToken);
         session.Dispose();
         await render;
-        Assert.ThrowsExactly<ObjectDisposedException>(() => session.RenderPreviewAsync().GetAwaiter().GetResult());
+        Assert.ThrowsExactly<ObjectDisposedException>(() => session.RenderPreviewAsync(TestContext.CancellationToken).GetAwaiter().GetResult());
     }
 
     // ------------------------------------------------------------------ cancellation
@@ -481,7 +485,7 @@ public sealed class AdversarialPipelineTests
         var processor = new ImageProcessor();
         using var img = Noise(256, 256, 63);
         var options = ImageExportOptions.Jpeg with { MaxFileSize = 10, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly };
-        await Assert.ThrowsExactlyAsync<ImageEncodeException>(async () => await processor.EncodeAsync(img, options));
+        await Assert.ThrowsExactlyAsync<ImageEncodeException>(async () => await processor.EncodeAsync(img, options, TestContext.CancellationToken));
     }
 
     /// <summary>DimensionsOnly must keep the requested quality; it is the whole point of the strategy.</summary>
@@ -497,8 +501,8 @@ public sealed class AdversarialPipelineTests
             MaxFileSize = 20_000,
             MaxFileSizeStrategy = MaxFileSizeStrategy.DimensionsOnly,
         };
-        var result = await processor.EncodeAsync(img, options);
-        Assert.IsTrue(result.Length <= 20_000, $"produced {result.Length} bytes");
+        var result = await processor.EncodeAsync(img, options, TestContext.CancellationToken);
+        Assert.IsLessThanOrEqualTo(20_000, result.Length, $"produced {result.Length} bytes");
         Assert.AreEqual(0.95, result.Quality!.Value, 0.5e-3);
     }
 
@@ -509,8 +513,8 @@ public sealed class AdversarialPipelineTests
         using var img = Noise(400, 400, 71);
         foreach (var target in new long[] { 100_000, 50_000, 20_000 })
         {
-            var result = await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { MaxFileSize = target });
-            Assert.IsTrue(result.Length <= target, $"target {target} produced {result.Length} bytes");
+            var result = await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { MaxFileSize = target }, TestContext.CancellationToken);
+            Assert.IsLessThanOrEqualTo(target, result.Length, $"target {target} produced {result.Length} bytes");
         }
     }
 
@@ -519,8 +523,8 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var img = Noise(16, 16, 73);
-        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, ImageExportOptions.Avif));
-        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Tiff }));
+        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, ImageExportOptions.Avif, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Tiff }, TestContext.CancellationToken));
     }
 
     // ------------------------------------------------------------------ batch
@@ -530,16 +534,16 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var good = Noise(64, 64, 75);
-        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png)).Data;
+        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
 
         var items = new List<BatchItem>();
         for (var i = 0; i < 12; i++)
             items.Add(i % 3 == 0 ? new BatchItem(new byte[] { 0xFF, 0xD8, 0xFF, 9, 9, 9 }, $"bad{i}") : new BatchItem(encoded, $"good{i}"));
 
         var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(32, 32),
-            new BatchOptions { ExportOptions = ImageExportOptions.Png });
+            new BatchOptions { ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken);
 
-        Assert.AreEqual(12, result.Results.Count);
+        Assert.HasCount(12, result.Results);
         Assert.AreEqual(8, result.SuccessCount);
         Assert.AreEqual(4, result.FailureCount);
         foreach (var r in result.Results)
@@ -553,17 +557,17 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var good = Noise(48, 48, 77);
-        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png)).Data;
+        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
         var items = Enumerable.Range(0, 20).Select(i => new BatchItem(encoded, $"i{i}")).ToList();
 
         var seen = 0;
         var progress = new Progress<BatchProgress>(_ => Interlocked.Increment(ref seen));
         var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(24, 24),
-            new BatchOptions { ExportOptions = ImageExportOptions.Png, Progress = progress });
+            new BatchOptions { ExportOptions = ImageExportOptions.Png, Progress = progress }, TestContext.CancellationToken);
 
         Assert.AreEqual(20, result.SuccessCount);
         // Progress<T> posts asynchronously; allow it to drain.
-        for (var i = 0; i < 50 && Volatile.Read(ref seen) < 20; i++) await Task.Delay(10);
+        for (var i = 0; i < 50 && Volatile.Read(ref seen) < 20; i++) await Task.Delay(10, TestContext.CancellationToken);
         Assert.AreEqual(20, Volatile.Read(ref seen));
     }
 
@@ -572,7 +576,7 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var good = Noise(256, 256, 79);
-        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png)).Data;
+        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
         var items = Enumerable.Range(0, 50).Select(i => new BatchItem(encoded, $"i{i}")).ToList();
 
         using var cts = new CancellationTokenSource();
@@ -582,11 +586,11 @@ public sealed class AdversarialPipelineTests
         var result = stopped.Result;
 
         Assert.IsTrue(result.WasCancelled);
-        Assert.AreEqual(50, result.Results.Count);
+        Assert.HasCount(50, result.Results);
         Assert.AreEqual(50, result.CancelledCount);
         Assert.AreEqual(0, result.SuccessCount);
         Assert.AreEqual(0, result.FailureCount);
-        CollectionAssert.AreEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
+        Assert.AreSequenceEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
     }
 
     [TestMethod]
@@ -594,19 +598,19 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var good = Noise(64, 64, 81);
-        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png)).Data;
+        var encoded = (await processor.EncodeAsync(good, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
         var items = new List<BatchItem> { new(new byte[] { 0xFF, 0xD8, 0xFF, 1, 2, 3 }, "bad") };
         items.AddRange(Enumerable.Range(0, 30).Select(i => new BatchItem(encoded, $"g{i}")));
 
         var result = await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(32, 32),
-            new BatchOptions { StopOnFirstError = true, MaxConcurrency = 1, ExportOptions = ImageExportOptions.Png });
+            new BatchOptions { StopOnFirstError = true, MaxConcurrency = 1, ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken);
 
-        Assert.AreEqual(31, result.Results.Count);
-        Assert.IsTrue(result.FailureCount >= 1);
+        Assert.HasCount(31, result.Results);
+        Assert.IsGreaterThanOrEqualTo(1, result.FailureCount);
         // Stopped by its own rule, not by the caller: the items it skipped are cancelled, the batch was not.
         Assert.IsFalse(result.WasCancelled);
         Assert.AreEqual(30, result.CancelledCount);
-        Assert.AreEqual(30, result.Cancelled.Count());
+        Assert.HasCount(30, result.Cancelled);
         foreach (var r in result.Results)
         {
             Assert.IsNotNull(r);
@@ -619,14 +623,14 @@ public sealed class AdversarialPipelineTests
     public async Task DecodingGarbageThrowsImageDecodeException()
     {
         var processor = new ImageProcessor();
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await processor.DecodeAsync(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await processor.DecodeAsync(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task DecodingEmptyDataThrowsImageDecodeException()
     {
         var processor = new ImageProcessor();
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await processor.DecodeAsync(ReadOnlyMemory<byte>.Empty));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await processor.DecodeAsync(ReadOnlyMemory<byte>.Empty, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -637,11 +641,11 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var img = Noise(48, 48, 83);
-        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format });
+        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format }, TestContext.CancellationToken);
         for (var cut = 4; cut < encoded.Data.Length; cut += Math.Max(1, encoded.Data.Length / 10))
         {
             var truncated = encoded.Data.AsMemory(0, cut);
-            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(truncated)).Dispose());
+            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(truncated, cancellationToken: TestContext.CancellationToken)).Dispose());
             Assert.IsTrue(ex is null or ImageException,
                 $"{format} truncated to {cut} of {encoded.Data.Length} bytes threw {ex?.GetType().Name}: {ex?.Message}");
         }
@@ -655,14 +659,14 @@ public sealed class AdversarialPipelineTests
     {
         var processor = new ImageProcessor();
         using var img = Noise(48, 48, 87);
-        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format });
+        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = format }, TestContext.CancellationToken);
         var rnd = new Random(4242);
         for (var trial = 0; trial < 60; trial++)
         {
             var copy = encoded.Data.ToArray();
             for (var flips = 0; flips < 6; flips++)
                 copy[rnd.Next(copy.Length)] = (byte)rnd.Next(256);
-            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(copy)).Dispose());
+            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(copy, cancellationToken: TestContext.CancellationToken)).Dispose());
             Assert.IsTrue(ex is null or ImageException,
                 $"{format} corruption trial {trial} threw {ex?.GetType().Name}: {ex?.Message}");
         }
@@ -678,10 +682,12 @@ public sealed class AdversarialPipelineTests
         foreach (var (w, h) in new[] { (1, 1), (1, 17), (17, 1), (2, 2), (63, 65), (256, 129) })
         {
             using var src = Noise(w, h, w * 31 + h);
-            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format, Quality = 0.9 });
+            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format, Quality = 0.9 }, TestContext.CancellationToken);
             Assert.AreEqual(format, encoded.Format);
-            using var decoded = await processor.DecodeAsync(encoded.Data);
+            using var decoded = await processor.DecodeAsync(encoded.Data, cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual(new Size(w, h), decoded.Size);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

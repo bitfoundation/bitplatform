@@ -85,9 +85,9 @@ public class BitToggleE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"tg-basic\"");
-        StringAssert.Contains(html, "role=\"switch\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"tg-basic\"", html);
+        Assert.Contains("role=\"switch\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"tg-default-on\" class=\"[^\"]*bit-tgl-chk"), "The on-by-default toggle is prerendered on.");
 
         await OpenAsync(Url);
@@ -212,7 +212,7 @@ public class BitToggleE2ETests : E2ETestBase
         Assert.AreEqual(oneSideBefore.Width, oneSideAfter.Width, 0.5, "The track keeps its width through a flip.");
 
         var plain = await BoxOfAsync(Button("tg-plain"));
-        Assert.IsTrue(oneSideAfter.Width > plain.Width, "The track widens to fit its content.");
+        Assert.IsGreaterThan(plain.Width, oneSideAfter.Width, "The track widens to fit its content.");
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var roomy = await BoxOfAsync(Thumb("tg-icons"));
         var plain = await BoxOfAsync(Thumb("tg-plain"));
-        Assert.IsTrue(roomy.Width > plain.Width, "A knob with a glyph is roomier.");
+        Assert.IsGreaterThan(plain.Width, roomy.Width, "A knob with a glyph is roomier.");
 
         await Expect(Page.Locator("#tg-icon-on .bit-tgl-ico")).ToHaveClassAsync(HasClass("bit-icon--CheckMark"));
         var before = await BoxOfAsync(Button("tg-icon-on"));
@@ -429,7 +429,7 @@ public class BitToggleE2ETests : E2ETestBase
         await Expect(Hidden("tg-required")).Not.ToHaveAttributeAsync("required", AnyValue);
 
         var asterisk = await Label("tg-required").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(asterisk, "*");
+        Assert.Contains("*", asterisk);
         var color = await Label("tg-required").EvaluateAsync<string>("el => getComputedStyle(el, '::after').color");
         Assert.AreEqual(await ResolveColorAsync("var(--bit-clr-req)"), color);
 
@@ -599,7 +599,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var button = await BoxOfAsync(Button("tg-desc"));
         var line = await BoxOfAsync(description);
-        Assert.IsTrue(line.Y >= button.Y + button.Height - 1, "The description sits under the switch.");
+        Assert.IsGreaterThanOrEqualTo(button.Y + button.Height - 1, line.Y, "The description sits under the switch.");
 
         await description.ClickAsync();
         await Button("tg-basic").ClickAsync();
@@ -608,7 +608,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var inlineDescription = await BoxOfAsync(Page.Locator("#tg-desc-inline .bit-tgl-des"));
         var inlineButton = await BoxOfAsync(Button("tg-desc-inline"));
-        Assert.IsTrue(inlineDescription.Y >= inlineButton.Y + inlineButton.Height - 1, "Inline, the description takes a line of its own.");
+        Assert.IsGreaterThanOrEqualTo(inlineButton.Y + inlineButton.Height - 1, inlineDescription.Y, "Inline, the description takes a line of its own.");
         Assert.AreEqual(400, (await BoxOfAsync(Root("tg-desc-inline"))).Width, 1);
 
         await Expect(Page.Locator("#tg-desc-tpl .bit-tgl-des #desc-tpl-link")).ToBeVisibleAsync();
@@ -682,7 +682,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var errorBox = await BoxOfAsync(error);
         var descriptionBox = await BoxOfAsync(Page.Locator("#tg-2fa .bit-tgl-des"));
-        Assert.IsTrue(errorBox.Y < descriptionBox.Y, "The error line sits above the description.");
+        Assert.IsLessThan(descriptionBox.Y, errorBox.Y, "The error line sits above the description.");
         await Expect(error).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err)"));
 
         await Button("tg-2fa").ClickAsync();
@@ -713,7 +713,7 @@ public class BitToggleE2ETests : E2ETestBase
         var errorLabel = Page.Locator("#tg-error-tpl [id$='-error-label']");
         await Expect(Page.Locator("#tg-error-tpl [role=status]")).ToHaveTextAsync(label);
         await Expect(errorLabel).ToHaveTextAsync(label);
-        StringAssert.Contains(await Button("tg-error-tpl").GetAttributeAsync("aria-describedby"), await errorLabel.GetAttributeAsync("id"));
+        Assert.Contains((await errorLabel.GetAttributeAsync("id"))!, (await Button("tg-error-tpl").GetAttributeAsync("aria-describedby"))!);
     }
 
     [TestMethod]
@@ -867,8 +867,8 @@ public class BitToggleE2ETests : E2ETestBase
             return [r.height, top === null ? 0 : bottom - top + 0.5];
         }");
 
-        Assert.IsTrue(span[0] < 24, $"The plain track is drawn shorter than the target ({span[0]}px).");
-        Assert.IsTrue(span[1] >= 24, $"The pointer target is {span[1]}px high.");
+        Assert.IsLessThan(24, span[0], $"The plain track is drawn shorter than the target ({span[0]}px).");
+        Assert.IsGreaterThanOrEqualTo(24, span[1], $"The pointer target is {span[1]}px high.");
     }
 
     [TestMethod]
@@ -970,7 +970,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var smThumb = await BoxOfAsync(Thumb("tg-size-sm"));
         var lgThumb = await BoxOfAsync(Thumb("tg-size-lg"));
-        Assert.IsTrue(smThumb.Width < lgThumb.Width);
+        Assert.IsLessThan(lgThumb.Width, smThumb.Width);
 
         var smFont = Px(await StyleOfAsync(Label("tg-size-sm"), "font-size"));
         var mdFont = Px(await StyleOfAsync(Label("tg-size-md"), "font-size"));
@@ -980,7 +980,7 @@ public class BitToggleE2ETests : E2ETestBase
         var smIcons = await BoxOfAsync(Button("tg-size-sm-icons"));
         var lgIcons = await BoxOfAsync(Button("tg-size-lg-icons"));
         Assert.IsTrue(smIcons.Height >= sm.Height && lgIcons.Height >= lg.Height, "A knob with a glyph is never smaller than the plain one.");
-        Assert.IsTrue(smIcons.Height < lgIcons.Height);
+        Assert.IsLessThan(lgIcons.Height, smIcons.Height);
 
         var wins = await BoxOfAsync(Button("tg-size-wins"));
         Assert.AreEqual(lg.Width, wins.Width, 0.5, "An explicit Size wins over --bit-Toggle-track-width.");
@@ -1066,7 +1066,7 @@ public class BitToggleE2ETests : E2ETestBase
         await Expect(Button("tg-var-square")).ToHaveCSSAsync("border-top-left-radius", "4px");
         await Expect(Thumb("tg-var-square")).ToHaveCSSAsync("border-top-left-radius", "2px");
         await Expect(Button("tg-var-square")).ToHaveCSSAsync("border-top-width", "3px");
-        StringAssert.StartsWith(await StyleOfAsync(Thumb("tg-var-square"), "transition-duration"), "0.4s");
+        Assert.StartsWith("0.4s", await StyleOfAsync(Thumb("tg-var-square"), "transition-duration"));
 
         await Expect(Button("tg-var-palette")).ToHaveCSSAsync("background-color", "rgb(102, 51, 153)");
         await Expect(Thumb("tg-var-palette")).ToHaveCSSAsync("background-color", "rgb(255, 215, 0)");
@@ -1133,7 +1133,7 @@ public class BitToggleE2ETests : E2ETestBase
 
         var label = await BoxOfAsync(Label("tg-rtl-start"));
         var button = await BoxOfAsync(Button("tg-rtl-start"));
-        Assert.IsTrue(label.X > button.X, "Start is the right in RTL.");
+        Assert.IsGreaterThan(button.X, label.X, "Start is the right in RTL.");
 
         await Expect(Root("tg-rtl-inherited")).Not.ToHaveAttributeAsync("dir", AnyValue);
         await WaitForThumbAsync("tg-rtl-inherited", "right");
@@ -1231,13 +1231,13 @@ public class BitToggleE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.StartsWith(await StyleOfAsync(Thumb("tg-motion"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await StyleOfAsync(Thumb("tg-motion"), "transition-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         await Expect(Thumb("tg-motion")).Not.ToHaveCSSAsync("transition-duration", new Regex(@"0\.1s"));
         await Expect(Root("tg-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.StartsWith(await StyleOfAsync(Thumb("tg-motion-forced"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await StyleOfAsync(Thumb("tg-motion-forced"), "transition-duration"));
 
         // A flip under reduced motion lands at once.
         await Button("tg-motion").ClickAsync();

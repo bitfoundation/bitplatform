@@ -67,7 +67,7 @@ public class ScannerInputTests : BbScannerTest
         await session.Page.SetInputFilesAsync(".bit-bbscanner input[type=file]", new FilePayload { Name = "two.png", MimeType = "image/png", Buffer = png });
         await session.WaitForResultsAsync(2, timeoutMs: 30_000);
 
-        CollectionAssert.AreEquivalent(new[] { "LEFT-CODE", "RIGHT-CODE" }, (await session.ResultValuesAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "LEFT-CODE", "RIGHT-CODE" }, (await session.ResultValuesAsync()).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(session.PageErrors);
     }
 

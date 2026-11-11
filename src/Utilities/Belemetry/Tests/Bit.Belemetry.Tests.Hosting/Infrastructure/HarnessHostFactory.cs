@@ -16,7 +16,7 @@ namespace Bit.Belemetry.Tests.Hosting.Infrastructure;
 /// <see cref="BelemetryHttpMessageHandlerProvider"/>, so the server pipeline's exports land in the host's own
 /// capturing receiver exactly as they would over the network.
 /// </summary>
-public sealed class HarnessHostFactory(string mode, bool serverPipeline = false) : WebApplicationFactory<Bit.Belemetry.Tests.Harness.Web.Components.App>
+internal sealed class HarnessHostFactory(string mode, bool serverPipeline = false) : WebApplicationFactory<Bit.Belemetry.Tests.Harness.Web.Components.App>
 {
     private static readonly ConcurrentDictionary<string, Lazy<HarnessHostFactory>> _shared = new();
 

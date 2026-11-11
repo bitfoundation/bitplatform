@@ -99,7 +99,7 @@ public class ComponentContextTests : BunitContext
         Assert.DoesNotContain("by-attribute", panel.Markup, StringComparison.Ordinal);
     }
 
-    public sealed class CascadingHost : ComponentBase
+    internal sealed class CascadingHost : ComponentBase
     {
         private readonly HostSettings _settings = new();
 
@@ -124,13 +124,13 @@ public class ComponentContextTests : BunitContext
     }
 
     /// <summary>One settings object for the whole subtree, changed in place: the demo's DashboardSettings.</summary>
-    public sealed class HostSettings
+    internal sealed class HostSettings
     {
         public int Version { get; set; }
     }
 
     /// <summary>The demo's StatsCard, reduced: a cascading parameter makes every render of its parent re-apply its parameters.</summary>
-    public sealed class CascadingChild : ComponentBase
+    internal sealed class CascadingChild : ComponentBase
     {
         [Parameter] public string? Title { get; set; }
 
@@ -139,7 +139,7 @@ public class ComponentContextTests : BunitContext
         protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, Title + " v" + Settings?.Version);
     }
 
-    public sealed class SessionWithSecrets
+    internal sealed class SessionWithSecrets
     {
         public string UserName { get; set; } = "ada";
 
@@ -149,7 +149,7 @@ public class ComponentContextTests : BunitContext
         public string Nickname { get; set; } = "by-attribute";
     }
 
-    public sealed class ServiceUser : ComponentBase
+    internal sealed class ServiceUser : ComponentBase
     {
         [Inject] public SessionWithSecrets UserSession { get; set; } = default!;
 

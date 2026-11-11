@@ -21,9 +21,13 @@ public class HarnessCollectorTests
     public void AddSentry_TakesOneEvent_WithOrWithoutTheTrailingNewline()
     {
         var collector = new HarnessCollector();
+        var expectedValue = EventId;
+        var actualValue = collector.AddSentry("/api/1/envelope/", "key", null, null, null, Envelope("\n"))?.EventId;
 
-        Assert.AreEqual(EventId, collector.AddSentry("/api/1/envelope/", "key", null, null, null, Envelope("\n"))?.EventId);
-        Assert.AreEqual(EventId, collector.AddSentry("/api/1/envelope/", "key", null, null, null, Envelope(string.Empty))?.EventId);
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = EventId;
+        var actualValue2 = collector.AddSentry("/api/1/envelope/", "key", null, null, null, Envelope(string.Empty))?.EventId;
+        Assert.AreEqual(expectedValue1, actualValue2);
         Assert.HasCount(2, collector.Snapshot().SentryEvents);
     }
 
@@ -53,9 +57,11 @@ public class HarnessCollectorTests
     public void AddSentry_KeepsAnObjectInExtra_AsItsJson()
     {
         var collected = new HarnessCollector().AddSentry("/api/1/envelope/", "key", null, null, null, Envelope("\n", ""","extra":{"o":{"a":1},"s":"text"}"""));
+        var actualValue = collected?.Extra.GetValueOrDefault("o");
 
-        Assert.AreEqual("""{"a":1}""", collected?.Extra.GetValueOrDefault("o"));
-        Assert.AreEqual("text", collected?.Extra.GetValueOrDefault("s"));
+        Assert.AreEqual("""{"a":1}""", actualValue);
+        var actualValue1 = collected?.Extra.GetValueOrDefault("s");
+        Assert.AreEqual("text", actualValue1);
     }
 
     [TestMethod]
@@ -65,16 +71,16 @@ public class HarnessCollectorTests
         var client = factory.CreateClient();
         var url = HarnessCollectorFilter.CollectorPath + "/api/1/envelope/?sentry_key=key&sentry_version=7";
 
-        using (var accepted = await client.PostAsync(url, new ByteArrayContent(Envelope("\n"))))
+        using (var accepted = await client.PostAsync(url, new ByteArrayContent(Envelope("\n")), TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.OK, accepted.StatusCode);
-            using var answer = JsonDocument.Parse(await accepted.Content.ReadAsStringAsync());
+            using var answer = JsonDocument.Parse(await accepted.Content.ReadAsStringAsync(TestContext.CancellationToken));
             Assert.AreEqual(EventId, answer.RootElement.GetProperty("id").GetString());
         }
 
         var notGzip = new ByteArrayContent(Envelope("\n"));
         notGzip.Headers.ContentEncoding.Add("gzip");
-        using var refused = await client.PostAsync(url, notGzip);
+        using var refused = await client.PostAsync(url, notGzip, TestContext.CancellationToken);
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
     }
 
@@ -85,4 +91,6 @@ public class HarnessCollectorTests
                                       + $$"""{"type":"event","length":{{Encoding.UTF8.GetByteCount(item)}}}""" + "\n"
                                       + item + trailer);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -21,9 +21,9 @@ public class McpPromptTests
     [TestMethod]
     public async Task Every_expected_prompt_is_published_with_a_title_and_a_description()
     {
-        var prompts = await McpTestHost.Client.ListPromptsAsync();
+        var prompts = await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(_expectedPrompts, prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(_expectedPrompts, prompts.Select(prompt => prompt.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -35,12 +35,12 @@ public class McpPromptTests
     [TestMethod]
     public async Task A_prompts_arguments_are_declared_with_what_they_are_for()
     {
-        var prompts = await McpTestHost.Client.ListPromptsAsync();
+        var prompts = await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
         var feature = prompts.Single(prompt => prompt.Name == "implement-blex-feature")
                              .ProtocolPrompt.Arguments!.SingleOrDefault(argument => argument.Name == "feature");
         Assert.IsNotNull(feature);
-        Assert.AreEqual(true, feature.Required, "A feature request with no feature in it has nothing to work from.");
+        Assert.IsTrue(feature.Required, "A feature request with no feature in it has nothing to work from.");
 
         var hostingModel = prompts.Single(prompt => prompt.Name == "add-blex-to-app")
                                   .ProtocolPrompt.Arguments!.SingleOrDefault(argument => argument.Name == "hostingModel");
@@ -56,11 +56,12 @@ public class McpPromptTests
     {
         foreach (var name in _expectedPrompts)
         {
-            var result = await McpTestHost.Client.GetPromptAsync(name, ArgumentsFor(name));
+            var result = await McpTestHost.Client.GetPromptAsync(name, ArgumentsFor(name), cancellationToken: TestContext.CancellationToken);
 
-            Assert.AreEqual(1, result.Messages.Count, $"'{name}' produced {result.Messages.Count} messages.");
+            Assert.ContainsSingle(result.Messages, $"'{name}' produced {result.Messages.Count} messages.");
             Assert.AreEqual(Role.User, result.Messages[0].Role, $"'{name}' does not speak as the user.");
-            StringAssert.Contains((result.Messages[0].Content as TextContentBlock)?.Text, "Work in this order", $"'{name}' does not lay out an order to work in.");
+            var expectedValue = (result.Messages[0].Content as TextContentBlock)?.Text;
+            Assert.Contains("Work in this order", expectedValue!, $"'{name}' does not lay out an order to work in.");
         }
     }
 
@@ -71,8 +72,7 @@ public class McpPromptTests
         {
             foreach (var mentioned in ToolNames.MentionedIn(await GetTextAsync(name, ArgumentsFor(name))))
             {
-                CollectionAssert.Contains(McpToolSurfaceTests.ExpectedTools, mentioned,
-                    $"The '{name}' workflow tells the agent to call '{mentioned}', which this server does not expose.");
+                Assert.Contains(mentioned, McpToolSurfaceTests.ExpectedTools, $"The '{name}' workflow tells the agent to call '{mentioned}', which this server does not expose.");
             }
         }
     }
@@ -82,7 +82,7 @@ public class McpPromptTests
     {
         foreach (var name in new[] { "add-blex-to-app", "implement-blex-feature", "migrate-to-blex", "debug-blex-state" })
         {
-            StringAssert.Contains(await GetTextAsync(name, ArgumentsFor(name)), "InspectBlexStore",
+            Assert.Contains("InspectBlexStore", await GetTextAsync(name, ArgumentsFor(name)),
                 $"The '{name}' workflow never puts the store it writes to the generator.");
         }
     }
@@ -90,8 +90,8 @@ public class McpPromptTests
     [TestMethod]
     public async Task An_argument_reaches_the_prompt_it_was_given_to()
     {
-        StringAssert.Contains(await GetTextAsync("implement-blex-feature", new() { ["feature"] = "a cart that survives a reload" }), "a cart that survives a reload");
-        StringAssert.Contains(await GetTextAsync("debug-blex-state", new() { ["symptom"] = "Redux DevTools shows nothing" }), "Redux DevTools shows nothing");
+        Assert.Contains("a cart that survives a reload", await GetTextAsync("implement-blex-feature", new() { ["feature"] = "a cart that survives a reload" }));
+        Assert.Contains("Redux DevTools shows nothing", await GetTextAsync("debug-blex-state", new() { ["symptom"] = "Redux DevTools shows nothing" }));
     }
 
     [TestMethod]
@@ -99,9 +99,9 @@ public class McpPromptTests
     {
         var text = await GetTextAsync("add-blex-to-app", null);
 
-        StringAssert.Contains(text, "unknown");
-        StringAssert.Contains(text, "MauiProgram.cs");
-        StringAssert.Contains(text, "AddInteractiveServerComponents");
+        Assert.Contains("unknown", text);
+        Assert.Contains("MauiProgram.cs", text);
+        Assert.Contains("AddInteractiveServerComponents", text);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class McpPromptTests
     [TestMethod]
     public async Task A_prompt_that_does_not_exist_is_a_protocol_error()
     {
-        await Assert.ThrowsExactlyAsync<McpProtocolException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsExactlyAsync<McpProtocolException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     private static Dictionary<string, object?>? ArgumentsFor(string name) => name switch
@@ -135,4 +135,6 @@ public class McpPromptTests
 
         return string.Join('\n', result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

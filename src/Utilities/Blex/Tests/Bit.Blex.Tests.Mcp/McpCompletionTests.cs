@@ -13,11 +13,11 @@ public class McpCompletionTests
     [TestMethod]
     public async Task Every_resource_placeholder_offers_the_keys_that_exist()
     {
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://docs/{slug}", "slug", "")).Values.ToArray(), "effects");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://guide/{heading}", "heading", "")).Values.ToArray(), "Persistence");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://api/{typeName}", "typeName", "")).Values.ToArray(), "BlexOptions");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://diagnostics/{code}", "code", "")).Values.ToArray(), "BLEX001");
-        CollectionAssert.Contains((await CompleteResourceAsync("blex://source/{+path}", "path", "")).Values.ToArray(), "Demo/Client/Stores/CartStore.cs");
+        Assert.Contains("effects", (await CompleteResourceAsync("blex://docs/{slug}", "slug", "")).Values.ToArray());
+        Assert.Contains("Persistence", (await CompleteResourceAsync("blex://guide/{heading}", "heading", "")).Values.ToArray());
+        Assert.Contains("BlexOptions", (await CompleteResourceAsync("blex://api/{typeName}", "typeName", "")).Values.ToArray());
+        Assert.Contains("BLEX001", (await CompleteResourceAsync("blex://diagnostics/{code}", "code", "")).Values.ToArray());
+        Assert.Contains("Demo/Client/Stores/CartStore.cs", (await CompleteResourceAsync("blex://source/{+path}", "path", "")).Values.ToArray());
     }
 
     [TestMethod]
@@ -25,16 +25,16 @@ public class McpCompletionTests
     {
         var completion = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "blexoptio");
 
-        CollectionAssert.AreEqual(new[] { "BlexOptions" }, completion.Values.ToArray());
+        Assert.AreSequenceEqual(new[] { "BlexOptions" }, completion.Values.ToArray());
 
         var history = await CompleteResourceAsync("blex://api/{typeName}", "typeName", "history");
-        StringAssert.Contains(history.Values[0], "History");
+        Assert.Contains("History", history.Values[0]);
     }
 
     [TestMethod]
     public async Task A_free_text_prompt_argument_is_offered_the_phrasings_it_was_written_for()
     {
-        Assert.IsTrue((await CompletePromptAsync("debug-blex-state", "symptom", "")).Values.Count >= 5);
+        Assert.IsGreaterThanOrEqualTo(5, (await CompletePromptAsync("debug-blex-state", "symptom", "")).Values.Count);
         Assert.IsTrue((await CompletePromptAsync("implement-blex-feature", "feature", "undo")).Values.All(v => v.Contains("undo", StringComparison.OrdinalIgnoreCase)));
     }
 
@@ -43,7 +43,7 @@ public class McpCompletionTests
     {
         var completion = await CompletePromptAsync("add-blex-to-app", "hostingModel", "");
 
-        CollectionAssert.AreEquivalent(new[] { "unknown" }.Concat(BlexSetupGuide.HostingModels).ToArray(), completion.Values.ToArray());
+        Assert.AreSequenceEqual(new[] { "unknown" }.Concat(BlexSetupGuide.HostingModels).ToArray(), completion.Values.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class McpCompletionTests
 
         foreach (var code in (await CompleteResourceAsync("blex://diagnostics/{code}", "code", "")).Values)
         {
-            StringAssert.StartsWith(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = code }), $"# {code}");
+            Assert.StartsWith($"# {code}", await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = code }));
         }
 
         foreach (var typeName in (await CompleteResourceAsync("blex://api/{typeName}", "typeName", "")).Values)
@@ -70,7 +70,7 @@ public class McpCompletionTests
     {
         var completion = BlexCompletions.Complete("typeName", string.Empty);
 
-        Assert.IsTrue(completion.Values.Count <= 100);
+        Assert.IsLessThanOrEqualTo(100, completion.Values.Count);
         Assert.AreEqual(completion.Total > 100, completion.HasMore is true);
     }
 

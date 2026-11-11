@@ -31,7 +31,7 @@ public sealed class LayoutTests : BmotionPageTest
         Assert.AreEqual(400 - 60, after.Left - before.Left, 1, "The element didn't end up at its new layout position.");
         Assert.AreEqual(0, after.X, 0.5, "The FLIP transform was left on the element.");
         // Visually it travelled: the rendered left edge passed through the space between the two spots.
-        Assert.IsTrue(samples.Any(s => s.Left > before.Left + 20 && s.Left < after.Left - 20),
+        Assert.Contains(s => s.Left > before.Left + 20 && s.Left < after.Left - 20, samples,
             $"No intermediate position: {string.Join(", ", samples.Select(s => s.Left.ToString("0")))}");
     }
 
@@ -45,7 +45,7 @@ public sealed class LayoutTests : BmotionPageTest
         var after = await WaitForRestAsync("#grow-box");
         Assert.AreEqual(200, after.Width, 0.5);
         Assert.AreEqual(1, after.ScaleX, 0.001);
-        Assert.IsTrue(samples.Any(s => s.Width is > 70 and < 190), "The size change didn't animate.");
+        Assert.Contains(s => s.Width is > 70 and < 190, samples, "The size change didn't animate.");
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public sealed class LayoutTests : BmotionPageTest
         // Exact at every step, not only at the two ends: a correction interpolated straight from 1/scale to 1
         // would leave the child 40% too wide halfway through this grow.
         var scaling = frames.Where(f => f[0] is > 65 and < 195).ToArray();
-        Assert.IsTrue(scaling.Length > 3, "The box didn't scale through the FLIP.");
+        Assert.IsGreaterThan(3, scaling.Length, "The box didn't scale through the FLIP.");
         foreach (var f in scaling)
             Assert.AreEqual(20, f[1], 0.6, $"The child is {f[1]:0.#}px wide while the box is {f[0]:0.#}px: it was stretched.");
     }
@@ -102,7 +102,7 @@ public sealed class LayoutTests : BmotionPageTest
         // Firefox here) travels further per frame, so the bound follows the typical step.
         var samples = await SampleAsync("#both-box", 500);
         var jumps = samples.Zip(samples.Skip(1), (a, b) => Math.Abs(b.Left - a.Left)).ToArray();
-        Assert.IsTrue(jumps.Length > 0, "No frames sampled.");
+        Assert.IsNotEmpty(jumps, "No frames sampled.");
         var moving = jumps.Where(j => j > 1).Order().ToArray();
         var typical = moving.Length > 0 ? moving[moving.Length / 2] : 0;
         Assert.IsTrue(jumps.All(j => j < Math.Max(45, typical * 1.8)), $"The layout animation jumped: {string.Join(", ", jumps.Select(j => j.ToString("0")))}");
@@ -147,8 +147,8 @@ public sealed class LayoutTests : BmotionPageTest
         await ExpectEventAsync("underline:complete");
 
         var to = await WaitForRestAsync("#underline");
-        Assert.IsTrue(to.Left > from.Left + 100, "The underline didn't move to the new tab.");
-        Assert.IsTrue(samples.Any(s => s.Left > from.Left + 20 && s.Left < to.Left - 20),
+        Assert.IsGreaterThan(from.Left + 100, to.Left, "The underline didn't move to the new tab.");
+        Assert.Contains(s => s.Left > from.Left + 20 && s.Left < to.Left - 20, samples,
             $"The underline jumped instead of travelling: {string.Join(", ", samples.Select(s => s.Left.ToString("0")))}");
     }
 
@@ -181,12 +181,12 @@ public sealed class LayoutTests : BmotionPageTest
         var stage = await BoxAsync("#xfade-stage");
         // Part-way: card 2 is part faded in and card 1 part faded out - both on screen at once - and card 1 is on
         // its way from its own centre (15) to card 2's (230).
-        Assert.IsTrue(frames.Any(f => f[0] is > 0.15 and < 0.85 && f[1] is > 0.15 and < 0.85),
+        Assert.Contains(f => f[0] is > 0.15 and < 0.85 && f[1] is > 0.15 and < 0.85, frames,
             $"no frame showed both cards part-way: in {Trace(0)} / out {Trace(1)}");
-        Assert.IsTrue(frames.Any(f => f[2] - stage.X is > 60 and < 190), $"card 1 didn't travel towards card 2: {Trace(2)}");
+        Assert.Contains(f => f[2] - stage.X is > 60 and < 190, frames, $"card 1 didn't travel towards card 2: {Trace(2)}");
         for (int i = 1; i < frames.Length; i++)
             if (frames[i][0] >= 0 && frames[i - 1][0] >= 0)
-                Assert.IsTrue(frames[i][0] >= frames[i - 1][0] - 0.02, $"card 2 faded back out: {Trace(0)}");
+                Assert.IsGreaterThanOrEqualTo(frames[i - 1][0] - 0.02, frames[i][0], $"card 2 faded back out: {Trace(0)}");
 
         // Then only card 2, where it belongs, fully shown.
         await Assertions.Expect(Page.Locator("#xfade-1")).ToHaveCountAsync(0);

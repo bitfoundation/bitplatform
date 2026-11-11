@@ -70,7 +70,7 @@ public class ValueSafetyTests
         Assert.AreSame(text, BevRedactor.RedactText(text));
         var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
 
-        Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"checking 100,000 characters took {elapsed.TotalMilliseconds:0} ms");
+        Assert.IsLessThan(1000, elapsed.TotalMilliseconds, $"checking 100,000 characters took {elapsed.TotalMilliseconds:0} ms");
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public class ValueSafetyTests
         Assert.AreEqual(BevNodeKind.Redacted, token.Kind);
         Assert.AreEqual(BevRedactor.RedactedValue, token.Display);
         Assert.AreEqual(BevNodeKind.Redacted, connection.Kind);
-        StringAssert.Contains(connection.Display, "Server=db;Password=" + BevRedactor.RedactedValue);
+        Assert.Contains("Server=db;Password=" + BevRedactor.RedactedValue, connection.Display);
         Assert.IsFalse(connection.Display.Contains("hunter2", StringComparison.Ordinal));
     }
 
@@ -127,11 +127,11 @@ public class ValueSafetyTests
         var claim = session.Inspector.Children(claims, "[0]");
         var flat = session.Inspector.Flatten(new { Headers = headers, Claims = claims });
 
-        StringAssert.Contains(headerItems[1].Display, BevRedactor.RedactedValue, "KeyValuePair.ToString would print the value");
+        Assert.Contains(BevRedactor.RedactedValue, headerItems[1].Display, "KeyValuePair.ToString would print the value");
         Assert.AreEqual(BevRedactor.RedactedValue, keyHeader.Single(n => n.Name == "Value").Display);
         Assert.AreEqual(BevRedactor.RedactedValue, claim.Single(n => n.Name == "Value").Display);
-        Assert.IsFalse(flat.Values.Any(v => v.Contains("opaque", StringComparison.Ordinal)), string.Join(", ", flat));
-        Assert.IsTrue(flat.Values.Any(v => v.Contains("Ada", StringComparison.Ordinal)), "a pair with an ordinary name keeps its value");
+        Assert.DoesNotContain(v => v.Contains("opaque", StringComparison.Ordinal), flat.Values, string.Join(", ", flat));
+        Assert.Contains(v => v.Contains("Ada", StringComparison.Ordinal), flat.Values, "a pair with an ordinary name keeps its value");
     }
 
     [TestMethod]
@@ -147,10 +147,10 @@ public class ValueSafetyTests
         var flat = session.Inspector.Flatten(new { Config = configuration, Smtp = options }, maxDepth: 6);
 
         Assert.IsFalse(configNode.IsExpandable);
-        StringAssert.Contains(configNode.Display, "never read");
+        Assert.Contains("never read", configNode.Display);
         Assert.IsFalse(optionsNode.IsExpandable);
-        StringAssert.Contains(optionsNode.Display, "IOptions<SmtpSettings>");
-        Assert.IsFalse(flat.Values.Any(v => v.Contains("s3cret", StringComparison.Ordinal)), string.Join(", ", flat));
+        Assert.Contains("IOptions<SmtpSettings>", optionsNode.Display);
+        Assert.DoesNotContain(v => v.Contains("s3cret", StringComparison.Ordinal), flat.Values, string.Join(", ", flat));
     }
 
     [TestMethod]
@@ -194,8 +194,8 @@ public class ValueSafetyTests
         Assert.IsFalse(customer.IsExpandable);
         Assert.AreEqual("Customer", customer.Display, "a record's ToString prints every member");
         Assert.IsFalse(list.IsExpandable);
-        StringAssert.Contains(list.Display, "3 items");
-        Assert.AreEqual(0, session.Inspector.Children(record, "").Count);
+        Assert.Contains("3 items", list.Display);
+        Assert.IsEmpty(session.Inspector.Children(record, ""));
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public class ValueSafetyTests
         var flat = new Dictionary<string, string>();
         session.Inspector.FlattenNamed(flat, "Customer", new Customer("Ada", 36), member: null, maxDepth: 3, maxItems: 25, maxEntries: 400, BevObjectInspector.FlattenDeadline());
         Assert.AreEqual(BevRedactor.HiddenValue, flat["Customer"]);
-        Assert.HasCount(1, flat, "nothing below a value that is not read");
+        Assert.ContainsSingle(flat, "nothing below a value that is not read");
     }
 
     [TestMethod]
@@ -230,9 +230,9 @@ public class ValueSafetyTests
         var capability = CapabilityReport.Build(session).Single(c => c.Name == "Values (parameters, fields, state, claims)");
         var fact = BevRuntimeInfo.Build(session).SelectMany(s => s.Facts).Single(f => f.Name == "Value access");
 
-        StringAssert.Contains(capability.Explanation, "as BitBevToolsOptions.ValueAccess sets it");
+        Assert.Contains("as BitBevToolsOptions.ValueAccess sets it", capability.Explanation);
         Assert.IsFalse(capability.Explanation.Contains("serves many users", StringComparison.Ordinal), capability.Explanation);
-        StringAssert.Contains(fact.Hint, "BitBevToolsOptions.ValueAccess is set to None");
+        Assert.Contains("BitBevToolsOptions.ValueAccess is set to None", fact.Hint!);
         Assert.IsFalse(fact.Hint!.Contains("serves many users", StringComparison.Ordinal), fact.Hint);
     }
 
@@ -245,7 +245,7 @@ public class ValueSafetyTests
         var record = session.Errors.Record(new InvalidOperationException("Cannot open Server=db;Password=hunter2;"), "test");
 
         Assert.IsFalse(record.Message.Contains("hunter2", StringComparison.Ordinal));
-        StringAssert.Contains(record.Message, "Password=" + BevRedactor.RedactedValue);
+        Assert.Contains("Password=" + BevRedactor.RedactedValue, record.Message);
         Assert.IsFalse(BevSessionExporter.ToJson(session).Contains("hunter2", StringComparison.Ordinal));
     }
 

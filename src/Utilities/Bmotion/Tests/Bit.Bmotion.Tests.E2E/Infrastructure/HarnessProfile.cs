@@ -8,7 +8,7 @@
 /// <param name="Prerender">A <c>BmPrerenderMode</c> name.</param>
 /// <param name="ReducedMotion">A <c>BmReducedMotionMode</c> name.</param>
 /// <param name="CssSafeMode">A <c>BmCssSafeMode</c> name.</param>
-public sealed record HarnessProfile(string Prerender, string ReducedMotion, string CssSafeMode)
+internal sealed record HarnessProfile(string Prerender, string ReducedMotion, string CssSafeMode)
 {
     /// <summary>The library's defaults: what an app that calls <c>AddBitBmotionServices()</c> gets.</summary>
     public static HarnessProfile Default { get; } = new("Initial", "IgnoreUnlessConfigured", "Off");

@@ -92,7 +92,7 @@ public class PanelInteractionTests : BunitContext
 
         Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
         // Virtualize takes the closest scrollable ancestor as its scroll root when it first renders.
-        StringAssert.Contains(cut.Find(".bev-tree").GetAttribute("style"), "overflow:auto");
+        Assert.Contains("overflow:auto", cut.Find(".bev-tree").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -109,11 +109,11 @@ public class PanelInteractionTests : BunitContext
 
         prefs.SetResult("""{"open":false,"dock":"Right","theme":"Dark"}""");
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, module.Invocations["savePrefs"]));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(module.Invocations["savePrefs"]));
         var saved = (string)module.Invocations["savePrefs"][0].Arguments[0]!;
-        StringAssert.Contains(saved, "\"open\":true");
-        StringAssert.Contains(saved, "\"dock\":\"Right\"");
-        StringAssert.Contains(saved, "\"theme\":\"Dark\"");
+        Assert.Contains("\"open\":true", saved);
+        Assert.Contains("\"dock\":\"Right\"", saved);
+        Assert.Contains("\"theme\":\"Dark\"", saved);
     }
 
     [TestMethod]
@@ -469,7 +469,7 @@ public class PanelInteractionTests : BunitContext
         navigation.NavigateTo("/");
 
         var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
-        CollectionAssert.AreEqual(new[] { "Navigate to /products/1", "Navigate to /products", "Navigate to /" }, titles);
+        Assert.AreSequenceEqual(new[] { "Navigate to /products/1", "Navigate to /products", "Navigate to /" }, titles);
     }
 
     [TestMethod]
@@ -485,7 +485,7 @@ public class PanelInteractionTests : BunitContext
         navigation.NavigateTo("/products/1#reviews");
 
         var titles = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Navigation).Select(e => e.Title).ToList();
-        CollectionAssert.AreEqual(new[] { "Navigate to /products/{id}", "Navigate to /products/1#reviews" }, titles);
+        Assert.AreSequenceEqual(new[] { "Navigate to /products/{id}", "Navigate to /products/1#reviews" }, titles);
     }
 
     [TestMethod]

@@ -75,7 +75,8 @@ public sealed class LazyLoadingTests : DemoTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the editor's empty state, from
         // its own registration.
         var response = await page.GotoAsync(BaseUrl + "/editor", new() { WaitUntil = WaitUntilState.Load, Timeout = 120_000 });
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("bmg-editor", prerendered);
         Assert.Contains("Drop an image here, or click to choose one", prerendered);

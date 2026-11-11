@@ -37,7 +37,7 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
 
         await EndDragAsync(cut.FindComponent<BdndDraggable<string>>());
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("end failed", error.Message);
         Assert.IsFalse(Manager.IsDragging());
     }
@@ -66,7 +66,7 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
 
         await cut.InvokeAsync(() => instance.HandleDragEnd());
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("end failed", error.Message);
         Assert.IsFalse(Manager.IsDragging());
     }
@@ -85,9 +85,9 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
         var end = EndDragAsync(cut.FindComponent<BdndDraggable<string>>());
         Assert.IsFalse(Manager.IsDragging(), "the drag ends right after OnEnd's synchronous part");
         gate.SetResult();
-        await end.WaitAsync(WaitLimit);
+        await end.WaitAsync(WaitLimit, TestContext.CancellationToken);
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("late end failure", error.Message);
     }
 
@@ -128,7 +128,7 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
 
         await EndDragAsync(source);
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("begin failed", error.Message);
         Assert.AreSequenceEqual(new[] { "end:False" }, log);
         Assert.IsFalse(Manager.IsDragging());
@@ -142,7 +142,7 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
 
         await bin.InvokeAsync(() => bin.Instance.HandleNativeDrop(new BdndNativeDropPayload { Types = ["Files"] }));
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("upload failed", error.Message);
     }
 
@@ -163,9 +163,11 @@ public class BdndCallbackFailureTests : BdndComponentTestBase
 
         Assert.IsFalse(await source.InvokeAsync(() => source.Instance.HandleKeyboardCommand("drop")));
 
-        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit);
+        var error = await Renderer.UnhandledException.WaitAsync(WaitLimit, TestContext.CancellationToken);
         Assert.AreEqual("drop failed", error.Message);
         Assert.AreSequenceEqual(new[] { "end:False" }, log);
         Assert.IsFalse(Manager.IsDragging());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

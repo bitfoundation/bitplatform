@@ -20,7 +20,7 @@ public class BitModalContentParametersTests : BunitTestContext
             { c => c.Message, "typed" }
         };
 
-        Assert.AreEqual(1, parameters.Count);
+        Assert.ContainsSingle(parameters);
         Assert.AreEqual("typed", parameters[nameof(TestModalContent.Message)]);
     }
 
@@ -53,7 +53,7 @@ public class BitModalContentParametersTests : BunitTestContext
         Assert.ThrowsExactly<ArgumentException>(() => parameters.Add(c => c.Count, 3L));
         Assert.ThrowsExactly<ArgumentException>(() => parameters.Add(c => c.Note, notANote));
         Assert.ThrowsExactly<ArgumentException>(() => parameters.Add(c => c.Count, noCount));
-        Assert.AreEqual(0, parameters.Count);
+        Assert.IsEmpty(parameters);
     }
 
     [TestMethod]

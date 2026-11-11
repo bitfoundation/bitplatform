@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
@@ -18,7 +18,7 @@ public class RecipeCatalogTests
     [TestMethod]
     public void All_EveryRecipe_IsCompleteAndIdentifiable()
     {
-        Assert.IsTrue(BmotionRecipeCatalog.All.Length >= 10, $"Only {BmotionRecipeCatalog.All.Length} recipes.");
+        Assert.IsGreaterThanOrEqualTo(10, BmotionRecipeCatalog.All.Length, $"Only {BmotionRecipeCatalog.All.Length} recipes.");
 
         foreach (var recipe in BmotionRecipeCatalog.All)
         {
@@ -40,7 +40,7 @@ public class RecipeCatalogTests
     {
         var ids = BmotionRecipeCatalog.All.Select(recipe => recipe.Id).ToArray();
 
-        CollectionAssert.AreEquivalent(ids.Distinct().ToArray(), ids);
+        Assert.AreSequenceEqual(ids.Distinct().ToArray(), ids, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class RecipeCatalogTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count,
+        Assert.IsEmpty(failures,
                         $"Recipes the server would itself reject:\n{string.Join("\n", failures)}");
     }
 
@@ -78,7 +78,7 @@ public class RecipeCatalogTests
                                        .Select(match => (recipe.Id, Spec: match.Value)))
             .ToArray();
 
-        Assert.AreNotEqual(0, calls.Length, "No recipe writes a transition, which cannot be right.");
+        Assert.IsNotEmpty(calls, "No recipe writes a transition, which cannot be right.");
 
         foreach (var (id, spec) in calls)
         {
@@ -99,8 +99,7 @@ public class RecipeCatalogTests
 
         foreach (var recipe in BmotionRecipeCatalog.All.Where(recipe => recipe.SeeAlso is not null))
         {
-            CollectionAssert.Contains(routes, recipe.SeeAlso,
-                                      $"'{recipe.Id}' points at '{recipe.SeeAlso}', which is not a page of this demo.");
+            Assert.Contains(recipe.SeeAlso, routes, $"'{recipe.Id}' points at '{recipe.SeeAlso}', which is not a page of this demo.");
         }
     }
 
@@ -113,7 +112,7 @@ public class RecipeCatalogTests
     {
         var summaries = BmotionRecipeCatalog.Summaries;
 
-        Assert.AreEqual(BmotionRecipeCatalog.All.Length, summaries.Length);
+        Assert.HasCount(BmotionRecipeCatalog.All.Length, summaries);
 
         foreach (var summary in summaries)
         {
@@ -144,9 +143,15 @@ public class RecipeCatalogTests
     {
         foreach (var recipe in BmotionRecipeCatalog.All)
         {
-            Assert.AreEqual(recipe.Id, BmotionRecipeCatalog.Find(recipe.Id)?.Id);
-            Assert.AreEqual(recipe.Id, BmotionRecipeCatalog.Find(recipe.Id.ToUpperInvariant())?.Id);
-            Assert.AreEqual(recipe.Id, BmotionRecipeCatalog.Find($"  {recipe.Id}  ")?.Id);
+            var expectedValue = recipe.Id;
+            var actualValue = BmotionRecipeCatalog.Find(recipe.Id)?.Id;
+            Assert.AreEqual(expectedValue, actualValue);
+            var expectedValue1 = recipe.Id;
+            var actualValue2 = BmotionRecipeCatalog.Find(recipe.Id.ToUpperInvariant())?.Id;
+            Assert.AreEqual(expectedValue1, actualValue2);
+            var expectedValue3 = recipe.Id;
+            var actualValue4 = BmotionRecipeCatalog.Find($"  {recipe.Id}  ")?.Id;
+            Assert.AreEqual(expectedValue3, actualValue4);
         }
     }
 
@@ -156,7 +161,9 @@ public class RecipeCatalogTests
     [DataRow("exit", "exit-animation")]
     public void Find_MatchesLoosely_SoAHalfRememberedNameStillLands(string typed, string expected)
     {
-        Assert.AreEqual(expected, BmotionRecipeCatalog.Find(typed)?.Id);
+        var expectedValue = expected;
+        var actualValue = BmotionRecipeCatalog.Find(typed)?.Id;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]

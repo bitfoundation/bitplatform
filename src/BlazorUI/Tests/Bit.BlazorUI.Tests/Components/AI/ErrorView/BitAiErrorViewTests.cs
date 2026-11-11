@@ -15,7 +15,7 @@ public class BitAiErrorViewTests : BitAiTestBase
         var component = RenderComponent<BitAiErrorView>(p => p.Add(c => c.Error, new BitAiError("The model is overloaded.")));
 
         Assert.IsNotNull(component.Find("[role=alert]"));
-        StringAssert.Contains(component.Find(".bit-aierv").TextContent, "Something went wrong");
+        Assert.Contains("Something went wrong", component.Find(".bit-aierv").TextContent);
         Assert.AreEqual("The model is overloaded.", component.Find(".bit-aierv-txt").TextContent);
     }
 
@@ -26,8 +26,8 @@ public class BitAiErrorViewTests : BitAiTestBase
             .Add(c => c.Error, new BitAiError("permission denied"))
             .Add(c => c.Compact, true));
 
-        StringAssert.Contains(component.Markup, "permission denied");
-        Assert.IsFalse(component.Markup.Contains("Something went wrong"));
+        Assert.Contains("permission denied", component.Markup);
+        Assert.DoesNotContain("Something went wrong", component.Markup);
         Assert.IsEmpty(component.FindAll(".bit-aierv-txt"));
     }
 
@@ -77,7 +77,7 @@ public class BitAiErrorViewTests : BitAiTestBase
         var component = RenderComponent<BitAiErrorView>(p => p
             .Add(c => c.Error, new BitAiError("slow down") { RetryAfter = TimeSpan.FromMilliseconds(150) }));
 
-        Assert.HasCount(1, component.FindAll(".bit-aierv-rta"));
+        Assert.ContainsSingle(component.FindAll(".bit-aierv-rta"));
 
         component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-aierv-rta")), TimeSpan.FromSeconds(3));
         Assert.AreEqual("slow down", component.Find(".bit-aierv-txt").TextContent);
@@ -85,7 +85,7 @@ public class BitAiErrorViewTests : BitAiTestBase
         // Another error asks for a wait of its own.
         component.Render(p => p.Add(c => c.Error, new BitAiError("slow down again") { RetryAfter = TimeSpan.FromSeconds(30) }));
 
-        Assert.HasCount(1, component.FindAll(".bit-aierv-rta"));
+        Assert.ContainsSingle(component.FindAll(".bit-aierv-rta"));
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public class BitAiErrorViewTests : BitAiTestBase
         var component = RenderComponent<BitAiErrorView>(p => p.Add(c => c.Error, error));
 
         Assert.IsEmpty(component.FindAll(".bit-aierv-act"));
-        Assert.IsFalse(component.Markup.Contains(nameof(InvalidOperationException)));
+        Assert.DoesNotContain(nameof(InvalidOperationException), component.Markup);
     }
 
     [TestMethod]
@@ -223,8 +223,8 @@ public class BitAiErrorViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("error", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aierv-txt").ClassList.Contains("text-class"));
     }
 
@@ -246,7 +246,7 @@ public class BitAiErrorViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 }

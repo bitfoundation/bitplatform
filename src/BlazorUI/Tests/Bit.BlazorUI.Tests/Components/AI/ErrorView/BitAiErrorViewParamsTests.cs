@@ -45,7 +45,7 @@ public class BitAiErrorViewParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiErrorViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiErrorView", BitAiErrorViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiErrorView", new BitAiErrorViewParams().Name);
         Assert.AreEqual(BitAiErrorViewParams.ParamName, new BitAiErrorViewParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitAiErrorViewParams());
     }
@@ -84,8 +84,8 @@ public class BitAiErrorViewParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
     }
 
     [TestMethod]

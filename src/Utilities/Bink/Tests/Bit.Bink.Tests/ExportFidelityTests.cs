@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using System.Xml.Linq;
 
@@ -113,7 +113,7 @@ public class ExportFidelityTests
         XElement mask = Assert.ContainsSingle(svg.Descendants(Svg + "mask"));
         Assert.HasCount(300, mask.Elements().Where(e => e.Name != Svg + "rect").SelectMany(e => e.DescendantsAndSelf(Svg + "path")));
         XElement ink = svg.Descendants(Svg + "path").Single(p => !p.Ancestors(Svg + "mask").Any());
-        Assert.IsTrue(ink.Ancestors(Svg + "g").Any(g => g.Attribute("mask") is not null), "the ink is not masked at all");
+        Assert.Contains(g => g.Attribute("mask") is not null, ink.Ancestors(Svg + "g"), "the ink is not masked at all");
     }
 
     [TestMethod]
@@ -146,9 +146,9 @@ public class ExportFidelityTests
             // Everything erased after the ink was drawn must apply to it.
             for (int e = ink; e < alternations; e++) Assert.Contains(e, applied, $"eraser {e} no longer applies to ink {ink}");
             // Below the nesting limit the export is exact: nothing erased before the ink was drawn applies to it.
-            if (ink < 239) Assert.IsFalse(applied.Any(e => e < ink), $"ink {ink} is masked by an eraser drawn before it");
+            if (ink < 239) Assert.DoesNotContain(e => e < ink, applied, $"ink {ink} is masked by an eraser drawn before it");
         }
-        Assert.IsTrue(deepest <= 240, $"masks nest {deepest} deep");
+        Assert.IsLessThanOrEqualTo(240, deepest, $"masks nest {deepest} deep");
     }
 
     /// <summary>
@@ -167,8 +167,10 @@ public class ExportFidelityTests
         XElement image = Assert.ContainsSingle(svg.Descendants(Svg + "image"));
         XElement viewport = image.Parent!;
         Assert.AreEqual(Svg + "svg", viewport.Name, "the crop needs a viewport of its own");
-        Assert.AreEqual("2 1 4 3", viewport.Attribute("viewBox")?.Value);
-        Assert.AreEqual("none", viewport.Attribute("preserveAspectRatio")?.Value);
+        var actualValue = viewport.Attribute("viewBox")?.Value;
+        Assert.AreEqual("2 1 4 3", actualValue);
+        var actualValue1 = viewport.Attribute("preserveAspectRatio")?.Value;
+        Assert.AreEqual("none", actualValue1);
         Assert.AreEqual(10f, ParseNumber(viewport.Attribute("x")));
         Assert.AreEqual(20f, ParseNumber(viewport.Attribute("y")));
         Assert.AreEqual(40f, ParseNumber(viewport.Attribute("width")));
@@ -201,7 +203,7 @@ public class ExportFidelityTests
         Assert.AreEqual(10f, ParseNumber(image.Attribute("y")));
         Assert.AreEqual(80f, ParseNumber(image.Attribute("width")));
         Assert.AreEqual(80f, ParseNumber(image.Attribute("height")));
-        Assert.IsTrue(image.Ancestors(Svg + "g").Any(g => g.Attribute("clip-path") is not null), "the rest of the image is clipped away");
+        Assert.Contains(g => g.Attribute("clip-path") is not null, image.Ancestors(Svg + "g"), "the rest of the image is clipped away");
     }
 
     /// <summary>The canvas draws nothing for a crop with no area; SVG drew the whole image.</summary>
@@ -233,8 +235,12 @@ public class ExportFidelityTests
         Assert.HasCount(2, svg.Descendants(Svg + "image"));
         foreach (XElement image in svg.Descendants(Svg + "image"))
         {
-            Assert.AreEqual(source.Uri, image.Attribute("href")?.Value);
-            Assert.AreEqual(source.Uri, image.Attribute(XLink + "href")?.Value);
+            var expectedValue = source.Uri;
+            var actualValue = image.Attribute("href")?.Value;
+            Assert.AreEqual(expectedValue, actualValue);
+            var expectedValue1 = source.Uri;
+            var actualValue2 = image.Attribute(XLink + "href")?.Value;
+            Assert.AreEqual(expectedValue1, actualValue2);
         }
     }
 

@@ -48,8 +48,8 @@ public class BitButtonParamsTests : BunitTestContext
     [TestMethod]
     public void BitButtonParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitButton)}", BitButtonParams.ParamName);
-        Assert.AreEqual("BitParams.BitButton", BitButtonParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitButton)}", new BitButtonParams().Name);
+        Assert.AreEqual("BitParams.BitButton", new BitButtonParams().Name);
     }
 
     [TestMethod]
@@ -159,7 +159,7 @@ public class BitButtonParamsTests : BunitTestContext
         var icon = component.Find(".bit-btn-icn");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
         Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
         Assert.AreEqual("font-size: 2rem;", icon.GetAttribute("style"));
     }
@@ -187,8 +187,8 @@ public class BitButtonParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("4", root.GetAttribute("tabindex"));
         Assert.AreEqual("Cascaded label", root.GetAttribute("aria-label"));
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
@@ -343,7 +343,7 @@ public class BitButtonParamsTests : BunitTestContext
         var root = component.Find(".bit-btn");
 
         // the root, the default variant and the icon-only box a button with no content is - nothing cascaded on top
-        CollectionAssert.AreEquivalent(new[] { "bit-btn", "bit-btn-fil", "bit-btn-ntx" }, root.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-btn", "bit-btn-fil", "bit-btn-ntx" }, root.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(root.HasAttribute("style"));
         Assert.IsFalse(root.HasAttribute("title"));
         Assert.IsFalse(root.HasAttribute("aria-disabled"));

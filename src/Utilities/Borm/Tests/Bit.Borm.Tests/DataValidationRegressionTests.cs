@@ -20,7 +20,7 @@ public struct DvFrame
     public DvPoint Origin { get; set; }
 }
 
-public class DvShapes
+internal class DvShapes
 {
     public DvPoint Point { get; set; }
     public DvPoint? Maybe { get; set; }
@@ -28,7 +28,7 @@ public class DvShapes
     public List<DvPoint> Points { get; set; } = [];
 }
 
-public class DvAccess
+internal class DvAccess
 {
     public string Id { get; private set; } = "orig";
     public bool IsAdmin { get; internal set; }
@@ -37,26 +37,26 @@ public class DvAccess
     public string Name { get; set; } = "";
 }
 
-public class DvAddress { public string? City { get; set; } }
-public class DvCustomer { public DvAddress Address { get; set; } = new(); }
-public class DvLine { public string? Product { get; set; } }
-public class DvOrder { public List<DvLine> Lines { get; set; } = []; }
-public class DvTags { public List<string> Tags { get; set; } = ["a"]; }
-public class DvOuter
+internal class DvAddress { public string? City { get; set; } }
+internal class DvCustomer { public DvAddress Address { get; set; } = new(); }
+internal class DvLine { public string? Product { get; set; } }
+internal class DvOrder { public List<DvLine> Lines { get; set; } = []; }
+internal class DvTags { public List<string> Tags { get; set; } = ["a"]; }
+internal class DvOuter
 {
     public DvCustomer Customer { get; set; } = new();
     public DvOrder Order { get; set; } = new();
 }
 
-public class DvRow
+internal class DvRow
 {
     public string? Name { get; set; }
     public int Qty { get; set; }
 }
 
-public record DvTag(string Name, List<int> Codes);
+internal record DvTag(string Name, List<int> Codes);
 
-public class DvLoop
+internal class DvLoop
 {
     public string Name { get; set; } = "";
     public DvLoop? Self { get; set; }
@@ -65,9 +65,9 @@ public class DvLoop
 [Flags]
 public enum DvPerm { None = 0, Read = 1, Write = 2 }
 
-public class DvFlagsModel { public DvPerm Perms { get; set; } }
+internal class DvFlagsModel { public DvPerm Perms { get; set; } }
 
-public class DvAnnotated
+internal class DvAnnotated
 {
     [Range(0d, 1d, MinimumIsExclusive = true, MaximumIsExclusive = true)]
     public double Ratio { get; set; }
@@ -100,7 +100,7 @@ public class DvAnnotated
     public DateTime Ancient { get; set; }
 }
 
-public class DvCultureBounds
+internal class DvCultureBounds
 {
     [Range(typeof(decimal), "0,01", "99,99")]
     public decimal Price { get; set; }
@@ -109,7 +109,7 @@ public class DvCultureBounds
     public decimal Invariant { get; set; }
 }
 
-public class DvBinary
+internal class DvBinary
 {
     public string Name { get; set; } = "";
     public byte[]? Thumbnail { get; set; }
@@ -117,7 +117,7 @@ public class DvBinary
     public List<byte[]>? Pages { get; set; }
 }
 
-public class DvCollections
+internal class DvCollections
 {
     public HashSet<DayOfWeek> Days { get; set; } = [];
     public ISet<string> Labels { get; set; } = new HashSet<string>();
@@ -125,16 +125,16 @@ public class DvCollections
     public ReadOnlyCollection<string> Frozen { get; set; } = new([]);
 }
 
-public class DvNullable { public int? Age { get; set; } }
+internal class DvNullable { public int? Age { get; set; } }
 
-public class DvFieldModel
+internal class DvFieldModel
 {
 #pragma warning disable CA1051 // a public field is exactly what this test needs
     public string? PublicField;
 #pragma warning restore CA1051
 }
 
-public class DvValidatable : IValidatableObject
+internal class DvValidatable : IValidatableObject
 {
     public int Calls { get; private set; }
 
@@ -148,17 +148,17 @@ public class DvValidatable : IValidatableObject
     }
 }
 
-public class DvDates { public DateOnly? When { get; set; } }
+internal class DvDates { public DateOnly? When { get; set; } }
 
-public class DvStamped { public DateTimeOffset When { get; set; } }
+internal class DvStamped { public DateTimeOffset When { get; set; } }
 
-public class DvParent
+internal class DvParent
 {
     public int NavigationReads { get; set; }
     public List<DvChild> Children { get; } = [];
 }
 
-public class DvChild(DvParent parent)
+internal class DvChild(DvParent parent)
 {
     public string? Name { get; set; }
     public int N { get; set; }
@@ -174,7 +174,7 @@ public class DvChild(DvParent parent)
     }
 }
 
-public class DvAggregate
+internal class DvAggregate
 {
     public DvAddress Shipping { get; private set; } = new();
     public List<DvLine> Lines { get; private set; } = [];
@@ -184,13 +184,14 @@ public class DvAggregate
     public string Reference { get; private set; } = "";
 }
 
-public class DvAggregateView
+internal class DvAggregateView
 {
     public DvAddress Shipping { get; private set; } = new();
     public List<DvLine> Lines { get; private set; } = [new DvLine()];
 }
 
 [CustomValidation(typeof(DvRanged), nameof(Check))]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "CustomValidationAttribute requires the validation type to be public.")]
 public class DvRanged
 {
     [Required]
@@ -201,7 +202,7 @@ public class DvRanged
         => model.Start!.Length > 1 ? ValidationResult.Success : new ValidationResult("Start is too short.");
 }
 
-public sealed class DvFile(string name) : IBrowserFile
+internal sealed class DvFile(string name) : IBrowserFile
 {
     public string Name => name;
     public DateTimeOffset LastModified => default;
@@ -318,9 +319,11 @@ public class DataValidationRegressionTests
 
         data.SetValue("Maybe.X", 9);
         data.SetValue("Maybe.Y", 4);
+        var actualValue = model.Maybe?.X;
 
-        Assert.AreEqual(9, model.Maybe?.X);
-        Assert.AreEqual(4, model.Maybe?.Y);
+        Assert.AreEqual(9, actualValue);
+        var actualValue1 = model.Maybe?.Y;
+        Assert.AreEqual(4, actualValue1);
     }
 
     [TestMethod]
@@ -678,10 +681,13 @@ public class DataValidationRegressionTests
     public void FindByPath_reaches_fields_beneath_a_dotted_container()
     {
         var form = DottedContainers();
+        var actualValue = form.FindByPath("Customer.Address.City")?.Name;
 
-        Assert.AreEqual("City", form.FindByPath("Customer.Address.City")?.Name);
-        Assert.AreEqual("Product", form.FindByPath("Order.Lines[0].Product")?.Name);
-        Assert.AreEqual("item", form.FindByPath("Order.Lines[3]")?.Name);
+        Assert.AreEqual("City", actualValue);
+        var actualValue1 = form.FindByPath("Order.Lines[0].Product")?.Name;
+        Assert.AreEqual("Product", actualValue1);
+        var actualValue2 = form.FindByPath("Order.Lines[3]")?.Name;
+        Assert.AreEqual("item", actualValue2);
         Assert.IsNull(form.FindByPath("Customer.Address.Nope"));
         Assert.IsNull(form.FindByPath("Customer.Nope"));
     }
@@ -693,9 +699,11 @@ public class DataValidationRegressionTests
             .Object("Address", a => a.Text("City"))
             .Array("Items", i => i.Text("Product"))
             .Build();
+        var actualValue = form.FindByPath("address.city")?.Name;
 
-        Assert.AreEqual("City", form.FindByPath("address.city")?.Name);
-        Assert.AreEqual("Product", form.FindByPath("Items[2].Product")?.Name);
+        Assert.AreEqual("City", actualValue);
+        var actualValue1 = form.FindByPath("Items[2].Product")?.Name;
+        Assert.AreEqual("Product", actualValue1);
         Assert.IsNull(form.FindByPath("[0]"));
     }
 
@@ -811,7 +819,7 @@ public class DataValidationRegressionTests
 
         Assert.IsFalse(store.LastWriteFailed);
         var tags = Assert.IsExactInstanceOfType<string[]>(data["tags"]);
-        Assert.AreEqual(3, tags.Length);
+        Assert.HasCount(3, tags);
         Assert.AreEqual("a", tags[0]);
         Assert.IsNull(tags[1]);
         Assert.AreEqual("c", tags[2]);
@@ -841,10 +849,10 @@ public class DataValidationRegressionTests
         store.SetValue("codes[100000000]", "x");
         Assert.IsTrue(store.LastWriteFailed);
 
-        Assert.HasCount(1, tags);
+        Assert.ContainsSingle(tags);
         Assert.AreEqual("a", tags[0]);
         var codes = Assert.IsExactInstanceOfType<string[]>(data["codes"]);
-        Assert.HasCount(1, codes);
+        Assert.ContainsSingle(codes);
         Assert.AreEqual("a", codes[0]);
     }
 

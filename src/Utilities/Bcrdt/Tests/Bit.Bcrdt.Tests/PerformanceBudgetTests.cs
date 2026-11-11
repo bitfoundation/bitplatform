@@ -86,8 +86,8 @@ public class PerformanceBudgetTests
         // This is the case a busy server hits constantly: many clients asking "anything new?" about
         // a document that has not changed. Without the document-level delete-set cache this scaled
         // linearly with content, which is invisible in small tests and ruinous at scale.
-        Assert.IsTrue(
-            largeCost < smallCost * 2,
+        Assert.IsLessThan(
+            smallCost * 2, largeCost,
             $"Answering an up-to-date peer allocated {smallCost:N0} bytes for a small document and " +
             $"{largeCost:N0} bytes for one holding 40x the content with the same number of " +
             "deletions. The cost is scaling with content rather than with what has to be sent.");
@@ -124,7 +124,7 @@ public class PerformanceBudgetTests
         BcrdtDeleteSet cached = doc.GetDeleteSet();
         BcrdtDeleteSet derived = BcrdtDeleteSet.FromStore(doc.Store);
 
-        Assert.AreEqual(derived.Clients.Count, cached.Clients.Count);
+        Assert.HasCount(derived.Clients.Count, cached.Clients);
         foreach ((ulong client, List<BcrdtDeleteRange> expected) in derived.Clients)
         {
             Assert.IsTrue(cached.Clients.TryGetValue(client, out List<BcrdtDeleteRange>? actual),
@@ -146,8 +146,8 @@ public class PerformanceBudgetTests
         byte[] delta = doc.EncodeStateAsUpdate(peerState);
         byte[] whole = doc.EncodeStateAsUpdate();
 
-        Assert.IsTrue(
-            delta.Length < 100,
+        Assert.IsLessThan(
+            100, delta.Length,
             $"A one-character delta encoded to {delta.Length} bytes against a {whole.Length} byte document.");
     }
 
@@ -162,7 +162,7 @@ public class PerformanceBudgetTests
         int blocks = doc.Store.GetClientStructs(doc.ClientId)!.Count;
 
         // The whole affordability argument for collaborative text rests on this number staying tiny.
-        Assert.IsTrue(blocks < 20, $"20 000 keystrokes produced {blocks} blocks; they should have merged.");
+        Assert.IsLessThan(20, blocks, $"20 000 keystrokes produced {blocks} blocks; they should have merged.");
     }
 
     [TestMethod]
@@ -178,8 +178,8 @@ public class PerformanceBudgetTests
         text.Insert(50_000, "x");
 
         Assert.IsNotNull(lastUpdate);
-        Assert.IsTrue(
-            lastUpdate!.Length < 64,
+        Assert.IsLessThan(
+            64, lastUpdate!.Length,
             $"A keystroke in a 100 000 character document produced a {lastUpdate.Length} byte update.");
     }
 
@@ -192,7 +192,7 @@ public class PerformanceBudgetTests
 
         // Sync cost is driven by this, and it must scale with the number of authors rather than with
         // the content - otherwise reconnecting to a large document gets slower forever.
-        Assert.IsTrue(doc.GetStateVector().Encode().Length < 32);
+        Assert.IsLessThan(32, doc.GetStateVector().Encode().Length);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class PerformanceBudgetTests
         for (int i = 0; i < 5_000; i++) array.Insert(random.Next(array.Count + 1), (long)i);
 
         int blocks = doc.Store.GetClientStructs(doc.ClientId)!.Count;
-        Assert.IsTrue(blocks > 1_000, $"The fixture holds only {blocks} blocks, too few to exercise the cache.");
+        Assert.IsGreaterThan(1_000, blocks, $"The fixture holds only {blocks} blocks, too few to exercise the cache.");
 
         List<object?> expected = array.ToArray();
         int target = array.Count - 10;

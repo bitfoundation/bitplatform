@@ -39,8 +39,8 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         container.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
-            Assert.IsTrue(container.Markup.Contains("runtime type"));
+            Assert.ContainsSingle(container.FindAll(".bit-mdl"));
+            Assert.Contains("runtime type", container.Markup);
         });
 
         Assert.IsFalse(modalRef.IsClosed);
@@ -59,16 +59,16 @@ public class BitModalServiceLifecycleTests : BunitTestContext
     {
         RenderComponent<BitModalContainer>();
 
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        Assert.IsEmpty(ModalService.OpenModals);
 
         var first = await ModalService.Show<TestModalContent>();
         var second = await ModalService.Show<TestModalContent>();
 
-        CollectionAssert.AreEqual(new[] { first, second }, ModalService.OpenModals.ToArray());
+        Assert.AreSequenceEqual(new[] { first, second }, ModalService.OpenModals.ToArray());
 
         await first.Close();
 
-        CollectionAssert.AreEqual(new[] { second }, ModalService.OpenModals.ToArray());
+        Assert.AreSequenceEqual(new[] { second }, ModalService.OpenModals.ToArray());
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         var modalRef = await ModalService.Show<TestModalContent>(persistent: true);
 
         // Open, only not on the screen yet: no container has mounted to render it.
-        CollectionAssert.AreEqual(new[] { modalRef }, ModalService.OpenModals.ToArray());
+        Assert.AreSequenceEqual(new[] { modalRef }, ModalService.OpenModals.ToArray());
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             { nameof(TestModalContent.Message), "the content" }
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.IsTrue(await modalRef.Rendered);
 
@@ -139,7 +139,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         var modalRef = await ModalService.Show<TestModalContent>();
 
         // Bounded, so that a modal left waiting fails this test instead of hanging it.
-        await Task.WhenAny(modalRef.Rendered, Task.Delay(2000));
+        await Task.WhenAny(modalRef.Rendered, Task.Delay(2000, TestContext.CancellationToken));
 
         Assert.IsTrue(modalRef.Rendered.IsCompleted);
         Assert.IsFalse(await modalRef.Rendered);
@@ -176,7 +176,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         var container = RenderComponent<BitModalContainer>();
 
         var dismissed = await ModalService.Show<TestModalContent>();
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
         _ = container.PressEscape();
         container.WaitForAssertion(() => Assert.IsTrue(dismissed.IsClosed));
         Assert.IsTrue(dismissed.IsDismissed);
@@ -209,13 +209,13 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             CanClose = () => { asked++; return Task.FromResult(false); }
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.IsFalse(await modalRef.TryClose());
 
         Assert.AreEqual(1, asked);
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -228,12 +228,12 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             CanClose = () => Task.FromResult(true)
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.IsTrue(await modalRef.TryClose("answered"));
 
         Assert.AreEqual("answered", await modalRef.Result);
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -246,13 +246,13 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             CanClose = () => Task.FromResult(false)
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         _ = container.PressEscape();
 
         // The Modal takes itself off the screen before reporting the dismissal, so a refusal has to put it
         // back: the modal the user was not allowed to leave is still there.
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
         Assert.IsFalse(modalRef.IsClosed);
     }
 
@@ -267,11 +267,11 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             CanClose = () => Task.FromResult(false)
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         container.Find(".bit-mdl-cls").Click();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
         Assert.IsFalse(modalRef.IsClosed);
     }
 
@@ -292,24 +292,24 @@ public class BitModalServiceLifecycleTests : BunitTestContext
                 OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissals++)
             });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
-        Assert.AreEqual(1, log.Count);
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
+        Assert.ContainsSingle(log);
 
         _ = container.PressEscape();
 
         // The guard has had its say by now, so whatever the dismissal was going to do it has done.
         container.WaitForAssertion(() => Assert.AreEqual(1, asked));
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         // The half-filled form the guard is there to protect is the one the user was filling in: a dismissal
         // that was turned down never takes the content away and builds it again from scratch.
-        Assert.AreEqual(1, log.Count);
+        Assert.ContainsSingle(log);
 
         // And a dismissal that did not go through is not one the consumer is told about.
         Assert.AreEqual(0, dismissals);
 
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -327,7 +327,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
             new Dictionary<string, object> { { nameof(TestModalStateContent.Log), log } },
             new BitModalParameters
             {
-                CanClose = async () => { await Task.Delay(1); asked++; return false; },
+                CanClose = async () => { await Task.Delay(1, TestContext.CancellationToken); asked++; return false; },
                 OnOpen = EventCallback.Factory.Create(this, () => opens++)
             });
 
@@ -336,15 +336,15 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         container.Find(".bit-mdl-ovl").Click();
 
         container.WaitForAssertion(() => Assert.AreEqual(1, asked));
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         // The modal never left the screen, so it never arrived on it a second time either: an opening
         // reported twice for one modal is a consumer running its opening work twice.
         Assert.AreEqual(1, opens);
-        Assert.AreEqual(1, log.Count);
+        Assert.ContainsSingle(log);
 
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -377,11 +377,11 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.IsEmpty(container.FindAll(".bit-mdl")));
 
         Assert.IsTrue(modalRef.IsClosed);
         Assert.IsNull(await modalRef.Result);
@@ -394,12 +394,12 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = false });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -417,11 +417,11 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         // on a route change is closed on a route change.
         var persistentClosing = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = true }, persistent: true);
 
-        container.WaitForAssertion(() => Assert.AreEqual(3, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(3, container.FindAll(".bit-mdl")));
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.IsFalse(persistent.IsClosed);
         Assert.IsTrue(ordinary.IsClosed);
@@ -429,13 +429,13 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         // Still tracked, which is what a persistent modal being open means: the next container to mount takes
         // it back on, and it is the only one that does.
-        CollectionAssert.AreEqual(new[] { persistent }, ModalService.OpenModals.ToArray());
+        Assert.AreSequenceEqual(new[] { persistent }, ModalService.OpenModals.ToArray());
 
         await Context.DisposeComponentsAsync();
 
         var remounted = RenderComponent<BitModalContainer>();
 
-        remounted.WaitForAssertion(() => Assert.AreEqual(1, remounted.FindAll(".bit-mdl").Count));
+        remounted.WaitForAssertion(() => Assert.ContainsSingle(remounted.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -449,11 +449,11 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         var kept = await ModalService.Show<TestModalContent>();
         var closed = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = true });
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere-else");
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         Assert.IsFalse(kept.IsClosed);
         Assert.IsTrue(closed.IsClosed);
@@ -469,13 +469,13 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl")));
 
         // Still the same page, so still the page the modal belongs to.
         navigationManager.NavigateTo("/the-page?sort=name");
 
         Assert.IsFalse(modalRef.IsClosed);
-        Assert.AreEqual(1, container.FindAll(".bit-mdl").Count);
+        Assert.ContainsSingle(container.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -486,7 +486,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         var modalRef = await ModalService.Show<TestModalContent>();
         var persistentRef = await ModalService.Show<TestModalContent>(persistent: true);
 
-        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.HasCount(2, container.FindAll(".bit-mdl")));
 
         await Context.DisposeComponentsAsync();
 
@@ -499,7 +499,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         Assert.IsFalse(persistentRef.IsClosed);
 
         var remounted = RenderComponent<BitModalContainer>();
-        remounted.WaitForAssertion(() => Assert.AreEqual(1, remounted.FindAll(".bit-mdl").Count));
+        remounted.WaitForAssertion(() => Assert.ContainsSingle(remounted.FindAll(".bit-mdl")));
     }
 
     [TestMethod]
@@ -512,8 +512,8 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         // The last container to initialize is the one the service renders through; the one before it stands
         // down rather than rendering the same modal a second time.
-        second.WaitForAssertion(() => Assert.AreEqual(1, second.FindAll(".bit-mdl").Count));
-        Assert.AreEqual(0, first.FindAll(".bit-mdl").Count);
+        second.WaitForAssertion(() => Assert.ContainsSingle(second.FindAll(".bit-mdl")));
+        Assert.IsEmpty(first.FindAll(".bit-mdl"));
     }
 
     [TestMethod]
@@ -530,7 +530,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         container.WaitForAssertion(() =>
         {
             Assert.AreEqual("after", container.Find(".bit-mdl-hdr").TextContent);
-            Assert.AreEqual(1, container.FindAll(".bit-mdl-cls").Count);
+            Assert.ContainsSingle(container.FindAll(".bit-mdl-cls"));
         });
     }
 
@@ -545,8 +545,8 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         // One clear line rather than one per modal: an app with no container shows every one of them into
         // nothing, and the message is the same every time.
-        Assert.AreEqual(1, loggerFactory.Errors.Count);
-        StringAssert.Contains(loggerFactory.Errors[0], "modal container");
+        Assert.ContainsSingle(loggerFactory.Errors);
+        Assert.Contains("modal container", loggerFactory.Errors[0]);
     }
 
     [TestMethod]
@@ -558,7 +558,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         // A persistent modal shown before the container mounts is the supported way of doing it, not a mistake.
         await modalService.Show<TestModalContent>(persistent: true);
 
-        Assert.AreEqual(0, loggerFactory.Errors.Count);
+        Assert.IsEmpty(loggerFactory.Errors);
     }
 
     [TestMethod]
@@ -610,7 +610,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         // The reference never reaches the caller of a failed Show, but a persistent one shown the same way
         // would still be tracked - and nothing is left holding a Result that will never complete.
-        Assert.AreEqual(0, ModalService.OpenModals.Count);
+        Assert.IsEmpty(ModalService.OpenModals);
     }
 
     [TestMethod]
@@ -620,7 +620,7 @@ public class BitModalServiceLifecycleTests : BunitTestContext
 
         var modalRef = await ModalService.Show<TestModalContent>();
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-mdl-ovl").Count));
+        container.WaitForAssertion(() => Assert.ContainsSingle(container.FindAll(".bit-mdl-ovl")));
 
         container.Find(".bit-mdl-ovl").Click();
 
@@ -704,6 +704,8 @@ public class BitModalServiceLifecycleTests : BunitTestContext
         // content close this very modal.
         Assert.AreSame(modalRef, handedToTheFactory);
 
-        container.WaitForAssertion(() => Assert.IsTrue(container.Markup.Contains(modalRef.Id)));
+        container.WaitForAssertion(() => Assert.Contains(modalRef.Id, container.Markup));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

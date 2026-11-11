@@ -27,10 +27,10 @@ public class QueryBuilderTests : BunitTestContext
         {
             var uri = new Uri(nav.Uri);
             Assert.AreEqual("/q", uri.AbsolutePath);
-            Assert.IsTrue(uri.Query.Contains("filter=red"));
-            Assert.IsTrue(uri.Query.Contains("sort=name"));
-            Assert.IsTrue(uri.Query.Contains("page=2"));
-            Assert.IsFalse(uri.Query.Contains("page=1"));
+            Assert.Contains("filter=red", uri.Query);
+            Assert.Contains("sort=name", uri.Query);
+            Assert.Contains("page=2", uri.Query);
+            Assert.DoesNotContain("page=1", uri.Query);
         });
     }
 
@@ -70,7 +70,7 @@ public class QueryBuilderTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.Contains("page=2"));
+            Assert.Contains("page=2", nav.Uri);
             Assert.IsTrue(nav.History.Last().Options.ReplaceHistoryEntry);
         });
     }
@@ -84,8 +84,8 @@ public class QueryBuilderTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.Contains("price=3.5"));
-            Assert.IsTrue(nav.Uri.Contains("active=true"));
+            Assert.Contains("price=3.5", nav.Uri);
+            Assert.Contains("active=true", nav.Uri);
         });
     }
 }

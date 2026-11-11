@@ -49,7 +49,7 @@ public class BitDateRangePickerResponsiveE2ETests : BitDatePickersE2ETestBase
         Assert.AreEqual(390, box.Width, 1);
 
         var day = await BoxAsync(Day(pid, Today));
-        Assert.IsTrue(day.Width > 36, $"A day of the panel is a touch-sized cell ({day.Width}px).");
+        Assert.IsGreaterThan(36, day.Width, $"A day of the panel is a touch-sized cell ({day.Width}px).");
 
         await Day(pid, 2024, 6, 10).TapAsync();
         await Day(pid, 2024, 6, 13).TapAsync();
@@ -135,7 +135,7 @@ public class BitDateRangePickerResponsiveE2ETests : BitDatePickersE2ETestBase
         await Expect(Callout(pid).Locator(".bit-dtrp-mwp")).ToHaveCountAsync(0);
         var field = await BoxAsync(Page.Locator("#drp-narrow .bit-dtrp-wrp"));
         var callout = await BoxAsync(Callout(pid));
-        Assert.IsTrue(Math.Abs(callout.Y - (field.Y + field.Height + 1)) <= 2, "Not Responsive, the callout still drops from its field.");
+        Assert.IsLessThanOrEqualTo(2, Math.Abs(callout.Y - (field.Y + field.Height + 1)), "Not Responsive, the callout still drops from its field.");
         Assert.IsTrue(callout.X >= 0 && callout.X + callout.Width <= 390 + 1, "The callout fits the screen.");
 
         var title = Callout(pid).Locator(".bit-dtrp-dwp .bit-dtrp-ptb");

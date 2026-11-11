@@ -18,30 +18,30 @@ public class BitTagsInputStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the default an
         // unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-tgi-fontsize, var(--bit-TagsInput-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "gap: var(--bit-tgi-gap, var(--bit-TagsInput-gap, #{spacing(0.375)}));");
-        StringAssert.Contains(stylesheet, "min-height: var(--bit-tgi-minheight, var(--bit-TagsInput-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-tagminheight, var(--bit-TagsInput-tag-min-height, #{$siz-chip-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-tagfontsize, var(--bit-TagsInput-tag-font-size, #{$tg-fs-xs}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-iconsize, var(--bit-TagsInput-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-helperfontsize, var(--bit-TagsInput-description-font-size, #{$tg-fs-xs}))");
+        Assert.Contains("font-size: var(--bit-tgi-fontsize, var(--bit-TagsInput-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("gap: var(--bit-tgi-gap, var(--bit-TagsInput-gap, #{spacing(0.375)}));", stylesheet);
+        Assert.Contains("min-height: var(--bit-tgi-minheight, var(--bit-TagsInput-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("var(--bit-tgi-tagminheight, var(--bit-TagsInput-tag-min-height, #{$siz-chip-sm}))", stylesheet);
+        Assert.Contains("var(--bit-tgi-tagfontsize, var(--bit-TagsInput-tag-font-size, #{$tg-fs-xs}))", stylesheet);
+        Assert.Contains("var(--bit-tgi-iconsize, var(--bit-TagsInput-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-tgi-helperfontsize, var(--bit-TagsInput-description-font-size, #{$tg-fs-xs}))", stylesheet);
 
         // So does an explicit Color: the chip colors of the tag variant are the Color's (unset while it is), then the
         // variable's, then the primary chip's; the field's focus ring and rule and the spinner rank the same way. The
         // chip reads them behind the value its own hover moves, which is unset while the chip is not hovered. The
         // variables and the primary chip are resolved on the chip by its tag variant (the -pub values), each variable
         // behind the tag variant's own twin of it.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-tgi-tag-bg-pub)));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-tgi-tag-clr-pub)));");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub))");
-        StringAssert.Contains(stylesheet, "--bit-tgi-tag-bg-pub: var(--bit-TagsInput-fill-tag-background, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));");
-        StringAssert.Contains(stylesheet, "--bit-tgi-tag-clr-pub: var(--bit-TagsInput-fill-tag-color, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));");
-        StringAssert.Contains(stylesheet, "--bit-tgi-tag-ring-pub: var(--bit-TagsInput-fill-tag-focus-color, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-spinner-color, #{$clr-pri}))");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgi-tgf {"), "--bit-tgi-tag-bg: var(--bit-tgi-clr);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgi-tgf {"), "--bit-tgi-tag-bg-dft: #{$clr-pri};");
+        Assert.Contains("background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-tgi-tag-bg-pub)));", stylesheet);
+        Assert.Contains("color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-tgi-tag-clr-pub)));", stylesheet);
+        Assert.Contains("var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub))", stylesheet);
+        Assert.Contains("--bit-tgi-tag-bg-pub: var(--bit-TagsInput-fill-tag-background, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));", stylesheet);
+        Assert.Contains("--bit-tgi-tag-clr-pub: var(--bit-TagsInput-fill-tag-color, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));", stylesheet);
+        Assert.Contains("--bit-tgi-tag-ring-pub: var(--bit-TagsInput-fill-tag-focus-color, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)))", stylesheet);
+        Assert.Contains("var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-tgi-clr, var(--bit-TagsInput-spinner-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("--bit-tgi-tag-bg: var(--bit-tgi-clr);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgi-tgf {"));
+        Assert.Contains("--bit-tgi-tag-bg-dft: #{$clr-pri};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgi-tgf {"));
 
         // The values the parameters publish are never read behind a public variable. The -dft values are the
         // Variant's recipe for the primary chip an unset Color stands for, so the variables stay ahead of them.
@@ -61,8 +61,7 @@ public class BitTagsInputStylesheetTests
         // field apart from the other two on :root.
         foreach (var name in new[] { "background", "border-color", "hover-border-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ",
-                                  $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
+            Assert.Contains($"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ", block, $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
         }
 
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-TagsInput-(?!{variant}-)(?:fill|outline|text)-"),
@@ -82,8 +81,7 @@ public class BitTagsInputStylesheetTests
         foreach (var name in new[] { "tag-color", "tag-background", "tag-border-color", "tag-focus-color", "tag-hover-color",
                                      "tag-hover-background", "toggle-hover-color", "toggle-hover-background" })
         {
-            StringAssert.Contains(block, $"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ",
-                                  $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
+            Assert.Contains($"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ", block, $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
         }
 
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-TagsInput-(?!{variant}-)(?:fill|outline|text)-"),
@@ -99,8 +97,8 @@ public class BitTagsInputStylesheetTests
         // their edge was cut off along the chip's: it is drawn inside them, like the chip's own.
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), rule);
 
-        StringAssert.Contains(block, "@include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));");
-        Assert.IsFalse(block.Contains("outline-offset: 0"), "The ring is drawn on the edge the chip clips.");
+        Assert.Contains("@include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));", block);
+        Assert.DoesNotContain("outline-offset: 0", block, "The ring is drawn on the edge the chip clips.");
     }
 
     [TestMethod]
@@ -115,7 +113,7 @@ public class BitTagsInputStylesheetTests
                                          "--bit-tgi-fontsize", "--bit-tgi-iconsize", "--bit-tgi-helperfontsize", "--bit-tgi-tagfontsize",
                                          "--bit-tgi-minheight", "--bit-tgi-padding", "--bit-tgi-tagminheight", "--bit-tgi-tagpadding" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -132,14 +130,14 @@ public class BitTagsInputStylesheetTests
         // The text of an Outline or Text chip sits on the field rather than on the role's fill, so it is drawn in the role's
         // text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white - and
         // kept under the pointer, as a BitTag keeps it, where the hover color of such a role is no more readable.
-        StringAssert.Contains(variant, "--bit-tgi-tag-clr: var(--bit-tgi-clr-fg);");
-        StringAssert.Contains(variant, "--bit-tgi-tag-clr-hover: var(--bit-tgi-clr-fg);");
-        StringAssert.Contains(variant, "--bit-tgi-tag-clr-dft: #{$clr-pri};");
-        StringAssert.Contains(variant, "--bit-tgi-tag-clr-hover-dft: #{$clr-pri};");
+        Assert.Contains("--bit-tgi-tag-clr: var(--bit-tgi-clr-fg);", variant);
+        Assert.Contains("--bit-tgi-tag-clr-hover: var(--bit-tgi-clr-fg);", variant);
+        Assert.Contains("--bit-tgi-tag-clr-dft: #{$clr-pri};", variant);
+        Assert.Contains("--bit-tgi-tag-clr-hover-dft: #{$clr-pri};", variant);
 
         // Only the text: the focus ring keeps the role's main.
-        StringAssert.Contains(variant, "--bit-tgi-tag-ring: var(--bit-tgi-clr);");
+        Assert.Contains("--bit-tgi-tag-ring: var(--bit-tgi-clr);", variant);
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tgi-#{$role} {"), "--bit-tgi-clr-fg: #{role-text($role, $tokens)};");
+        Assert.Contains("--bit-tgi-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tgi-#{$role} {"));
     }
 }

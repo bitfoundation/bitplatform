@@ -27,9 +27,9 @@ public class ServiceWorkerInspectionTests
 
         Assert.IsTrue(report.ImportsBswup);
         Assert.IsNotNull(report.Import);
-        StringAssert.Contains(report.Import, "bit-bswup.sw.js");
-        Assert.AreEqual(0, report.Problems.Length, string.Join(" | ", report.Problems));
-        Assert.AreEqual(0, report.Warnings.Length, string.Join(" | ", report.Warnings));
+        Assert.Contains("bit-bswup.sw.js", report.Import);
+        Assert.IsEmpty(report.Problems, string.Join(" | ", report.Problems));
+        Assert.IsEmpty(report.Warnings, string.Join(" | ", report.Warnings));
     }
 
     [TestMethod]
@@ -51,9 +51,8 @@ public class ServiceWorkerInspectionTests
     {
         var report = Inspect(ServiceWorkerFixtures.Clean);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "assetsExclude", "caseInsensitiveUrl", "isPassive" },
-            report.Settings.Select(setting => setting.Name).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "assetsExclude", "caseInsensitiveUrl", "isPassive" }, report.Settings.Select(setting => setting.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         Assert.IsTrue(report.Settings.All(setting => setting.Recognized), "every setting here is one the shipped worker reads");
         Assert.IsTrue(report.Settings.All(setting => setting.AfterImport is false));
@@ -66,7 +65,7 @@ public class ServiceWorkerInspectionTests
     {
         var report = Inspect(ServiceWorkerFixtures.Clean);
 
-        Assert.IsFalse(report.Settings.Any(setting => setting.Name == "importScripts"));
+        Assert.DoesNotContain(setting => setting.Name == "importScripts", report.Settings);
     }
 
     // -- The failures that produce no visible error ----------------------------
@@ -138,7 +137,7 @@ public class ServiceWorkerInspectionTests
     {
         var report = Inspect(ServiceWorkerFixtures.WithImport("self.mode = 'FullOffline';"));
 
-        Assert.AreEqual(0, report.Problems.Length, string.Join(" | ", report.Problems));
+        Assert.IsEmpty(report.Problems, string.Join(" | ", report.Problems));
         Assert.IsTrue(Mentions(report.Notes, "'FullOffline' preset fills in", "defaultUrl"));
     }
 
@@ -276,7 +275,7 @@ public class ServiceWorkerInspectionTests
     {
         var report = Inspect(ServiceWorkerFixtures.WithImport("self.errorTolerance = 'strict';"));
 
-        Assert.AreEqual(0, report.Warnings.Length, string.Join(" | ", report.Warnings));
+        Assert.IsEmpty(report.Warnings, string.Join(" | ", report.Warnings));
         Assert.IsTrue(Mentions(report.Notes, "strict", "rejects the install"));
     }
 
@@ -330,8 +329,8 @@ public class ServiceWorkerInspectionTests
     {
         var report = Inspect(ServiceWorkerFixtures.WithImport("//self.enableFetchDiagnostics = true;"));
 
-        Assert.AreEqual(0, report.Settings.Length);
-        Assert.AreEqual(0, report.Warnings.Length);
+        Assert.IsEmpty(report.Settings);
+        Assert.IsEmpty(report.Warnings);
     }
 
     [TestMethod]
@@ -343,7 +342,7 @@ public class ServiceWorkerInspectionTests
         var report = BswupServiceWorkerInspector.Inspect(script);
 
         Assert.IsFalse(report.ImportsBswup);
-        Assert.AreEqual(0, report.Settings.Length);
-        Assert.IsTrue(report.Problems.Length > 0, "an empty file is a file that does nothing");
+        Assert.IsEmpty(report.Settings);
+        Assert.IsNotEmpty(report.Problems, "an empty file is a file that does nothing");
     }
 }

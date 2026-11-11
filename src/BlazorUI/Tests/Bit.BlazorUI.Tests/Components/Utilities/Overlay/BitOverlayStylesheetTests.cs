@@ -24,8 +24,7 @@ public class BitOverlayStylesheetTests
         var read = PublicVariableRead.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var documented = DocumentedVariable.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(documented.Order().ToArray(), read.Order().ToArray(),
-            "The --bit-Overlay-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
+        Assert.AreSequenceEqual(documented.Order().ToArray(), read.Order().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The --bit-Overlay-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
     }
 
     [TestMethod]
@@ -35,7 +34,7 @@ public class BitOverlayStylesheetTests
         // it: a declaration on the Overlay would shadow them all.
         var declared = PublicVariableDeclaration.Matches(ReadStylesheet()).Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), declared);
+        Assert.AreSequenceEqual(Array.Empty<string>(), declared);
     }
 
     [TestMethod]
@@ -43,9 +42,9 @@ public class BitOverlayStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-mfl {"), "background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "var(--bit-Overlay-transition-duration, #{$mot-duration-short})");
+        Assert.Contains("z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"));
+        Assert.Contains("background-color: var(--bit-Overlay-background, #{$clr-bg-overlay});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-mfl {"));
+        Assert.Contains("var(--bit-Overlay-transition-duration, #{$mot-duration-short})", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"));
     }
 
     [TestMethod]
@@ -53,8 +52,8 @@ public class BitOverlayStylesheetTests
     {
         var absolute = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ovl-abs {");
 
-        StringAssert.Contains(absolute, "border-radius: inherit;");
-        StringAssert.Contains(absolute, "z-index: unset;");
+        Assert.Contains("border-radius: inherit;", absolute);
+        Assert.Contains("z-index: unset;", absolute);
     }
 
     [TestMethod]
@@ -65,12 +64,12 @@ public class BitOverlayStylesheetTests
 
         foreach (var cls in new[] { "tlf", "tcr", "trg", "tst", "ten", "clf", "ctr", "crg", "cst", "cen", "blf", "bcr", "brg", "bst", "ben" })
         {
-            StringAssert.Contains(stylesheet, $".bit-ovl-{cls}");
+            Assert.Contains($".bit-ovl-{cls}", stylesheet);
         }
 
         // The physical ones are pinned back to their own side in a right-to-left layout.
-        StringAssert.Contains(stylesheet, ".bit-ovl-tlf:is(.bit-rtl, :dir(rtl))");
-        StringAssert.Contains(stylesheet, ".bit-ovl-brg:is(.bit-rtl, :dir(rtl))");
+        Assert.Contains(".bit-ovl-tlf:is(.bit-rtl, :dir(rtl))", stylesheet);
+        Assert.Contains(".bit-ovl-brg:is(.bit-rtl, :dir(rtl))", stylesheet);
     }
 
     [TestMethod]
@@ -80,7 +79,7 @@ public class BitOverlayStylesheetTests
         var stylesheet = ReadStylesheet();
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\b(ease|ease-in|ease-out|ease-in-out|cubic-bezier)\b"));
-        StringAssert.Contains(stylesheet, "$mot-duration-short");
+        Assert.Contains("$mot-duration-short", stylesheet);
     }
 
     [TestMethod]
@@ -90,9 +89,9 @@ public class BitOverlayStylesheetTests
         // a child's user-select:auto, so the children are handed it themselves, at no weight a consumer's rule loses to.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "user-select: none;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-cnt {"), "user-select: text;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-ovl-cnt) > * {"), "user-select: text;");
+        Assert.Contains("user-select: none;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"));
+        Assert.Contains("user-select: text;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-cnt {"));
+        Assert.Contains("user-select: text;", SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-ovl-cnt) > * {"));
     }
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Overlay", "BitOverlay.scss");

@@ -20,7 +20,7 @@ public partial class BitCollapseStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         foreach (var name in documented)
         {
@@ -28,12 +28,12 @@ public partial class BitCollapseStylesheetTests
             // reads it, which is how the peek fade applies no mask at all rather than one that fades nothing.
             if (Regex.IsMatch(stylesheet, $@"^//\s+{Regex.Escape(name)}\s.*\(default: unset", RegexOptions.Multiline))
             {
-                StringAssert.Contains(stylesheet, $"var({name})", $"{name} is documented as unset but never read bare.");
-                Assert.IsFalse(stylesheet.Contains($"var({name}, "), $"{name} is documented as unset but read with a fallback.");
+                Assert.Contains($"var({name})", stylesheet, $"{name} is documented as unset but never read bare.");
+                Assert.DoesNotContain($"var({name}, ", stylesheet, $"{name} is documented as unset but read with a fallback.");
                 continue;
             }
 
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -47,7 +47,7 @@ public partial class BitCollapseStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -72,7 +72,7 @@ public partial class BitCollapseStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-col {");
 
-        StringAssert.Contains(block, $"{token}: initial;");
+        Assert.Contains($"{token}: initial;", block);
     }
 
     [TestMethod]
@@ -81,15 +81,15 @@ public partial class BitCollapseStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The inline -full tokens are read ahead of the public variables...
-        StringAssert.Contains(stylesheet, "var(--bit-col-dur-full, var(--bit-Collapse-duration, ");
-        StringAssert.Contains(stylesheet, "var(--bit-col-eas, var(--bit-Collapse-easing, ");
+        Assert.Contains("var(--bit-col-dur-full, var(--bit-Collapse-duration, ", stylesheet);
+        Assert.Contains("var(--bit-col-eas, var(--bit-Collapse-easing, ", stylesheet);
 
         // ...and the Background classes paint the theme color outright rather than through the variable.
         foreach (var kind in new[] { "pbg", "sbg", "tbg", "rbg" })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-col-{kind} {{");
 
-            Assert.IsFalse(block.Contains("--bit-Collapse-"), $"The {kind} background reads a public variable.");
+            Assert.DoesNotContain("--bit-Collapse-", block, $"The {kind} background reads a public variable.");
         }
     }
 
@@ -100,9 +100,9 @@ public partial class BitCollapseStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {", "The disabled collapse has no rule of its own.");
 
-        StringAssert.Contains(block, "color: $clr-fg-dis;");
-        StringAssert.Contains(block, "background-color: $clr-bg-dis;");
-        Assert.IsFalse(block.Contains("--bit-Collapse-"));
+        Assert.Contains("color: $clr-fg-dis;", block);
+        Assert.Contains("background-color: $clr-bg-dis;", block);
+        Assert.DoesNotContain("--bit-Collapse-", block);
     }
 
     [TestMethod]
@@ -112,8 +112,8 @@ public partial class BitCollapseStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(block, ".bit-col.bit-dis {\n        color: GrayText;");
-        StringAssert.Contains(block, ".bit-col-con:focus-visible {\n        outline-color: Highlight;");
+        Assert.Contains(".bit-col.bit-dis {\n        color: GrayText;", block);
+        Assert.Contains(".bit-col-con:focus-visible {\n        outline-color: Highlight;", block);
     }
 
     [TestMethod]
@@ -124,10 +124,10 @@ public partial class BitCollapseStylesheetTests
         // an app restoring the motion tokens bring back; the collapse keeps no query or restore of its own for them.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "--bit-col-duration: #{mot-scaled-duration(var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long})))};");
-        StringAssert.Contains(stylesheet, "--bit-col-delay: #{mot-scaled-delay(var(--bit-col-del-full, 0ms))};");
-        Assert.IsFalse(stylesheet.Contains("prefers-reduced-motion"), "The collapse collapses its own motion.");
-        Assert.IsFalse(stylesheet.Contains("bit-fam"), "The collapse restores its own motion.");
+        Assert.Contains("--bit-col-duration: #{mot-scaled-duration(var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long})))};", stylesheet);
+        Assert.Contains("--bit-col-delay: #{mot-scaled-delay(var(--bit-col-del-full, 0ms))};", stylesheet);
+        Assert.DoesNotContain("prefers-reduced-motion", stylesheet, "The collapse collapses its own motion.");
+        Assert.DoesNotContain("bit-fam", stylesheet, "The collapse restores its own motion.");
     }
 
     [TestMethod]
@@ -136,18 +136,18 @@ public partial class BitCollapseStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var start = stylesheet.IndexOf("\n@media print {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "There is no print block.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "There is no print block.");
 
         var block = stylesheet[start..];
 
-        StringAssert.Contains(block, ".bit-col-eop {");
-        StringAssert.Contains(block, "grid-template-rows: 1fr;");
-        StringAssert.Contains(block, "grid-template-columns: 1fr;");
-        StringAssert.Contains(block, "visibility: inherit;");
-        StringAssert.Contains(block, "content-visibility: visible;");
+        Assert.Contains(".bit-col-eop {", block);
+        Assert.Contains("grid-template-rows: 1fr;", block);
+        Assert.Contains("grid-template-columns: 1fr;", block);
+        Assert.Contains("visibility: inherit;", block);
+        Assert.Contains("content-visibility: visible;", block);
 
         // A browser that treats hidden="until-found" as plain hidden takes the content out with display:none.
-        StringAssert.Contains(block, "> .bit-col-cco[hidden] {\n            display: block;");
+        Assert.Contains("> .bit-col-cco[hidden] {\n            display: block;", block);
     }
 
     [TestMethod]
@@ -157,18 +157,18 @@ public partial class BitCollapseStylesheetTests
 
         // No fade unless the public variable asks for one, read once on the root so a nested collapse starts over.
         // There is no fallback, so an unset variable invalidates the mask rather than masking with a 0px fade.
-        StringAssert.Contains(stylesheet, "--bit-col-fade: var(--bit-Collapse-peek-fade);");
-        Assert.IsFalse(stylesheet.Contains("var(--bit-Collapse-peek-fade,"), "The peek fade must not fall back to a length.");
+        Assert.Contains("--bit-col-fade: var(--bit-Collapse-peek-fade);", stylesheet);
+        Assert.DoesNotContain("var(--bit-Collapse-peek-fade,", stylesheet, "The peek fade must not fall back to a length.");
 
         // Only a closed peek is masked, along the axis it collapses on, and the sideways one follows the direction.
-        StringAssert.Contains(stylesheet, ".bit-col-pek.bit-col-col > .bit-col-con {\n    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);");
-        StringAssert.Contains(stylesheet, "linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent)");
-        StringAssert.Contains(stylesheet, "&.bit-col-pek.bit-col-col:is(.bit-rtl, :dir(rtl)) > .bit-col-con {");
+        Assert.Contains(".bit-col-pek.bit-col-col > .bit-col-con {\n    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);", stylesheet);
+        Assert.Contains("linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent)", stylesheet);
+        Assert.Contains("&.bit-col-pek.bit-col-col:is(.bit-rtl, :dir(rtl)) > .bit-col-con {", stylesheet);
 
         // A section printed open prints its peek in full.
         var print = SourceFiles.GetScssBlock(stylesheet, "\n@media print {");
 
-        StringAssert.Contains(print, "--bit-col-fade: initial;");
+        Assert.Contains("--bit-col-fade: initial;", print);
     }
 
     [TestMethod]
@@ -178,7 +178,7 @@ public partial class BitCollapseStylesheetTests
 
         // WebKit lays out content mid-way through a discrete content-visibility transition as already hidden, which
         // snaps the track shut; the component applies hidden="until-found" at the end of the close instead.
-        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a searchable close shut in WebKit.");
+        Assert.DoesNotContain(line => line.Contains("allow-discrete"), code, "A discrete transition snaps a searchable close shut in WebKit.");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

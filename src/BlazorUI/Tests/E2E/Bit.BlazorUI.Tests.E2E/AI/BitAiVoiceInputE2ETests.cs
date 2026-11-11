@@ -86,7 +86,7 @@ public class BitAiVoiceInputE2ETests : E2ETestBase
         await Expect(Text("vi-listening")).ToHaveTextAsync("True");
 
         var recognizer = await Page.EvaluateAsync<bool[]>("() => { const r = window.__e2eSpeech.current; return [r.started, r.continuous, r.interimResults]; }");
-        CollectionAssert.AreEqual(new[] { true, true, true }, recognizer, "A continuous recognizer reporting interim results is started.");
+        Assert.AreSequenceEqual(new[] { true, true, true }, recognizer, "A continuous recognizer reporting interim results is started.");
 
         // Without a Language, the language of the browser.
         Assert.AreEqual(await Page.EvaluateAsync<string>("() => navigator.language"), await Page.EvaluateAsync<string>("() => window.__e2eSpeech.current.lang"));

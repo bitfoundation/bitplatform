@@ -64,7 +64,7 @@ public class TestingHelpersTests : BitBhTestContext
     public async Task Collection_order_query_before_any_render_completes_with_null()
     {
         var order = JSInterop.JSRuntime.InvokeAsync<string[][]?>("collection.order", "items").AsTask();
-        Assert.AreSame(order, await Task.WhenAny(order, Task.Delay(TimeSpan.FromSeconds(5))));
+        Assert.AreSame(order, await Task.WhenAny(order, Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken)));
         Assert.IsNull(await order);
     }
 
@@ -83,4 +83,6 @@ public class TestingHelpersTests : BitBhTestContext
             CultureInfo.CurrentCulture = culture;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

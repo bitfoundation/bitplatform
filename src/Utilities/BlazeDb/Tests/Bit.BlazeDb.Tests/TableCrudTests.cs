@@ -109,7 +109,7 @@ public class TableCrudTests
     [TestMethod]
     public async Task GetTable_Unregistered_Descriptor_Throws()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions());
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions(), TestContext.CancellationToken);
 
         Assert.ThrowsExactly<BlazeDbException>(() => db.GetTable(PersonTable.Descriptor));
     }
@@ -118,25 +118,27 @@ public class TableCrudTests
     public async Task Invalid_Options_Are_Rejected_Before_Opening()
     {
         await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(async () =>
-            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { FlushInterval = TimeSpan.Zero }));
+            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { FlushInterval = TimeSpan.Zero }, TestContext.CancellationToken));
         await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(async () =>
-            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { CheckpointWalSize = 0 }));
+            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { CheckpointWalSize = 0 }, TestContext.CancellationToken));
         await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(async () =>
-            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { QuotaReserveBytes = -1 }));
+            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { QuotaReserveBytes = -1 }, TestContext.CancellationToken));
         await Assert.ThrowsExactlyAsync<ArgumentException>(async () =>
-            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { ReadOnly = true }));
+            await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { ReadOnly = true }, TestContext.CancellationToken));
     }
 
     [TestMethod]
     public async Task A_Disposed_Database_Refuses_Further_Use()
     {
-        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(PersonTable.Descriptor));
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = new BlazeDbInMemoryStorage() }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         await db.DisposeAsync();
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => db.BeginTransaction());
         Assert.ThrowsExactly<ObjectDisposedException>(() => db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "a", 1)));
-        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await db.FlushAsync());
-        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await db.CheckpointAsync());
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await db.CheckpointAsync(TestContext.CancellationToken));
         await db.DisposeAsync(); // idempotent
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

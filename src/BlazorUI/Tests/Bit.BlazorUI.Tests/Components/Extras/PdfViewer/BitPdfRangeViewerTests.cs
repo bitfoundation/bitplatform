@@ -38,37 +38,38 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
             .Add(v => v.OnError, errors.Add));
         component.WaitForPages(3);
         component.WaitForAssertion(() => Assert.AreEqual(1, loaded, string.Join("; ", errors) + " Requests: " + string.Join(",", handler.Requests)));
-        CollectionAssert.AreEqual(new[] { 1 }, rendered);
+        Assert.AreSequenceEqual(new[] { 1 }, rendered);
         Assert.AreEqual("Range title", component.Find(".bit-pdv-surface").GetAttribute("aria-label"));
         Assert.IsNull(component.Instance.GetBytes());
         Assert.IsNull(component.Instance.Metadata);
-        Assert.AreEqual(0, component.Instance.FormFields.Count);
-        Assert.AreEqual(0, component.Instance.StructureTree.Count);
+        Assert.IsEmpty(component.Instance.FormFields);
+        Assert.IsEmpty(component.Instance.StructureTree);
         Assert.AreEqual(bytes.Length, component.Instance.FileSize);
         Assert.AreEqual(0, progress);
-        Assert.IsTrue(handler.Requests.Count < 10);
+        Assert.IsLessThan(10, handler.Requests.Count);
         Assert.IsFalse(component.Find("button[aria-label='Attachments']").HasAttribute("disabled"));
         Assert.ThrowsExactly<InvalidOperationException>(() => component.Instance.ExtractPageText(1));
         string? text = null;
         await component.InvokeAsync(async () =>
         {
-            text = await component.Instance.ExtractPageTextAsync(2);
+            text = await component.Instance.ExtractPageTextAsync(2, TestContext.CancellationToken);
             await component.Instance.GoToPage(2);
-            await component.Instance.LoadDocumentDetailsAsync();
+            await component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken);
         });
-        StringAssert.Contains(text!, "Range page 2");
+        Assert.Contains("Range page 2", text!);
         Assert.AreEqual(2, component.Instance.CurrentPage);
-        CollectionAssert.AreEqual(new[] { 1, 2 }, rendered);
-        Assert.AreEqual("Range title", component.Instance.Metadata?.Title);
+        Assert.AreSequenceEqual(new[] { 1, 2 }, rendered);
+        var actualValue = component.Instance.Metadata?.Title;
+        Assert.AreEqual("Range title", actualValue);
         int requests = handler.Requests.Count;
-        await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync());
-        Assert.AreEqual(requests, handler.Requests.Count);
+        await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken));
+        Assert.HasCount(requests, handler.Requests);
         byte[]? copy = null;
-        await component.InvokeAsync(async () => copy = await component.Instance.GetBytesAsync());
-        CollectionAssert.AreEqual(bytes, copy!);
+        await component.InvokeAsync(async () => copy = await component.Instance.GetBytesAsync(TestContext.CancellationToken));
+        Assert.AreSequenceEqual(bytes, copy!);
         Assert.IsNull(component.Instance.GetBytes());
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
+        Assert.IsEmpty(component.Instance.FailedPages);
         await component.InvokeAsync(() => component.Instance.OpenAsync(null));
         Assert.AreEqual(0, component.Instance.PageCount);
     }
@@ -87,10 +88,10 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         var source = BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading(new() { MaxFallbackSize = cap < 0 ? null : cap });
         var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source).Add(v => v.OnError, errors.Add));
         if (opens) component.WaitForPages(1);
-        else component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        else component.WaitForAssertion(() => Assert.ContainsSingle(errors));
         Assert.AreEqual(1, handler.Requests, "The first 200 response must be reused for fallback.");
         if (opens) Assert.IsNotNull(component.Instance.GetBytes());
-        else StringAssert.Contains(errors.Single(), "MaxFallbackSize");
+        else Assert.Contains("MaxFallbackSize", errors.Single());
     }
 
     [TestMethod]
@@ -104,17 +105,17 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         // Force a genuinely asynchronous response: cancellation must not hide the validator failure.
         handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
         handler.Problem = "changed";
-        var work = component.InvokeAsync(async () => { await component.Instance.ExtractPageTextAsync(2); });
-        component.WaitForAssertion(() => Assert.IsTrue(handler.Requests.Count >= 3));
+        var work = component.InvokeAsync(async () => { await component.Instance.ExtractPageTextAsync(2, TestContext.CancellationToken); });
+        component.WaitForAssertion(() => Assert.IsGreaterThanOrEqualTo(3, handler.Requests.Count));
         handler.Pause.SetResult();
         await Assert.ThrowsAsync<IOException>(() => work);
-        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(errors));
         Assert.AreEqual(0, component.Instance.PageCount);
         Assert.IsNull(component.Instance.Document);
         Assert.AreEqual(0, handler.LastBody!.Reads);
         int requests = handler.Requests.Count;
-        await component.InvokeAsync(() => component.Instance.ExtractPageTextAsync(2));
-        Assert.AreEqual(requests, handler.Requests.Count);
+        await component.InvokeAsync(() => component.Instance.ExtractPageTextAsync(2, TestContext.CancellationToken));
+        Assert.HasCount(requests, handler.Requests);
     }
 
     [TestMethod]
@@ -133,7 +134,7 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, Definition())
             .Add(v => v.OnDocumentLoaded, async () =>
             {
-                if (recovering && detailsOnLoaded) await component!.Instance.LoadDocumentDetailsAsync();
+                if (recovering && detailsOnLoaded) await component!.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken);
             })
             .Add(v => v.OnError, async (string message) =>
             {
@@ -141,7 +142,7 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
                 recovering = true;
                 handler.Problem = null;
                 await component!.Instance.OpenAsync(Definition());
-                if (!detailsOnLoaded) await component.Instance.LoadDocumentDetailsAsync();
+                if (!detailsOnLoaded) await component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken);
                 recovered = true;
                 recovery.SetResult();
             }));
@@ -157,29 +158,30 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
                 await component.InvokeAsync(() => component.Instance.ToggleProperties());
                 await recovery.Task;
             }
-            else await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync());
+            else await component.InvokeAsync(() => component.Instance.LoadDocumentDetailsAsync(TestContext.CancellationToken));
         }
         var work = LoadDetailsAsync();
         try
         {
-            if (trigger == "api") await Assert.ThrowsAsync<IOException>(() => work.WaitAsync(TimeSpan.FromSeconds(5)));
-            else await work.WaitAsync(TimeSpan.FromSeconds(5));
+            if (trigger == "api") await Assert.ThrowsAsync<IOException>(() => work.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
+            else await work.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             Assert.IsTrue(recovered, "OnError could not await details from the replacement Range source.");
-            Assert.AreEqual(1, errors.Count);
-            StringAssert.Contains(errors[0], "changed");
+            Assert.ContainsSingle(errors);
+            Assert.Contains("changed", errors[0]);
             component.WaitForPages(3);
-            Assert.AreEqual("Range title", component.Instance.Metadata?.Title);
+            var actualValue = component.Instance.Metadata?.Title;
+            Assert.AreEqual("Range title", actualValue);
             Assert.IsNotNull(component.Instance.Document);
             Assert.IsNull(component.Instance.GetBytes());
-            Assert.AreEqual(0, component.Instance.FailedPages.Count);
+            Assert.IsEmpty(component.Instance.FailedPages);
         }
         finally
         {
             if (!work.IsCompleted)
             {
                 // Let a failing regression unwind instead of leaving bUnit's dispatcher blocked.
-                await component.InvokeAsync(() => component.Instance.OpenAsync(null)).WaitAsync(TimeSpan.FromSeconds(5));
-                recovery.TrySetCanceled();
+                await component.InvokeAsync(() => component.Instance.OpenAsync(null)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+                recovery.TrySetCanceled(TestContext.CancellationToken);
                 try { await work; } catch (OperationCanceledException) { }
             }
         }
@@ -193,12 +195,12 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, Definition()));
         component.WaitForPages(3);
         handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        var work = component.InvokeAsync(async () => { await component.Instance.ExtractPageTextAsync(2); });
-        component.WaitForAssertion(() => Assert.IsTrue(handler.Requests.Count >= 3));
+        var work = component.InvokeAsync(async () => { await component.Instance.ExtractPageTextAsync(2, TestContext.CancellationToken); });
+        component.WaitForAssertion(() => Assert.IsGreaterThanOrEqualTo(3, handler.Requests.Count));
         var gate = (SemaphoreSlim)typeof(BitPdfViewer).GetField("_renderGate", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(component.Instance)!;
-        Assert.IsTrue(await gate.WaitAsync(TimeSpan.FromSeconds(2)), "HTTP awaited while holding the engine gate.");
+        Assert.IsTrue(await gate.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "HTTP awaited while holding the engine gate.");
         gate.Release();
-        await component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.HelloWorld()))).WaitAsync(TimeSpan.FromSeconds(5));
+        await component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.HelloWorld()))).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await Assert.ThrowsAsync<OperationCanceledException>(() => work);
         component.WaitForPages(1);
     }
@@ -214,19 +216,19 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
             .Add(v => v.OnError, errors.Add));
         component.WaitForPages(3);
         Assert.IsFalse(component.Instance.HasAttachments);
-        Assert.AreEqual(0, component.Instance.Attachments.Count);
+        Assert.IsEmpty(component.Instance.Attachments);
         component.WaitForAssertion(() => Assert.IsTrue((bool)typeof(BitPdfViewer)
             .GetField("_rangeEssentialsLoaded", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(component.Instance)!));
         int requests = handler.Requests.Count;
         Assert.Throws<BitPdfMissingDataException>(() => _ = component.Instance.Document!.Attachments);
-        Assert.AreEqual(requests, handler.Requests.Count, "A synchronous Document read started HTTP.");
+        Assert.HasCount(requests, handler.Requests, "A synchronous Document read started HTTP.");
         await component.InvokeAsync(() => component.Instance.ShowSidebar(BitPdfSidebar.Attachments));
         Assert.IsTrue(component.Instance.HasAttachments);
-        Assert.AreEqual(1, component.Instance.Attachments.Count);
-        Assert.AreEqual(200000, component.Instance.Attachments[0].Content.Length);
+        Assert.ContainsSingle(component.Instance.Attachments);
+        Assert.HasCount(200000, component.Instance.Attachments[0].Content);
         Assert.IsNull(component.Instance.Metadata);
-        Assert.IsTrue(handler.Requests.Count > requests);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsGreaterThan(requests, handler.Requests.Count);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -242,7 +244,7 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         if (timeout) handler.Pause = new(TaskCreationOptions.RunContinuationsAsynchronously);
         else handler.Problem = "416";
         await component.InvokeAsync(() => component.Instance.Search("Range"));
-        Assert.AreEqual(1, errors.Count);
+        Assert.ContainsSingle(errors);
         Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
         Assert.IsNotNull(component.Instance.Document);
         Assert.IsNull(component.Instance.GetBytes());
@@ -251,7 +253,7 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         handler.Pause?.SetResult();
         await component.InvokeAsync(() => component.Instance.Search("Range"));
         Assert.AreEqual(3, component.Instance.SearchMatchCount);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -267,14 +269,14 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
         var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
         handler.Problem = "changed";
-        await Assert.ThrowsAsync<IOException>(async () => { await reference.Stream.CopyToAsync(Stream.Null); });
+        await Assert.ThrowsAsync<IOException>(async () => { await reference.Stream.CopyToAsync(Stream.Null, TestContext.CancellationToken); });
         // Interop transports a stream failure back as JSException, not its .NET type.
         planned.SetException(new JSException("The original PDF stream could not be read."));
         await work;
         Assert.AreEqual(0, component.Instance.PageCount);
         Assert.IsNull(component.Instance.Document);
-        Assert.AreEqual(1, errors.Count);
-        StringAssert.Contains(errors[0], "changed");
+        Assert.ContainsSingle(errors);
+        Assert.Contains("changed", errors[0]);
     }
 
     [TestMethod]
@@ -294,11 +296,11 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
             .Add(v => v.OnError, errors.Add).Add(v => v.OnProgress, (double _) => progress++));
         component.WaitForPages(BitPdfDocument.Load(bytes).PageCount);
         Assert.IsNotNull(component.Instance.GetBytes());
-        CollectionAssert.AreEqual(bytes, component.Instance.GetBytes()!);
+        Assert.AreSequenceEqual(bytes, component.Instance.GetBytes()!);
         Assert.AreEqual(1, handler.FullRequests);
-        Assert.IsTrue(handler.RangeRequests > 0);
-        Assert.IsTrue(progress > 0);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsGreaterThan(0, handler.RangeRequests);
+        Assert.IsGreaterThan(0, progress);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -318,7 +320,7 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         component.WaitForPages(1);
         Assert.IsNotNull(component.Instance.GetBytes());
         Assert.AreEqual(1, handler.FullRequests);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
     }
 
     [TestMethod]
@@ -332,14 +334,14 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
             BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading(new() { CacheSize = budget }))
             .Add(v => v.OnError, errors.Add));
         component.WaitForPages(count);
-        await component.InvokeAsync(() => component.Instance.LastPage()).WaitAsync(TimeSpan.FromSeconds(20));
+        await component.InvokeAsync(() => component.Instance.LastPage()).WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken);
         Assert.AreEqual(count, component.Instance.CurrentPage);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count, string.Join("; ", errors));
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        StringAssert.Contains(component.Markup, "Page 72");
+        Assert.IsEmpty(component.Instance.FailedPages, string.Join("; ", errors));
+        Assert.IsEmpty(errors, string.Join("; ", errors));
+        Assert.Contains("Page 72", component.Markup);
         var source = typeof(BitPdfViewer).GetField("_rangeSource", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(component.Instance)!;
         int peak = (int)source.GetType().GetProperty("PeakBytes", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(source)!;
-        Assert.IsTrue(peak <= budget);
+        Assert.IsLessThanOrEqualTo(budget, peak);
         Assert.IsNull(component.Instance.GetBytes());
     }
 
@@ -354,11 +356,11 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
             .Add(v => v.OnError, errors.Add));
         component.WaitForPages(256);
         int before = handler.Requests.Count;
-        await component.InvokeAsync(() => component.Instance.GoToPage(211)).WaitAsync(TimeSpan.FromSeconds(20));
-        StringAssert.Contains(component.Markup, ">Page 211</");
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
-        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
-        Assert.IsTrue(handler.Requests.Count - before < 40, $"Distant lookup issued {handler.Requests.Count - before} requests: {string.Join(",", handler.Requests.Skip(before))}");
+        await component.InvokeAsync(() => component.Instance.GoToPage(211)).WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken);
+        Assert.Contains(">Page 211</", component.Markup);
+        Assert.IsEmpty(component.Instance.FailedPages);
+        Assert.IsEmpty(errors, string.Join("; ", errors));
+        Assert.IsLessThan(40, handler.Requests.Count - before, $"Distant lookup issued {handler.Requests.Count - before} requests: {string.Join(",", handler.Requests.Skip(before))}");
         Assert.IsNull(component.Instance.GetBytes());
     }
 
@@ -497,4 +499,6 @@ public partial class BitPdfRangeViewerTests : BunitTestContext
         protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => stream.WriteAsync(bytes).AsTask();
         protected override Task<Stream> CreateContentReadStreamAsync() => Task.FromResult<Stream>(new MemoryStream(bytes));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

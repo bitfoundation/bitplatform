@@ -118,7 +118,7 @@ public class BitFooterTests : BunitTestContext
 
         var style = component.Find(".bit-ftr").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-ftr-gap"));
+        Assert.DoesNotContain("--bit-ftr-gap", style);
     }
 
     [TestMethod]
@@ -132,8 +132,8 @@ public class BitFooterTests : BunitTestContext
 
         var style = component.Find(".bit-ftr").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "height:64px");
-        StringAssert.Contains(style, "--bit-ftr-gap:1rem");
+        Assert.Contains("height:64px", style);
+        Assert.Contains("--bit-ftr-gap:1rem", style);
     }
 
     [TestMethod]
@@ -144,11 +144,11 @@ public class BitFooterTests : BunitTestContext
             parameters.Add(p => p.Gap, "1rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-ftr").GetAttribute("style")!, "--bit-ftr-gap:1rem");
+        Assert.Contains("--bit-ftr-gap:1rem", component.Find(".bit-ftr").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Gap, "2rem"));
 
-        StringAssert.Contains(component.Find(".bit-ftr").GetAttribute("style")!, "--bit-ftr-gap:2rem");
+        Assert.Contains("--bit-ftr-gap:2rem", component.Find(".bit-ftr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -585,7 +585,7 @@ public class BitFooterTests : BunitTestContext
                              .Select(i => i.Arguments[2])
                              .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { 50, 150 }, offsets);
+        Assert.AreSequenceEqual(new object[] { 50, 150 }, offsets);
     }
 
     [TestMethod]
@@ -606,7 +606,7 @@ public class BitFooterTests : BunitTestContext
             parameters.Add(p => p.Bordered, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Footers.setup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -633,14 +633,14 @@ public class BitFooterTests : BunitTestContext
                             .Select(i => i.Arguments[0])
                             .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "footer-one", "footer-two" }, setups);
+        Assert.AreSequenceEqual(new object[] { "footer-one", "footer-two" }, setups);
 
         var disposes = Context.JSInterop.Invocations
                               .Where(i => i.Identifier == "BitBlazorUI.Footers.dispose")
                               .Select(i => i.Arguments[0])
                               .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "footer-one" }, disposes);
+        Assert.AreSequenceEqual(new object[] { "footer-one" }, disposes);
     }
 
     [TestMethod]
@@ -678,7 +678,7 @@ public class BitFooterTests : BunitTestContext
             parameters.Add(p => p.Fixed, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Footers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -703,7 +703,7 @@ public class BitFooterTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
         Assert.IsTrue(component.Instance.IsRevealed);
 
-        CollectionAssert.AreEqual(new[] { false, true }, revealStates);
+        Assert.AreSequenceEqual(new[] { false, true }, revealStates);
     }
 
     [TestMethod]
@@ -901,12 +901,12 @@ public class BitFooterTests : BunitTestContext
         var footer = component.Find(".bit-ftr");
 
         Assert.IsTrue(footer.ClassList.Contains("root-class"));
-        Assert.IsTrue(footer.GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", footer.GetAttribute("style")!);
 
         var container = component.Find(".bit-ftr-gut");
 
         Assert.IsTrue(container.ClassList.Contains("container-class"));
-        Assert.IsTrue(container.GetAttribute("style")!.Contains("color:blue"));
+        Assert.Contains("color:blue", container.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -973,7 +973,7 @@ public class BitFooterTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1056,13 +1056,13 @@ public class BitFooterTests : BunitTestContext
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-wrp"));
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-ved"));
         Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-esc"));
-        StringAssert.Contains(footers[0].GetAttribute("style")!, "--bit-ftr-gap:1rem");
+        Assert.Contains("--bit-ftr-gap:1rem", footers[0].GetAttribute("style")!);
 
         // The second one sets its own color and gap, which the cascading parameters must not overwrite.
         Assert.IsTrue(footers[1].ClassList.Contains("bit-ftr-err"));
         Assert.IsFalse(footers[1].ClassList.Contains("bit-ftr-suc"));
         Assert.IsTrue(footers[1].ClassList.Contains("bit-ftr-otl"));
-        StringAssert.Contains(footers[1].GetAttribute("style")!, "--bit-ftr-gap:2rem");
+        Assert.Contains("--bit-ftr-gap:2rem", footers[1].GetAttribute("style")!);
 
         // The cascaded RevealOffset reaches the script of both footers.
         var offsets = Context.JSInterop.Invocations
@@ -1070,9 +1070,9 @@ public class BitFooterTests : BunitTestContext
                              .Select(i => i.Arguments[2])
                              .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { 80, 80 }, offsets);
+        Assert.AreSequenceEqual(new object[] { 80, 80 }, offsets);
 
-        StringAssert.Contains(footers[0].GetAttribute("style")!, "--bit-ftr-max-width:60rem");
+        Assert.Contains("--bit-ftr-max-width:60rem", footers[0].GetAttribute("style")!);
 
         // ElevateOnScroll, ScrollPadding and ScrollTarget reach the script as well.
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
@@ -1179,13 +1179,13 @@ public class BitFooterTests : BunitTestContext
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
 
-        Assert.AreEqual(expected ? 1 : 0, setups.Length);
+        Assert.HasCount(expected ? 1 : 0, setups);
 
         if (expected)
         {
             // Reveal was not asked for, so the script only keeps the scroll padding in step.
-            Assert.AreEqual(false, setups[0].Arguments[3]);
-            Assert.AreEqual(true, setups[0].Arguments[6]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(setups[0].Arguments[3]));
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(setups[0].Arguments[6]));
         }
     }
 
@@ -1212,8 +1212,8 @@ public class BitFooterTests : BunitTestContext
                              .Select(i => i.Arguments[5])
                              .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "#pane-one", "#pane-two" }, targets);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+        Assert.AreSequenceEqual(new object[] { "#pane-one", "#pane-two" }, targets);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Footers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1267,12 +1267,12 @@ public class BitFooterTests : BunitTestContext
 
         var setup = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.setup").ToArray();
 
-        Assert.AreEqual(elevateOnScroll ? 1 : 0, setup.Length);
+        Assert.HasCount(elevateOnScroll ? 1 : 0, setup);
 
         if (elevateOnScroll)
         {
-            Assert.AreEqual(false, setup[0].Arguments[3]);
-            Assert.AreEqual(true, setup[0].Arguments[4]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup[0].Arguments[3]));
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup[0].Arguments[4]));
         }
     }
 
@@ -1300,7 +1300,7 @@ public class BitFooterTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOverlapping);
 
         // The repeated state is not raised twice.
-        CollectionAssert.AreEqual(new[] { true, false }, states);
+        Assert.AreSequenceEqual(new[] { true, false }, states);
     }
 
     [TestMethod]
@@ -1319,7 +1319,7 @@ public class BitFooterTests : BunitTestContext
         Assert.IsFalse(footer.ClassList.Contains("bit-ftr-esc"));
 
         // The overlap state is still reported, so the script stays attached.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Footers.setup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1356,7 +1356,7 @@ public class BitFooterTests : BunitTestContext
             Assert.IsFalse(component.Instance.IsOverlapping);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Footers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1412,7 +1412,7 @@ public class BitFooterTests : BunitTestContext
         // The registration is keyed by the id it was attached under, so that is the one taken down.
         var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.dispose").ToArray();
 
-        Assert.AreEqual(1, disposes.Length);
+        Assert.ContainsSingle(disposes);
         Assert.AreEqual("site-footer", disposes[0].Arguments[0]);
     }
 
@@ -1435,7 +1435,7 @@ public class BitFooterTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(footer, reference.Value);
 
         dispose.SetVoidResult();
@@ -1475,14 +1475,14 @@ public class BitFooterTests : BunitTestContext
         // The order is the signature of Footers.setup(id, dotnetObj, revealOffset, reveal, elevate, scrollTarget, scrollPadding).
         var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Footers.setup");
 
-        Assert.AreEqual(7, setup.Arguments.Count);
+        Assert.HasCount(7, setup.Arguments);
         Assert.AreEqual("site-footer", setup.Arguments[0]);
         Assert.IsInstanceOfType<DotNetObjectReference<BitFooter>>(setup.Arguments[1]);
         Assert.AreEqual(24, setup.Arguments[2]);
-        Assert.AreEqual(true, setup.Arguments[3]);
-        Assert.AreEqual(true, setup.Arguments[4]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[3]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[4]));
         Assert.AreEqual("#shell", setup.Arguments[5]);
-        Assert.AreEqual(true, setup.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[6]));
         Assert.AreSame(component.Instance, ((DotNetObjectReference<BitFooter>)setup.Arguments[1]!).Value);
     }
 

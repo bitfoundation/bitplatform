@@ -54,7 +54,7 @@ public class BitRichTextEditorParamsTests : BunitTestContext
     [TestMethod]
     public void BitRichTextEditorParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitRichTextEditor", BitRichTextEditorParams.ParamName);
+        Assert.AreEqual("BitParams.BitRichTextEditor", new BitRichTextEditorParams().Name);
         Assert.AreEqual(BitRichTextEditorParams.ParamName, new BitRichTextEditorParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitRichTextEditorParams());
     }
@@ -70,7 +70,7 @@ public class BitRichTextEditorParamsTests : BunitTestContext
                                                   .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                   .ToArray();
 
-        Assert.IsTrue(parameters.Length > 20, "The reflection above found too few parameters to mean anything.");
+        Assert.IsGreaterThan(20, parameters.Length, "The reflection above found too few parameters to mean anything.");
 
         foreach (var name in parameters)
         {
@@ -106,8 +106,8 @@ public class BitRichTextEditorParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rte-stk"));
         Assert.IsTrue(root.ClassList.Contains("bit-rte-ro"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-RichTextEditor-height:12rem");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-RichTextEditor-max-height:20rem");
+        Assert.Contains("--bit-RichTextEditor-height:12rem", root.GetAttribute("style")!);
+        Assert.Contains("--bit-RichTextEditor-max-height:20rem", root.GetAttribute("style")!);
 
         var surface = component.Find(".bit-rte-edt");
 
@@ -119,9 +119,9 @@ public class BitRichTextEditorParamsTests : BunitTestContext
         Assert.AreEqual("true", surface.GetAttribute("aria-required"));
         Assert.AreEqual("Rich-Text-Editor", surface.GetAttribute("aria-label"));
 
-        StringAssert.Contains(component.Find(".bit-rte-tlb").GetAttribute("style"), "color:red");
-        Assert.AreEqual(1, component.FindAll(".bit-rte-grp").Count, "The cascaded toolbar holds the inline group alone.");
-        StringAssert.Contains(component.Find(".bit-rte-cnt").TextContent, "/50");
+        Assert.Contains("color:red", component.Find(".bit-rte-tlb").GetAttribute("style")!);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-grp"), "The cascaded toolbar holds the inline group alone.");
+        Assert.Contains("/50", component.Find(".bit-rte-cnt").TextContent);
     }
 
     [TestMethod]
@@ -140,8 +140,8 @@ public class BitRichTextEditorParamsTests : BunitTestContext
         });
 
         Assert.AreEqual("Own", component.Find(".bit-rte-edt").GetAttribute("data-placeholder"));
-        Assert.AreEqual(1, component.FindAll(".bit-rte-tlb").Count);
-        StringAssert.Contains(component.Find(".bit-rte").GetAttribute("style"), "--bit-RichTextEditor-height:5rem");
+        Assert.ContainsSingle(component.FindAll(".bit-rte-tlb"));
+        Assert.Contains("--bit-RichTextEditor-height:5rem", component.Find(".bit-rte").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class BitRichTextEditorParamsTests : BunitTestContext
             },
         });
 
-        Assert.AreEqual(1, component.FindAll("button[aria-label='Stamp']").Count);
+        Assert.ContainsSingle(component.FindAll("button[aria-label='Stamp']"));
     }
 
     [TestMethod]
@@ -171,12 +171,12 @@ public class BitRichTextEditorParamsTests : BunitTestContext
         });
 
         Assert.AreEqual("Cascaded", component.Find(".bit-rte-edt").GetAttribute("data-placeholder"));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb"));
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>()));
 
         Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("data-placeholder"));
-        Assert.AreEqual(1, component.FindAll(".bit-rte-tlb").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-tlb"));
     }
 
     private sealed class GermanLocalizer : IBitRichTextEditorLocalizer

@@ -38,7 +38,7 @@ public class ThemeTests
             .Select(m => m.Value.Trim())
             .ToList();
 
-        Assert.IsTrue(literals.Count == 0, "colours must go through a --bit-blow-* property, but these rules hard-code one:\n  "
+        Assert.IsEmpty(literals, "colours must go through a --bit-blow-* property, but these rules hard-code one:\n  "
             + string.Join("\n  ", literals));
     }
 
@@ -120,8 +120,8 @@ public class ThemeTests
     {
         // Green against red is the pair a colour-blind user is most likely to confuse, so the states also differ
         // in shape and contrast: a ring on a handle that would accept, a dimmed handle that would not.
-        StringAssert.Matches(Css, new Regex(@"\.bit-blow-handle-valid \{[^}]*box-shadow:"));
-        StringAssert.Matches(Css, new Regex(@"\.bit-blow-handle-invalid:hover \{[^}]*opacity:"));
+        Assert.MatchesRegex(new Regex(@"\.bit-blow-handle-valid \{[^}]*box-shadow:"), Css);
+        Assert.MatchesRegex(new Regex(@"\.bit-blow-handle-invalid:hover \{[^}]*opacity:"), Css);
     }
 
     [TestMethod]
@@ -129,12 +129,12 @@ public class ThemeTests
     {
         var media = Regex.Match(Css, @"@media \(prefers-reduced-motion: reduce\) \{(?<body>[^@]*?)\n\}");
         Assert.IsTrue(media.Success, "no prefers-reduced-motion rule");
-        StringAssert.Contains(media.Groups["body"].Value, ".bit-blow-edge.animated");
-        StringAssert.Contains(media.Groups["body"].Value, "animation: none");
+        Assert.Contains(".bit-blow-edge.animated", media.Groups["body"].Value);
+        Assert.Contains("animation: none", media.Groups["body"].Value);
 
         // The app can force it, and can opt back out of what the operating system asked for.
-        StringAssert.Contains(Css, ".bit-blow.bit-blow-reduce-motion .bit-blow-edge.animated");
-        StringAssert.Contains(media.Groups["body"].Value, ":not(.bit-blow-allow-motion)");
+        Assert.Contains(".bit-blow.bit-blow-reduce-motion .bit-blow-edge.animated", Css);
+        Assert.Contains(":not(.bit-blow-allow-motion)", media.Groups["body"].Value);
     }
 
     [TestMethod]
@@ -148,15 +148,14 @@ public class ThemeTests
         // edges, handles and selection are drawn.
         var start = Css.IndexOf("@media (forced-colors: active)", StringComparison.Ordinal);
         Assert.IsGreaterThanOrEqualTo(0, start, "no forced-colors rule");
-        StringAssert.Contains(Css[start..], selector);
+        Assert.Contains(selector, Css[start..]);
     }
 
     [TestMethod]
     public void HandlesKeepAMinimumHitSizeOnScreen()
     {
-        StringAssert.Contains(Css, "--bit-blow-handle-hit-size:");
-        StringAssert.Matches(Rule(@"\.bit-blow-handle::before \{"),
-            new Regex(@"width: max\(100%, calc\(var\(--bit-blow-handle-hit-size\) / var\(--bit-blow-zoom, 1\)\)\)"));
+        Assert.Contains("--bit-blow-handle-hit-size:", Css);
+        Assert.MatchesRegex(new Regex(@"width: max\(100%, calc\(var\(--bit-blow-handle-hit-size\) / var\(--bit-blow-zoom, 1\)\)\)"), Rule(@"\.bit-blow-handle::before \{"));
     }
 
     // ---- helpers ----
@@ -176,7 +175,7 @@ public class ThemeTests
 
         var from = start.Index + start.Length;
         var end = Css.IndexOf('}', from);
-        Assert.IsTrue(end > from, $"rule {selectorPattern} is not closed");
+        Assert.IsGreaterThan(from, end, $"rule {selectorPattern} is not closed");
 
         return Css[from..end];
     }

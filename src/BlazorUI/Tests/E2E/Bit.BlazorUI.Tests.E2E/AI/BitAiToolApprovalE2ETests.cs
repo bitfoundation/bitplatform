@@ -256,16 +256,16 @@ public class BitAiToolApprovalE2ETests : E2ETestBase
         var (declineLeft, _, _, _) = await Answer("tap-ltr", "Decline").RectAsync();
         var (allowLeft, _, _, _) = await Answer("tap-ltr", "Allow").RectAsync();
         var (textLeft, _, _, _) = await Prompt("tap-ltr").Locator(".bit-aitap-txt").RectAsync();
-        Assert.IsTrue(declineLeft < allowLeft, "Left to right, the most cautious answer comes first from the left.");
-        Assert.IsTrue(textLeft < declineLeft, "Left to right, the question leads the answers.");
+        Assert.IsLessThan(allowLeft, declineLeft, "Left to right, the most cautious answer comes first from the left.");
+        Assert.IsLessThan(declineLeft, textLeft, "Left to right, the question leads the answers.");
 
         foreach (var id in new[] { "tap-rtl", "tap-rtl-inherited" })
         {
             var (_, _, declineRight, _) = await Answer(id, "Decline").RectAsync();
             var (_, _, allowRight, _) = await Answer(id, "Allow").RectAsync();
             var (_, _, textRight, _) = await Prompt(id).Locator(".bit-aitap-txt").RectAsync();
-            Assert.IsTrue(declineRight > allowRight, $"{id}: right to left, the most cautious answer comes first from the right.");
-            Assert.IsTrue(textRight > declineRight, $"{id}: right to left, the question leads the answers from the right.");
+            Assert.IsGreaterThan(allowRight, declineRight, $"{id}: right to left, the most cautious answer comes first from the right.");
+            Assert.IsGreaterThan(declineRight, textRight, $"{id}: right to left, the question leads the answers from the right.");
         }
 
         await Expect(Prompt("tap-rtl")).ToHaveAttributeAsync("dir", "rtl");
@@ -280,7 +280,7 @@ public class BitAiToolApprovalE2ETests : E2ETestBase
         var prompt = Prompt("tap-narrow");
         var (_, _, _, textBottom) = await prompt.Locator(".bit-aitap-txt").RectAsync();
         var (_, actionsTop, _, _) = await prompt.Locator(".bit-aitap-act").RectAsync();
-        Assert.IsTrue(actionsTop >= textBottom - 1, "The answers wrap under the question.");
+        Assert.IsGreaterThanOrEqualTo(textBottom - 1, actionsTop, "The answers wrap under the question.");
         Assert.IsTrue(await prompt.EvaluateAsync<bool>("e => e.scrollWidth <= e.clientWidth + 1"), "Nothing runs off the side of the prompt.");
     }
 

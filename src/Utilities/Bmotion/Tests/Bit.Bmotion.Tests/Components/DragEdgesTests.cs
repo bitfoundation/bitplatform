@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -32,8 +32,8 @@ public class DragEdgesTests
             .Add(p => p.ChildContent, Div));
 
         var flags = AttachedFlags(ctx.Interop);
-        Assert.AreEqual(true, flags["drag"]);
-        Assert.AreEqual(true, flags["dragPropagation"]);
+        Assert.IsTrue((bool?)flags["drag"]);
+        Assert.IsTrue((bool?)flags["dragPropagation"]);
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class DragEdgesTests
             .Add(p => p.GesturePropagation, false)
             .Add(p => p.ChildContent, Div));
 
-        Assert.AreEqual(false, AttachedFlags(ctx.Interop)["gesturePropagation"]);
+        Assert.IsFalse((bool?)AttachedFlags(ctx.Interop)["gesturePropagation"]);
     }
 
     [TestMethod]
@@ -157,6 +157,6 @@ public class DragEdgesTests
             .Add(p => p.DragDirectionLock, true)
             .Add(p => p.ChildContent, Div));
 
-        Assert.AreEqual(true, AttachedFlags(ctx.Interop)["dragDirectionLock"]);
+        Assert.IsTrue((bool?)AttachedFlags(ctx.Interop)["dragDirectionLock"]);
     }
 }

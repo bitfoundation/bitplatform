@@ -29,7 +29,7 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run", platform), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, reason);
+        Assert.Contains(reason, host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
         Assert.IsEmpty(host.Runner.Detached);
     }
@@ -40,12 +40,12 @@ public class RunTests
         using var host = new TestHost(HostOs.Windows);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run", "android"));
-        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+        Assert.Contains("isn't a bit Boilerplate project folder", host.FlatOutput);
 
         CreateProject(host);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run", "tizen"));
-        StringAssert.Contains(host.FlatOutput, "'tizen' isn't a platform");
+        Assert.Contains("'tizen' isn't a platform", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -60,7 +60,7 @@ public class RunTests
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "-p:Environment=Staging"), host.Output);
 
         var commands = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
-        CollectionAssert.AreEqual(new[] { "build Contoso.Web.slnf -p:Environment=Staging", $"run --project {serverWeb} --no-build --property:Environment=Staging" }, commands);
+        Assert.AreSequenceEqual(new[] { "build Contoso.Web.slnf -p:Environment=Staging", $"run --project {serverWeb} --no-build --property:Environment=Staging" }, commands);
     }
 
     [TestMethod]
@@ -110,31 +110,31 @@ public class RunTests
         Assert.IsFalse(steps.AnyFailed, host.Output);
 
         var install = host.Runner.Calls.Single(c => Tool(c) is "sdkmanager" && c.Arguments.Contains("--install"));
-        CollectionAssert.AreEqual(new[] { $"--sdk_root={sdk}", "--install", "emulator", image }, install.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { $"--sdk_root={sdk}", "--install", "emulator", image }, install.Arguments.ToArray());
         Assert.AreEqual(jdk, install.Environment!["JAVA_HOME"]);
         Assert.AreEqual(sdk, install.Environment!["ANDROID_HOME"]);
-        StringAssert.StartsWith(install.StandardInput, "y\n");
+        Assert.StartsWith("y\n", install.StandardInput);
 
         var create = host.Runner.Calls.Single(c => Tool(c) is "avdmanager");
-        CollectionAssert.AreEqual(new[] { "create", "avd", "--name", name, "--package", image, "--device", "pixel_7", "--path", folder, "--force" }, create.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "create", "avd", "--name", name, "--package", image, "--device", "pixel_7", "--path", folder, "--force" }, create.Arguments.ToArray());
         Assert.AreEqual("no\n", create.StandardInput);
 
         var config = File.ReadAllLines(Path.Combine(folder, "config.ini"));
-        CollectionAssert.Contains(config, "hw.device.name=pixel_7");
-        CollectionAssert.Contains(config, $"disk.dataPartition.size={8L * 1024 * 1024 * 1024}");
+        Assert.Contains("hw.device.name=pixel_7", config);
+        Assert.Contains($"disk.dataPartition.size={8L * 1024 * 1024 * 1024}", config);
         Assert.IsFalse(config.Contains("disk.dataPartition.size=800M"));
 
         var started = host.Runner.Detached.Single();
         string[] emulatorArguments = ["-avd", name, "-no-boot-anim"];
-        CollectionAssert.AreEqual(os is HostOs.Windows ? emulatorArguments : ["-c", "nohup \"$0\" \"$@\" >/dev/null 2>&1 &", emulator, .. emulatorArguments], started.Arguments.ToArray());
+        Assert.AreSequenceEqual(os is HostOs.Windows ? emulatorArguments : ["-c", "nohup \"$0\" \"$@\" >/dev/null 2>&1 &", emulator, .. emulatorArguments], started.Arguments.ToArray());
         Assert.AreEqual(os is HostOs.Windows ? emulator : "/bin/sh", started.FileName);
 
         var adb = host.Runner.Calls.Where(c => Tool(c) is "adb").Select(c => string.Join(' ', c.Arguments)).ToList();
-        CollectionAssert.Contains(adb, "-s emulator-5554 shell settings put secure autofill_service null");
-        CollectionAssert.Contains(adb, "-s emulator-5554 shell settings put secure stylus_handwriting_enabled 0");
+        Assert.Contains("-s emulator-5554 shell settings put secure autofill_service null", adb);
+        Assert.Contains("-s emulator-5554 shell settings put secure stylus_handwriting_enabled 0", adb);
 
         var run = host.Runner.Calls.Last();
-        CollectionAssert.AreEqual(new[] { "build", Maui, "-t:Run", "-f", "net10.0-android", "-p:AdbTarget=-s emulator-5554" }, run.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", Maui, "-t:Run", "-f", "net10.0-android", "-p:AdbTarget=-s emulator-5554" }, run.Arguments.ToArray());
         Assert.IsLessThan(host.Runner.Calls.IndexOf(run), host.Runner.Calls.FindLastIndex(c => string.Join(' ', c.Arguments).Contains("stylus_handwriting_enabled", StringComparison.Ordinal)));
     }
 
@@ -151,11 +151,11 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "android", "-p:Environment=Staging"), host.Output);
 
-        Assert.IsFalse(host.Runner.Calls.Any(c => Tool(c) is "sdkmanager" or "avdmanager" or "emulator"));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("settings")), "the settings of a device bit didn't start are left alone");
+        Assert.DoesNotContain(c => Tool(c) is "sdkmanager" or "avdmanager" or "emulator", host.Runner.Calls);
+        Assert.DoesNotContain(c => c.Arguments.Contains("settings"), host.Runner.Calls, "the settings of a device bit didn't start are left alone");
         Assert.IsEmpty(host.Runner.Detached);
-        CollectionAssert.AreEqual(new[] { "build", Maui, "-t:Run", "-f", "net10.0-android", $"-p:AdbTarget=-s {serial}", "-p:Environment=Staging" }, host.Runner.Calls.Last().Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, $"Using {serial}");
+        Assert.AreSequenceEqual(new[] { "build", Maui, "-t:Run", "-f", "net10.0-android", $"-p:AdbTarget=-s {serial}", "-p:Environment=Staging" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.Contains($"Using {serial}", host.FlatOutput);
     }
 
     [TestMethod]
@@ -174,10 +174,10 @@ public class RunTests
         await new NativeRun(host.Services, project) { PollInterval = TimeSpan.Zero }.RunAsync(steps, Platform.Android, CancellationToken.None);
 
         Assert.IsFalse(steps.AnyFailed, host.Output);
-        Assert.IsFalse(host.Runner.Calls.Any(c => Tool(c) is "sdkmanager" or "avdmanager"));
-        CollectionAssert.AreEqual(new[] { "-avd", "Pixel_9", "-no-boot-anim" }, host.Runner.Detached.Single().Arguments.ToArray());
-        Assert.IsTrue(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) == "-s emulator-5554 shell settings put secure autofill_service null"));
-        CollectionAssert.Contains(host.Runner.Calls.Last().Arguments.ToArray(), "-p:AdbTarget=-s emulator-5554");
+        Assert.DoesNotContain(c => Tool(c) is "sdkmanager" or "avdmanager", host.Runner.Calls);
+        Assert.AreSequenceEqual(new[] { "-avd", "Pixel_9", "-no-boot-anim" }, host.Runner.Detached.Single().Arguments.ToArray());
+        Assert.Contains(c => string.Join(' ', c.Arguments) == "-s emulator-5554 shell settings put secure autofill_service null", host.Runner.Calls);
+        Assert.Contains("-p:AdbTarget=-s emulator-5554", host.Runner.Calls.Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -190,9 +190,9 @@ public class RunTests
         Assert.AreEqual("Pixel_9", NativeRun.PickVirtualDevice(devices[..2], "bit_android_36", apis));
         Assert.AreEqual("Old", NativeRun.PickVirtualDevice(devices[..1], "bit_android_36", apis));
         Assert.IsNull(NativeRun.PickVirtualDevice([], "bit_android_36", apis));
-        CollectionAssert.AreEqual(new[] { "android-36", "android-36.0" }, apis.ToArray());
-        CollectionAssert.AreEqual(new[] { "android-36.1" }, NativeRun.SystemImageApis("36.1").ToArray());
-        CollectionAssert.AreEqual(new[] { "android-37.0", "android-37" }, NativeRun.SystemImageApis("37.0").ToArray());
+        Assert.AreSequenceEqual(new[] { "android-36", "android-36.0" }, apis.ToArray());
+        Assert.AreSequenceEqual(new[] { "android-36.1" }, NativeRun.SystemImageApis("36.1").ToArray());
+        Assert.AreSequenceEqual(new[] { "android-37.0", "android-37" }, NativeRun.SystemImageApis("37.0").ToArray());
     }
 
     [TestMethod]
@@ -211,8 +211,8 @@ public class RunTests
         var boot = steps.Reports.Single(r => r.Id == "android-boot").Result;
         Assert.AreEqual(StepStatus.Failed, boot.Status);
         Assert.AreEqual("The Android emulator didn't start", boot.Title);
-        StringAssert.Contains(boot.FollowUp, "-avd Pixel_9");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("-t:Run")));
+        Assert.Contains("-avd Pixel_9", boot.FollowUp!);
+        Assert.DoesNotContain(c => c.Arguments.Contains("-t:Run"), host.Runner.Calls);
     }
 
     [TestMethod]
@@ -227,9 +227,9 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("run", platform), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "This machine can't build the");
-        StringAssert.Contains(host.FlatOutput, $"cd {directory} && bit setup --platforms {platform}");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("-t:Run") || c.Arguments.Contains("-t:GetAndroidDependencies") || c.Arguments.Contains("install")));
+        Assert.Contains("This machine can't build the", host.FlatOutput);
+        Assert.Contains($"cd {directory} && bit setup --platforms {platform}", host.FlatOutput);
+        Assert.DoesNotContain(c => c.Arguments.Contains("-t:Run") || c.Arguments.Contains("-t:GetAndroidDependencies") || c.Arguments.Contains("install"), host.Runner.Calls);
     }
 
     [TestMethod]
@@ -246,9 +246,9 @@ public class RunTests
 
             Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("run", "android"), host.Output);
 
-            StringAssert.Contains(host.FlatOutput, "the Android SDK isn't installed");
-            StringAssert.Contains(host.FlatOutput, "bit setup --platforms android");
-            Assert.IsFalse(host.Runner.Calls.Any(c => Tool(c) is "adb"));
+            Assert.Contains("the Android SDK isn't installed", host.FlatOutput);
+            Assert.Contains("bit setup --platforms android", host.FlatOutput);
+            Assert.DoesNotContain(c => Tool(c) is "adb", host.Runner.Calls);
         }
         finally
         {
@@ -257,12 +257,10 @@ public class RunTests
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     public async Task AnAndroidSdkOnlyAnAdministratorCanChange_Should_AskForAnElevatedTerminalWithoutOne()
     {
-        if (OperatingSystem.IsWindows() is false)
-            return;
-
         using var host = new TestHost(HostOs.Windows);
         var project = Project(host, CreateProject(host));
         var sdk = CreateAndroidSdk(host, HostOs.Windows, emulator: false);
@@ -287,8 +285,8 @@ public class RunTests
 
         var install = steps.Reports.Single(r => r.Id == "android-emulator").Result;
         Assert.AreEqual("The Android emulator needs administrator rights", install.Title);
-        StringAssert.Contains(install.FollowUp, "--install emulator");
-        Assert.IsFalse(host.Runner.Calls.Any(c => Tool(c) is "sdkmanager" && c.Arguments.Contains("--install")));
+        Assert.Contains("--install emulator", install.FollowUp!);
+        Assert.DoesNotContain(c => Tool(c) is "sdkmanager" && c.Arguments.Contains("--install"), host.Runner.Calls);
         Assert.IsEmpty(host.Runner.Detached);
     }
 
@@ -303,7 +301,7 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", platform, "-p:Environment=Staging"), host.Output);
 
-        CollectionAssert.AreEqual(new[] { "build", Maui, "-t:Run", "-f", targetFramework, "-p:Environment=Staging" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", Maui, "-t:Run", "-f", targetFramework, "-p:Environment=Staging" }, host.Runner.Calls.Last().Arguments.ToArray());
         Assert.IsEmpty(host.Runner.Detached);
     }
 
@@ -316,10 +314,10 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "windows", "-p:Environment=Staging"), host.Output);
 
-        CollectionAssert.AreEqual(new[] { "build", windows, "-p:Environment=Staging" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", windows, "-p:Environment=Staging" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
         var started = host.Runner.Detached.Single();
         Assert.AreEqual("dotnet", started.FileName);
-        CollectionAssert.AreEqual(new[] { "run", "--project", windows, "--no-build", "--property:Environment=Staging" }, started.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "run", "--project", windows, "--no-build", "--property:Environment=Staging" }, started.Arguments.ToArray());
         Assert.AreEqual(host.WorkingDirectory, started.WorkingDirectory);
     }
 
@@ -332,7 +330,7 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "ios"), host.Output);
 
-        CollectionAssert.AreEqual(new[] { "build", MovedMaui, "-t:Run", "-f", "net10.0-ios" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", MovedMaui, "-t:Run", "-f", "net10.0-ios" }, host.Runner.Calls.Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -343,8 +341,8 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("run", "windows"), host.Output);
 
-        CollectionAssert.AreEqual(new[] { "build", MovedWindows }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
-        CollectionAssert.AreEqual(new[] { "run", "--project", MovedWindows, "--no-build" }, host.Runner.Detached.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", MovedWindows }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "run", "--project", MovedWindows, "--no-build" }, host.Runner.Detached.Single().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -356,7 +354,7 @@ public class RunTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run", "ios"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "Contoso has no src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj");
+        Assert.Contains("Contoso has no src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 

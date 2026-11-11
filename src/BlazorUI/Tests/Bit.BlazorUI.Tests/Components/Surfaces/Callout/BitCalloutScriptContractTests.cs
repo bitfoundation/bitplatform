@@ -36,7 +36,7 @@ public class BitCalloutScriptContractTests
 
         // A JS function binds its arguments by position: one added on a side alone, or two swapped, shifts every
         // value after it onto the wrong parameter - the rootId the chain copies the root by among them.
-        CollectionAssert.AreEqual(parameters, arguments);
+        Assert.AreSequenceEqual(parameters, arguments);
     }
 
     [TestMethod]
@@ -48,11 +48,11 @@ public class BitCalloutScriptContractTests
         // Every link of the chain copies the classes of what it stands for, so it is kept from drawing their
         // ::before and ::after loose in the body; the element the parts sit in pins their fixed positioning
         // against a descendant rule of the page that now matches them.
-        StringAssert.Contains(script, "wanted.set('data-bit-callout-link', '')");
-        StringAssert.Contains(script, "holder.setAttribute('data-bit-callout-holder', '')");
+        Assert.Contains("wanted.set('data-bit-callout-link', '')", script);
+        Assert.Contains("holder.setAttribute('data-bit-callout-holder', '')", script);
 
-        StringAssert.Contains(general, "[data-bit-callout-link]::before,\n[data-bit-callout-link]::after {\n    content: none !important;");
-        StringAssert.Contains(general, "[data-bit-callout-holder] > * {\n    position: fixed !important;");
+        Assert.Contains("[data-bit-callout-link]::before,\n[data-bit-callout-link]::after {\n    content: none !important;", general);
+        Assert.Contains("[data-bit-callout-holder] > * {\n    position: fixed !important;", general);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitCalloutScriptContractTests
     {
         var script = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "Callouts.ts"));
 
-        StringAssert.Contains(script, "export function dismissOnOverlayClick(");
+        Assert.Contains("export function dismissOnOverlayClick(", script);
 
         // The overlay's own Blazor handler dismisses the innermost callout on the same click, so the listener that
         // dismisses the ones under it too has to run first and keep the click from reaching that handler: on the
@@ -68,8 +68,8 @@ public class BitCalloutScriptContractTests
         // it (one level in), never inside a function.
         var listener = Regex.Match(script, @"\n(?:    )?window\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
         Assert.IsTrue(listener.Success, "The capture-phase click listener on the window was not found in Callouts.ts.");
-        StringAssert.Contains(listener.Groups["body"].Value, "Callouts.dismissOnOverlayClick(");
-        StringAssert.Contains(listener.Groups["body"].Value, "stopImmediatePropagation()");
+        Assert.Contains("Callouts.dismissOnOverlayClick(", listener.Groups["body"].Value);
+        Assert.Contains("stopImmediatePropagation()", listener.Groups["body"].Value);
     }
 
     [TestMethod]
@@ -83,13 +83,13 @@ public class BitCalloutScriptContractTests
                            .Distinct()
                            .ToArray();
 
-        Assert.IsTrue(written.Length > 0, "BitCallout no longer writes a private variable inline; this test has nothing left to pin.");
+        Assert.IsNotEmpty(written, "BitCallout no longer writes a private variable inline; this test has nothing left to pin.");
 
         // A callout opened inside another one is its descendant - in the page, and in the chain it is relocated
         // into - so without a reset in its own rule it would be sized by the outer one's parameters.
         foreach (var variable in written)
         {
-            StringAssert.Contains(stylesheet, $"{variable}: initial;", $"{variable} is written inline but never reset, so it inherits into a nested callout.");
+            Assert.Contains($"{variable}: initial;", stylesheet, $"{variable} is written inline but never reset, so it inherits into a nested callout.");
         }
     }
 

@@ -18,17 +18,17 @@ public class BitRatingStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the default an
         // unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-rtg-size, var(--bit-Rating-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-rtg-lbl-size, var(--bit-Rating-label-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));");
+        Assert.Contains("font-size: var(--bit-rtg-size, var(--bit-Rating-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-rtg-lbl-size, var(--bit-Rating-label-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));", stylesheet);
 
         // So does an explicit Color, for the fill in every state and for the focus ring. The hover and the press set the
         // variable the fill is painted from, and the rule at rest reads it ahead of the resting color, so an app's class
         // on the fill keeps its paint under the pointer.
-        StringAssert.Contains(stylesheet, "color: var(--bit-rtg-ifl-clr, var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "--bit-rtg-ifl-clr: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-rtg-ifl-clr: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color)))");
+        Assert.Contains("color: var(--bit-rtg-ifl-clr, var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri})));", stylesheet);
+        Assert.Contains("--bit-rtg-ifl-clr: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("--bit-rtg-ifl-clr: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color)))", stylesheet);
 
         // The values the parameters publish are never read behind a public variable. The unfilled part is not the
         // Color's to paint (--bit-rtg-clr-uns), so it stays the variable's.
@@ -47,7 +47,7 @@ public class BitRatingStylesheetTests
         foreach (var property in new[] { "--bit-rtg-clr", "--bit-rtg-clr-hover", "--bit-rtg-clr-active", "--bit-rtg-clr-focus",
                                          "--bit-rtg-size", "--bit-rtg-lbl-size", "--bit-rtg-dsc-size" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -59,7 +59,7 @@ public class BitRatingStylesheetTests
         // that bubbles up to the item as a fresh hover - bringing back the preview a click had just ended.
         var iconContainer = SourceFiles.StripScssComments(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-rtg-ict {"));
 
-        StringAssert.Contains(iconContainer, "pointer-events: none;");
+        Assert.Contains("pointer-events: none;", iconContainer);
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Rating", "BitRating.scss");

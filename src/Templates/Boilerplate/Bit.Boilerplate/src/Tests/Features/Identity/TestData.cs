@@ -1,6 +1,6 @@
 namespace Boilerplate.Tests.Features.Identity;
 
-public partial class TestData
+internal partial class TestData
 {
     public const string DefaultTestEmail = "test@bitplatform.dev";
     public const string DefaultTestPassword = "12345678";

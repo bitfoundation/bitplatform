@@ -192,7 +192,7 @@ public class BitAiFormE2ETests : E2ETestBase
         Assert.AreEqual(JsonValueKind.True, root.GetProperty("subscribe").ValueKind);
         Assert.AreEqual("London", root.GetProperty("address").GetProperty("city").GetString());
         Assert.AreEqual(JsonValueKind.Array, root.GetProperty("tags").ValueKind);
-        CollectionAssert.AreEqual(new[] { "math" }, root.GetProperty("tags").EnumerateArray().Select(t => t.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "math" }, root.GetProperty("tags").EnumerateArray().Select(t => t.GetString()).ToArray());
         Assert.IsFalse(root.TryGetProperty("notes", out _), "A field left empty is left out.");
 
         // The form stays as it is, for the host to mark it submitted.
@@ -262,7 +262,7 @@ public class BitAiFormE2ETests : E2ETestBase
 
         await Expect(Text("frm-prefill-json")).Not.ToHaveTextAsync("-");
         using var json = JsonDocument.Parse(await Text("frm-prefill-json").TextContentAsync() ?? "{}");
-        CollectionAssert.AreEqual(new[] { "math", "engines" }, json.RootElement.GetProperty("tags").EnumerateArray().Select(t => t.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "math", "engines" }, json.RootElement.GetProperty("tags").EnumerateArray().Select(t => t.GetString()).ToArray());
         Assert.AreEqual(36, json.RootElement.GetProperty("age").GetInt32());
     }
 
@@ -299,7 +299,7 @@ public class BitAiFormE2ETests : E2ETestBase
         // The actions keep their side of the row.
         var form = await Root("frm-submitted").RectAsync();
         var tag = await done.RectAsync();
-        Assert.IsTrue(form.Right - tag.Right < 40, "The confirmation sits at the end of the row.");
+        Assert.IsLessThan(40, form.Right - tag.Right, "The confirmation sits at the end of the row.");
     }
 
     [TestMethod]
@@ -414,7 +414,7 @@ public class BitAiFormE2ETests : E2ETestBase
         await Expect(Submit("frm-main")).ToHaveClassAsync(HasClass("bit-btn-fil"));
         var cancel = await Cancel("frm-main").RectAsync();
         var submit = await Submit("frm-main").RectAsync();
-        Assert.IsTrue(cancel.Right <= submit.Left + 1, "Cancel comes before Submit.");
+        Assert.IsLessThanOrEqualTo(submit.Left + 1, cancel.Right, "Cancel comes before Submit.");
     }
 
     [TestMethod]
@@ -454,11 +454,11 @@ public class BitAiFormE2ETests : E2ETestBase
         var formRect = await form.RectAsync();
         var submit = await Submit("frm-rtl").RectAsync();
         var cancel = await Cancel("frm-rtl").RectAsync();
-        Assert.IsTrue(submit.Left - formRect.Left < 60, "The actions sit at the left edge.");
-        Assert.IsTrue(submit.Right <= cancel.Left + 1, "Cancel is on the right of Submit.");
+        Assert.IsLessThan(60, submit.Left - formRect.Left, "The actions sit at the left edge.");
+        Assert.IsLessThanOrEqualTo(cancel.Left + 1, submit.Right, "Cancel is on the right of Submit.");
 
         var label = await Page.Locator("#frm-rtl .bit-tfl-lbl").RectAsync();
         var input = await Page.Locator("#frm-rtl input").RectAsync();
-        Assert.IsTrue(Math.Abs(label.Right - input.Right) < 8, "The label lines up with the right edge of its input.");
+        Assert.IsLessThan(8, Math.Abs(label.Right - input.Right), "The label lines up with the right edge of its input.");
     }
 }

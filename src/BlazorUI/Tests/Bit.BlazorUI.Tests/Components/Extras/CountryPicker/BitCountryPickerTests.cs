@@ -87,7 +87,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         var options = component.FindAll("button.bit-cnp-itm");
 
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-srch").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-srch"));
         Assert.AreEqual(options[0].Id, component.Find("button.bit-cnp-fld").GetAttribute("aria-activedescendant"));
 
         component.Find("button.bit-cnp-fld").KeyDown("ArrowDown");
@@ -238,7 +238,7 @@ public class BitCountryPickerTests : BunitTestContext
         });
 
         Assert.AreEqual("Select a country", component.Find(".bit-cnp-pls").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-fld .bit-cnp-flg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-fld .bit-cnp-flg"));
     }
 
     [TestMethod]
@@ -261,7 +261,7 @@ public class BitCountryPickerTests : BunitTestContext
         // The name is written beside it, so the flag is decoration a screen reader leaves alone.
         Assert.AreEqual("", flag.GetAttribute("alt"));
         Assert.AreEqual("true", flag.GetAttribute("aria-hidden"));
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-pls").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-pls"));
     }
 
     [TestMethod]
@@ -275,7 +275,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-flg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-flg"));
     }
 
     [TestMethod]
@@ -301,11 +301,11 @@ public class BitCountryPickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCountryPicker>();
 
-        Assert.AreEqual(0, component.FindAll("button.bit-cnp-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-cnp-itm"));
 
         component.Find("button.bit-cnp-fld").Click();
 
-        Assert.AreEqual(BitCountries.All.Length, component.FindAll("button.bit-cnp-itm").Count);
+        Assert.HasCount(BitCountries.All.Length, component.FindAll("button.bit-cnp-itm"));
     }
 
     [TestMethod]
@@ -320,7 +320,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         var names = component.FindAll(".bit-cnp-inm").Select(n => n.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(FiveCountries.Select(c => c.Name).ToArray(), names);
+        Assert.AreSequenceEqual(FiveCountries.Select(c => c.Name).ToArray(), names);
         Assert.IsFalse(component.Find(".bit-cnp-lst").TextContent.Contains('+'));
     }
 
@@ -337,9 +337,11 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
         component.FindAll("button.bit-cnp-itm")[3].Click();
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual("DE", changed?.Iso2);
-        Assert.AreEqual("DE", component.Instance.Value?.Iso2);
+        Assert.AreEqual("DE", actualValue);
+        var actualValue1 = component.Instance.Value?.Iso2;
+        Assert.AreEqual("DE", actualValue1);
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual("Germany", component.Find(".bit-cnp-txt").TextContent.Trim());
     }
@@ -358,8 +360,9 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
         component.FindAll("button.bit-cnp-itm")[2].Click();
+        var actualValue = bound?.Iso2;
 
-        Assert.AreEqual("GB", bound?.Iso2);
+        Assert.AreEqual("GB", actualValue);
     }
 
     [TestMethod]
@@ -373,8 +376,9 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
         component.FindAll("button.bit-cnp-itm")[2].Click();
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("FR", component.Instance.Value?.Iso2);
+        Assert.AreEqual("FR", actualValue);
         Assert.AreEqual("France", component.Find(".bit-cnp-txt").TextContent.Trim());
     }
 
@@ -410,7 +414,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         var selected = component.FindAll("button.bit-cnp-itm").Where(i => i.ClassList.Contains("bit-cnp-sel")).ToList();
 
-        Assert.AreEqual(1, selected.Count);
+        Assert.ContainsSingle(selected);
         Assert.AreEqual("Germany", selected[0].GetAttribute("title"));
         Assert.AreEqual("true", selected[0].GetAttribute("aria-selected"));
 
@@ -440,8 +444,9 @@ public class BitCountryPickerTests : BunitTestContext
         {
             parameters.Add(p => p.DefaultValue, BitCountries.Canada);
         });
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("CA", component.Instance.Value?.Iso2);
+        Assert.AreEqual("CA", actualValue);
         Assert.AreEqual("Canada", component.Find(".bit-cnp-txt").TextContent.Trim());
     }
 
@@ -452,8 +457,9 @@ public class BitCountryPickerTests : BunitTestContext
         {
             parameters.Add(p => p.DefaultCountry, BitCountries.Japan);
         });
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("JP", component.Instance.Value?.Iso2);
+        Assert.AreEqual("JP", actualValue);
     }
 
     [TestMethod]
@@ -464,8 +470,9 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.DefaultCountry, BitCountries.Japan);
             parameters.Add(p => p.DefaultValue, BitCountries.Canada);
         });
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("CA", component.Instance.Value?.Iso2);
+        Assert.AreEqual("CA", actualValue);
     }
 
     [TestMethod]
@@ -499,7 +506,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         Assert.AreEqual("Germany", items[0].GetAttribute("title"));
         Assert.AreEqual("France", items[1].GetAttribute("title"));
-        Assert.AreEqual(BitCountries.All.Length, items.Count);
+        Assert.HasCount(BitCountries.All.Length, items);
 
         // The rule under the last of them sets them apart from the rest.
         Assert.IsFalse(items[0].ClassList.Contains("bit-cnp-ilp"));
@@ -519,7 +526,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         var titles = component.FindAll("button.bit-cnp-itm").Select(i => i.GetAttribute("title")).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "United States", "United Kingdom", "Germany", "France" }, titles);
+        Assert.AreSequenceEqual(new[] { "United States", "United Kingdom", "Germany", "France" }, titles);
     }
 
     [TestMethod,
@@ -538,7 +545,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         var items = component.FindAll("button.bit-cnp-itm");
 
-        Assert.IsTrue(items.Count > 0, $"No result for '{term}'.");
+        Assert.IsNotEmpty(items, $"No result for '{term}'.");
         Assert.AreEqual(expected, items[0].GetAttribute("title"));
     }
 
@@ -555,7 +562,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         // The picker shows no dialing code, so a country found through one would be a match nobody could see the
         // reason for.
-        Assert.AreEqual(0, component.FindAll("button.bit-cnp-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-cnp-itm"));
     }
 
     [TestMethod]
@@ -569,7 +576,7 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find(".bit-cnp-srch").Input(" - ");
 
-        Assert.AreEqual(FiveCountries.Count, component.FindAll("button.bit-cnp-itm").Count);
+        Assert.HasCount(FiveCountries.Count, component.FindAll("button.bit-cnp-itm"));
     }
 
     [TestMethod]
@@ -583,9 +590,9 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find(".bit-cnp-srch").Input("zzzzzzz");
 
-        Assert.AreEqual(0, component.FindAll("button.bit-cnp-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-cnp-itm"));
         Assert.AreEqual("nothing here", component.Find(".bit-cnp-nor").TextContent.Trim());
-        StringAssert.StartsWith(component.Find(".bit-cnp-lvr").TextContent, "nothing here");
+        Assert.StartsWith("nothing here", component.Find(".bit-cnp-lvr").TextContent);
 
         component.Render(parameters =>
         {
@@ -603,11 +610,11 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find(".bit-cnp-srch").Input("germany");
 
-        StringAssert.StartsWith(component.Find(".bit-cnp-lvr").TextContent, "1 country found");
+        Assert.StartsWith("1 country found", component.Find(".bit-cnp-lvr").TextContent);
 
         component.Find(".bit-cnp-srch").Input("united");
 
-        StringAssert.Contains(component.Find(".bit-cnp-lvr").TextContent, "countries found");
+        Assert.Contains("countries found", component.Find(".bit-cnp-lvr").TextContent);
 
         component.Render(parameters =>
         {
@@ -616,7 +623,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find(".bit-cnp-srch").Input("germany");
 
-        StringAssert.StartsWith(component.Find(".bit-cnp-lvr").TextContent, "1 Länder gefunden");
+        Assert.StartsWith("1 Länder gefunden", component.Find(".bit-cnp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -648,8 +655,9 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find(".bit-cnp-srch").Input("germany");
         component.Find(".bit-cnp-srch").KeyDown("Enter");
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual("DE", changed?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
@@ -747,7 +755,7 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        Assert.Contains("Enter", LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
     }
@@ -760,12 +768,12 @@ public class BitCountryPickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCountryPicker>();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
 
         component.Find("button.bit-cnp-fld").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
-        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
+        Assert.DoesNotContain("Character", LastPreventKeys(field: false));
     }
 
     // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
@@ -804,13 +812,13 @@ public class BitCountryPickerTests : BunitTestContext
         // into the box after it, in order - where the browser appends them to whatever the box holds by then, rather than
         // a render writing a term a round trip old over the letters typed into the box since.
         component.WaitForAssertion(() => Assert.AreEqual("n", component.Find(".bit-cnp-srch").GetAttribute("value")));
-        CollectionAssert.AreEqual(new[] { "o", "r" }, TypedIntoTheSearchBox());
+        Assert.AreSequenceEqual(new[] { "o", "r" }, TypedIntoTheSearchBox());
 
         // The box reports what it holds through its binding, which is what searches for it.
         component.Find(".bit-cnp-srch").Input("nor");
 
         Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value"));
-        StringAssert.StartsWith(component.Find("button.bit-cnp-act").GetAttribute("title"), "Nor");
+        Assert.StartsWith("Nor", component.Find("button.bit-cnp-act").GetAttribute("title"));
     }
 
     // The letters a component typed into its search box by script (Extras.typeInto), in order.
@@ -831,7 +839,7 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").KeyDown("g");
 
         Assert.IsTrue(component.Instance.IsOpen);
-        StringAssert.StartsWith(component.Find("button.bit-cnp-act").GetAttribute("title"), "G");
+        Assert.StartsWith("G", component.Find("button.bit-cnp-act").GetAttribute("title"));
 
         component.Find("button.bit-cnp-fld").KeyDown("e");
         component.Find("button.bit-cnp-fld").KeyDown("r");
@@ -840,8 +848,9 @@ public class BitCountryPickerTests : BunitTestContext
 
         // Space is part of the name while a term is being typed, and Enter takes the country the term has reached.
         component.Find("button.bit-cnp-fld").KeyDown("Enter");
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("DE", component.Instance.Value?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
@@ -913,12 +922,13 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find("button.bit-cnp-fld").KeyDown("ArrowDown");
         component.Find("button.bit-cnp-fld").KeyDown(" ");
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("CA", component.Instance.Value?.Iso2);
+        Assert.AreEqual("CA", actualValue);
         Assert.IsFalse(component.Instance.IsOpen);
 
         // The focus stayed on the field the whole time, so the choice is said out loud.
-        StringAssert.StartsWith(component.Find(".bit-cnp-lvr").TextContent, "Canada");
+        Assert.StartsWith("Canada", component.Find(".bit-cnp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -959,8 +969,9 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
         component.Find("button.bit-cnp-fld").KeyDown("ArrowDown");
         component.Find("button.bit-cnp-fld").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        var actualValue = component.Instance.Value?.Iso2;
 
-        Assert.AreEqual("CA", component.Instance.Value?.Iso2);
+        Assert.AreEqual("CA", actualValue);
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
@@ -1011,7 +1022,7 @@ public class BitCountryPickerTests : BunitTestContext
         component.Find("button.bit-cnp-fld").Click();
 
         var open = LastToggle();
-        Assert.AreEqual(true, open.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(open.Arguments[6]));
         Assert.AreEqual(component.Find("button.bit-cnp-fld").Id, open.Arguments[^3]);
 
         // The Tab of the search box is the JS side's to answer, which reports it through OnTabOut.
@@ -1084,16 +1095,16 @@ public class BitCountryPickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCountryPicker>();
 
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
 
         component.Find("button.bit-cnp-fld").Click();
 
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:block");
+        Assert.Contains("display:block", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
 
         component.Find(".bit-cnp-ovl").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1137,8 +1148,9 @@ public class BitCountryPickerTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
 
         component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.Japan)).GetAwaiter().GetResult();
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual("JP", changed?.Iso2);
+        Assert.AreEqual("JP", actualValue);
         Assert.AreEqual("Japan", component.Find(".bit-cnp-txt").TextContent.Trim());
     }
 
@@ -1154,11 +1166,11 @@ public class BitCountryPickerTests : BunitTestContext
         });
 
         Assert.AreEqual("DEU", component.Find(".bit-cnp-fld .vt").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-txt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-txt"));
 
         component.Find("button.bit-cnp-fld").Click();
 
-        CollectionAssert.AreEqual(new[] { "US", "CA", "GB", "DE", "FR" }, component.FindAll(".bit-cnp-itm .it").Select(i => i.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "US", "CA", "GB", "DE", "FR" }, component.FindAll(".bit-cnp-itm .it").Select(i => i.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -1192,7 +1204,7 @@ public class BitCountryPickerTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-cnp").ClassList.Contains("bit-inv"));
 
         // The message appeared after the field was read, so it is announced.
-        StringAssert.StartsWith(component.Find(".bit-cnp-lvr").TextContent, "Not served.");
+        Assert.StartsWith("Not served.", component.Find(".bit-cnp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -1241,8 +1253,9 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
         component.FindAll("button.bit-cnp-itm")[3].Click();
+        var actualValue = model.Country?.Iso2;
 
-        Assert.AreEqual("DE", model.Country?.Iso2);
+        Assert.AreEqual("DE", actualValue);
 
         // Picking a country notifies the form of the edit, which validates the field again.
         component.WaitForAssertion(() =>
@@ -1275,7 +1288,7 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, BitCountries.Netherlands);
         });
 
-        Assert.AreEqual(0, component.FindAll("input[type=hidden]").Count);
+        Assert.IsEmpty(component.FindAll("input[type=hidden]"));
     }
 
     [TestMethod,
@@ -1383,7 +1396,7 @@ public class BitCountryPickerTests : BunitTestContext
         var close = component.Find("button.bit-cnp-cls");
 
         Assert.AreEqual("Schließen", close.GetAttribute("aria-label"));
-        StringAssert.Contains(close.QuerySelector("i")!.ClassName, "fa-xmark");
+        Assert.Contains("fa-xmark", close.QuerySelector("i")!.ClassName!);
 
         component.Find("button.bit-cnp-fld").Click();
         component.Find("button.bit-cnp-cls").Click();
@@ -1403,7 +1416,7 @@ public class BitCountryPickerTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-cnp").ClassList.Contains("root-class"));
-        StringAssert.Contains(component.Find(".bit-cnp").GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", component.Find(".bit-cnp").GetAttribute("style")!);
         Assert.AreEqual("color:red", component.Find(".bit-cnp-fld").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-cnp-tcn").ClassList.Contains("text-class"));
         Assert.IsTrue(component.Find(".bit-cnp-cal").ClassList.Contains("callout-class"));
@@ -1541,8 +1554,8 @@ public class BitCountryPickerTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The JS side is told to take the relocated list off the screen, not left holding it.
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1553,7 +1566,7 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
 
         // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
         component.Render(parameters =>
@@ -1564,8 +1577,8 @@ public class BitCountryPickerTests : BunitTestContext
 
         // The picker cannot set a one-way IsOpen back to false, so the list is hidden instead.
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
         Assert.AreEqual("false", component.Find("button.bit-cnp-fld").GetAttribute("aria-expanded"));
 
         component.Render(parameters =>
@@ -1574,8 +1587,8 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.Disabled, false);
         });
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:block");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:block", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
         Assert.AreEqual("true", component.Find("button.bit-cnp-fld").GetAttribute("aria-expanded"));
     }
 
@@ -1598,8 +1611,8 @@ public class BitCountryPickerTests : BunitTestContext
 
         Assert.IsFalse(isOpen);
         Assert.IsFalse(component.Instance.IsOpen);
-        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+        Assert.Contains("display:none", component.Find(".bit-cnp-ovl").GetAttribute("style")!);
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1610,18 +1623,18 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.NoSearchBox, true);
         });
 
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
         // Enter picks the active country of the open list, and the click it would also fire must not reopen it.
-        CollectionAssert.Contains(LastFieldKeys(), "Enter");
-        CollectionAssert.Contains(LastFieldKeys(), "PageDown");
+        Assert.Contains("Enter", LastFieldKeys());
+        Assert.Contains("PageDown", LastFieldKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
         // Enter is the native click that opens the closed field again.
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
     }
 
     [TestMethod]
@@ -1631,11 +1644,11 @@ public class BitCountryPickerTests : BunitTestContext
 
         component.Find("button.bit-cnp-fld").Click();
 
-        CollectionAssert.Contains(LastFieldKeys(), "Enter");
+        Assert.Contains("Enter", LastFieldKeys());
 
         component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened()).GetAwaiter().GetResult();
 
-        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastFieldKeys());
     }
 
     [TestMethod]
@@ -1719,7 +1732,7 @@ public class BitCountryPickerTests : BunitTestContext
         var names = component.FindAll(".bit-cnp-inm").Select(n => n.TextContent).ToArray();
 
         // The first entry carrying a code is the one offered.
-        CollectionAssert.AreEqual(new[] { "United States", "Deutschland" }, names);
+        Assert.AreSequenceEqual(new[] { "United States", "Deutschland" }, names);
     }
 
     [TestMethod]
@@ -1733,7 +1746,7 @@ public class BitCountryPickerTests : BunitTestContext
             parameters.Add(p => p.Value, neverland);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-cnp-fld img").Count);
+        Assert.IsEmpty(component.FindAll(".bit-cnp-fld img"));
         Assert.AreEqual("SPAN", component.Find(".bit-cnp-fld .bit-cnp-flg").TagName);
 
         component.Find("button.bit-cnp-fld").Click();

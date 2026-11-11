@@ -46,8 +46,8 @@ public class BitIconParamsTests : BunitTestContext
     [TestMethod]
     public void BitIconParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitIcon)}", BitIconParams.ParamName);
-        Assert.AreEqual("BitParams.BitIcon", BitIconParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitIcon)}", new BitIconParams().Name);
+        Assert.AreEqual("BitParams.BitIcon", new BitIconParams().Name);
     }
 
     [TestMethod]
@@ -135,8 +135,8 @@ public class BitIconParamsTests : BunitTestContext
         var style = root.GetAttribute("style");
 
         Assert.IsTrue(root.ClassList.Contains("bit-ico-trn"));
-        StringAssert.Contains(style, "--bit-ico-rotate:45deg");
-        StringAssert.Contains(style, "font-size:2rem");
+        Assert.Contains("--bit-ico-rotate:45deg", style!);
+        Assert.Contains("font-size:2rem", style);
     }
 
     [TestMethod]
@@ -157,9 +157,9 @@ public class BitIconParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-ico-anm"));
         Assert.IsTrue(root.ClassList.Contains("bit-ico-dly"));
         Assert.IsTrue(root.ClassList.Contains("bit-ico-itr"));
-        StringAssert.Contains(style, "--bit-ico-anm-dur:2s");
-        StringAssert.Contains(style, "--bit-ico-anm-dly:500ms");
-        StringAssert.Contains(style, "--bit-ico-anm-itr:3");
+        Assert.Contains("--bit-ico-anm-dur:2s", style!);
+        Assert.Contains("--bit-ico-anm-dly:500ms", style);
+        Assert.Contains("--bit-ico-anm-itr:3", style);
     }
 
     [TestMethod]
@@ -220,8 +220,8 @@ public class BitIconParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("cascaded-id", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
     }
 
@@ -262,7 +262,7 @@ public class BitIconParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-ico-spn"));
         // A false written by the icon is a decision, so the cascaded true does not turn the box on.
         Assert.IsFalse(root.ClassList.Contains("bit-ico-fxw"));
-        StringAssert.Contains(root.GetAttribute("style"), "font-size:1rem");
+        Assert.Contains("font-size:1rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]

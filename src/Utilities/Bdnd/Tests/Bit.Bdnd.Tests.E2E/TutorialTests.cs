@@ -27,8 +27,8 @@ public sealed class TutorialTests : BdndTest
         // From column 1, row 7 a knight reaches three squares, each lit green. The pointer is still over the
         // knight's own square, which the knight cannot move to: hovered but refusing, it is red.
         await Expect(page.Locator(".chess-overlay")).ToHaveCountAsync(4);
-        CollectionAssert.AreEquivalent(new[] { "0,5", "2,5", "3,6" }, await SquaresLitAsync(page, Green), "the legal squares");
-        CollectionAssert.AreEquivalent(new[] { "1,7" }, await SquaresLitAsync(page, Red), "the hovered square");
+        Assert.AreSequenceEqual(new[] { "0,5", "2,5", "3,6" }, await SquaresLitAsync(page, Green), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the legal squares");
+        Assert.AreSequenceEqual(new[] { "1,7" }, await SquaresLitAsync(page, Red), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the hovered square");
 
         // Over a legal square the light turns yellow; the origin square, no longer hovered, goes dark.
         await MoveAsync(page, Square(page, "2,5"));
@@ -74,9 +74,8 @@ public sealed class TutorialTests : BdndTest
         // The knight on its new square is a new draggable, and the next move starts from there.
         await StartDragAsync(page, page.Locator(".knight"));
         await Expect(page.Locator(".chess-overlay")).ToHaveCountAsync(9);
-        CollectionAssert.AreEquivalent(new[] { "0,4", "0,6", "1,3", "1,7", "3,3", "3,7", "4,4", "4,6" }, await SquaresLitAsync(page, Green),
-            "the legal squares from column 2, row 5");
-        CollectionAssert.AreEquivalent(new[] { "2,5" }, await SquaresLitAsync(page, Red), "the hovered square");
+        Assert.AreSequenceEqual(new[] { "0,4", "0,6", "1,3", "1,7", "3,3", "3,7", "4,4", "4,6" }, await SquaresLitAsync(page, Green), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the legal squares from column 2, row 5");
+        Assert.AreSequenceEqual(new[] { "2,5" }, await SquaresLitAsync(page, Red), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the hovered square");
 
         await DragToAsync(page, (await BoxAsync(Square(page, "4,4"))).Centre,
             () => Expect(Overlay(page, "4,4")).ToHaveCSSAsync("background-color", Yellow));

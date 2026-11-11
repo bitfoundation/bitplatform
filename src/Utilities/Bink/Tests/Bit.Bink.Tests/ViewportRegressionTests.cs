@@ -33,8 +33,8 @@ public class ViewportRegressionTests(TestContext output)
         Vector2 first = stroke.Points.PositionAt(0);
         Vector2 last = stroke.Points.PositionAt(stroke.Points.Count - 1);
         output.WriteLine($"zoom {zoom}: first={first} last={last} n={stroke.Points.Count}");
-        Assert.IsTrue(Vector2.Distance(first, docFrom) < 1.0f, $"start off by {Vector2.Distance(first, docFrom)} at zoom {zoom}");
-        Assert.IsTrue(Vector2.Distance(last, docTo) < 1.0f, $"end off by {Vector2.Distance(last, docTo)} at zoom {zoom}");
+        Assert.IsLessThan(1.0f, Vector2.Distance(first, docFrom), $"start off by {Vector2.Distance(first, docFrom)} at zoom {zoom}");
+        Assert.IsLessThan(1.0f, Vector2.Distance(last, docTo), $"end off by {Vector2.Distance(last, docTo)} at zoom {zoom}");
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class ViewportRegressionTests(TestContext output)
         {
             vp = vp.ZoomBy(1.19f, anchor);
             Vector2 after = vp.ToDocument(anchor);
-            Assert.IsTrue(Vector2.Distance(before, after) < 0.01f, $"drifted {Vector2.Distance(before, after)} at step {i} zoom {vp.Zoom}");
+            Assert.IsLessThan(0.01f, Vector2.Distance(before, after), $"drifted {Vector2.Distance(before, after)} at step {i} zoom {vp.Zoom}");
         }
     }
 
@@ -87,7 +87,7 @@ public class ViewportRegressionTests(TestContext output)
     {
         BinkViewport bad = BinkViewport.Identity with { Zoom = -2f };
         output.WriteLine($"negative zoom read back as: {bad.Zoom}");
-        Assert.IsTrue(bad.Zoom > 0, "a negative zoom was accepted through a with-expression");
+        Assert.IsGreaterThan(0, bad.Zoom, "a negative zoom was accepted through a with-expression");
     }
 
     [TestMethod]

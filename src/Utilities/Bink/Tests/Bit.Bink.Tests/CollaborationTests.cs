@@ -115,7 +115,7 @@ public class OperationCodecTests
 
         // Roughly ten bytes per point on the wire, including base64 expansion and all the JSON around it.
         double perPoint = json.Length / 120.0;
-        Assert.IsTrue(perPoint < 14, $"a stroke cost {perPoint:0.0} bytes per point on the wire ({json.Length} bytes total)");
+        Assert.IsLessThan(14, perPoint, $"a stroke cost {perPoint:0.0} bytes per point on the wire ({json.Length} bytes total)");
     }
 
     [TestMethod]
@@ -144,10 +144,12 @@ public class OperationCodecTests
         // replica by something as small as renaming the layer.
         var properties = new BinkLayerProperties { Name = "Notes", Metadata = new Dictionary<string, string> { ["role"] = "review" } };
         var decoded = (BinkUpdateLayerOperation)BinkOperationCodec.Deserialize(BinkOperationCodec.Serialize(new BinkUpdateLayerOperation(Guid.NewGuid(), properties)));
-        Assert.AreEqual("review", decoded.Properties.Metadata?["role"]);
+        var actualValue = decoded.Properties.Metadata?["role"];
+        Assert.AreEqual("review", actualValue);
 
         var added = (BinkAddLayerOperation)BinkOperationCodec.Deserialize(BinkOperationCodec.Serialize(new BinkAddLayerOperation(Guid.NewGuid(), properties)));
-        Assert.AreEqual("review", added.Properties.Metadata?["role"]);
+        var actualValue1 = added.Properties.Metadata?["role"];
+        Assert.AreEqual("review", actualValue1);
     }
 }
 
@@ -251,8 +253,8 @@ public class CollaborationSessionTests
 
             ta.SetConnected(true);
             tb.SetConnected(true);
-            await sa.FlushAsync();
-            await sb.FlushAsync();
+            await sa.FlushAsync(TestContext.CancellationToken);
+            await sb.FlushAsync(TestContext.CancellationToken);
             await Task.Yield();
 
             // Whatever the outcome, the replicas must agree.
@@ -273,7 +275,7 @@ public class CollaborationSessionTests
             Assert.AreEqual(5, sa.PendingCount);
 
             ta.SetConnected(true);
-            await sa.FlushAsync();
+            await sa.FlushAsync(TestContext.CancellationToken);
             await Task.Yield();
 
             Assert.AreEqual(5, b.ElementCount);
@@ -293,7 +295,7 @@ public class CollaborationSessionTests
             ta.SetConnected(true);
             sa.ClearPending();
 
-            await sb.RequestSnapshotAsync();
+            await sb.RequestSnapshotAsync(TestContext.CancellationToken);
             await Task.Yield();
 
             Assert.AreEqual(4, b.ElementCount);
@@ -323,7 +325,7 @@ public class CollaborationSessionTests
             DocumentId = local.Id,
             Sequence = 1,
             Snapshot = BinkSerializer.Serialize(oversized),
-        });
+        }, TestContext.CancellationToken);
         await Task.Yield();
 
         // The local drawing survives: a refused snapshot must not destroy it.
@@ -347,7 +349,7 @@ public class CollaborationSessionTests
                 Cursor = new Vector2(30, 40),
                 LiveStroke = [new Vector2(0, 0), new Vector2(10, 10)],
                 LiveStrokeWidth = 4f,
-            });
+            }, TestContext.CancellationToken);
             await Task.Yield();
 
             Assert.IsNotNull(received);
@@ -377,7 +379,7 @@ public class CollaborationSessionTests
             DocumentId = document.Id,
             Sequence = 1,
             Operation = "{\"op\":\"add\",\"layer\":\"not-a-guid\"}",
-        });
+        }, TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreEqual(1, document.ElementCount);
@@ -403,8 +405,8 @@ public class CollaborationSessionTests
             Operation = BinkOperationCodec.Serialize(new BinkAddElementOperation(document.Layers[0].Id, stroke)),
         };
 
-        await peer.SendAsync(message);
-        await peer.SendAsync(message);
+        await peer.SendAsync(message, TestContext.CancellationToken);
+        await peer.SendAsync(message, TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreEqual(1, document.ElementCount);
@@ -426,7 +428,7 @@ public class CollaborationSessionTests
             DocumentId = document.Id,
             Sequence = 7,
             Presence = new BinkPresenceState { ParticipantId = "peer", Name = "Peer" },
-        });
+        }, TestContext.CancellationToken);
         await Task.Yield();
         Assert.ContainsSingle(session.Participants);
 
@@ -436,7 +438,7 @@ public class CollaborationSessionTests
             SenderId = "peer",
             DocumentId = document.Id,
             Sequence = 8,
-        });
+        }, TestContext.CancellationToken);
         await Task.Yield();
         Assert.IsEmpty(session.Participants);
 
@@ -450,7 +452,7 @@ public class CollaborationSessionTests
             DocumentId = document.Id,
             Sequence = 1,
             Operation = BinkOperationCodec.Serialize(new BinkAddElementOperation(document.Layers[0].Id, stroke)),
-        });
+        }, TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreEqual(1, document.ElementCount);
@@ -476,7 +478,7 @@ public class CollaborationSessionTests
 
         transport.SetConnected(true);
         document.AddElement(TestData.Stroke(new Vector2(40, 0), new Vector2(50, 10)));
-        await session.FlushAsync();
+        await session.FlushAsync(TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreEqual(0, session.PendingCount);
@@ -484,9 +486,11 @@ public class CollaborationSessionTests
             .Where(m => m.Kind == BinkCollaborationMessageKind.Operation)
             .Select(m => m.Sequence)
             .ToArray();
-        Assert.AreEqual(3, sequences.Length);
+        Assert.HasCount(3, sequences);
         Assert.AreSequenceEqual(sequences.OrderBy(x => x).ToArray(), sequences);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>A transport whose messages the test delivers by hand, so concurrent edits can be interleaved exactly.</summary>
@@ -547,7 +551,7 @@ public class CollaborationRegressionTests
 
         // Both alex and sam answer. Every participant used to apply every answer: sam took alex's copy and lost
         // the stroke only sam had, and zoe applied both answers, the second overwriting the first.
-        await sz.RequestSnapshotAsync();
+        await sz.RequestSnapshotAsync(TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreEqual(2, alex.ElementCount);
@@ -564,7 +568,7 @@ public class CollaborationRegressionTests
         await using var ss = new BinkCollaborationSession(sam, hub.CreateClient(), "sam");
         await using var sz = new BinkCollaborationSession(zoe, hub.CreateClient(), "zoe");
 
-        await sa.SendSnapshotAsync();
+        await sa.SendSnapshotAsync(TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreSequenceEqual(alex.AllElements.Select(e => e.Id), sam.AllElements.Select(e => e.Id));
@@ -597,12 +601,12 @@ public class CollaborationRegressionTests
             Snapshot = BinkSerializer.Serialize(other),
         });
 
-        await session.RequestSnapshotAsync();
+        await session.RequestSnapshotAsync(TestContext.CancellationToken);
         clock.Now += TimeSpan.FromSeconds(31);
         await Answer();
         Assert.AreEqual(1, local.ElementCount, "An answer that comes after the request was given up on is not applied over what was drawn meanwhile.");
 
-        await session.RequestSnapshotAsync();
+        await session.RequestSnapshotAsync(TestContext.CancellationToken);
         clock.Now += TimeSpan.FromSeconds(29);
         await Answer();
         Assert.AreEqual(0, local.ElementCount, "A fresh request is answered as before.");
@@ -682,8 +686,8 @@ public class CollaborationRegressionTests
         local.AddElement(TestData.Stroke(new Vector2(0, 0), new Vector2(20, 20)));
         Assert.AreEqual(1, session.PendingCount);
 
-        await session.UpdatePresenceAsync(new BinkPresenceState { ParticipantId = "local", Cursor = new Vector2(5, 5) });
-        await session.FlushAsync();
+        await session.UpdatePresenceAsync(new BinkPresenceState { ParticipantId = "local", Cursor = new Vector2(5, 5) }, TestContext.CancellationToken);
+        await session.FlushAsync(TestContext.CancellationToken);
         Assert.AreEqual(0, session.PendingCount);
 
         foreach (BinkCollaborationMessage message in transport.Sent.ToArray()) await peer.DeliverAsync(message);
@@ -707,7 +711,7 @@ public class CollaborationRegressionTests
         var hub = new TestHub();
         await using var sa = new BinkCollaborationSession(a, hub.CreateClient(), "alex");
         await using var sb = new BinkCollaborationSession(b, hub.CreateClient(), "sam");
-        await sb.RequestSnapshotAsync();
+        await sb.RequestSnapshotAsync(TestContext.CancellationToken);
         await Task.Yield();
 
         Assert.AreSequenceEqual(a.Layers.Select(l => l.Id), b.Layers.Select(l => l.Id));
@@ -750,8 +754,10 @@ public class CollaborationRegressionTests
         Assert.AreEqual(1, session.PendingCount);
         transport.SetConnected(true);
 
-        Task flush = session.FlushAsync();
+        Task flush = session.FlushAsync(TestContext.CancellationToken);
         await session.DisposeAsync();
         await flush;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

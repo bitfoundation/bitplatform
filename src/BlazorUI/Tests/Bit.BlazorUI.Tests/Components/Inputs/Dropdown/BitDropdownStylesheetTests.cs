@@ -23,22 +23,22 @@ public class BitDropdownStylesheetTests
 
         // An explicit Size publishes the --bit-drp-sz-* values, so they are read before the variable, which only
         // restyles the medium dropdown an unset one stands for.
-        StringAssert.Contains(vars, "--bit-drp-fs: var(--bit-drp-sz-fs, var(--bit-Dropdown-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(vars, "--bit-drp-h: var(--bit-drp-sz-h, var(--bit-Dropdown-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(vars, "--bit-drp-itm-h: var(--bit-drp-sz-itm-h, var(--bit-Dropdown-item-height, #{$siz-item-md}));");
-        StringAssert.Contains(vars, "--bit-drp-itm-fs: var(--bit-drp-sz-itm-fs, var(--bit-Dropdown-item-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(vars, "--bit-drp-ico: var(--bit-drp-sz-ico, var(--bit-Dropdown-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-drp-sz-fs, var(--bit-Dropdown-label-font-size, var(--bit-drp-fs)));");
+        Assert.Contains("--bit-drp-fs: var(--bit-drp-sz-fs, var(--bit-Dropdown-font-size, #{$tg-fs-sm}));", vars);
+        Assert.Contains("--bit-drp-h: var(--bit-drp-sz-h, var(--bit-Dropdown-min-height, #{$siz-ctrl-md}));", vars);
+        Assert.Contains("--bit-drp-itm-h: var(--bit-drp-sz-itm-h, var(--bit-Dropdown-item-height, #{$siz-item-md}));", vars);
+        Assert.Contains("--bit-drp-itm-fs: var(--bit-drp-sz-itm-fs, var(--bit-Dropdown-item-font-size, #{$tg-fs-sm}));", vars);
+        Assert.Contains("--bit-drp-ico: var(--bit-drp-sz-ico, var(--bit-Dropdown-icon-size, #{$siz-icon-md}));", vars);
+        Assert.Contains("font-size: var(--bit-drp-sz-fs, var(--bit-Dropdown-label-font-size, var(--bit-drp-fs)));", stylesheet);
 
         // So does an explicit Color, whose role class publishes the --bit-drp-role-* values.
-        StringAssert.Contains(vars, "--bit-drp-clr: var(--bit-drp-role-main, var(--bit-Dropdown-accent-color, #{$clr-pri}));");
-        StringAssert.Contains(vars, "--bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));");
-        StringAssert.Contains(vars, "--bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));");
-        StringAssert.Contains(vars, "--bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
+        Assert.Contains("--bit-drp-clr: var(--bit-drp-role-main, var(--bit-Dropdown-accent-color, #{$clr-pri}));", vars);
+        Assert.Contains("--bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));", vars);
+        Assert.Contains("--bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));", vars);
+        Assert.Contains("--bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color));", vars);
+        Assert.Contains("color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));", stylesheet);
 
         // And Transparent, over the background of the field.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-drp-bg, var(--bit-Dropdown-background, #{$clr-bg-pri}));");
+        Assert.Contains("background-color: var(--bit-drp-bg, var(--bit-Dropdown-background, #{$clr-bg-pri}));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Dropdown-[a-z-]+, var\(--bit-drp-(sz-|role-|bg\b)"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -57,19 +57,19 @@ public class BitDropdownStylesheetTests
                                          "--bit-drp-sz-ico", "--bit-drp-sz-sel", "--bit-drp-role-main", "--bit-drp-role-fg", "--bit-drp-role-on", "--bit-drp-role-hover",
                                          "--bit-drp-role-focus", "--bit-drp-bg" })
         {
-            StringAssert.Contains(reset, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", reset);
         }
 
         foreach (var start in new[] { "\n.bit-drp {", "\n.bit-drp-cal {" })
         {
             var declarations = SourceFiles.GetScssDeclarations(stylesheet, start);
 
-            StringAssert.Contains(declarations, "@include drp-reset;");
-            StringAssert.Contains(declarations, "@include drp-vars;");
-            Assert.IsFalse(declarations.Contains("@include drp-size-medium;"), $"{start.Trim()} publishes the medium size whether or not it was asked for.");
+            Assert.Contains("@include drp-reset;", declarations);
+            Assert.Contains("@include drp-vars;", declarations);
+            Assert.DoesNotContain("@include drp-size-medium;", declarations, $"{start.Trim()} publishes the medium size whether or not it was asked for.");
 
-            Assert.IsTrue(stylesheet.IndexOf(start, StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-drp-md {", StringComparison.Ordinal), "The size classes come before the element that resets them.");
-            Assert.IsTrue(stylesheet.IndexOf(start, StringComparison.Ordinal) < stylesheet.IndexOf(".bit-drp-#{$role} {", StringComparison.Ordinal), "The role classes come before the element that resets them.");
+            Assert.IsLessThan(stylesheet.IndexOf("\n.bit-drp-md {", StringComparison.Ordinal), stylesheet.IndexOf(start, StringComparison.Ordinal), "The size classes come before the element that resets them.");
+            Assert.IsLessThan(stylesheet.IndexOf(".bit-drp-#{$role} {", StringComparison.Ordinal), stylesheet.IndexOf(start, StringComparison.Ordinal), "The role classes come before the element that resets them.");
         }
     }
 
@@ -81,10 +81,10 @@ public class BitDropdownStylesheetTests
         // A header is read on the callout rather than over the role's fill, so an explicit Color paints it in the role's
         // text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
         // while the accent the dropdown fills its selection and checkboxes with keeps the main.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-drp-ihd {"), "color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
+        Assert.Contains("color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-drp-ihd {"));
 
         var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-drp-#{$role} {");
-        StringAssert.Contains(roles, "--bit-drp-role-main: #{role($tokens, main)};");
-        StringAssert.Contains(roles, "--bit-drp-role-fg: #{role-text($role, $tokens)};");
+        Assert.Contains("--bit-drp-role-main: #{role($tokens, main)};", roles);
+        Assert.Contains("--bit-drp-role-fg: #{role-text($role, $tokens)};", roles);
     }
 }

@@ -53,7 +53,7 @@ public class BaletteInlineTests : BunitContext
         var init = _module.Invocations.Single(i => i.Identifier == "init").Arguments;
         Assert.IsEmpty((IEnumerable<string>)init[2]!);
         Assert.IsEmpty((IEnumerable<string>)init[3]!);
-        Assert.AreEqual(true, init[7]);
+        Assert.IsTrue((bool?)init[7]);
     }
 
     [TestMethod]

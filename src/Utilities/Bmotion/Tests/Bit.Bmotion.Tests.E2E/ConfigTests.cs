@@ -54,7 +54,7 @@ public sealed class ConfigTests : BmotionPageTest
 
         Assert.IsTrue(Snapped(samples, 100), "The transform animated under reduced motion.");
         // The fade keeps its transition and plays in the browser - on Blazor Server too.
-        Assert.IsTrue(samples.Any(s => s.Opacity is > 0.25 and < 0.95), "Opacity should still fade under reduced motion.");
+        Assert.Contains(s => s.Opacity is > 0.25 and < 0.95, samples, "Opacity should still fade under reduced motion.");
         await WaitForStateAsync("#reduced", "s => Math.abs(s.opacity - 1) < 0.01");
     }
 
@@ -64,7 +64,7 @@ public sealed class ConfigTests : BmotionPageTest
         await ClickAsync("go");
         var samples = await SampleAsync("#os-config", 400);
 
-        Assert.IsTrue(samples.Any(s => s.X is > 1 and < 99), "Animation was reduced although the OS asks for nothing.");
+        Assert.Contains(s => s.X is > 1 and < 99, samples, "Animation was reduced although the OS asks for nothing.");
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public sealed class ConfigTests : BmotionPageTest
         var srgbGreens = await GreensAsync(await srgb);
         var oklabGreens = await GreensAsync(oklab);
         Assert.IsTrue(srgbGreens.All(g => g == 0), $"sRGB interpolation picked up green on {RunHost}.");
-        Assert.IsTrue(oklabGreens.Any(g => g > 0), $"OKLab interpolation went through sRGB's path on {RunHost}.");
+        Assert.Contains(g => g > 0, oklabGreens, $"OKLab interpolation went through sRGB's path on {RunHost}.");
     }
 
     // Paints each CSS colour into a one-pixel canvas and reads back its sRGB green channel - whatever syntax (and
@@ -128,7 +128,7 @@ public sealed class ConfigWithReducedMotionPreferenceTests : BmotionPageTest
         await ClickAsync("go");
         var samples = await SampleAsync("#never-reduced", 400);
 
-        Assert.IsTrue(samples.Any(s => s.X is > 1 and < 99), "ReduceMotion=false did not animate.");
+        Assert.Contains(s => s.X is > 1 and < 99, samples, "ReduceMotion=false did not animate.");
     }
 
     [TestMethod]
@@ -137,6 +137,6 @@ public sealed class ConfigWithReducedMotionPreferenceTests : BmotionPageTest
         await ClickAsync("go");
         var samples = await SampleAsync("#no-config", 400);
 
-        Assert.IsTrue(samples.Any(s => s.X is > 1 and < 99), "IgnoreUnlessConfigured reduced an element outside any BmotionConfig.");
+        Assert.Contains(s => s.X is > 1 and < 99, samples, "IgnoreUnlessConfigured reduced an element outside any BmotionConfig.");
     }
 }

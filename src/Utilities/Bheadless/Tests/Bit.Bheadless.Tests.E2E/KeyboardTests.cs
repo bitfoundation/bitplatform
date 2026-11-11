@@ -114,7 +114,8 @@ public sealed class KeyboardTests : DemoTest
         await page.Keyboard.PressAsync("ArrowRight");
         await Expect(tab).Not.ToBeFocusedAsync();
         var now = await FocusedAsync(page);
-        Assert.AreEqual("tab", now?.Role);
+        var actualValue = now?.Role;
+        Assert.AreEqual("tab", actualValue);
         await Expect(page.Locator($"[id=\"{now!.Id}\"]")).ToHaveAttributeAsync("aria-selected", "true");
         Assert.AreEqual(before, await page.EvaluateAsync<double>("() => window.scrollY"), "the page scrolled");
     }
@@ -169,7 +170,8 @@ public sealed class KeyboardTests : DemoTest
         await page.Keyboard.PressAsync("ArrowDown");
         await Expect(radio).Not.ToBeFocusedAsync();
         var now = await FocusedAsync(page);
-        Assert.AreEqual("radio", now?.Role);
+        var actualValue = now?.Role;
+        Assert.AreEqual("radio", actualValue);
         await Expect(page.Locator($"[id=\"{now!.Id}\"]")).ToHaveAttributeAsync("aria-checked", "true");
     }
 
@@ -195,7 +197,8 @@ public sealed class KeyboardTests : DemoTest
         await page.Locator($"[id=\"{id}\"]").FocusAsync();
         await page.Keyboard.PressAsync("ArrowDown");
         await Expect(page.Locator($"[id=\"{id}\"]")).Not.ToBeFocusedAsync();
-        Assert.AreEqual("treeitem", (await FocusedAsync(page))?.Role);
+        var actualValue = (await FocusedAsync(page))?.Role;
+        Assert.AreEqual("treeitem", actualValue);
 
         var collapsedId = await tree.Locator("[role=treeitem][aria-expanded=false]").First.GetAttributeAsync("id");
         await page.Locator($"[id=\"{collapsedId}\"]").FocusAsync();

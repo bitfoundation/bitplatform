@@ -7,4 +7,4 @@
 /// </summary>
 /// <param name="Package">The package the bundle is a static web asset of ("Bit.BlazorUI").</param>
 /// <param name="Bundle">The bundle's path under the package's static web assets ("scripts/bit.blazorui.js").</param>
-public sealed record TrimmedBundle(string Package, string Bundle, int KeptPieces, int AllPieces, long TrimmedBytes, long FullBytes);
+internal sealed record TrimmedBundle(string Package, string Bundle, int KeptPieces, int AllPieces, long TrimmedBytes, long FullBytes);

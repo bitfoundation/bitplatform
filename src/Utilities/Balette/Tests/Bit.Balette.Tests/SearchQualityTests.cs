@@ -144,7 +144,7 @@ public class TypoToleranceTests
         var approximate = typo.Match("settigns", "Settings");
         var exact = BaletteFuzzyMatcher.Default.Match("settings", "Settings");
 
-        Assert.IsTrue(approximate.Score < exact.Score);
+        Assert.IsLessThan(exact.Score, approximate.Score);
         AssertSequence.AreEqual([0, 1, 2, 3, 4, 5, 6, 7], approximate.Positions);
         Assert.IsTrue(typo.Match("settigns", "Open the settings").Positions.All(p => p >= 9));
     }

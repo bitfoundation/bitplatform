@@ -59,7 +59,7 @@ public class ConnectionReviewTests : BunitContext
         pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 75, ClientY = 201 });
         pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 75, ClientY = 201 });
 
-        Assert.HasCount(1, edges, "the drop on the full input connected to the neighbouring one");
+        Assert.ContainsSingle(edges, "the drop on the full input connected to the neighbouring one");
         Assert.AreEqual(BlowConnectionRejection.TargetFull, ends.Single().Rejection);
     }
 
@@ -80,7 +80,7 @@ public class ConnectionReviewTests : BunitContext
             cut.Instance.StartConnection("a", null, BlowHandleType.Source, BlowPosition.Bottom);
             cut.Instance.CompleteConnection("b", null, BlowHandleType.Target);
         });
-        await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsFalse(ends.Single().IsValid);
         Assert.AreEqual(BlowConnectionRejection.RejectedByRule, ends.Single().Rejection);
@@ -129,7 +129,7 @@ public class ConnectionReviewTests : BunitContext
         edges.Add(new BlowEdge { Id = "remote", Source = "b", Target = "a" });
         await cut.InvokeAsync(() => cut.Instance.CompleteConnection("b", null, BlowHandleType.Target));
 
-        Assert.HasCount(1, edges, "the drop closed a cycle that appeared during the drag");
+        Assert.ContainsSingle(edges, "the drop closed a cycle that appeared during the drag");
         Assert.AreEqual(BlowConnectionRejection.Cycle, ends.Single().Rejection);
     }
 
@@ -151,7 +151,7 @@ public class ConnectionReviewTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.CompleteConnection("b", null, BlowHandleType.Target));
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.AreEqual("b", edge.Target);
     }
 
@@ -185,8 +185,8 @@ public class ConnectionReviewTests : BunitContext
         };
         var edges = new List<BlowEdge> { new() { Id = "e", Source = "b", SourceHandle = "in", Target = "c", TargetHandle = "in" } };
 
-        Assert.IsTrue(BlowGraphValidator.CreateDefault(BlowConnectionMode.Loose).Validate(nodes, edges).IsValid);
-        Assert.IsFalse(BlowGraphValidator.CreateDefault().Validate(nodes, edges).IsValid, "strict mode should still flag it");
+        Assert.IsTrue(BlowGraphValidator.CreateDefault(BlowConnectionMode.Loose).Validate(nodes, edges, TestContext.CancellationToken).IsValid);
+        Assert.IsFalse(BlowGraphValidator.CreateDefault().Validate(nodes, edges, TestContext.CancellationToken).IsValid, "strict mode should still flag it");
     }
 
     [TestMethod]
@@ -204,4 +204,6 @@ public class ConnectionReviewTests : BunitContext
         Assert.IsFalse(lines[^1]!.IsValid);
         Assert.AreEqual(BlowConnectionRejection.TargetFull, lines[^1]!.Rejection);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

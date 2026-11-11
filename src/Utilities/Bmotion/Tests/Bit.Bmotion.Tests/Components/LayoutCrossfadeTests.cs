@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -77,14 +77,14 @@ public class LayoutCrossfadeTests
         // show at its new place at full strength.
         using var ctx = new BmotionTestContext();
         var cut = RenderSwitch(ctx, BmPresenceMode.Sync);
-        StringAssert.DoesNotMatch(cut.Find("#card-1").GetAttribute("style") ?? "", new System.Text.RegularExpressions.Regex("filter"), "nothing to crossfade with");
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("filter"), cut.Find("#card-1").GetAttribute("style") ?? "", "nothing to crossfade with");
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
-        StringAssert.Contains(cut.Find("#card-2").GetAttribute("style"), "filter:opacity(0)");
+        Assert.Contains("filter:opacity(0)", cut.Find("#card-2").GetAttribute("style")!);
 
         // The crossfade clears it in the browser; a later render doesn't bring it back.
         cut.Render(ps => ps.Add(p => p.Item, 2));
-        StringAssert.DoesNotMatch(cut.Find("#card-2").GetAttribute("style") ?? "", new System.Text.RegularExpressions.Regex("filter"));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("filter"), cut.Find("#card-2").GetAttribute("style") ?? "");
     }
 
     [TestMethod]
@@ -98,10 +98,10 @@ public class LayoutCrossfadeTests
         cut.Render(ps => ps.Add(p => p.Item, 2));
         // Card 1's exit ends while card 2 is still measuring itself (a round trip on Blazor Server).
         await ctx.FinishWaapiAsync("card-1");
-        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.FindAll("section").Count));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("section")));
         measuring.SetResult();
 
-        cut.WaitForAssertion(() => Assert.AreEqual("card-2", (string?)ctx.Interop.ArgsOf("cancelLayoutCrossfade").LastOrDefault()?[0], "its hidden start is cleared"));
+        cut.WaitForAssertion(() => Assert.AreEqual("card-2", (string?)ctx.Interop.ArgsOf("cancelLayoutCrossfade").LastOrDefault()[0], "its hidden start is cleared"));
         Assert.IsFalse(ctx.Interop.WasCalled("playLayoutCrossfade"));
     }
 
@@ -117,7 +117,7 @@ public class LayoutCrossfadeTests
         cut.WaitForAssertion(() => Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiFlip")));
         Assert.AreEqual(-200, (double)ctx.Interop.ArgsOf("playWaapiFlip").Single()[1]!, 1e-9, "from where the old card was last");
         Assert.IsFalse(ctx.Interop.WasCalled("playLayoutCrossfade"));
-        StringAssert.DoesNotMatch(cut.Find("#card-2").GetAttribute("style") ?? "", new System.Text.RegularExpressions.Regex("filter"), "and isn't hidden");
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("filter"), cut.Find("#card-2").GetAttribute("style") ?? "", "and isn't hidden");
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class LayoutCrossfadeTests
         cut.Render(ps => ps.Add(p => p.Item, 2));
         cut.Render(ps => ps.Add(p => p.Item, 2)); // re-rendered while card 1 is on its way out
         await ctx.FinishWaapiAsync("card-1");
-        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.FindAll("section").Count));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("section")));
 
         // A third card takes the id over: it grows out of card 2, the holder - not card 1, which had left.
         ctx.Interop.BoundingRectProvider = id => id == "card-3" ? new BmotionBoundingRect { Left = 400, Top = 0, Width = 100, Height = 40 } : Rects(id);
@@ -180,6 +180,6 @@ public class LayoutCrossfadeTests
 
         cut.Render(ps => ps.Add(p => p.First, true));
 
-        cut.WaitForAssertion(() => Assert.AreEqual("card-1", (string?)ctx.Interop.ArgsOf("cancelLayoutCrossfade").SingleOrDefault()?[0]));
+        cut.WaitForAssertion(() => Assert.AreEqual("card-1", (string?)ctx.Interop.ArgsOf("cancelLayoutCrossfade").SingleOrDefault()[0]));
     }
 }

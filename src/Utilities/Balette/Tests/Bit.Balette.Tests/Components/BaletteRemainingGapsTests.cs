@@ -73,15 +73,15 @@ public class PinOrderTests
 
         foreach (var id in new[] { "zeta", "alpha", "mid" })
         {
-            await history.TogglePinAsync(id);
+            await history.TogglePinAsync(id, TestContext.CancellationToken);
             time.Advance(TimeSpan.FromMinutes(1));
         }
 
         AssertSequence.AreEqual(["zeta", "alpha", "mid"], history.Pinned());
 
         // Unpinned and pinned again: last.
-        await history.TogglePinAsync("zeta");
-        await history.TogglePinAsync("zeta");
+        await history.TogglePinAsync("zeta", TestContext.CancellationToken);
+        await history.TogglePinAsync("zeta", TestContext.CancellationToken);
         AssertSequence.AreEqual(["alpha", "mid", "zeta"], history.Pinned());
     }
 
@@ -99,6 +99,8 @@ public class PinOrderTests
         Assert.IsTrue(old["b"].Pinned);
         Assert.IsNull(old["b"].PinnedAt);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>Source paging, the pending-sequence hint, clearing recents from the action panel and the spoken confirmation.</summary>
@@ -235,9 +237,9 @@ public class BaletteRemainingGapsTests : BunitContext
     {
         _service.Register(BaletteCmd.Action("Alpha", () => { }), BaletteCmd.Action("Beta", () => { }));
         var history = Services.GetRequiredService<BaletteHistory>();
-        await history.RecordAsync("alpha");
-        await history.RecordAsync("beta");
-        await history.TogglePinAsync("beta");
+        await history.RecordAsync("alpha", TestContext.CancellationToken);
+        await history.RecordAsync("beta", TestContext.CancellationToken);
+        await history.TogglePinAsync("beta", TestContext.CancellationToken);
         var cut = Render<Balette>();
         await cut.InvokeAsync(() => _service.OpenAsync("alpha"));
 
@@ -263,4 +265,6 @@ public class BaletteRemainingGapsTests : BunitContext
         // On screen, the footer keeps the message alone.
         Assert.AreEqual("Confirm: This deletes the project", cut.Find("[data-balette=toast]").TextContent.Trim());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

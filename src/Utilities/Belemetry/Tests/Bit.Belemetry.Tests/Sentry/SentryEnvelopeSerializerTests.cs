@@ -60,7 +60,7 @@ public class SentryEnvelopeSerializerTests
         var envelope = Parse(SentryEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [log]), Context()).Single());
 
         Assert.AreEqual(Str(envelope.Event, "event_id"), Str(envelope.Header, "event_id"));
-        StringAssert.Matches(Str(envelope.Header, "event_id"), new System.Text.RegularExpressions.Regex("^[0-9a-f]{32}$"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("^[0-9a-f]{32}$"), Str(envelope.Header, "event_id"));
         Assert.AreEqual(Dsn, Str(envelope.Header, "dsn"));
         Assert.AreEqual("bit.belemetry.dotnet", Str(envelope.Header, "sdk", "name"));
         Assert.AreEqual("10.6.2", Str(envelope.Header, "sdk", "version"));
@@ -108,12 +108,12 @@ public class SentryEnvelopeSerializerTests
         Assert.AreEqual("Fail", Str(frame, "function"));
         Assert.AreEqual(typeof(SentryStackTraceTests.Thrower).FullName!.Replace('+', '.'), Str(frame, "module"));
         Assert.IsTrue(frame.GetProperty("in_app").GetBoolean());
-        StringAssert.StartsWith(Str(frame, "instruction_addr"), "0x");
-        StringAssert.StartsWith(Str(frame, "function_id"), "0x");
-        StringAssert.StartsWith(Str(frame, "addr_mode"), "rel:");
+        Assert.StartsWith("0x", Str(frame, "instruction_addr"));
+        Assert.StartsWith("0x", Str(frame, "function_id"));
+        Assert.StartsWith("rel:", Str(frame, "addr_mode"));
 
         // The line from the stack text, which the record resolved once.
-        StringAssert.EndsWith(Str(frame, "filename"), ".cs");
+        Assert.EndsWith(".cs", Str(frame, "filename"));
         Assert.IsGreaterThan(0, frame.GetProperty("lineno").GetInt32());
 
         var images = e.GetProperty("debug_meta").GetProperty("images").EnumerateArray().ToList();
@@ -135,7 +135,7 @@ public class SentryEnvelopeSerializerTests
         Assert.AreEqual("s-1", Str(e, "tags", "session.id"));
         Assert.AreEqual("u-1", Str(e, "user", "id"));
         var extra = e.GetProperty("extra");
-        CollectionAssert.AreEquivalent(new[] { "enduser.pseudo.id", "tenant", "retries", "ratio", "tags" }, extra.EnumerateObject().Select(p => p.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "enduser.pseudo.id", "tenant", "retries", "ratio", "tags" }, extra.EnumerateObject().Select(p => p.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(2, extra.GetProperty("retries").GetInt64());
         Assert.AreEqual(0.5, extra.GetProperty("ratio").GetDouble());
         Assert.AreEqual("b", extra.GetProperty("tags")[1].GetString());
@@ -202,7 +202,7 @@ public class SentryEnvelopeSerializerTests
         Assert.IsFalse(values[1].TryGetProperty("stacktrace", out _), "Never thrown.");
         var frame = values[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray().Last();
         Assert.AreEqual("Fail", Str(frame, "function"));
-        StringAssert.StartsWith(Str(frame, "function_id"), "0x");
+        Assert.StartsWith("0x", Str(frame, "function_id"));
         Assert.IsGreaterThan(0, frame.GetProperty("lineno").GetInt32());
         Assert.IsTrue(e.TryGetProperty("debug_meta", out _));
     }
@@ -278,7 +278,7 @@ public class SentryEnvelopeSerializerTests
         var batch = new BelemetryBatch(Records.Resource(), logs: [error, warning, pageView, empty]);
 
         var events = Events(batch);
-        Assert.HasCount(1, events);
+        Assert.ContainsSingle(events);
         Assert.AreEqual("Payment declined", Str(events[0], "message", "formatted"));
         Assert.IsFalse(events[0].TryGetProperty("exception", out _));
         Assert.AreEqual(1, SentryEnvelopeSerializer.Count(batch, Context()));
@@ -317,8 +317,7 @@ public class SentryEnvelopeSerializerTests
         var batch = new BelemetryBatch(Records.Resource(), [span]);
 
         var events = Events(batch);
-        CollectionAssert.AreEqual(new[] { "plain", "logged as a warning", "logged and dropped" },
-                                  events.Select(e => Str(e.GetProperty("exception").GetProperty("values")[0], "value")).ToArray());
+        Assert.AreSequenceEqual(new[] { "plain", "logged as a warning", "logged and dropped" }, events.Select(e => Str(e.GetProperty("exception").GetProperty("values")[0], "value")).ToArray());
         Assert.AreEqual(3, SentryEnvelopeSerializer.Count(batch, Context()));
 
         var e = events[0];
@@ -403,7 +402,7 @@ public class SentryEnvelopeSerializerTests
         Assert.AreEqual("csharp", Str(e, "platform"));
         Assert.AreEqual("bit.belemetry.javascript", Str(e, "sdk", "name"), "Who recorded it.");
         var values = e.GetProperty("exception").GetProperty("values").EnumerateArray().ToList();
-        CollectionAssert.AreEqual(new[] { "System.TimeoutException", "System.InvalidOperationException" }, values.Select(v => Str(v, "type")).ToArray());
+        Assert.AreSequenceEqual(new[] { "System.TimeoutException", "System.InvalidOperationException" }, values.Select(v => Str(v, "type")).ToArray());
         Assert.AreEqual("late", Str(values[0], "value"));
         var frame = values[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray().Last();
         Assert.AreEqual("Fail", Str(frame, "function"));
@@ -425,7 +424,7 @@ public class SentryEnvelopeSerializerTests
         var e = Single(log, resource: resource);
         Assert.AreEqual("javascript", Str(e, "platform"));
         var frames = e.GetProperty("exception").GetProperty("values")[0].GetProperty("stacktrace").GetProperty("frames").EnumerateArray().ToList();
-        CollectionAssert.AreEqual(new[] { "save", "Object.invokeMethodAsync" }, frames.Select(f => Str(f, "function")).ToArray());
+        Assert.AreSequenceEqual(new[] { "save", "Object.invokeMethodAsync" }, frames.Select(f => Str(f, "function")).ToArray());
     }
 
     [TestMethod]

@@ -142,7 +142,7 @@ public class BitRatingTests : BunitTestContext
 
         var button = component.FindAll(".bit-rtg-btn");
 
-        Assert.AreEqual(max, button.Count);
+        Assert.HasCount(max, button);
     }
 
     [TestMethod,
@@ -156,7 +156,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.Max, max);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-rtg-btn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rtg-btn"));
     }
 
     [TestMethod,
@@ -385,7 +385,7 @@ public class BitRatingTests : BunitTestContext
 
         bitRatingButtons[clickedIndex - 1].Click();
 
-        Assert.AreEqual(max, bitRatingButtons.Count);
+        Assert.HasCount(max, bitRatingButtons);
         Assert.AreEqual(expectedResult, value);
     }
 
@@ -423,8 +423,7 @@ public class BitRatingTests : BunitTestContext
         {
             var expected = System.Math.Clamp(value - (index - 1), 0, 1) * 100;
 
-            StringAssert.Contains(fills[index - 1].GetAttribute("style"),
-                                  FormattableString.Invariant($"width:{expected}%"));
+            Assert.Contains(FormattableString.Invariant($"width:{expected}%"), fills[index - 1].GetAttribute("style")!);
         }
 
         var input = component.Find(".bit-input-hidden");
@@ -476,7 +475,7 @@ public class BitRatingTests : BunitTestContext
     {
         var component = RenderComponent<BitRating>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-seg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-seg"));
     }
 
     [TestMethod,
@@ -497,7 +496,7 @@ public class BitRatingTests : BunitTestContext
 
         var expectedSegments = expectedSteps == 1 ? 0 : 5 * expectedSteps;
 
-        Assert.AreEqual(expectedSegments, component.FindAll(".bit-rtg-seg").Count);
+        Assert.HasCount(expectedSegments, component.FindAll(".bit-rtg-seg"));
     }
 
     [TestMethod]
@@ -525,7 +524,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-seg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-seg"));
     }
 
     [TestMethod]
@@ -543,7 +542,7 @@ public class BitRatingTests : BunitTestContext
         {
             var expected = index == 3 ? "width:100%" : "width:0%";
 
-            StringAssert.Contains(fills[index - 1].GetAttribute("style"), expected);
+            Assert.Contains(expected, fills[index - 1].GetAttribute("style")!);
         }
     }
 
@@ -564,12 +563,12 @@ public class BitRatingTests : BunitTestContext
 
         // The preview only paints the items; the committed value stays where it was.
         Assert.AreEqual(1d, value);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:100%");
+        Assert.Contains("width:100%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
 
         component.Find(".bit-rtg-cnt").MouseLeave();
 
         Assert.IsNull(hovered);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -588,7 +587,7 @@ public class BitRatingTests : BunitTestContext
         // Only the preview the component paints is off: the hovered value is still reported, which is
         // what a page drawing a preview of its own needs.
         Assert.AreEqual(4d, hovered);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
 
         // The class turns off the CSS half of the preview, which shades the filled part on hover.
         Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-rtg-nhp"));
@@ -611,8 +610,8 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[4].MouseOver();
 
         var fills = component.FindAll(".bit-rtg-ifl");
-        StringAssert.Contains(fills[1].GetAttribute("style"), "width:100%");
-        StringAssert.Contains(fills[2].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:100%", fills[1].GetAttribute("style")!);
+        Assert.Contains("width:0%", fills[2].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -626,12 +625,12 @@ public class BitRatingTests : BunitTestContext
 
         component.FindAll(".bit-rtg-btn")[3].MouseOver();
 
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:100%");
+        Assert.Contains("width:100%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
 
         // Going read-only under the pointer means no mouseleave ever arrives to end the preview.
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
 
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -743,7 +742,7 @@ public class BitRatingTests : BunitTestContext
         component.Find(".bit-rtg").KeyDown("ArrowRight");
 
         Assert.AreEqual(4, value);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -920,7 +919,7 @@ public class BitRatingTests : BunitTestContext
         var buttons = component.FindAll(".bit-rtg-btn");
 
         // With no item selected the tab stop falls back to the first one, so the rating stays reachable.
-        Assert.AreEqual(1, buttons.Count(b => b.GetAttribute("tabindex") == "0"));
+        Assert.ContainsSingle(b => b.GetAttribute("tabindex") == "0", buttons);
         Assert.AreEqual("0", buttons[0].GetAttribute("tabindex"));
     }
 
@@ -934,7 +933,7 @@ public class BitRatingTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-rtg-btn");
 
-        Assert.AreEqual(1, buttons.Count(b => b.GetAttribute("tabindex") == "0"));
+        Assert.ContainsSingle(b => b.GetAttribute("tabindex") == "0", buttons);
         Assert.AreEqual("0", buttons[3].GetAttribute("tabindex"));
     }
 
@@ -952,7 +951,7 @@ public class BitRatingTests : BunitTestContext
         // value lands in is still the one being picked, which is what the styling hook marks.
         Assert.IsTrue(items.All(i => i.GetAttribute("aria-checked") == "false"));
         Assert.AreEqual("true", items[3].GetAttribute("data-is-current"));
-        Assert.AreEqual(1, items.Count(i => i.GetAttribute("data-is-current") == "true"));
+        Assert.ContainsSingle(i => i.GetAttribute("data-is-current") == "true", items);
     }
 
     [TestMethod]
@@ -1026,13 +1025,13 @@ public class BitRatingTests : BunitTestContext
 
         var items = component.FindAll(".custom-item");
 
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
         Assert.AreEqual("1:100", items[0].TextContent);
         Assert.AreEqual("2:100", items[1].TextContent);
         Assert.AreEqual("3:0", items[2].TextContent);
 
         // The template replaces the built-in icons rather than adding to them.
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-iem").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-iem"));
     }
 
     [TestMethod]
@@ -1052,7 +1051,7 @@ public class BitRatingTests : BunitTestContext
 
         var current = contexts.Where(c => c.IsCurrent).ToList();
 
-        Assert.AreEqual(1, current.Count);
+        Assert.ContainsSingle(current);
         Assert.AreEqual(4, current[0].Index);
         // The run behind it is filled, but only the fourth is the one the value lands in.
         Assert.AreEqual(3, contexts.Count(c => c.IsFull));
@@ -1089,7 +1088,7 @@ public class BitRatingTests : BunitTestContext
         // A refused value must not go on being previewed: on a touch device no mouseleave ever arrives
         // to end the preview, so the rating would keep showing the value it just refused.
         Assert.AreEqual(2d, value);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1104,7 +1103,7 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[4].Click();
 
         Assert.AreEqual(2d, component.Instance.Value);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[4].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1208,7 +1207,7 @@ public class BitRatingTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 3.5);
         });
 
-        Assert.AreEqual(0, component.FindAll("[aria-live]").Count);
+        Assert.IsEmpty(component.FindAll("[aria-live]"));
     }
 
     [TestMethod]
@@ -1221,7 +1220,7 @@ public class BitRatingTests : BunitTestContext
         });
 
         // 3.7 - 3 lands on 0.7000000000000002 in binary floating point, which must not reach the markup.
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:70%");
+        Assert.Contains("width:70%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1249,23 +1248,23 @@ public class BitRatingTests : BunitTestContext
 
         var root = component.Find(".bit-rtg");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color:red;");
+        Assert.Contains("color:red;", root.GetAttribute("style")!);
 
         var button = component.Find(".bit-rtg-btn");
         Assert.IsTrue(button.ClassList.Contains("custom-button"));
-        StringAssert.Contains(button.GetAttribute("style"), "color:blue;");
+        Assert.Contains("color:blue;", button.GetAttribute("style")!);
 
         var container = component.Find(".bit-rtg-ict");
         Assert.IsTrue(container.ClassList.Contains("custom-container"));
-        StringAssert.Contains(container.GetAttribute("style"), "color:green;");
+        Assert.Contains("color:green;", container.GetAttribute("style")!);
 
         var selected = component.Find(".bit-rtg-ifl");
         Assert.IsTrue(selected.ClassList.Contains("custom-selected"));
-        StringAssert.Contains(selected.GetAttribute("style"), "color:purple;");
+        Assert.Contains("color:purple;", selected.GetAttribute("style")!);
 
         var unselected = component.Find(".bit-rtg-iem");
         Assert.IsTrue(unselected.ClassList.Contains("custom-unselected"));
-        StringAssert.Contains(unselected.GetAttribute("style"), "color:orange;");
+        Assert.Contains("color:orange;", unselected.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1284,7 +1283,7 @@ public class BitRatingTests : BunitTestContext
 
         if (expectedStyle.HasValue())
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
         else
         {
@@ -1317,7 +1316,7 @@ public class BitRatingTests : BunitTestContext
         // A radio whose only content is a decorative glyph would otherwise reach a screen reader nameless.
         var labels = component.FindAll(".bit-rtg-btn .bit-rtg-alb");
 
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
 
         for (var index = 1; index <= 3; index++)
         {
@@ -1363,7 +1362,7 @@ public class BitRatingTests : BunitTestContext
         });
 
         // The items are aria-hidden behind the single label of the group, which leaves them nothing to name.
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-alb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-alb"));
     }
 
     [TestMethod]
@@ -1527,13 +1526,13 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual("vertical", root.GetAttribute("aria-orientation"));
 
         // The fill of a vertical rating grows along the block axis, from the bottom edge of its item.
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "height:50%");
+        Assert.Contains("height:50%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
 
         // ... and so do the slices that commit the fractions of the item.
         var segment = component.FindAll(".bit-rtg-seg")[0].GetAttribute("style");
 
-        StringAssert.Contains(segment, "height:50%");
-        StringAssert.Contains(segment, "bottom:0%");
+        Assert.Contains("height:50%", segment!);
+        Assert.Contains("bottom:0%", segment);
     }
 
     [TestMethod]
@@ -1591,9 +1590,9 @@ public class BitRatingTests : BunitTestContext
         var fills = component.FindAll(".bit-rtg-ifl");
 
         // Only the item the value ends inside is filled, and only by as much of it as the value covers.
-        StringAssert.Contains(fills[2].GetAttribute("style"), "width:0%");
-        StringAssert.Contains(fills[3].GetAttribute("style"), "width:50%");
-        StringAssert.Contains(fills[4].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", fills[2].GetAttribute("style")!);
+        Assert.Contains("width:50%", fills[3].GetAttribute("style")!);
+        Assert.Contains("width:0%", fills[4].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1738,7 +1737,7 @@ public class BitRatingTests : BunitTestContext
         var root = component.Find(".bit-rtg");
 
         // A name given by reference wins, so the inline one is not rendered beside it.
-        StringAssert.Contains(root.GetAttribute("aria-labelledby"), "-label");
+        Assert.Contains("-label", root.GetAttribute("aria-labelledby")!);
         Assert.IsFalse(root.HasAttribute("aria-label"));
     }
 
@@ -1754,7 +1753,7 @@ public class BitRatingTests : BunitTestContext
         var buttons = component.FindAll(".bit-rtg-btn");
 
         // The attribute lands on the single tab stop, which is the item the value points at.
-        Assert.AreEqual(1, buttons.Count(b => b.HasAttribute("autofocus")));
+        Assert.ContainsSingle(b => b.HasAttribute("autofocus"), buttons);
         Assert.IsTrue(buttons[2].HasAttribute("autofocus"));
     }
 
@@ -1804,7 +1803,7 @@ public class BitRatingTests : BunitTestContext
         var root = component.Find(".bit-rtg");
 
         Assert.AreEqual("How was it?", component.Find(".custom-label").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-lbl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-lbl"));
         Assert.AreEqual(component.Find(".bit-rtg-lbc").Id, root.GetAttribute("aria-labelledby"));
     }
 
@@ -1813,7 +1812,7 @@ public class BitRatingTests : BunitTestContext
     {
         var component = RenderComponent<BitRating>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-lbc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-lbc"));
         Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-labelledby"));
     }
 
@@ -1836,7 +1835,7 @@ public class BitRatingTests : BunitTestContext
 
         if (string.IsNullOrEmpty(expectedClass))
         {
-            Assert.IsFalse(root.ClassList.Any(c => c is "bit-rtg-lbm" or "bit-rtg-lst" or "bit-rtg-led"));
+            Assert.DoesNotContain(c => c is "bit-rtg-lbm" or "bit-rtg-lst" or "bit-rtg-led", root.ClassList);
         }
         else
         {
@@ -1906,7 +1905,7 @@ public class BitRatingTests : BunitTestContext
         // Without a label there is nothing for the value to join, so it stays in the aria-label instead.
         Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 4.2, 5),
                         component.Find(".bit-rtg").GetAttribute("aria-label"));
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-alb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-alb"));
     }
 
     [TestMethod]
@@ -2003,8 +2002,8 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[2].MouseOver();
 
         Assert.AreEqual(0d, hovered);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[0].GetAttribute("style"), "width:0%");
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[0].GetAttribute("style")!);
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style")!);
 
         // Any other item previews itself as usual, and the committed value is untouched throughout.
         component.FindAll(".bit-rtg-btn")[4].MouseOver();
@@ -2028,11 +2027,11 @@ public class BitRatingTests : BunitTestContext
         // the clear; the trailing half is a 3 like any other step.
         component.FindAll(".bit-rtg-seg")[4].MouseOver();
 
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[1].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[1].GetAttribute("style")!);
 
         component.FindAll(".bit-rtg-seg")[5].MouseOver();
 
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:100%");
+        Assert.Contains("width:100%", component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2049,7 +2048,7 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[2].MouseOver();
 
         Assert.AreEqual(3d, hovered);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style"), "width:100%");
+        Assert.Contains("width:100%", component.FindAll(".bit-rtg-ifl")[2].GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -2124,7 +2123,7 @@ public class BitRatingTests : BunitTestContext
 
         var containers = component.FindAll(".bit-rtg-ict");
 
-        Assert.AreEqual(3, containers.Count);
+        Assert.HasCount(3, containers);
         Assert.AreEqual("true", containers[0].GetAttribute("aria-hidden"));
 
         // The name of the item is the hidden label alone, and not that label plus the number the template drew.
@@ -2143,7 +2142,7 @@ public class BitRatingTests : BunitTestContext
         });
 
         // A precision that asks for no steps, or for infinitely many, leaves the items whole.
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-seg").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-seg"));
         Assert.AreEqual("1", component.Find(".bit-input-hidden").GetAttribute("step"));
     }
 
@@ -2152,7 +2151,7 @@ public class BitRatingTests : BunitTestContext
     {
         var component = RenderComponent<BitRating>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-dsc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-dsc"));
         Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-describedby"));
     }
 
@@ -2232,9 +2231,9 @@ public class BitRatingTests : BunitTestContext
         Assert.IsTrue(labelContainer.ClassList.Contains("custom-label-container"));
         Assert.IsTrue(label.ClassList.Contains("custom-label"));
         Assert.IsTrue(container.ClassList.Contains("custom-container"));
-        StringAssert.Contains(labelContainer.GetAttribute("style"), "padding: 1rem;");
-        StringAssert.Contains(label.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(container.GetAttribute("style"), "gap: 1rem;");
+        Assert.Contains("padding: 1rem;", labelContainer.GetAttribute("style")!);
+        Assert.Contains("color: red;", label.GetAttribute("style")!);
+        Assert.Contains("gap: 1rem;", container.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2398,7 +2397,7 @@ public class BitRatingTests : BunitTestContext
 
         // The javascript side suppresses the scrolling of the navigation keys and reports the focus crossing the edge
         // of the rating, which is what the names of the two JSInvokable handlers are handed over for.
-        Assert.AreEqual(1, setups.Count);
+        Assert.ContainsSingle(setups);
         Assert.AreEqual(rootId, setups[0].Arguments[0]);
         Assert.AreEqual(nameof(BitRating._HandleFocusIn), setups[0].Arguments[2]);
         Assert.AreEqual(nameof(BitRating._HandleFocusOut), setups[0].Arguments[3]);
@@ -2407,7 +2406,7 @@ public class BitRatingTests : BunitTestContext
 
         var disposals = Context.JSInterop.Invocations["BitBlazorUI.Ratings.dispose"];
 
-        Assert.AreEqual(1, disposals.Count);
+        Assert.ContainsSingle(disposals);
         Assert.AreEqual(rootId, disposals[0].Arguments[0]);
     }
 
@@ -2425,14 +2424,14 @@ public class BitRatingTests : BunitTestContext
         var buttons = component.FindAll(".bit-rtg-btn");
 
         // The items follow the new max, and so does the value, which is held inside the range.
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
         Assert.IsTrue(buttons.All(b => b.GetAttribute("aria-setsize") == "3"));
         Assert.AreEqual(3, component.Instance.Value);
         Assert.AreEqual("3", component.Find(".bit-input-hidden").GetAttribute("max"));
 
         component.Render(parameters => parameters.Add(p => p.Max, 8));
 
-        Assert.AreEqual(8, component.FindAll(".bit-rtg-btn").Count);
+        Assert.HasCount(8, component.FindAll(".bit-rtg-btn"));
     }
 
     [TestMethod]
@@ -2466,7 +2465,7 @@ public class BitRatingTests : BunitTestContext
 
         Assert.AreEqual("rating-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("rating", root.GetAttribute("data-test"));
     }
 
@@ -2506,7 +2505,7 @@ public class BitRatingTests : BunitTestContext
 
         // Neither the preview nor its report: a rating that cannot be changed has no value a click would commit.
         Assert.IsNull(hovered);
-        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
+        Assert.Contains("width:0%", component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2527,7 +2526,7 @@ public class BitRatingTests : BunitTestContext
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
     }
 

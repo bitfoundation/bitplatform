@@ -23,9 +23,9 @@ public class FieldGroupTests : ComponentTestBase
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Grouped()));
         var groups = cut.FindAll("fieldset.bit-borm-fieldgroup");
 
-        Assert.AreEqual(2, groups.Count);
+        Assert.HasCount(2, groups);
         Assert.AreEqual("Your name", groups[0].QuerySelector("legend")!.TextContent);
-        Assert.AreEqual(2, groups[0].QuerySelectorAll(".bit-borm-field").Count);
+        Assert.HasCount(2, groups[0].QuerySelectorAll(".bit-borm-field"));
         Assert.AreEqual("Contact details", groups[1].QuerySelector("legend")!.TextContent);
     }
 
@@ -52,7 +52,7 @@ public class FieldGroupTests : ComponentTestBase
 
         var cut = Render<BormView>(p => p.Add(x => x.Definition, form));
 
-        Assert.AreEqual(2, cut.FindAll("fieldset.bit-borm-fieldgroup").Count);
+        Assert.HasCount(2, cut.FindAll("fieldset.bit-borm-fieldgroup"));
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class FieldGroupTests : ComponentTestBase
     }
 }
 
-public class GroupedProfile
+internal class GroupedProfile
 {
     [System.ComponentModel.DataAnnotations.Display(GroupName = "Identity")]
     public string FirstName { get; set; } = "";

@@ -5,6 +5,8 @@ using Bit.Bswup.Demo.Server.Services;
 using Microsoft.AspNetCore.Components;
 using ModelContextProtocol.Server;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Bswup.Tests.Mcp.Production;
 
 /// <summary>
@@ -38,7 +40,7 @@ public class CatalogConsistencyTests
     {
         foreach (var mentioned in _toolMention.Matches(text).Select(match => match.Groups["name"].Value).Distinct())
         {
-            CollectionAssert.Contains(_toolNames, mentioned, $"{where} points at '{mentioned}', which is not a tool");
+            Assert.Contains(mentioned, _toolNames, $"{where} points at '{mentioned}', which is not a tool");
         }
     }
 
@@ -86,7 +88,7 @@ public class CatalogConsistencyTests
                                     .First().Description;
 
             Assert.IsNotNull(DocsCatalog.FindBySlug(slug), $"{tool} points at the '{slug}' page, which does not exist");
-            StringAssert.Contains(description, $"'{slug}'", $"{tool} does not say which page carries its prose");
+            Assert.Contains($"'{slug}'", description, $"{tool} does not say which page carries its prose");
         }
     }
 
@@ -98,9 +100,9 @@ public class CatalogConsistencyTests
         // twenty-four settings was told twenty-four times that they go in service-worker.js.
         var properties = typeof(Bit.Bswup.Demo.Server.Dtos.BswupOptionDto).GetProperties().Select(property => property.Name).ToArray();
 
-        CollectionAssert.DoesNotContain(properties, "Kind");
-        CollectionAssert.DoesNotContain(properties, "SetIn");
-        CollectionAssert.DoesNotContain(properties, "Docs");
+        Assert.DoesNotContain("Kind", properties);
+        Assert.DoesNotContain("SetIn", properties);
+        Assert.DoesNotContain("Docs", properties);
     }
 
     [TestMethod]
@@ -111,7 +113,7 @@ public class CatalogConsistencyTests
             .DistinctBy(hit => hit.Tool)
             .ToArray();
 
-        Assert.IsTrue(hits.Length > 0, "the search returned nothing at all, so nothing below was checked");
+        Assert.IsNotEmpty(hits, "the search returned nothing at all, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -128,7 +130,7 @@ public class CatalogConsistencyTests
             .DistinctBy(hit => hit.Tool)
             .ToArray();
 
-        Assert.IsTrue(hits.Length > 0, "no hit pointed at a docs page, so nothing below was checked");
+        Assert.IsNotEmpty(hits, "no hit pointed at a docs page, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -154,7 +156,7 @@ public class CatalogConsistencyTests
             .DistinctBy(hit => hit.Tool)
             .ToArray();
 
-        Assert.IsTrue(hits.Length > 0, "no hit named a narrowed call, so nothing below was checked");
+        Assert.IsNotEmpty(hits, "no hit named a narrowed call, so nothing below was checked");
 
         var known = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
@@ -173,7 +175,7 @@ public class CatalogConsistencyTests
             var tool = match.Groups["tool"].Value;
 
             Assert.IsTrue(known.ContainsKey(tool), $"'{hit.Tool}' narrows a tool that takes no name");
-            CollectionAssert.Contains(known[tool], match.Groups["name"].Value, hit.Tool);
+            Assert.Contains(match.Groups["name"].Value, known[tool], hit.Tool);
         }
     }
 
@@ -186,7 +188,7 @@ public class CatalogConsistencyTests
             .DistinctBy(hit => hit.Tool)
             .ToArray();
 
-        Assert.IsTrue(hits.Length > 0, "no hit pointed at a source file, so nothing below was checked");
+        Assert.IsNotEmpty(hits, "no hit pointed at a source file, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -204,7 +206,7 @@ public class CatalogConsistencyTests
             var message = DocsPageRenderer.Unavailable(page, "a reason");
 
             AssertOnlyRealTools(message, $"the fallback for '{page.Title}'");
-            StringAssert.Contains(message, page.Url, page.Title);
+            Assert.Contains(page.Url, message, page.Title);
         }
     }
 
@@ -223,8 +225,8 @@ public class CatalogConsistencyTests
                 .Select(route => route.Template)
                 .ToArray();
 
-            Assert.IsTrue(routes.Length > 0, $"{page.PageType.Name} is in the catalog but is not a routable page");
-            CollectionAssert.Contains(routes, page.Url, $"{page.PageType.Name}: the catalog says '{page.Url}', the component says '{string.Join(", ", routes)}'");
+            Assert.IsNotEmpty(routes, $"{page.PageType.Name} is in the catalog but is not a routable page");
+            Assert.Contains(page.Url, routes, $"{page.PageType.Name}: the catalog says '{page.Url}', the component says '{string.Join(", ", routes)}'");
         }
     }
 
@@ -247,14 +249,14 @@ public class CatalogConsistencyTests
                                                  .Select(group => group.Key)
                                                  .ToArray();
 
-        Assert.AreEqual(0, duplicateSlugs.Length, string.Join(", ", duplicateSlugs));
+        Assert.IsEmpty(duplicateSlugs, string.Join(", ", duplicateSlugs));
 
         var duplicateTypes = DocsCatalog.AllPages.GroupBy(page => page.PageType)
                                                  .Where(group => group.Count() > 1)
                                                  .Select(group => group.Key.Name)
                                                  .ToArray();
 
-        Assert.AreEqual(0, duplicateTypes.Length, string.Join(", ", duplicateTypes));
+        Assert.IsEmpty(duplicateTypes, string.Join(", ", duplicateTypes));
     }
 
     [TestMethod]
@@ -279,7 +281,7 @@ public class CatalogConsistencyTests
 
         foreach (var url in SiteMetadata.NoIndexUrls)
         {
-            CollectionAssert.Contains(routes, url, $"'{url}' is marked noindex but no component routes there");
+            Assert.Contains(url, routes, $"'{url}' is marked noindex but no component routes there");
         }
     }
 

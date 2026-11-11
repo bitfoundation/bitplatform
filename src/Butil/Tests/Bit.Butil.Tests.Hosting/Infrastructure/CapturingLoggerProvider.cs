@@ -1,10 +1,10 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 namespace ButilTests.Hosting.Infrastructure;
 
 /// <summary>Keeps every entry the host logs, so a test can assert on what rendering wrote to the server log.</summary>
-public sealed class CapturingLoggerProvider : ILoggerProvider
+internal sealed class CapturingLoggerProvider : ILoggerProvider
 {
     private readonly ConcurrentQueue<CapturedLogEntry> _entries = new();
 

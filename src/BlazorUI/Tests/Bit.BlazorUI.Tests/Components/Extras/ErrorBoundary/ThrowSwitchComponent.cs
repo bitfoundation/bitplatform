@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 /// Throws while <see cref="ShouldThrow"/> is set, so a test can make the same content throw again
 /// after a recovery - which is what an error count reset has to be observed through.
 /// </summary>
-public class ThrowSwitchComponent : ComponentBase
+internal class ThrowSwitchComponent : ComponentBase
 {
     public static bool ShouldThrow;
 

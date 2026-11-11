@@ -20,11 +20,11 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(16, documented.Length, "The stylesheet does not document the sixteen public variables.");
+        Assert.HasCount(16, documented, "The stylesheet does not document the sixteen public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -57,7 +57,7 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         // The shared ring turns on the spinner tokens, which slow a looping animation down under reduced motion
         // instead of collapsing it to zero (BitSpinnerRingStylesheetTests pins the mixin itself).
-        StringAssert.Contains(spinner, "@include spinner-ring(");
+        Assert.Contains("@include spinner-ring(", spinner);
     }
 
     [TestMethod]
@@ -66,14 +66,14 @@ public partial class BitInfiniteScrollingStylesheetTests
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         // The spinner's track and arc are kept apart by the spinner-ring mixin it is drawn with.
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-spn {"), "@include spinner-ring(");
-        StringAssert.Contains(forced, "color: GrayText;");
+        Assert.Contains("@include spinner-ring(", SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-spn {"));
+        Assert.Contains("color: GrayText;", forced);
 
         // A button with no box of its own would read as plain text in a forced palette.
-        StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style ButtonText;");
+        Assert.Contains("border: $shp-border-width $shp-border-style ButtonText;", forced);
 
         // The ring of a feed's article becomes the system's own focus color (focus-ring-inset does it).
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {"), "@include focus-ring-inset(");
+        Assert.Contains("@include focus-ring-inset(", SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {"));
     }
 
     [TestMethod]
@@ -82,8 +82,8 @@ public partial class BitInfiniteScrollingStylesheetTests
         var article = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {");
 
         // An inset box-shadow is painted under the article's children, so an item with a background would hide it.
-        Assert.IsFalse(article.Contains("box-shadow"), "The ring of an article is a box-shadow, which its content covers.");
-        StringAssert.Contains(article, "@include focus-ring-inset(var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus}));");
+        Assert.DoesNotContain("box-shadow", article, "The ring of an article is a box-shadow, which its content covers.");
+        Assert.Contains("@include focus-ring-inset(var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus}));", article);
     }
 
     [TestMethod]
@@ -92,9 +92,8 @@ public partial class BitInfiniteScrollingStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The text-align variable takes values (justify, match-parent) that a flex alignment rejects.
-        Assert.IsFalse(stylesheet.Contains("justify-content: var(--bit-InfiniteScrolling-status-text-align"),
-                       "The text-align variable is read as a flex alignment.");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-isc-spn {"), "display: inline-block;");
+        Assert.DoesNotContain("justify-content: var(--bit-InfiniteScrolling-status-text-align", stylesheet, "The text-align variable is read as a flex alignment.");
+        Assert.Contains("display: inline-block;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-isc-spn {"));
     }
 
     [TestMethod]
@@ -104,12 +103,12 @@ public partial class BitInfiniteScrollingStylesheetTests
         var button = SourceFiles.GetScssBlock(stylesheet, "\n.bit-isc-btn {");
 
         // The busy button is marked aria-disabled, never disabled, so the focus that pressed it is kept.
-        StringAssert.Contains(button, "&[aria-disabled=\"true\"] {");
-        Assert.IsFalse(button.Contains(":disabled"), "The busy button is styled through :disabled, which it never is.");
+        Assert.Contains("&[aria-disabled=\"true\"] {", button);
+        Assert.DoesNotContain(":disabled", button, "The busy button is styled through :disabled, which it never is.");
 
         // A box-shadow ring is not scrolled to, so the button keeps room for it at either end of the list.
-        StringAssert.Contains(button, "margin-block: $isc-ring-room;");
-        StringAssert.Contains(stylesheet, "$isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});");
+        Assert.Contains("margin-block: $isc-ring-room;", button);
+        Assert.Contains("$isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});", stylesheet);
     }
 
     [TestMethod]
@@ -117,10 +116,10 @@ public partial class BitInfiniteScrollingStylesheetTests
     {
         var print = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media print {");
 
-        StringAssert.Contains(print, "overflow: visible !important;");
-        StringAssert.Contains(print, "max-height: none !important;");
-        StringAssert.Contains(print, ".bit-isc-btn");
-        StringAssert.Contains(print, "display: none !important;");
+        Assert.Contains("overflow: visible !important;", print);
+        Assert.Contains("max-height: none !important;", print);
+        Assert.Contains(".bit-isc-btn", print);
+        Assert.Contains("display: none !important;", print);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

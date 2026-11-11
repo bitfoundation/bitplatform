@@ -23,16 +23,16 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.NextAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
 
-        var record = await harness.Service.GetRecordAsync("persisted");
+        var record = await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken);
 
         Assert.IsNotNull(record);
         Assert.AreEqual("b", record!.CurrentStepId);
         Assert.AreEqual(1, record.CurrentIndex);
         Assert.IsFalse(record.Completed);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, record.VisitedStepIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, record.VisitedStepIds.ToArray());
     }
 
     [TestMethod]
@@ -41,12 +41,12 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
-        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted"));
-        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted"));
-        Assert.IsNotNull((await harness.Service.GetRecordAsync("persisted"))!.CompletedAt);
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted", TestContext.CancellationToken));
+        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted", TestContext.CancellationToken));
+        Assert.IsNotNull((await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken))!.CompletedAt);
     }
 
     [TestMethod]
@@ -55,19 +55,19 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour());
-        await first.CompleteAsync();
-        var completedAt = (await harness.Service.GetRecordAsync("persisted"))!.CompletedAt;
+        var first = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await first.CompleteAsync(TestContext.CancellationToken);
+        var completedAt = (await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken))!.CompletedAt;
 
         // Replayed from a help menu, then abandoned half way.
-        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
-        await replay.NextAsync();
+        var replay = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
+        await replay.NextAsync(TestContext.CancellationToken);
 
-        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted"), "Completion is a fact about the user, not about the run in progress.");
+        Assert.IsTrue(await harness.Service.IsCompletedAsync("persisted", TestContext.CancellationToken), "Completion is a fact about the user, not about the run in progress.");
 
-        await replay.DismissAsync();
+        await replay.DismissAsync(TestContext.CancellationToken);
 
-        var record = await harness.Service.GetRecordAsync("persisted");
+        var record = await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken);
         Assert.IsTrue(record!.Completed);
         Assert.AreEqual(completedAt, record.CompletedAt);
         Assert.IsTrue(record.Dismissed, "The way the last run ended is still recorded.");
@@ -79,13 +79,13 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour(version: 1));
-        await first.CompleteAsync();
+        var first = await harness.Service.StartAsync(Tour(version: 1), cancellationToken: TestContext.CancellationToken);
+        await first.CompleteAsync(TestContext.CancellationToken);
 
-        var edited = await harness.Service.StartAsync(Tour(version: 2));
-        await edited.NextAsync();
+        var edited = await harness.Service.StartAsync(Tour(version: 2), cancellationToken: TestContext.CancellationToken);
+        await edited.NextAsync(TestContext.CancellationToken);
 
-        var record = await harness.Service.GetRecordAsync("persisted");
+        var record = await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken);
         Assert.IsFalse(record!.Completed);
         Assert.IsNull(record.CompletedAt);
     }
@@ -96,11 +96,11 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.DismissAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.DismissAsync(TestContext.CancellationToken);
 
-        Assert.IsFalse(await harness.Service.IsCompletedAsync("persisted"));
-        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted"));
+        Assert.IsFalse(await harness.Service.IsCompletedAsync("persisted", TestContext.CancellationToken));
+        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -109,13 +109,13 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour());
-        await first.NextAsync();
+        var first = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await first.NextAsync(TestContext.CancellationToken);
 
         // Interrupted rather than refused: a page reload, a lost circuit, or another tour.
-        await first.CancelAsync();
+        await first.CancelAsync(TestContext.CancellationToken);
 
-        var resumed = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
+        var resumed = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
 
         Assert.AreEqual("b", resumed.CurrentStep!.Id);
         Assert.Contains(BonboardingEventKind.TourResumed, harness.Events.Kinds);
@@ -136,14 +136,14 @@ public class PersistenceTests
         {
             TourId = "persisted",
             Data = new Dictionary<string, string> { ["plan"] = "pro" },
-        });
+        }, TestContext.CancellationToken);
 
-        var session = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Resume = false });
-        await session.NextAsync();
-        Assert.AreEqual("pro", (await harness.Store.GetAsync("persisted"))!.Data!["plan"]);
+        var session = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Resume = false }, TestContext.CancellationToken);
+        await session.NextAsync(TestContext.CancellationToken);
+        Assert.AreEqual("pro", (await harness.Store.GetAsync("persisted", TestContext.CancellationToken))!.Data!["plan"]);
 
-        await session.CompleteAsync();
-        var record = await harness.Store.GetAsync("persisted");
+        await session.CompleteAsync(TestContext.CancellationToken);
+        var record = await harness.Store.GetAsync("persisted", TestContext.CancellationToken);
         Assert.IsTrue(record!.Completed);
         Assert.AreEqual("pro", record.Data!["plan"]);
     }
@@ -154,14 +154,14 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.CancelAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.CancelAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
-        Assert.IsFalse(await harness.Service.IsClosedAsync("persisted"));
+        Assert.IsFalse(await harness.Service.IsClosedAsync("persisted", TestContext.CancellationToken));
 
         // So StartOnce still offers it next time.
-        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour()));
+        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -170,11 +170,11 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.DismissAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.DismissAsync(TestContext.CancellationToken);
 
-        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted"));
-        Assert.IsNull(await harness.Service.StartOnceAsync(Tour()));
+        Assert.IsTrue(await harness.Service.IsClosedAsync("persisted", TestContext.CancellationToken));
+        Assert.IsNull(await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -183,12 +183,12 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour());
-        await first.NextAsync();
-        await first.CancelAsync();
+        var first = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await first.NextAsync(TestContext.CancellationToken);
+        await first.CancelAsync(TestContext.CancellationToken);
 
         var restarted = await harness.Service.StartAsync(
-            Tour(), new BonboardingStartOptions { Resume = false, Force = true });
+            Tour(), new BonboardingStartOptions { Resume = false, Force = true }, TestContext.CancellationToken);
 
         Assert.AreEqual("a", restarted.CurrentStep!.Id);
     }
@@ -199,11 +199,11 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour());
-        await first.NextAsync();
-        await first.CancelAsync();
+        var first = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await first.NextAsync(TestContext.CancellationToken);
+        await first.CancelAsync(TestContext.CancellationToken);
 
-        var next = await harness.Service.StartAsync(Tour(version: 2), new BonboardingStartOptions { Force = true });
+        var next = await harness.Service.StartAsync(Tour(version: 2), new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
 
         Assert.AreEqual("a", next.CurrentStep!.Id);
     }
@@ -214,11 +214,11 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartOnceAsync(Tour());
+        var first = await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken);
         Assert.IsNotNull(first);
-        await first!.CompleteAsync();
+        await first!.CompleteAsync(TestContext.CancellationToken);
 
-        Assert.IsNull(await harness.Service.StartOnceAsync(Tour()));
+        Assert.IsNull(await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -227,13 +227,13 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var first = await harness.Service.StartAsync(Tour());
-        await first.CompleteAsync();
+        var first = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await first.CompleteAsync(TestContext.CancellationToken);
 
-        var restarted = await harness.Service.RestartAsync(Tour());
+        var restarted = await harness.Service.RestartAsync(Tour(), TestContext.CancellationToken);
 
         Assert.AreEqual("a", restarted.CurrentStep!.Id);
-        Assert.IsFalse(await harness.Service.IsCompletedAsync("persisted"));
+        Assert.IsFalse(await harness.Service.IsCompletedAsync("persisted", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -242,13 +242,13 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
-        await harness.Service.ResetAsync("persisted");
+        await harness.Service.ResetAsync("persisted", TestContext.CancellationToken);
 
-        Assert.IsNull(await harness.Service.GetRecordAsync("persisted"));
-        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour()));
+        Assert.IsNull(await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken));
+        Assert.IsNotNull(await harness.Service.StartOnceAsync(Tour(), cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -260,10 +260,10 @@ public class PersistenceTests
         var tour = Tour();
         tour.Persist = false;
 
-        var session = await harness.Service.StartAsync(tour);
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
-        Assert.IsNull(await harness.Service.GetRecordAsync("persisted"));
+        Assert.IsNull(await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -272,10 +272,10 @@ public class PersistenceTests
         await using var harness = new BonboardingHarness(options => options.Persist = false);
         harness.WithElements("#a", "#b", "#c");
 
-        var session = await harness.Service.StartAsync(Tour());
-        await session.CompleteAsync();
+        var session = await harness.Service.StartAsync(Tour(), cancellationToken: TestContext.CancellationToken);
+        await session.CompleteAsync(TestContext.CancellationToken);
 
-        Assert.IsNull(await harness.Service.GetRecordAsync("persisted"));
+        Assert.IsNull(await harness.Service.GetRecordAsync("persisted", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -291,9 +291,9 @@ public class PersistenceTests
             CurrentStepId = "removed-long-ago",
             CurrentIndex = 2,
             VisitedStepIds = ["a", "removed-long-ago"],
-        });
+        }, TestContext.CancellationToken);
 
-        var session = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true });
+        var session = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Force = true }, TestContext.CancellationToken);
 
         Assert.AreEqual("c", session.CurrentStep!.Id);
         // The history keeps only steps that still exist, so Back cannot land on a ghost.
@@ -309,15 +309,15 @@ public class PersistenceTests
             Microsoft.Extensions.Options.Options.Create(new BonboardingOptions()),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<BonboardingBrowserStore>.Instance);
 
-        await store.SetAsync(new BonboardingRecord { TourId = "t1", CurrentStepId = "s2", CurrentIndex = 1 });
+        await store.SetAsync(new BonboardingRecord { TourId = "t1", CurrentStepId = "s2", CurrentIndex = 1 }, TestContext.CancellationToken);
 
         Assert.ContainsSingle(harness.Interop.Storage);
         Assert.IsTrue(harness.Interop.Storage.ContainsKey("bit-bonboarding:t1"));
 
-        var reloaded = await store.GetAsync("t1");
+        var reloaded = await store.GetAsync("t1", TestContext.CancellationToken);
         Assert.AreEqual("s2", reloaded!.CurrentStepId);
 
-        await store.ClearAsync();
+        await store.ClearAsync(TestContext.CancellationToken);
         Assert.IsEmpty(harness.Interop.Storage);
     }
 
@@ -332,7 +332,7 @@ public class PersistenceTests
             Microsoft.Extensions.Options.Options.Create(new BonboardingOptions()),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<BonboardingBrowserStore>.Instance);
 
-        Assert.IsNull(await store.GetAsync("broken"));
+        Assert.IsNull(await store.GetAsync("broken", TestContext.CancellationToken));
         Assert.IsEmpty(harness.Interop.Storage);
     }
 
@@ -345,10 +345,10 @@ public class PersistenceTests
 
         // Two handlers raising their signals at once, or a page ticking two items off in one go.
         await Task.WhenAll(
-            harness.Service.SetChecklistItemAsync("start", "invite"),
-            harness.Service.SetChecklistItemAsync("start", "profile"));
+            harness.Service.SetChecklistItemAsync("start", "invite", cancellationToken: TestContext.CancellationToken),
+            harness.Service.SetChecklistItemAsync("start", "profile", cancellationToken: TestContext.CancellationToken));
 
-        CollectionAssert.AreEquivalent(new[] { "invite", "profile" }, (await harness.Service.GetCompletedChecklistItemsAsync("start")).ToArray());
+        Assert.AreSequenceEqual(new[] { "invite", "profile" }, (await harness.Service.GetCompletedChecklistItemsAsync("start", TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -358,12 +358,14 @@ public class PersistenceTests
     {
         await using var harness = new BonboardingHarness(options => options.Persist = persist);
 
-        await harness.Service.SetChecklistItemAsync("start", "invite");
-        await harness.Service.DismissChecklistAsync("start");
+        await harness.Service.SetChecklistItemAsync("start", "invite", cancellationToken: TestContext.CancellationToken);
+        await harness.Service.DismissChecklistAsync("start", TestContext.CancellationToken);
 
-        await harness.Service.ResetAllAsync();
+        await harness.Service.ResetAllAsync(TestContext.CancellationToken);
 
-        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start"));
-        Assert.IsFalse(await harness.Service.IsChecklistDismissedAsync("start"));
+        Assert.IsEmpty(await harness.Service.GetCompletedChecklistItemsAsync("start", TestContext.CancellationToken));
+        Assert.IsFalse(await harness.Service.IsChecklistDismissedAsync("start", TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

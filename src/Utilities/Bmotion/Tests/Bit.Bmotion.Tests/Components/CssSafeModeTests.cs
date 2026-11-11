@@ -43,10 +43,10 @@ public class CssSafeModeTests
 
         var warning = logger.Warnings.FirstOrDefault(w => w.Contains("CSS safe mode"));
         Assert.IsNotNull(warning, "Warn mode must log the rejected value");
-        StringAssert.Contains(warning, "boxShadow");
-        StringAssert.Contains(warning, "'box'", "the warning names the element");
+        Assert.Contains("boxShadow", warning);
+        Assert.Contains("'box'", warning, "the warning names the element");
         // Warn is diagnostics only: the value is still written, exactly as with the mode off.
-        StringAssert.Contains(cut.Find("div").GetAttribute("style"), Injected);
+        Assert.Contains(Injected, cut.Find("div").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public class CssSafeModeTests
 
         RenderWith(ctx, Bm.To(boxShadow: "0 0 4px rgba(0,0,0,.5)", cssVars: new() { ["--accent"] = "#0af" }));
 
-        Assert.IsFalse(logger.Warnings.Any());
+        Assert.IsEmpty(logger.Warnings);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class CssSafeModeTests
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderWith(ctx, Bm.To(css: new() { ["outline"] = Injected })));
-        StringAssert.Contains(thrown.Message, "outline");
+        Assert.Contains("outline", thrown.Message);
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public class CssSafeModeTests
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderWith(ctx, Bm.To(cssVars: new() { ["--accent"] = "x</style><script>" })));
-        StringAssert.Contains(thrown.Message, "--accent");
+        Assert.Contains("--accent", thrown.Message);
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public class CssSafeModeTests
             .Add(p => p.InitialState, "hidden")
             .Add(p => p.State, "visible")
             .Add(p => p.ChildContent, ChildWith(childStates))));
-        StringAssert.Contains(thrown.Message, "boxShadow");
+        Assert.Contains("boxShadow", thrown.Message);
     }
 
     [TestMethod]
@@ -129,11 +129,11 @@ public class CssSafeModeTests
             .Add(p => p.Variants, parentStates)
             .Add(p => p.State, "visible")
             .Add(p => p.ChildContent, ChildWith(childStates)));
-        Assert.IsFalse(logger.Warnings.Any(), "the variant the child starts with is clean");
+        Assert.IsEmpty(logger.Warnings, "the variant the child starts with is clean");
 
         cut.Render(ps => ps.Add(p => p.State, "pressed"));
 
-        cut.WaitForAssertion(() => Assert.IsTrue(logger.Warnings.Any(w => w.Contains("boxShadow") && w.Contains("'child'"))));
+        cut.WaitForAssertion(() => Assert.Contains(w => w.Contains("boxShadow") && w.Contains("'child'"), logger.Warnings));
     }
 
     private static RenderFragment ChildWith(BmVariants variants) => b =>
@@ -187,13 +187,13 @@ public class CssSafeModeTests
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
         var unsafeTarget = Bm.To(boxShadow: $"0 0 4px {Injected}");
 
-        var bySelector = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(".box", unsafeTarget).AsTask());
-        StringAssert.Contains(bySelector.Message, "boxShadow");
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(new ElementReference("box-ref"), unsafeTarget).AsTask());
+        var bySelector = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(".box", unsafeTarget, cancellationToken: TestContext.CancellationToken).AsTask());
+        Assert.Contains("boxShadow", bySelector.Message);
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.AnimateAsync(new ElementReference("box-ref"), unsafeTarget, cancellationToken: TestContext.CancellationToken).AsTask());
 
         // Only the last segment is unsafe: none of the sequence may start, and no element is left registered.
         var sequence = new BmSequence().Add(".a", Bm.To(opacity: 0.5)).Add(".b", unsafeTarget);
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.RunAsync(sequence).AsTask());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.RunAsync(sequence, TestContext.CancellationToken).AsTask());
 
         Assert.IsFalse(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "a rejected target registers no element");
         Assert.IsFalse(ctx.Interop.WasCalled("resolveOrRegisterByRef"), "a rejected target registers no element");
@@ -208,14 +208,13 @@ public class CssSafeModeTests
         ctx.Options.CssSafeMode = BmCssSafeMode.Warn;
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
 
-        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"), cancellationToken: TestContext.CancellationToken);
 
         var warning = logger.Warnings.SingleOrDefault(w => w.Contains("CSS safe mode"));
         Assert.IsNotNull(warning, "Warn mode must log the rejected value");
-        StringAssert.Contains(warning, "'.card'", "the warning names the selector");
+        Assert.Contains("'.card'", warning, "the warning names the selector");
         Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "Warn still animates");
-        Assert.IsTrue(ctx.Interop.ArgsOf("playWaapiAnimation")
-                          .Any(args => ((Dictionary<string, object>[])args[2]!)[^1].TryGetValue("boxShadow", out var shadow) && Equals(shadow, $"0 0 4px {Injected}")),
+        Assert.Contains(args => ((Dictionary<string, object>[])args[2]!)[^1].TryGetValue("boxShadow", out var shadow) && Equals(shadow, $"0 0 4px {Injected}"), ctx.Interop.ArgsOf("playWaapiAnimation"),
                       "Warn animates the rejected value as given");
     }
 
@@ -225,7 +224,7 @@ public class CssSafeModeTests
         using var ctx = new BmotionTestContext();
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
 
-        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+        await service.AnimateAsync(".card", Bm.To(boxShadow: $"0 0 4px {Injected}"), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"));
     }
@@ -244,7 +243,7 @@ public class CssSafeModeTests
             : Bm.To(css: new() { ["x;background-image:url(//evil);y"] = "1px" });
 
         var thrown = Assert.ThrowsExactly<InvalidOperationException>(() => RenderWith(ctx, target));
-        StringAssert.Contains(thrown.Message, "property name");
+        Assert.Contains("property name", thrown.Message);
     }
 
     // The inline style writes a free-form entry and the typed prop it shadows both; the engine's dictionary keeps one.
@@ -270,8 +269,8 @@ public class CssSafeModeTests
 
         var warning = logger.Warnings.Single(w => w.Contains("CSS safe mode"));
         Assert.IsFalse(warning.Contains('\n'), "a rejected value can't start a log line of its own");
-        StringAssert.Contains(warning, "red\\u000a[info] Admin login ok");
-        Assert.IsTrue(warning.Length < 400, $"the value is cut short, not logged whole ({warning.Length} characters)");
+        Assert.Contains("red\\u000a[info] Admin login ok", warning);
+        Assert.IsLessThan(400, warning.Length, $"the value is cut short, not logged whole ({warning.Length} characters)");
     }
 
     // An element carrying more rejected values than Warn remembers is reported up to the limit and then told about once:
@@ -293,7 +292,7 @@ public class CssSafeModeTests
             .Add(p => p.ChildContent, Div));
         await ctx.RunFramesAsync(0, 100);
         Assert.AreEqual(BmotionCssWarnings.Max + 1, Logged());
-        Assert.AreEqual(1, logger.Warnings.Count(w => w.Contains("not reported")));
+        Assert.ContainsSingle(w => w.Contains("not reported"), logger.Warnings);
 
         cut.Render(ps => ps.Add(p => p.Animate, Bm.To(cssVars: many)));
         await ctx.RunFramesAsync(100, 200);
@@ -310,9 +309,9 @@ public class CssSafeModeTests
         var service = ctx.Services.GetRequiredService<BmotionAnimateService>();
 
         for (int i = 0; i < 5; i++)
-            await service.AnimateAsync(".swatch", Bm.To(boxShadow: $"0 0 4px {Injected}"));
+            await service.AnimateAsync(".swatch", Bm.To(boxShadow: $"0 0 4px {Injected}"), cancellationToken: TestContext.CancellationToken);
 
-        Assert.AreEqual(1, logger.Warnings.Count(w => w.Contains("CSS safe mode")));
+        Assert.ContainsSingle(w => w.Contains("CSS safe mode"), logger.Warnings);
     }
 
     // Resolving the elements is a round trip (a network one on Blazor Server): a target changed meanwhile must not play
@@ -331,11 +330,11 @@ public class CssSafeModeTests
             return ["el"];
         };
 
-        await service.AnimateAsync("#el", target, Bm.Tween(0.1, ease: BmEase.Linear));
+        await service.AnimateAsync("#el", target, Bm.Tween(0.1, ease: BmEase.Linear), cancellationToken: TestContext.CancellationToken);
         for (double t = 0; t <= 300; t += 16) engine.ComputeFrame(t);
 
         var played = engine.GetDiagnostics().Single(d => d.Id == "el").StringValues["backgroundColor"];
-        Assert.IsFalse(played.Contains("display"), played);
+        Assert.DoesNotContain("display", played, played);
     }
 
     // The element raises OnAnimationStart between checking its target and playing it, and a handler can await.
@@ -357,7 +356,7 @@ public class CssSafeModeTests
         await ctx.RunFramesAsync(0, 300);
 
         var played = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").StringValues["backgroundColor"];
-        Assert.IsFalse(played.Contains("display"), played);
+        Assert.DoesNotContain("display", played, played);
     }
 
     // A service created by hand on the application's engine (in a factory, say) follows the application's options.
@@ -369,7 +368,7 @@ public class CssSafeModeTests
         var service = new BmotionAnimateService(ctx.Engine, ctx.Interop);
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
-            service.AnimateAsync(".box", Bm.To(boxShadow: $"0 0 4px {Injected}")).AsTask());
+            service.AnimateAsync(".box", Bm.To(boxShadow: $"0 0 4px {Injected}"), cancellationToken: TestContext.CancellationToken).AsTask());
     }
 
     [TestMethod]
@@ -385,4 +384,6 @@ public class CssSafeModeTests
 
         Assert.IsTrue(ctx.Interop.WasCalled("registerElement"), "clean values must render normally");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

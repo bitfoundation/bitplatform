@@ -21,8 +21,8 @@ public class BitLabelE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Path}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<label id=\"lbl-basic\" class=\"bit-lbl\">");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<label id=\"lbl-basic\" class=\"bit-lbl\">", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#lbl-basic")).ToHaveTextAsync("I'm a Label");
@@ -96,7 +96,7 @@ public class BitLabelE2ETests : E2ETestBase
         await Expect(mark).ToHaveTextAsync("*");
         await Expect(mark).ToHaveAttributeAsync("aria-hidden", "true");
         await Expect(mark).ToHaveCSSAsync("color", await ResolveAsync("color", "var(--bit-clr-req)"));
-        Assert.IsTrue(await PixelsAsync(mark, "margin-left") > 0, "The mark keeps a gap after the caption.");
+        Assert.IsGreaterThan(0, await PixelsAsync(mark, "margin-left"), "The mark keeps a gap after the caption.");
 
         // The asterisk is a decoration: the control's name is the caption alone.
         await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = "Email", Exact = true })).ToHaveIdAsync("required-input");
@@ -224,7 +224,7 @@ public class BitLabelE2ETests : E2ETestBase
         var noWrap = Page.Locator("#lbl-nowrap");
         var noWrapBox = await noWrap.BoundingBoxAsync();
 
-        Assert.IsTrue(wrapping!.Height > noWrapBox!.Height * 1.5, $"The wrapping label ({wrapping.Height}px) is several lines, the NoWrap one ({noWrapBox.Height}px) one.");
+        Assert.IsGreaterThan(noWrapBox!.Height * 1.5, wrapping!.Height, $"The wrapping label ({wrapping.Height}px) is several lines, the NoWrap one ({noWrapBox.Height}px) one.");
 
         await Expect(noWrap).ToHaveClassAsync(HasClass("bit-lbl-nwr"));
         await Expect(noWrap).ToHaveCSSAsync("white-space", "nowrap");
@@ -235,8 +235,8 @@ public class BitLabelE2ETests : E2ETestBase
 
         // The mark keeps its size and stays inside the label's box.
         var mark = await noWrap.Locator(".bit-lbl-row > .bit-lbl-rqi").BoundingBoxAsync();
-        Assert.IsTrue(mark!.Width > 0);
-        Assert.IsTrue(mark.X + mark.Width <= noWrapBox.X + noWrapBox.Width + 0.5, "The required mark stays in sight.");
+        Assert.IsGreaterThan(0, mark!.Width);
+        Assert.IsLessThanOrEqualTo(noWrapBox.X + noWrapBox.Width + 0.5, mark.X + mark.Width, "The required mark stays in sight.");
     }
 
     [TestMethod]
@@ -284,11 +284,11 @@ public class BitLabelE2ETests : E2ETestBase
 
         var label = Page.Locator("#lbl-vh-wrap");
 
-        Assert.IsTrue((await label.BoundingBoxAsync())!.Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await label.BoundingBoxAsync())!.Width);
 
         await Page.Locator("#vh-checkbox").FocusAsync();
         await Expect(label).ToHaveCSSAsync("position", "static");
-        Assert.IsTrue((await label.BoundingBoxAsync())!.Width > 50, "The label shows while its checkbox has the focus.");
+        Assert.IsGreaterThan(50, (await label.BoundingBoxAsync())!.Width, "The label shows while its checkbox has the focus.");
 
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#after-vh")).ToBeFocusedAsync();
@@ -304,7 +304,7 @@ public class BitLabelE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#lbl-hidden")).ToHaveCSSAsync("visibility", "hidden");
         await Expect(Page.Locator("#lbl-hidden")).ToBeHiddenAsync();
-        Assert.IsTrue((await Page.Locator("#lbl-hidden").BoundingBoxAsync())!.Height > 0, "A hidden label keeps its room.");
+        Assert.IsGreaterThan(0, (await Page.Locator("#lbl-hidden").BoundingBoxAsync())!.Height, "A hidden label keeps its room.");
 
         await Expect(Page.Locator("#lbl-collapsed")).ToHaveCSSAsync("display", "none");
         Assert.IsNull(await Page.Locator("#lbl-collapsed").BoundingBoxAsync());
@@ -381,7 +381,7 @@ public class BitLabelE2ETests : E2ETestBase
         var label = Page.Locator("#lbl-focusable");
         await Expect(label).ToBeFocusedAsync();
         await Expect(label).ToHaveAttributeAsync("tabindex", "0");
-        StringAssert.Contains(await ComputedStyleAsync("#lbl-focusable", "box-shadow"), "rgb(200, 0, 100)");
+        Assert.Contains("rgb(200, 0, 100)", await ComputedStyleAsync("#lbl-focusable", "box-shadow"));
     }
 
     [TestMethod]
@@ -522,13 +522,13 @@ public class BitLabelE2ETests : E2ETestBase
 
         // After the caption is to its left in a right-to-left line, the gap on the mark's inline-start (right) side.
         Assert.IsTrue(await MarkIsLeftOfCaptionAsync("#lbl-rtl-required", ".bit-lbl-rqi"), "The mark follows the caption, to its left.");
-        Assert.IsTrue(await PixelsAsync(label.Locator(".bit-lbl-rqi"), "margin-right") > 0);
+        Assert.IsGreaterThan(0, await PixelsAsync(label.Locator(".bit-lbl-rqi"), "margin-right"));
         Assert.AreEqual(0, await PixelsAsync(label.Locator(".bit-lbl-rqi"), "margin-left"));
 
         // The caption starts at the right edge of the label.
         var box = await Page.Locator("#lbl-rtl").BoundingBoxAsync();
         var textRight = await Page.Locator("#lbl-rtl").EvaluateAsync<double>("el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().right; }");
-        Assert.IsTrue(Math.Abs(box!.X + box.Width - textRight) < 2, "The caption is laid out from the right.");
+        Assert.IsLessThan(2, Math.Abs(box!.X + box.Width - textRight), "The caption is laid out from the right.");
 
         Assert.IsFalse(await MarkIsLeftOfCaptionAsync("#lbl-ltr-required", ".bit-lbl-rqi"), "Left to right, the mark is to the caption's right.");
     }

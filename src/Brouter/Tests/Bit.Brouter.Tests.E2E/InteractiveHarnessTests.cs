@@ -40,9 +40,9 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await WaitForInteractiveAsync();
 
         var status = Page.Locator("#status");
-        CollectionAssert.Contains(ExpectedPlatforms.ToList(), await status.GetAttributeAsync("data-platform"));
+        Assert.Contains(await status.GetAttributeAsync("data-platform"), ExpectedPlatforms.ToList());
 
-        CollectionAssert.Contains(ExpectedRenderers.ToList(), await status.GetAttributeAsync("data-renderer"));
+        Assert.Contains(await status.GetAttributeAsync("data-renderer"), ExpectedRenderers.ToList());
     }
 
     [TestMethod]
@@ -162,10 +162,10 @@ public abstract class InteractiveHarnessTests : HarnessTest
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("data-brouter-nav", "push");
 
         var requests = await BrouterModuleRequestsAsync();
-        Assert.IsTrue(requests.Length > 0, "The page never requested the Bit.Brouter module.");
+        Assert.IsNotEmpty(requests, "The page never requested the Bit.Brouter module.");
         foreach (var request in requests)
         {
-            StringAssert.StartsWith(new Uri(request.Url).AbsolutePath, "/_content/Bit.Brouter/", $"The module was requested from {request.Url}.");
+            Assert.StartsWith("/_content/Bit.Brouter/", new Uri(request.Url).AbsolutePath, $"The module was requested from {request.Url}.");
             // 0 is what a host that does not expose the status (an intercepted WebView request) reports.
             Assert.IsTrue(request.Status is 0 or (>= 200 and < 300), $"{request.Url} answered {request.Status}.");
         }
@@ -272,7 +272,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
 
         await ExpectUrlAsync("/long#bottom-anchor");
         await Expect(Page.Locator("#bottom-anchor")).ToBeFocusedAsync();
-        Assert.IsTrue(await ScrollYAsync() > 2500, $"window.scrollY is {await ScrollYAsync()}; the anchor was not scrolled into view.");
+        Assert.IsGreaterThan(2500, await ScrollYAsync(), $"window.scrollY is {await ScrollYAsync()}; the anchor was not scrolled into view.");
     }
 
     [TestMethod]
@@ -433,7 +433,7 @@ public abstract class InteractiveHarnessTests : HarnessTest
 
         await Page.CloseAsync(new() { RunBeforeUnload = true });
 
-        Assert.AreEqual("beforeunload", await dialogType.Task.WaitAsync(TimeSpan.FromSeconds(15)));
+        Assert.AreEqual("beforeunload", await dialogType.Task.WaitAsync(TimeSpan.FromSeconds(15), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -469,4 +469,6 @@ public abstract class InteractiveHarnessTests : HarnessTest
         var match = System.Text.RegularExpressions.Regex.Match(html, $"id=\"{id}\"[^>]*>([^<]*)<");
         return match.Success ? match.Groups[1].Value.Trim() : null;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

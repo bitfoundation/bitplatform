@@ -43,8 +43,8 @@ public class BitRatingErrorMessageTests : BunitTestContext
                                  .Where(p => p is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "items", "error", "description" }, parts);
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-btn .bit-rtg-erm").Count);
+        Assert.AreSequenceEqual(new[] { "items", "error", "description" }, parts);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-btn .bit-rtg-erm"));
     }
 
     [TestMethod]
@@ -54,13 +54,13 @@ public class BitRatingErrorMessageTests : BunitTestContext
 
         var root = component.Find(".bit-rtg");
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-inv"));
         Assert.IsFalse(root.HasAttribute("aria-invalid"));
         Assert.IsFalse(root.HasAttribute("aria-describedby"));
 
         // a form full of plain ratings does not carry an empty error region per rating
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class BitRatingErrorMessageTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
 
         // the flag says the value was rejected; it does not invent a line saying why
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
 
@@ -121,7 +121,7 @@ public class BitRatingErrorMessageTests : BunitTestContext
         });
 
         Assert.AreEqual("Templated message", component.Find(".bit-rtg-erm .custom-error").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-rtg-erm").TextContent.Contains("Plain message"));
+        Assert.DoesNotContain("Plain message", component.Find(".bit-rtg-erm").TextContent);
 
         // the plain text is not on screen, so it is not what the live region announces either
         Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
@@ -175,7 +175,7 @@ public class BitRatingErrorMessageTests : BunitTestContext
         var component = RenderComponent<BitRating>(parameters => parameters.Add(p => p.Invalid, true));
 
         // the flag on its own has nothing to say, and so no live region to say it in
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
         Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "امتیاز نامعتبر"));
@@ -230,8 +230,8 @@ public class BitRatingErrorMessageTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
 
         // the value keeps the region of its own, which the error does not take over
-        Assert.AreEqual(2, component.FindAll("[aria-live]").Count);
-        Assert.IsFalse(component.Find("[aria-live]:not([role])").TextContent.Contains("review"));
+        Assert.HasCount(2, component.FindAll("[aria-live]"));
+        Assert.DoesNotContain("review", component.Find("[aria-live]:not([role])").TextContent);
 
         component.FindAll(".bit-rtg-btn")[1].Click();
 
@@ -259,7 +259,7 @@ public class BitRatingErrorMessageTests : BunitTestContext
         var descriptionId = component.Find(".bit-rtg-dsc").Id;
 
         // the page's own reference is kept, and the two lines are read in the order they sit under the items
-        CollectionAssert.AreEqual(new[] { "quality-hint", errorId, descriptionId }, describedBy);
+        Assert.AreSequenceEqual(new[] { "quality-hint", errorId, descriptionId }, describedBy);
     }
 
     [TestMethod]
@@ -311,7 +311,7 @@ public class BitRatingErrorMessageTests : BunitTestContext
 
         // the base class registers the class for any rejection, the form's and the app's alike, so the two together
         // still make a single one
-        Assert.AreEqual(1, component.Find(".bit-rtg").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-rtg").ClassList);
         Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
 
         // and once the app drops its own rejection, the form's still stands

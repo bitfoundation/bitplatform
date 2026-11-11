@@ -19,8 +19,8 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var boundary = cut.Find("[data-testid=leaf-boundary]");
-            Assert.IsTrue(boundary.TextContent.Contains("leaf loader failed"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=leaf-content]").Count);
+            Assert.Contains("leaf loader failed", boundary.TextContent);
+            Assert.IsEmpty(cut.FindAll("[data-testid=leaf-content]"));
             // Boundaries are UI; observability still goes through the OnError hook.
             Assert.AreEqual(1, cut.Instance.ErrorHookCount);
             Assert.IsInstanceOfType<InvalidOperationException>(cut.Instance.LastError);
@@ -40,11 +40,11 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var boundary = cut.Find("[data-testid=parent-boundary]");
-            Assert.IsTrue(boundary.TextContent.Contains("child loader failed"));
+            Assert.Contains("child loader failed", boundary.TextContent);
             // The boundary replaces the parent's content (layout included), mirroring
             // React Router's ErrorBoundary semantics; the child never rendered.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=parent-layout]").Count);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=child-content]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=parent-layout]"));
+            Assert.IsEmpty(cut.FindAll("[data-testid=child-content]"));
         });
     }
 
@@ -59,8 +59,8 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             var boundary = cut.Find("[data-testid=root-boundary]");
-            Assert.IsTrue(boundary.TextContent.Contains("root loader failed"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=root-content]").Count);
+            Assert.Contains("root loader failed", boundary.TextContent);
+            Assert.IsEmpty(cut.FindAll("[data-testid=root-content]"));
         });
     }
 
@@ -80,7 +80,7 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=leaf-content]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=leaf-boundary]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=leaf-boundary]"));
         });
     }
 
@@ -99,7 +99,7 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=ok]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=root-boundary]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=root-boundary]"));
         });
     }
 
@@ -123,7 +123,7 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=leaf-content]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=leaf-boundary]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=leaf-boundary]"));
         });
     }
 
@@ -148,7 +148,7 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=elock-boundary]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=elock-page]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=elock-page]"));
         });
 
         // The disposed page's always-cancel lock must not block leaving the error UI.
@@ -167,12 +167,12 @@ public class ErrorContentTests : BunitTestContext
         nav.NavigateTo("http://localhost/kperr/1");
 
         var cut = RenderComponent<ErrorContentHost>();
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kperr-page]").TextContent, "kperr 1"));
+        cut.WaitForAssertion(() => Assert.Contains("kperr 1", cut.Find("[data-testid=kperr-page]").TextContent));
 
         // A second parameter set retains entry 1 hidden (its honest Hidden deactivation).
         var brouter = Services.GetRequiredService<IBrouter>();
         await cut.InvokeAsync(() => brouter.Navigate("/kperr/2"));
-        cut.WaitForAssertion(() => CollectionAssert.Contains(cut.Instance.KPErrLog, "deactivated:Hidden"));
+        cut.WaitForAssertion(() => Assert.Contains("deactivated:Hidden", cut.Instance.KPErrLog));
 
         // A renavigation with a failing loader swaps the ACTIVE entry's page for the boundary:
         // that entry ends with Disposing (its page is destroyed, not hidden) and is dropped.
@@ -182,7 +182,7 @@ public class ErrorContentTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=kperr-boundary]"));
-            CollectionAssert.Contains(cut.Instance.KPErrLog, "deactivated:Disposing");
+            Assert.Contains("deactivated:Disposing", cut.Instance.KPErrLog);
         });
     }
 
@@ -205,8 +205,8 @@ public class ErrorContentTests : BunitTestContext
             Assert.IsNotNull(cut.Find("[data-testid=kerr-boundary]"));
             // The error render destroys the page - keep-alive retention keeps a subtree that no
             // longer holds it - so the departure honestly reports Disposing, never Hidden.
-            CollectionAssert.Contains(cut.Instance.KErrLog, "deactivated:Disposing");
-            CollectionAssert.DoesNotContain(cut.Instance.KErrLog, "deactivated:Hidden");
+            Assert.Contains("deactivated:Disposing", cut.Instance.KErrLog);
+            Assert.DoesNotContain("deactivated:Hidden", cut.Instance.KErrLog);
         });
     }
 }

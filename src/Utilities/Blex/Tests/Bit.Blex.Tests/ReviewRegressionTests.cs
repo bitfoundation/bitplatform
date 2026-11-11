@@ -1,4 +1,4 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 using Bit.Blex.Testing;
 using Bit.Blex.Tests.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
@@ -7,7 +7,7 @@ namespace Bit.Blex.Tests;
 
 /// <summary>A ledger whose failing action first tells another store, the way a cross-store workflow does.</summary>
 [BlexStoreAttribute(Name = "notifyingLedger", RollbackOnError = true)]
-public partial class NotifyingLedgerStore
+internal partial class NotifyingLedgerStore
 {
     [BlexStateAttribute] private int _balance = 100;
 
@@ -25,7 +25,7 @@ public partial class NotifyingLedgerStore
 
 /// <summary>Effects that overlap: one changes state and parks, others run and finish while it is parked.</summary>
 [BlexStoreAttribute(Name = "midflight")]
-public partial class MidFlightStore
+internal partial class MidFlightStore
 {
     [BlexStateAttribute] private int _items;
 
@@ -55,7 +55,7 @@ public partial class MidFlightStore
 
 /// <summary>An effect that waits for something its own store's action does: the workflow WhenAsync exists for.</summary>
 [BlexStoreAttribute(Name = "checkout")]
-public partial class CheckoutStore
+internal partial class CheckoutStore
 {
     [BlexStateAttribute] private bool _confirmed;
     [BlexStateAttribute] private bool _submitted;
@@ -96,7 +96,7 @@ public class ReviewRegressionTests
         var slow = store.Slow();     // Items = 1, then parks: recorded only when it ends
         await store.Quick();         // its IsLoading flips while Slow is still running
 
-        Assert.IsFalse(recorded.Contains("counter/Add"), "a re-evaluation now would record the reaction before its cause");
+        Assert.DoesNotContain("counter/Add", recorded, "a re-evaluation now would record the reaction before its cause");
 
         store.Gate.SetResult();
         await slow;
@@ -131,7 +131,7 @@ public class ReviewRegressionTests
         var submit = store.Submit();   // waits for Confirmed, and keeps the store's record open while it does
         store.Confirm();               // folded into Submit's record, which only comes once Submit ends
 
-        await submit.WaitAsync(TimeSpan.FromSeconds(5));
+        await submit.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsTrue(store.Submitted);
     }
 
@@ -178,7 +178,7 @@ public class ReviewRegressionTests
         second.WithdrawThenNotify(30);   // 70
 
         // True only while the counter is back at 0 but the ledger is not yet back at 100: never, in a whole restore.
-        var torn = manager.WhenAsync(() => first.Count == 0 && second.Balance == 70);
+        var torn = manager.WhenAsync(() => first.Count == 0 && second.Balance == 70, TestContext.CancellationToken);
         manager.RestoreGlobalState(before);
         await Task.Yield();
 
@@ -191,11 +191,11 @@ public class ReviewRegressionTests
     {
         var (client, _, _) = Client();
         var server = new FakeServer<string>();
-        var read = client.FetchAsync(["todos"], server.Fetch());   // nobody observes the entry
+        var read = client.FetchAsync(["todos"], server.Fetch(), cancellationToken: TestContext.CancellationToken);   // nobody observes the entry
 
         await client.InvalidateAsync(["todos"]);                   // a mutation landed meanwhile
         server.Respond(0, "before the mutation");
-        Assert.AreEqual("before the mutation", await read.WaitAsync(TimeSpan.FromSeconds(5)), "the read gets the answer it asked for");
+        Assert.AreEqual("before the mutation", await read.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken), "the read gets the answer it asked for");
 
         using var view = client.Query(["todos"], server.Fetch(), new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(5) });
         Assert.AreEqual(2, server.Calls, "that answer predates the invalidation, so it is not fresh");
@@ -209,10 +209,10 @@ public class ReviewRegressionTests
         client.SetQueryData<string>(["me"], "ada");
         await client.InvalidateAsync(["me"]);   // stale, so the read fetches
 
-        var read = client.FetchAsync(["me"], server.Fetch());
+        var read = client.FetchAsync(["me"], server.Fetch(), cancellationToken: TestContext.CancellationToken);
         client.Clear();                          // sign-out
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => read.WaitAsync(TimeSpan.FromSeconds(5)));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => read.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -229,7 +229,7 @@ public class ReviewRegressionTests
         var invalidation = interactive.InvalidateAsync(["quote"]);
         Assert.AreEqual(1, server.Calls, "the entry never had a fetch of its own; its observer's is used");
         server.Respond(0, "fresh");
-        await invalidation.WaitAsync(TimeSpan.FromSeconds(5));
+        await invalidation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual("fresh", quote.Data);
     }
 
@@ -251,8 +251,8 @@ public class ReviewRegressionTests
     {
         var (client, clock, _) = Client(o => o.GcTime = TimeSpan.FromSeconds(30));
         var fresh = new BlexQueryOptions { StaleTime = TimeSpan.FromMinutes(5) };
-        await client.FetchAsync<int>(["n"], _ => Task.FromResult(1), fresh);
-        await client.FetchAsync<int>(["n"], _ => Task.FromResult(2), fresh);   // a fresh hit
+        await client.FetchAsync<int>(["n"], _ => Task.FromResult(1), fresh, TestContext.CancellationToken);
+        await client.FetchAsync<int>(["n"], _ => Task.FromResult(2), fresh, TestContext.CancellationToken);   // a fresh hit
 
         clock.Advance(TimeSpan.FromSeconds(30));
 
@@ -302,7 +302,7 @@ public class ReviewRegressionTests
 
         var (client, _, _) = Client();
         using var query = client.Query<int>(["telemetry"], _ => Task.FromResult(7));
-        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(7, query.Data);
         Assert.IsFalse(query.IsFetching, "the entry settled despite the listener");
     }
@@ -313,11 +313,11 @@ public class ReviewRegressionTests
         var server = new FakeServer<string>();
         using var observer = client.Query(["n"], server.Fetch());   // fetch 0 in flight, observed
 
-        var read = client.FetchAsync(["n"], server.Fetch());          // joins fetch 0
+        var read = client.FetchAsync(["n"], server.Fetch(), cancellationToken: TestContext.CancellationToken);          // joins fetch 0
         var invalidation = client.InvalidateAsync(["n"]);             // supersedes it with fetch 1
 
         server.Respond(1, "new");
-        Assert.AreEqual("new", await read.WaitAsync(TimeSpan.FromSeconds(5)), "neither stale data nor a spurious cancellation");
+        Assert.AreEqual("new", await read.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken), "neither stale data nor a spurious cancellation");
         await invalidation;
     }
 
@@ -330,11 +330,11 @@ public class ReviewRegressionTests
         var settled = query.WhenSettledAsync();
 
         _ = query.RefetchAsync();
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.IsFalse(settled.IsCompleted, "the superseded fetch's cancellation is not a settlement");
 
         server.Respond(1, "latest");
-        await settled.WaitAsync(TimeSpan.FromSeconds(5));
+        await settled.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual("latest", query.Data);
     }
 
@@ -407,7 +407,7 @@ public class ReviewRegressionTests
     }
 
     [TestMethod]
-    public void A_failed_fetch_for_a_new_key_does_not_hide_behind_the_previous_keys_data()
+    public async Task A_failed_fetch_for_a_new_key_does_not_hide_behind_the_previous_keys_data()
     {
         var (client, _, _) = Client();
         var server = new FakeServer<string>();
@@ -415,7 +415,7 @@ public class ReviewRegressionTests
         Assert.IsTrue(next.IsPlaceholderData);
 
         server.Fail(0, new InvalidOperationException("down"));
-        next.WhenSettledAsync().Wait(TimeSpan.FromSeconds(5));
+        await next.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsTrue(next.IsError);
         Assert.IsFalse(next.HasData);
@@ -452,4 +452,6 @@ public class ReviewRegressionTests
         clock.Advance(TimeSpan.FromSeconds(10));
         Assert.IsFalse(client.TryGetQueryData<string>(["n"], out _));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

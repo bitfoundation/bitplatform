@@ -80,6 +80,6 @@ public sealed class UseBitBsqliteTests
         // EF Core 10's query translator does this before compiling any query. On WASM there is
         // no e_sqlite3; UseBitBsqlite installs a PCL stub so the call does not throw.
         var version = new Version(new Microsoft.Data.Sqlite.SqliteConnection().ServerVersion);
-        Assert.IsTrue(version >= new Version(3, 38));
+        Assert.IsGreaterThanOrEqualTo(new Version(3, 38), version);
     }
 }

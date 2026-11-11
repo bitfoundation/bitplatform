@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 /// A logger factory that keeps the errors it is handed, so a test can tell a service that reported a mistake
 /// apart from one that swallowed it.
 /// </summary>
-public class TestModalLoggerFactory : ILoggerFactory
+internal class TestModalLoggerFactory : ILoggerFactory
 {
     public List<string> Errors { get; } = [];
 

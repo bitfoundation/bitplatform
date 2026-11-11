@@ -54,8 +54,8 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
         }
 
         // Guards the discovery itself: a reflection change that found nothing would otherwise pass vacuously.
-        Assert.IsTrue(tested > 100, $"Only {tested} Classes/Styles parameters were discovered.");
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsGreaterThan(100, tested, $"Only {tested} Classes/Styles parameters were discovered.");
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     // A type whose base sits in an assembly the tests do not ship (Newtonsoft.Json, behind a chart type) cannot be
@@ -212,7 +212,7 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
 
         var tabs = component.FindAll(".bit-pvti");
 
-        Assert.AreEqual(2, tabs.Count);
+        Assert.HasCount(2, tabs);
         Assert.IsTrue(tabs.All(t => t.ClassList.Contains("second") && t.ClassList.Contains("first") is false));
         Assert.IsTrue(tabs[0].ClassList.Contains("second-selected"));
     }

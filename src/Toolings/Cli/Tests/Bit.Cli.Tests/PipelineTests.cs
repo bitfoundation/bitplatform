@@ -14,7 +14,7 @@ public class PipelineTests
     {
         var scan = await new GitHubWorkflows(TemplateDirectory()).ScanAsync(CancellationToken.None);
 
-        CollectionAssert.AreEquivalent(new[] { "Production", "Test" }, scan.Environments.ToArray(), $"{string.Join(", ", scan.Secrets.Select(s => $"{s.Environment}:{s.Name}"))} {string.Join(" | ", scan.Notes)}");
+        Assert.AreSequenceEqual(new[] { "Production", "Test" }, scan.Environments.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{string.Join(", ", scan.Secrets.Select(s => $"{s.Environment}:{s.Name}"))} {string.Join(" | ", scan.Notes)}");
 
         foreach (var environment in scan.Environments)
         {
@@ -22,11 +22,11 @@ public class PipelineTests
 
             foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
             {
-                CollectionAssert.Contains(names, name, $"{environment}: {string.Join(", ", names)}");
+                Assert.Contains(name, names, $"{environment}: {string.Join(", ", names)}");
             }
         }
 
-        Assert.IsFalse(scan.Secrets.Any(s => s.Name is "GITHUB_TOKEN"));
+        Assert.DoesNotContain(s => s.Name is "GITHUB_TOKEN", scan.Secrets);
         Assert.IsEmpty(scan.Notes, string.Join(Environment.NewLine, scan.Notes));
     }
 
@@ -93,15 +93,15 @@ public class PipelineTests
 
         var found = scan.Secrets.Select(s => $"{s.Environment ?? "repository"}:{s.Name}").ToList();
 
-        CollectionAssert.AreEquivalent(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "Production:TOKEN", "Production:REMOTE_ONLY", "Staging:TOKEN",
             "repository:TOKEN", "repository:CALLER_TOKEN", "repository:INDEXED", "repository:WORKFLOW_WIDE"
-        }, found, string.Join(", ", found));
+        }, found, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, string.Join(", ", found));
 
-        CollectionAssert.AreEqual(new[] { "contoso/pipelines/.github/workflows/shared.yml@v1" }, fetched);
-        Assert.IsTrue(scan.Notes.Any(n => n.Contains("broken.yml", StringComparison.Ordinal)), string.Join(Environment.NewLine, scan.Notes));
-        Assert.IsTrue(scan.Notes.Any(n => n.Contains("github.ref_name", StringComparison.Ordinal)), string.Join(Environment.NewLine, scan.Notes));
+        Assert.AreSequenceEqual(new[] { "contoso/pipelines/.github/workflows/shared.yml@v1" }, fetched);
+        Assert.Contains(n => n.Contains("broken.yml", StringComparison.Ordinal), scan.Notes, string.Join(Environment.NewLine, scan.Notes));
+        Assert.Contains(n => n.Contains("github.ref_name", StringComparison.Ordinal), scan.Notes, string.Join(Environment.NewLine, scan.Notes));
     }
 
     [TestMethod]
@@ -131,13 +131,13 @@ public class PipelineTests
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
 
-        Assert.IsTrue(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) == "api -X PUT repos/contoso/shop/environments/Production --silent"), host.Output);
+        Assert.Contains(c => string.Join(' ', c.Arguments) == "api -X PUT repos/contoso/shop/environments/Production --silent", host.Runner.Calls, host.Output);
 
         var stored = Stored(host);
-        CollectionAssert.AreEquivalent(new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "APP_CERTIFICATE", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "ANDROID_RELEASE_KEYSTORE_PASSWORD", "ANDROID_RELEASE_SIGNING_PASSWORD" }, stored.Keys.ToArray(), host.Output);
+        Assert.AreSequenceEqual(new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "APP_CERTIFICATE", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "ANDROID_RELEASE_KEYSTORE_PASSWORD", "ANDROID_RELEASE_SIGNING_PASSWORD" }, stored.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, host.Output);
 
         using var certificate = X509Certificate2.CreateFromPem(stored["APP_CERTIFICATE"], stored["APP_CERTIFICATE"]);
-        StringAssert.Contains(certificate.Subject, "OU=Production");
+        Assert.Contains("OU=Production", certificate.Subject);
         Assert.IsTrue(certificate.HasPrivateKey);
 
         Assert.AreEqual(stored["ANDROID_RELEASE_KEYSTORE_PASSWORD"], stored["ANDROID_RELEASE_SIGNING_PASSWORD"]);
@@ -148,7 +148,7 @@ public class PipelineTests
         Assert.IsTrue(host.Runner.Calls.All(c => stored.Values.All(v => c.Arguments.Any(a => a.Contains(v, StringComparison.Ordinal)) is false)), "a secret was passed on a command line");
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop", "Contoso.keystore")));
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop-Production", "AppCertificate.key")));
-        StringAssert.Contains(host.FlatOutput, "Skipped DATABASE_CONNECTION_STRING");
+        Assert.Contains("Skipped DATABASE_CONNECTION_STRING", host.FlatOutput);
     }
 
     [TestMethod]
@@ -161,9 +161,9 @@ public class PipelineTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
 
         var stored = Stored(host);
-        CollectionAssert.AreEquivalent(new[] { "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "REDIS_PERSISTENT_PASSWORD" }, stored.Keys.ToArray(), host.Output);
+        Assert.AreSequenceEqual(new[] { "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "REDIS_PERSISTENT_PASSWORD" }, stored.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, host.Output);
         Assert.IsTrue(stored.Values.All(password => password.Length == 32 && password.All(char.IsAsciiLetterOrDigit)), string.Join(", ", stored.Values));
-        Assert.AreEqual(3, stored.Values.Distinct().Count());
+        Assert.HasCount(3, stored.Values.Distinct());
         Assert.IsFalse(host.FlatOutput.Contains("Skipped SERVERWEB_SETTINGS", StringComparison.Ordinal), host.Output);
         Assert.IsFalse(host.FlatOutput.Contains("Skipped LANDINGPAGE_SETTINGS", StringComparison.Ordinal), host.Output);
     }
@@ -178,9 +178,9 @@ public class PipelineTests
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"));
 
         Assert.IsEmpty(Stored(host));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PUT")));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("DATABASE_CONNECTION_STRING missing"));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("APP_CERTIFICATE_RETIRED not set, optional"));
+        Assert.DoesNotContain(c => c.Arguments.Contains("PUT"), host.Runner.Calls);
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("DATABASE_CONNECTION_STRING missing"), host.FlatOutput);
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("APP_CERTIFICATE_RETIRED not set, optional"), host.FlatOutput);
     }
 
     [TestMethod]
@@ -192,8 +192,8 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"));
 
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVEROPERATIONS_SETTINGS not set, optional"));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("SERVERMANAGEMENT_SETTINGS not set, optional"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("SERVEROPERATIONS_SETTINGS not set, optional"), host.FlatOutput);
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("SERVERMANAGEMENT_SETTINGS not set, optional"), host.FlatOutput);
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class PipelineTests
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
 
-        CollectionAssert.AreEquivalent(new[] { "DATABASE_PASSWORD" }, Stored(host).Keys.ToArray(), host.Output);
+        Assert.AreSequenceEqual(new[] { "DATABASE_PASSWORD" }, Stored(host).Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, host.Output);
         Assert.IsFalse(host.FlatOutput.Contains("Skipped SERVEROPERATIONS_SETTINGS", StringComparison.Ordinal), host.Output);
     }
 
@@ -217,7 +217,7 @@ public class PipelineTests
         host.Runner.On("gh", "secret list --repo contoso/shop --json", 0, "OPENAI__APIKEY\n");
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--check"));
-        Assert.AreEqual(1, System.Text.RegularExpressions.Regex.Matches(host.Output, "OPENAI__APIKEY", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Count, host.Output);
+        Assert.ContainsSingle(System.Text.RegularExpressions.Regex.Matches(host.Output, "OPENAI__APIKEY", System.Text.RegularExpressions.RegexOptions.IgnoreCase), host.Output);
     }
 
     [TestMethod]
@@ -237,7 +237,7 @@ public class PipelineTests
         Assert.AreEqual(old.Pem, stored["APP_CERTIFICATE_RETIRED"]);
         Assert.AreNotEqual(old.Pem, stored["APP_CERTIFICATE"]);
         Assert.AreEqual(stored["APP_CERTIFICATE"], AppCertificates.Read(backup, AppCertificates.ActiveName)!.Pem);
-        Assert.HasCount(1, Directory.GetFiles(backup, "AppCertificate.*.crt"));
+        Assert.ContainsSingle(Directory.GetFiles(backup, "AppCertificate.*.crt"));
     }
 
     [TestMethod]
@@ -271,7 +271,7 @@ public class PipelineTests
 
         var sets = host.Runner.Calls.Where(c => c.Arguments is ["secret", "set", ..]).ToList();
         Assert.HasCount(10, sets, host.Output);
-        Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "POST /v1/certificates"));
+        Assert.ContainsSingle(r => r.Line is "POST /v1/certificates", apple.Requests);
 
         foreach (var environment in new[] { "Production", "Test" })
         {
@@ -282,8 +282,8 @@ public class PipelineTests
             Assert.IsTrue(certificate.HasPrivateKey);
         }
 
-        StringAssert.Contains(host.FlatOutput, "com.contoso.shop App Store");
-        Assert.HasCount(1, Directory.GetFiles(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop"), "com.contoso.shop.*.p12"));
+        Assert.Contains("com.contoso.shop App Store", host.FlatOutput);
+        Assert.ContainsSingle(Directory.GetFiles(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop"), "com.contoso.shop.*.p12"));
     }
 
     [TestMethod]
@@ -295,9 +295,9 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
 
-        StringAssert.Contains(host.FlatOutput, "--yes");
+        Assert.Contains("--yes", host.FlatOutput);
         Assert.IsEmpty(Stored(host));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PUT")));
+        Assert.DoesNotContain(c => c.Arguments.Contains("PUT"), host.Runner.Calls);
     }
 
     [TestMethod]
@@ -309,7 +309,7 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("pipeline", "--yes"));
 
-        StringAssert.Contains(host.Output, $"bit ran this in {host.WorkingDirectory}, answering its prompts on standard input: gh secret set PUBLIC_VAPIDKEY --repo contoso/shop --env Production");
+        Assert.Contains($"bit ran this in {host.WorkingDirectory}, answering its prompts on standard input: gh secret set PUBLIC_VAPIDKEY --repo contoso/shop --env Production", host.Output);
         Assert.IsTrue(Stored(host).Values.All(v => host.Output.Contains(v, StringComparison.Ordinal) is false), host.Output);
     }
 
@@ -324,10 +324,10 @@ public class PipelineTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
-        CollectionAssert.Contains(commands, "api repos/contoso/shop -X PATCH -f pull_request_creation_policy=collaborators_only --silent", host.Output);
-        CollectionAssert.Contains(commands, "api -X PUT repos/contoso/shop/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false --silent", host.Output);
-        Assert.IsFalse(commands.Any(c => c.Contains("fork-pr-contributor-approval", StringComparison.Ordinal)), host.Output);
-        StringAssert.Contains(host.FlatOutput, "Only collaborators can open pull requests");
+        Assert.Contains("api repos/contoso/shop -X PATCH -f pull_request_creation_policy=collaborators_only --silent", commands, host.Output);
+        Assert.Contains("api -X PUT repos/contoso/shop/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false --silent", commands, host.Output);
+        Assert.DoesNotContain(c => c.Contains("fork-pr-contributor-approval", StringComparison.Ordinal), commands, host.Output);
+        Assert.Contains("Only collaborators can open pull requests", host.FlatOutput);
     }
 
     [TestMethod]
@@ -342,8 +342,8 @@ public class PipelineTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         var changes = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).Where(c => c.Contains("PATCH", StringComparison.Ordinal) || c.Contains("PUT", StringComparison.Ordinal)).ToList();
-        CollectionAssert.AreEqual(new[] { "api -X PUT repos/contoso/shop/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors --silent" }, changes, host.Output);
-        StringAssert.Contains(host.FlatOutput, "keep the deploy jobs in a separate private repository");
+        Assert.AreSequenceEqual(new[] { "api -X PUT repos/contoso/shop/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors --silent" }, changes, host.Output);
+        Assert.Contains("keep the deploy jobs in a separate private repository", host.FlatOutput);
     }
 
     [TestMethod]
@@ -356,9 +356,9 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"));
 
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT")));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Pull requests from collaborators only off"));
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Read-only GITHUB_TOKEN that can't approve pull requests on"));
+        Assert.DoesNotContain(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT"), host.Runner.Calls);
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("Pull requests from collaborators only off"), host.FlatOutput);
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("Read-only GITHUB_TOKEN that can't approve pull requests on"), host.FlatOutput);
 
         host.Runner.On("gh", "api repos/contoso/shop --jq", 0, "private\ncollaborators_only\n");
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"));
@@ -372,7 +372,7 @@ public class PipelineTests
         host.Runner.On("gh", "api repos/contoso/shop/actions/permissions/workflow --jq", 1, "HTTP 403");
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"));
-        StringAssert.Contains(host.FlatOutput, "Couldn't read the pull request and Actions settings");
+        Assert.Contains("Couldn't read the pull request and Actions settings", host.FlatOutput);
     }
 
     [TestMethod]
@@ -390,7 +390,7 @@ public class PipelineTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         var changes = host.Runner.Calls.Where(c => c.Arguments.Contains("PUT") || c.Arguments.Contains("POST") || c.Arguments.Contains("PATCH")).ToList();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "api -X PUT repos/contoso/shop/vulnerability-alerts --silent",
             "api -X PUT repos/contoso/shop/environments/Production --input - --silent",
@@ -402,7 +402,7 @@ public class PipelineTests
         Assert.AreEqual(5, body["wait_timer"]!.GetValue<int>());
         Assert.IsTrue(body["prevent_self_review"]!.GetValue<bool>());
         Assert.AreEqual(42, body["reviewers"]![0]!["id"]!.GetValue<int>());
-        StringAssert.Contains(host.FlatOutput, "Production deploys from main only");
+        Assert.Contains("Production deploys from main only", host.FlatOutput);
     }
 
     [TestMethod]
@@ -417,7 +417,7 @@ public class PipelineTests
         host.Runner.On("gh", "api repos/contoso/shop/environments/Production/deployment-branch-policies", 0, "7 branch main\n");
 
         Assert.AreEqual(CliApp.ExitOk, await host.RunAsync("pipeline", "--check"), host.Output);
-        StringAssert.Matches(host.FlatOutput, new System.Text.RegularExpressions.Regex("Production deploys from main only on"));
+        Assert.MatchesRegex(new System.Text.RegularExpressions.Regex("Production deploys from main only on"), host.FlatOutput);
 
         host.Runner.On("gh", "api repos/contoso/shop/environments/Production/deployment-branch-policies", 0, "7 branch main\n8 branch develop\n");
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("pipeline", "--check"), host.Output);
@@ -437,7 +437,7 @@ public class PipelineTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         var changes = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).Where(c => c.Contains("-X", StringComparison.Ordinal)).ToArray();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "api -X PUT repos/contoso/shop/environments/Production --input - --silent",
             "api -X DELETE repos/contoso/shop/environments/Production/deployment-branch-policies/8 --silent",
@@ -469,8 +469,8 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
 
-        StringAssert.Contains(host.FlatOutput, "--yes");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT")));
+        Assert.Contains("--yes", host.FlatOutput);
+        Assert.DoesNotContain(c => c.Arguments.Contains("PATCH") || c.Arguments.Contains("PUT"), host.Runner.Calls);
     }
 
     [TestMethod]
@@ -479,7 +479,7 @@ public class PipelineTests
         using var host = Repository();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("pipeline"));
-        StringAssert.Contains(host.FlatOutput, "no GitHub Actions workflows");
+        Assert.Contains("no GitHub Actions workflows", host.FlatOutput);
     }
 
     private static TestHost Repository(IPrompter? prompter = null)

@@ -79,7 +79,7 @@ public class HistoryRegressionTests(TestContext output)
             }
 
             // The element index and the layer lists must never disagree, whatever the sequence was.
-            Assert.AreEqual(document.ElementCount, document.AllElements.Count());
+            Assert.HasCount(document.ElementCount, document.AllElements);
             foreach (BinkElement e in document.AllElements)
             {
                 Assert.IsTrue(document.ContainsElement(e.Id));
@@ -296,8 +296,8 @@ public class HistoryRegressionTests(TestContext output)
         document.Apply(new BinkBatchOperation(frames, "Move"));
 
         List<int> versions = ReportedVersions(reported!);
-        Assert.AreEqual(3, versions.Count);
-        Assert.AreEqual(versions.Distinct().Count(), versions.Count);
+        Assert.HasCount(3, versions);
+        Assert.HasCount(versions.Distinct().Count(), versions);
         Assert.AreEqual(document.GetElement(stroke.Id).Version, versions[^1]);
     }
 
@@ -323,8 +323,8 @@ public class HistoryRegressionTests(TestContext output)
 
         BinkHistoryEntry entry = history.UndoStack[^1];
         Assert.AreEqual("Move", entry.Label);
-        Assert.AreEqual(2, ((BinkBatchOperation)entry.Forward).Operations.Count);
-        Assert.AreEqual(2, ((BinkBatchOperation)entry.Inverse).Operations.Count);
+        Assert.HasCount(2, ((BinkBatchOperation)entry.Forward).Operations);
+        Assert.HasCount(2, ((BinkBatchOperation)entry.Inverse).Operations);
 
         Assert.IsTrue(history.Undo());
         Assert.AreEqual(Matrix3x2.Identity, document.GetElement(a.Id).Transform);
@@ -380,7 +380,7 @@ public class HistoryRegressionTests(TestContext output)
         Assert.IsTrue(doomed.All(id => !document.ContainsElement(id)));
 
         Assert.IsTrue(history.Undo());
-        CollectionAssert.AreEqual(before, document.AllElements.Select(e => e.Id).ToList());
+        Assert.AreSequenceEqual(before, document.AllElements.Select(e => e.Id).ToList());
         foreach (Guid id in first) Assert.AreEqual(document.Layers[0].Id, document.GetLayerOf(id)!.Id);
         foreach (Guid id in other) Assert.AreEqual(second.Id, document.GetLayerOf(id)!.Id);
     }
@@ -428,7 +428,7 @@ public class HistoryRegressionTests(TestContext output)
             Assert.AreEqual(expected.IndexOf(probe), document.Layers[0].IndexOf(probe));
             Assert.AreEqual(-1, document.Layers[0].IndexOf(Guid.NewGuid()));
         }
-        CollectionAssert.AreEqual(expected, document.Layers[0].Elements.Select(e => e.Id).ToList());
+        Assert.AreSequenceEqual(expected, document.Layers[0].Elements.Select(e => e.Id).ToList());
         foreach (Guid id in expected) Assert.AreEqual(expected.IndexOf(id), document.Layers[0].IndexOf(id));
     }
 

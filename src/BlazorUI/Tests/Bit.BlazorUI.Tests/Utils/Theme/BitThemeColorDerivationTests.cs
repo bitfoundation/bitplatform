@@ -43,19 +43,19 @@ public sealed class BitThemeColorDerivationTests
         // with the null/empty guards and with BitThemeColorContrast's validation. The previous
         // behavior fabricated an all-white palette, which masked the mistake and overrode
         // stylesheet defaults; the variants must stay untouched instead.
-        Assert.IsNull(v.Main,        "Main");
-        Assert.IsNull(v.Dark,        "Dark");
-        Assert.IsNull(v.Light,       "Light");
-        Assert.IsNull(v.Text,        "Text");
-        Assert.IsNull(v.MainHover,   "MainHover");
-        Assert.IsNull(v.MainActive,  "MainActive");
-        Assert.IsNull(v.DarkHover,   "DarkHover");
-        Assert.IsNull(v.DarkActive,  "DarkActive");
-        Assert.IsNull(v.LightHover,  "LightHover");
+        Assert.IsNull(v.Main, "Main");
+        Assert.IsNull(v.Dark, "Dark");
+        Assert.IsNull(v.Light, "Light");
+        Assert.IsNull(v.Text, "Text");
+        Assert.IsNull(v.MainHover, "MainHover");
+        Assert.IsNull(v.MainActive, "MainActive");
+        Assert.IsNull(v.DarkHover, "DarkHover");
+        Assert.IsNull(v.DarkActive, "DarkActive");
+        Assert.IsNull(v.LightHover, "LightHover");
         Assert.IsNull(v.LightActive, "LightActive");
-        Assert.IsNull(v.Disabled,     "Disabled");
+        Assert.IsNull(v.Disabled, "Disabled");
         Assert.IsNull(v.DisabledText, "DisabledText");
-        Assert.IsNull(v.Focus,        "Focus");
+        Assert.IsNull(v.Focus, "Focus");
     }
 
     [TestMethod]
@@ -80,19 +80,19 @@ public sealed class BitThemeColorDerivationTests
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
 
-        Assert.IsNotNull(v.Main,        "Main");
-        Assert.IsNotNull(v.MainHover,   "MainHover");
-        Assert.IsNotNull(v.MainActive,  "MainActive");
-        Assert.IsNotNull(v.Dark,        "Dark");
-        Assert.IsNotNull(v.DarkHover,   "DarkHover");
-        Assert.IsNotNull(v.DarkActive,  "DarkActive");
-        Assert.IsNotNull(v.Light,       "Light");
-        Assert.IsNotNull(v.LightHover,  "LightHover");
+        Assert.IsNotNull(v.Main, "Main");
+        Assert.IsNotNull(v.MainHover, "MainHover");
+        Assert.IsNotNull(v.MainActive, "MainActive");
+        Assert.IsNotNull(v.Dark, "Dark");
+        Assert.IsNotNull(v.DarkHover, "DarkHover");
+        Assert.IsNotNull(v.DarkActive, "DarkActive");
+        Assert.IsNotNull(v.Light, "Light");
+        Assert.IsNotNull(v.LightHover, "LightHover");
         Assert.IsNotNull(v.LightActive, "LightActive");
-        Assert.IsNotNull(v.Text,        "Text");
-        Assert.IsNotNull(v.Disabled,     "Disabled");
+        Assert.IsNotNull(v.Text, "Text");
+        Assert.IsNotNull(v.Disabled, "Disabled");
         Assert.IsNotNull(v.DisabledText, "DisabledText");
-        Assert.IsNotNull(v.Focus,        "Focus");
+        Assert.IsNotNull(v.Focus, "Focus");
     }
 
     // ── Pre-set values are never overwritten ───────────────────────────────────
@@ -270,14 +270,14 @@ public sealed class BitThemeColorDerivationTests
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
 
-        var mainLum   = Luminance(v.Main!);
-        var darkLum   = Luminance(v.Dark!);
+        var mainLum = Luminance(v.Main!);
+        var darkLum = Luminance(v.Dark!);
         var dHoverLum = Luminance(v.DarkHover!);
-        var dActLum   = Luminance(v.DarkActive!);
+        var dActLum = Luminance(v.DarkActive!);
 
-        Assert.IsTrue(darkLum   < mainLum, "Dark should be darker than Main");
-        Assert.IsTrue(dHoverLum < darkLum, "DarkHover should be darker than Dark");
-        Assert.IsTrue(dActLum   < dHoverLum, "DarkActive should be darker than DarkHover");
+        Assert.IsLessThan(mainLum, darkLum, "Dark should be darker than Main");
+        Assert.IsLessThan(darkLum, dHoverLum, "DarkHover should be darker than Dark");
+        Assert.IsLessThan(dHoverLum, dActLum, "DarkActive should be darker than DarkHover");
     }
 
     // ── Light variants are lighter than Main ──────────────────────────────────
@@ -288,20 +288,20 @@ public sealed class BitThemeColorDerivationTests
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#3060A0");
 
-        var mainLum      = Luminance(v.Main!);
-        var lightLum     = Luminance(v.Light!);
-        var lHoverLum    = Luminance(v.LightHover!);
-        var lActiveLum   = Luminance(v.LightActive!);
+        var mainLum = Luminance(v.Main!);
+        var lightLum = Luminance(v.Light!);
+        var lHoverLum = Luminance(v.LightHover!);
+        var lActiveLum = Luminance(v.LightActive!);
 
         // The light family is a tinted background: Light is the palest step and its hover/active
         // states step BACK toward Main (a tinted surface darkens on interaction) - matching the
         // packaged Fluent palette (pri-light #85C1FF → hover #74B4F6 → active #66A9EE). All three
         // stay lighter than Main.
-        Assert.IsTrue(lightLum   > mainLum,   "Light should be lighter than Main");
-        Assert.IsTrue(lHoverLum  > mainLum,   "LightHover should be lighter than Main");
-        Assert.IsTrue(lActiveLum > mainLum,   "LightActive should be lighter than Main");
-        Assert.IsTrue(lightLum   > lHoverLum,  "Light should be lighter than LightHover");
-        Assert.IsTrue(lHoverLum  > lActiveLum, "LightHover should be lighter than LightActive");
+        Assert.IsGreaterThan(mainLum, lightLum, "Light should be lighter than Main");
+        Assert.IsGreaterThan(mainLum, lHoverLum, "LightHover should be lighter than Main");
+        Assert.IsGreaterThan(mainLum, lActiveLum, "LightActive should be lighter than Main");
+        Assert.IsGreaterThan(lHoverLum, lightLum, "Light should be lighter than LightHover");
+        Assert.IsGreaterThan(lActiveLum, lHoverLum, "LightHover should be lighter than LightActive");
     }
 
     // ── Light steps are distinct even for high-brightness colors ──────────────
@@ -315,8 +315,8 @@ public sealed class BitThemeColorDerivationTests
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#E8E8E8"); // near-white grey
 
         // All three light variants must differ from Main.
-        Assert.AreNotEqual(v.Main, v.Light,       "Light must differ from Main for high-v color");
-        Assert.AreNotEqual(v.Main, v.LightHover,  "LightHover must differ from Main for high-v color");
+        Assert.AreNotEqual(v.Main, v.Light, "Light must differ from Main for high-v color");
+        Assert.AreNotEqual(v.Main, v.LightHover, "LightHover must differ from Main for high-v color");
         Assert.AreNotEqual(v.Main, v.LightActive, "LightActive must differ from Main for high-v color");
     }
 
@@ -326,9 +326,9 @@ public sealed class BitThemeColorDerivationTests
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#B0C8E0"); // mid-high brightness
 
-        Assert.AreNotEqual(v.Light,      v.LightHover,  "Light and LightHover must differ");
+        Assert.AreNotEqual(v.Light, v.LightHover, "Light and LightHover must differ");
         Assert.AreNotEqual(v.LightHover, v.LightActive, "LightHover and LightActive must differ");
-        Assert.AreNotEqual(v.Light,      v.LightActive, "Light and LightActive must differ");
+        Assert.AreNotEqual(v.Light, v.LightActive, "Light and LightActive must differ");
     }
 
     [TestMethod]
@@ -340,7 +340,7 @@ public sealed class BitThemeColorDerivationTests
         var v = new BitThemeColorVariants();
         BitThemeColorDerivation.FillColorRoleFromMain(v, "#D0D0D0");
 
-        Assert.AreNotEqual(v.Light,      v.LightHover,  "Light and LightHover must differ at high brightness");
+        Assert.AreNotEqual(v.Light, v.LightHover, "Light and LightHover must differ at high brightness");
         Assert.AreNotEqual(v.LightHover, v.LightActive, "LightHover and LightActive must differ at high brightness");
     }
 
@@ -443,9 +443,8 @@ public sealed class BitThemeColorDerivationTests
             {
                 var (lighterName, lighterHex) = ordered[i - 1];
                 var (darkerName, darkerHex) = ordered[i];
-                Assert.IsTrue(
-                    OklabLightness(lighterHex) > OklabLightness(darkerHex),
-                    $"{lighterName} ({lighterHex}) must be perceptually lighter than {darkerName} ({darkerHex}) for seed {seed}");
+                Assert.IsGreaterThan(
+OklabLightness(darkerHex), OklabLightness(lighterHex), $"{lighterName} ({lighterHex}) must be perceptually lighter than {darkerName} ({darkerHex}) for seed {seed}");
             }
         }
     }
@@ -482,7 +481,7 @@ public sealed class BitThemeColorDerivationTests
 
                 var delta = Math.Abs(hue - seedHue);
                 if (delta > 180) delta = 360 - delta;
-                Assert.IsTrue(delta < 4.0, $"{name} ({hex}) hue drifted {delta:F1}° from seed {seed}");
+                Assert.IsLessThan(4.0, delta, $"{name} ({hex}) hue drifted {delta:F1}° from seed {seed}");
             }
         }
     }
@@ -501,21 +500,20 @@ public sealed class BitThemeColorDerivationTests
         const double floor = 3.0;
 
         for (var r = 0; r <= 0xFF; r += 0x33)
-        for (var g = 0; g <= 0xFF; g += 0x33)
-        for (var b = 0; b <= 0xFF; b += 0x33)
-        {
-            var seed = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
-            var v = new BitThemeColorVariants();
-            BitThemeColorDerivation.FillColorRoleFromMain(v, seed);
+            for (var g = 0; g <= 0xFF; g += 0x33)
+                for (var b = 0; b <= 0xFF; b += 0x33)
+                {
+                    var seed = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
+                    var v = new BitThemeColorVariants();
+                    BitThemeColorDerivation.FillColorRoleFromMain(v, seed);
 
-            foreach (var (name, hex) in new[] { ("Main", v.Main!), ("MainHover", v.MainHover!), ("MainActive", v.MainActive!) })
-            {
-                var ratio = BitThemeColorContrast.GetContrastRatio(v.Text!, hex);
-                Assert.IsTrue(
-                    ratio >= floor,
-                    $"Text {v.Text} on {name} {hex} (seed {seed}) is {ratio:F2}:1, below the {floor}:1 floor");
-            }
-        }
+                    foreach (var (name, hex) in new[] { ("Main", v.Main!), ("MainHover", v.MainHover!), ("MainActive", v.MainActive!) })
+                    {
+                        var ratio = BitThemeColorContrast.GetContrastRatio(v.Text!, hex);
+                        Assert.IsGreaterThanOrEqualTo(
+        floor, ratio, $"Text {v.Text} on {name} {hex} (seed {seed}) is {ratio:F2}:1, below the {floor}:1 floor");
+                    }
+                }
     }
 
     // ── Dark scheme ───────────────────────────────────────────────────────────
@@ -563,16 +561,16 @@ public sealed class BitThemeColorDerivationTests
 
             var main = OklabLightness(v.Main!);
 
-            Assert.IsTrue(OklabLightness(v.Dark!) < OklabLightness(v.DarkHover!), $"Dark < DarkHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.DarkHover!) < OklabLightness(v.DarkActive!), $"DarkHover < DarkActive for {seed}");
-            Assert.IsTrue(OklabLightness(v.DarkActive!) < main, $"DarkActive < Main for {seed}");
-            Assert.IsTrue(main < OklabLightness(v.MainHover!), $"Main < MainHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.MainHover!) < OklabLightness(v.MainActive!), $"MainHover < MainActive for {seed}");
-            Assert.IsTrue(OklabLightness(v.MainActive!) < OklabLightness(v.Light!), $"MainActive < Light for {seed}");
-            Assert.IsTrue(OklabLightness(v.Light!) < OklabLightness(v.LightHover!), $"Light < LightHover for {seed}");
-            Assert.IsTrue(OklabLightness(v.LightHover!) < OklabLightness(v.LightActive!), $"LightHover < LightActive for {seed}");
-            Assert.IsTrue(OklabLightness(v.Disabled!) < main, $"Disabled < Main for {seed}");
-            Assert.IsTrue(OklabLightness(v.DisabledText!) > OklabLightness(v.Disabled!), $"DisabledText > Disabled for {seed}");
+            Assert.IsLessThan(OklabLightness(v.DarkHover!), OklabLightness(v.Dark!), $"Dark < DarkHover for {seed}");
+            Assert.IsLessThan(OklabLightness(v.DarkActive!), OklabLightness(v.DarkHover!), $"DarkHover < DarkActive for {seed}");
+            Assert.IsLessThan(main, OklabLightness(v.DarkActive!), $"DarkActive < Main for {seed}");
+            Assert.IsLessThan(OklabLightness(v.MainHover!), main, $"Main < MainHover for {seed}");
+            Assert.IsLessThan(OklabLightness(v.MainActive!), OklabLightness(v.MainHover!), $"MainHover < MainActive for {seed}");
+            Assert.IsLessThan(OklabLightness(v.Light!), OklabLightness(v.MainActive!), $"MainActive < Light for {seed}");
+            Assert.IsLessThan(OklabLightness(v.LightHover!), OklabLightness(v.Light!), $"Light < LightHover for {seed}");
+            Assert.IsLessThan(OklabLightness(v.LightActive!), OklabLightness(v.LightHover!), $"LightHover < LightActive for {seed}");
+            Assert.IsLessThan(main, OklabLightness(v.Disabled!), $"Disabled < Main for {seed}");
+            Assert.IsGreaterThan(OklabLightness(v.Disabled!), OklabLightness(v.DisabledText!), $"DisabledText > Disabled for {seed}");
         }
     }
 
@@ -583,21 +581,20 @@ public sealed class BitThemeColorDerivationTests
         const double floor = 3.0;
 
         for (var r = 0; r <= 0xFF; r += 0x33)
-        for (var g = 0; g <= 0xFF; g += 0x33)
-        for (var b = 0; b <= 0xFF; b += 0x33)
-        {
-            var seed = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
-            var v = new BitThemeColorVariants();
-            BitThemeColorDerivation.FillColorRoleFromMain(v, seed, BitThemeColorScheme.Dark);
+            for (var g = 0; g <= 0xFF; g += 0x33)
+                for (var b = 0; b <= 0xFF; b += 0x33)
+                {
+                    var seed = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
+                    var v = new BitThemeColorVariants();
+                    BitThemeColorDerivation.FillColorRoleFromMain(v, seed, BitThemeColorScheme.Dark);
 
-            foreach (var (name, hex) in new[] { ("Main", v.Main!), ("MainHover", v.MainHover!), ("MainActive", v.MainActive!) })
-            {
-                var ratio = BitThemeColorContrast.GetContrastRatio(v.Text!, hex);
-                Assert.IsTrue(
-                    ratio >= floor,
-                    $"Text {v.Text} on {name} {hex} (dark scheme, seed {seed}) is {ratio:F2}:1, below the {floor}:1 floor");
-            }
-        }
+                    foreach (var (name, hex) in new[] { ("Main", v.Main!), ("MainHover", v.MainHover!), ("MainActive", v.MainActive!) })
+                    {
+                        var ratio = BitThemeColorContrast.GetContrastRatio(v.Text!, hex);
+                        Assert.IsGreaterThanOrEqualTo(
+        floor, ratio, $"Text {v.Text} on {name} {hex} (dark scheme, seed {seed}) is {ratio:F2}:1, below the {floor}:1 floor");
+                    }
+                }
     }
 
     // ── Calibration against the packaged palettes ─────────────────────────────
@@ -646,8 +643,7 @@ public sealed class BitThemeColorDerivationTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), mismatches,
-            $"{paletteFile} disabled colors drifted from BitThemeColorDerivation: {string.Join("; ", mismatches)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), mismatches, $"{paletteFile} disabled colors drifted from BitThemeColorDerivation: {string.Join("; ", mismatches)}");
     }
 
     // ── Whitespace trimming ───────────────────────────────────────────────────

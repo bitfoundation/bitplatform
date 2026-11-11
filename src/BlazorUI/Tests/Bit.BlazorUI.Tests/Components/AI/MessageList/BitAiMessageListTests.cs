@@ -102,7 +102,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var component = RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, conversation));
 
-        Assert.HasCount(1, component.FindAll("article"));
+        Assert.ContainsSingle(component.FindAll("article"));
 
         component.Render(p => p.Add(c => c.HideSystemMessages, false));
 
@@ -126,8 +126,8 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var regenerate = component.FindAll("button[title='Regenerate']");
 
-        Assert.HasCount(1, regenerate);
-        StringAssert.Contains(regenerate[0].Closest("article")!.TextContent, "second reply");
+        Assert.ContainsSingle(regenerate);
+        Assert.Contains("second reply", regenerate[0].Closest("article")!.TextContent);
 
         await session.DisposeAsync();
     }
@@ -194,7 +194,7 @@ public class BitAiMessageListTests : BitAiTestBase
         await Task.Run(() =>
         {
             for (var i = 0; i < 20; i++) conversation.AddMessage(BitAiRole.User, $"message {i}");
-        });
+        }, TestContext.CancellationToken);
 
         component.WaitForAssertion(() => Assert.HasCount(21, component.FindAll("article.bit-aicms")));
     }
@@ -216,7 +216,7 @@ public class BitAiMessageListTests : BitAiTestBase
         component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll("article.bit-aicms")));
         var after = component.FindComponents<BitAiChatMessage>().Single(c => c.Instance.Message == third).Instance;
         Assert.AreSame(before, after);
-        Assert.IsTrue(component.FindComponents<BitAiChatMessage>().Any(c => c.Instance.Message == first));
+        Assert.Contains(c => c.Instance.Message == first, component.FindComponents<BitAiChatMessage>());
     }
 
     // The options are cascaded rather than registered: the services are already read by the time a test runs.
@@ -254,7 +254,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var component = RenderWithThreshold(conversation, 3);
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 2), Drawn(component));
 
         // The script reads how many older messages are left out, to ask for them as the reader scrolls up.
         Assert.AreEqual("2", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old"));
@@ -268,7 +268,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var component = RenderWithThreshold(conversation, 3);
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 0), Drawn(component));
         Assert.IsFalse(component.Find(".bit-aimsl").HasAttribute("data-bit-aimsl-old"));
     }
 
@@ -284,7 +284,7 @@ public class BitAiMessageListTests : BitAiTestBase
         var list = component.FindComponent<BitAiMessageList>();
         var root = () => component.Find(".bit-aimsl");
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 5), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 5), Drawn(component));
         Assert.AreEqual("5", root().GetAttribute("data-bit-aimsl-old"));
 
         // The header is above the first message, so it waits for that one to be drawn.
@@ -292,20 +292,20 @@ public class BitAiMessageListTests : BitAiTestBase
 
         await list.InvokeAsync(() => list.Instance._OnStartReached());
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 3), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 3), Drawn(component));
         Assert.AreEqual("3", root().GetAttribute("data-bit-aimsl-old"));
 
         await list.InvokeAsync(() => list.Instance._OnStartReached());
         await list.InvokeAsync(() => list.Instance._OnStartReached());
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 0), Drawn(component));
         Assert.IsFalse(root().HasAttribute("data-bit-aimsl-old"));
         Assert.IsTrue(component.Find(".bit-aimsl-con").Children.First().ClassList.Contains("head"));
 
         // At the start there is nothing more to draw.
         await list.InvokeAsync(() => list.Instance._OnStartReached());
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 0), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 0), Drawn(component));
     }
 
     [TestMethod]
@@ -321,16 +321,16 @@ public class BitAiMessageListTests : BitAiTestBase
         await list.InvokeAsync(() => list.Instance._OnStartReached());
         await list.InvokeAsync(() => list.Instance._OnStartReached());
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 1), Drawn(component));
 
         // A message arriving while the reader is up there keeps every page they scrolled through.
         messages.Add(conversation.AddMessage(BitAiRole.User, "message 9"));
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(IdsFrom(messages, 1), Drawn(component)));
 
         await list.InvokeAsync(() => list.Instance._OnPinnedChange(true));
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 6), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 6), Drawn(component));
         Assert.AreEqual("6", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old"));
     }
 
@@ -343,18 +343,18 @@ public class BitAiMessageListTests : BitAiTestBase
         // A tail of four, and a page of two.
         var component = RenderWithThreshold(conversation, 4);
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 2), Drawn(component));
 
         // The messages drawn above the tail are let go of only once more than a page of them is: a tail too short to
         // fill the view, which the script extends at once, is not let go of and drawn again with every message.
         messages.Add(conversation.AddMessage(BitAiRole.User, "message 6"));
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(IdsFrom(messages, 2), Drawn(component)));
 
         messages.Add(conversation.AddMessage(BitAiRole.User, "message 7"));
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(IdsFrom(messages, 2), Drawn(component)));
 
         messages.Add(conversation.AddMessage(BitAiRole.User, "message 8"));
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(IdsFrom(messages, 5), Drawn(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(IdsFrom(messages, 5), Drawn(component)));
     }
 
     [TestMethod]
@@ -375,7 +375,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         await list.InvokeAsync(() => list.Instance._OnStartReached());
 
-        CollectionAssert.AreEqual(IdsFrom(messages, 1), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 1), Drawn(component));
         Assert.AreSame(newest, ComponentOf(component, messages[4]));
         Assert.AreSame(before, ComponentOf(component, messages[3]));
     }
@@ -392,12 +392,12 @@ public class BitAiMessageListTests : BitAiTestBase
         conversation.RemoveMessage(messages[0].MessageId);
 
         component.WaitForAssertion(() => Assert.AreEqual("1", component.Find(".bit-aimsl").GetAttribute("data-bit-aimsl-old")));
-        CollectionAssert.AreEqual(IdsFrom(messages, 2), Drawn(component));
+        Assert.AreSequenceEqual(IdsFrom(messages, 2), Drawn(component));
 
         // One of the tail going brings an older one in, so the tail stays as long as it is.
         conversation.RemoveMessage(messages[4].MessageId);
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { messages[1].MessageId, messages[2].MessageId, messages[3].MessageId }, Drawn(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { messages[1].MessageId, messages[2].MessageId, messages[3].MessageId }, Drawn(component)));
         Assert.IsFalse(component.Find(".bit-aimsl").HasAttribute("data-bit-aimsl-old"));
     }
 
@@ -415,8 +415,8 @@ public class BitAiMessageListTests : BitAiTestBase
         var articles = component.FindAll("article.bit-aicms");
 
         Assert.HasCount(3, articles);
-        StringAssert.Contains(articles[0].TextContent, "message 2");
-        StringAssert.Contains(articles[^1].TextContent, "message 4");
+        Assert.Contains("message 2", articles[0].TextContent);
+        Assert.Contains("message 4", articles[^1].TextContent);
     }
 
     [TestMethod]
@@ -431,7 +431,7 @@ public class BitAiMessageListTests : BitAiTestBase
         // Named by the id the script keeps the list's observer by, so a later scroll takes the observer back to pinned too.
         var scroll = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.scrollToBottom");
         Assert.AreEqual(component.Instance.UniqueId, scroll.Arguments[0]);
-        Assert.AreEqual(false, scroll.Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(scroll.Arguments[2]));
     }
 
     [TestMethod]
@@ -451,7 +451,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         Assert.IsGreaterThanOrEqualTo(0, scroll);
         Assert.IsGreaterThan(scroll, observe);
-        Assert.AreEqual(1, calls.Count(c => c == "BitBlazorUI.AiMessageList.observe"));
+        Assert.ContainsSingle(c => c == "BitBlazorUI.AiMessageList.observe", calls);
     }
 
     [TestMethod]
@@ -464,7 +464,7 @@ public class BitAiMessageListTests : BitAiTestBase
             .AddChildContent<BitAiMessageList>(list => list.Add(c => c.Conversation, conversation)));
 
         var observe = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.observe");
-        Assert.AreEqual(false, observe.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(observe.Arguments[3]));
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.AiMessageList.setAutoScroll");
 
         // The options changing while the list is open reach the script, once per change of the option.
@@ -473,7 +473,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var set = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.setAutoScroll");
         Assert.AreEqual(provider.FindComponent<BitAiMessageList>().Instance.UniqueId, set.Arguments[0]);
-        Assert.AreEqual(true, set.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(set.Arguments[1]));
     }
 
     [TestMethod]
@@ -481,7 +481,7 @@ public class BitAiMessageListTests : BitAiTestBase
     {
         RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, new BitAiConversation()));
 
-        Assert.AreEqual(true, Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.observe").Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.VerifyInvoke("BitBlazorUI.AiMessageList.observe").Arguments[3]));
     }
 
     [TestMethod]
@@ -503,13 +503,13 @@ public class BitAiMessageListTests : BitAiTestBase
         component.WaitForAssertion(() =>
         {
             var entering = component.FindAll("article.bit-aicms-ent");
-            Assert.HasCount(1, entering);
+            Assert.ContainsSingle(entering);
             Assert.AreEqual(added.MessageId, entering[0].GetAttribute("data-message-id"));
         });
 
         // A new message keeps the class it entered with, so a later render neither replays nor drops the entrance.
         component.Render();
-        Assert.HasCount(1, component.FindAll("article.bit-aicms-ent"));
+        Assert.ContainsSingle(component.FindAll("article.bit-aicms-ent"));
         Assert.HasCount(3, component.FindAll("article.bit-aicms"));
     }
 
@@ -520,7 +520,7 @@ public class BitAiMessageListTests : BitAiTestBase
         var component = RenderComponent<BitAiMessageList>(p => p.Add(c => c.Conversation, first));
 
         first.AddMessage(BitAiRole.User, "hello");
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll("article.bit-aicms-ent")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("article.bit-aicms-ent")));
 
         var second = new BitAiConversation();
         second.AddMessage(BitAiRole.User, "restored");
@@ -548,12 +548,12 @@ public class BitAiMessageListTests : BitAiTestBase
         await component.InvokeAsync(() => component.Instance._OnPinnedChange(false));
 
         Assert.IsFalse(component.Instance.IsPinned);
-        CollectionAssert.AreEqual(new[] { false }, reported);
+        Assert.AreSequenceEqual(new[] { false }, reported);
 
         await component.InvokeAsync(() => component.Instance.ScrollToLatestAsync());
 
         Assert.IsTrue(component.Instance.IsPinned);
-        CollectionAssert.AreEqual(new[] { false, true }, reported);
+        Assert.AreSequenceEqual(new[] { false, true }, reported);
     }
 
     [TestMethod]
@@ -569,7 +569,7 @@ public class BitAiMessageListTests : BitAiTestBase
 
         var scroll = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.AiMessageList.scrollToBottom");
         Assert.AreEqual(component.Instance.UniqueId, scroll.Arguments[0]);
-        Assert.AreEqual(false, scroll.Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(scroll.Arguments[2]));
         Assert.IsEmpty(reported);
     }
 
@@ -592,7 +592,7 @@ public class BitAiMessageListTests : BitAiTestBase
         // The reader was away from the newest message of the old conversation: the new one opens at its newest message,
         // so a scroll-to-latest button shown for the old one goes (a cleared or a new chat).
         component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsPinned));
-        CollectionAssert.AreEqual(new[] { false, true }, reported);
+        Assert.AreSequenceEqual(new[] { false, true }, reported);
 
         var scrolls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.AiMessageList.scrollToBottom").ToList();
         Assert.HasCount(2, scrolls);
@@ -615,12 +615,12 @@ public class BitAiMessageListTests : BitAiTestBase
         for (var i = 0; i < 5; i++) text.Append(" more");
 
         // The part the text goes into draws it...
-        component.WaitForAssertion(() => StringAssert.Contains(component.Find($"article[data-message-id='{reply.MessageId}']").TextContent, "Once more more more more more"));
+        component.WaitForAssertion(() => Assert.Contains("Once more more more more more", component.Find($"article[data-message-id='{reply.MessageId}']").TextContent));
 
         // ...and nothing else is drawn again for it, once every render the tokens asked for has run. The list's own render
         // count takes in every render below it - the part's included - so the other message says it instead: a render of the
         // list hands every message view its message again, which re-renders it.
-        await Task.Delay(250);
+        await Task.Delay(250, TestContext.CancellationToken);
 
         Assert.AreEqual(questionRenders, questionView.RenderCount);
     }
@@ -689,7 +689,7 @@ public class BitAiMessageListTests : BitAiTestBase
         var root = component.Find(".bit-aimsl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -701,7 +701,7 @@ public class BitAiMessageListTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Content = "color: green;" }));
 
         Assert.IsTrue(component.Find(".bit-aimsl").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aimsl").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aimsl").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aimsl-con").ClassList.Contains("custom-content"));
         Assert.AreEqual("color: green;", component.Find(".bit-aimsl-con").GetAttribute("style"));
     }
@@ -724,7 +724,7 @@ public class BitAiMessageListTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -772,4 +772,6 @@ public class BitAiMessageListTests : BitAiTestBase
             await Task.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

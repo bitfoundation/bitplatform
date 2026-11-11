@@ -5,10 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Boilerplate.WorkbenchTests.Infrastructure;
 
-/// <summary>
-/// Runs the Workbench in this process on a free port, built the way its Program.Main builds it.
-/// </summary>
-public sealed class WorkbenchTestServer : IAsyncDisposable
+internal sealed class WorkbenchTestServer : IAsyncDisposable
 {
     private WebApplication? app;
 

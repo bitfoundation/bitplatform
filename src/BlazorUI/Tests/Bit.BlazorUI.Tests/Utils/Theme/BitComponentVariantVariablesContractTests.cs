@@ -82,8 +82,7 @@ public sealed class BitComponentVariantVariablesContractTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
-            $"A variant's own variable has to fall back to the shared one, in that variant's rules: {string.Join("; ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders.ToArray(), $"A variant's own variable has to fall back to the shared one, in that variant's rules: {string.Join("; ", offenders)}");
     }
 
     [TestMethod]
@@ -129,8 +128,7 @@ public sealed class BitComponentVariantVariablesContractTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders.ToArray(),
-            $"A public variable read by a variant needs that variant's twin ahead of it: {string.Join("; ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders.ToArray(), $"A public variable read by a variant needs that variant's twin ahead of it: {string.Join("; ", offenders)}");
     }
 
     // A private variable (--bit-<abbr>-*, lower case) whose fallback the text ends in.

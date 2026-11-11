@@ -20,9 +20,10 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Modeless, true);
         });
+        var actualValue = com.Find(".bit-mdl-ctn").Attributes["aria-modal"]?.Value;
 
-        Assert.AreEqual("false", com.Find(".bit-mdl-ctn").Attributes["aria-modal"]?.Value);
-        Assert.AreEqual(0, com.FindAll(".bit-mdl-ovl").Count);
+        Assert.AreEqual("false", actualValue);
+        Assert.IsEmpty(com.FindAll(".bit-mdl-ovl"));
     }
 
     [TestMethod]
@@ -34,9 +35,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Modeless, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]
@@ -48,9 +49,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Modeless, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -63,8 +64,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Blocking, true);
         });
+        var actualValue = com.Find(".bit-mdl-ctn").Attributes["role"]?.Value;
 
-        Assert.AreEqual("alertdialog", com.Find(".bit-mdl-ctn").Attributes["role"]?.Value);
+        Assert.AreEqual("alertdialog", actualValue);
 
         var modeless = RenderComponent<BitModal>(parameters =>
         {
@@ -72,8 +74,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.Modeless, true);
         });
+        var actualValue1 = modeless.Find(".bit-mdl-ctn").Attributes["role"]?.Value;
 
-        Assert.AreEqual("dialog", modeless.Find(".bit-mdl-ctn").Attributes["role"]?.Value);
+        Assert.AreEqual("dialog", actualValue1);
 
         var explicitlyNot = RenderComponent<BitModal>(parameters =>
         {
@@ -81,8 +84,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Blocking, true);
             parameters.Add(p => p.IsAlert, false);
         });
+        var actualValue2 = explicitlyNot.Find(".bit-mdl-ctn").Attributes["role"]?.Value;
 
-        Assert.AreEqual("dialog", explicitlyNot.Find(".bit-mdl-ctn").Attributes["role"]?.Value);
+        Assert.AreEqual("dialog", actualValue2);
     }
 
     [TestMethod,
@@ -144,7 +148,7 @@ public class BitModalChromeTests : BunitTestContext
         {
             Assert.IsFalse(isOpen);
             Assert.AreEqual(1, dismissed);
-            Assert.AreEqual(0, com.FindAll(".bit-mdl").Count);
+            Assert.IsEmpty(com.FindAll(".bit-mdl"));
         });
     }
 
@@ -227,7 +231,7 @@ public class BitModalChromeTests : BunitTestContext
         Assert.AreEqual("header-text", com.Find(".bit-mdl-hdr").TextContent);
         Assert.AreEqual("footer-text", com.Find(".bit-mdl-fcn").TextContent);
         Assert.AreEqual("body-text", com.Find(".bit-mdl-bdy").TextContent);
-        Assert.AreEqual(1, com.FindAll(".bit-mdl-cls").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mdl-cls"));
         Assert.IsTrue(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-chr"));
     }
 
@@ -255,9 +259,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.ChildContent, "body-text");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mdl-hcn").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-mdl-bdy").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-mdl-fcn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mdl-hcn"));
+        Assert.IsEmpty(com.FindAll(".bit-mdl-bdy"));
+        Assert.IsEmpty(com.FindAll(".bit-mdl-fcn"));
         Assert.IsFalse(com.Find(".bit-mdl-ctn").ClassList.Contains("bit-mdl-chr"));
         Assert.AreEqual("body-text", com.Find(".bit-mdl-ctn").TextContent);
     }
@@ -272,7 +276,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.ChildContent, "body-text");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-mdl-hcn").Count);
+        Assert.IsEmpty(com.FindAll(".bit-mdl-hcn"));
         Assert.AreEqual("body-text", com.Find(".bit-mdl-bdy").TextContent);
         Assert.AreEqual("footer-text", com.Find(".bit-mdl-fcn").TextContent);
     }
@@ -288,9 +292,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -301,9 +305,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
     }
 
     [TestMethod]
@@ -315,7 +319,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         com.Render(parameters =>
         {
@@ -323,7 +327,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
     }
 
     [TestMethod]
@@ -335,7 +339,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Draggable, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]));
 
         com.Render(parameters =>
         {
@@ -343,7 +347,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.Draggable, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]));
     }
 
     [TestMethod]
@@ -357,8 +361,8 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count);
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]));
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
 
         var containerId = com.Find(".bit-mdl-ctn").Id;
 
@@ -369,7 +373,7 @@ public class BitModalChromeTests : BunitTestContext
         });
 
         // The whole content box is the handle of a Modal that was not pointed at one.
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]));
         Assert.AreEqual($"#{containerId}", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][0].Arguments[2]);
 
         com.Render(parameters =>
@@ -381,9 +385,9 @@ public class BitModalChromeTests : BunitTestContext
 
         // The handlers are registered against the element the selector named, so a Modal pointed somewhere
         // else takes them back off the old handle before it puts them on the new one.
-        com.WaitForAssertion(() => Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count));
+        com.WaitForAssertion(() => Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
         Assert.AreEqual($"#{containerId}", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"][0].Arguments[1]);
         Assert.AreEqual("#the-handle", Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"][1].Arguments[2]);
     }
@@ -399,7 +403,7 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]));
 
         com.Render(parameters =>
         {
@@ -407,14 +411,14 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]));
 
         // The hold on the page is given up, and the overflow of the scroller is what holds it instead.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"]);
 
         // The key is the first argument and the scroller the second; the third is whether the overflow is
         // being taken away.
-        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments[2]));
     }
 
     [TestMethod]
@@ -425,9 +429,9 @@ public class BitModalChromeTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"].Count));
+        com.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
     }
 
     [TestMethod]
@@ -448,7 +452,7 @@ public class BitModalChromeTests : BunitTestContext
 
         Assert.AreEqual("cascaded header", com.Find(".bit-mdl-hdr").TextContent);
         Assert.AreEqual("cascaded footer", com.Find(".bit-mdl-fcn").TextContent);
-        Assert.AreEqual(1, com.FindAll(".bit-mdl-cls").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-mdl-cls"));
         Assert.IsTrue(com.Find(".bit-mdl").ClassList.Contains("bit-mdl-trg"));
         Assert.IsTrue(com.Find(".bit-mdl").ClassList.Contains("bit-mdl-mfl"));
     }

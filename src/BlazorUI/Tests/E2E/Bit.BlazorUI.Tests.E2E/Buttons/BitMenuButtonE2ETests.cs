@@ -134,7 +134,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await SettledAsync(callout);
         var button = await Root("mnb-basic").BoxAsync();
         var box = await callout.BoxAsync();
-        Assert.IsTrue(box.Y >= button.Y + button.Height - 1.5, $"The callout ({box.Y}) opens under the button ({button.Y + button.Height}).");
+        Assert.IsGreaterThanOrEqualTo(button.Y + button.Height - 1.5, box.Y, $"The callout ({box.Y}) opens under the button ({button.Y + button.Height}).");
         ButtonsE2EHelpers.AreClose(button.X, box.X, 2, "The callout is aligned with the button");
 
         await Page.Mouse.ClickAsync(button.X + button.Width + 300, button.Y + 200);
@@ -666,7 +666,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await SettledAsync(CalloutOf(submenu));
         var menuBox = await CalloutOf(menu).BoxAsync();
         var subBox = await CalloutOf(submenu).BoxAsync();
-        Assert.IsTrue(subBox.X >= menuBox.X + menuBox.Width - 2, "The submenu opens beside the menu, on the right.");
+        Assert.IsGreaterThanOrEqualTo(menuBox.X + menuBox.Width - 2, subBox.X, "The submenu opens beside the menu, on the right.");
 
         await Page.Keyboard.PressAsync("ArrowDown");
         await Expect(ItemsOf(submenu).Nth(1)).ToBeFocusedAsync();
@@ -865,7 +865,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Escape");
 
         var iconOnly = await Root($"mnb-size-icon-{size}").BoxAsync();
-        Assert.IsTrue(iconOnly.Width >= iconOnly.Height - 1, "An icon-only menu button is at least square.");
+        Assert.IsGreaterThanOrEqualTo(iconOnly.Height - 1, iconOnly.Width, "An icon-only menu button is at least square.");
     }
 
     [TestMethod]
@@ -919,7 +919,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
             }
             """);
 
-        Assert.AreEqual(0, problems.Length, string.Join(" ", problems));
+        Assert.IsEmpty(problems, string.Join(" ", problems));
     }
 
     private Task<bool> IsLabelEllipsizedAsync(string id)
@@ -1068,8 +1068,8 @@ public class BitMenuButtonE2ETests : E2ETestBase
         var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(busy < spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
-        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
+        Assert.IsLessThan(spinner, busy, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsGreaterThanOrEqualTo(450, spinner - click, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Page.Locator("#btn-release-delay").ClickAsync();
         await Expect(opb.Locator(".bit-mnb-spn")).ToHaveCountAsync(0);
@@ -1322,7 +1322,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         }
 
         var opb = Opb(id);
-        Assert.IsTrue((await opb.Locator(".bit-mnb-ico").BoxAsync()).X > (await opb.Locator(".bit-mnb-btx").BoxAsync()).X, "The icon is on the right.");
+        Assert.IsGreaterThan((await opb.Locator(".bit-mnb-btx").BoxAsync()).X, (await opb.Locator(".bit-mnb-ico").BoxAsync()).X, "The icon is on the right.");
 
         await opb.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
@@ -1346,7 +1346,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await Expect(ItemsOf(submenu).First).ToBeFocusedAsync();
         await SettledAsync(CalloutOf(submenu));
         var sub = await CalloutOf(submenu).BoxAsync();
-        Assert.IsTrue(sub.X + sub.Width <= callout.X + 2, "In RTL the submenu opens on the left.");
+        Assert.IsLessThanOrEqualTo(callout.X + 2, sub.X + sub.Width, "In RTL the submenu opens on the left.");
 
         await Page.Keyboard.PressAsync("ArrowRight");
         await Expect(submenu).ToBeHiddenAsync();
@@ -1440,7 +1440,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await SettledAsync(CalloutOf(menu));
         var button = await Root("mnb-drop-all").BoxAsync();
         var callout = await CalloutOf(menu).BoxAsync();
-        Assert.IsTrue(callout.X >= button.X + button.Width - 1, "All opens the menu beside the button when neither side has the room.");
+        Assert.IsGreaterThanOrEqualTo(button.X + button.Width - 1, callout.X, "All opens the menu beside the button when neither side has the room.");
     }
 
     [TestMethod]
@@ -1449,12 +1449,12 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await OpenAsync(ItemsApi);
 
         var full = ButtonsE2EHelpers.ParseSeconds(await Root("motion-default").StyleAsync("transition-duration"));
-        Assert.IsTrue(full >= 0.05);
+        Assert.IsGreaterThanOrEqualTo(0.05, full);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        Assert.IsTrue(ButtonsE2EHelpers.ParseSeconds(await Root("motion-default").StyleAsync("transition-duration")) < 0.001);
-        Assert.IsTrue(ButtonsE2EHelpers.ParseSeconds(await Opb("motion-default").Locator(".bit-mnb-chv").StyleAsync("transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, ButtonsE2EHelpers.ParseSeconds(await Root("motion-default").StyleAsync("transition-duration")));
+        Assert.IsLessThan(0.001, ButtonsE2EHelpers.ParseSeconds(await Opb("motion-default").Locator(".bit-mnb-chv").StyleAsync("transition-duration")));
         Assert.AreEqual(full, ButtonsE2EHelpers.ParseSeconds(await Root("motion-forced").StyleAsync("transition-duration")), 0.0001);
 
         var menu = await OpenMenuAsync("motion-forced");
@@ -1484,8 +1484,8 @@ public class BitMenuButtonE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<div id=""mnb-basic"" [^>]*class=""[^""]*\bbit-mnb\b"));
-        StringAssert.Contains(html, "id=\"mnb-basic-opb\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<div id=""mnb-basic"" [^>]*class=""[^""]*\bbit-mnb\b"), html);
+        Assert.Contains("id=\"mnb-basic-opb\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 }

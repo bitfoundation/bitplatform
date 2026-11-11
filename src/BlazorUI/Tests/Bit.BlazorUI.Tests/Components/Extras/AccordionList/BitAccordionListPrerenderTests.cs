@@ -23,7 +23,7 @@ public class BitAccordionListPrerenderTests
             [nameof(BitAccordionList<BitAccordionListOption>.EmptyContent)] = EmptyContent,
         });
 
-        StringAssert.Contains(html, "no-items");
+        Assert.Contains("no-items", html);
     }
 
     [TestMethod]
@@ -40,8 +40,8 @@ public class BitAccordionListPrerenderTests
             [nameof(BitAccordionList<BitAccordionListOption>.EmptyContent)] = EmptyContent,
         });
 
-        StringAssert.Contains(html, "First");
-        Assert.IsFalse(html.Contains("no-items"));
+        Assert.Contains("First", html);
+        Assert.DoesNotContain("no-items", html);
     }
 
     [TestMethod]
@@ -53,6 +53,6 @@ public class BitAccordionListPrerenderTests
             [nameof(BitAccordionList<BitAccordionListItem>.EmptyContent)] = EmptyContent,
         });
 
-        StringAssert.Contains(html, "no-items");
+        Assert.Contains("no-items", html);
     }
 }

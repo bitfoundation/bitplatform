@@ -36,15 +36,15 @@ public class McpApiToolTests
 
         foreach (var expected in new[] { "Brouter", "Broute", "BrouterLink", "BrouterOutlet", "IBrouter", "BrouterOptions" })
         {
-            StringAssert.Contains(index, $"- **{expected}** (", $"'{expected}' is missing from the public API index.");
+            Assert.Contains($"- **{expected}** (", index, $"'{expected}' is missing from the public API index.");
         }
 
-        StringAssert.Contains(index, "- **Broute** (Component)");
-        StringAssert.Contains(index, "- **IBrouter** (Interface)");
-        StringAssert.Contains(index, "- **BrouterScrollMode** (Enum)");
+        Assert.Contains("- **Broute** (Component)", index);
+        Assert.Contains("- **IBrouter** (Interface)", index);
+        Assert.Contains("- **BrouterScrollMode** (Enum)", index);
 
         // The index is what a caller picks a type from, so it has to name the call that reads one.
-        StringAssert.Contains(index, "GetBrouterApi(typeName:");
+        Assert.Contains("GetBrouterApi(typeName:", index);
 
         // A nested or compiler-generated type in the index means the filter stopped working.
         Assert.IsFalse(index.Contains("__", StringComparison.Ordinal), "A compiler-generated type is listed in the API index.");
@@ -57,11 +57,11 @@ public class McpApiToolTests
         // When it is not, every summary comes back empty and the reference degrades to a list of names.
         var entries = IndexEntries(await ApiAsync());
 
-        Assert.IsTrue(entries.Length > 30, $"Only {entries.Length} public types are listed at all.");
+        Assert.IsGreaterThan(30, entries.Length, $"Only {entries.Length} public types are listed at all.");
 
         var documented = entries.Count(entry => entry.Contains(") - ", StringComparison.Ordinal));
 
-        Assert.IsTrue(documented > entries.Length * 3 / 4,
+        Assert.IsGreaterThan(entries.Length * 3 / 4, documented,
             $"Only {documented} of {entries.Length} public types have a summary - the Bit.Brouter XML documentation is not being read.");
     }
 
@@ -75,7 +75,7 @@ public class McpApiToolTests
 
         var entry = IndexEntries(index).Single(line => line.StartsWith("- **IBrouterRoute**", StringComparison.Ordinal));
 
-        Assert.IsTrue(entry.Length < route.Length,
+        Assert.IsLessThan(route.Length, entry.Length,
             "The index entry for a type is not shorter than the type's own reference.");
     }
 
@@ -84,19 +84,19 @@ public class McpApiToolTests
     {
         var broute = await ApiAsync("Broute");
 
-        StringAssert.StartsWith(broute, "# Broute (Component)");
-        StringAssert.Contains(broute, "`Bit.Brouter.Broute`");
+        Assert.StartsWith("# Broute (Component)", broute);
+        Assert.Contains("`Bit.Brouter.Broute`", broute);
 
         // "Parameter" means a Blazor [Parameter] - the distinction an agent needs before writing a tag.
-        StringAssert.Contains(broute, "## Parameter");
+        Assert.Contains("## Parameter", broute);
 
         var path = MemberLine(broute, "Path");
-        StringAssert.Contains(path, "`string`");
+        Assert.Contains("`string`", path);
 
         // The default is read off a freshly constructed instance, which is the only way it stays true.
         var group = MemberLine(broute, "Group");
-        StringAssert.Contains(group, "`bool`");
-        StringAssert.Contains(group, "= `false`");
+        Assert.Contains("`bool`", group);
+        Assert.Contains("= `false`", group);
         Assert.IsTrue(group.Contains(" - ", StringComparison.Ordinal), "The parameter arrived without its documentation.");
     }
 
@@ -105,8 +105,8 @@ public class McpApiToolTests
     {
         var brouter = await ApiAsync("IBrouter");
 
-        StringAssert.Contains(brouter, "## Method");
-        StringAssert.Contains(brouter, "- **NavigateAsync**(");
+        Assert.Contains("## Method", brouter);
+        Assert.Contains("- **NavigateAsync**(", brouter);
 
         var navigate = MemberLine(brouter, "NavigateAsync");
         Assert.IsTrue(navigate.Contains(" - ", StringComparison.Ordinal), "IBrouter.NavigateAsync arrived without its documentation.");
@@ -121,8 +121,8 @@ public class McpApiToolTests
         // the parameterless overload and the includeActive one do materially different things.
         var brouter = await ApiAsync("IBrouter");
 
-        StringAssert.Contains(brouter, "- **ClearKeepAlive**()");
-        StringAssert.Contains(brouter, "- **ClearKeepAlive**(bool includeActive)");
+        Assert.Contains("- **ClearKeepAlive**()", brouter);
+        Assert.Contains("- **ClearKeepAlive**(bool includeActive)", brouter);
     }
 
     [TestMethod]
@@ -132,8 +132,8 @@ public class McpApiToolTests
         // member most needs and is least likely to have remembered.
         var broute = await ApiAsync("Broute");
 
-        StringAssert.Contains(broute, "KeepAlive");
-        Assert.IsTrue(broute.Length > 4000, "The component reference is too short to be carrying the remarks as well.");
+        Assert.Contains("KeepAlive", broute);
+        Assert.IsGreaterThan(4000, broute.Length, "The component reference is too short to be carrying the remarks as well.");
     }
 
     [TestMethod]
@@ -143,8 +143,8 @@ public class McpApiToolTests
         // facts, and only one of them is true.
         var options = await ApiAsync("BrouterOptions");
 
-        StringAssert.Contains(MemberLine(options, "CaseSensitive"), "= `false`");
-        StringAssert.Contains(MemberLine(options, "Constraints"), "= `",
+        Assert.Contains("= `false`", MemberLine(options, "CaseSensitive"));
+        Assert.Contains("= `", MemberLine(options, "Constraints"),
             "BrouterOptions.Constraints is reported as having no default, but it starts out holding a registry.");
     }
 
@@ -153,9 +153,9 @@ public class McpApiToolTests
     {
         var mode = await ApiAsync("BrouterScrollMode");
 
-        StringAssert.StartsWith(mode, "# BrouterScrollMode (Enum)");
-        StringAssert.Contains(mode, "## EnumValue");
-        StringAssert.Contains(mode, "- **ToTop**");
+        Assert.StartsWith("# BrouterScrollMode (Enum)", mode);
+        Assert.Contains("## EnumValue", mode);
+        Assert.Contains("- **ToTop**", mode);
     }
 
     [TestMethod]
@@ -164,10 +164,10 @@ public class McpApiToolTests
         // Casing, and the generic spelling a caller reads in the index.
         foreach (var typeName in new[] { "broute", "BROUTE" })
         {
-            StringAssert.StartsWith(await ApiAsync(typeName), "# Broute (Component)", $"'{typeName}' did not resolve to Broute.");
+            Assert.StartsWith("# Broute (Component)", await ApiAsync(typeName), $"'{typeName}' did not resolve to Broute.");
         }
 
-        StringAssert.StartsWith(await ApiAsync("BrouterAwait<TValue>"), "# BrouterAwait",
+        Assert.StartsWith("# BrouterAwait", await ApiAsync("BrouterAwait<TValue>"),
             "A generic type does not resolve under the name the index shows for it.");
     }
 
@@ -176,8 +176,8 @@ public class McpApiToolTests
     {
         var answer = await ApiAsync("Brout");
 
-        StringAssert.Contains(answer, "Did you mean");
-        StringAssert.Contains(answer, "Broute");
+        Assert.Contains("Did you mean", answer);
+        Assert.Contains("Broute", answer);
     }
 
     [TestMethod]
@@ -185,8 +185,8 @@ public class McpApiToolTests
     {
         var answer = await ApiAsync("HttpClient");
 
-        StringAssert.Contains(answer, "GetBrouterApi");
-        StringAssert.Contains(answer, "index");
+        Assert.Contains("GetBrouterApi", answer);
+        Assert.Contains("index", answer);
     }
 
     [TestMethod]
@@ -202,20 +202,20 @@ public class McpApiToolTests
 
             var cells = row.Split('|', StringSplitOptions.TrimEntries).Where(cell => cell.Length > 0).ToArray();
 
-            Assert.AreEqual(5, cells.Length, $"'{constraint.Token}' does not state all five of token, category, rule, pass and fail.");
-            StringAssert.Contains(row, constraint.Rule, $"'{constraint.Token}' states no rule.");
-            StringAssert.Contains(row, $"`{constraint.PassExample}`", $"'{constraint.Token}' shows no passing value.");
-            StringAssert.Contains(row, $"`{constraint.FailExample}`", $"'{constraint.Token}' shows no failing value.");
+            Assert.HasCount(5, cells, $"'{constraint.Token}' does not state all five of token, category, rule, pass and fail.");
+            Assert.Contains(constraint.Rule, row, $"'{constraint.Token}' states no rule.");
+            Assert.Contains($"`{constraint.PassExample}`", row, $"'{constraint.Token}' shows no passing value.");
+            Assert.Contains($"`{constraint.FailExample}`", row, $"'{constraint.Token}' shows no failing value.");
             Assert.IsTrue(constraint.Category is "type" or "validation" or "custom" or "chain", $"'{constraint.Token}' is filed under '{constraint.Category}'.");
         }
 
         // The custom one the demo registers, and constraint chaining, are what a reader is least
         // likely to guess at and most likely to need.
-        StringAssert.Contains(constraints, "| custom |");
-        StringAssert.Contains(constraints, "| chain |");
+        Assert.Contains("| custom |", constraints);
+        Assert.Contains("| chain |", constraints);
 
         // A constraint is written in a template, so the table says where to check the finished one.
-        StringAssert.Contains(constraints, "InspectBrouterRouteTemplates");
+        Assert.Contains("InspectBrouterRouteTemplates", constraints);
     }
 
     /// <summary>The rendered line for one member, which is where its type, default and summary are.</summary>

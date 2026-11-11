@@ -84,9 +84,9 @@ public partial class McpSnippetTests
 
                 var console = model == "console";
 
-                var trees = project.Select(file => CSharpSyntaxTree.ParseText(file.Code, path: file.Heading))
-                    .Append(CSharpSyntaxTree.ParseText(console ? ConsoleImplicitUsings : WebImplicitUsings, path: "GlobalUsings.cs"))
-                    .Concat(console ? Enumerable.Empty<SyntaxTree>() : [CSharpSyntaxTree.ParseText(AppStub, path: "App.cs")]);
+                var trees = project.Select(file => CSharpSyntaxTree.ParseText(file.Code, path: file.Heading, cancellationToken: TestContext.CancellationToken))
+                    .Append(CSharpSyntaxTree.ParseText(console ? ConsoleImplicitUsings : WebImplicitUsings, path: "GlobalUsings.cs", cancellationToken: TestContext.CancellationToken))
+                    .Concat(console ? Enumerable.Empty<SyntaxTree>() : [CSharpSyntaxTree.ParseText(AppStub, path: "App.cs", cancellationToken: TestContext.CancellationToken)]);
 
                 var compilation = CSharpCompilation.Create(
                     $"Snippet{compiled}",
@@ -95,7 +95,7 @@ public partial class McpSnippetTests
                     new CSharpCompilationOptions(programs.Length == 0 ? OutputKind.DynamicallyLinkedLibrary : OutputKind.ConsoleApplication, nullableContextOptions: NullableContextOptions.Enable));
 
                 using var output = new MemoryStream();
-                var result = compilation.Emit(output);
+                var result = compilation.Emit(output, cancellationToken: TestContext.CancellationToken);
 
                 failures.AddRange(result.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Select(diagnostic => $"{name}: {diagnostic}"));
                 compiled++;
@@ -280,4 +280,6 @@ public partial class McpSnippetTests
 
     [GeneratedRegex(@"(?<![\w@""])(?<name>@?[A-Za-z][\w:]*)\s*=")]
     private static partial Regex AttributeRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

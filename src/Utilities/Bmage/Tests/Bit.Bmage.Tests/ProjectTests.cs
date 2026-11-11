@@ -52,7 +52,7 @@ public sealed class ProjectTests
         using var actual = new DocumentRenderer().Render(project.Document, project.Original);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, actual), "and renders the same edit");
         Assert.AreEqual(document.Pipeline.Count, project.Document.Pipeline.Count);
-        Assert.AreEqual(document.Layers.Count, project.Document.Layers.Count);
+        Assert.HasCount(document.Layers.Count, project.Document.Layers);
         Assert.AreEqual(document.Annotations[1].Id, project.Document.Annotations[1].Id, "ids survive, so the editor can select what it selected");
     }
 
@@ -65,7 +65,7 @@ public sealed class ProjectTests
         var bytes = await SaveAsync(source, RichDocument(source, logo, matte));
         using var zip = new ZipArchive(new MemoryStream(bytes));
         var images = zip.Entries.Where(e => e.FullName.StartsWith("images/", StringComparison.Ordinal)).Select(e => e.FullName).ToArray();
-        CollectionAssert.AreEquivalent(new[] { "images/original.png", "images/1.png", "images/2.png" }, images, "the logo is used three times, the matte once");
+        Assert.AreSequenceEqual(new[] { "images/original.png", "images/1.png", "images/2.png" }, images, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the logo is used three times, the matte once");
 
         using var project = await LoadAsync(bytes);
         Assert.HasCount(2, project.Images);
@@ -126,7 +126,7 @@ public sealed class ProjectTests
     private static async Task AssertRefusedAsync(byte[] bytes, string expected, BmageProjectOptions? options = null)
     {
         var error = await Assert.ThrowsExactlyAsync<ImageDocumentFormatException>(() => LoadAsync(bytes, options));
-        StringAssert.Contains(error.Message, expected);
+        Assert.Contains(expected, error.Message);
     }
 
     [TestMethod]

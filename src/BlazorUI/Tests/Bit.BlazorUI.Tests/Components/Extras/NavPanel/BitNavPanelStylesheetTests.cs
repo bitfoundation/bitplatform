@@ -32,7 +32,7 @@ public partial class BitNavPanelStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -46,7 +46,7 @@ public partial class BitNavPanelStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -64,7 +64,7 @@ public partial class BitNavPanelStylesheetTests
         var documented = DocumentedVariables(ReadStylesheet()).Order().ToArray();
         var listed = DemoVariable().Matches(ReadDemo()).Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(documented, listed, "The demo page's CSS variables table and the stylesheet header disagree.");
+        Assert.AreSequenceEqual(documented, listed, "The demo page's CSS variables table and the stylesheet header disagree.");
     }
 
     [TestMethod]
@@ -74,11 +74,11 @@ public partial class BitNavPanelStylesheetTests
 
         // The Width and ToggledWidth parameters travel as the private --bit-npn-w / --bit-npn-tw, read ahead of the
         // public variables, which only restyle the default an unset parameter stands for.
-        StringAssert.Contains(stylesheet, "width: var(--bit-npn-w, var(--bit-NavPanel-width, auto));");
-        StringAssert.Contains(stylesheet, "max-width: var(--bit-npn-w, var(--bit-NavPanel-width, 100%));");
-        StringAssert.Contains(stylesheet, "min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(12)}));");
-        StringAssert.Contains(stylesheet, "min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));");
-        StringAssert.Contains(stylesheet, "min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));");
+        Assert.Contains("width: var(--bit-npn-w, var(--bit-NavPanel-width, auto));", stylesheet);
+        Assert.Contains("max-width: var(--bit-npn-w, var(--bit-NavPanel-width, 100%));", stylesheet);
+        Assert.Contains("min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(12)}));", stylesheet);
+        Assert.Contains("min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(8)}));", stylesheet);
+        Assert.Contains("min-width: var(--bit-npn-tw, var(--bit-NavPanel-toggled-width, #{spacing(6)}));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-NavPanel-[a-z-]+, var\(--bit-npn-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -91,12 +91,12 @@ public partial class BitNavPanelStylesheetTests
         // A panel nested in another one's content (a footer, a header) never takes the outer one's Width for its own.
         var list = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "npn-private-properties");
 
-        CollectionAssert.AreEqual(new[] { "w", "tw" }, list.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "w", "tw" }, list.Names.ToArray());
 
         var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-npn {");
 
-        StringAssert.Contains(root, "--bit-npn-w: initial;");
-        StringAssert.Contains(root, "--bit-npn-tw: initial;");
+        Assert.Contains("--bit-npn-w: initial;", root);
+        Assert.Contains("--bit-npn-tw: initial;", root);
     }
 
     [TestMethod]
@@ -106,15 +106,15 @@ public partial class BitNavPanelStylesheetTests
 
         // The shape classes are wrapped in :where(), so the rules they select weigh what the bare .bit-npn rules
         // weigh and a Class an app restyles the panel with keeps winning over them.
-        StringAssert.Contains(stylesheet, "&:where(.bit-npn-col) {\n        @include npn-column;");
-        StringAssert.Contains(stylesheet, "&:where(.bit-npn-drw) {\n        @include npn-drawer;");
-        StringAssert.Contains(stylesheet, "&:where(.bit-npn-#{$class}) {");
+        Assert.Contains("&:where(.bit-npn-col) {\n        @include npn-column;", stylesheet);
+        Assert.Contains("&:where(.bit-npn-drw) {\n        @include npn-drawer;", stylesheet);
+        Assert.Contains("&:where(.bit-npn-#{$class}) {", stylesheet);
 
         // Until the browser has reported the screen, the breakpoint itself is the class, split at the default breakpoints.
-        StringAssert.Contains(stylesheet, "bsm: $mq-sm-min,");
-        StringAssert.Contains(stylesheet, "bmd: $mq-md-min,");
-        StringAssert.Contains(stylesheet, "blg: $mq-lg-min,");
-        StringAssert.Contains(stylesheet, "bxl: $mq-xl-min");
+        Assert.Contains("bsm: $mq-sm-min,", stylesheet);
+        Assert.Contains("bmd: $mq-md-min,", stylesheet);
+        Assert.Contains("blg: $mq-lg-min,", stylesheet);
+        Assert.Contains("bxl: $mq-xl-min", stylesheet);
     }
 
     [TestMethod]
@@ -124,14 +124,14 @@ public partial class BitNavPanelStylesheetTests
 
         // The direction is the one the panel is laid out in (:dir), with the class an explicit Dir renders as the
         // fallback of an engine without :dir(); End turns it round, and both at once is back where it started.
-        StringAssert.Contains(drawer, "&:is(.bit-rtl, :dir(rtl)),\n    &.bit-npn-end {\n        right: 0;\n        left: unset;");
-        StringAssert.Contains(drawer, "&:is(.bit-rtl, :dir(rtl)).bit-npn-end {\n        left: 0;\n        right: unset;");
-        StringAssert.Contains(drawer, "&:is(.bit-rtl, :dir(rtl)),\n        &.bit-npn-end {\n            transform: translateX(100%);");
-        StringAssert.Contains(drawer, "&:is(.bit-rtl, :dir(rtl)).bit-npn-end {\n            transform: translateX(-100%);");
+        Assert.Contains("&:is(.bit-rtl, :dir(rtl)),\n    &.bit-npn-end {\n        right: 0;\n        left: unset;", drawer);
+        Assert.Contains("&:is(.bit-rtl, :dir(rtl)).bit-npn-end {\n        left: 0;\n        right: unset;", drawer);
+        Assert.Contains("&:is(.bit-rtl, :dir(rtl)),\n        &.bit-npn-end {\n            transform: translateX(100%);", drawer);
+        Assert.Contains("&:is(.bit-rtl, :dir(rtl)).bit-npn-end {\n            transform: translateX(-100%);", drawer);
 
         // Every :dir(rtl) stands in the forgiving :is() with the class, never on its own.
         var stylesheet = ReadStylesheet();
-        Assert.AreEqual(Regex.Matches(stylesheet, @":dir\(rtl\)").Count, Regex.Matches(stylesheet, @":is\(\.bit-rtl, :dir\(rtl\)\)").Count);
+        Assert.HasCount(Regex.Matches(stylesheet, @":dir\(rtl\)").Count, Regex.Matches(stylesheet, @":is\(\.bit-rtl, :dir\(rtl\)\)"));
     }
 
     [TestMethod]
@@ -140,11 +140,11 @@ public partial class BitNavPanelStylesheetTests
         var closed = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-npn-cls {");
 
         // A panel only moved off screen keeps its links in the tab order and the accessibility tree.
-        StringAssert.Contains(closed, "visibility: hidden;");
-        StringAssert.Contains(closed, "pointer-events: none;");
-        StringAssert.Contains(closed, "transform: translateX(-100%);");
+        Assert.Contains("visibility: hidden;", closed);
+        Assert.Contains("pointer-events: none;", closed);
+        Assert.Contains("transform: translateX(-100%);", closed);
         // The visibility waits for the slide out, so the drawer is not cut off mid-way.
-        StringAssert.Contains(closed, "visibility 0s linear $mot-duration");
+        Assert.Contains("visibility 0s linear $mot-duration", closed);
     }
 
     [TestMethod]
@@ -154,16 +154,16 @@ public partial class BitNavPanelStylesheetTests
 
         // The drawer is a surface lifted over the page and moves with the popup easings; the column travels between
         // its two widths with the state easing, and a FitWidth panel jumps instead.
-        StringAssert.Contains(stylesheet, "box-shadow: var(--bit-NavPanel-drawer-shadow, #{$box-shadow-sheet});");
-        StringAssert.Contains(stylesheet, "transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;");
-        StringAssert.Contains(stylesheet, "transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;");
-        StringAssert.Contains(stylesheet, "&:not(.bit-npn-fiw) {\n        transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;");
-        StringAssert.Contains(stylesheet, "border-radius: var(--bit-NavPanel-radius, #{$shp-radius-sheet});");
-        StringAssert.Contains(stylesheet, "z-index: $zindex-callout;");
-        StringAssert.Contains(stylesheet, "font-size: $tg-fs-md;");
-        StringAssert.Contains(stylesheet, "font-weight: $tg-fw-semibold;");
+        Assert.Contains("box-shadow: var(--bit-NavPanel-drawer-shadow, #{$box-shadow-sheet});", stylesheet);
+        Assert.Contains("transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-decelerate;", stylesheet);
+        Assert.Contains("transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;", stylesheet);
+        Assert.Contains("&:not(.bit-npn-fiw) {\n        transition: min-width $mot-duration $mot-easing, max-width $mot-duration $mot-easing;", stylesheet);
+        Assert.Contains("border-radius: var(--bit-NavPanel-radius, #{$shp-radius-sheet});", stylesheet);
+        Assert.Contains("z-index: $zindex-callout;", stylesheet);
+        Assert.Contains("font-size: $tg-fs-md;", stylesheet);
+        Assert.Contains("font-weight: $tg-fw-semibold;", stylesheet);
 
-        Assert.IsFalse(stylesheet.Contains("cubic-bezier("), "A literal easing is written instead of a motion token.");
+        Assert.DoesNotContain("cubic-bezier(", stylesheet, "A literal easing is written instead of a motion token.");
     }
 
     [TestMethod]
@@ -171,11 +171,11 @@ public partial class BitNavPanelStylesheetTests
     {
         var overlay = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-npn-ovl {");
 
-        StringAssert.Contains(overlay, "background-color: var(--bit-NavPanel-overlay-background, #{$clr-bg-overlay});");
-        StringAssert.Contains(overlay, "backdrop-filter: var(--bit-NavPanel-overlay-backdrop-filter, none);");
-        StringAssert.Contains(overlay, "z-index: $zindex-overlay;");
+        Assert.Contains("background-color: var(--bit-NavPanel-overlay-background, #{$clr-bg-overlay});", overlay);
+        Assert.Contains("backdrop-filter: var(--bit-NavPanel-overlay-backdrop-filter, none);", overlay);
+        Assert.Contains("z-index: $zindex-overlay;", overlay);
         // Until the browser has answered, the overlay is taken away on the screens the column is on.
-        StringAssert.Contains(overlay, "&.bit-npn-#{$class} {\n            @media screen and (min-width: #{$min}) {\n                display: none;");
+        Assert.Contains("&.bit-npn-#{$class} {\n            @media screen and (min-width: #{$min}) {\n                display: none;", overlay);
     }
 
     [TestMethod]
@@ -185,10 +185,10 @@ public partial class BitNavPanelStylesheetTests
 
         foreach (var cssClass in _accentClasses)
         {
-            StringAssert.Contains(stylesheet, $"\n.{cssClass} {{\n    --bit-npn-clr-bg: ", $"{cssClass} paints no accent.");
+            Assert.Contains($"\n.{cssClass} {{\n    --bit-npn-clr-bg: ", stylesheet, $"{cssClass} paints no accent.");
         }
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-cnt {"), "background-color: var(--bit-npn-clr-bg);");
+        Assert.Contains("background-color: var(--bit-npn-clr-bg);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-cnt {"));
     }
 
     [TestMethod]
@@ -198,9 +198,9 @@ public partial class BitNavPanelStylesheetTests
 
         // The background, the shadow and the overlay tint are all thrown away, so the rule along the edge that faces
         // the page is drawn instead - and on the other edge for a panel docked to the end.
-        StringAssert.Contains(forced, "border-inline-end-width: $shp-border-width;");
-        StringAssert.Contains(forced, "border-inline-end-color: CanvasText;");
-        StringAssert.Contains(forced, "&.bit-npn-end {\n            border-inline-end-width: 0;\n            border-inline-start-width: $shp-border-width;\n            border-inline-start-color: CanvasText;");
+        Assert.Contains("border-inline-end-width: $shp-border-width;", forced);
+        Assert.Contains("border-inline-end-color: CanvasText;", forced);
+        Assert.Contains("&.bit-npn-end {\n            border-inline-end-width: 0;\n            border-inline-start-width: $shp-border-width;\n            border-inline-start-color: CanvasText;", forced);
     }
 
     [TestMethod]
@@ -209,15 +209,15 @@ public partial class BitNavPanelStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The live region is read by a screen reader and never seen.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-lvr {"), "@include visually-hidden;");
+        Assert.Contains("@include visually-hidden;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-lvr {"));
 
         // The close button belongs to the drawer and the toggle button to the column: each is out of the layout where
         // the other is the control that belongs there.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-cbw {"), "display: none;");
+        Assert.Contains("display: none;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-npn-cbw {"));
 
         var drawer = SourceFiles.GetScssBlock(stylesheet, "\n@mixin npn-drawer {");
-        StringAssert.Contains(drawer, ".bit-npn-tbn {\n        display: none;");
-        StringAssert.Contains(drawer, ".bit-npn-cbw {\n        display: contents;");
+        Assert.Contains(".bit-npn-tbn {\n        display: none;", drawer);
+        Assert.Contains(".bit-npn-cbw {\n        display: contents;", drawer);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

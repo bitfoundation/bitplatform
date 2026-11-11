@@ -41,8 +41,8 @@ public class InitialFalseTests
 
         // The first paint already shows the target - there is no Initial state to flash first.
         var style = cut.Find("div").GetAttribute("style")!;
-        StringAssert.Contains(style, "opacity:0.5");
-        StringAssert.Contains(style, "40px");
+        Assert.Contains("opacity:0.5", style);
+        Assert.Contains("40px", style);
 
         // And the engine starts from those same values, so the next animation leaves from them.
         var state = State(ctx, "box");
@@ -65,8 +65,8 @@ public class InitialFalseTests
         // Give any stray driver or completion every chance to surface.
         await ctx.RunFramesAsync(0, 1000);
         await ctx.FinishWaapiAsync();
-        Assert.AreEqual(0, started.Count, "an enter that never plays must not be reported as started");
-        lock (completed) Assert.AreEqual(0, completed.Count, "...or as completed");
+        Assert.IsEmpty(started, "an enter that never plays must not be reported as started");
+        lock (completed) Assert.IsEmpty(completed, "...or as completed");
     }
 
     [TestMethod]
@@ -84,10 +84,10 @@ public class InitialFalseTests
         var keyframes = (Dictionary<string, object>[])play[2]!;
         Assert.AreEqual("0.5", keyframes[0]["opacity"]);
         Assert.AreEqual("1", keyframes[^1]["opacity"]);
-        Assert.AreEqual(1, started.Count);
+        Assert.ContainsSingle(started);
 
         await ctx.FinishWaapiAsync("box");
-        cut.WaitForAssertion(() => { lock (completed) Assert.AreEqual(1, completed.Count); });
+        cut.WaitForAssertion(() => { lock (completed) Assert.ContainsSingle(completed); });
         Assert.AreEqual(1.0, State(ctx, "box").NumericValues["opacity"], 1e-9);
     }
 }

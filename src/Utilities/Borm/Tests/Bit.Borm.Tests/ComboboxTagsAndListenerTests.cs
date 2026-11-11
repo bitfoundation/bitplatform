@@ -31,7 +31,7 @@ public class ComboboxRenderingTests : ComponentTestBase
 
         Assert.AreEqual("borm_country_list", input.GetAttribute("list"));
         Assert.AreEqual("list", input.GetAttribute("aria-autocomplete"));
-        Assert.AreEqual(3, cut.FindAll("#borm_country_list option").Count);
+        Assert.HasCount(3, cut.FindAll("#borm_country_list option"));
     }
 
     [TestMethod]
@@ -311,7 +311,7 @@ public class TagsInputTests : ComponentTestBase
 
         var buttons = cut.FindAll(".bit-borm-tag__remove");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual("Remove urgent", buttons[0].GetAttribute("aria-label"));
     }
 

@@ -64,27 +64,28 @@ public sealed class ScenarioTests
     {
         var processor = new ImageProcessor();
         using var photo = CameraPhoto(1200, 900);
-        var camera = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.95, Metadata = MetadataPolicy.Preserve });
+        var camera = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.95, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
 
-        using var decoded = await processor.DecodeAsync(camera.Data, new DecodeOptions { AutoOrient = true });
+        using var decoded = await processor.DecodeAsync(camera.Data, new DecodeOptions { AutoOrient = true }, TestContext.CancellationToken);
         // Auto-orient must have made the portrait photo upright before anything else runs.
         Assert.AreEqual(new Size(1200, 900), decoded.Size);
 
         var pipeline = ImagePipeline.Create().CropToAspect(AspectRatio.Square).Resize(512, 512, ResizeMode.Stretch);
         var avatar = await processor.EncodeAsync(
             await pipeline.ExecuteAsync(decoded),
-            ImageExportOptions.Jpeg with { Quality = 0.9, Metadata = MetadataPolicy.Remove });
+            ImageExportOptions.Jpeg with { Quality = 0.9, Metadata = MetadataPolicy.Remove }, TestContext.CancellationToken);
 
         Assert.AreEqual(512, avatar.Width);
         Assert.AreEqual(512, avatar.Height);
-        using var check = await processor.DecodeAsync(avatar.Data);
+        using var check = await processor.DecodeAsync(avatar.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(new Size(512, 512), check.Size);
 
         // Nothing identifying may survive.
         var text = System.Text.Encoding.Latin1.GetString(avatar.Data);
         Assert.DoesNotContain("SN-SECRET-1", text, StringComparison.Ordinal);
         Assert.DoesNotContain("TestCam", text, StringComparison.Ordinal);
-        Assert.IsNull(check.Metadata?.Exif?.Location);
+        var actualValue = check.Metadata?.Exif?.Location;
+        Assert.IsNull(actualValue);
     }
 
     /// <summary>Scenario B: a screenshot is annotated with an arrow, a box, text and a redaction, then exported.</summary>
@@ -117,10 +118,10 @@ public sealed class ScenarioTests
         for (var y = 60; y < 260; y++)
             for (var x = 400; x < 700; x++)
                 if (rendered[x, y] != Rgba32.White) marked++;
-        Assert.IsTrue(marked > 200, $"only {marked} pixels were drawn by the arrow, box and step marker");
+        Assert.IsGreaterThan(200, marked, $"only {marked} pixels were drawn by the arrow, box and step marker");
 
-        var exported = await processor.EncodeAsync(rendered, ImageExportOptions.Png);
-        using var check = await processor.DecodeAsync(exported.Data);
+        var exported = await processor.EncodeAsync(rendered, ImageExportOptions.Png, TestContext.CancellationToken);
+        using var check = await processor.DecodeAsync(exported.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(screenshot.Size, check.Size);
     }
 
@@ -130,21 +131,23 @@ public sealed class ScenarioTests
     {
         var processor = new ImageProcessor();
         using var photo = CameraPhoto(3000, 2250, Orientation.Normal);
-        var original = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.98, Metadata = MetadataPolicy.Preserve });
+        var original = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.98, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
 
         var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(2000, 2000);
         var optimised = await processor.ProcessAsync(original.Data, pipeline,
-            ImageExportOptions.Jpeg with { Quality = 0.8, Metadata = MetadataPolicy.StripSensitive, MaxFileSize = 400_000 });
+            ImageExportOptions.Jpeg with { Quality = 0.8, Metadata = MetadataPolicy.StripSensitive, MaxFileSize = 400_000 }, cancellationToken: TestContext.CancellationToken);
 
-        Assert.IsTrue(optimised.Length <= 400_000, $"produced {optimised.Length} bytes against a 400,000 byte budget");
-        Assert.IsTrue(optimised.Length < original.Length, "optimisation did not reduce the file size");
+        Assert.IsLessThanOrEqualTo(400_000, optimised.Length, $"produced {optimised.Length} bytes against a 400,000 byte budget");
+        Assert.IsLessThan(original.Length, optimised.Length, "optimisation did not reduce the file size");
         Assert.IsTrue(optimised.Width <= 2000 && optimised.Height <= 2000, $"produced {optimised.Width}x{optimised.Height}");
         // Aspect ratio must be preserved by MaxSize.
         Assert.AreEqual(3000 / 2250.0, optimised.Width / (double)optimised.Height, 0.5e-2);
 
-        using var check = await processor.DecodeAsync(optimised.Data);
-        Assert.IsNull(check.Metadata?.Exif?.Location);
-        Assert.IsFalse(check.Metadata?.Exif?.Exif.Contains(ExifTag.BodySerialNumber) ?? false);
+        using var check = await processor.DecodeAsync(optimised.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue = check.Metadata?.Exif?.Location;
+        Assert.IsNull(actualValue);
+        var actualValue1 = check.Metadata?.Exif?.Exif.Contains(ExifTag.BodySerialNumber) ?? false;
+        Assert.IsFalse(actualValue1);
     }
 
     /// <summary>Scenario D: a set of product images is normalised to one size and background.</summary>
@@ -157,7 +160,7 @@ public sealed class ScenarioTests
         foreach (var (w, h) in sizes)
         {
             using var img = CameraPhoto(w, h, Orientation.Normal);
-            encoded.Add((await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data);
+            encoded.Add((await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Quality = 0.9 }, TestContext.CancellationToken)).Data);
         }
 
         // Contain onto a fixed white canvas: every output identical in size, nothing cropped away.
@@ -168,11 +171,11 @@ public sealed class ScenarioTests
         for (var i = 0; i < encoded.Count; i++)
         {
             var (sw, sh) = sizes[i];
-            var result = await processor.ProcessAsync(encoded[i], pipeline, ImageExportOptions.Jpeg with { Quality = 0.85 });
+            var result = await processor.ProcessAsync(encoded[i], pipeline, ImageExportOptions.Jpeg with { Quality = 0.85 }, cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual(800, result.Width);
             Assert.AreEqual(800, result.Height);
 
-            using var check = await processor.DecodeAsync(result.Data);
+            using var check = await processor.DecodeAsync(result.Data, cancellationToken: TestContext.CancellationToken);
 
             // A source that is already square fills the canvas exactly, so only check padding where it must exist.
             if (sw != sh)
@@ -200,7 +203,7 @@ public sealed class ScenarioTests
     {
         var processor = new ImageProcessor();
         using var sample = CameraPhoto(800, 600, Orientation.Normal);
-        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
+        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 }, TestContext.CancellationToken)).Data;
 
         var items = new List<BatchItem>();
         for (var i = 0; i < 40; i++)
@@ -217,17 +220,17 @@ public sealed class ScenarioTests
             MaxConcurrency = 2,
             ExportOptions = ImageExportOptions.Jpeg with { Quality = 0.8, Metadata = MetadataPolicy.Remove },
             Progress = progress,
-        });
+        }, TestContext.CancellationToken);
 
-        Assert.AreEqual(40, result.Results.Count);
+        Assert.HasCount(40, result.Results);
         Assert.AreEqual(39, result.SuccessCount);
         Assert.AreEqual(1, result.FailureCount);
         Assert.AreEqual("corrupt.jpg", result.Failed.Single().FileName);
-        Assert.IsTrue(result.TotalOutputBytes < result.TotalInputBytes, "the batch did not reduce total size");
+        Assert.IsLessThan(result.TotalInputBytes, result.TotalOutputBytes, "the batch did not reduce total size");
         foreach (var ok in result.Succeeded)
             Assert.IsTrue(ok.Output!.Width <= 320 && ok.Output.Height <= 320);
 
-        for (var i = 0; i < 50 && Volatile.Read(ref updates) < 40; i++) await Task.Delay(10);
+        for (var i = 0; i < 50 && Volatile.Read(ref updates) < 40; i++) await Task.Delay(10, TestContext.CancellationToken);
         Assert.AreEqual(40, Volatile.Read(ref updates));
     }
 
@@ -237,7 +240,7 @@ public sealed class ScenarioTests
     {
         var processor = new ImageProcessor();
         using var sample = CameraPhoto(900, 700, Orientation.Normal);
-        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
+        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 }, TestContext.CancellationToken)).Data;
         var items = Enumerable.Range(0, 60).Select(i => new BatchItem(good, $"i{i}")).ToList();
 
         using var cts = new CancellationTokenSource();
@@ -255,13 +258,13 @@ public sealed class ScenarioTests
         var result = stopped.Result;
 
         Assert.IsTrue(result.WasCancelled);
-        Assert.AreEqual(60, result.Results.Count);
+        Assert.HasCount(60, result.Results);
         // Every image that finished before the stop is still there, with its output; the rest are marked, not dropped.
         Assert.IsGreaterThanOrEqualTo(5, result.SuccessCount);
         Assert.IsGreaterThan(0, result.CancelledCount);
         Assert.AreEqual(60, result.SuccessCount + result.CancelledCount);
         foreach (var finished in result.Succeeded) Assert.AreEqual(200, Math.Max(finished.Output!.Width, finished.Output.Height));
-        CollectionAssert.AreEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
+        Assert.AreSequenceEqual(items.Select(i => i.FileName).ToList(), result.Results.Select(r => r.FileName).ToList());
     }
 
     /// <summary>
@@ -282,7 +285,7 @@ public sealed class ScenarioTests
         session.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.15f), "Brighten");
         session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(300, 200, 400, 300) });
 
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.IsFalse(preview.IsDisposed);
         // The preview is the edit at proxy scale: a 1600x1200 crop of a photo shown at a quarter size.
         Assert.IsInRange(398, 402, preview.Width);
@@ -293,11 +296,11 @@ public sealed class ScenarioTests
         session.Redo();
         Assert.AreEqual(3, session.Document.Pipeline.Count + session.Document.Annotations.Count);
 
-        using var full = await session.RenderFullAsync();
+        using var full = await session.RenderFullAsync(cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(new Size(1600, 1200), full.Size);
 
-        var exported = await processor.EncodeAsync(full, ImageExportOptions.Jpeg with { Quality = 0.9 });
-        using var check = await processor.DecodeAsync(exported.Data);
+        var exported = await processor.EncodeAsync(full, ImageExportOptions.Jpeg with { Quality = 0.9 }, TestContext.CancellationToken);
+        using var check = await processor.DecodeAsync(exported.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(new Size(1600, 1200), check.Size);
     }
 
@@ -325,13 +328,13 @@ public sealed class ScenarioTests
             }
         }
 
-        Assert.IsTrue(session.History.Entries.Count <= 50, $"history grew to {session.History.Entries.Count}");
-        Assert.IsTrue(session.History.EstimatedMemory < 5_000_000, $"history holds {session.History.EstimatedMemory} bytes");
+        Assert.IsLessThanOrEqualTo(50, session.History.Entries.Count, $"history grew to {session.History.Entries.Count}");
+        Assert.IsLessThan(5_000_000, session.History.EstimatedMemory, $"history holds {session.History.EstimatedMemory} bytes");
 
         // Whatever state the churn landed in must still render, at both resolutions.
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.IsFalse(preview.IsDisposed);
-        using var full = await session.RenderFullAsync();
+        using var full = await session.RenderFullAsync(cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(full.Width > 0 && full.Height > 0);
         Assert.AreEqual(session.Document.OutputSize, full.Size);
     }
@@ -357,7 +360,7 @@ public sealed class ScenarioTests
         Assert.IsTrue(session.UsesProxy);
         Assert.AreEqual(new Size(300, 75), session.ProxySize);
 
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(new Size(300, 75), preview.Size);
     }
 
@@ -365,4 +368,6 @@ public sealed class ScenarioTests
     {
         public void Report(T value) => report(value);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

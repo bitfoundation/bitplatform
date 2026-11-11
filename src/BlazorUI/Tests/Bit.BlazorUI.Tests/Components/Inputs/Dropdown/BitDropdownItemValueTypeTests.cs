@@ -59,7 +59,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         var drpItems = component.FindAll(".bit-drp-itm");
 
-        Assert.AreEqual(2, drpItems.Count);
+        Assert.HasCount(2, drpItems);
         Assert.AreEqual("One", drpItems[0].TextContent.Trim());
         Assert.AreEqual("Two", drpItems[1].TextContent.Trim());
         Assert.IsTrue(drpItems[1].HasAttribute("disabled"));
@@ -81,7 +81,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         component.FindAll(".bit-drp-itm")[1].Click();
 
-        CollectionAssert.AreEqual(new Guid?[] { _twoId }, changes);
+        Assert.AreSequenceEqual(new Guid?[] { _twoId }, changes);
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
             parameters.Add(p => p.Values, new Guid?[] { _oneId, _twoId });
         });
 
-        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.HasCount(2, component.Instance.SelectedItems);
         Assert.AreEqual("One, Two", component.Find(".bit-drp-tdp").InnerHtml);
     }
 
@@ -133,7 +133,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         component.FindAll(".bit-drp-itm")[0].Click();
 
-        CollectionAssert.AreEqual(new long[] { 1 }, changes);
+        Assert.AreSequenceEqual(new long[] { 1 }, changes);
     }
 
     [TestMethod]
@@ -154,13 +154,13 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         var drpItems = component.FindAll(".bit-drp-itm");
 
-        Assert.AreEqual(2, drpItems.Count);
+        Assert.HasCount(2, drpItems);
         Assert.AreEqual("One", drpItems[0].TextContent.Trim());
         Assert.IsTrue(component.Instance.Items!.All(item => item.IsSelected is false));
 
         drpItems[1].Click();
 
-        Assert.AreEqual(1, selected.Count);
+        Assert.ContainsSingle(selected);
         Assert.AreEqual("Two", selected[0].Text);
     }
 
@@ -211,11 +211,11 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         component.Find(".bit-drp-inp").Input("Three");
 
-        Assert.HasCount(1, component.FindAll(".bit-drp-dyn"));
+        Assert.ContainsSingle(component.FindAll(".bit-drp-dyn"));
 
         AddDynamicItem(component, "Three");
 
-        Assert.AreEqual(1, added.Count);
+        Assert.ContainsSingle(added);
         Assert.AreEqual("Three", added[0].Text);
         Assert.AreEqual("Three", added[0].Title);
         Assert.AreEqual(newId, added[0].Value);
@@ -240,8 +240,8 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
         AddDynamicItem(component, "Three");
         AddDynamicItem(component, "Four");
 
-        CollectionAssert.AreEqual(expected, added.Select(item => item.Value).ToArray());
-        CollectionAssert.AreEquivalent(expected.Select(id => (Guid?)id).ToArray(), component.Instance.Values!.ToArray());
+        Assert.AreSequenceEqual(expected, added.Select(item => item.Value).ToArray());
+        Assert.AreSequenceEqual(expected.Select(id => (Guid?)id).ToArray(), component.Instance.Values!.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -303,7 +303,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         AddDynamicItem(component, "Two");
 
-        Assert.AreEqual(1, added.Count);
+        Assert.ContainsSingle(added);
         Assert.AreEqual(42, added[0].Value);
         Assert.AreEqual(42L, component.Instance.Value);
     }
@@ -327,7 +327,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
 
         AddDynamicItem(component, "Two");
 
-        Assert.AreEqual(1, added.Count);
+        Assert.ContainsSingle(added);
         Assert.AreEqual("New Two", added[0].Text);
         Assert.AreEqual(43, added[0].Value);
         Assert.AreEqual(43L, component.Instance.Value);
@@ -343,7 +343,7 @@ public class BitDropdownItemValueTypeTests : BunitTestContext
         var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderComponent<BitDropdown<BitDropdownOption<Guid>, Guid?>>());
 
-        StringAssert.Contains(exception.Message, "BitDropdownOption<Guid?>");
+        Assert.Contains("BitDropdownOption<Guid?>", exception.Message);
     }
 
     [TestMethod]

@@ -70,7 +70,7 @@ public sealed class BitTagsInputBridgeContractTests
                                      .Distinct()
                                      .ToList();
 
-        Assert.IsTrue(invoked.Count > 0, "No BitBlazorUI.TagsInput.* call was found; the extensions file is no longer the bridge's C# half.");
+        Assert.IsNotEmpty(invoked, "No BitBlazorUI.TagsInput.* call was found; the extensions file is no longer the bridge's C# half.");
 
         var exported = ExportedFunction.Matches(ReadTypeScript())
                                        .Select(m => m.Groups["name"].Value)
@@ -78,8 +78,7 @@ public sealed class BitTagsInputBridgeContractTests
 
         foreach (var name in invoked)
         {
-            Assert.IsTrue(exported.Contains(name),
-                $"The component invokes BitBlazorUI.TagsInput.{name}, which the script does not export. " +
+            Assert.Contains(name, exported, $"The component invokes BitBlazorUI.TagsInput.{name}, which the script does not export. " +
                 "The call is made inside a catch, so this fails silently at runtime instead of throwing.");
         }
     }
@@ -92,7 +91,7 @@ public sealed class BitTagsInputBridgeContractTests
                                        .Distinct()
                                        .ToList();
 
-        Assert.IsTrue(callbacks.Count > 0, "No invokeMethodAsync call was found; the script no longer calls the component back.");
+        Assert.IsNotEmpty(callbacks, "No invokeMethodAsync call was found; the script no longer calls the component back.");
 
         var invokable = typeof(BitTagsInput).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
                                             .Select(m => (Method: m, Attribute: System.Reflection.CustomAttributeExtensions.GetCustomAttribute<Microsoft.JSInterop.JSInvokableAttribute>(m)))
@@ -102,8 +101,7 @@ public sealed class BitTagsInputBridgeContractTests
 
         foreach (var name in callbacks)
         {
-            Assert.IsTrue(invokable.Contains(name),
-                $"The script calls the component back with '{name}', which no [JSInvokable] of BitTagsInput answers to. " +
+            Assert.Contains(name, invokable, $"The script calls the component back with '{name}', which no [JSInvokable] of BitTagsInput answers to. " +
                 "The call is caught on the script side, so a typed separator would silently commit nothing.");
         }
     }
@@ -120,8 +118,7 @@ public sealed class BitTagsInputBridgeContractTests
 
         foreach (var name in exported)
         {
-            StringAssert.Contains(extensions, $"BitBlazorUI.TagsInput.{name}",
-                $"The script exports {name}, which nothing on the C# side calls. Either the component stopped " +
+            Assert.Contains($"BitBlazorUI.TagsInput.{name}", extensions, $"The script exports {name}, which nothing on the C# side calls. Either the component stopped " +
                 "needing it, in which case it is dead code shipped to every visitor, or the call was renamed.");
         }
     }
@@ -137,14 +134,13 @@ public sealed class BitTagsInputBridgeContractTests
                               .Where(k => SetupMarkers.Contains(k) is false)
                               .ToList();
 
-        Assert.IsTrue(keys.Count > 0, "No dataset read was found; the script no longer takes its settings off the element.");
+        Assert.IsNotEmpty(keys, "No dataset read was found; the script no longer takes its settings off the element.");
 
         foreach (var key in keys)
         {
             var attribute = ToAttributeName(key);
 
-            StringAssert.Contains(markup, attribute,
-                $"The script reads dataset.{key}, so the markup has to write {attribute}. Nothing declares that " +
+            Assert.Contains(attribute, markup, $"The script reads dataset.{key}, so the markup has to write {attribute}. Nothing declares that " +
                 "pairing but these two spellings, and a settings attribute the script cannot find reads as the " +
                 "feature being turned off rather than as an error.");
         }
@@ -160,12 +156,11 @@ public sealed class BitTagsInputBridgeContractTests
                                   .Distinct()
                                   .ToList();
 
-        Assert.IsTrue(classes.Count > 0, "No bit-tgi-* class was found; the script no longer tells a chip from anything else.");
+        Assert.IsNotEmpty(classes, "No bit-tgi-* class was found; the script no longer tells a chip from anything else.");
 
         foreach (var name in classes)
         {
-            StringAssert.Contains(markup, name,
-                $"The script looks for .{name}, which the component no longer renders. The keys the chips answer " +
+            Assert.Contains(name, markup, $"The script looks for .{name}, which the component no longer renders. The keys the chips answer " +
                 "to would keep their browser defaults - Home scrolling the page, Alt with an arrow leaving it.");
         }
     }
@@ -194,25 +189,24 @@ public sealed class BitTagsInputBridgeContractTests
 
         foreach (var key in keys)
         {
-            StringAssert.Contains(body, $"\"{key}\"",
-                $"The script takes the browser's default for {key} away from a focused chip, and the component " +
+            Assert.Contains($"\"{key}\"", body, $"The script takes the browser's default for {key} away from a focused chip, and the component " +
                 "does nothing with it: the key is simply dead there.");
         }
 
         // The arrow keys are answered through the RTL aware previousKey / nextKey pair rather than by name.
         foreach (var key in new[] { "ArrowLeft", "ArrowRight" })
         {
-            Assert.IsTrue(keys.Contains(key), $"The component walks the chips with {key}, which the browser acts on first unless the script holds it back.");
+            Assert.Contains(key, keys, $"The component walks the chips with {key}, which the browser acts on first unless the script holds it back.");
         }
     }
 
     private static string Substring(string source, string from, string to)
     {
         var start = source.IndexOf(from, StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"'{from}' was not found; the contract test no longer reads what it was written to read.");
+        Assert.IsGreaterThanOrEqualTo(0, start, $"'{from}' was not found; the contract test no longer reads what it was written to read.");
 
         var end = source.IndexOf(to, start, StringComparison.Ordinal);
-        Assert.IsTrue(end > start, $"'{to}' was not found after '{from}'; the contract test no longer reads what it was written to read.");
+        Assert.IsGreaterThan(start, end, $"'{to}' was not found after '{from}'; the contract test no longer reads what it was written to read.");
 
         return source[start..end];
     }

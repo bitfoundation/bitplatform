@@ -31,7 +31,7 @@ public partial class DemoSharedEnumsTests
     [TestMethod]
     public void EverySharedTableShouldListTheMembersOfTheEnumItIsNamedAfterInTheirDeclaredOrder()
     {
-        Assert.IsTrue(Factories.Length > 0, "No shared table was found.");
+        Assert.IsNotEmpty(Factories, "No shared table was found.");
 
         foreach (var factory in Factories)
         {
@@ -45,9 +45,7 @@ public partial class DemoSharedEnumsTests
             Assert.IsTrue(type.IsEnum, $"{factory.Name} is not an enum.");
 
             // GetFields keeps the order the members are declared in; Enum.GetNames sorts them by value.
-            CollectionAssert.AreEqual(type.GetFields(BindingFlags.Public | BindingFlags.Static).Select(f => f.Name).ToArray(),
-                                      table.Items.Select(i => i.Name).ToArray(),
-                                      $"The shared {factory.Name} table does not list the members of the enum in the order it declares them.");
+            Assert.AreSequenceEqual(type.GetFields(BindingFlags.Public | BindingFlags.Static).Select(f => f.Name).ToArray(), table.Items.Select(i => i.Name).ToArray(), $"The shared {factory.Name} table does not list the members of the enum in the order it declares them.");
         }
     }
 
@@ -72,8 +70,7 @@ public partial class DemoSharedEnumsTests
     {
         var documented = DemoSharedEnums.Summaries.Keys.Where(k => k.Contains('.') is false).Order(StringComparer.Ordinal).ToArray();
 
-        CollectionAssert.AreEqual(Factories.Select(f => f.Name).Order(StringComparer.Ordinal).ToArray(), documented,
-            "The enums named in DemoSharedEnumDocs.targets and the factories of DemoSharedEnums differ.");
+        Assert.AreSequenceEqual(Factories.Select(f => f.Name).Order(StringComparer.Ordinal).ToArray(), documented, "The enums named in DemoSharedEnumDocs.targets and the factories of DemoSharedEnums differ.");
     }
 
     [TestMethod]
@@ -83,10 +80,11 @@ public partial class DemoSharedEnumsTests
 
         foreach (var id in ids)
         {
-            Assert.IsTrue(id?.EndsWith("-enum", StringComparison.Ordinal), $"The anchor id {id} does not end in -enum like the others.");
+            var actualValue = id?.EndsWith("-enum", StringComparison.Ordinal);
+            Assert.IsTrue(actualValue, $"The anchor id {id} does not end in -enum like the others.");
         }
 
-        CollectionAssert.AllItemsAreUnique(ids, "Two shared tables are anchored under the same id.");
+        Assert.AreAllDistinct(ids, "Two shared tables are anchored under the same id.");
     }
 
     [TestMethod]
@@ -114,14 +112,14 @@ public partial class DemoSharedEnumsTests
     {
         var tables = PageOwnTables().ToArray();
 
-        Assert.IsTrue(tables.Length > 50, $"Only {tables.Length} tables were read off the demo pages.");
+        Assert.IsGreaterThan(50, tables.Length, $"Only {tables.Length} tables were read off the demo pages.");
 
         var offenders = tables.GroupBy(t => t.Name, StringComparer.Ordinal)
                                        .Where(g => g.Select(t => t.Id).Distinct(StringComparer.Ordinal).Count() > 1)
                                        .Select(g => $"{g.Key} ({string.Join(", ", g.Select(t => $"{t.Page}: {t.Id}"))})")
                                        .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders, $"Types anchored under more than one id: {string.Join("; ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"Types anchored under more than one id: {string.Join("; ", offenders)}");
     }
 
     [TestMethod]
@@ -140,11 +138,11 @@ public partial class DemoSharedEnumsTests
         {
             var page = $"private readonly List<ComponentSubEnum> componentSubEnums =\n[\n    DemoSharedEnums.BitColor(),\n    {spelling},\n];";
 
-            CollectionAssert.AreEqual(new[] { ("size-enum", "BitSize") }, ReadTables(page).ToArray(), $"Not read: {spelling}");
+            Assert.AreSequenceEqual(new[] { ("size-enum", "BitSize") }, ReadTables(page).ToArray(), $"Not read: {spelling}");
         }
 
         // The demo data of a page sets an Id and a Name on its items as well, and is no table.
-        Assert.AreEqual(0, ReadTables("""private readonly List<Item> items = [ new() { Id = "edit", Name = "Edit" } ];""").Count());
+        Assert.IsEmpty(ReadTables("""private readonly List<Item> items = [ new() { Id = "edit", Name = "Edit" } ];"""));
     }
 
     [TestMethod]
@@ -189,7 +187,7 @@ public partial class DemoSharedEnumsTests
     {
         var table = DemoSharedEnums.BitColor().Only("Error", "Primary");
 
-        CollectionAssert.AreEqual(new[] { "Primary", "Error" }, table.Items.Select(i => i.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "Primary", "Error" }, table.Items.Select(i => i.Name).ToArray());
     }
 
     [TestMethod]
@@ -213,7 +211,7 @@ public partial class DemoSharedEnumsTests
         var pages = SourceFiles.GetDirectory("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components");
         var files = Directory.GetFiles(pages, "*.razor.cs", SearchOption.AllDirectories);
 
-        Assert.IsTrue(files.Length > 0, "No demo page was found.");
+        Assert.IsNotEmpty(files, "No demo page was found.");
 
         foreach (var file in files)
         {

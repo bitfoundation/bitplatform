@@ -75,8 +75,8 @@ public class BitResourceTimelineParamsTests : BunitTestContext
     {
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, Calls(WhenRenderedFn).Count);
-            Assert.AreEqual(0, component.FindAll(".bit-rtm-ldg").Count);
+            Assert.ContainsSingle(Calls(WhenRenderedFn));
+            Assert.IsEmpty(component.FindAll(".bit-rtm-ldg"));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -92,7 +92,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
     [TestMethod]
     public void BitResourceTimelineParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitResourceTimeline", BitResourceTimelineParams.ParamName);
+        Assert.AreEqual("BitParams.BitResourceTimeline", new BitResourceTimelineParams().Name);
         Assert.AreEqual(BitResourceTimelineParams.ParamName, new BitResourceTimelineParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitResourceTimelineParams());
 
@@ -123,7 +123,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
 
         foreach (var name in own)
         {
-            Assert.IsTrue(parameters.Contains(name), $"BitResourceTimelineParams.{name} is no parameter of BitResourceTimeline.");
+            Assert.Contains(name, parameters, $"BitResourceTimelineParams.{name} is no parameter of BitResourceTimeline.");
         }
     }
 
@@ -150,7 +150,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
 
         var viewport = component.Find(".bit-rtm-vpt");
         Assert.IsTrue(viewport.ClassList.Contains("cascaded-viewport"));
@@ -165,8 +165,8 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         var setup = Calls(SetupFn).Single();
         Assert.AreSame(options, setup.Arguments[3]);
         Assert.AreSame(texts, setup.Arguments[4]);
-        Assert.AreEqual(true, setup.Arguments[5]);
-        Assert.AreEqual(0, Calls(SetOptionsFn).Count);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[5]));
+        Assert.IsEmpty(Calls(SetOptionsFn));
     }
 
     [TestMethod]
@@ -183,11 +183,11 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         // Polled: a WaitForAssertion timing out would have bUnit fail the append still pending, which ends the load.
         for (var i = 0; i < 500 && await Renderer.Dispatcher.InvokeAsync(() => Calls(AppendAllocationsFn).Count) == 0; i++)
         {
-            await Task.Delay(10);
+            await Task.Delay(10, TestContext.CancellationToken);
         }
 
         Assert.AreEqual(5, Calls(BeginDataFn).Single().Arguments[4]);
-        Assert.AreEqual(2, ((IReadOnlyList<BitResourceTimelineAllocation>)Calls(AppendAllocationsFn)[0].Arguments[1]!).Count);
+        Assert.HasCount(2, ((IReadOnlyList<BitResourceTimelineAllocation>)Calls(AppendAllocationsFn)[0].Arguments[1]!));
         Assert.AreEqual("Bitte warten", component.Find(".bit-rtm-ldg").TextContent);
     }
 
@@ -243,8 +243,8 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         Assert.AreSame(ownTexts, setup.Arguments[4]);
 
         // An explicit 0 sends everything in one call, whatever the cascade says.
-        Assert.AreEqual(1, Calls(SetDataFn).Count);
-        Assert.AreEqual(0, Calls(BeginDataFn).Count);
+        Assert.ContainsSingle(Calls(SetDataFn));
+        Assert.IsEmpty(Calls(BeginDataFn));
         Assert.AreEqual(0, component.FindComponent<BitResourceTimeline>().Instance.LoadingMinDurationMs);
     }
 
@@ -283,11 +283,13 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         Assert.AreEqual("Resource timeline", viewport.GetAttribute("aria-label"));
         Assert.IsFalse(viewport.ClassList.Contains("cascaded-viewport"));
         // Options taken away set nothing, and the engine merges them: it stays editable, and says so.
-        Assert.IsTrue(viewport.GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
+        Assert.Contains("Alt+", viewport.GetAttribute("aria-keyshortcuts")!);
 
         // The engine is told the options and texts it was configured with are gone.
         var setOptions = Calls(SetOptionsFn).Single();
         Assert.IsNull(setOptions.Arguments[1]);
         Assert.AreEqual("Resource timeline", ((BitResourceTimelineTexts)setOptions.Arguments[2]!).AriaLabel);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

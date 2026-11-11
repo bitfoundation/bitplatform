@@ -72,7 +72,7 @@ public class BdndObserverTests : BdndComponentTestBase
         await EndDragAsync(Source(cut));
 
         cut.WaitForAssertion(() => Assert.AreEqual("end:crate:False::False", _log[^1]));
-        Assert.IsFalse(_log.Any(l => l.StartsWith("leave", StringComparison.Ordinal)));
+        Assert.DoesNotContain(l => l.StartsWith("leave", StringComparison.Ordinal), _log);
     }
 
     [TestMethod]
@@ -187,7 +187,7 @@ public class BdndObserverTests : BdndComponentTestBase
         await EndDragAsync(Source(cut));
 
         Assert.IsFalse(Manager.IsDragging());
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("handler failed", error.Message);
     }
 
@@ -240,7 +240,7 @@ public class BdndObserverTests : BdndComponentTestBase
 
         Bin(cut).Render(p => p.Add(x => x.Disabled, false));
 
-        Assert.HasCount(1, Manager.GetDroppableTargets());
+        Assert.ContainsSingle(Manager.GetDroppableTargets());
     }
 
     [TestMethod]
@@ -284,7 +284,9 @@ public class BdndObserverTests : BdndComponentTestBase
 
         await EndDragAsync(cut.FindComponent<BdndDraggable<string>>());
 
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("analytics failed", error.Message);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

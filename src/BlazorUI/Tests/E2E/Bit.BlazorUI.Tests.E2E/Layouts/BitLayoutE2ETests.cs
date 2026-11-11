@@ -22,10 +22,10 @@ public class BitLayoutE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/layout");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"landmarks\"");
-        StringAssert.Contains(html, "bit-lyt-mcn");
-        StringAssert.Contains(html, "<main id=\"landmarks-main\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"landmarks\"", html);
+        Assert.Contains("bit-lyt-mcn", html);
+        Assert.Contains("<main id=\"landmarks-main\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class BitLayoutE2ETests : E2ETestBase
 
         // The reading order is unchanged.
         var order = await Page.Locator("#panels > .bit-lyt-man > *").EvaluateAllAsync<string[]>("els => els.map(e => e.tagName)");
-        CollectionAssert.AreEqual(new[] { "NAV", "MAIN", "ASIDE" }, order);
+        Assert.AreSequenceEqual(new[] { "NAV", "MAIN", "ASIDE" }, order);
     }
 
     [TestMethod]
@@ -217,7 +217,7 @@ public class BitLayoutE2ETests : E2ETestBase
 
         // Nothing pinned: the header scrolls away.
         await box.EvaluateAsync("el => el.scrollTop = 300");
-        Assert.IsTrue((await BoxAsync("#sticky > .bit-lyt-hdr")).Bottom < (await BoxAsync("#sticky-box")).Y, "the header scrolled away");
+        Assert.IsLessThan((await BoxAsync("#sticky-box")).Y, (await BoxAsync("#sticky > .bit-lyt-hdr")).Bottom, "the header scrolled away");
 
         foreach (var id in new[] { "#btn-sticky-header", "#btn-sticky-footer", "#btn-sticky-nav", "#btn-sticky-aside" }) await Page.ClickAsync(id);
         await Expect(Page.Locator("#sticky-state")).ToHaveTextAsync("h=True;f=True;n=True;a=True");
@@ -244,7 +244,7 @@ public class BitLayoutE2ETests : E2ETestBase
         await OpenAsync("/e2e/layout");
 
         var before = await BoxAsync("#full-height");
-        Assert.IsTrue(before.H < 200, "as tall as its content by default");
+        Assert.IsLessThan(200, before.H, "as tall as its content by default");
 
         await Page.ClickAsync("#btn-full-height");
         await Expect(Page.Locator("#full-height")).ToHaveClassAsync(HasClass("bit-lyt-flh"));
@@ -276,7 +276,7 @@ public class BitLayoutE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-scrollable");
         await Expect(layout).Not.ToHaveClassAsync(HasClass("bit-lyt-scm"));
-        Assert.IsTrue((await BoxAsync("#scrollable")).H > 1000, "without it the layout is as tall as its content");
+        Assert.IsGreaterThan(1000, (await BoxAsync("#scrollable")).H, "without it the layout is as tall as its content");
     }
 
     [TestMethod]
@@ -537,7 +537,7 @@ public class BitLayoutE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

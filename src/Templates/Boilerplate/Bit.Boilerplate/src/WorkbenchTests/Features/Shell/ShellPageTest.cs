@@ -21,8 +21,10 @@ public abstract class ShellPageTest : WorkbenchPageTest
         }
         catch (TimeoutException)
         {
-            Assert.AreEqual((width, height), size);
+            // Report the last measured dimensions below instead of the polling timeout.
         }
+
+        Assert.AreEqual((width, height), size);
     }
 
     /// <summary>The view's window size, or none while its frame is between two documents.</summary>

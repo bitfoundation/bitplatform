@@ -68,11 +68,11 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         var surface = Surface(document);
 
         Assert.IsNull(surface.QuerySelector("script, style, svg, math, iframe, form, input, font"));
-        Assert.IsFalse(surface.Descendants<IElement>().Any(e => e.Attributes.Any(a => a.Name.StartsWith("on"))));
-        Assert.IsFalse(surface.Descendants<IComment>().Any());
+        Assert.DoesNotContain(e => e.Attributes.Any(a => a.Name.StartsWith("on")), surface.Descendants<IElement>());
+        Assert.IsEmpty(surface.Descendants<IComment>());
 
         var links = surface.QuerySelectorAll("a").ToArray();
-        Assert.AreEqual(3, links.Length);
+        Assert.HasCount(3, links);
         Assert.IsFalse(links[0].HasAttribute("href"));
         Assert.IsFalse(links[1].HasAttribute("href"));
         Assert.AreEqual("https://bitplatform.dev", links[2].GetAttribute("href"));
@@ -82,9 +82,9 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         Assert.AreEqual("Photo", image.GetAttribute("alt"));
 
         Assert.AreEqual("color: red", surface.QuerySelector("span")!.GetAttribute("style"));
-        StringAssert.Contains(surface.TextContent, "unwrapped");
-        StringAssert.Contains(surface.TextContent, "text");
-        Assert.IsFalse(surface.TextContent.Contains("alert"));
+        Assert.Contains("unwrapped", surface.TextContent);
+        Assert.Contains("text", surface.TextContent);
+        Assert.DoesNotContain("alert", surface.TextContent);
     }
 
     [TestMethod]
@@ -181,8 +181,8 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
 
         var paragraphs = Surface(document).QuerySelectorAll("p");
 
-        Assert.IsFalse((paragraphs[0].GetAttribute("style") ?? string.Empty).Contains("image-set"));
-        Assert.IsFalse((paragraphs[1].GetAttribute("style") ?? string.Empty).Contains("image-set"));
+        Assert.DoesNotContain("image-set", (paragraphs[0].GetAttribute("style") ?? string.Empty));
+        Assert.DoesNotContain("image-set", (paragraphs[1].GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -213,8 +213,8 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         var surface = Surface(document);
         var root = document.QuerySelector(".bit-rte")!;
 
-        StringAssert.Contains(surface.TextContent, "tail");
-        StringAssert.Contains(surface.TextContent, "stray item");
+        Assert.Contains("tail", surface.TextContent);
+        Assert.Contains("stray item", surface.TextContent);
         Assert.IsTrue(root.Contains(surface));
         Assert.IsNotNull(root.QuerySelector(".bit-rte-hint"));
         Assert.IsFalse(surface.Contains(root.QuerySelector(".bit-rte-hint")));
@@ -247,7 +247,7 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
 
         // The tree a browser builds from the output, written back, is the output itself: nothing in it was closed,
         // moved or reopened by the parser, which is what keeps the value inside the surface whatever it holds.
-        StringAssert.Contains(html, $">{surface.InnerHtml}</div>");
+        Assert.Contains($">{surface.InnerHtml}</div>", html);
         Assert.AreNotEqual(string.Empty, surface.InnerHtml);
     }
 
@@ -314,7 +314,7 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         var document = await PrerenderAsync(value);
         watch.Stop();
 
-        Assert.IsTrue(watch.Elapsed < System.TimeSpan.FromSeconds(10), $"{name}: {watch.Elapsed}");
+        Assert.IsLessThan(System.TimeSpan.FromSeconds(10), watch.Elapsed, $"{name}: {watch.Elapsed}");
 
         var root = document.QuerySelector(".bit-rte")!;
         Assert.IsTrue(root.Contains(Surface(document)), name);
@@ -329,8 +329,8 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
         // Bounded to about a megabyte, the rest left to the bridge - but never an empty surface, which the
         // placeholder would claim is a blank document.
         var html = Surface(document).InnerHtml;
-        StringAssert.StartsWith(html, "<p>xxx");
-        StringAssert.EndsWith(html, "x</p>");
+        Assert.StartsWith("<p>xxx", html);
+        Assert.EndsWith("x</p>", html);
         Assert.IsLessThanOrEqualTo(1024 * 1024 + "<p></p>".Length, html.Length);
     }
 
@@ -343,7 +343,7 @@ public class BitRichTextEditorPrerenderTests : BunitTestContext
 
         // The cut lands before the last tag that starts within the limit, so no element is split in the middle.
         var html = Surface(document).InnerHtml;
-        StringAssert.EndsWith(html, new string('x', 1000) + "</p>");
+        Assert.EndsWith(new string('x', 1000) + "</p>", html);
         Assert.IsLessThan(blocks.Length, html.Length);
     }
 

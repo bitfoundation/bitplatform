@@ -124,8 +124,7 @@ public sealed class BitComponentPrivatePropertyResetTests
 
         offenders.Sort(StringComparer.Ordinal);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A role or size class publishes a private property the root of its component does not reset, so a nested instance inherits the outer one's choice: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A role or size class publishes a private property the root of its component does not reset, so a nested instance inherits the outer one's choice: {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -168,12 +167,12 @@ public sealed class BitComponentPrivatePropertyResetTests
         // Two lists known to be there, so a reading that no longer finds them fails here rather than passing on none.
         foreach (var anchor in new[] { "bdg-private-properties", "ico-private-properties" })
         {
-            Assert.IsTrue(found.Contains(anchor), $"${anchor} was not found; the lists are no longer read.");
+            Assert.Contains(anchor, found, $"${anchor} was not found; the lists are no longer read.");
         }
 
         offenders.Sort(StringComparer.Ordinal);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders, string.Join(", ", offenders));
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, string.Join(", ", offenders));
     }
 
     [TestMethod]
@@ -249,8 +248,7 @@ public sealed class BitComponentPrivatePropertyResetTests
 
         offenders.Sort(StringComparer.Ordinal);
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A component writes a private property into its inline style that its stylesheet never resets, so a nested instance inherits it: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A component writes a private property into its inline style that its stylesheet never resets, so a nested instance inherits it: {string.Join(", ", offenders)}");
     }
 
     // The headers of the rules that style one element of a component: every top-level rule naming its class among its

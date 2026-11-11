@@ -51,7 +51,7 @@ public sealed class KeyboardTests : BlowTest
         AssertNear(before.Y + 30 * zoom, after.Y, 0.5, "node top after ArrowDown and Shift+ArrowDown");
 
         // The move is announced, and the page itself did not scroll under the arrow keys.
-        StringAssert.Contains(await page.Locator(".bit-blow-a11y-live").TextContentAsync(), "moved");
+        Assert.Contains("moved", (await page.Locator(".bit-blow-a11y-live").TextContentAsync())!);
         Assert.AreEqual(scrolled, await page.EvaluateAsync<double>("() => window.scrollY"), "the arrow keys scrolled the page");
     }
 
@@ -70,7 +70,7 @@ public sealed class KeyboardTests : BlowTest
 
         await page.Keyboard.PressAsync("Escape");
         await EventuallyAsync(async () => (await SelectedNodesAsync(page)).Length == 0, "Escape cleared the selection");
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "3", "4" }, await IdsAsync(page), "Escape removed a node");
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Escape removed a node");
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public sealed class KeyboardTests : BlowTest
         // Pressing in the field selected its node, so without the editable-focus check Backspace would have
         // deleted it.
         Assert.AreEqual("Collect inpu", await field.InputValueAsync());
-        CollectionAssert.AreEquivalent(new[] { "1", "2" }, await IdsAsync(page), "a key typed into a field deleted a node");
+        Assert.AreSequenceEqual(new[] { "1", "2" }, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "a key typed into a field deleted a node");
         Assert.AreEqual(1, await page.Locator(".bit-blow-edge").CountAsync(), "a key typed into a field deleted an edge");
 
         // The same key does delete the node once focus is on the node rather than in the field.

@@ -50,7 +50,7 @@ public class BitMarkdownViewerParamsTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownViewerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitMarkdownViewer", BitMarkdownViewerParams.ParamName);
+        Assert.AreEqual("BitParams.BitMarkdownViewer", new BitMarkdownViewerParams().Name);
         Assert.AreEqual(BitMarkdownViewerParams.ParamName, new BitMarkdownViewerParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitMarkdownViewerParams());
     }
@@ -89,11 +89,11 @@ public class BitMarkdownViewerParamsTests : BunitTestContext
         var root = component.Find(".bit-mdv");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        Assert.AreEqual(1, component.FindAll(".bit-mdv h2").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv h1").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv del").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv h2"));
+        Assert.IsEmpty(component.FindAll(".bit-mdv h1"));
+        Assert.ContainsSingle(component.FindAll(".bit-mdv del"));
         Assert.IsFalse(component.Find(".bit-mdv img").HasAttribute("src"));
-        StringAssert.Contains(root.TextContent, "CODE:x");
+        Assert.Contains("CODE:x", root.TextContent);
     }
 
     [TestMethod]
@@ -131,8 +131,8 @@ public class BitMarkdownViewerParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
-        Assert.AreEqual(1, component.FindAll(".bit-mdv h1").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-mdv del").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv h1"));
+        Assert.IsEmpty(component.FindAll(".bit-mdv del"));
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class BitMarkdownViewerParamsTests : BunitTestContext
             Pipeline = BitMarkdownPipelines.GitHub,
         }, "# Title");
 
-        Assert.AreEqual(1, component.FindAll(".bit-mdv h2").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv h2"));
 
         component.Render(parameters =>
         {
@@ -156,6 +156,6 @@ public class BitMarkdownViewerParamsTests : BunitTestContext
 
         Assert.AreEqual(0, viewer.HeadingLevelOffset);
         Assert.IsNull(viewer.Pipeline);
-        Assert.AreEqual(1, component.FindAll(".bit-mdv h1").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mdv h1"));
     }
 }

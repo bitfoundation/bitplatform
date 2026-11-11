@@ -74,7 +74,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         // The busy state is the literal "false" once the document is in - never a missing attribute, which
         // would leave the earlier "true" standing for a reader that read it while the load ran.
         Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-progress").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pdv-progress"));
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll("[data-thumb]")));
 
         var thumbs = component.FindAll("[data-thumb]");
 
@@ -127,7 +127,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Texts, new BitPdfViewerTexts { ThumbnailAriaLabelFormat = "Seite {0}" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll("[data-thumb]")));
 
         Assert.AreEqual("Seite 2", component.FindAll("[data-thumb]")[1].GetAttribute("aria-label"));
     }
@@ -141,7 +141,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Classes, new BitPdfViewerClassStyles { PasswordDialog = "custom-password" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-password").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-pdv-password")));
 
         var dialog = component.Find(".bit-pdv-password");
         Assert.IsTrue(dialog.ClassList.Contains("custom-password"));
@@ -160,7 +160,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var description = component.Find($"#{component.Find(".bit-pdv-password-input").GetAttribute("aria-describedby")}");
-            StringAssert.Contains(description.TextContent, "not accepted");
+            Assert.Contains("not accepted", description.TextContent);
             Assert.IsTrue(description.ClassList.Contains("bit-pdv-password-error"));
         });
     }
@@ -177,7 +177,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         component.InvokeAsync(component.Instance.ToggleProperties);
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[role='dialog']").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[role='dialog']")));
 
         var dialog = component.Find("[role='dialog']");
         Assert.AreEqual("Document properties", component.Find($"#{dialog.GetAttribute("aria-labelledby")}").TextContent.Trim());
@@ -193,7 +193,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll("[data-thumb]")));
 
         Assert.IsTrue(component.Find(".bit-pdv-toolbar").HasAttribute("inert"));
         Assert.IsTrue(component.Find(".bit-pdv-thumbs").HasAttribute("inert"));
@@ -213,7 +213,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Bookmarks);
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.FindAll("[role='treeitem']").Count > 0));
+        component.WaitForAssertion(() => Assert.IsNotEmpty(component.FindAll("[role='treeitem']")));
 
         foreach (var item in component.FindAll("[role='treeitem']"))
         {
@@ -245,8 +245,8 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         // The start content opens the toolbar and the end content closes it, around the built-in controls.
         var groups = toolbar.Children;
-        Assert.IsTrue(groups[0].QuerySelector(".custom-start") is not null);
-        Assert.IsTrue(groups[^1].QuerySelector(".custom-end") is not null);
+        Assert.IsNotNull(groups[0].QuerySelector(".custom-start"));
+        Assert.IsNotNull(groups[^1].QuerySelector(".custom-end"));
     }
 
     [TestMethod]
@@ -260,8 +260,8 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         var style = component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-PdfViewer-height:300px");
-        StringAssert.Contains(style, "--bit-PdfViewer-width:50%");
+        Assert.Contains("--bit-PdfViewer-height:300px", style);
+        Assert.Contains("--bit-PdfViewer-width:50%", style);
     }
 
     [TestMethod]
@@ -272,16 +272,16 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-page='1'] .bit-pdv-html-page")));
 
         // The painted glyphs are a picture of the words the selection layer holds, so only one of the two is read.
         var painted = component.Find(".bit-pdv-html-page > [aria-hidden='true']");
-        Assert.IsTrue(painted.QuerySelectorAll("span").Length > 0);
+        Assert.IsGreaterThan(0, painted.QuerySelectorAll("span").Length);
         Assert.AreEqual(0, painted.QuerySelectorAll("[data-bit-pdv-sel]").Length);
 
         var text = component.Find(".bit-pdv-text-layer [data-bit-pdv-sel]");
         Assert.IsNull(text.Closest("[aria-hidden='true']"));
-        StringAssert.Contains(text.TextContent, "Hello");
+        Assert.Contains("Hello", text.TextContent);
     }
 
     [TestMethod]
@@ -344,11 +344,11 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Build(bodies, rootObjNum: 1)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-page='1'] .bit-pdv-html-page")));
 
         var links = component.FindAll(".bit-pdv-html-page a[href='https://bitplatform.dev']");
 
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         Assert.AreEqual("https://bitplatform.dev", links[0].GetAttribute("title"));
         Assert.IsNull(links[0].GetAttribute("tabindex"));
         Assert.AreEqual("-1", links[1].GetAttribute("tabindex"));
@@ -364,17 +364,17 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll("[data-thumb]")));
 
         // The sidebar's spy asks for the thumbnails it scrolls into view; there is no browser here to ask.
         await component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([1]));
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-thumb='1'] .bit-pdv-html-page").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-thumb='1'] .bit-pdv-html-page")));
 
         // An option of a listbox with a tab stop inside it is a tab stop nobody can see: what the thumbnail shows is
         // inert, whether it was built for the sidebar or reused from the page.
         Assert.IsTrue(component.FindAll("[data-thumb] a").All(a => a.Closest("[inert]") is not null));
         Assert.IsNotNull(component.Find("[data-thumb='1'] .bit-pdv-thumb-svg").GetAttribute("inert"));
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-surface a[data-bit-pdv-page]").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-surface a[data-bit-pdv-page]"));
     }
 
     [TestMethod]
@@ -388,11 +388,11 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, e => errors.Add(e)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(errors));
 
         var alert = component.Find(".bit-pdv-error");
         Assert.AreEqual("alert", alert.GetAttribute("role"));
-        StringAssert.Contains(alert.TextContent, errors[0]);
+        Assert.Contains(errors[0], alert.TextContent);
     }
 
     [TestMethod]
@@ -408,7 +408,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
                 builder.AddMarkupContent(0, $"<span class=\"custom-error\">{message}</span>")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(errors));
 
         var alert = component.Find(".bit-pdv-error");
         Assert.AreEqual("alert", alert.GetAttribute("role"));
@@ -418,7 +418,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld())));
 
         component.WaitForPages(1);
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pdv-error"));
     }
 
     [TestMethod]
@@ -433,8 +433,8 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         var empty = component.Find(".bit-pdv-empty");
 
         Assert.IsNotNull(empty.QuerySelector(".custom-empty"));
-        Assert.IsFalse(empty.TextContent.Contains("No document loaded."));
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
+        Assert.DoesNotContain("No document loaded.", empty.TextContent);
+        Assert.IsEmpty(component.FindAll(".bit-pdv-error"));
     }
 
     [TestMethod]
@@ -451,16 +451,16 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
                 builder.AddMarkupContent(0, "<span class=\"custom-loading\">Opening</span>")));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".custom-loading").Count));
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-page-loading").Count);
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".custom-loading")));
+        Assert.IsEmpty(component.FindAll(".bit-pdv-page-loading"));
         // The template replaces the placeholder, not the loading bar or the busy state.
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-progress").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-progress"));
         Assert.AreEqual("true", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
 
         response.SetResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(TestPdf.HelloWorld()) });
 
         component.WaitForPages(1);
-        Assert.AreEqual(0, component.FindAll(".custom-loading").Count);
+        Assert.IsEmpty(component.FindAll(".custom-loading"));
     }
 
     private sealed class HeldHandler(Task<HttpResponseMessage> response) : HttpMessageHandler
@@ -479,11 +479,11 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         component.WaitForPages(2);
         // The script tracks where focus is from the first render on, so a closing panel
         // needs no round trip to ask it.
-        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.registerFocusTracker").Count);
+        Assert.ContainsSingle(Context.InvocationsOf("BitBlazorUI.PdfViewer.registerFocusTracker"));
 
         // Opening a panel takes nothing out of the DOM.
         await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
-        Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus").Count);
+        Assert.IsEmpty(Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus"));
 
         // F4 from a thumbnail takes the panel - and the focus inside it - out of the DOM.
         // Whether focus was in it is the script's to say: focus the reader had elsewhere
@@ -492,7 +492,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         Assert.AreEqual(BitPdfSidebar.None, component.Instance.Sidebar);
         component.WaitForAssertion(() =>
-            Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus").Count));
+            Assert.ContainsSingle(Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus")));
     }
 
     [TestMethod]
@@ -513,7 +513,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         // A key the viewer no longer answers to is not announced.
         component.Render(parameters => parameters.Add(p => p.EnableKeyboardShortcuts, false));
 
-        Assert.AreEqual(0, component.FindAll("[aria-keyshortcuts]").Count);
+        Assert.IsEmpty(component.FindAll("[aria-keyshortcuts]"));
     }
 
     [TestMethod]

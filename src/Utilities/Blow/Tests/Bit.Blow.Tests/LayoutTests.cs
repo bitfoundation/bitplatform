@@ -29,8 +29,8 @@ public class LayoutTests
         BlowLayout.Layered(nodes, Path("0", "1", "2"));
 
         // Top-to-bottom: each node strictly below the last, all on the same column.
-        Assert.IsTrue(nodes[1].Position.Y > nodes[0].Position.Y);
-        Assert.IsTrue(nodes[2].Position.Y > nodes[1].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[1].Position.Y);
+        Assert.IsGreaterThan(nodes[1].Position.Y, nodes[2].Position.Y);
         Assert.AreEqual(nodes[0].Position.X, nodes[1].Position.X, 1e-6);
     }
 
@@ -64,7 +64,7 @@ public class LayoutTests
 
         BlowLayout.Layered(nodes, edges);
 
-        Assert.IsTrue(nodes[2].Position.Y > nodes[1].Position.Y);
+        Assert.IsGreaterThan(nodes[1].Position.Y, nodes[2].Position.Y);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class LayoutTests
         BlowLayout.Layered(nodes, Path("0", "1", "2"),
             new BlowLayeredLayoutOptions { Direction = BlowLayoutDirection.LeftToRight });
 
-        Assert.IsTrue(nodes[1].Position.X > nodes[0].Position.X);
+        Assert.IsGreaterThan(nodes[0].Position.X, nodes[1].Position.X);
         Assert.AreEqual(nodes[0].Position.Y, nodes[1].Position.Y, 1e-6);
     }
 
@@ -89,8 +89,8 @@ public class LayoutTests
         BlowLayout.Layered(up, Path("0", "1", "2"),
             new BlowLayeredLayoutOptions { Direction = BlowLayoutDirection.BottomToTop });
 
-        Assert.IsTrue(down[2].Position.Y > down[0].Position.Y);
-        Assert.IsTrue(up[2].Position.Y < up[0].Position.Y);
+        Assert.IsGreaterThan(down[0].Position.Y, down[2].Position.Y);
+        Assert.IsLessThan(up[0].Position.Y, up[2].Position.Y);
     }
 
     [TestMethod]
@@ -130,7 +130,8 @@ public class LayoutTests
         BlowLayout.Layered(nodes, edges);
 
         // Every node got a finite position; the back edge did not push anything to infinity.
-        foreach (var n in nodes) {
+        foreach (var n in nodes)
+        {
             Assert.IsTrue(double.IsFinite(n.Position.X));
             Assert.IsTrue(double.IsFinite(n.Position.Y));
         }
@@ -163,7 +164,7 @@ public class LayoutTests
 
         BlowLayout.Layered(nodes, edges);
 
-        Assert.IsTrue(nodes[1].Position.Y > nodes[0].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[1].Position.Y);
     }
 
     [TestMethod]
@@ -178,7 +179,7 @@ public class LayoutTests
 
         BlowLayout.Layered(nodes, edges);
 
-        Assert.IsTrue(nodes[1].Position.Y > nodes[0].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[1].Position.Y);
     }
 
     [TestMethod]
@@ -223,7 +224,7 @@ public class LayoutTests
         BlowLayout.Layered(nodes, Path("0", "1"), new BlowLayeredLayoutOptions { LayerGap = 10 });
 
         // Layer thickness comes from the nodes in it, so the tall node's bottom clears the next.
-        Assert.IsTrue(nodes[1].Position.Y >= nodes[0].Position.Y + 200);
+        Assert.IsGreaterThanOrEqualTo(nodes[0].Position.Y + 200, nodes[1].Position.Y);
     }
 
     [TestMethod]
@@ -260,7 +261,7 @@ public class LayoutTests
         var nodes = Chain(2);
         BlowLayout.Layered(nodes, [], new BlowLayeredLayoutOptions { CrossingReductionPasses = 0 });
 
-        Assert.IsTrue(nodes[0].Position.X < nodes[1].Position.X);
+        Assert.IsLessThan(nodes[1].Position.X, nodes[0].Position.X);
     }
 
     [TestMethod]
@@ -290,7 +291,7 @@ public class LayoutTests
         BlowLayout.Grid(nodes, new BlowGridLayoutOptions { Columns = 2 });
 
         Assert.AreEqual(nodes[0].Position.Y, nodes[1].Position.Y, 1e-6);
-        Assert.IsTrue(nodes[2].Position.Y > nodes[0].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[2].Position.Y);
         Assert.AreEqual(nodes[0].Position.X, nodes[2].Position.X, 1e-6);
     }
 
@@ -302,7 +303,7 @@ public class LayoutTests
 
         // Nine nodes in three columns: the fourth starts a new row.
         Assert.AreEqual(nodes[0].Position.Y, nodes[2].Position.Y, 1e-6);
-        Assert.IsTrue(nodes[3].Position.Y > nodes[0].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[3].Position.Y);
     }
 
     [TestMethod]
@@ -336,7 +337,7 @@ public class LayoutTests
         BlowLayout.Grid(nodes, new BlowGridLayoutOptions { Columns = 0 });
 
         Assert.AreEqual(nodes[0].Position.Y, nodes[1].Position.Y, 1e-6);
-        Assert.IsTrue(nodes[2].Position.Y > nodes[0].Position.Y);
+        Assert.IsGreaterThan(nodes[0].Position.Y, nodes[2].Position.Y);
     }
 
     // ---- circle ----
@@ -379,7 +380,7 @@ public class LayoutTests
         BlowLayout.Circle(few);
         BlowLayout.Circle(many);
 
-        Assert.IsTrue(Spread(many) > Spread(few));
+        Assert.IsGreaterThan(Spread(few), Spread(many));
 
         static double Spread(List<BlowNode> nodes) =>
             nodes.Max(n => n.Position.X) - nodes.Min(n => n.Position.X);
@@ -432,7 +433,7 @@ public class LayoutTests
 
         Assert.AreEqual(-2, result.OffsetX, 1e-6);
         Assert.AreEqual(-3, result.OffsetY, 1e-6);
-        Assert.AreEqual(2, result.Guides.Count);
+        Assert.HasCount(2, result.Guides);
     }
 
     [TestMethod]

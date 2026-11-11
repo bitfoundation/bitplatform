@@ -195,7 +195,7 @@ public class BitCircularTimePickerCultureTests : BunitTestContext
 
         var numbers = component.FindAll(".bit-ctp-num").Select(n => n.TextContent).ToArray();
 
-        Assert.AreEqual(24, numbers.Length);
+        Assert.HasCount(24, numbers);
         Assert.IsTrue(numbers.All(n => n.Length == 2 && n.All(char.IsAsciiDigit)));
         Assert.AreEqual("09", component.FindAll("button.bit-ctp-txt")[0].TextContent.Trim());
     }

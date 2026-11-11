@@ -46,8 +46,8 @@ public class BitLabelParamsTests : BunitTestContext
     [TestMethod]
     public void BitLabelParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLabel)}", BitLabelParams.ParamName);
-        Assert.AreEqual("BitParams.BitLabel", BitLabelParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLabel)}", new BitLabelParams().Name);
+        Assert.AreEqual("BitParams.BitLabel", new BitLabelParams().Name);
     }
 
     [TestMethod]
@@ -183,7 +183,7 @@ public class BitLabelParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-lbl-lg"));
 
         // Required written as false by the label opts it out of the cascaded Required, so its Optional shows.
-        Assert.AreEqual(0, component.FindAll(".bit-lbl-rqi").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lbl-rqi"));
         Assert.AreEqual("(own)", component.Find(".bit-lbl-opi").TextContent);
     }
 

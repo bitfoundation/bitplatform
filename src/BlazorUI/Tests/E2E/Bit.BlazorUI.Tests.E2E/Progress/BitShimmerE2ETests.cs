@@ -23,8 +23,8 @@ public class BitShimmerE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"smr-basic\" class=\"bit-smr-lin bit-smr\" aria-busy=\"true\"><div class=\"bit-smr-wrp  \" aria-hidden=\"true\">");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"smr-basic\" class=\"bit-smr-lin bit-smr\" aria-busy=\"true\"><div class=\"bit-smr-wrp  \" aria-hidden=\"true\">", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#smr-basic")).ToHaveAttributeAsync("aria-busy", "true");
@@ -41,7 +41,7 @@ public class BitShimmerE2ETests : E2ETestBase
 
         var box = await root.BoundingBoxAsync();
         Assert.AreEqual(374, Math.Round(box!.Width), "The full width of its container.");
-        Assert.IsTrue(box.Height > 0);
+        Assert.IsGreaterThan(0, box.Height);
 
         await Expect(root.Locator(".bit-smr-wrp")).ToHaveCSSAsync("background-color", await ResolveAsync("color", "var(--bit-clr-bg-sec)"));
         await Expect(root.Locator(".bit-smr-wrp")).ToHaveCSSAsync("border-top-left-radius", await ResolveAsync("border-top-left-radius", "var(--bit-shp-radius-surface)"));
@@ -97,7 +97,7 @@ public class BitShimmerE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         var lines = await LineBoxesAsync("#smr-lines");
-        Assert.AreEqual(3, lines.Count);
+        Assert.HasCount(3, lines);
         await Expect(Page.Locator("#smr-lines")).ToHaveClassAsync(HasClass("bit-smr-mln"));
         Assert.IsTrue(lines.All(l => Math.Abs(l.Height - 12) < 0.5), "Each line is Height tall.");
         Assert.AreEqual(374, lines[0].Width, 0.5);
@@ -105,7 +105,7 @@ public class BitShimmerE2ETests : E2ETestBase
         Assert.AreEqual(8, lines[1].Y - (lines[0].Y + lines[0].Height), 0.5, "spacing(1) apart.");
 
         var gapped = await LineBoxesAsync("#smr-lines-gap");
-        Assert.AreEqual(4, gapped.Count);
+        Assert.HasCount(4, gapped);
         Assert.AreEqual(16, gapped[1].Y - (gapped[0].Y + gapped[0].Height), 0.5);
         Assert.AreEqual(374 * 0.35, gapped[3].Width, 0.5);
 
@@ -146,7 +146,7 @@ public class BitShimmerE2ETests : E2ETestBase
         await Expect(Page.Locator("#smr-anim-timing .bit-smr-anm")).ToHaveCSSAsync("animation-delay", "1s");
 
         var delays = await Page.Locator("#smr-anim-stagger .bit-smr-anm").EvaluateAllAsync<string[]>("els => els.map(e => getComputedStyle(e).animationDelay)");
-        CollectionAssert.AreEqual(new[] { "0s", "0.2s", "0.4s", "0.6s" }, delays);
+        Assert.AreSequenceEqual(new[] { "0s", "0.2s", "0.4s", "0.6s" }, delays);
     }
 
     [TestMethod]
@@ -234,7 +234,7 @@ public class BitShimmerE2ETests : E2ETestBase
 
         // The placeholder is not in the page at all until the delay is up.
         await Page.WaitForFunctionAsync("() => { const el = document.querySelector('#smr-show-delay .bit-smr-wrp'); return !!el && getComputedStyle(el).opacity === '1'; }");
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 1500, $"Shown after {watch.ElapsedMilliseconds}ms of its 2000.");
+        Assert.IsGreaterThanOrEqualTo(1500, watch.ElapsedMilliseconds, $"Shown after {watch.ElapsedMilliseconds}ms of its 2000.");
     }
 
     [TestMethod]
@@ -256,7 +256,7 @@ public class BitShimmerE2ETests : E2ETestBase
         await Expect(Page.Locator("#overlay-min-content")).ToBeHiddenAsync();
 
         await Expect(Page.Locator("#min-show-content")).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 2500, $"Held for {watch.ElapsedMilliseconds}ms of its 3000.");
+        Assert.IsGreaterThanOrEqualTo(2500, watch.ElapsedMilliseconds, $"Held for {watch.ElapsedMilliseconds}ms of its 3000.");
         await Expect(Page.Locator("#overlay-min-content")).ToBeVisibleAsync();
     }
 
@@ -362,7 +362,7 @@ public class BitShimmerE2ETests : E2ETestBase
         Assert.AreEqual(374 * 0.4, lines[2].Width, 0.5);
         await Expect(Page.Locator("#smr-params-1 .bit-smr-anm").First).ToHaveClassAsync(HasClass("bit-smr-pul"));
         var delays = await Page.Locator("#smr-params-1 .bit-smr-anm").EvaluateAllAsync<string[]>("els => els.map(e => getComputedStyle(e).animationDelay)");
-        CollectionAssert.AreEqual(new[] { "0s", "0.15s", "0.3s" }, delays);
+        Assert.AreSequenceEqual(new[] { "0s", "0.15s", "0.3s" }, delays);
 
         await Expect(Page.Locator("#smr-params-2 .bit-smr-anm").First).ToHaveClassAsync(HasClass("bit-smr-wav"));
         Assert.IsTrue((await LineBoxesAsync("#smr-params-2")).All(l => Math.Abs(l.Height - 20) < 0.5));
@@ -404,7 +404,7 @@ public class BitShimmerE2ETests : E2ETestBase
     {
         await OpenAsync(Path);
 
-        StringAssert.Contains(await ComputedStyleAsync("#smr-color-wave .bit-smr-anm", "background-image"), await ResolveAsync("color", "var(--bit-clr-err)"));
+        Assert.Contains(await ResolveAsync("color", "var(--bit-clr-err)"), await ComputedStyleAsync("#smr-color-wave .bit-smr-anm", "background-image"));
     }
 
     [TestMethod]

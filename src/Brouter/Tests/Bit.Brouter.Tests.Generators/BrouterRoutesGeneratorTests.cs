@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Bit.Brouter.Tests.Generators.GeneratorTestHarness;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Brouter.Tests.Generators;
 
 [TestClass]
@@ -14,7 +16,7 @@ public class BrouterRoutesGeneratorTests
             <h1>Counter</h1>
             """));
 
-        StringAssert.Contains(source, "public static string CounterByStart(int @start");
+        Assert.Contains("public static string CounterByStart(int @start", source);
         Assert.AreEqual("/counter/42", Invoke(asm, "CounterByStart", 42, Type.Missing));
     }
 
@@ -102,7 +104,7 @@ public class BrouterRoutesGeneratorTests
             @page "/blog/{action=Index}/{id:int}"
             """));
 
-        StringAssert.Contains(source, "public static string BlogByActionById(string @action, int @id");
+        Assert.Contains("public static string BlogByActionById(string @action, int @id", source);
         Assert.AreEqual("/blog/Archive/5", Invoke(asm, "BlogByActionById", "Archive", 5, Type.Missing));
     }
 
@@ -116,7 +118,7 @@ public class BrouterRoutesGeneratorTests
             @page "/products/{culture?}/list"
             """));
 
-        StringAssert.Contains(source, "public static string ProductsListByCulture(string @culture");
+        Assert.Contains("public static string ProductsListByCulture(string @culture", source);
         Assert.AreEqual("/products/en/list", Invoke(asm, "ProductsListByCulture", "en", Type.Missing));
     }
 
@@ -128,7 +130,7 @@ public class BrouterRoutesGeneratorTests
             """));
 
         // min(1) is validation-only: the int constraint still decides the CLR type.
-        StringAssert.Contains(source, "public static string RateByScore(int @score");
+        Assert.Contains("public static string RateByScore(int @score", source);
         Assert.AreEqual("/rate/3", Invoke(asm, "RateByScore", 3, Type.Missing));
     }
 
@@ -183,7 +185,7 @@ public class BrouterRoutesGeneratorTests
 
         Assert.AreEqual("/inside", Invoke(asm, "Inside", Type.Missing));
         // Neither the dynamic route nor its child may generate anything.
-        Assert.IsFalse(Methods(asm).Any(m => m.Name.Contains("Unknowable", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(m => m.Name.Contains("Unknowable", StringComparison.OrdinalIgnoreCase), Methods(asm));
     }
 
     [TestMethod]
@@ -200,7 +202,7 @@ public class BrouterRoutesGeneratorTests
                 """));
 
         var methods = Methods(asm).Where(m => m.Name is "User" or "UsersById").ToArray();
-        Assert.AreEqual(1, methods.Length);
+        Assert.ContainsSingle(methods);
         Assert.AreEqual("User", methods[0].Name);
     }
 
@@ -216,9 +218,9 @@ public class BrouterRoutesGeneratorTests
             """));
 
         var names = Methods(asm).Select(m => m.Name).ToArray();
-        CollectionAssert.Contains(names, "Home");
+        Assert.Contains("Home", names);
         Assert.IsFalse(names.Contains("Root"));
-        Assert.IsFalse(names.Any(n => n.Contains("Files")));
+        Assert.DoesNotContain(n => n.Contains("Files"), names);
     }
 
     [TestMethod]
@@ -232,8 +234,8 @@ public class BrouterRoutesGeneratorTests
             """));
 
         var diagnostic = diagnostics.Single(d => d.Id == "BRT001");
-        StringAssert.Contains(diagnostic.GetMessage(), "first");
-        StringAssert.Contains(diagnostic.GetMessage(), "second");
+        Assert.Contains("first", diagnostic.GetMessage());
+        Assert.Contains("second", diagnostic.GetMessage());
         // The first declaration still wins deterministically.
         Assert.AreEqual("/users/7", Invoke(asm, "First", 7, Type.Missing));
         Assert.AreEqual("first", NameConstant(asm, "First"));

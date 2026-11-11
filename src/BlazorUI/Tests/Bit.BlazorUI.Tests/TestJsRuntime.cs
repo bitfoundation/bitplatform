@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI.Tests;
 
-public class TestJsRuntime : IJSRuntime
+internal class TestJsRuntime : IJSRuntime
 {
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
     {

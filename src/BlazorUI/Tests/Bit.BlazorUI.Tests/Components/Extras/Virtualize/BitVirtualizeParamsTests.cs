@@ -75,7 +75,7 @@ public class BitVirtualizeParamsTests : BunitTestContext
     [TestMethod]
     public void BitVirtualizeParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitVirtualize", BitVirtualizeParams.ParamName);
+        Assert.AreEqual("BitParams.BitVirtualize", new BitVirtualizeParams().Name);
         Assert.AreEqual(BitVirtualizeParams.ParamName, new BitVirtualizeParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitVirtualizeParams());
     }
@@ -117,15 +117,15 @@ public class BitVirtualizeParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("feed", root.GetAttribute("role"));
 
         // 300px of 100px items, 10px apart, with no overscan.
         var items = component.FindAll(".bit-vir-itm");
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
         Assert.AreEqual("article", items[0].GetAttribute("role"));
         Assert.IsTrue(items[0].ClassList.Contains("cascaded-item"));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:10990px");
+        Assert.Contains("height:10990px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -140,8 +140,8 @@ public class BitVirtualizeParamsTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Find(".bit-vir-itm").ClassList.Contains("bit-vir-fix"));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:3000px");
-        Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Virtualize.setup"][0].Arguments[3]);
+        Assert.Contains("height:3000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Virtualize.setup"][0].Arguments[3]));
     }
 
     [TestMethod]
@@ -180,7 +180,7 @@ public class BitVirtualizeParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:5000px");
+        Assert.Contains("height:5000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
 
         var item = component.Find(".bit-vir-itm");
 
@@ -213,6 +213,6 @@ public class BitVirtualizeParamsTests : BunitTestContext
         Assert.AreEqual(50f, list.ItemSize);
         Assert.AreEqual("list", list.Role);
         Assert.AreEqual("list", component.Find(".bit-vir").GetAttribute("role"));
-        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:5000px");
+        Assert.Contains("height:5000px", component.Find(".bit-vir-spc").GetAttribute("style")!);
     }
 }

@@ -41,7 +41,7 @@ public partial class McpCatalogConsistencyTests
             foreach (var hit in result.Hits) suggestions.Add(hit.Tool);
         }
 
-        Assert.IsTrue(suggestions.Count > 50, $"Only {suggestions.Count} distinct follow-up calls were suggested; the sample is too small to say much.");
+        Assert.IsGreaterThan(50, suggestions.Count, $"Only {suggestions.Count} distinct follow-up calls were suggested; the sample is too small to say much.");
 
         foreach (var suggestion in suggestions)
         {
@@ -50,7 +50,7 @@ public partial class McpCatalogConsistencyTests
             Assert.IsTrue(call.Success, $"'{suggestion}' is not a tool call a caller could make verbatim.");
 
             var tool = call.Groups["tool"].Value;
-            CollectionAssert.Contains(McpToolSurfaceTests.ExpectedTools, tool, $"'{suggestion}' names a tool this server does not expose.");
+            Assert.Contains(tool, McpToolSurfaceTests.ExpectedTools, $"'{suggestion}' names a tool this server does not expose.");
 
             var arguments = new Dictionary<string, object?>();
             if (call.Groups["argument"].Success) arguments[call.Groups["argument"].Value] = call.Groups["value"].Value;
@@ -72,26 +72,26 @@ public partial class McpCatalogConsistencyTests
 
         var listed = SlugRegex().Matches(index).Select(match => match.Groups["slug"].Value).ToArray();
 
-        var resources = (await McpTestHost.Client.ListResourcesAsync())
+        var resources = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
                         .Where(resource => resource.Uri.StartsWith("blex://docs/", StringComparison.Ordinal))
                         .Select(resource => resource.Uri["blex://docs/".Length..])
                         .ToArray();
 
         var completions = (await McpTestHost.Client.CompleteAsync(
-            new ModelContextProtocol.Protocol.ResourceTemplateReference { Uri = "blex://docs/{slug}" }, "slug", "")).Completion.Values;
+            new ModelContextProtocol.Protocol.ResourceTemplateReference { Uri = "blex://docs/{slug}" }, "slug", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.AreEquivalent(listed, resources);
-        CollectionAssert.AreEquivalent(listed, completions.ToArray());
+        Assert.AreSequenceEqual(listed, resources, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(listed, completions.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public async Task Every_page_in_the_site_map_is_served_and_named_in_the_tool_description()
     {
-        var description = (await McpTestHost.Client.ListToolsAsync()).Single(tool => tool.Name == "GetBlexDocsPage").Description!;
+        var description = (await McpTestHost.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Single(tool => tool.Name == "GetBlexDocsPage").Description!;
 
         foreach (var page in DocsPageRenderer.Pages)
         {
-            StringAssert.Contains(description, $"'{page.Slug}'", $"'{page.Slug}' is a documentation page the tool's description never names.");
+            Assert.Contains($"'{page.Slug}'", description, $"'{page.Slug}' is a documentation page the tool's description never names.");
         }
 
         foreach (var quoted in QuotedSlugRegex().Matches(description).Select(match => match.Groups["slug"].Value))
@@ -112,11 +112,11 @@ public partial class McpCatalogConsistencyTests
             var quoted = QuotedPathRegex().Matches(guide).Select(match => match.Groups["path"].Value).ToArray();
 
             // A guide built from the catalog that suddenly quotes nothing has stopped finding its project.
-            Assert.IsTrue(quoted.Length >= 4, $"The '{model}' guide quotes only {quoted.Length} files from the source catalog.");
+            Assert.IsGreaterThanOrEqualTo(4, quoted.Length, $"The '{model}' guide quotes only {quoted.Length} files from the source catalog.");
 
             foreach (var path in quoted)
             {
-                Assert.IsTrue(paths.Contains(path), $"The '{model}' guide quotes '{path}', which the source index does not list.");
+                Assert.Contains(path, paths, $"The '{model}' guide quotes '{path}', which the source index does not list.");
             }
         }
     }
@@ -146,4 +146,6 @@ public partial class McpCatalogConsistencyTests
     // Only a quoted word that continues a list - introduced by ':' or continued by ',' - is a slug.
     [GeneratedRegex(@"(?<=[:,] )'(?<slug>[a-z][a-z-]+)'")]
     private static partial Regex QuotedSlugRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

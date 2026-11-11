@@ -12,9 +12,9 @@ public class BelemetryPageRoutesTests
         var routes = BelemetryPageRoutes.Discover(typeof(BelemetryPageRoutesTests).Assembly);
 
         CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/orders", "/route-test/users/{name}" }, routes);
-        Assert.AreEqual(1, routes.Count(r => string.Equals(r, "/route-test/orders", StringComparison.OrdinalIgnoreCase)), "Two pages declaring one route list it once.");
-        CollectionAssert.DoesNotContain(routes, "/route-test/not-a-component", "Only a component is routed.");
-        CollectionAssert.DoesNotContain(routes, "/route-test/internal", "The router only looks at exported types.");
+        Assert.ContainsSingle(r => string.Equals(r, "/route-test/orders", StringComparison.OrdinalIgnoreCase), routes, "Two pages declaring one route list it once.");
+        Assert.DoesNotContain("/route-test/not-a-component", routes, "Only a component is routed.");
+        Assert.DoesNotContain("/route-test/internal", routes, "The router only looks at exported types.");
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class BelemetryPageRoutesTests
         var routes = BelemetryPageRoutes.Read([typeof(BelemetryPageRoutesTests).Assembly, typeof(BelemetryPageRoutesTests).Assembly, typeof(object).Assembly]);
 
         CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/orders", "/route-test/users/{name}" }, routes);
-        Assert.AreEqual(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.HasCount(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase));
     }
 
     [TestMethod]
@@ -85,12 +85,15 @@ public class BelemetryPageRoutesTests
 
     [Route("/route-test/orders/{id:int}")]
     [Route("/route-test/orders")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Routing discovery fixtures intentionally expose their public types.")]
     public sealed class RouteTestOrderPage : ComponentBase { }
 
     [Route("/Route-Test/Orders")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Routing discovery fixtures intentionally expose their public types.")]
     public sealed class RouteTestOrdersAgainPage : ComponentBase { }
 
     [Route("/route-test/users/{name}")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Routing discovery fixtures intentionally expose their public types.")]
     public sealed class RouteTestUserPage : IComponent
     {
         public void Attach(RenderHandle renderHandle) { }
@@ -99,6 +102,7 @@ public class BelemetryPageRoutesTests
     }
 
     [Route("/route-test/not-a-component")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "Routing discovery fixtures intentionally expose their public types.")]
     public sealed class RouteTestNotAComponent { }
 
     [Route("/route-test/internal")]

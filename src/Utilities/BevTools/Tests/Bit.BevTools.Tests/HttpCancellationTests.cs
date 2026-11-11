@@ -36,8 +36,8 @@ public class HttpCancellationTests
             Assert.IsEmpty(session.Errors.Snapshot(), "a cancellation is the caller's decision, not an error");
             var evt = session.Timeline.Find(record.TimelineEventId)!;
             Assert.AreEqual(BevToolsSeverity.Warning, evt.Severity);
-            StringAssert.Contains(evt.Detail, "cancelled after");
-            StringAssert.Contains(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Indented = false }), "\"cancelled\":true");
+            Assert.Contains("cancelled after", evt.Detail!);
+            Assert.Contains("\"cancelled\":true", BevSessionExporter.ToJson(session, new BevSessionExportOptions { Indented = false }));
         }
     }
 
@@ -50,12 +50,12 @@ public class HttpCancellationTests
             using var client = new HttpClient(new BevToolsHttpMessageHandler(session) { InnerHandler = new HangingHandler() }) { Timeout = TimeSpan.FromMilliseconds(50) };
 
             // HttpClient turns its own timeout into a TaskCanceledException wrapping a TimeoutException, above the handlers.
-            var thrown = await Assert.ThrowsAsync<TaskCanceledException>(() => client.GetAsync("https://example.test/slow"));
+            var thrown = await Assert.ThrowsAsync<TaskCanceledException>(() => client.GetAsync("https://example.test/slow", TestContext.CancellationToken));
             Assert.IsInstanceOfType<TimeoutException>(thrown.InnerException);
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.IsTrue(record.IsCancelled);
-            StringAssert.Contains(record.Error, "HttpClient.Timeout");
+            Assert.Contains("HttpClient.Timeout", record.Error!);
         }
     }
 
@@ -66,19 +66,19 @@ public class HttpCancellationTests
     }
 
     [TestMethod]
-    public void A_cancellation_the_caller_did_not_ask_for_is_a_failure_with_its_reason()
+    public async Task A_cancellation_the_caller_did_not_ask_for_is_a_failure_with_its_reason()
     {
         var (session, scope) = TestHelpers.CreateSession();
         using (scope)
         {
             using var client = new HttpClient(new BevToolsHttpMessageHandler(session) { InnerHandler = new ConnectTimeoutHandler() });
 
-            Assert.ThrowsExactly<TaskCanceledException>(() => client.GetAsync("https://shop.test/api/orders").GetAwaiter().GetResult());
+            await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => client.GetAsync("https://shop.test/api/orders", TestContext.CancellationToken));
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.IsFalse(record.IsCancelled, "the request's own token was never cancelled");
             Assert.IsTrue(record.IsFailed);
-            StringAssert.Contains(record.Error, "TimeoutException: A connection could not be established");
+            Assert.Contains("TimeoutException: A connection could not be established", record.Error!);
             var error = Assert.ContainsSingle(session.Errors.Snapshot());
             Assert.AreEqual("http", error.Source);
         }
@@ -92,4 +92,6 @@ public class HttpCancellationTests
         Assert.AreEqual("POST https://x.test/orders", BevHttpEndpoints.Of("POST", "https://x.test/orders"));
         Assert.AreEqual("GET /a?flag", BevHttpEndpoints.Of("GET", "/a?flag"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

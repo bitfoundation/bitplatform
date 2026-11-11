@@ -58,8 +58,8 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(Chat("cht-basic").Locator(".bit-aiems")).ToHaveCountAsync(0);
         var column = await Chat("cht-basic").Locator(".bit-aimsl-con").RectAsync();
         var bubble = await Messages("cht-basic", "user").First.Locator(".bit-aicms-bbl").RectAsync();
-        Assert.IsTrue(bubble.Right > column.Right - 40, $"The bubble sits at the end of the line: {bubble.Right} vs {column.Right}.");
-        Assert.IsTrue(bubble.Left > column.Left + 40, "The bubble is no wider than its text.");
+        Assert.IsGreaterThan(column.Right - 40, bubble.Right, $"The bubble sits at the end of the line: {bubble.Right} vs {column.Right}.");
+        Assert.IsGreaterThan(column.Left + 40, bubble.Left, "The bubble is no wider than its text.");
 
         await SendAsync("cht-basic", "and again");
         await Expect(Messages("cht-basic", "user")).ToHaveTextAsync(["hello there", "and again"]);
@@ -84,7 +84,7 @@ public class BitAiChatE2ETests : E2ETestBase
         Assert.AreEqual(box.Bottom - box.Top, chat.Bottom - chat.Top, 1, "The chat takes the height of its container.");
         var list = await transcript.RectAsync();
         var footer = await Chat("cht-basic").Locator(".bit-aicht-ftr").RectAsync();
-        Assert.IsTrue(footer.Top >= list.Bottom - 1, "The footer with the composer is under the transcript.");
+        Assert.IsGreaterThanOrEqualTo(list.Bottom - 1, footer.Top, "The footer with the composer is under the transcript.");
         Assert.AreEqual(chat.Bottom, footer.Bottom, 1, "The footer sits at the bottom of the chat.");
     }
 
@@ -116,7 +116,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(Chat("cht-basic")).ToHaveCSSAsync("flex-direction", "column");
 
         // The footer fades the transcript out behind the composer, into the chat's own background.
-        StringAssert.StartsWith(await ComputedStyleAsync("#cht-basic .bit-aicht-ftr", "background-image"), "linear-gradient(");
+        Assert.StartsWith("linear-gradient(", await ComputedStyleAsync("#cht-basic .bit-aicht-ftr", "background-image"));
         await Expect(Chat("cht-basic")).ToHaveCSSAsync("font-family", await Page.ResolveFontFamilyAsync("var(--bit-tpg-font-family)"));
     }
 
@@ -190,7 +190,7 @@ public class BitAiChatE2ETests : E2ETestBase
         // The text grew in several steps on its way to the whole reply, rather than landing at once.
         var lengths = await Page.TextLengthsAsync("stream");
         var growing = lengths.Where(l => l > 0 && l < $"You said: {prompt}".Length).Distinct().Count();
-        Assert.IsTrue(growing >= 3, $"The reply arrived in steps: {string.Join(", ", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo(3, growing, $"The reply arrived in steps: {string.Join(", ", lengths)}.");
     }
 
     [TestMethod]
@@ -208,12 +208,12 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(reply).ToHaveAttributeAsync("aria-busy", "false");
         await Expect(SendButton("cht-stop")).ToHaveAttributeAsync("aria-label", "Send");
         var stopped = await reply.Locator(".bit-aicms-bdy").InnerTextAsync();
-        StringAssert.Contains(stopped, "Paragraph 2:");
+        Assert.Contains("Paragraph 2:", stopped);
 
         // Nothing more arrives after the stop: the partial answer is kept as it was.
         await Page.WaitForTimeoutAsync(600);
         Assert.AreEqual(stopped, await reply.Locator(".bit-aicms-bdy").InnerTextAsync());
-        Assert.IsFalse(stopped.Contains("Paragraph 30:"), "The turn was stopped before its end.");
+        Assert.DoesNotContain("Paragraph 30:", stopped, "The turn was stopped before its end.");
 
         // A stopped reply is a finished one: its actions are offered, and the session takes the next prompt.
         await Expect(reply.Locator("button[aria-label='Regenerate']")).ToHaveCountAsync(1);
@@ -259,7 +259,7 @@ public class BitAiChatE2ETests : E2ETestBase
 
         // Mid-stream the view is at the newest line, within the distance that still counts as the bottom.
         var midStream = await transcript.ScrollStateAsync();
-        Assert.IsTrue(midStream.FromBottom <= 48, $"The view follows the reply while it streams: {midStream.FromBottom}px from the bottom.");
+        Assert.IsLessThanOrEqualTo(48, midStream.FromBottom, $"The view follows the reply while it streams: {midStream.FromBottom}px from the bottom.");
 
         await Expect(reply).ToHaveAttributeAsync("aria-busy", "false", new() { Timeout = 20000 });
         await transcript.WaitForScrolledToBottomAsync();
@@ -283,12 +283,12 @@ public class BitAiChatE2ETests : E2ETestBase
         // The button floats centered just above the composer.
         var footer = await Chat("cht-scroll").Locator(".bit-aicht-ftr").RectAsync();
         var floating = await button.RectAsync();
-        Assert.IsTrue(floating.Bottom <= footer.Top + 1, "The button floats above the footer.");
+        Assert.IsLessThanOrEqualTo(footer.Top + 1, floating.Bottom, "The button floats above the footer.");
         Assert.AreEqual((footer.Left + footer.Right) / 2, (floating.Left + floating.Right) / 2, 1.5, "The button is centered.");
 
         await transcript.WaitForScrollToRestAsync();
         var before = await transcript.ScrollStateAsync();
-        Assert.IsTrue(before.FromBottom > 48, $"The reader is away from the newest message: {before.FromBottom}px from the bottom.");
+        Assert.IsGreaterThan(48, before.FromBottom, $"The reader is away from the newest message: {before.FromBottom}px from the bottom.");
 
         // A reply streams in while the reader is scrolled up: the content grows, the view does not move.
         await SendAsync("cht-scroll", "a long answer");
@@ -296,7 +296,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(reply.GetByText("Paragraph 6:", new() { Exact = false })).ToHaveCountAsync(1);
         var during = await transcript.ScrollStateAsync();
         Assert.AreEqual(before.Top, during.Top, 1, $"The view stays where the reader left it: at {during.Top}px, left at {before.Top}px ({during.FromBottom}px from the bottom).");
-        Assert.IsTrue(during.Height > before.Height, "The reply grew the transcript.");
+        Assert.IsGreaterThan(before.Height, during.Height, "The reply grew the transcript.");
         await Expect(button).ToBeVisibleAsync();
 
         // The button takes the reader to the newest line, goes away, and the view follows the rest of the reply.
@@ -371,16 +371,16 @@ public class BitAiChatE2ETests : E2ETestBase
         var list = await transcript.RectAsync();
         var composer = await chat.Locator(".bit-aipri").RectAsync();
         var footer = await Page.Locator("#cht-tpl-footer").RectAsync();
-        Assert.IsTrue(header.Bottom <= list.Top + 1);
-        Assert.IsTrue(footer.Top >= composer.Bottom - 1);
+        Assert.IsLessThanOrEqualTo(list.Top + 1, header.Bottom);
+        Assert.IsGreaterThanOrEqualTo(composer.Bottom - 1, footer.Top);
 
         // At the newest message the list's header is scrolled out of the transcript; at the start it is at its top.
         var listHeaderAtBottom = await Page.Locator("#cht-tpl-list-header").RectAsync();
-        Assert.IsTrue(listHeaderAtBottom.Bottom < list.Top, "The list header is scrolled away above the transcript.");
+        Assert.IsLessThan(list.Top, listHeaderAtBottom.Bottom, "The list header is scrolled away above the transcript.");
         await transcript.EvaluateAsync("e => e.scrollTop = 0");
         await AiE2EHelpers.PollAsync(async () => (await Page.Locator("#cht-tpl-list-header").RectAsync()).Top >= list.Top, "The list header scrolled into the transcript.");
         var listHeaderAtTop = await Page.Locator("#cht-tpl-list-header").RectAsync();
-        Assert.IsTrue(listHeaderAtTop.Bottom <= list.Bottom, "The list header is inside the transcript.");
+        Assert.IsLessThanOrEqualTo(list.Bottom, listHeaderAtTop.Bottom, "The list header is inside the transcript.");
         Assert.AreEqual(header.Top, (await Page.Locator("#cht-tpl-header").RectAsync()).Top, 0.5, "The header did not move.");
     }
 
@@ -432,7 +432,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(footer).ToHaveCSSAsync("padding-right", "20px");
         await Expect(footer).ToHaveCSSAsync("padding-bottom", "30px");
         await Expect(footer).ToHaveCSSAsync("padding-left", "20px");
-        StringAssert.Contains(await ComputedStyleAsync("#cht-var .bit-aicht-ftr", "background-image"), "rgb(250, 240, 230)");
+        Assert.Contains("rgb(250, 240, 230)", await ComputedStyleAsync("#cht-var .bit-aicht-ftr", "background-image"));
     }
 
     [TestMethod]
@@ -470,12 +470,12 @@ public class BitAiChatE2ETests : E2ETestBase
         var column = await Chat(id).Locator(".bit-aimsl-con").RectAsync();
         var bubble = Messages(id, "user").First.Locator(".bit-aicms-bbl");
         var rect = await bubble.RectAsync();
-        Assert.IsTrue(rect.Left < column.Left + 40, $"The bubble is at the left: {rect.Left} vs {column.Left}.");
-        Assert.IsTrue(rect.Right < column.Right - 40, "The bubble is no wider than its text.");
+        Assert.IsLessThan(column.Left + 40, rect.Left, $"The bubble is at the left: {rect.Left} vs {column.Left}.");
+        Assert.IsLessThan(column.Right - 40, rect.Right, "The bubble is no wider than its text.");
 
         var tight = AiE2EHelpers.ParsePx(await bubble.EvaluateAsync<string>("e => getComputedStyle(e).borderBottomLeftRadius"));
         var round = AiE2EHelpers.ParsePx(await bubble.EvaluateAsync<string>("e => getComputedStyle(e).borderBottomRightRadius"));
-        Assert.IsTrue(tight < round, $"The tail corner is the bottom left one: {tight} vs {round}.");
+        Assert.IsLessThan(round, tight, $"The tail corner is the bottom left one: {tight} vs {round}.");
     }
 
     [TestMethod]
@@ -488,7 +488,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(bubble).ToBeVisibleAsync();
         var tight = AiE2EHelpers.ParsePx(await bubble.EvaluateAsync<string>("e => getComputedStyle(e).borderBottomRightRadius"));
         var round = AiE2EHelpers.ParsePx(await bubble.EvaluateAsync<string>("e => getComputedStyle(e).borderBottomLeftRadius"));
-        Assert.IsTrue(tight < round, $"The tail corner is the bottom right one: {tight} vs {round}.");
+        Assert.IsLessThan(round, tight, $"The tail corner is the bottom right one: {tight} vs {round}.");
     }
 
     [TestMethod]
@@ -500,7 +500,7 @@ public class BitAiChatE2ETests : E2ETestBase
         await Expect(Transcript("cht-scroll")).ToHaveCSSAsync("overflow-y", "visible");
         await Expect(Chat("cht-scroll").Locator(".bit-aicht-ftr")).ToHaveCSSAsync("background-image", "none");
         var chat = await Chat("cht-scroll").RectAsync();
-        Assert.IsTrue(chat.Bottom - chat.Top > 360, "The printed chat is as tall as its whole transcript.");
+        Assert.IsGreaterThan(360, chat.Bottom - chat.Top, "The printed chat is as tall as its whole transcript.");
     }
 
     [TestMethod]
@@ -510,10 +510,10 @@ public class BitAiChatE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<div[^>]*id=""cht-basic""[^>]*class=""[^""]*\bbit-aicht\b"));
-        StringAssert.Contains(html, "data-message-id=\"scr-24\"");
-        StringAssert.Contains(html, "How can I help?");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<div[^>]*id=""cht-basic""[^>]*class=""[^""]*\bbit-aicht\b"), html);
+        Assert.Contains("data-message-id=\"scr-24\"", html);
+        Assert.Contains("How can I help?", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

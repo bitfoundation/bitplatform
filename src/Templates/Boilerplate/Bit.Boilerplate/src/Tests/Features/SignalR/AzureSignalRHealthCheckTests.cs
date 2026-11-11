@@ -80,7 +80,7 @@ public class AzureSignalRHealthCheckTests
         var result = await Run(handler, "Endpoint=https://test.service.signalr.net;AuthType=azure.msi;Version=1.0;");
 
         Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Exception?.Message);
-        Assert.HasCount(1, handler.Requests);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     private async Task<HealthCheckResult> Run(HttpMessageHandler handler, string connectionString)

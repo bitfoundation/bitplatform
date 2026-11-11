@@ -36,11 +36,11 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         });
 
         // No viewport is measured yet, so a 600px screen of items is assumed, plus the overscan after it.
-        StringAssert.Contains(html, "Item 0;");
-        StringAssert.Contains(html, "Item 18;");
-        Assert.IsFalse(html.Contains("Item 19;"));
+        Assert.Contains("Item 0;", html);
+        Assert.Contains("Item 18;", html);
+        Assert.DoesNotContain("Item 19;", html);
         // The spacer already holds the whole list, so the page has its final height.
-        StringAssert.Contains(html, "height:50000px");
+        Assert.Contains("height:50000px", html);
     }
 
     [TestMethod]
@@ -55,9 +55,9 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         });
 
         // The measured list pins the header of the group at its top, so the first window does as well.
-        StringAssert.Contains(html, "bit-vir-stk");
+        Assert.Contains("bit-vir-stk", html);
         // The next header is where the pinned one is pushed out from.
-        StringAssert.Contains(html, "data-bit-vir-sticky-next=\"500\"");
+        Assert.Contains("data-bit-vir-sticky-next=\"500\"", html);
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public class BitVirtualizePrerenderTests : BunitTestContext
             [nameof(BitVirtualize<int>.IsStickyItem)] = (Func<int, bool>)(i => i % 10 == 0),
         });
 
-        Assert.IsFalse(html.Contains("bit-vir-stk"));
+        Assert.DoesNotContain("bit-vir-stk", html);
     }
 
     [TestMethod]
@@ -96,14 +96,14 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         Assert.AreEqual(0, requests);
 
         // The window the provider is first asked for is laid out as placeholders, keeping its room on the page.
-        CollectionAssert.AreEqual(Enumerable.Range(0, 19).ToArray(), IndicesIn(html));
-        StringAssert.Contains(html, "Placeholder 0 (50);");
-        StringAssert.Contains(html, "Placeholder 18 (50);");
-        StringAssert.Contains(html, "height:950px");
-        StringAssert.Contains(html, "transform:translateY(900px)");
+        Assert.AreSequenceEqual(Enumerable.Range(0, 19).ToArray(), IndicesIn(html));
+        Assert.Contains("Placeholder 0 (50);", html);
+        Assert.Contains("Placeholder 18 (50);", html);
+        Assert.Contains("height:950px", html);
+        Assert.Contains("transform:translateY(900px)", html);
         // The size of the list is not known yet.
-        StringAssert.Contains(html, "aria-setsize=\"-1\"");
-        Assert.IsFalse(html.Contains("Item 0;"));
+        Assert.Contains("aria-setsize=\"-1\"", html);
+        Assert.DoesNotContain("Item 0;", html);
     }
 
     [TestMethod]
@@ -121,10 +121,10 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         });
 
         // 600px of 100px items, plus the overscan.
-        CollectionAssert.AreEqual(Enumerable.Range(0, 13).ToArray(), IndicesIn(html));
-        StringAssert.Contains(html, "Placeholder 12 (100);");
-        StringAssert.Contains(html, "transform:translateY(1200px)");
-        StringAssert.Contains(html, "height:1300px");
+        Assert.AreSequenceEqual(Enumerable.Range(0, 13).ToArray(), IndicesIn(html));
+        Assert.Contains("Placeholder 12 (100);", html);
+        Assert.Contains("transform:translateY(1200px)", html);
+        Assert.Contains("height:1300px", html);
     }
 
     [TestMethod]
@@ -141,8 +141,8 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         });
 
         // The LoadingTemplate is what the app chose to show until the first load, so it still takes precedence.
-        StringAssert.Contains(html, "Loading the list;");
-        Assert.IsFalse(html.Contains("Placeholder"));
+        Assert.Contains("Loading the list;", html);
+        Assert.DoesNotContain("Placeholder", html);
     }
 
     [TestMethod]
@@ -166,9 +166,9 @@ public class BitVirtualizePrerenderTests : BunitTestContext
         });
 
         // While the first window is on its way, the placeholders stand where its items are going to land.
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         var placeholders = component.FindAll(".bit-vir-itm");
-        Assert.AreEqual(requests[0].Count, placeholders.Count);
+        Assert.HasCount(requests[0].Count, placeholders);
         Assert.AreEqual("Placeholder 0 (50);", placeholders[0].TextContent);
         Assert.AreEqual("true", placeholders[0].GetAttribute("aria-busy"));
 
@@ -199,7 +199,7 @@ public class BitVirtualizePrerenderTests : BunitTestContext
             parameters.Add(p => p.EmptyTemplate, b => b.AddContent(0, "Empty"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-vir-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-vir-itm"));
         Assert.AreEqual("Empty", component.Find(".bit-vir-emp").TextContent);
     }
 }

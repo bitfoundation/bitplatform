@@ -20,11 +20,11 @@ public partial class BitVirtualizeStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(6, documented.Length, "The stylesheet does not document the six public variables.");
+        Assert.HasCount(6, documented, "The stylesheet does not document the six public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitVirtualizeStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -58,13 +58,13 @@ public partial class BitVirtualizeStylesheetTests
 
         // The list clips what overflows it and the items are flush with each other, so the ring is drawn inside, as an
         // outline that is painted above the content of the item.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@mixin vir-focus-ring {"), "&:focus-visible {");
+        Assert.Contains("&:focus-visible {", SourceFiles.GetScssBlock(stylesheet, "\n@mixin vir-focus-ring {"));
         // focus-ring-inset is that outline, and it turns into the system's own focus color in a forced palette.
-        StringAssert.Contains(ring, "@include focus-ring-inset(var(--bit-Virtualize-focus-color, #{$clr-pri-focus}));");
-        Assert.IsFalse(ring.Contains("$band"), "The ring is banded with a box-shadow, which the content of an item covers.");
+        Assert.Contains("@include focus-ring-inset(var(--bit-Virtualize-focus-color, #{$clr-pri-focus}));", ring);
+        Assert.DoesNotContain("$band", ring, "The ring is banded with a box-shadow, which the content of an item covers.");
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir {"), "@include vir-focus-ring;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir-itm {"), "@include vir-focus-ring;");
+        Assert.Contains("@include vir-focus-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir {"));
+        Assert.Contains("@include vir-focus-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir-itm {"));
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public partial class BitVirtualizeStylesheetTests
         // The pinned copy sits above the real item, so the ring of the item would be hidden under it.
         var copy = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-vir-spc:has(> .bit-vir-blk > .bit-vir-itm[tabindex=\"0\"]:focus-visible) > .bit-vir-sac {");
 
-        StringAssert.Contains(copy, "@include vir-ring;");
+        Assert.Contains("@include vir-ring;", copy);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public partial class BitVirtualizeStylesheetTests
     {
         var sticky = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-vir-stk {");
 
-        StringAssert.Contains(sticky, "background: var(--bit-Virtualize-sticky-background, #{$clr-bg-pri});");
+        Assert.Contains("background: var(--bit-Virtualize-sticky-background, #{$clr-bg-pri});", sticky);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

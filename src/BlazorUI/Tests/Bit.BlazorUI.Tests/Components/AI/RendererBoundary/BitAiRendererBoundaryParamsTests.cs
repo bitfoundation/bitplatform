@@ -44,7 +44,7 @@ public class BitAiRendererBoundaryParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiRendererBoundaryParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiRendererBoundary", BitAiRendererBoundaryParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiRendererBoundary", new BitAiRendererBoundaryParams().Name);
         Assert.AreEqual(BitAiRendererBoundaryParams.ParamName, new BitAiRendererBoundaryParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitAiRendererBoundaryParams());
     }
@@ -83,8 +83,8 @@ public class BitAiRendererBoundaryParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
     }
 
     [TestMethod]

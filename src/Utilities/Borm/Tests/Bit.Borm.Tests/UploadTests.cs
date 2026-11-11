@@ -89,12 +89,12 @@ public class UploadTests : ComponentTestBase
             await state.UploadAsync(field, "resume", [new FakeFile("c.pdf", 10)]);
         });
 
-        CollectionAssert.AreEqual(new[] { "id:a.pdf", "id:b.pdf", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        Assert.AreSequenceEqual(new[] { "id:a.pdf", "id:b.pdf", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
         // The ids carry no extension, and are not judged as file names: the files were judged before they went.
         Assert.IsTrue(await state.ValidateAsync());
 
         state.RemoveUpload(field, "resume", state.UploadsFor("resume")[1]);
-        CollectionAssert.AreEqual(new[] { "id:a.pdf", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        Assert.AreSequenceEqual(new[] { "id:a.pdf", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
     }
 
     [TestMethod]
@@ -106,13 +106,13 @@ public class UploadTests : ComponentTestBase
 
         await Renderer.Dispatcher.InvokeAsync(() => state.UploadAsync(field, "resume", [new FakeFile("c.pdf", 10)]));
 
-        CollectionAssert.AreEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
-        CollectionAssert.AreEqual(new[] { "id1", "id2" }, state.StoredUploadsFor("resume").ToArray());
+        Assert.AreSequenceEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        Assert.AreSequenceEqual(new[] { "id1", "id2" }, state.StoredUploadsFor("resume").ToArray());
 
         state.RemoveStoredUpload(field, "resume", "id1");
-        CollectionAssert.AreEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
+        Assert.AreSequenceEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["resume"]!);
         state.RemoveUpload(field, "resume", state.UploadsFor("resume").Single());
-        CollectionAssert.AreEqual(new[] { "id2" }, (System.Collections.ICollection)data["resume"]!);
+        Assert.AreSequenceEqual(new[] { "id2" }, (System.Collections.ICollection)data["resume"]!);
     }
 
     [TestMethod]
@@ -126,10 +126,10 @@ public class UploadTests : ComponentTestBase
 
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("hello", "c.pdf"));
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "id1", "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!));
         cut.WaitForAssertion(() => Assert.HasCount(3, cut.FindAll(".bit-borm-file__item")));
         cut.Find(".bit-borm-file__item [aria-label='Remove id1']").Click();
-        CollectionAssert.AreEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!);
+        Assert.AreSequenceEqual(new[] { "id2", "id:c.pdf" }, (System.Collections.ICollection)data["docs"]!);
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class UploadTests : ComponentTestBase
 
         Assert.AreEqual(0, sent);
         Assert.IsNull(data.GetValueOrDefault("resume"));
-        StringAssert.Contains(state.MessagesFor("resume").Single().Message, ".pdf");
+        Assert.Contains(".pdf", state.MessagesFor("resume").Single().Message);
     }
 
     [TestMethod]
@@ -237,9 +237,9 @@ public class UploadTests : ComponentTestBase
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("hello", "cover.pdf"));
 
         cut.WaitForAssertion(() => Assert.AreEqual("id:cover.pdf", data["resume"]));
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(".bit-borm-file__item").TextContent, "cover.pdf"));
+        cut.WaitForAssertion(() => Assert.Contains("cover.pdf", cut.Find(".bit-borm-file__item").TextContent));
         Assert.AreEqual("Remove cover.pdf", cut.Find(".bit-borm-file__item .bit-borm-btn--danger").GetAttribute("aria-label"));
-        StringAssert.Contains(cut.Find(".bit-borm-file [aria-live]").TextContent, "cover.pdf uploaded");
-        StringAssert.Contains(cut.Find(".bit-borm-review").TextContent, "cover.pdf");
+        Assert.Contains("cover.pdf uploaded", cut.Find(".bit-borm-file [aria-live]").TextContent);
+        Assert.Contains("cover.pdf", cut.Find(".bit-borm-review").TextContent);
     }
 }

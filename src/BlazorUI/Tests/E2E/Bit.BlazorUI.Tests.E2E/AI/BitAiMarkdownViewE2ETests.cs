@@ -150,7 +150,7 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
                 return [...seen].filter(([, n]) => n > 1).map(([id]) => id);
             }
             """);
-        Assert.AreEqual(0, duplicates.Length, $"Duplicate ids: {string.Join(", ", duplicates)}");
+        Assert.IsEmpty(duplicates, $"Duplicate ids: {string.Join(", ", duplicates)}");
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
 
         // The heading stops a little below the top of the viewport rather than against it.
         var margin = AiE2EHelpers.ParsePx(await target.EvaluateAsync<string>("e => getComputedStyle(e).scrollMarginBlockStart"));
-        Assert.IsTrue(margin > 0, $"The heading has a scroll margin, was {margin}px.");
+        Assert.IsGreaterThan(0, margin, $"The heading has a scroll margin, was {margin}px.");
         await AiE2EHelpers.PollAsync(async () => Math.Abs((await target.RectAsync()).Top - margin) <= 2,
             "The heading is scrolled to its scroll margin below the top of the viewport.");
     }
@@ -293,7 +293,7 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
 
         // What the browser itself parsed out of every href of the view: never a scheme that runs anything.
         var protocols = await view.Locator("a[href]").EvaluateAllAsync<string[]>("links => links.map(a => a.protocol)");
-        Assert.AreEqual(5, protocols.Length);
+        Assert.HasCount(5, protocols);
         foreach (var protocol in protocols)
         {
             Assert.IsTrue(protocol is "http:" or "https:" or "mailto:", $"A link of the view has the protocol {protocol}.");
@@ -414,7 +414,7 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
         // It trails the last character of the text, which a screen reader reads without it.
         var last = await paragraph.CharacterRectAsync("The answer is still being".Length - 1);
         var box = await caret.RectAsync();
-        Assert.IsTrue(box.Left >= last.Right - 0.5, $"The caret ({box.Left}) is after the text ({last.Right}).");
+        Assert.IsGreaterThanOrEqualTo(last.Right - 0.5, box.Left, $"The caret ({box.Left}) is after the text ({last.Right}).");
         await Expect(paragraph).ToHaveTextAsync("The answer is still being");
 
         // A closed paragraph, a view not asked for one and the options turning it off draw none.
@@ -468,16 +468,16 @@ public class BitAiMarkdownViewE2ETests : E2ETestBase
             // The rest mirrors: the bar of the quote and the indent of the list are at the right.
             var quote = Page.Locator($"#{id} blockquote.bit-aimdv-quo");
             await Expect(quote).ToHaveCSSAsync("border-left-width", "0px");
-            Assert.IsTrue(AiE2EHelpers.ParsePx(await quote.EvaluateAsync<string>("e => getComputedStyle(e).borderRightWidth")) > 0, $"{id}: the bar of the quote is at the right.");
+            Assert.IsGreaterThan(0, AiE2EHelpers.ParsePx(await quote.EvaluateAsync<string>("e => getComputedStyle(e).borderRightWidth")), $"{id}: the bar of the quote is at the right.");
 
             var list = Page.Locator($"#{id} ul.bit-aimdv-lst");
             await Expect(list).ToHaveCSSAsync("padding-left", "0px");
-            Assert.IsTrue(AiE2EHelpers.ParsePx(await list.EvaluateAsync<string>("e => getComputedStyle(e).paddingRight")) > 0, $"{id}: the list is indented from the right.");
+            Assert.IsGreaterThan(0, AiE2EHelpers.ParsePx(await list.EvaluateAsync<string>("e => getComputedStyle(e).paddingRight")), $"{id}: the list is indented from the right.");
         }
 
         var ltrQuote = Page.Locator("#mdv-ltr blockquote.bit-aimdv-quo");
         await Expect(ltrQuote).ToHaveCSSAsync("border-right-width", "0px");
-        Assert.IsTrue(AiE2EHelpers.ParsePx(await ltrQuote.EvaluateAsync<string>("e => getComputedStyle(e).borderLeftWidth")) > 0);
+        Assert.IsGreaterThan(0, AiE2EHelpers.ParsePx(await ltrQuote.EvaluateAsync<string>("e => getComputedStyle(e).borderLeftWidth")));
     }
 
     // ---------- public variables, Classes and Styles ----------

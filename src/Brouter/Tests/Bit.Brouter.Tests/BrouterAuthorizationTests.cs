@@ -36,7 +36,7 @@ public class BrouterAuthorizationTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("denied", cut.Find("[data-testid=auto-denied]").TextContent);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=secure]"));
         });
     }
 
@@ -54,7 +54,7 @@ public class BrouterAuthorizationTests : BunitTestContext
         // No [Authorize] on DiscoveredPage: AuthorizeRouteView renders it without an auth check,
         // exactly like the built-in Router stack.
         cut.WaitForAssertion(() =>
-            StringAssert.StartsWith(cut.Find("[data-testid=discovered]").TextContent, "id:5"));
+            Assert.StartsWith("id:5", cut.Find("[data-testid=discovered]").TextContent));
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public class BrouterAuthorizationTests : BunitTestContext
             // The explicit Found rendered (its marker is present) and the built-in composition
             // did not (the host's DefaultLayout never wrapped the page).
             Assert.AreEqual(nameof(DiscoveredPage), cut.Find("[data-testid=explicit-found]").TextContent);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=layout-marker]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=layout-marker]"));
         });
     }
 
@@ -105,7 +105,7 @@ public class BrouterAuthorizationTests : BunitTestContext
         // fail-closed throw surfaces synchronously from the mount itself.
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => RenderComponent<AutoAuthLayoutHost>());
-        StringAssert.Contains(exception.Message, "authorization");
+        Assert.Contains("authorization", exception.Message);
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class BrouterAuthorizationTests : BunitTestContext
         // surfaces synchronously from the mount.
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => RenderComponent<DiscoveryHost>());
-        StringAssert.Contains(exception.Message, "authorization");
+        Assert.Contains("authorization", exception.Message);
     }
 
     [TestMethod]
@@ -149,10 +149,12 @@ public class BrouterAuthorizationTests : BunitTestContext
             exception = thrownDuringRender;
         }
 
-        exception ??= await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        exception ??= await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsInstanceOfType<InvalidOperationException>(exception);
-        StringAssert.Contains(exception.Message, "authorization");
-        Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count,
+        Assert.Contains("authorization", exception.Message);
+        Assert.IsEmpty(cut.FindAll("[data-testid=secure]"),
             "an [Authorize] page must never render without an authorization check");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

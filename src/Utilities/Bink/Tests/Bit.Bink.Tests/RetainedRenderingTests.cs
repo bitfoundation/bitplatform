@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -228,7 +228,7 @@ public sealed class RetainedRenderingTests
         Opcodes(context);
 
         byte[] bytes = context.ToSingleBytes();
-        Assert.AreEqual(context.Count * 4, bytes.Length);
+        Assert.HasCount(context.Count * 4, bytes);
         ReadOnlySpan<double> values = context.Commands;
         for (int i = 0; i < values.Length; i++)
         {

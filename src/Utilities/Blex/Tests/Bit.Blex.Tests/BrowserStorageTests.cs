@@ -19,9 +19,9 @@ public class BrowserStorageTests
         js.Module.Returns["get"] = "stored";
         await using var storage = new BlexBrowserStorage(js, BlexBrowserStorageKind.Session);
 
-        var read = await storage.GetAsync("blex:settings");
-        await storage.SetAsync("blex:settings", "{}");
-        await storage.RemoveAsync("blex:settings");
+        var read = await storage.GetAsync("blex:settings", TestContext.CancellationToken);
+        await storage.SetAsync("blex:settings", "{}", TestContext.CancellationToken);
+        await storage.RemoveAsync("blex:settings", TestContext.CancellationToken);
 
         Assert.AreEqual("stored", read);
         Assert.AreEqual("./_content/Bit.Blex/bit-blex-storage.js", Assert.ContainsSingle(js.Imports));
@@ -36,9 +36,9 @@ public class BrowserStorageTests
         var js = new FakeJsRuntime();
         await using var storage = new BlexBrowserStorage(js);
 
-        await storage.SetAsync("a", "1");
-        await storage.SetAsync("b", "2");
-        await storage.GetAsync("a");
+        await storage.SetAsync("a", "1", TestContext.CancellationToken);
+        await storage.SetAsync("b", "2", TestContext.CancellationToken);
+        await storage.GetAsync("a", TestContext.CancellationToken);
 
         Assert.ContainsSingle(js.Imports);
     }
@@ -50,7 +50,7 @@ public class BrowserStorageTests
         js.Module.Returns["watch"] = 7;
         var storage = new BlexBrowserStorage(js, BlexBrowserStorageKind.Local);
 
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
         Assert.AreEqual("local", js.Module.ArgsOf("watch")![0]);
 
         await storage.DisposeAsync();
@@ -70,7 +70,7 @@ public class BrowserStorageTests
         var js = new FakeJsRuntime();
         js.Module.Returns["watch"] = 3;
         var storage = new BlexBrowserStorage(js, BlexBrowserStorageKind.Local);
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
 
         js.Module.Failure = identifier => identifier == "unwatch"
             ? new JSException("JS object instance with ID 1 does not exist (has it been disposed?).")
@@ -86,8 +86,8 @@ public class BrowserStorageTests
         js.Module.Returns["watch"] = 1;
         await using var storage = new BlexBrowserStorage(js);
 
-        await storage.StartWatchingAsync();
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, js.Module.CountOf("watch"));
     }
@@ -99,7 +99,7 @@ public class BrowserStorageTests
         var js = new FakeJsRuntime();
         var storage = new BlexBrowserStorage(js, BlexBrowserStorageKind.Session);
 
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
         await storage.DisposeAsync();
 
         Assert.AreEqual(0, js.Module.CountOf("watch"));
@@ -112,7 +112,7 @@ public class BrowserStorageTests
         var js = new FakeJsRuntime();   // "watch" returns default(int) == 0
         var storage = new BlexBrowserStorage(js);
 
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
         await storage.DisposeAsync();
 
         Assert.AreEqual(1, js.Module.CountOf("watch"));
@@ -125,7 +125,7 @@ public class BrowserStorageTests
         var js = new FakeJsRuntime();
         js.Module.Returns["watch"] = 3;
         await using var storage = new BlexBrowserStorage(js);
-        await storage.StartWatchingAsync();
+        await storage.StartWatchingAsync(TestContext.CancellationToken);
 
         string? seen = "unset";
         storage.ExternalChange += key => seen = key;
@@ -149,4 +149,6 @@ public class BrowserStorageTests
         Assert.IsEmpty(js.Imports);
         Assert.IsFalse(js.Module.Disposed);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

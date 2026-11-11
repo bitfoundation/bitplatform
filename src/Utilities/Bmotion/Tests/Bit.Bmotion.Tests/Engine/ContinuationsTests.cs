@@ -64,7 +64,7 @@ public class ContinuationsTests
         }));
 
         source.SetResult(true);
-        await continuation.WaitAsync(TimeSpan.FromSeconds(5));
+        await continuation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreSame(TaskScheduler.Default, ranOn);
     }
@@ -82,6 +82,8 @@ public class ContinuationsTests
         Assert.IsFalse(continuation.IsCompleted, "it settles with the handler, not before");
 
         handler.SetException(new InvalidOperationException("handler failed"));
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => continuation.WaitAsync(TimeSpan.FromSeconds(5)));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => continuation.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

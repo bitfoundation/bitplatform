@@ -29,7 +29,7 @@ public class BbScannerNativeCameraTests : BunitContext
     }
 
     [TestMethod]
-    public void The_platform_camera_is_opened_and_its_frames_decoded_without_the_page_camera()
+    public async global::System.Threading.Tasks.Task The_platform_camera_is_opened_and_its_frames_decoded_without_the_page_camera()
     {
         _camera.Scene = SceneWithQrCode("NATIVE-FRAME");
         var scans = new List<BbBarcodeResult>();
@@ -38,7 +38,7 @@ public class BbScannerNativeCameraTests : BunitContext
             .Add(p => p.Formats, BbBarcodeFormat.QrCode)
             .Add(p => p.OnScan, r => scans.Add(r)));
 
-        WaitUntil(() => Assert.HasCount(1, scans));
+        await WaitUntil(() => Assert.ContainsSingle(scans), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual("NATIVE-FRAME", scans[0].Text);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
         Assert.AreEqual(BbCameraFacing.Rear, _camera.Requests.Single().Facing);
@@ -48,10 +48,10 @@ public class BbScannerNativeCameraTests : BunitContext
     }
 
     [TestMethod]
-    public void The_page_places_the_preview_and_the_overlays_follow_its_size()
+    public async global::System.Threading.Tasks.Task The_page_places_the_preview_and_the_overlays_follow_its_size()
     {
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         _page.Place(16, 120, 360, 270);
 
@@ -63,14 +63,18 @@ public class BbScannerNativeCameraTests : BunitContext
     public async Task Switching_cameras_keeps_the_page_showing_the_preview_through_itself()
     {
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var back = _camera.Current!;
 
         await scanner.InvokeAsync(() => scanner.Instance.SwitchCameraAsync("front"));
 
-        WaitUntil(() => Assert.AreEqual("user", scanner.Instance.Camera?.FacingMode));
+        await WaitUntil(() =>
+        {
+            var actualValue = scanner.Instance.Camera?.FacingMode;
+            Assert.AreEqual("user", actualValue);
+        }, cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(back.Disposed);
-        Assert.IsFalse(back.Placements.Any(p => p.IsDetached), "The preview is replaced, not taken down in between.");
+        Assert.DoesNotContain(p => p.IsDetached, back.Placements, "The preview is replaced, not taken down in between.");
         Assert.AreEqual(0, _page.Count("detachNativePreview"));
         Assert.IsNotNull(_page.PreviewReceiver);
     }
@@ -81,111 +85,111 @@ public class BbScannerNativeCameraTests : BunitContext
         var open = new TaskCompletionSource();
         _camera.OpenDelay = open.Task;
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.HasCount(1, _camera.Requests));
+        await WaitUntil(() => Assert.ContainsSingle(_camera.Requests), cancellationToken: TestContext.CancellationToken);
 
         await scanner.InvokeAsync(() => scanner.Instance.StopAsync());
         open.SetResult();
 
-        WaitUntil(() => Assert.HasCount(1, _camera.Sessions));
-        WaitUntil(() => Assert.IsTrue(_camera.Sessions[0].Disposed));
+        await WaitUntil(() => Assert.ContainsSingle(_camera.Sessions), cancellationToken: TestContext.CancellationToken);
+        await WaitUntil(() => Assert.IsTrue(_camera.Sessions[0].Disposed), cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(_camera.Sessions[0].Placements.Last().IsDetached, "The preview is taken down before the camera closes.");
         Assert.AreEqual(BbScannerStatus.Stopped, scanner.Instance.Status);
         Assert.AreEqual(0, _page.Count("attachNativePreview"));
     }
 
     [TestMethod]
-    public void A_turned_device_resizes_the_scanner_to_the_frames_it_now_delivers()
+    public async global::System.Threading.Tasks.Task A_turned_device_resizes_the_scanner_to_the_frames_it_now_delivers()
     {
         var cameras = new List<BbCameraInfo>();
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnCameraChanged, c => cameras.Add(c)));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         _camera.Current!.Turn(480, 640);
 
-        WaitUntil(() => Assert.AreEqual(480, scanner.Instance.Camera!.Width));
+        await WaitUntil(() => Assert.AreEqual(480, scanner.Instance.Camera!.Width), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(640, scanner.Instance.Camera!.Height);
         Assert.AreEqual((480, 640), scanner.Instance.ProcessingSize);
-        WaitUntil(() => Assert.AreEqual(640, cameras.Last().Height));
+        await WaitUntil(() => Assert.AreEqual(640, cameras.Last().Height), cancellationToken: TestContext.CancellationToken);
     }
 
     [TestMethod]
-    public void A_refusal_by_the_platform_is_reported_as_it_was_classified()
+    public async global::System.Threading.Tasks.Task A_refusal_by_the_platform_is_reported_as_it_was_classified()
     {
         _camera.OpenFailure = new BbScannerException(BbScannerErrorKind.PermissionDenied, "The user refused the camera.");
         BbScannerException? error = null;
 
         Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
 
-        WaitUntil(() => Assert.IsNotNull(error));
+        await WaitUntil(() => Assert.IsNotNull(error), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerErrorKind.PermissionDenied, error!.Kind);
         Assert.AreEqual("The user refused the camera.", error.Message);
     }
 
     [TestMethod]
-    public void A_camera_that_ends_is_reported_lost_and_closed()
+    public async global::System.Threading.Tasks.Task A_camera_that_ends_is_reported_lost_and_closed()
     {
         BbScannerException? error = null;
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var session = _camera.Current!;
 
         session.State = BbCameraSessionState.Ended;
 
-        WaitUntil(() => Assert.IsNotNull(error));
+        await WaitUntil(() => Assert.IsNotNull(error), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerErrorKind.CameraUnavailable, error!.Kind);
         Assert.IsTrue(session.Disposed);
         Assert.IsNull(_page.PreviewReceiver, "The page is put back as it was.");
     }
 
     [TestMethod]
-    public void Released_while_the_app_is_in_the_background_the_camera_is_opened_again_when_it_returns()
+    public async global::System.Threading.Tasks.Task Released_while_the_app_is_in_the_background_the_camera_is_opened_again_when_it_returns()
     {
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.ReleaseCameraWhenHidden, true));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var first = _camera.Current!;
 
         _camera.IsInBackground = true;
-        WaitUntil(() => Assert.IsTrue(first.Disposed));
+        await WaitUntil(() => Assert.IsTrue(first.Disposed), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerStatus.Starting, scanner.Instance.Status);
 
         _camera.IsInBackground = false;
-        WaitUntil(() => Assert.HasCount(2, _camera.Sessions));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.HasCount(2, _camera.Sessions), cancellationToken: TestContext.CancellationToken);
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
     }
 
     [TestMethod]
-    public void A_camera_the_platform_interrupts_while_the_app_is_in_front_is_waited_for_rather_than_released()
+    public async global::System.Threading.Tasks.Task A_camera_the_platform_interrupts_while_the_app_is_in_front_is_waited_for_rather_than_released()
     {
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.ReleaseCameraWhenHidden, true));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var session = _camera.Current!;
 
         // iPad multitasking, or system pressure: the app is still in front. Released, the camera would be opened again at
         // once, into the same interruption.
         session.State = BbCameraSessionState.Interrupted;
-        Thread.Sleep(500);
+        await global::System.Threading.Tasks.Task.Delay(500, TestContext.CancellationToken);
 
         Assert.IsFalse(session.Disposed);
-        Assert.HasCount(1, _camera.Sessions);
+        Assert.ContainsSingle(_camera.Sessions);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
     }
 
     [TestMethod]
-    public void A_camera_that_ends_while_the_app_is_in_the_background_is_opened_again_when_it_returns()
+    public async global::System.Threading.Tasks.Task A_camera_that_ends_while_the_app_is_in_the_background_is_opened_again_when_it_returns()
     {
         BbScannerException? error = null;
         var scanner = Render<BbScanner>(parameters => parameters.Add(p => p.OnError, e => error = e));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var first = _camera.Current!;
 
         _camera.IsInBackground = true;
         first.State = BbCameraSessionState.Ended;
-        WaitUntil(() => Assert.IsTrue(first.Disposed));
+        await WaitUntil(() => Assert.IsTrue(first.Disposed), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerStatus.Starting, scanner.Instance.Status);
 
         _camera.IsInBackground = false;
-        WaitUntil(() => Assert.HasCount(2, _camera.Sessions));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.HasCount(2, _camera.Sessions), cancellationToken: TestContext.CancellationToken);
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.IsNull(error, "An interruption is recovered from, not reported.");
     }
 
@@ -207,7 +211,7 @@ public class BbScannerNativeCameraTests : BunitContext
         var scanner = Render<BbScanner>(parameters => parameters
             .Add(p => p.Formats, BbBarcodeFormat.QrCode)
             .Add(p => p.MaxProcessingSize, 160));
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         var results = await scanner.InvokeAsync(() => scanner.Instance.ScanCurrentFrameAsync());
 
@@ -220,16 +224,16 @@ public class BbScannerNativeCameraTests : BunitContext
     {
         _camera.Permission = BbCameraPermission.Prompt;
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(await scanner.InvokeAsync(() => scanner.Instance.SetTorchAsync(true)));
         Assert.IsTrue(_camera.Current!.TorchOn);
         Assert.AreEqual(BbCameraPermission.Prompt, await scanner.InvokeAsync(() => scanner.Instance.GetCameraPermissionAsync()));
-        CollectionAssert.AreEqual(new[] { "Back camera", "Front camera" }, scanner.Instance.Cameras.Select(c => c.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "Back camera", "Front camera" }, scanner.Instance.Cameras.Select(c => c.Label).ToArray());
     }
 
     [TestMethod]
-    public void Changing_the_formats_while_frames_are_decoded_on_another_thread_keeps_scanning()
+    public async global::System.Threading.Tasks.Task Changing_the_formats_while_frames_are_decoded_on_another_thread_keeps_scanning()
     {
         _camera.Scene = SceneWithQrCode("STILL-SCANNING");
         var scans = new List<string>();
@@ -237,14 +241,14 @@ public class BbScannerNativeCameraTests : BunitContext
             .Add(p => p.Formats, BbBarcodeFormat.QrCode | BbBarcodeFormat.Code128)
             .Add(p => p.DuplicateSuppressionWindow, TimeSpan.Zero)
             .Add(p => p.OnScan, r => { lock (scans) { scans.Add(r.Text); } }));
-        WaitUntil(() => Assert.IsNotEmpty(scans));
+        await WaitUntil(() => Assert.IsNotEmpty(scans), cancellationToken: TestContext.CancellationToken);
 
         // Each change replaces the decoder, which may be decoding a frame at that moment.
         for (var i = 0; i < 20; i++)
         {
             var formats = i % 2 == 0 ? BbBarcodeFormat.QrCode : BbBarcodeFormat.QrCode | BbBarcodeFormat.Code128;
             scanner.Render(parameters => parameters.Add(p => p.Formats, formats));
-            Thread.Sleep(15);
+            await global::System.Threading.Tasks.Task.Delay(15, TestContext.CancellationToken);
         }
 
         int before;
@@ -253,7 +257,7 @@ public class BbScannerNativeCameraTests : BunitContext
             before = scans.Count;
         }
 
-        WaitUntil(() => Assert.IsGreaterThan(before, scans.Count));
+        await WaitUntil(() => Assert.IsGreaterThan(before, scans.Count), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status);
     }
 
@@ -261,7 +265,7 @@ public class BbScannerNativeCameraTests : BunitContext
     public async Task Stopping_closes_the_camera_and_puts_the_page_back()
     {
         var scanner = Render<BbScanner>();
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         var session = _camera.Current!;
 
         await scanner.InvokeAsync(() => scanner.Instance.StopAsync());
@@ -273,18 +277,18 @@ public class BbScannerNativeCameraTests : BunitContext
     }
 
     [TestMethod]
-    public void A_source_that_is_not_supported_here_leaves_the_page_s_camera()
+    public async global::System.Threading.Tasks.Task A_source_that_is_not_supported_here_leaves_the_page_s_camera()
     {
         _camera.IsSupported = false;
         var scanner = Render<BbScanner>();
 
-        WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status));
+        await WaitUntil(() => Assert.AreEqual(BbScannerStatus.Scanning, scanner.Instance.Status), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1, _page.Count("start"));
         Assert.IsEmpty(_camera.Requests);
         Assert.AreEqual(0, _page.Last("start")[6], "A page behind a WebView needs no watchdog.");
     }
 
-    private static void WaitUntil(Action assertion)
+    private static async global::System.Threading.Tasks.Task WaitUntil(Action assertion, global::System.Threading.CancellationToken cancellationToken = default)
     {
         var deadline = DateTime.UtcNow + Wait;
         while (true)
@@ -296,7 +300,7 @@ public class BbScannerNativeCameraTests : BunitContext
             }
             catch (AssertFailedException) when (DateTime.UtcNow < deadline)
             {
-                Thread.Sleep(20);
+                await global::System.Threading.Tasks.Task.Delay(20, cancellationToken);
             }
         }
     }
@@ -312,4 +316,5 @@ public class BbScannerNativeCameraTests : BunitContext
 
         return frame.Pixels[..(width * height)].ToArray();
     }
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }

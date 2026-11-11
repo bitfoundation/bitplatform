@@ -75,7 +75,7 @@ public sealed class BitJsInvokableDisposalContractTests
     [DataRow(typeof(BitMarkdownEditorLegacy))]
     public void TheScanShouldFindTheKnownComponents(Type component)
     {
-        Assert.IsTrue(FindComponentsDisposingAfterTheirTeardown().Contains(component), $"{component.Name} disposes its reference through DisposeAfterAsync but the scan did not find it.");
+        Assert.Contains(component, FindComponentsDisposingAfterTheirTeardown(), $"{component.Name} disposes its reference through DisposeAfterAsync but the scan did not find it.");
     }
 
     [TestMethod]

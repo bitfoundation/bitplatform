@@ -22,19 +22,19 @@ public class McpCompletionTests
     public async Task Every_resource_placeholder_offers_the_keys_that_exist()
     {
         var slugs = await CompleteResourceAsync("brouter://docs/{slug}", "slug", "");
-        CollectionAssert.Contains(slugs.Values.ToArray(), "guards");
+        Assert.Contains("guards", slugs.Values.ToArray());
         // The overview's real slug is the empty string, which nobody can type; the alias stands in.
-        CollectionAssert.Contains(slugs.Values.ToArray(), "overview");
-        Assert.IsFalse(slugs.Values.Contains(string.Empty), "An unpickable empty value is being offered.");
+        Assert.Contains("overview", slugs.Values.ToArray());
+        Assert.DoesNotContain(string.Empty, slugs.Values, "An unpickable empty value is being offered.");
 
         var headings = await CompleteResourceAsync("brouter://guide/{heading}", "heading", "");
-        CollectionAssert.Contains(headings.Values.ToArray(), "Async guards");
+        Assert.Contains("Async guards", headings.Values.ToArray());
 
         var types = await CompleteResourceAsync("brouter://api/{typeName}", "typeName", "");
-        CollectionAssert.Contains(types.Values.ToArray(), "BrouterOptions");
+        Assert.Contains("BrouterOptions", types.Values.ToArray());
 
         var paths = await CompleteResourceAsync("brouter://source/{path}", "path", "");
-        CollectionAssert.Contains(paths.Values.ToArray(), "Demo/Client/AppRouter.razor");
+        Assert.Contains("Demo/Client/AppRouter.razor", paths.Values.ToArray());
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class McpCompletionTests
     {
         var completion = await CompleteResourceAsync("brouter://api/{typeName}", "typeName", "brouterop");
 
-        CollectionAssert.AreEqual(new[] { "BrouterOptions" }, completion.Values.ToArray());
+        Assert.AreSequenceEqual(new[] { "BrouterOptions" }, completion.Values.ToArray());
         Assert.AreEqual(1, completion.Total);
         Assert.AreNotEqual(true, completion.HasMore);
     }
@@ -53,8 +53,8 @@ public class McpCompletionTests
         // "loader" appears inside three headings; the two that begin with it come first.
         var completion = await CompleteResourceAsync("brouter://guide/{heading}", "heading", "loader");
 
-        Assert.IsTrue(completion.Values.Count >= 2);
-        StringAssert.StartsWith(completion.Values[0], "Loader");
+        Assert.IsGreaterThanOrEqualTo(2, completion.Values.Count);
+        Assert.StartsWith("Loader", completion.Values[0]);
         Assert.AreEqual("Data loader", completion.Values[^1], "A substring match should rank below the prefix matches.");
     }
 
@@ -64,14 +64,14 @@ public class McpCompletionTests
         // A symptom cannot be completed, only started off - and starting in the workflow's own words
         // lands in the one it was designed around.
         var symptoms = await CompletePromptAsync("debug-brouter-routing", "symptom", "");
-        Assert.IsTrue(symptoms.Values.Count >= 5, "The debugging workflow offers no symptoms to start from.");
+        Assert.IsGreaterThanOrEqualTo(5, symptoms.Values.Count, "The debugging workflow offers no symptoms to start from.");
 
         var narrowed = await CompletePromptAsync("debug-brouter-routing", "symptom", "guard");
         Assert.IsTrue(narrowed.Values.All(value => value.Contains("guard", StringComparison.OrdinalIgnoreCase)));
 
         var features = await CompletePromptAsync("implement-brouter-feature", "feature", "cache");
-        Assert.IsTrue(features.Values.Count > 0);
-        StringAssert.Contains(features.Values[0], "cache");
+        Assert.IsNotEmpty(features.Values);
+        Assert.Contains("cache", features.Values[0]);
     }
 
     [TestMethod]
@@ -82,8 +82,8 @@ public class McpCompletionTests
         // with those rather than replace them - the same value offered to someone twice.
         var completion = await CompletePromptAsync("add-brouter-to-app", "renderMode", "");
 
-        CollectionAssert.AreEquivalent(new[] { "unknown", "server", "wasm", "auto", "standalone-wasm", "hybrid" }, completion.Values.ToArray());
-        CollectionAssert.AreEqual(completion.Values.Distinct().ToArray(), completion.Values.ToArray(), "A value is being offered twice.");
+        Assert.AreSequenceEqual(new[] { "unknown", "server", "wasm", "auto", "standalone-wasm", "hybrid" }, completion.Values.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(completion.Values.Distinct().ToArray(), completion.Values.ToArray(), "A value is being offered twice.");
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class McpCompletionTests
     {
         var completion = await CompletePromptAsync("add-brouter-to-app", "nosucharg", "");
 
-        Assert.AreEqual(0, completion.Values.Count);
+        Assert.IsEmpty(completion.Values);
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class McpCompletionTests
         // straight back through the tool a client would call next.
         var completion = await CompleteResourceAsync("brouter://docs/{slug}", "slug", "");
 
-        Assert.AreEqual(DocsCatalog.AllPages.Count(), completion.Values.Count);
+        Assert.HasCount(DocsCatalog.AllPages.Count(), completion.Values);
 
         foreach (var slug in completion.Values)
         {
@@ -145,7 +145,7 @@ public class McpCompletionTests
         // server has is that big yet - which is precisely why the cap is easy to break unnoticed.
         var completion = BrouterCompletions.Complete("path", string.Empty);
 
-        Assert.IsTrue(completion.Values.Count <= 100);
+        Assert.IsLessThanOrEqualTo(100, completion.Values.Count);
         Assert.AreEqual(completion.Total > 100, completion.HasMore is true);
     }
 

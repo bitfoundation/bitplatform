@@ -28,8 +28,8 @@ public class BitPdfRangeHintTests
         var header = Activator.CreateInstance(Hints.GetNestedType("Header", Flags)!, [2, 0, 5, 2000, streams])!;
         var hints = Hints.GetMethod("Read", Flags)!.Invoke(null, [data, 38, header, 10000, (Func<int, int, bool>)((_, _) => true)])!;
         var ranges = (List<(int Offset, int Length)>)Hints.GetMethod("Ranges", Flags)!.Invoke(hints, [1, 1000])!;
-        CollectionAssert.AreEqual(overflow ? new[] { (2000, 180), (3080, 50) } : new[] { (2000, 100), (3000, 50) }, ranges.ToArray());
-        Assert.AreEqual(0, ((List<(int, int)>)Hints.GetMethod("Ranges", Flags)!.Invoke(hints, [1, 100])!).Count);
+        Assert.AreSequenceEqual(overflow ? new[] { (2000, 180), (3080, 50) } : new[] { (2000, 100), (3000, 50) }, ranges.ToArray());
+        Assert.IsEmpty(((List<(int, int)>)Hints.GetMethod("Ranges", Flags)!.Invoke(hints, [1, 100])!));
     }
 
     [TestMethod]
@@ -90,9 +90,9 @@ public class BitPdfRangeHintTests
         Assert.IsNull(method.Invoke(null, [document.XRef, first, null, "duplicate", budget, completed]));
         var second = method.Invoke(null, [document.XRef, Spec(), null, "second", budget, completed])!;
         var attachment = (BitPdfAttachment)resultType.GetProperty("Attachment", Flags)!.GetValue(second)!;
-        Assert.AreEqual(4, attachment.Content.Length);
+        Assert.HasCount(4, attachment.Content);
         var third = method.Invoke(null, [document.XRef, Spec(), null, "third", budget, completed])!;
-        Assert.AreEqual(0, ((BitPdfAttachment)resultType.GetProperty("Attachment", Flags)!.GetValue(third)!).Content.Length);
+        Assert.IsEmpty(((BitPdfAttachment)resultType.GetProperty("Attachment", Flags)!.GetValue(third)!).Content);
     }
 
     [TestMethod]
@@ -108,7 +108,7 @@ public class BitPdfRangeHintTests
             .Invoke(d.XRef, [1, d.PageCount, 262144])!);
         Assert.AreEqual(!malformed, ranges.Count > 0);
         Assert.AreEqual(400d, await source.Run(document, d => d.Pages[1].Width));
-        Assert.AreEqual(1, handler.Requests.Count);
+        Assert.ContainsSingle(handler.Requests);
     }
 
     private static byte[] OverflowFixture(bool malformed)

@@ -36,7 +36,7 @@ public sealed class BitThemeFluentPaletteContractTests
     private static void AssertFamily(
         IDictionary<string, string> tokens, string prefix, string[] suffixes, string[] transcribed, string name, List<string> failures)
     {
-        Assert.AreEqual(suffixes.Length, transcribed.Length, $"{name} has the wrong number of slots");
+        Assert.HasCount(suffixes.Length, transcribed, $"{name} has the wrong number of slots");
 
         for (var i = 0; i < suffixes.Length; i++)
         {
@@ -114,7 +114,7 @@ public sealed class BitThemeFluentPaletteContractTests
             failures.Add($"--bit-clr-bg-overlay: stylesheet {tokens["bg-overlay"]}, transcribed {overlay}");
         }
 
-        Assert.AreEqual(0, failures.Count, $"{paletteFile} has drifted from the transcription: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{paletteFile} has drifted from the transcription: {string.Join("; ", failures.Take(12))}");
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public sealed class BitThemeFluentPaletteContractTests
 
         string[] names = ["white", "black", .. Enumerable.Range(1, 22).Select(i => $"gray{i * 10}")];
 
-        Assert.AreEqual(names.Length, BitThemeFluentPalettes.Neutrals.Length, "ramp length");
+        Assert.HasCount(names.Length, BitThemeFluentPalettes.Neutrals, "ramp length");
 
         var failures = new List<string>();
         for (var i = 0; i < names.Length; i++)
@@ -142,6 +142,6 @@ public sealed class BitThemeFluentPaletteContractTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count, $"the neutral ramp has drifted: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"the neutral ramp has drifted: {string.Join("; ", failures.Take(12))}");
     }
 }

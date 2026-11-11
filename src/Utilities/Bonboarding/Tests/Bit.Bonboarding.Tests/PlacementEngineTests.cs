@@ -77,7 +77,7 @@ public class PlacementEngineTests
 
         // There is no room above inside the visible part, so it goes below rather than under the keyboard's edge.
         Assert.AreEqual(BonboardingPlacementSide.Bottom, result.Side);
-        Assert.IsTrue(result.Popover.Bottom <= visible.Bottom - 16);
+        Assert.IsLessThanOrEqualTo(visible.Bottom - 16, result.Popover.Bottom);
     }
 
     [TestMethod]
@@ -131,7 +131,7 @@ public class PlacementEngineTests
         Assert.AreEqual(BonboardingPlacementSide.Bottom, result.Side);
         Assert.IsTrue(result.UsedPreferred);
         Assert.AreEqual(16, result.Popover.Left);
-        Assert.IsTrue(result.Popover.Right <= 1000 - 16);
+        Assert.IsLessThanOrEqualTo(1000 - 16, result.Popover.Right);
         Assert.AreEqual(0, result.Overflow);
     }
 
@@ -173,8 +173,8 @@ public class PlacementEngineTests
 
         Assert.IsTrue(result.ShowArrow);
         // Corner radius plus half the arrow keeps it off the rounded corner.
-        Assert.IsTrue(result.ArrowOffset >= 12 + 5, $"Arrow offset {result.ArrowOffset} overlaps the corner.");
-        Assert.IsTrue(result.ArrowOffset <= 320 - 12 - 5);
+        Assert.IsGreaterThanOrEqualTo(12 + 5, result.ArrowOffset, $"Arrow offset {result.ArrowOffset} overlaps the corner.");
+        Assert.IsLessThanOrEqualTo(320 - 12 - 5, result.ArrowOffset);
     }
 
     [TestMethod]

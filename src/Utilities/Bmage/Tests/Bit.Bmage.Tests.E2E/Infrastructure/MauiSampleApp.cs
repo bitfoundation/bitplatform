@@ -22,7 +22,7 @@ namespace Bit.Bmage.Tests.E2E.Infrastructure;
 /// Runtime.
 /// </para>
 /// </remarks>
-public sealed class MauiSampleApp : IAsyncDisposable
+internal sealed class MauiSampleApp : IAsyncDisposable
 {
     /// <summary>The origin BlazorWebView serves the app from.</summary>
     public const string AppOrigin = "https://0.0.0.1";

@@ -92,8 +92,8 @@ public class ConvergenceTests
         network.SynchronizeAll();
 
         AssertConverged(network, seed, history);
-        Assert.IsTrue(
-            roundsNeeded > 0,
+        Assert.IsGreaterThan(
+            0, roundsNeeded,
             $"Seed {seed}: handshake retries never reconciled the replicas within 12 rounds, " +
             "which suggests repair is not making progress rather than merely being unlucky.");
     }
@@ -243,7 +243,7 @@ public class ConvergenceTests
         }
         catch (BcrdtConvergenceException ex)
         {
-            Assert.Fail($"Seed {seed}: {ex.Message}");
+            throw new global::System.InvalidOperationException($"Seed {seed}: {ex.Message}", ex);
         }
     }
 
@@ -287,9 +287,8 @@ public class ConvergenceTests
                 : Environment.NewLine + "--- operation history ---" + Environment.NewLine +
                   string.Join(Environment.NewLine, history.TakeLast(40));
 
-            Assert.Fail(
-                $"Seed {seed}. {network.MessagesSent} message(s) sent, {network.MessagesDropped} dropped." +
-                Environment.NewLine + ex.Message + trace);
+            throw new global::System.InvalidOperationException($"Seed {seed}. {network.MessagesSent} message(s) sent, {network.MessagesDropped} dropped." +
+                Environment.NewLine + ex.Message + trace, ex);
         }
     }
 }

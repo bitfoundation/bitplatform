@@ -19,25 +19,25 @@ public class BitNavBarStylesheetTests
 
         // An explicit Size publishes the steps, which the root reads before the variable; an unset one is the medium
         // navbar the variable restyles.
-        StringAssert.Contains(root, "--bit-nbr-ico-fs: var(--bit-nbr-sz-ico, var(--bit-NavBar-icon-size, #{$tg-fs-md}));");
-        StringAssert.Contains(root, "--bit-nbr-txt-fs: var(--bit-nbr-sz-txt, var(--bit-NavBar-text-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(root, "--bit-nbr-pad: var(--bit-nbr-sz-pad, var(--bit-NavBar-item-padding, #{spacing(1)}));");
-        StringAssert.Contains(root, "--bit-nbr-row-pad: var(--bit-nbr-sz-row-pad, var(--bit-NavBar-item-padding, #{spacing(2)}));");
-        StringAssert.Contains(root, "--bit-nbr-min: var(--bit-nbr-sz-min, var(--bit-NavBar-item-min-size, #{$siz-ctrl-md}));");
+        Assert.Contains("--bit-nbr-ico-fs: var(--bit-nbr-sz-ico, var(--bit-NavBar-icon-size, #{$tg-fs-md}));", root);
+        Assert.Contains("--bit-nbr-txt-fs: var(--bit-nbr-sz-txt, var(--bit-NavBar-text-size, #{$tg-fs-sm}));", root);
+        Assert.Contains("--bit-nbr-pad: var(--bit-nbr-sz-pad, var(--bit-NavBar-item-padding, #{spacing(1)}));", root);
+        Assert.Contains("--bit-nbr-row-pad: var(--bit-nbr-sz-row-pad, var(--bit-NavBar-item-padding, #{spacing(2)}));", root);
+        Assert.Contains("--bit-nbr-min: var(--bit-nbr-sz-min, var(--bit-NavBar-item-min-size, #{$siz-ctrl-md}));", root);
 
         // The size classes publish the plain steps and read no public variable of their own.
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-nbr-{size} {{").Contains("--bit-NavBar-"), $"The {size} class reads a public variable ahead of the size.");
+            Assert.DoesNotContain("--bit-NavBar-", SourceFiles.GetScssBlock(stylesheet, $"\n.bit-nbr-{size} {{"), $"The {size} class reads a public variable ahead of the size.");
         }
 
         // An explicit Color is read first for every color it paints (its filled recipe ahead of the plain role), then
         // the variable, then the primary role an unset Color stands for - filled or not.
-        StringAssert.Contains(stylesheet, "color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-selected-color, var(--bit-nbr-fil-text, #{$clr-pri}))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-nbr-clr-acc-hover, var(--bit-NavBar-item-hover-background, var(--bit-nbr-fil-hover, transparent)));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-nbr-clr-ind, var(--bit-NavBar-indicator-color, var(--bit-nbr-fil-text, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));");
+        Assert.Contains("color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-selected-color, var(--bit-nbr-fil-text, #{$clr-pri}))));", stylesheet);
+        Assert.Contains("background-color: var(--bit-nbr-clr-acc-hover, var(--bit-NavBar-item-hover-background, var(--bit-nbr-fil-hover, transparent)));", stylesheet);
+        Assert.Contains("background-color: var(--bit-nbr-clr-ind, var(--bit-NavBar-indicator-color, var(--bit-nbr-fil-text, #{$clr-pri})));", stylesheet);
+        Assert.Contains("@include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));", stylesheet);
+        Assert.Contains("color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));", stylesheet);
 
         // Filled only switches the default (--bit-nbr-fil-*), which the variables are read ahead of; nothing else a
         // parameter publishes may sit behind a public variable.
@@ -52,8 +52,8 @@ public class BitNavBarStylesheetTests
         // Without the fill the labels sit on the bar's own background, so a Color draws them in the role's text color -
         // a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white - while the
         // indicator, a rule rather than text, keeps the main.
-        StringAssert.Contains(roles, "--bit-nbr-clr: #{role-text($role, $tokens)};");
-        StringAssert.Contains(roles, "--bit-nbr-clr-ind: #{role($tokens, main)};");
+        Assert.Contains("--bit-nbr-clr: #{role-text($role, $tokens)};", roles);
+        Assert.Contains("--bit-nbr-clr-ind: #{role($tokens, main)};", roles);
     }
 
     [TestMethod]
@@ -70,13 +70,13 @@ public class BitNavBarStylesheetTests
                                          "--bit-nbr-fil-text", "--bit-nbr-sz-ico", "--bit-nbr-sz-txt", "--bit-nbr-sz-gap", "--bit-nbr-sz-pad",
                                          "--bit-nbr-sz-sec-pad", "--bit-nbr-sz-row-pad", "--bit-nbr-sz-min" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
         var rootAt = stylesheet.IndexOf("\n.bit-nbr {", System.StringComparison.Ordinal);
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-nbr-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-nbr-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-nbr-fil {", System.StringComparison.Ordinal), "The filled class is declared ahead of the root that resets it.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-nbr-md {", System.StringComparison.Ordinal), rootAt, "The size classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-nbr-#{$role} {", System.StringComparison.Ordinal), rootAt, "The color classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-nbr-fil {", System.StringComparison.Ordinal), rootAt, "The filled class is declared ahead of the root that resets it.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss");

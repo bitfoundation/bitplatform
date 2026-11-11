@@ -59,7 +59,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
     {
         var component = RenderDay();
 
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-mini-calendar").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-mini-calendar"));
         Assert.AreEqual("March 2026", Title(component));
 
         var title = component.Find(".bit-bfc-mini-calendar-title");
@@ -73,7 +73,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
         var component = RenderDay();
 
         var headers = component.FindAll(".bit-bfc-mini-calendar th");
-        CollectionAssert.AreEqual(new[] { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" }, headers.Select(h => h.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" }, headers.Select(h => h.TextContent.Trim()).ToArray());
         Assert.IsTrue(headers.All(h => h.GetAttribute("scope") == "col"));
         // The abbreviation keeps the full short name a screen reader announces.
         Assert.AreEqual("Sun", headers[0].GetAttribute("abbr"));
@@ -85,14 +85,14 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
         var component = RenderDay();
 
         // March 2026 runs Sunday to Tuesday, padded with April 1 - 4: five rows of seven.
-        Assert.AreEqual(5, component.FindAll(".bit-bfc-mini-calendar tbody tr").Count);
+        Assert.HasCount(5, component.FindAll(".bit-bfc-mini-calendar tbody tr"));
         var days = Days(component);
-        Assert.AreEqual(35, days.Count);
+        Assert.HasCount(35, days);
         Assert.AreEqual("1", days[0].TextContent.Trim());
         Assert.IsTrue(days.All(d => d.GetAttribute("type") == "button"));
 
         var others = days.Where(d => d.ClassList.Contains("other-month")).Select(d => d.TextContent.Trim()).ToArray();
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4" }, others);
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, others);
     }
 
     [TestMethod]
@@ -110,7 +110,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
         Assert.AreEqual("date", today.GetAttribute("aria-current"));
         Assert.AreEqual("Wednesday, March 18, 2026", today.GetAttribute("aria-label"));
 
-        Assert.AreEqual(1, Days(component).Count(d => d.ClassList.Contains("selected")));
+        Assert.ContainsSingle(d => d.ClassList.Contains("selected"), Days(component));
     }
 
     [TestMethod]
@@ -147,9 +147,8 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
             HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday]
         }));
 
-        CollectionAssert.AreEqual(
-            new[] { "Mo", "Tu", "We", "Th", "Fr" },
-            component.FindAll(".bit-bfc-mini-calendar th").Select(h => h.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Mo", "Tu", "We", "Th", "Fr" }, component.FindAll(".bit-bfc-mini-calendar th").Select(h => h.TextContent.Trim()).ToArray());
         Assert.IsTrue(component.FindAll(".bit-bfc-mini-calendar tbody tr").All(r => r.QuerySelectorAll("td").Length == 5));
     }
 
@@ -158,7 +157,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
     {
         var component = RenderDay(p => p.Add(c => c.Settings, new BitFullCalendarSettings { ShowDayViewCalendar = false }));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-mini-calendar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-mini-calendar"));
     }
 
     #endregion
@@ -290,7 +289,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
         var days = Days(component);
         var disabled = days.Where(d => d.HasAttribute("disabled")).ToList();
         // March 1 - 9, March 26 - 31 and the four April padding days.
-        Assert.AreEqual(9 + 6 + 4, disabled.Count);
+        Assert.HasCount(9 + 6 + 4, disabled);
         Assert.IsTrue(disabled.All(d => d.GetAttribute("aria-disabled") == "true"));
         Assert.IsTrue(days.Where(d => d.HasAttribute("disabled") is false).All(d => d.HasAttribute("aria-disabled") is false));
         Assert.IsFalse(Day(component, new DateTime(2026, 3, 10)).HasAttribute("disabled"));
@@ -336,7 +335,7 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
     {
         var component = RenderDay();
 
-        Assert.AreEqual(1, Days(component).Count(d => d.GetAttribute("tabindex") == "0"));
+        Assert.ContainsSingle(d => d.GetAttribute("tabindex") == "0", Days(component));
         Assert.AreEqual("20260318", RovingDay(component));
         Assert.IsTrue(Days(component).All(d => d.HasAttribute("data-bit-bfc-roving")));
     }

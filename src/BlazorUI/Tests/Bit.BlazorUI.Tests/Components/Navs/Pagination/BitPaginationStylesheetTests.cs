@@ -56,7 +56,7 @@ public class BitPaginationStylesheetTests
             // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
             var expected = variable == "--bit-Pagination-focus-color" ? $"var({variable})" : $"var({variable}, ";
 
-            Assert.IsTrue(stylesheet.Contains(expected), $"{variable} is never read as it should be.");
+            Assert.Contains(expected, stylesheet, $"{variable} is never read as it should be.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -75,7 +75,7 @@ public class BitPaginationStylesheetTests
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Pagination-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, documented);
+        Assert.AreSequenceEqual(PublicVariables, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -85,13 +85,13 @@ public class BitPaginationStylesheetTests
 
         // The radius is resolved into a private variable on the root, which the Rounded class declared after it
         // replaces on the same element, so a radius inherited from an ancestor does not undo the parameter.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-radius: var(--bit-Pagination-button-radius, #{$shp-radius-control});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-rnd {"), "--bit-pgn-radius: #{$shp-radius-full};");
+        Assert.Contains("--bit-pgn-radius: var(--bit-Pagination-button-radius, #{$shp-radius-control});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"));
+        Assert.Contains("--bit-pgn-radius: #{$shp-radius-full};", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-rnd {"));
 
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-pgn {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-pgn-rnd {", System.StringComparison.Ordinal));
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-pgn-rnd {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-pgn {", System.StringComparison.Ordinal));
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-btn {"), "border-radius: var(--bit-pgn-radius);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-elp {"), "border-radius: var(--bit-pgn-radius);");
+        Assert.Contains("border-radius: var(--bit-pgn-radius);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-btn {"));
+        Assert.Contains("border-radius: var(--bit-pgn-radius);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-elp {"));
     }
 
     [TestMethod]
@@ -99,14 +99,14 @@ public class BitPaginationStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"), "--bit-pgn-btn-size: var(--bit-pgn-size-btn, var(--bit-Pagination-button-size, #{$siz-ctrl-md}));");
+        Assert.Contains("--bit-pgn-btn-size: var(--bit-pgn-size-btn, var(--bit-Pagination-button-size, #{$siz-ctrl-md}));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn {"));
 
         foreach (var size in new[] { "sm", "md", "lg" })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-pgn-{size} {{");
 
-            StringAssert.Contains(block, $"--bit-pgn-size-btn: #{{$siz-ctrl-{size}}};");
-            StringAssert.Contains(block, $"--bit-pgn-pad-x: #{{$siz-ctrl-pad-x-{size}}};");
+            Assert.Contains($"--bit-pgn-size-btn: #{{$siz-ctrl-{size}}};", block);
+            Assert.Contains($"--bit-pgn-pad-x: #{{$siz-ctrl-pad-x-{size}}};", block);
         }
     }
 
@@ -117,10 +117,10 @@ public class BitPaginationStylesheetTests
 
         // Under the Fill variant every page is filled and the current one only a shade darker, so its weight is the
         // cue that does not rest on color, and forced colors repaint it with the system selection colors.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-sel {"), "font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});");
+        Assert.Contains("font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-sel {"));
         // The selection pair opts out of the forced palette, or Chromium's Canvas backplate would sit behind the
         // HighlightText number and all but erase it.
-        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-sel:not([disabled], [aria-disabled=\"true\"]) {\n        forced-color-adjust: none;\n        color: HighlightText;");
+        Assert.Contains(".bit-pgn-btn.bit-pgn-sel:not([disabled], [aria-disabled=\"true\"]) {\n        forced-color-adjust: none;\n        color: HighlightText;", stylesheet);
     }
 
     [TestMethod]
@@ -130,8 +130,8 @@ public class BitPaginationStylesheetTests
 
         // The primary fill is LinkText under a Canvas label, which Chromium's Canvas backplate erases, so a filled
         // button takes the system button pair instead, and the pointer states are set back to it.
-        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-fil:not(.bit-pgn-sel, [disabled], [aria-disabled=\"true\"]) {\n        color: ButtonText;\n        border-color: ButtonText;\n        background-color: ButtonFace;");
-        StringAssert.Contains(stylesheet, ".bit-pgn-elb:active {\n        --bit-pgn-sfg: initial;");
+        Assert.Contains(".bit-pgn-btn.bit-pgn-fil:not(.bit-pgn-sel, [disabled], [aria-disabled=\"true\"]) {\n        color: ButtonText;\n        border-color: ButtonText;\n        background-color: ButtonFace;", stylesheet);
+        Assert.Contains(".bit-pgn-elb:active {\n        --bit-pgn-sfg: initial;", stylesheet);
     }
 
     [TestMethod]
@@ -141,17 +141,17 @@ public class BitPaginationStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // pagination an unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-pgn-font-size, var(--bit-Pagination-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-btn-size: var(--bit-pgn-size-btn, var(--bit-Pagination-button-size, #{$siz-ctrl-md}));");
+        Assert.Contains("font-size: var(--bit-pgn-font-size, var(--bit-Pagination-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-pgn-btn-size: var(--bit-pgn-size-btn, var(--bit-Pagination-button-size, #{$siz-ctrl-md}));", stylesheet);
 
         // So does an explicit Color, for every color it paints; what it leaves alone (the transparent fill of Outline
         // and Text) stays the variable's alone.
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-fill-button-color, var(--bit-Pagination-button-color, #{$clr-pri-text})));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-fill-button-background, var(--bit-Pagination-button-background, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-Pagination-outline-button-background, var(--bit-Pagination-button-background, transparent));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-sbg: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-sbg, var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark})));");
-        StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));");
+        Assert.Contains("--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-fill-button-color, var(--bit-Pagination-button-color, #{$clr-pri-text})));", stylesheet);
+        Assert.Contains("--bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-fill-button-background, var(--bit-Pagination-button-background, #{$clr-pri})));", stylesheet);
+        Assert.Contains("--bit-pgn-clr-btn-bg: var(--bit-Pagination-outline-button-background, var(--bit-Pagination-button-background, transparent));", stylesheet);
+        Assert.Contains("--bit-pgn-sbg: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("background-color: var(--bit-pgn-sbg, var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark})));", stylesheet);
+        Assert.Contains("@include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Pagination-[a-z-]+, var\(--bit-pgn-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -169,8 +169,7 @@ public class BitPaginationStylesheetTests
         // from the other two on :root - an outline pagination's neutral hairline without a ring around every filled one.
         foreach (var name in new[] { "button-color", "button-background", "button-border-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-Pagination-{variant}-{name}, var(--bit-Pagination-{name}, ",
-                                  $"{selector} does not read --bit-Pagination-{variant}-{name} ahead of --bit-Pagination-{name}.");
+            Assert.Contains($"var(--bit-Pagination-{variant}-{name}, var(--bit-Pagination-{name}, ", block, $"{selector} does not read --bit-Pagination-{variant}-{name} ahead of --bit-Pagination-{name}.");
         }
 
         // A variant reads a shared button color only right behind its own twin, and never the tier of another variant.
@@ -190,10 +189,9 @@ public class BitPaginationStylesheetTests
         // The page numbers of an Outline or Text pagination sit on the page rather than on the role's fill, so they are
         // drawn in the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as
         // text on white.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{"),
-                              $"--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-fg, var(--bit-Pagination-{variant}-button-color, var(--bit-Pagination-button-color, #{{$clr-pri}})));");
+        Assert.Contains($"--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-fg, var(--bit-Pagination-{variant}-button-color, var(--bit-Pagination-button-color, #{{$clr-pri}})));", SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{"));
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-pgn-#{$role} {"), "--bit-pgn-clr-fg: #{role-text($role, $tokens)};");
+        Assert.Contains("--bit-pgn-clr-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-pgn-#{$role} {"));
     }
 
     [TestMethod]
@@ -209,16 +207,16 @@ public class BitPaginationStylesheetTests
                                          "--bit-pgn-clr-sel", "--bit-pgn-clr-sel-hover", "--bit-pgn-clr-sel-active", "--bit-pgn-clr-dis-bg",
                                          "--bit-pgn-clr-dis-text", "--bit-pgn-size-btn", "--bit-pgn-font-size", "--bit-pgn-pad-x" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
         // While Color is unset, a disabled control still takes the disabled colors of the primary role it stands for.
-        StringAssert.Contains(root, "--bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-pri-dis});");
-        StringAssert.Contains(root, "--bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text, #{$clr-pri-dis-text});");
+        Assert.Contains("--bit-pgn-clr-dis: var(--bit-pgn-clr-dis-bg, #{$clr-pri-dis});", root);
+        Assert.Contains("--bit-pgn-clr-txt-dis: var(--bit-pgn-clr-dis-text, #{$clr-pri-dis-text});", root);
 
         var rootAt = stylesheet.IndexOf("\n.bit-pgn {", System.StringComparison.Ordinal);
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-pgn-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
-        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-pgn-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-pgn-#{$role} {", System.StringComparison.Ordinal), rootAt, "The color classes are declared ahead of the root that resets them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-pgn-md {", System.StringComparison.Ordinal), rootAt, "The size classes are declared ahead of the root that resets them.");
     }
 
     private static string ReadStylesheet()

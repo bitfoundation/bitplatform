@@ -202,7 +202,7 @@ public class BitAiContextMeterTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(component.Find(".bit-aictm-mtr").ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -223,7 +223,7 @@ public class BitAiContextMeterTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -253,7 +253,7 @@ public class BitAiContextMeterTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red", Status = "color: blue" }));
 
         Assert.IsTrue(component.Find(".bit-aictm").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aictm").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-aictm").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aictm-ttl").ClassList.Contains("c-label"));
         Assert.IsTrue(component.Find(".bit-aictm-mtr").ClassList.Contains("c-meter"));
         Assert.IsTrue(component.Find(".bit-aictm-pct").ClassList.Contains("c-percent"));
@@ -281,7 +281,7 @@ public class BitAiContextMeterTests : BitAiTestBase
     [TestMethod]
     public void BitAiContextMeterParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiContextMeter", BitAiContextMeterParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiContextMeter", new BitAiContextMeterParams().Name);
         Assert.AreEqual(BitAiContextMeterParams.ParamName, new BitAiContextMeterParams().Name);
     }
 }

@@ -63,11 +63,11 @@ public class DataModelingTests
         Assert.AreEqual(measurement.Big, decoded.Big);
         Assert.AreEqual(measurement.Huge, decoded.Huge);
         Assert.AreEqual(measurement.Day, decoded.Day);
-        CollectionAssert.AreEquivalent(measurement.Bins.ToList(), decoded.Bins.ToList());
+        Assert.AreSequenceEqual(measurement.Bins.ToList(), decoded.Bins.ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsInstanceOfType<HashSet<int>>(decoded.Bins);
-        CollectionAssert.AreEquivalent(measurement.Labels!.ToList(), decoded.Labels!.ToList());
-        CollectionAssert.AreEqual(measurement.Samples.ToList(), decoded.Samples.ToList());
-        CollectionAssert.AreEqual(measurement.Links.ToList(), decoded.Links.ToList());
+        Assert.AreSequenceEqual(measurement.Labels!.ToList(), decoded.Labels!.ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(measurement.Samples.ToList(), decoded.Samples.ToList());
+        Assert.AreSequenceEqual(measurement.Links.ToList(), decoded.Links.ToList());
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class DataModelingTests
     public async Task Records_And_Constructor_Bound_Rows_Survive_Recovery_And_Keep_Their_Indexes()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             var contacts = db.GetTable(Contact.Table);
             contacts.InsertMany([
@@ -134,24 +134,23 @@ public class DataModelingTests
                 new Contact(3, "Grace", new DateOnly(1906, 12, 9)),
             ]);
             contacts.Update(contacts.Get(3)! with { Name = "Grace Hopper" });
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             db.GetTable(Measurement.Table).InsertMany(Enumerable.Range(1, 6).Select(SampleMeasurement));
         }
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         var recovered = reopened.GetTable(Contact.Table);
         Assert.AreEqual(new Contact(2, "Alan", new DateOnly(1912, 6, 23)) { Nickname = "Prof" }, recovered.Get(2));
         Assert.AreEqual("Grace Hopper", recovered.Get(3)!.Name);
-        CollectionAssert.AreEqual(new[] { 1, 3, 2 }, recovered.OrderBy(Contact.Indexes.Birthday).Select(c => c.Id).ToArray());
-        CollectionAssert.AreEquivalent(new[] { 1, 2 }, recovered.Lookup(Contact.Indexes.Initial, "A").Select(c => c.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 3, 2 }, recovered.OrderBy(Contact.Indexes.Birthday).Select(c => c.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, recovered.Lookup(Contact.Indexes.Initial, "A").Select(c => c.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var measurements = reopened.GetTable(Measurement.Table);
         Assert.AreEqual(6, measurements.Count);
         Assert.AreEqual(1, measurements.CountBy(Measurement.Indexes.Big, Int128.MaxValue - 4));
-        CollectionAssert.AreEqual(
-            measurements.Scan().Where(m => m.Day is not null).OrderBy(m => m.Day).Select(m => m.Id).ToList(),
-            measurements.Range(Measurement.Indexes.Day, new DateOnly(2000, 1, 1), DateOnly.MaxValue).Select(m => m.Id).ToList());
-        Assert.AreEqual(0, reopened.VerifyIntegrity().Count);
+        Assert.AreSequenceEqual(
+            measurements.Scan().Where(m => m.Day is not null).OrderBy(m => m.Day).Select(m => m.Id).ToList(), measurements.Range(Measurement.Indexes.Day, new DateOnly(2000, 1, 1), DateOnly.MaxValue).Select(m => m.Id).ToList());
+        Assert.IsEmpty(reopened.VerifyIntegrity());
     }
 
     [TestMethod]
@@ -176,7 +175,7 @@ public class DataModelingTests
     [TestMethod]
     public async Task Index_Only_Properties_Serve_Lookups_Ranges_And_Compound_Indexes()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(Options());
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken);
         var emails = db.GetTable(EmailAddress.Table);
         emails.InsertMany([
             new EmailAddress { Id = 1, Address = "ada@b.org" },
@@ -184,12 +183,14 @@ public class DataModelingTests
             new EmailAddress { Id = 3, Address = "grace@b.org" },
         ]);
 
-        CollectionAssert.AreEqual(new[] { 2, 1, 3 }, emails.OrderBy(EmailAddress.Indexes.Domain).Select(e => e.Id).ToArray());
-        CollectionAssert.AreEqual(new[] { 3 }, emails.Lookup(EmailAddress.Indexes.DomainUser, ("b.org", "grace")).Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 2, 1, 3 }, emails.OrderBy(EmailAddress.Indexes.Domain).Select(e => e.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 3 }, emails.Lookup(EmailAddress.Indexes.DomainUser, ("b.org", "grace")).Select(e => e.Id).ToArray());
 
         // Changing the stored property the computed one depends on moves the entry, through a new row.
         emails.Update(new EmailAddress { Id = 3, Address = "grace@a.org" });
-        CollectionAssert.AreEquivalent(new[] { 2, 3 }, emails.StartsWith(EmailAddress.Indexes.Domain, "a.").Select(e => e.Id).ToArray());
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
+        Assert.AreSequenceEqual(new[] { 2, 3 }, emails.StartsWith(EmailAddress.Indexes.Domain, "a.").Select(e => e.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.IsEmpty(db.VerifyIntegrity());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

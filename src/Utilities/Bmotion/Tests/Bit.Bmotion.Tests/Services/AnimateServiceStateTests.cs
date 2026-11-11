@@ -51,20 +51,20 @@ public class AnimateServiceStateTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
 
-        var first = await service.AnimateAsync("#box", Bm.To(x: 100, scale: 2), Bm.Tween(0.3));
+        var first = await service.AnimateAsync("#box", Bm.To(x: 100, scale: 2), Bm.Tween(0.3), cancellationToken: TestContext.CancellationToken);
         interop.FinishWaapi();
-        await first.WhenCompleteAsync().WaitAsync(Timeout);
+        await first.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         await WaitUntilAsync(() => !engine.IsRegistered("bm-sel-1"), "the finished animation must release its element");
 
-        await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3));
+        await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3), cancellationToken: TestContext.CancellationToken);
 
         // From x 100 - and with the scale it doesn't animate kept - rather than from identity.
         var state = engine.GetDiagnostics().Single(d => d.Id == "bm-sel-1");
         Assert.AreEqual(100, state.Transforms["x"], 1e-9);
         Assert.AreEqual(2, state.Transforms["scale"], 1e-9);
         var from = FirstFrameTransform(interop);
-        StringAssert.Contains(from, "100px", $"the second animation must leave from x 100: {from}");
-        StringAssert.Contains(from, "scale(2)", $"and keep the scale: {from}");
+        Assert.Contains("100px", from, $"the second animation must leave from x 100: {from}");
+        Assert.Contains("scale(2)", from, $"and keep the scale: {from}");
     }
 
     [TestMethod]
@@ -73,14 +73,14 @@ public class AnimateServiceStateTests
         var (service, engine, interop) = Create();
         await using var _ = engine;
 
-        var first = await service.AnimateAsync("#box", Bm.To(x: 100, scale: 2), Bm.Tween(0.3));
+        var first = await service.AnimateAsync("#box", Bm.To(x: 100, scale: 2), Bm.Tween(0.3), cancellationToken: TestContext.CancellationToken);
         interop.FinishWaapi();
-        await first.WhenCompleteAsync().WaitAsync(Timeout);
+        await first.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         await WaitUntilAsync(() => !engine.IsRegistered("bm-sel-1"), "the finished animation must release its element");
 
         // The page was left and opened again: the element answering to the id is a new one, at rest.
         interop.NewElements = ids => ids;
-        await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3));
+        await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3), cancellationToken: TestContext.CancellationToken);
 
         // Nothing kept for the element before it is resumed: it neither starts at x 100 nor takes the scale.
         var state = engine.GetDiagnostics().Single(d => d.Id == "bm-sel-1");
@@ -97,17 +97,17 @@ public class AnimateServiceStateTests
         await using var _ = engine;
         interop.RefResolver = _ => "ball";
 
-        var first = await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3));
+        var first = await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3), TestContext.CancellationToken);
         interop.FinishWaapi();
-        await first.WhenCompleteAsync().WaitAsync(Timeout);
+        await first.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
         await WaitUntilAsync(() => !engine.IsRegistered("ball"), "the finished animation must release its element");
 
         interop.NewElements = ids => ids;
         var played = interop.ArgsOf("playWaapiAnimation").Count;
-        await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3));
+        await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3), TestContext.CancellationToken);
 
         // Were the old element's x resumed, the new one would already be "there": nothing would play, and it would jump.
-        Assert.AreEqual(played + 1, interop.ArgsOf("playWaapiAnimation").Count, "the new element must be animated");
+        Assert.HasCount(played + 1, interop.ArgsOf("playWaapiAnimation"), "the new element must be animated");
         var from = FirstFrameTransform(interop);
         Assert.IsFalse(from.Contains("160px", StringComparison.Ordinal), $"the new element must animate from where it is: {from}");
     }
@@ -136,7 +136,7 @@ public class AnimateServiceStateTests
         host.Render(ps => ps.Add(p => p.Show, false));
         Assert.IsFalse(ctx.Engine.IsRegistered("box"));
 
-        await host.InvokeAsync(async () => await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3)));
+        await host.InvokeAsync(async () => await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3), cancellationToken: TestContext.CancellationToken));
 
         // A component renders its element from scratch: nothing it left in the engine is resumed.
         var state = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box");
@@ -194,7 +194,7 @@ public class AnimateServiceStateTests
         Assert.AreEqual(2, RateOf(engine));
 
         RunFrames(engine, 16, 600);
-        await controls.WhenCompleteAsync().WaitAsync(Timeout);
+        await controls.WhenCompleteAsync().WaitAsync(Timeout, TestContext.CancellationToken);
 
         await WaitUntilAsync(() => RateOf(engine) == 1, "a natural finish must put the rate back too");
     }
@@ -228,4 +228,6 @@ public class AnimateServiceStateTests
 
         Assert.AreEqual(0.5, RateOf(engine));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

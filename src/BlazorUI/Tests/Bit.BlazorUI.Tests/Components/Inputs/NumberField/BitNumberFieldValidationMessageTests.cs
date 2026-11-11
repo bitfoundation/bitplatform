@@ -31,7 +31,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         var component = RenderField(editContext, model, new() { [nameof(BitNumberField<int?>.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsNull(component.Find(".bit-nfl-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -47,7 +47,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         // A value the EditContext accepts takes the line, and the reference to it, away again.
         component.Find(".bit-nfl-inp").Change("10");
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsNull(component.Find(".bit-nfl-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-nfl-inp").GetAttribute("aria-invalid"));
     }
@@ -76,7 +76,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         // A number takes the parsing error away with the text that caused it.
         component.Find(".bit-nfl-inp").Change("10");
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.AreEqual(10, model.Value);
     }
 
@@ -124,7 +124,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-nfl-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsNull(component.Find(".bit-nfl-inp").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-hds"));
     }
@@ -146,7 +146,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-erm"));
         Assert.AreEqual("Only 4 seats are left for this show.", component.Find(".bit-nfl-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -276,13 +276,13 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         attributes[nameof(BitNumberField<int?>.ShowValidationMessage)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-erm"));
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-hds"));
 
         // And both go once the value is accepted.
         component.Find(".bit-nfl-inp").Change("10");
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsFalse(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-hds"));
     }
 
@@ -309,7 +309,7 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         });
 
         Assert.AreEqual("true", component.Find(".bit-nfl-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsFalse(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-hds"));
 
         // The field was invalid and stays so; the message alone is what changes.
@@ -341,12 +341,12 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-erm"));
 
         attributes[nameof(BitNumberField<int?>.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
         Assert.IsNull(component.Find(".bit-nfl-inp").GetAttribute("aria-describedby"));
     }
 
@@ -362,8 +362,8 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the field has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
     }
 
     [TestMethod]
@@ -385,12 +385,12 @@ public class BitNumberFieldValidationMessageTests : BunitTestContext
 
         var message = component.Find(".bit-nfl-erm").TextContent.Trim();
 
-        StringAssert.Contains(message, "The Value field is not valid.");
-        StringAssert.Contains(message, RangeMessage);
+        Assert.Contains("The Value field is not valid.", message);
+        Assert.Contains(RangeMessage, message);
 
         component.Find(".bit-nfl-inp").Change("10");
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-erm"));
 
         component.Find("form").Submit();
 

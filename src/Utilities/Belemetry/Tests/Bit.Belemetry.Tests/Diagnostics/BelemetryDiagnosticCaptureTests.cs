@@ -28,21 +28,21 @@ public class BelemetryDiagnosticCaptureTests
     public async Task ACapture_IsOnlyExported_AfterConfirm_AndAChangeWithdrawsTheConfirmation()
     {
         await using var host = await WithAFailureAsync();
-        var capture = await host.Diagnostics.CaptureAsync(new() { Reason = "user-report" });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Reason = "user-report" }, TestContext.CancellationToken);
 
         Assert.IsTrue(capture.Succeeded);
         Assert.AreEqual(16, capture.Id.Length);
         Assert.AreEqual(BelemetryCaptureTriggerKind.Manual, capture.Trigger.Kind);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => capture.ExportAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => capture.ExportAsync(TestContext.CancellationToken));
 
         capture.Confirm();
         Assert.IsTrue(capture.IsConfirmed);
         capture.ExcludeSection(BelemetryBundleSections.Release);
         Assert.IsFalse(capture.IsConfirmed, "What is confirmed is what is exported.");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => capture.ExportAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => capture.ExportAsync(TestContext.CancellationToken));
 
         capture.Confirm();
-        var bytes = await capture.ExportAsync();
+        var bytes = await capture.ExportAsync(TestContext.CancellationToken);
         Assert.IsGreaterThan(0, bytes.Length);
     }
 
@@ -50,13 +50,13 @@ public class BelemetryDiagnosticCaptureTests
     public async Task TheBundle_RoundTrips_AndValidates()
     {
         await using var host = await WithAFailureAsync();
-        var capture = await host.Diagnostics.CaptureAsync(new() { Reason = "user-report", Description = "I clicked Save and it broke. Reach me at jane@example.com" });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Reason = "user-report", Description = "I clicked Save and it broke. Reach me at jane@example.com" }, TestContext.CancellationToken);
         capture.Confirm();
 
         using var stream = new MemoryStream();
-        await capture.ExportAsync(stream);
+        await capture.ExportAsync(stream, TestContext.CancellationToken);
         stream.Position = 0;
-        var read = await BelemetrySupportBundle.ReadAsync(stream);
+        var read = await BelemetrySupportBundle.ReadAsync(stream, TestContext.CancellationToken);
 
         Assert.IsTrue(read.IsValid, string.Join("; ", read.Errors));
         Assert.AreEqual(BelemetrySupportBundle.SchemaVersion, read.SchemaVersion);
@@ -71,8 +71,8 @@ public class BelemetryDiagnosticCaptureTests
         Assert.AreEqual("Production", report.Environment);
         Assert.AreEqual("abc1234", report.Commit);
         Assert.AreEqual("I clicked Save and it broke. Reach me at [email]", report.UserDescription, "User text goes through the privacy patterns too.");
-        Assert.IsTrue(report.Findings.Any(f => f.Kind == BelemetryIssueFindingKind.UserProvided));
-        Assert.IsTrue(report.Findings.Any(f => f.Kind == BelemetryIssueFindingKind.Observed && f.Text.StartsWith("System.InvalidOperationException was logged", StringComparison.Ordinal)));
+        Assert.Contains(f => f.Kind == BelemetryIssueFindingKind.UserProvided, report.Findings);
+        Assert.Contains(f => f.Kind == BelemetryIssueFindingKind.Observed && f.Text.StartsWith("System.InvalidOperationException was logged", StringComparison.Ordinal), report.Findings);
         Assert.HasCount(2, read.Events);
         Assert.AreEqual(1, read.ExceptionGroups.Single().Count);
         Assert.Contains("# InvalidOperationException", read.ReportMarkdown!);
@@ -82,9 +82,9 @@ public class BelemetryDiagnosticCaptureTests
     public async Task TheExport_IsDeterministic()
     {
         await using var host = await WithAFailureAsync();
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         capture.Confirm();
-        CollectionAssert.AreEqual(await capture.ExportAsync(), await capture.ExportAsync());
+        Assert.AreSequenceEqual(await capture.ExportAsync(TestContext.CancellationToken), await capture.ExportAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -92,29 +92,29 @@ public class BelemetryDiagnosticCaptureTests
     {
         await using var host = await WithAFailureAsync(o => o.Diagnostics.AllowedAttributes.Add("tenant"));
         host.Diagnostics.Record("tenant.switched", new Dictionary<string, object?> { ["tenant"] = "contoso" });
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
 
         var warning = capture.Events.Single(e => e.Message == "Inventory is slow");
         Assert.IsTrue(capture.ExcludeEvent(warning));
         capture.RedactAttribute("tenant");
         capture.ExcludeSection(BelemetryBundleSections.Release);
         capture.SetDescription("It broke");
-        Assert.IsFalse(capture.Events.Contains(warning));
+        Assert.DoesNotContain(warning, capture.Events);
         Assert.IsNull(capture.Release);
         Assert.AreEqual("excluded", capture.Sections.Single(s => s.Section == BelemetryBundleSections.Release).Status);
 
         capture.Confirm();
-        var read = await BelemetrySupportBundle.ReadAsync(new MemoryStream(await capture.ExportAsync()));
+        var read = await BelemetrySupportBundle.ReadAsync(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)), TestContext.CancellationToken);
         Assert.IsTrue(read.IsValid, string.Join("; ", read.Errors));
         Assert.IsFalse(read.Files.ContainsKey("release.json"));
-        Assert.IsFalse(read.Events.Any(e => e.Message == "Inventory is slow"));
+        Assert.DoesNotContain(e => e.Message == "Inventory is slow", read.Events);
         Assert.AreEqual("REDACTED", read.Events.Single(e => e.Name == "tenant.switched").Attributes["tenant"]);
 
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         using var manifest = JsonDocument.Parse(zip.GetEntry("manifest.json")!.Open());
         var changes = manifest.RootElement.GetProperty("privacy").GetProperty("userChanges").EnumerateArray().Select(c => c.GetString()).ToList();
-        CollectionAssert.AreEqual(new[] { $"excluded event {BelemetryDiagnosticJson.EventId(warning)}", "redacted attribute tenant", "excluded section Release", "set description" }, changes);
-        Assert.IsTrue(manifest.RootElement.GetProperty("missingEvidence").EnumerateArray().Any(m => m.GetString()!.Contains("narrowed the bundle")));
+        Assert.AreSequenceEqual(new[] { $"excluded event {BelemetryDiagnosticJson.EventId(warning)}", "redacted attribute tenant", "excluded section Release", "set description" }, changes);
+        Assert.Contains(m => m.GetString()!.Contains("narrowed the bundle"), manifest.RootElement.GetProperty("missingEvidence").EnumerateArray());
     }
 
     [TestMethod]
@@ -138,10 +138,10 @@ public class BelemetryDiagnosticCaptureTests
         });
         host.Host.Settings.Options.Diagnostics.Snapshots.Timeout = TimeSpan.FromMilliseconds(200);
 
-        var withoutSnapshots = await host.Diagnostics.CaptureAsync();
+        var withoutSnapshots = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         Assert.IsEmpty(withoutSnapshots.Snapshots, "Application state is opt-in per capture.");
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true });
+        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true }, TestContext.CancellationToken);
         var cart = capture.Snapshots.Single(s => s.Name == "cart");
         Assert.AreEqual(BelemetrySnapshotStatus.Captured, cart.Status);
         Assert.AreEqual(3, cart.Data!["items"]);
@@ -156,7 +156,7 @@ public class BelemetryDiagnosticCaptureTests
         Assert.AreEqual(BelemetrySnapshotStatus.Excluded, capture.Snapshots.Single(s => s.Name == "cart").Status);
         Assert.IsNull(capture.Snapshots.Single(s => s.Name == "cart").Data);
         capture.Confirm();
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         var snapshots = new StreamReader(zip.GetEntry("snapshots.json")!.Open()).ReadToEnd();
         Assert.DoesNotContain("\"items\"", snapshots);
         Assert.DoesNotContain("hunter", snapshots);
@@ -166,11 +166,11 @@ public class BelemetryDiagnosticCaptureTests
     public async Task RecordedSnapshots_GiveTheStateBeforeAnOperation()
     {
         await using var host = await WithAFailureAsync(services: s => s.AddBitBelemetrySnapshotProvider<CartSnapshot>());
-        await host.Diagnostics.RecordSnapshotAsync("before-checkout");
+        await host.Diagnostics.RecordSnapshotAsync("before-checkout", TestContext.CancellationToken);
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true });
-        CollectionAssert.AreEqual(new string?[] { "before-checkout", null }, capture.Snapshots.Select(s => s.Label).ToArray());
-        Assert.IsTrue(capture.Events.Any(e => e.Name == "snapshot.before-checkout"));
+        var capture = await host.Diagnostics.CaptureAsync(new() { IncludeSnapshots = true }, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new string?[] { "before-checkout", null }, capture.Snapshots.Select(s => s.Label).ToArray());
+        Assert.Contains(e => e.Name == "snapshot.before-checkout", capture.Events);
     }
 
     [TestMethod]
@@ -185,22 +185,22 @@ public class BelemetryDiagnosticCaptureTests
         var source = new ActivitySource(BelemetryDiagnosticEventFactory.ComponentsSource);
         using (var handle = source.StartActivity(BelemetryDiagnosticEventFactory.HandleEventActivity)!) handle.SetTag(BelemetryDiagnosticEventFactory.ComponentTypeTag, "MyApp.Pages.Orders");
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         var orders = capture.Components.Single(c => c.Type == "MyApp.Pages.Orders");
-        CollectionAssert.AreEqual(new[] { "MyApp.App", "MyApp.Layout.MainLayout" }, orders.Ancestors!.ToArray());
+        Assert.AreSequenceEqual(new[] { "MyApp.App", "MyApp.Layout.MainLayout" }, orders.Ancestors!.ToArray());
         Assert.AreEqual(7, orders.RenderCount);
         Assert.AreEqual("tree", orders.Source);
-        StringAssert.StartsWith(orders.InstanceKey, "c", "A capture-local key, never the renderer's id.");
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.Contains("'broken' failed")));
+        Assert.StartsWith("c", orders.InstanceKey, "A capture-local key, never the renderer's id.");
+        Assert.Contains(m => m.Contains("'broken' failed"), capture.MissingEvidence);
     }
 
     [TestMethod]
     public async Task WithoutAProvider_TheHierarchyIsReportedMissing_NotInvented()
     {
         await using var host = await WithAFailureAsync();
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual("component hierarchy unavailable (no IBelemetryComponentContextProvider)", capture.Sections.Single(s => s.Section == BelemetryBundleSections.Components).Note);
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.Contains("Browser evidence")), "No browser in a test host: said, not hidden.");
+        Assert.Contains(m => m.Contains("Browser evidence"), capture.MissingEvidence, "No browser in a test host: said, not hidden.");
     }
 
     [TestMethod]
@@ -209,12 +209,12 @@ public class BelemetryDiagnosticCaptureTests
         await using var host = await WithAFailureAsync();
         var boundary = DiagnosticsTestHost.Thrown(() => new ArgumentException("bad quantity"));
 
-        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = boundary, Reason = "error-boundary" });
+        var capture = await host.Diagnostics.CaptureAsync(new() { Exception = boundary, Reason = "error-boundary" }, TestContext.CancellationToken);
 
         Assert.AreEqual("System.ArgumentException", capture.Subject!.Exception!.Type);
         Assert.AreEqual("tracked", capture.Subject.Exception.Origin);
         Assert.AreEqual("System.ArgumentException", capture.Report.ExceptionType);
-        Assert.AreEqual(2, capture.ExceptionGroups.Count);
+        Assert.HasCount(2, capture.ExceptionGroups);
     }
 
     [TestMethod]
@@ -231,10 +231,10 @@ public class BelemetryDiagnosticCaptureTests
         for (var i = 0; i < 200; i++) logger.LogWarning("{Big}", new string('x', 1000));
         logger.LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("kept")), "failure");
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         Assert.IsLessThan(200, capture.Events.Count);
         Assert.IsNotNull(capture.Subject, "The failure is kept.");
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.Contains("bundle size limit")));
+        Assert.Contains(m => m.Contains("bundle size limit"), capture.MissingEvidence);
         Assert.AreEqual("truncated", capture.Sections.Single(s => s.Section == BelemetryBundleSections.Timeline).Status);
     }
 
@@ -248,20 +248,20 @@ public class BelemetryDiagnosticCaptureTests
         var app = host.Factory.CreateLogger("App");
 
         app.LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("handled by the app")), "logged");
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.IsEmpty(host.Diagnostics.PendingCaptures, "Default triggers: a logged, handled error is not one.");
 
         var thrown = DiagnosticsTestHost.Thrown(() => new NullReferenceException("render failed"));
         renderer.LogCritical(thrown, "Unhandled exception rendering component: {Message}", thrown.Message);
         renderer.LogCritical(thrown, "Unhandled exception rendering component: {Message}", thrown.Message);
         await WaitForAsync(() => host.Diagnostics.PendingCaptures.Count == 1);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
         var capture = host.Diagnostics.PendingCaptures.Single();
         Assert.AreEqual(BelemetryCaptureTriggerKind.Automatic, capture.Trigger.Kind);
         Assert.AreEqual("unhandled-exception", capture.Trigger.Reason);
         Assert.AreEqual("System.NullReferenceException", capture.Subject!.Exception!.Type);
-        Assert.HasCount(1, available);
+        Assert.ContainsSingle(available);
         Assert.IsFalse(capture.IsConfirmed, "An automatic capture waits for review; it is never exported on its own.");
 
         Assert.IsTrue(host.Diagnostics.Dismiss(capture));
@@ -336,4 +336,6 @@ public class BelemetryDiagnosticCaptureTests
         public BelemetryExceptionClassification? Classify(BelemetryDiagnosticException exception) =>
             exception.Message?.Contains("payment", StringComparison.Ordinal) is true ? new BelemetryExceptionClassification { Category = "payments", Critical = true } : null;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

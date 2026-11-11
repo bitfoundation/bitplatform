@@ -27,12 +27,12 @@ public class BitStickyPrerenderTests
             [nameof(BitSticky.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Pinned")),
         });
 
-        StringAssert.Contains(html, "<header");
-        StringAssert.Contains(html, "bit-stk-btm");
-        StringAssert.Contains(html, "bit-stk-elv");
-        StringAssert.Contains(html, "z-index: 3");
-        StringAssert.Contains(html, @"aria-label=""Filters""");
-        StringAssert.Contains(html, "Pinned");
+        Assert.Contains("<header", html);
+        Assert.Contains("bit-stk-btm", html);
+        Assert.Contains("bit-stk-elv", html);
+        Assert.Contains("z-index: 3", html);
+        Assert.Contains(@"aria-label=""Filters""", html);
+        Assert.Contains("Pinned", html);
 
         // A header has a role of its own, so the name does not make it a group.
         Assert.DoesNotContain("role=", html);
@@ -50,7 +50,7 @@ public class BitStickyPrerenderTests
             [nameof(BitSticky.Top)] = "10",
         });
 
-        StringAssert.Contains(html, "top: 10px");
-        StringAssert.Contains(html, @"class=""bit-stk""");
+        Assert.Contains("top: 10px", html);
+        Assert.Contains(@"class=""bit-stk""", html);
     }
 }

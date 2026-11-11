@@ -87,7 +87,7 @@ public class CrossTabSyncTests
     {
         var (store, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark","FontSize":18}""");
         await persistor.FlushAsync();
@@ -101,7 +101,7 @@ public class CrossTabSyncTests
     {
         var (_, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         var writesBefore = storage.Writes;
 
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark"}""");
@@ -122,7 +122,7 @@ public class CrossTabSyncTests
         store.StateChanged += () => notifications++;
 
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark"}""");
         await persistor.FlushAsync();
@@ -140,7 +140,7 @@ public class CrossTabSyncTests
             seen.Add((name, state["Theme"]!.GetValue<string>())));
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark"}""");
         await persistor.FlushAsync();
@@ -153,7 +153,7 @@ public class CrossTabSyncTests
     {
         var (store, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("someOtherApp:token", "whatever");
         storage.WriteFromAnotherTab("blex:unknownStore", """{"Theme":"dark"}""");
@@ -167,7 +167,7 @@ public class CrossTabSyncTests
     {
         var (store, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         store.SetTheme("dark");
         await persistor.FlushAsync();
 
@@ -186,7 +186,7 @@ public class CrossTabSyncTests
         manager.OnError = errors.Add;
 
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("blex:settings", "{ not json");
         await persistor.FlushAsync();
@@ -211,7 +211,7 @@ public class CrossTabSyncTests
         });
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         // A tab running an older build wrote a v1 payload.
         storage.WriteFromAnotherTab("blex:settings", """{"__blexVersion":1,"state":{"Theme":"dark"}}""");
@@ -229,7 +229,7 @@ public class CrossTabSyncTests
         var options = Synced(o => o.OnExternalChange = (_, _) => throw new InvalidOperationException("boom"));
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark"}""");
         await persistor.FlushAsync();
@@ -243,7 +243,7 @@ public class CrossTabSyncTests
     {
         var (store, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(0, storage.WatchStarts);
 
@@ -258,7 +258,7 @@ public class CrossTabSyncTests
     {
         var (store, manager, storage) = Setup();
         var persistor = new BlexStatePersistor(manager, storage, Synced());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         await persistor.DisposeAsync();
 
         Assert.IsFalse(storage.HasSubscribers);
@@ -274,12 +274,12 @@ public class CrossTabSyncTests
         storage.FailToStartWatching = true;
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => persistor.StartAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => persistor.StartAsync(TestContext.CancellationToken));
         Assert.IsFalse(storage.HasSubscribers);
 
         // A retry once interop is available must actually take effect.
         storage.FailToStartWatching = false;
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         storage.WriteFromAnotherTab("blex:settings", """{"Theme":"dark"}""");
         await persistor.FlushAsync();
 
@@ -292,8 +292,8 @@ public class CrossTabSyncTests
         var (_, manager, storage) = Setup();
         await using var persistor = new BlexStatePersistor(manager, storage, Synced());
 
-        await persistor.StartAsync();
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, storage.WatchStarts);
     }
@@ -306,7 +306,7 @@ public class CrossTabSyncTests
         var watchStartsAnnounced = -1;
         persistor.Hydrated += () => watchStartsAnnounced = storage.WatchStarts;
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         // What hears of it may change a store at once; another tab's change after that must not go unheard.
         Assert.AreEqual(1, watchStartsAnnounced);
@@ -322,7 +322,7 @@ public class CrossTabSyncTests
         var plain = new PlainStorage();
 
         await using var persistor = new BlexStatePersistor(manager, plain, Synced());
-        await persistor.StartAsync(); // must not throw
+        await persistor.StartAsync(TestContext.CancellationToken); // must not throw
 
         store.SetTheme("dark");
         await persistor.FlushAsync();
@@ -348,4 +348,6 @@ public class CrossTabSyncTests
             return ValueTask.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

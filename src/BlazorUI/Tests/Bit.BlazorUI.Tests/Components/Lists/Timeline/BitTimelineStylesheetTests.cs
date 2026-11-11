@@ -53,11 +53,11 @@ public class BitTimelineStylesheetTests : BunitTestContext
 
         Assert.IsFalse(descendant.IsMatch(stylesheet), descendant.Match(stylesheet).Value);
 
-        StringAssert.Contains(stylesheet, "\n.bit-tln-fil > .bit-tln-itm {");
-        StringAssert.Contains(stylesheet, "\n.bit-tln-otl > .bit-tln-itm {");
-        StringAssert.Contains(stylesheet, "\n.bit-tln-txt > .bit-tln-itm {");
-        StringAssert.Contains(stylesheet, "\n.bit-tln-ldd > .bit-tln-itm {");
-        StringAssert.Contains(stylesheet, "\n.bit-tln-ldt > .bit-tln-itm {");
+        Assert.Contains("\n.bit-tln-fil > .bit-tln-itm {", stylesheet);
+        Assert.Contains("\n.bit-tln-otl > .bit-tln-itm {", stylesheet);
+        Assert.Contains("\n.bit-tln-txt > .bit-tln-itm {", stylesheet);
+        Assert.Contains("\n.bit-tln-ldd > .bit-tln-itm {", stylesheet);
+        Assert.Contains("\n.bit-tln-ldt > .bit-tln-itm {", stylesheet);
     }
 
     [TestMethod]
@@ -68,8 +68,8 @@ public class BitTimelineStylesheetTests : BunitTestContext
         // The parts of an item are only reached through the item, or the button of a clickable one, that holds them.
         Assert.IsFalse(Regex.IsMatch(horizontal, @"\n    \.bit-tln-(pcn|scn|dvd|itm)"), "A horizontal rule selects the parts of any descendant timeline.");
 
-        StringAssert.Contains(horizontal, "\n    > .bit-tln-prt,\n    > .bit-tln-itm > .bit-tln-prt {");
-        StringAssert.Contains(horizontal, "\n    > .bit-tln-itm.bit-tln-irv {");
+        Assert.Contains("\n    > .bit-tln-prt,\n    > .bit-tln-itm > .bit-tln-prt {", horizontal);
+        Assert.Contains("\n    > .bit-tln-itm.bit-tln-irv {", horizontal);
     }
 
     [TestMethod]
@@ -79,20 +79,20 @@ public class BitTimelineStylesheetTests : BunitTestContext
 
         // An explicit Size - of the timeline or of an item - publishes these, so they are read before the variable, which
         // only restyles the medium timeline an unset one stands for.
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-tln-dot-size: var(--bit-tln-dot-sz, var(--bit-Timeline-dot-size, #{spacing(3.75)}));");
+        Assert.Contains("font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-tln-dot-size: var(--bit-tln-dot-sz, var(--bit-Timeline-dot-size, #{spacing(3.75)}));", stylesheet);
 
         // So does an explicit Color, for every dot color its role paints; the transparent dot of Outline and Text is the
         // variable's alone.
         var fill = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tln-fil > .bit-tln-itm {");
-        StringAssert.Contains(fill, "var(--bit-tln-clr, var(--bit-Timeline-fill-dot-background, var(--bit-Timeline-dot-background, #{$clr-pri}))),");
-        StringAssert.Contains(fill, "var(--bit-tln-clr, var(--bit-Timeline-fill-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),");
-        StringAssert.Contains(fill, "var(--bit-tln-clr-fg, var(--bit-Timeline-fill-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri-text})))");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tln-otl > .bit-tln-itm {"), "var(--bit-Timeline-outline-dot-background, var(--bit-Timeline-dot-background, transparent)),");
+        Assert.Contains("var(--bit-tln-clr, var(--bit-Timeline-fill-dot-background, var(--bit-Timeline-dot-background, #{$clr-pri}))),", fill);
+        Assert.Contains("var(--bit-tln-clr, var(--bit-Timeline-fill-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),", fill);
+        Assert.Contains("var(--bit-tln-clr-fg, var(--bit-Timeline-fill-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri-text})))", fill);
+        Assert.Contains("var(--bit-Timeline-outline-dot-background, var(--bit-Timeline-dot-background, transparent)),", SourceFiles.GetScssBlock(stylesheet, "\n.bit-tln-otl > .bit-tln-itm {"));
 
         // Left in front: the legacy line color behind the public one.
         var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Timeline-[a-z-]+, var\(--bit-tln-([a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
-        CollectionAssert.AreEqual(new[] { "dvd-clr" }, publicFirst);
+        Assert.AreSequenceEqual(new[] { "dvd-clr" }, publicFirst);
     }
 
     [TestMethod,
@@ -109,11 +109,10 @@ public class BitTimelineStylesheetTests : BunitTestContext
 
         // Each variant - of the timeline or of an item - reads a tier of its own ahead of every shared dot color, so a
         // theme can set one look apart from the other two on :root, and hands the chains to the mixin of its variant.
-        StringAssert.Contains(block, $"@include {mixin}(");
+        Assert.Contains($"@include {mixin}(", block);
         foreach (var name in new[] { "dot-background", "dot-border-color", "icon-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-Timeline-{variant}-{name}, var(--bit-Timeline-{name}, ",
-                                  $"{selector} does not read --bit-Timeline-{variant}-{name} ahead of --bit-Timeline-{name}.");
+            Assert.Contains($"var(--bit-Timeline-{variant}-{name}, var(--bit-Timeline-{name}, ", block, $"{selector} does not read --bit-Timeline-{variant}-{name} ahead of --bit-Timeline-{name}.");
         }
 
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-Timeline-(?!{variant}-)(?:fill|outline|text)-"),
@@ -132,14 +131,14 @@ public class BitTimelineStylesheetTests : BunitTestContext
         // The plate copies the corners of the dot it sits in, so the radius stays one variable for every variant, and is
         // filled with what the item's own variant resolved: the rule also matches the icons of the items of a Text
         // timeline that override their variant, which must not be handed the Text tier. Only the Text variant paints it.
-        StringAssert.Contains(plate, "border-radius: inherit;");
-        StringAssert.Contains(plate, "background-color: var(--bit-tln-dot-ico-clr-bg);");
+        Assert.Contains("border-radius: inherit;", plate);
+        Assert.Contains("background-color: var(--bit-tln-dot-ico-clr-bg);", plate);
         Assert.IsFalse(Regex.IsMatch(plate, @"var\(--bit-Timeline-"), "The plate reads a public variable past the variant of its item.");
 
         var stylesheet = ReadStylesheet();
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-text("), "--bit-tln-dot-ico-clr-bg: #{$dot-background};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-fill("), "--bit-tln-dot-ico-clr-bg: transparent;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-outline("), "--bit-tln-dot-ico-clr-bg: transparent;");
+        Assert.Contains("--bit-tln-dot-ico-clr-bg: #{$dot-background};", SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-text("));
+        Assert.Contains("--bit-tln-dot-ico-clr-bg: transparent;", SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-fill("));
+        Assert.Contains("--bit-tln-dot-ico-clr-bg: transparent;", SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-outline("));
     }
 
     [TestMethod]
@@ -153,7 +152,7 @@ public class BitTimelineStylesheetTests : BunitTestContext
         foreach (var property in new[] { "--bit-tln-clr", "--bit-tln-clr-fg", "--bit-tln-clr-focus", "--bit-tln-clr-dis-bg", "--bit-tln-clr-dis-text",
                                          "--bit-tln-dot-sz", "--bit-tln-fs" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

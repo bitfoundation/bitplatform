@@ -35,7 +35,7 @@ public sealed class PipelineTests
         using var copy = source.Clone();
         using var result = ImagePipeline.Create().Grayscale().Blur(2f).Execute(source);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, copy));
-        Assert.IsTrue(TestImages.MaxChannelDifference(source, result) > 0);
+        Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(source, result));
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public sealed class PipelineTests
         Assert.IsNotEmpty(values);
         Assert.AreEqual(1.0, values[^1], 0.5e-3);
         for (var i = 1; i < values.Count; i++)
-            Assert.IsTrue(values[i] >= values[i - 1] - 1e-9, $"Progress went backwards: {values[i - 1]} → {values[i]}");
+            Assert.IsGreaterThanOrEqualTo(values[i - 1] - 1e-9, values[i], $"Progress went backwards: {values[i - 1]} → {values[i]}");
     }
 
     [TestMethod]
@@ -180,8 +180,8 @@ public sealed class PipelineOptimizerTests
         Assert.AreEqual(direct.Size, optimized.Size);
         var diff = TestImages.MaxChannelDifference(direct, optimized);
         var mean = TestImages.MeanChannelDifference(direct, optimized, includeAlpha: true);
-        Assert.IsTrue(diff <= 4, $"'{name}' differed by max {diff} after optimization.");
-        Assert.IsTrue(mean <= 0.75, $"'{name}' had mean difference {mean:0.####} after optimization.");
+        Assert.IsLessThanOrEqualTo(4, diff, $"'{name}' differed by max {diff} after optimization.");
+        Assert.IsLessThanOrEqualTo(0.75, mean, $"'{name}' had mean difference {mean:0.####} after optimization.");
     }
 
     /// <summary>
@@ -200,8 +200,8 @@ public sealed class PipelineOptimizerTests
         using var fused = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
         var stepwiseError = TestImages.MaxChannelDifference(source, stepwise);
         var fusedError = TestImages.MaxChannelDifference(source, fused);
-        Assert.IsTrue(fusedError < stepwiseError, $"fused error {fusedError} was not better than stepwise error {stepwiseError}");
-        Assert.IsTrue(fusedError <= 1, $"fused round trip lost {fusedError} levels");
+        Assert.IsLessThan(stepwiseError, fusedError, $"fused error {fusedError} was not better than stepwise error {stepwiseError}");
+        Assert.IsLessThanOrEqualTo(1, fusedError, $"fused round trip lost {fusedError} levels");
     }
 
     /// <summary>
@@ -228,7 +228,7 @@ public sealed class PipelineOptimizerTests
         using var fused = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
         // Both must clip to white and then darken to the same value, not return to the original 200.
         Assert.AreEqual(stepwise[0, 0].R, fused[0, 0].R);
-        Assert.IsTrue(fused[0, 0].R < 100, $"Highlight was not clipped: {fused[0, 0]}");
+        Assert.IsLessThan(100, fused[0, 0].R, $"Highlight was not clipped: {fused[0, 0]}");
     }
 
     public static IEnumerable<object[]> EquivalencePipelines() =>
@@ -308,12 +308,12 @@ public sealed class ImageProcessorTests
     public async Task RoundTripsThroughDecodeProcessEncode()
     {
         using var source = TestImages.Gradient(120, 90);
-        var input = PngEncoder.Encode(source).Data;
-        var result = await Processor.ProcessAsync(input, ImagePipeline.Create().Resize(60, 45, ResizeMode.Stretch).Grayscale(), ImageExportOptions.Png);
+        var input = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
+        var result = await Processor.ProcessAsync(input, ImagePipeline.Create().Resize(60, 45, ResizeMode.Stretch).Grayscale(), ImageExportOptions.Png, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(ImageFormat.Png, result.Format);
         Assert.AreEqual(60, result.Width);
         Assert.AreEqual(45, result.Height);
-        using var decoded = PngDecoder.Decode(result.Data);
+        using var decoded = PngDecoder.Decode(result.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(decoded[10, 10].R, decoded[10, 10].G);
     }
 
@@ -321,7 +321,7 @@ public sealed class ImageProcessorTests
     public async Task ThrowsAClearErrorForUnknownFormats()
     {
         var garbage = new byte[64];
-        var ex = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await Processor.DecodeAsync(garbage));
+        var ex = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await Processor.DecodeAsync(garbage, cancellationToken: TestContext.CancellationToken));
         Assert.Contains("supported image format", ex.Message, StringComparison.Ordinal);
     }
 
@@ -329,7 +329,7 @@ public sealed class ImageProcessorTests
     public async Task ThrowsACapabilityErrorForUnavailableEncoders()
     {
         using var source = TestImages.Gradient(8, 8);
-        var ex = await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await Processor.EncodeAsync(source, ImageExportOptions.Avif));
+        var ex = await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await Processor.EncodeAsync(source, ImageExportOptions.Avif, TestContext.CancellationToken));
         Assert.Contains("Avif", ex.Message, StringComparison.Ordinal);
     }
 
@@ -338,8 +338,8 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(400, 300);
         var target = 6000L;
-        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, MaxFileSize = target });
-        Assert.IsTrue(result.Length <= target, $"Result was {result.Length} bytes, target {target}");
+        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.95, MaxFileSize = target }, TestContext.CancellationToken);
+        Assert.IsLessThanOrEqualTo(target, result.Length, $"Result was {result.Length} bytes, target {target}");
         Assert.IsTrue(result.Quality < 0.95);
     }
 
@@ -348,9 +348,9 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(800, 600);
         var target = 1200L;
-        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = target });
-        Assert.IsTrue(result.Length <= target, $"Result was {result.Length} bytes");
-        Assert.IsTrue(result.Width < 800);
+        var result = await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = target }, TestContext.CancellationToken);
+        Assert.IsLessThanOrEqualTo(target, result.Length, $"Result was {result.Length} bytes");
+        Assert.IsLessThan(800, result.Width);
     }
 
     [TestMethod]
@@ -358,7 +358,7 @@ public sealed class ImageProcessorTests
     {
         using var source = TestImages.Gradient(400, 300);
         await Assert.ThrowsExactlyAsync<ImageEncodeException>(async () =>
-            await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = 300, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly }));
+            await Processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9, MaxFileSize = 300, MaxFileSizeStrategy = MaxFileSizeStrategy.QualityOnly }, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -368,15 +368,15 @@ public sealed class ImageProcessorTests
         using var b = TestImages.Gradient(20, 20);
         var items = new List<BatchItem>
         {
-            new(PngEncoder.Encode(a).Data, "a.png"),
+            new(PngEncoder.Encode(a, cancellationToken: TestContext.CancellationToken).Data, "a.png"),
             new(new byte[32], "broken.bin"),
-            new(PngEncoder.Encode(b).Data, "b.png"),
+            new(PngEncoder.Encode(b, cancellationToken: TestContext.CancellationToken).Data, "b.png"),
         };
         var updates = new List<BatchProgress>();
         var result = await Processor.ProcessBatchAsync(items, ImagePipeline.Create().Resize(10, 10, ResizeMode.Stretch),
-            new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png, Progress = new Progress<BatchProgress>(p => { lock (updates) updates.Add(p); }) });
+            new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png, Progress = new Progress<BatchProgress>(p => { lock (updates) updates.Add(p); }) }, TestContext.CancellationToken);
 
-        Assert.AreEqual(3, result.Results.Count);
+        Assert.HasCount(3, result.Results);
         Assert.AreEqual(2, result.SuccessCount);
         Assert.AreEqual(1, result.FailureCount);
         Assert.IsFalse(result.AllSucceeded);
@@ -393,7 +393,7 @@ public sealed class ImageProcessorTests
     public async Task BatchRespectsCancellation()
     {
         using var img = TestImages.Gradient(64, 64);
-        var data = PngEncoder.Encode(img).Data;
+        var data = PngEncoder.Encode(img, cancellationToken: TestContext.CancellationToken).Data;
         var items = Enumerable.Range(0, 8).Select(i => new BatchItem(data, $"{i}.png")).ToList();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -409,10 +409,12 @@ public sealed class ImageProcessorTests
     public void IdentifiesWithoutDecoding()
     {
         using var source = TestImages.Gradient(77, 55);
-        var data = PngEncoder.Encode(source).Data;
+        var data = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
         var info = Processor.Identify(data);
         Assert.IsNotNull(info);
         Assert.AreEqual(77, info!.Width);
         Assert.AreEqual(ImageFormat.Png, info.Format);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

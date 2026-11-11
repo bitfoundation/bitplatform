@@ -91,12 +91,12 @@ public class GuidanceComponentTests : BunitContext
             .Add(beacon => beacon.Title, "Exports moved"));
 
         await cut.Find("button.bit-bonboarding-beacon").ClickAsync(new());
-        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync());
+        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync(TestContext.CancellationToken));
 
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("button.bit-bonboarding-beacon")));
         Assert.IsEmpty(_interop.Beacons, "The browser stopped positioning it.");
         Assert.AreEqual("[data-bonboarding-anchor=\"export\"]", _interop.FocusedTargets.Single().Selector, "Focus went to the element the hint was about.");
-        Assert.IsTrue(await BonboardingService.IsClosedAsync("exports-moved"));
+        Assert.IsTrue(await BonboardingService.IsClosedAsync("exports-moved", TestContext.CancellationToken));
 
         // A fresh render on another visit remembers.
         var again = Render<BonboardingBeacon>(parameters => parameters
@@ -113,12 +113,12 @@ public class GuidanceComponentTests : BunitContext
             .Add(beacon => beacon.Anchor, "export"));
 
         await cut.Find("button.bit-bonboarding-beacon").ClickAsync(new());
-        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync());
+        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync(TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("button.bit-bonboarding-beacon")));
 
-        await cut.InvokeAsync(() => BonboardingService.ResetAsync("exports-moved"));
+        await cut.InvokeAsync(() => BonboardingService.ResetAsync("exports-moved", TestContext.CancellationToken));
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll("button.bit-bonboarding-beacon")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("button.bit-bonboarding-beacon")));
         Assert.ContainsSingle(_interop.Beacons, "The browser positions it again.");
     }
 
@@ -130,7 +130,7 @@ public class GuidanceComponentTests : BunitContext
             .Add(beacon => beacon.Title, "Exports moved"));
 
         await cut.Find("button.bit-bonboarding-beacon").ClickAsync(new());
-        await cut.InvokeAsync(() => BonboardingService.Active!.DismissAsync());
+        await cut.InvokeAsync(() => BonboardingService.Active!.DismissAsync(TestContext.CancellationToken));
 
         cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("button.bit-bonboarding-beacon").GetAttribute("aria-expanded")));
         Assert.IsEmpty(_interop.FocusedTargets);
@@ -140,14 +140,14 @@ public class GuidanceComponentTests : BunitContext
     public async Task A_Beacon_Steps_Aside_While_A_Tour_Runs()
     {
         var cut = Render<BonboardingBeacon>(parameters => parameters.Add(beacon => beacon.Anchor, "export"));
-        Assert.HasCount(1, cut.FindAll("button.bit-bonboarding-beacon"));
+        Assert.ContainsSingle(cut.FindAll("button.bit-bonboarding-beacon"));
 
-        var tour = await cut.InvokeAsync(() => BonboardingService.StartAsync(Tour("busy")));
+        var tour = await cut.InvokeAsync(() => BonboardingService.StartAsync(Tour("busy"), cancellationToken: TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("button.bit-bonboarding-beacon")));
 
-        await cut.InvokeAsync(() => tour.DismissAsync());
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll("button.bit-bonboarding-beacon")));
-        Assert.HasCount(1, _interop.Beacons, "Attached again with its new element.");
+        await cut.InvokeAsync(() => tour.DismissAsync(TestContext.CancellationToken));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("button.bit-bonboarding-beacon")));
+        Assert.ContainsSingle(_interop.Beacons, "Attached again with its new element.");
     }
 
     private static BonboardingTourDefinition MultiPageTour() => new()
@@ -167,13 +167,13 @@ public class GuidanceComponentTests : BunitContext
         var cut = Render<BonboardingBeacon>(parameters => parameters.Add(beacon => beacon.Anchor, "export"));
         var navigation = Services.GetRequiredService<NavigationManager>();
 
-        var tour = await cut.InvokeAsync(() => BonboardingService.StartAsync(MultiPageTour()));
-        await cut.InvokeAsync(() => tour.NextAsync());
+        var tour = await cut.InvokeAsync(() => BonboardingService.StartAsync(MultiPageTour(), cancellationToken: TestContext.CancellationToken));
+        await cut.InvokeAsync(() => tour.NextAsync(TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("button.bit-bonboarding-beacon")));
 
         // The user followed a link elsewhere: nothing of the tour is on screen to give way to.
         await cut.InvokeAsync(() => navigation.NavigateTo("dashboard"));
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll("button.bit-bonboarding-beacon")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("button.bit-bonboarding-beacon")));
 
         // Back on its page, the tour takes the screen again.
         await cut.InvokeAsync(() => navigation.NavigateTo("settings"));
@@ -193,7 +193,7 @@ public class GuidanceComponentTests : BunitContext
         var session = BonboardingService.Active!;
         Assert.AreEqual("billing", session.Tour.Id);
 
-        await cut.InvokeAsync(() => session.CompleteAsync());
+        await cut.InvokeAsync(() => session.CompleteAsync(TestContext.CancellationToken));
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("button.bit-bonboarding-beacon")));
     }
 
@@ -226,7 +226,7 @@ public class GuidanceComponentTests : BunitContext
     [TestMethod]
     public async Task A_Checklist_Shows_What_Is_Done_And_How_Far_Along_It_Is()
     {
-        await BonboardingService.SetChecklistItemAsync("getting-started", "profile");
+        await BonboardingService.SetChecklistItemAsync("getting-started", "profile", cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingChecklist>(parameters => parameters.Add(list => list.Checklist, Checklist(
             new BonboardingChecklistItem { Id = "profile", Title = "Fill in your profile" },
@@ -241,7 +241,7 @@ public class GuidanceComponentTests : BunitContext
         Assert.AreEqual("3", bar.GetAttribute("aria-valuemax"));
 
         var states = cut.FindAll(".bit-bonboarding-checklist-item").Select(item => item.GetAttribute("data-bonboarding-state")).ToArray();
-        CollectionAssert.AreEqual(new[] { "done", "todo", "done" }, states);
+        Assert.AreSequenceEqual(new[] { "done", "todo", "done" }, states);
         Assert.Contains("Not done", cut.FindAll(".bit-bonboarding-checklist-item")[1].TextContent, "The state is spoken, not only drawn.");
 
         var heading = cut.Find(".bit-bonboarding-checklist-title");
@@ -260,9 +260,10 @@ public class GuidanceComponentTests : BunitContext
 
         // Pressing the item starts its tour.
         await cut.Find(".bit-bonboarding-checklist-action").ClickAsync(new());
-        Assert.AreEqual("first-project", BonboardingService.Active?.Tour.Id);
+        var actualValue = BonboardingService.Active?.Tour.Id;
+        Assert.AreEqual("first-project", actualValue);
 
-        await cut.InvokeAsync(() => BonboardingService.Active!.CompleteAsync());
+        await cut.InvokeAsync(() => BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken));
 
         cut.WaitForAssertion(() => Assert.AreEqual("done", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
     }
@@ -279,17 +280,17 @@ public class GuidanceComponentTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.AreEqual("todo", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
 
-        Assert.IsTrue(await cut.InvokeAsync(() => BonboardingService.SignalAsync("member-invited")));
+        Assert.IsTrue(await cut.InvokeAsync(() => BonboardingService.SignalAsync("member-invited", TestContext.CancellationToken)));
 
         cut.WaitForAssertion(() => Assert.AreEqual("done", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
         Assert.AreEqual(1, completed, "The last item getting done completes the checklist.");
-        CollectionAssert.AreEqual(new[] { "invite" }, (await BonboardingService.GetCompletedChecklistItemsAsync("getting-started")).ToArray());
+        Assert.AreSequenceEqual(new[] { "invite" }, (await BonboardingService.GetCompletedChecklistItemsAsync("getting-started", TestContext.CancellationToken)).ToArray());
     }
 
     [TestMethod]
     public async Task A_Checklist_Given_Another_Definition_Shows_That_One()
     {
-        await BonboardingService.SetChecklistItemAsync("members", "invitation");
+        await BonboardingService.SetChecklistItemAsync("members", "invitation", cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingChecklist>(parameters => parameters.Add(list => list.Checklist, Checklist(
             new BonboardingChecklistItem { Id = "project", Title = "Create a project" })));
@@ -309,7 +310,7 @@ public class GuidanceComponentTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.AreEqual("1 of 2 done", cut.Find(".bit-bonboarding-checklist-count").TextContent));
         var states = cut.FindAll(".bit-bonboarding-checklist-item").Select(item => item.GetAttribute("data-bonboarding-state")).ToArray();
-        CollectionAssert.AreEqual(new[] { "done", "todo" }, states);
+        Assert.AreSequenceEqual(new[] { "done", "todo" }, states);
     }
 
     [TestMethod]
@@ -317,8 +318,8 @@ public class GuidanceComponentTests : BunitContext
     {
         var tour = Tour("first-project", "First project");
         BonboardingService.Register(tour);
-        await BonboardingService.StartAsync(tour);
-        await BonboardingService.Active!.CompleteAsync();
+        await BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken);
+        await BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken);
 
         var checklist = Render<BonboardingChecklist>(parameters => parameters.Add(list => list.Checklist, Checklist(
             new BonboardingChecklistItem { Id = "project", Title = "Create a project", Tour = tour })));
@@ -328,7 +329,7 @@ public class GuidanceComponentTests : BunitContext
         list.WaitForAssertion(() => Assert.AreEqual("completed", list.Find("[data-bonboarding-tour='first-project']").GetAttribute("data-bonboarding-progress")));
 
         // A settings page's "Reset onboarding" button.
-        await list.InvokeAsync(() => BonboardingService.ResetAsync("first-project"));
+        await list.InvokeAsync(() => BonboardingService.ResetAsync("first-project", TestContext.CancellationToken));
 
         checklist.WaitForAssertion(() => Assert.AreEqual("todo", checklist.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
         list.WaitForAssertion(() => Assert.AreEqual("new", list.Find("[data-bonboarding-tour='first-project']").GetAttribute("data-bonboarding-progress")));
@@ -337,13 +338,13 @@ public class GuidanceComponentTests : BunitContext
     [TestMethod]
     public async Task Resetting_Everything_Refreshes_The_Checklists_On_Screen()
     {
-        await BonboardingService.SetChecklistItemAsync("getting-started", "profile");
+        await BonboardingService.SetChecklistItemAsync("getting-started", "profile", cancellationToken: TestContext.CancellationToken);
 
         var cut = Render<BonboardingChecklist>(parameters => parameters.Add(list => list.Checklist, Checklist(
             new BonboardingChecklistItem { Id = "profile", Title = "Fill in your profile" })));
         cut.WaitForAssertion(() => Assert.AreEqual("done", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
 
-        await cut.InvokeAsync(() => BonboardingService.ResetAllAsync());
+        await cut.InvokeAsync(() => BonboardingService.ResetAllAsync(TestContext.CancellationToken));
 
         cut.WaitForAssertion(() => Assert.AreEqual("todo", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
     }
@@ -360,7 +361,7 @@ public class GuidanceComponentTests : BunitContext
         cut.WaitForAssertion(() => Assert.AreEqual("todo", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
 
         Assert.IsInstanceOfType<ForwardingBonboardingService>(BonboardingService);
-        Assert.IsTrue(await cut.InvokeAsync(() => BonboardingService.SignalAsync("member-invited")), "The checklist on screen was known to the service.");
+        Assert.IsTrue(await cut.InvokeAsync(() => BonboardingService.SignalAsync("member-invited", TestContext.CancellationToken)), "The checklist on screen was known to the service.");
 
         cut.WaitForAssertion(() => Assert.AreEqual("done", cut.Find(".bit-bonboarding-checklist-item").GetAttribute("data-bonboarding-state")));
     }
@@ -369,8 +370,8 @@ public class GuidanceComponentTests : BunitContext
     public async Task A_Checklist_Item_Counts_Only_A_Completion_Of_The_Tour_Version_It_Names()
     {
         var v1 = Tour("versioned");
-        await BonboardingService.StartAsync(v1);
-        await BonboardingService.Active!.CompleteAsync();
+        await BonboardingService.StartAsync(v1, cancellationToken: TestContext.CancellationToken);
+        await BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken);
 
         // The tour was rewritten; the item names the new version, which nobody has completed yet.
         var v2 = Tour("versioned");
@@ -393,9 +394,9 @@ public class GuidanceComponentTests : BunitContext
             .Add(beacon => beacon.Anchor, "export"));
 
         await cut.Find("button.bit-bonboarding-beacon").ClickAsync(new());
-        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync());
+        await cut.InvokeAsync(() => BonboardingService.Active!.NextAsync(TestContext.CancellationToken));
 
-        Assert.IsNull(await BonboardingService.GetRecordAsync("unpersisted-hint"), "Nothing is written when the application turned persistence off.");
+        Assert.IsNull(await BonboardingService.GetRecordAsync("unpersisted-hint", TestContext.CancellationToken), "Nothing is written when the application turned persistence off.");
     }
 
     [TestMethod]
@@ -418,7 +419,7 @@ public class GuidanceComponentTests : BunitContext
             new BonboardingChecklistItem { Id = "everyone", Title = "For everyone" },
             new BonboardingChecklistItem { Id = "admins", Title = "For admins", When = _ => ValueTask.FromResult(false) })));
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-bonboarding-checklist-item")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-bonboarding-checklist-item")));
         Assert.AreEqual("0 of 1 done", cut.Find(".bit-bonboarding-checklist-count").TextContent);
     }
 
@@ -437,10 +438,10 @@ public class GuidanceComponentTests : BunitContext
         await cut.Find("[data-bonboarding-action='dismiss-checklist']").ClickAsync(new());
 
         cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll(".bit-bonboarding-checklist")));
-        Assert.IsTrue(await BonboardingService.IsChecklistDismissedAsync("getting-started"));
+        Assert.IsTrue(await BonboardingService.IsChecklistDismissedAsync("getting-started", TestContext.CancellationToken));
 
-        await BonboardingService.ResetChecklistAsync("getting-started");
-        Assert.IsFalse(await BonboardingService.IsChecklistDismissedAsync("getting-started"));
+        await BonboardingService.ResetChecklistAsync("getting-started", TestContext.CancellationToken);
+        Assert.IsFalse(await BonboardingService.IsChecklistDismissedAsync("getting-started", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -452,7 +453,7 @@ public class GuidanceComponentTests : BunitContext
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("button.bit-bonboarding-checklist-action")));
         await cut.Find("button.bit-bonboarding-checklist-action").ClickAsync(new());
 
-        StringAssert.EndsWith(Services.GetRequiredService<NavigationManager>().Uri, "settings/team");
+        Assert.EndsWith("settings/team", Services.GetRequiredService<NavigationManager>().Uri);
     }
 
     // ---- Tour list --------------------------------------------------------------------
@@ -464,11 +465,11 @@ public class GuidanceComponentTests : BunitContext
         BonboardingService.Register(Tour("billing", "Billing"));
         BonboardingService.Register(Tour("reports", "Reports"));
 
-        await BonboardingService.StartAsync("billing");
-        await BonboardingService.Active!.CompleteAsync();
+        await BonboardingService.StartAsync("billing", cancellationToken: TestContext.CancellationToken);
+        await BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken);
 
-        var reports = await BonboardingService.StartAsync("reports");
-        await reports.CancelAsync();
+        var reports = await BonboardingService.StartAsync("reports", cancellationToken: TestContext.CancellationToken);
+        await reports.CancelAsync(TestContext.CancellationToken);
 
         var cut = Render<BonboardingTourList>(parameters => parameters.Add(list => list.Title, "Guided tours"));
 
@@ -498,8 +499,9 @@ public class GuidanceComponentTests : BunitContext
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-bonboarding-tour='welcome'] button")));
 
         await cut.Find("[data-bonboarding-tour='welcome'] button").ClickAsync(new());
+        var actualValue = BonboardingService.Active?.Tour.Id;
 
-        Assert.AreEqual("welcome", BonboardingService.Active?.Tour.Id);
+        Assert.AreEqual("welcome", actualValue);
         cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-bonboarding-tour='welcome'] button").HasAttribute("disabled")));
     }
 
@@ -507,14 +509,14 @@ public class GuidanceComponentTests : BunitContext
     public async Task The_Tour_List_Can_Leave_Out_What_Is_Done()
     {
         var done = Tour("done", "Done");
-        await BonboardingService.StartAsync(done);
-        await BonboardingService.Active!.CompleteAsync();
+        await BonboardingService.StartAsync(done, cancellationToken: TestContext.CancellationToken);
+        await BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken);
 
         var cut = Render<BonboardingTourList>(parameters => parameters
             .Add(list => list.Tours, new[] { Tour("todo", "To do"), done })
             .Add(list => list.HideCompleted, true));
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-bonboarding-tour-list-item")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-bonboarding-tour-list-item")));
         Assert.IsNotNull(cut.Find("[data-bonboarding-tour='todo']"));
     }
 
@@ -522,18 +524,18 @@ public class GuidanceComponentTests : BunitContext
     public async Task The_Tour_List_Follows_What_It_Is_Asked_To_List()
     {
         var done = Tour("done", "Done");
-        await BonboardingService.StartAsync(done);
-        await BonboardingService.Active!.CompleteAsync();
+        await BonboardingService.StartAsync(done, cancellationToken: TestContext.CancellationToken);
+        await BonboardingService.Active!.CompleteAsync(TestContext.CancellationToken);
 
         var cut = Render<BonboardingTourList>(parameters => parameters.Add(list => list.Tours, new[] { done }));
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-bonboarding-tour-list-item")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-bonboarding-tour-list-item")));
 
         // Another role, other tours.
         cut.Render(parameters => parameters.Add(list => list.Tours, new[] { Tour("todo", "To do"), done }));
         cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll(".bit-bonboarding-tour-list-item")));
 
         cut.Render(parameters => parameters.Add(list => list.HideCompleted, true));
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-bonboarding-tour-list-item")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-bonboarding-tour-list-item")));
         Assert.IsNotNull(cut.Find("[data-bonboarding-tour='todo']"));
     }
 
@@ -544,8 +546,8 @@ public class GuidanceComponentTests : BunitContext
         BonboardingService.Register(tour);
 
         var cut = Render<BonboardingTourList>();
-        var session = await cut.InvokeAsync(() => BonboardingService.StartAsync(tour));
-        await cut.InvokeAsync(() => session.NextAsync());
+        var session = await cut.InvokeAsync(() => BonboardingService.StartAsync(tour, cancellationToken: TestContext.CancellationToken));
+        await cut.InvokeAsync(() => session.NextAsync(TestContext.CancellationToken));
 
         const string Button = "[data-bonboarding-tour='multi-page'] button";
         cut.WaitForAssertion(() => Assert.IsTrue(cut.Find(Button).HasAttribute("disabled")));
@@ -557,8 +559,11 @@ public class GuidanceComponentTests : BunitContext
         Assert.AreEqual("Resume", cut.Find(Button).TextContent);
 
         await cut.Find(Button).ClickAsync(new());
+        var actualValue = BonboardingService.Active?.CurrentStep?.Id;
 
-        Assert.AreEqual("there", BonboardingService.Active?.CurrentStep?.Id, "Picked up where the user left it.");
+        Assert.AreEqual("there", actualValue, "Picked up where the user left it.");
         Assert.AreEqual(BonboardingTourStatus.Running, BonboardingService.Active!.Status);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

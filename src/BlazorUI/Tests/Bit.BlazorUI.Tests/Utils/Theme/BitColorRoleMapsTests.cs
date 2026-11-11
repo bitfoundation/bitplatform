@@ -26,8 +26,8 @@ public class BitColorRoleMapsTests
 
         // A semantic main is picked to be a fill - a warning amber is under 2:1 on white - so the theme declares the
         // shade of it meant to be read on the page.
-        StringAssert.Contains(tokens, "kind: semantic,");
-        StringAssert.Contains(tokens, $"fg: $clr-{role}-fg,");
+        Assert.Contains("kind: semantic,", tokens);
+        Assert.Contains($"fg: $clr-{role}-fg,", tokens);
     }
 
     [TestMethod,
@@ -39,8 +39,8 @@ public class BitColorRoleMapsTests
         var tokens = GetRole(role);
 
         // A foreground role is a text color already.
-        StringAssert.Contains(tokens, $"main: {main},");
-        StringAssert.Contains(tokens, $"fg: {main},");
+        Assert.Contains($"main: {main},", tokens);
+        Assert.Contains($"fg: {main},", tokens);
     }
 
     [TestMethod,
@@ -56,10 +56,10 @@ public class BitColorRoleMapsTests
 
         // Read as text on the page, a background color is the page's own color and vanishes, and a border color is a
         // hairline's, far under the 4.5:1 of WCAG 1.4.3; the role's on color is the text it is already paired with.
-        StringAssert.Contains(tokens, $"main: {main},");
-        StringAssert.Contains(tokens, "on: $clr-fg-pri,");
-        StringAssert.Contains(tokens, "fg: $clr-fg-pri,");
-        Assert.IsFalse(tokens.Contains($"fg: {main},"), $"The {role} role is read as text in its own {main}.");
+        Assert.Contains($"main: {main},", tokens);
+        Assert.Contains("on: $clr-fg-pri,", tokens);
+        Assert.Contains("fg: $clr-fg-pri,", tokens);
+        Assert.DoesNotContain($"fg: {main},", tokens, $"The {role} role is read as text in its own {main}.");
     }
 
     /// <summary>

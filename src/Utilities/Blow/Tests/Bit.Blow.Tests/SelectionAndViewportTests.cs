@@ -57,9 +57,9 @@ public class SelectionAndViewportTests : BunitContext
 
         Assert.IsNotNull(started);
         Assert.AreSequenceEqual(["a", "b"], started!.Value.Nodes.Select(n => n.Id));
-        Assert.IsTrue(moves > 0);
+        Assert.IsGreaterThan(0, moves);
         Assert.IsNotNull(stopped);
-        Assert.AreEqual(2, stopped!.Value.Nodes.Count);
+        Assert.HasCount(2, stopped!.Value.Nodes);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class SelectionAndViewportTests : BunitContext
 
         DragNode(cut, from: (0, 0), to: (10, 10));
 
-        Assert.AreEqual(3, started!.Value.Nodes.Count);
+        Assert.HasCount(3, started!.Value.Nodes);
     }
 
     [TestMethod]
@@ -340,7 +340,7 @@ public class SelectionAndViewportTests : BunitContext
         await animation;
 
         var viewport = cut.Instance.GetViewport();
-        Assert.IsTrue(viewport.X < 100, $"the transition kept running: X was {viewport.X}");
+        Assert.IsLessThan(100, viewport.X, $"the transition kept running: X was {viewport.X}");
     }
 
     [TestMethod]

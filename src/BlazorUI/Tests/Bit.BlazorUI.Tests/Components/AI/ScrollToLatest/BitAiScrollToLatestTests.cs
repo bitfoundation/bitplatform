@@ -77,9 +77,9 @@ public class BitAiScrollToLatestTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Button = new() { Root = "color: green;" } }));
 
         Assert.IsTrue(component.Find(".bit-aistl").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aistl").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aistl").GetAttribute("style")!);
         Assert.IsTrue(component.Find("button").ClassList.Contains("custom-button"));
-        StringAssert.Contains(component.Find("button").GetAttribute("style"), "color: green;");
+        Assert.Contains("color: green;", component.Find("button").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitAiScrollToLatestTests : BitAiTestBase
         var root = component.Find(".bit-aistl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class BitAiScrollToLatestTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 

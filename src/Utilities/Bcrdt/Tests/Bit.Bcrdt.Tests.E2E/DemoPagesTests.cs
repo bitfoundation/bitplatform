@@ -28,7 +28,8 @@ public sealed class DemoPagesTests : BcrdtTest
         var problems = TrackProblems(page, BaseUrl);
 
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} did not answer 200");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} did not answer 200");
         await WaitForInteractiveAsync(page);
         if (heading.Length > 0) await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(heading);
         else await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(new Regex("\\S"));
@@ -66,7 +67,7 @@ public sealed class DemoPagesTests : BcrdtTest
         // A sanity check on the sweep's own source: if the routes stopped being found, the sweep would pass on nothing.
         var routes = RepoLayout.DemoPages().Select(page => page.Route).ToArray();
         foreach (var route in new[] { "/", "/getting-started", "/text", "/list", "/form", "/conflicts", "/undo", "/internals", "/live", "/live/{Room}", "/mcp-server", "/not-found" })
-            CollectionAssert.Contains(routes, route, $"the sweep no longer finds {route}");
+            Assert.Contains(route, routes, $"the sweep no longer finds {route}");
     }
 
     [TestMethod]
@@ -77,8 +78,9 @@ public sealed class DemoPagesTests : BcrdtTest
         var problems = TrackProblems(page, BaseUrl, expected: problem => problem.Contains("404", StringComparison.Ordinal));
 
         var response = await GotoAsync(page, "/no-such-page");
+        var actualValue = response?.Status;
 
-        Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
+        Assert.AreEqual(404, actualValue, "an unknown address did not answer 404");
         await WaitForInteractiveAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("404");
         await Assertions.Expect(page.Locator("main")).ToContainTextAsync("There is no page at this address");

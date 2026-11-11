@@ -132,9 +132,9 @@ public sealed class AdversarialAnalysisTests
         var sampled = ImageStatistics.Measure(src, null, 10_000);
         var full = ImageStatistics.Measure(src, null, 0);
         // Sampling one pixel in sixty must not move a channel mean by even one level in 255.
-        Assert.IsTrue(Math.Abs(full.Red.Mean - sampled.Red.Mean) < 1.5,
+        Assert.IsLessThan(1.5, Math.Abs(full.Red.Mean - sampled.Red.Mean),
             $"sampled red mean {sampled.Red.Mean:0.00} against a full pass of {full.Red.Mean:0.00}");
-        Assert.IsTrue(Math.Abs(full.Luminance.Mean - sampled.Luminance.Mean) < 1.5,
+        Assert.IsLessThan(1.5, Math.Abs(full.Luminance.Mean - sampled.Luminance.Mean),
             $"sampled luminance mean {sampled.Luminance.Mean:0.00} against a full pass of {full.Luminance.Mean:0.00}");
     }
 
@@ -188,7 +188,7 @@ public sealed class AdversarialAnalysisTests
         foreach (var value in new[] { null, "", "   ", "not-a-placeholder", "!!!!", "0", new string('z', 500) })
         {
             var ex = Capture.Exception(() => ImagePlaceholder.Parse(value, 100, 100));
-            Assert.IsTrue(ex is null, $"parsing {value ?? "null"} threw {ex?.GetType().Name}");
+            Assert.IsNull(ex, $"parsing {value ?? "null"} threw {ex?.GetType().Name}");
         }
     }
 
@@ -239,7 +239,7 @@ public sealed class AdversarialAnalysisTests
             header.CopyTo(data, 0);
             for (var i = header.Length; i < length; i++) data[i] = (byte)rnd.Next(256);
 
-            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(data)).Dispose());
+            var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(data, cancellationToken: TestContext.CancellationToken)).Dispose());
             Assert.IsTrue(ex is null or ImageException,
                 $"{kind} trial {trial} threw {ex?.GetType().Name}: {ex?.Message}");
         }
@@ -260,7 +260,7 @@ public sealed class AdversarialAnalysisTests
         BitConverter.GetBytes((short)1).CopyTo(bmp, 26); // planes
         BitConverter.GetBytes((short)24).CopyTo(bmp, 28);// bits per pixel
 
-        var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(bmp)).Dispose());
+        var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(bmp, cancellationToken: TestContext.CancellationToken)).Dispose());
         Assert.IsTrue(ex is ImageException, $"an oversized BMP threw {ex?.GetType().Name ?? "nothing"}");
     }
 
@@ -281,7 +281,7 @@ public sealed class AdversarialAnalysisTests
         foreach (var data in inputs)
         {
             var ex = Capture.Exception(() => { processor.Identify(data); });
-            Assert.IsTrue(ex is null, $"Identify threw {ex?.GetType().Name} for {data.Length} bytes");
+            Assert.IsNull(ex, $"Identify threw {ex?.GetType().Name} for {data.Length} bytes");
         }
     }
 
@@ -296,13 +296,13 @@ public sealed class AdversarialAnalysisTests
         foreach (var (w, h) in new[] { (1, 1), (17, 5), (64, 64), (200, 137) })
         {
             using var src = Noise(w, h, w * 3 + h);
-            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format, Quality = 0.9 });
+            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format, Quality = 0.9 }, TestContext.CancellationToken);
 
             var info = processor.Identify(encoded.Data);
             Assert.IsNotNull(info);
             Assert.AreEqual(format, info!.Format);
 
-            using var decoded = await processor.DecodeAsync(encoded.Data);
+            using var decoded = await processor.DecodeAsync(encoded.Data, cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual(decoded.Size, info.DisplaySize);
         }
     }
@@ -315,7 +315,7 @@ public sealed class AdversarialAnalysisTests
         using var src = Noise(24, 24, 23);
         foreach (var format in new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp })
         {
-            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format });
+            var encoded = await processor.EncodeAsync(src, new ImageExportOptions { Format = format }, TestContext.CancellationToken);
             Assert.AreEqual(format, ImageFormats.Detect(encoded.Data));
             // Detection must also work from just the leading bytes, which is all a streaming caller has.
             Assert.AreEqual(format, ImageFormats.Detect(encoded.Data.AsSpan(0, Math.Min(16, encoded.Data.Length))));
@@ -333,9 +333,11 @@ public sealed class AdversarialAnalysisTests
         var processor = new ImageProcessor();
         var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"><rect width=\"10\" height=\"10\"/></svg>"u8.ToArray();
         Assert.AreEqual(ImageFormat.Svg, ImageFormats.Detect(svg));
-        var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(svg)).Dispose());
+        var ex = await Capture.ExceptionAsync(async () => (await processor.DecodeAsync(svg, cancellationToken: TestContext.CancellationToken)).Dispose());
         // The refusal docs/security.md quotes, not "no decoder is registered": no registry has one to register.
         Assert.IsInstanceOfType<ImageDecodeException>(ex);
         Assert.Contains("rasterising untrusted SVG", ex!.Message, StringComparison.Ordinal);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -34,7 +34,7 @@ public class BitNavPanelPrerenderTests
     {
         var document = await Prerender("settings");
 
-        CollectionAssert.AreEqual(new[] { "Settings" }, GetItemTexts(document));
+        Assert.AreSequenceEqual(new[] { "Settings" }, GetItemTexts(document));
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class BitNavPanelPrerenderTests
     {
         var document = await Prerender("categories");
 
-        CollectionAssert.AreEqual(new[] { "Categories" }, GetItemTexts(document));
+        Assert.AreSequenceEqual(new[] { "Categories" }, GetItemTexts(document));
     }
 
     [TestMethod]
@@ -50,8 +50,8 @@ public class BitNavPanelPrerenderTests
     {
         var document = await Prerender("nothing-matches-this");
 
-        Assert.AreEqual(0, GetItemTexts(document).Length);
-        StringAssert.Contains(document.Body!.TextContent, "Nothing found!");
+        Assert.IsEmpty(GetItemTexts(document));
+        Assert.Contains("Nothing found!", document.Body!.TextContent);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitNavPanelPrerenderTests
         var document = await Prerender(null);
 
         // The children of the collapsed AdminPanel are not rendered until it is expanded.
-        CollectionAssert.AreEqual(new[] { "Home", "AdminPanel", "Settings" }, GetItemTexts(document), string.Join(",", GetItemTexts(document)));
+        Assert.AreSequenceEqual(new[] { "Home", "AdminPanel", "Settings" }, GetItemTexts(document), string.Join(",", GetItemTexts(document)));
     }
 
 

@@ -56,21 +56,15 @@ public class CorrelationTests
     }
 
     [TestMethod]
-    public void An_unobserved_task_exception_is_an_error_unless_bevtools_started_the_task()
+    public async Task An_unobserved_task_exception_is_an_error_unless_bevtools_started_the_task()
     {
         var (session, scope) = TestHelpers.CreateSession();
         using (scope)
         {
-            var appTask = Task.Run(() => throw new InvalidOperationException("Saving the draft failed"));
+            var appTask = Task.Run(() => throw new InvalidOperationException("Saving the draft failed"), TestContext.CancellationToken);
             // An async method of BevTools' own that faults: its task is BevTools'.
-            var ownTask = BevRenderProfile.ParseAsync(new MemoryStream("not json"u8.ToArray()));
-            try
-            {
-                Task.WaitAll(appTask, ownTask);
-            }
-            catch (AggregateException)
-            {
-            }
+            var ownTask = BevRenderProfile.ParseAsync(new MemoryStream("not json"u8.ToArray()), TestContext.CancellationToken);
+            await Assert.ThrowsAsync<Exception>(() => Task.WhenAll(appTask, ownTask));
 
             BevUnobservedTasks.Record(session, appTask.Exception);
             BevUnobservedTasks.Record(session, ownTask.Exception);
@@ -78,13 +72,7 @@ public class CorrelationTests
             // An application's fire-and-forget call that went through BevTools' tracked IJSRuntime is still the application's.
             var js = new FakeJSRuntime { Handler = (_, _) => throw new InvalidOperationException("JS failed") }.WithBevToolsTracking(session);
             var viaWrapper = Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(js, "app.save").AsTask();
-            try
-            {
-                viaWrapper.Wait();
-            }
-            catch (AggregateException)
-            {
-            }
+            await Assert.ThrowsAsync<InvalidOperationException>(() => viaWrapper);
 
             Assert.IsFalse(BevUnobservedTasks.IsBevToolsOwn(viaWrapper.Exception!.InnerException!), viaWrapper.Exception.InnerException!.StackTrace);
             Assert.IsTrue(BevUnobservedTasks.IsBevToolsOwn(ownTask.Exception!.InnerException!));
@@ -145,6 +133,8 @@ public class CorrelationTests
             Assert.AreEqual(-1, session.AddMarker("while paused"));
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -171,17 +161,17 @@ public class MarkerPanelTests : BunitContext
 
         var session = Services.GetRequiredService<BevToolsSession>();
         var titles = session.Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray();
-        CollectionAssert.AreEqual(new[] { "⚑ Marker 1", "⚑ Marker 2" }, titles);
-        StringAssert.Contains(panel.Markup, "⚑ Marker 2");
+        Assert.AreSequenceEqual(new[] { "⚑ Marker 1", "⚑ Marker 2" }, titles);
+        Assert.Contains("⚑ Marker 2", panel.Markup);
 
         // Paused, no marker and no number used; another tab and back, the numbers go on.
         session.PauseCapture();
         panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
-        StringAssert.Contains(panel.Markup, "markers are put down only while capturing");
+        Assert.Contains("markers are put down only while capturing", panel.Markup);
         session.ResumeCapture();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Logs", StringComparison.Ordinal)).Click();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Timeline", StringComparison.Ordinal)).Click();
         panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
-        CollectionAssert.AreEqual(new[] { "⚑ Marker 1", "⚑ Marker 2", "⚑ Marker 3" }, session.Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray());
+        Assert.AreSequenceEqual(new[] { "⚑ Marker 1", "⚑ Marker 2", "⚑ Marker 3" }, session.Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray());
     }
 }

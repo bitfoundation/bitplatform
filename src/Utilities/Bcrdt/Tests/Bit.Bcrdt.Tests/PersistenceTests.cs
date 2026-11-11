@@ -37,7 +37,7 @@ public class PersistenceTests : IDisposable
 
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { Id = "doc", ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
 
             doc.GetText("body").Insert(0, "persisted text");
             doc.GetMap("meta").Set("title", "Example");
@@ -46,7 +46,7 @@ public class PersistenceTests : IDisposable
         }
 
         using var reopened = new BcrdtDocument(new BcrdtDocumentOptions { Id = "doc", ClientId = 2 });
-        await using BcrdtDocumentPersistence reloaded = await BcrdtDocumentPersistence.AttachAsync(reopened, store, "doc");
+        await using BcrdtDocumentPersistence reloaded = await BcrdtDocumentPersistence.AttachAsync(reopened, store, "doc", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("persisted text", reopened.GetText("body").ToString());
         Assert.AreEqual("Example", reopened.GetMap("meta").Get("title"));
@@ -60,7 +60,7 @@ public class PersistenceTests : IDisposable
 
         using (var seed = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(seed, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(seed, store, "doc", cancellationToken: TestContext.CancellationToken);
             seed.GetArray("items").Push("stored");
             await persistence.FlushAsync();
         }
@@ -70,7 +70,7 @@ public class PersistenceTests : IDisposable
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         doc.GetArray("items").Push("unsaved");
 
-        await using BcrdtDocumentPersistence reloaded = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+        await using BcrdtDocumentPersistence reloaded = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
 
         List<object?> items = doc.GetArray("items").ToArray();
         Assert.Contains("stored", items);
@@ -84,7 +84,7 @@ public class PersistenceTests : IDisposable
         IBcrdtDocumentStore store = CreateStore(useFileSystem);
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc"))
+        await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken))
         {
             var generator = new BcrdtOperationGenerator(7);
             for (int i = 0; i < 60; i++)
@@ -96,10 +96,10 @@ public class PersistenceTests : IDisposable
         }
 
         string before = BcrdtConvergenceHarness.Describe(doc);
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
 
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         reloaded.ApplyUpdate(stored.Update!);
 
         Assert.AreEqual(1, stored.RecordCount);
@@ -113,7 +113,7 @@ public class PersistenceTests : IDisposable
 
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
             doc.GetText("body").Insert(0, "first");
             await persistence.FlushAsync();
             doc.GetText("body").Insert(5, " second");
@@ -122,11 +122,11 @@ public class PersistenceTests : IDisposable
 
         // Simulate losing power partway through an append.
         string logPath = Directory.EnumerateFiles(_root, "*.bcl").Single();
-        byte[] contents = await File.ReadAllBytesAsync(logPath);
-        await File.WriteAllBytesAsync(logPath, [.. contents, 0x40, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE]);
+        byte[] contents = await File.ReadAllBytesAsync(logPath, TestContext.CancellationToken);
+        await File.WriteAllBytesAsync(logPath, [.. contents, 0x40, 0x00, 0x00, 0x00, 0xDE, 0xAD, 0xBE], TestContext.CancellationToken);
 
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        await using BcrdtDocumentPersistence recovery = await BcrdtDocumentPersistence.AttachAsync(reloaded, store, "doc");
+        await using BcrdtDocumentPersistence recovery = await BcrdtDocumentPersistence.AttachAsync(reloaded, store, "doc", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("first second", reloaded.GetText("body").ToString());
     }
@@ -138,17 +138,17 @@ public class PersistenceTests : IDisposable
 
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
             doc.GetText("body").Insert(0, "good");
             await persistence.FlushAsync();
         }
 
         string logPath = Directory.EnumerateFiles(_root, "*.bcl").Single();
-        byte[] contents = await File.ReadAllBytesAsync(logPath);
+        byte[] contents = await File.ReadAllBytesAsync(logPath, TestContext.CancellationToken);
         contents[^1] ^= 0xFF;
-        await File.WriteAllBytesAsync(logPath, contents);
+        await File.WriteAllBytesAsync(logPath, contents, TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         Assert.IsTrue(stored.IsEmpty, "A record with a broken checksum must not be handed to the decoder.");
     }
 
@@ -158,7 +158,7 @@ public class PersistenceTests : IDisposable
         var store = new BcrdtFileSystemDocumentStore(_root);
 
         // A document identifier is caller-supplied and often comes from a URL.
-        await store.AppendUpdateAsync("../../escaped", new byte[] { 1, 2, 3 });
+        await store.AppendUpdateAsync("../../escaped", new byte[] { 1, 2, 3 }, TestContext.CancellationToken);
 
         foreach (string path in Directory.EnumerateFiles(_root, "*", SearchOption.AllDirectories))
         {
@@ -172,15 +172,15 @@ public class PersistenceTests : IDisposable
     {
         IBcrdtDocumentStore store = CreateStore(useFileSystem);
 
-        await store.AppendUpdateAsync("alpha", CreateUpdate("a"));
-        await store.AppendUpdateAsync("beta", CreateUpdate("b"));
+        await store.AppendUpdateAsync("alpha", CreateUpdate("a"), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("beta", CreateUpdate("b"), TestContext.CancellationToken);
 
-        IReadOnlyList<string> ids = await store.ListAsync();
+        IReadOnlyList<string> ids = await store.ListAsync(TestContext.CancellationToken);
         Assert.Contains("alpha", ids);
         Assert.Contains("beta", ids);
 
-        await store.DeleteAsync("alpha");
-        BcrdtStoredDocument gone = await store.LoadAsync("alpha");
+        await store.DeleteAsync("alpha", TestContext.CancellationToken);
+        BcrdtStoredDocument gone = await store.LoadAsync("alpha", TestContext.CancellationToken);
         Assert.IsTrue(gone.IsEmpty);
     }
 
@@ -193,8 +193,8 @@ public class PersistenceTests : IDisposable
         using var a = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         using var b = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
 
-        await using (BcrdtDocumentPersistence pa = await BcrdtDocumentPersistence.AttachAsync(a, storeA, "doc"))
-        await using (BcrdtDocumentPersistence pb = await BcrdtDocumentPersistence.AttachAsync(b, storeB, "doc"))
+        await using (BcrdtDocumentPersistence pa = await BcrdtDocumentPersistence.AttachAsync(a, storeA, "doc", cancellationToken: TestContext.CancellationToken))
+        await using (BcrdtDocumentPersistence pb = await BcrdtDocumentPersistence.AttachAsync(b, storeB, "doc", cancellationToken: TestContext.CancellationToken))
         {
             a.GetText("body").Insert(0, "from A");
             b.GetText("body").Insert(0, "from B");
@@ -206,8 +206,8 @@ public class PersistenceTests : IDisposable
         // Two devices that were both offline. Loading each store into one document is the same
         // operation as syncing them over a network.
         using var combined = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 3 });
-        combined.ApplyUpdate((await storeA.LoadAsync("doc")).Update!);
-        combined.ApplyUpdate((await storeB.LoadAsync("doc")).Update!);
+        combined.ApplyUpdate((await storeA.LoadAsync("doc", TestContext.CancellationToken)).Update!);
+        combined.ApplyUpdate((await storeB.LoadAsync("doc", TestContext.CancellationToken)).Update!);
 
         string text = combined.GetText("body").ToString();
         Assert.Contains("from A", text);
@@ -224,17 +224,17 @@ public class PersistenceTests : IDisposable
         byte[] first = CreateUpdate("first", clientId: 1);
         byte[] second = CreateUpdate("second", clientId: 2);
         byte[] third = CreateUpdate("third", clientId: 3);
-        await store.AppendUpdateAsync("doc", first);
-        await store.AppendUpdateAsync("doc", second);
-        await store.AppendUpdateAsync("doc", third);
+        await store.AppendUpdateAsync("doc", first, TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", second, TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", third, TestContext.CancellationToken);
 
         // A flipped byte inside the second record: bit rot, not an interrupted append.
         string logPath = Directory.EnumerateFiles(_root, "*.bcl").Single();
-        byte[] contents = await File.ReadAllBytesAsync(logPath);
+        byte[] contents = await File.ReadAllBytesAsync(logPath, TestContext.CancellationToken);
         contents[8 + first.Length + 8 + 2] ^= 0xFF;
-        await File.WriteAllBytesAsync(logPath, contents);
+        await File.WriteAllBytesAsync(logPath, contents, TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 9 });
         reloaded.ApplyUpdate(stored.Update!);
 
@@ -247,12 +247,12 @@ public class PersistenceTests : IDisposable
         BcrdtStoreCorruption corruption = corruptions.Single();
         Assert.AreEqual("doc", corruption.DocumentId);
         Assert.AreEqual(2, corruption.RecordsKept);
-        CollectionAssert.AreEqual(contents, await File.ReadAllBytesAsync(corruption.QuarantinePath));
+        Assert.AreSequenceEqual(contents, await File.ReadAllBytesAsync(corruption.QuarantinePath, TestContext.CancellationToken));
 
         // The repaired log reads cleanly from then on, and takes appends after its good records.
-        await store.AppendUpdateAsync("doc", CreateUpdate("fourth", clientId: 4));
-        Assert.AreEqual(3, (await new BcrdtFileSystemDocumentStore(_root).LoadAsync("doc")).RecordCount);
-        Assert.HasCount(1, corruptions);
+        await store.AppendUpdateAsync("doc", CreateUpdate("fourth", clientId: 4), TestContext.CancellationToken);
+        Assert.AreEqual(3, (await new BcrdtFileSystemDocumentStore(_root).LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
+        Assert.ContainsSingle(corruptions);
     }
 
     [TestMethod]
@@ -262,17 +262,17 @@ public class PersistenceTests : IDisposable
         var corruptions = new List<BcrdtStoreCorruption>();
         store.CorruptionDetected += corruptions.Add;
 
-        await store.AppendUpdateAsync("doc", CreateUpdate("readable", clientId: 1));
-        await store.AppendUpdateAsync("doc", new byte[] { 0xFF, 0xFF, 0xFF, 0xFF });
+        await store.AppendUpdateAsync("doc", CreateUpdate("readable", clientId: 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument();
         reloaded.ApplyUpdate(stored.Update!);
 
         Assert.AreEqual("readable", reloaded.GetText("body").ToString());
-        Assert.HasCount(1, corruptions);
-        await store.CompactAsync("doc");
-        Assert.AreEqual("readable", Text((await store.LoadAsync("doc")).Update!));
+        Assert.ContainsSingle(corruptions);
+        await store.CompactAsync("doc", TestContext.CancellationToken);
+        Assert.AreEqual("readable", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -286,11 +286,11 @@ public class PersistenceTests : IDisposable
         // than any replica writes. A document refuses such a block, so a log merged with it in could
         // never be opened again.
         byte[] far = CollectedRange(7, 2 + (ulong)BcrdtUpdateCodec.MaxClockGap);
-        await store.AppendUpdateAsync("doc", CollectedRange(7, 0));
-        await store.AppendUpdateAsync("doc", far);
-        await store.AppendUpdateAsync("doc", CreateUpdate("kept"));
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 0), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", far, TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", CreateUpdate("kept"), TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument();
         reloaded.ApplyUpdate(stored.Update!);
 
@@ -303,10 +303,10 @@ public class PersistenceTests : IDisposable
         BcrdtStoreCorruption corruption = corruptions.Single();
         Assert.AreEqual(2, corruption.RecordsKept);
         Assert.AreEqual(8L + far.Length, corruption.BytesDiscarded);
-        Assert.AreEqual(2, (await store.LoadAsync("doc")).RecordCount);
-        await store.CompactAsync("doc");
-        Assert.AreEqual("kept", Text((await store.LoadAsync("doc")).Update!));
-        Assert.HasCount(1, corruptions);
+        Assert.AreEqual(2, (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
+        await store.CompactAsync("doc", TestContext.CancellationToken);
+        Assert.AreEqual("kept", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
+        Assert.ContainsSingle(corruptions);
     }
 
     [TestMethod]
@@ -319,14 +319,14 @@ public class PersistenceTests : IDisposable
         // A document measures a block from what it already holds - nothing, while it is being loaded - so
         // content that starts further out than any replica writes is refused, whether it is one record
         // or two that sit side by side and merge without a gap between them.
-        await store.AppendUpdateAsync("lone", CollectedRange(7, (ulong)BcrdtUpdateCodec.MaxClockGap + 1));
-        await store.AppendUpdateAsync("pair", CollectedRange(7, 1UL << 40));
-        await store.AppendUpdateAsync("pair", CollectedRange(7, (1UL << 40) + 1));
-        await store.AppendUpdateAsync("pair", CreateUpdate("kept"));
+        await store.AppendUpdateAsync("lone", CollectedRange(7, (ulong)BcrdtUpdateCodec.MaxClockGap + 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("pair", CollectedRange(7, 1UL << 40), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("pair", CollectedRange(7, (1UL << 40) + 1), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("pair", CreateUpdate("kept"), TestContext.CancellationToken);
 
-        Assert.IsTrue((await store.LoadAsync("lone")).IsEmpty);
+        Assert.IsTrue((await store.LoadAsync("lone", TestContext.CancellationToken)).IsEmpty);
 
-        BcrdtStoredDocument pair = await store.LoadAsync("pair");
+        BcrdtStoredDocument pair = await store.LoadAsync("pair", TestContext.CancellationToken);
         using var reloaded = new BcrdtDocument();
         reloaded.ApplyUpdate(pair.Update!);
         Assert.AreEqual(1, pair.RecordCount);
@@ -346,21 +346,21 @@ public class PersistenceTests : IDisposable
 
         byte[] unreadable = [0xFF, 0xFF, 0xFF, 0xFF];
         byte[] far = CollectedRange(7, (ulong)BcrdtUpdateCodec.MaxClockGap + 1);
-        await store.AppendUpdateAsync("doc", CreateUpdate("kept"));
-        await store.AppendUpdateAsync("doc", unreadable);
-        await store.AppendUpdateAsync("doc", far);
+        await store.AppendUpdateAsync("doc", CreateUpdate("kept"), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", unreadable, TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", far, TestContext.CancellationToken);
 
         // One repair, reported once, after which the document opens - not a repair reported for a
         // document that still fails to load.
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         Assert.AreEqual(1, stored.RecordCount);
         Assert.AreEqual("kept", Text(stored.Update!));
 
         BcrdtStoreCorruption corruption = corruptions.Single();
         Assert.AreEqual(1, corruption.RecordsKept);
         Assert.AreEqual(8L + unreadable.Length + 8L + far.Length, corruption.BytesDiscarded);
-        Assert.AreEqual("kept", Text((await store.LoadAsync("doc")).Update!));
-        Assert.HasCount(1, corruptions);
+        Assert.AreEqual("kept", Text((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!));
+        Assert.ContainsSingle(corruptions);
     }
 
     [TestMethod]
@@ -376,16 +376,16 @@ public class PersistenceTests : IDisposable
 
         Task appending = Task.Run(async () =>
         {
-            foreach (byte[] update in updates) await appender.AppendUpdateAsync("doc", update);
-        });
+            foreach (byte[] update in updates) await appender.AppendUpdateAsync("doc", update, TestContext.CancellationToken);
+        }, TestContext.CancellationToken);
         Task compacting = Task.Run(async () =>
         {
-            while (!appending.IsCompleted) await compactor.CompactAsync("doc");
-        });
+            while (!appending.IsCompleted) await compactor.CompactAsync("doc", TestContext.CancellationToken);
+        }, TestContext.CancellationToken);
         await Task.WhenAll(appending, compacting);
 
         using var reloaded = new BcrdtDocument();
-        reloaded.ApplyUpdate((await appender.LoadAsync("doc")).Update!);
+        reloaded.ApplyUpdate((await appender.LoadAsync("doc", TestContext.CancellationToken)).Update!);
         Assert.AreEqual(200, reloaded.GetArray("items").Count);
     }
 
@@ -394,7 +394,7 @@ public class PersistenceTests : IDisposable
     {
         var store = new SlowStore(TimeSpan.FromMilliseconds(30));
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+        await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
 
         using var editing = new CancellationTokenSource();
         Task typing = Task.Run(async () =>
@@ -402,16 +402,16 @@ public class PersistenceTests : IDisposable
             while (!editing.IsCancellationRequested)
             {
                 lock (doc) doc.GetText("body").Insert(0, "x");
-                await Task.Delay(5);
+                await Task.Delay(5, TestContext.CancellationToken);
             }
-        });
+        }, TestContext.CancellationToken);
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         Task flush;
         lock (doc) flush = persistence.FlushAsync();
 
         // The edits made after the call are not the flush's concern.
-        Assert.AreSame(flush, await Task.WhenAny(flush, Task.Delay(TimeSpan.FromSeconds(10))), "the flush should complete while edits continue");
+        Assert.AreSame(flush, await Task.WhenAny(flush, Task.Delay(TimeSpan.FromSeconds(10), TestContext.CancellationToken)), "the flush should complete while edits continue");
         await editing.CancelAsync();
         await typing;
     }
@@ -422,7 +422,7 @@ public class PersistenceTests : IDisposable
         var store = new FailingCompactionStore();
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-            doc, store, "doc", new BcrdtDocumentPersistenceOptions { CompactionThreshold = 5 });
+            doc, store, "doc", new BcrdtDocumentPersistenceOptions { CompactionThreshold = 5 }, TestContext.CancellationToken);
 
         for (int i = 0; i < 30; i++)
         {
@@ -443,7 +443,7 @@ public class PersistenceTests : IDisposable
         store.CorruptionDetected += corruptions.Add;
 
         byte[] first = CreateUpdate("kept");
-        await store.AppendUpdateAsync("doc", first);
+        await store.AppendUpdateAsync("doc", first, TestContext.CancellationToken);
 
         // Power lost while a multi-megabyte record was being written: its header promises 4 MB, and 2 MB
         // of zero-rich binary payload made it to disk. Nearly every other offset in it reads as a header
@@ -457,10 +457,10 @@ public class PersistenceTests : IDisposable
             torn[i] = (byte)random.Next(256);
             torn[i + 1] = (byte)random.Next(256);
         }
-        await File.WriteAllBytesAsync(logPath, [.. await File.ReadAllBytesAsync(logPath), .. torn]);
+        await File.WriteAllBytesAsync(logPath, [.. await File.ReadAllBytesAsync(logPath, TestContext.CancellationToken), .. torn], TestContext.CancellationToken);
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         watch.Stop();
 
         Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"loading took {watch.Elapsed}");
@@ -476,23 +476,23 @@ public class PersistenceTests : IDisposable
         var store = new BcrdtInMemoryDocumentStore(maxDocuments: 1, time);
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "open"))
+        await using (BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "open", cancellationToken: TestContext.CancellationToken))
         {
             doc.GetText("body").Insert(0, "base");
             await persistence.FlushAsync();
 
             // Open but idle for long past the grace period while other documents fill the store.
             time.Advance(TimeSpan.FromMinutes(10));
-            await store.AppendUpdateAsync("other-1", CreateUpdate("x", clientId: 2));
+            await store.AppendUpdateAsync("other-1", CreateUpdate("x", clientId: 2), TestContext.CancellationToken);
             time.Advance(TimeSpan.FromMinutes(10));
-            await store.AppendUpdateAsync("other-2", CreateUpdate("y", clientId: 3));
+            await store.AppendUpdateAsync("other-2", CreateUpdate("y", clientId: 3), TestContext.CancellationToken);
 
             // The next change builds on what the store already holds; that must still be there.
             doc.GetText("body").Insert(4, " and more");
             await persistence.FlushAsync();
         }
 
-        Assert.AreEqual("base and more", Text((await store.LoadAsync("open")).Update!));
+        Assert.AreEqual("base and more", Text((await store.LoadAsync("open", TestContext.CancellationToken)).Update!));
     }
 
     [TestMethod]
@@ -503,16 +503,16 @@ public class PersistenceTests : IDisposable
 
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "closed");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "closed", cancellationToken: TestContext.CancellationToken);
             doc.GetText("body").Insert(0, "gone");
             await persistence.FlushAsync();
         }
 
         time.Advance(TimeSpan.FromMinutes(2));
-        await store.AppendUpdateAsync("new", CreateUpdate("here", clientId: 2));
+        await store.AppendUpdateAsync("new", CreateUpdate("here", clientId: 2), TestContext.CancellationToken);
 
         Assert.AreEqual(1, store.Count);
-        Assert.IsTrue((await store.LoadAsync("closed")).IsEmpty);
+        Assert.IsTrue((await store.LoadAsync("closed", TestContext.CancellationToken)).IsEmpty);
     }
 
     [TestMethod]
@@ -520,16 +520,16 @@ public class PersistenceTests : IDisposable
     {
         var store = new RefusingStore();
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
-        await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+        await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
 
         var refused = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         persistence.WriteFailed += _ => refused.TrySetResult();
         store.RefuseNext = true;
         doc.GetText("body").Insert(0, "lost");
-        await refused.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await refused.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Settled by now - given up on - but never reported to anyone: the flush is the one to say so.
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         await Assert.ThrowsExactlyAsync<IOException>(() => persistence.FlushAsync());
 
         // Said once; a flush called after that reports only what happens from then on.
@@ -633,4 +633,6 @@ public class PersistenceTests : IDisposable
         public ValueTask<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default) =>
             _inner.ListAsync(cancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

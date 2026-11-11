@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -34,7 +34,7 @@ public class PresetTests
             .Add(p => p.Preset, BmPresets.Fade(duration: 0.4))
             .Add(p => p.ChildContent, Div));
 
-        StringAssert.Contains(cut.Find("div").GetAttribute("style"), "opacity:0", "rendered at the preset's Initial");
+        Assert.Contains("opacity:0", cut.Find("div").GetAttribute("style")!, "rendered at the preset's Initial");
         Assert.AreEqual("1", LastKeyframes(ctx)[^1]["opacity"], "and enters to its Animate");
         Assert.AreEqual(400.0, (double)LastTiming(ctx)["duration"]!, "with its transition");
     }
@@ -99,12 +99,12 @@ public class PresetTests
             .Add(p => p.ChildContent, Div));
 
         var flags = (IReadOnlyDictionary<string, object?>)ctx.Interop.ArgsOf("attachEventListeners").Last()[1]!;
-        Assert.AreEqual(true, flags["hover"]);
-        Assert.AreEqual(true, flags["tap"]);
+        Assert.IsTrue((bool?)flags["hover"]);
+        Assert.IsTrue((bool?)flags["tap"]);
 
         var box = (Bmotion)ctx.Interop.EventListenerRefs["box"];
         await ctx.Renderer.Dispatcher.InvokeAsync(() => box.OnPointerEnter());
-        StringAssert.Contains((string)LastKeyframes(ctx)[^1]["transform"], "-6px");
+        Assert.Contains("-6px", (string)LastKeyframes(ctx)[^1]["transform"]);
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class PresetTests
         Assert.AreEqual(0, merged.Opacity!.Last);
         Assert.AreEqual(20, merged.X!.Last, "the right-hand side wins where both set it");
         Assert.AreEqual(5, merged.Y!.Last);
-        CollectionAssert.AreEquivalent(new[] { "gap", "margin" }, merged.Css!.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "gap", "margin" }, merged.Css!.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(10, under.X!.Last, "neither input is changed");
         Assert.IsNull(under.Y);
     }
@@ -201,7 +201,7 @@ public class PresetTests
                 await cut.InvokeAsync(() => ((Bmotion)ctx.Interop.ViewportRefs["box"]).OnIntersect(true));
 
             var played = ctx.Interop.CountOf("playWaapiAnimation") + ctx.Interop.CountOf("applyStyles");
-            Assert.IsTrue(played > 0, $"{name} did nothing on {(server ? "Server" : "WebAssembly")}");
+            Assert.IsGreaterThan(0, played, $"{name} did nothing on {(server ? "Server" : "WebAssembly")}");
         }
     }
 }

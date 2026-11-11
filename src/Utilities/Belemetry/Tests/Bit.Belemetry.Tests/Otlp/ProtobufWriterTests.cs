@@ -41,9 +41,9 @@ public class ProtobufWriterTests
         Assert.AreEqual(WireFormat.MakeTag(8, WireFormat.WireType.LengthDelimited), input.ReadTag());
         Assert.AreEqual("héllo", input.ReadString());
         Assert.AreEqual(WireFormat.MakeTag(9, WireFormat.WireType.LengthDelimited), input.ReadTag());
-        CollectionAssert.AreEqual(new byte[] { 9, 8, 7 }, input.ReadBytes().ToByteArray());
+        Assert.AreSequenceEqual(new byte[] { 9, 8, 7 }, input.ReadBytes().ToByteArray());
         Assert.AreEqual(WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited), input.ReadTag());
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }, input.ReadBytes().ToByteArray());
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }, input.ReadBytes().ToByteArray());
 
         // Empty strings and malformed ids are omitted.
         Assert.IsTrue(input.IsAtEnd);
@@ -116,7 +116,7 @@ public class ProtobufWriterTests
         Assert.IsTrue(input.IsAtEnd);
 
         // No slack: the total equals the minimal protobuf encoding.
-        Assert.AreEqual(1 + CodedOutputStream.ComputeLengthSize(outerLength) + outerLength + 2, bytes.Length);
+        Assert.HasCount(1 + CodedOutputStream.ComputeLengthSize(outerLength) + outerLength + 2, bytes);
     }
 
     [TestMethod]

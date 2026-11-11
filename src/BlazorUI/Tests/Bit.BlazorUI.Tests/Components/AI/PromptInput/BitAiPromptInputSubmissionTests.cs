@@ -51,13 +51,13 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
             .Add(c => c.OnSubmit, s => s.Reject()));
 
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("notes.bin", [1, 2])));
-        Assert.HasCount(1, composer.Instance.Attachments);
+        Assert.ContainsSingle(composer.Instance.Attachments);
 
         composer.Find(".bit-aipri-snd").Click();
 
         composer.WaitForAssertion(() => Assert.AreEqual("  hello  ", composer.Find("textarea").GetAttribute("value")));
         Assert.AreEqual("notes.bin", Assert.ContainsSingle(composer.Instance.Attachments).Name);
-        Assert.HasCount(1, composer.FindComponents<BitAiAttachmentChip>());
+        Assert.ContainsSingle(composer.FindComponents<BitAiAttachmentChip>());
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
     {
         var transport = new HangingThenAnswering();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null });
-        var turn = session.SubmitAsync("first");
+        var turn = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitForAsync(() => session.IsGenerating);
 
         // Rendered with no session, so it offers to send while the session is busy - as a composer handed a stale state
@@ -92,7 +92,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
         composer.Find(".bit-aipri-snd").Click();
 
         composer.WaitForAssertion(() => Assert.AreEqual("second", composer.Find("textarea").GetAttribute("value")));
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
 
         session.Stop();
         await turn;
@@ -123,7 +123,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
 
         reporter!.Report(0.5);
         composer.WaitForAssertion(() => Assert.AreEqual(0.5, composer.Instance.Attachments[0].Progress));
-        composer.WaitForAssertion(() => StringAssert.Contains(composer.Find(".bit-aiach").TextContent, "50%"));
+        composer.WaitForAssertion(() => Assert.Contains("50%", composer.Find(".bit-aiach").TextContent));
 
         release.SetResult();
         composer.WaitForAssertion(() => Assert.AreEqual(BitAiAttachmentStatus.Ready, composer.Instance.Attachments[0].Status));
@@ -149,8 +149,8 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
 
         composer.WaitForAssertion(() => Assert.AreEqual(BitAiAttachmentStatus.Failed, composer.Instance.Attachments[0].Status));
         var chip = composer.Find(".bit-aiach");
-        StringAssert.Contains(chip.TextContent, BitAiStrings.Default.UploadFailed);
-        Assert.IsFalse(composer.Markup.Contains("10.0.0.7"));
+        Assert.Contains(BitAiStrings.Default.UploadFailed, chip.TextContent);
+        Assert.DoesNotContain("10.0.0.7", composer.Markup);
         Assert.AreEqual("true", composer.Find(".bit-aipri-snd").GetAttribute("aria-disabled"));
 
         composer.Find(".bit-aiach button").Click();
@@ -175,7 +175,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
         await composer.InvokeAsync(() => composer.Instance._OnDroppedFile(File("notes.bin", [1])));
         composer.Find(".bit-aiach button").Click();
 
-        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsEmpty(composer.Instance.Attachments);
     }
 
@@ -184,7 +184,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
     {
         var transport = new HangingThenAnswering();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitForAsync(() => session.IsGenerating);
 
         var composer = RenderComponent<BitAiPromptInput>(p => p.Add(c => c.Session, session));
@@ -209,7 +209,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
     {
         var transport = new HangingThenAnswering();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null });
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitForAsync(() => session.IsGenerating);
 
         var composer = RenderComponent<BitAiPromptInput>(p => p.Add(c => c.Session, session));
@@ -221,7 +221,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
         await first;
 
         Assert.AreEqual("second", composer.Find("textarea").GetAttribute("value"));
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
     }
 
     [TestMethod]
@@ -229,7 +229,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
     {
         var transport = new HangingThenAnswering();
         await using var session = new BitAiChatSession(transport, null, new() { Pacing = null, InterruptOnSubmit = true });
-        var first = session.SubmitAsync("first");
+        var first = session.SubmitAsync("first", cancellationToken: TestContext.CancellationToken);
         await WaitForAsync(() => session.IsGenerating);
 
         var composer = RenderComponent<BitAiPromptInput>(p => p
@@ -247,7 +247,7 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
         await first;
 
         Assert.AreEqual(BitAiMessageStatus.Cancelled, session.Conversation.Messages[1].Status);
-        Assert.AreEqual(2, session.Conversation.Messages.Count);
+        Assert.HasCount(2, session.Conversation.Messages);
         Assert.AreEqual("too long", composer.Find("textarea").GetAttribute("value"));
     }
 
@@ -280,4 +280,6 @@ public class BitAiPromptInputSubmissionTests : BitAiTestBase
             yield return new BitAiMessageCompletedEvent();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

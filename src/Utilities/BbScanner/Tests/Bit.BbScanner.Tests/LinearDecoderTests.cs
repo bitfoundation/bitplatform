@@ -52,7 +52,9 @@ public class LinearDecoderTests
         foreach (var chunk in all.Chunk(16).Select(c => new string(c)))
         {
             var result = DecodeMiddleRow(new BbCode93Reader(), LinearEncoders.Code93(chunk), BbBarcodeFormat.Code93);
-            Assert.AreEqual(chunk, result?.Payload.Text, $"Characters {(int)chunk[0]} to {(int)chunk[^1]}");
+            var expectedValue = chunk;
+            var actualValue = result?.Payload.Text;
+            Assert.AreEqual(expectedValue, actualValue, $"Characters {(int)chunk[0]} to {(int)chunk[^1]}");
         }
     }
 
@@ -75,9 +77,13 @@ public class LinearDecoderTests
     {
         var result = DecodeMiddleRow(new BbCodabarReader(), LinearEncoders.Codabar(data, start, stop), BbBarcodeFormat.Codabar);
         var kept = DecodeMiddleRow(new BbCodabarReader(keepStartStop: true), LinearEncoders.Codabar(data, start, stop), BbBarcodeFormat.Codabar);
+        var expectedValue = data;
+        var actualValue = result?.Payload.Text;
 
-        Assert.AreEqual(data, result?.Payload.Text);
-        Assert.AreEqual($"{start}{data}{stop}", kept?.Payload.Text);
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = $"{start}{data}{stop}";
+        var actualValue2 = kept?.Payload.Text;
+        Assert.AreEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -86,8 +92,9 @@ public class LinearDecoderTests
     public void CodabarReadsBothWideToNarrowRatios(int ratio)
     {
         var result = DecodeMiddleRow(new BbCodabarReader(), LinearEncoders.Codabar("31234000123457", wideRatio: ratio), BbBarcodeFormat.Codabar);
+        var actualValue = result?.Payload.Text;
 
-        Assert.AreEqual("31234000123457", result?.Payload.Text);
+        Assert.AreEqual("31234000123457", actualValue);
     }
 
     [TestMethod]
@@ -103,8 +110,9 @@ public class LinearDecoderTests
         // wide width, a pixel of it read as misfit and lost the symbol at a two to one ratio.
         using var image = SyntheticImage.FromLinearWithBarGain(LinearEncoders.Codabar("31234000123457", wideRatio: ratio), scale, barGain);
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Codabar, DuplicateSuppressionWindow = TimeSpan.Zero });
+        var actualValue = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
 
-        Assert.AreEqual("31234000123457", decoder.Decode(image.View, suppressDuplicates: false)?.Text);
+        Assert.AreEqual("31234000123457", actualValue);
     }
 
     [TestMethod]
@@ -141,7 +149,7 @@ public class LinearDecoderTests
             var actual = LinearEncoders.DataBar(symbol.Expected![2..]);
 
             // BWIPP's widths start with the left guard's space; the test kit leaves it to the quiet zone.
-            CollectionAssert.AreEqual(expected.SkipWhile(m => !m).ToArray(), actual.SkipWhile(m => !m).ToArray(), symbol.Id);
+            Assert.AreSequenceEqual(expected.SkipWhile(m => !m).ToArray(), actual.SkipWhile(m => !m).ToArray(), symbol.Id);
         }
     }
 
@@ -201,7 +209,8 @@ public class LinearDecoderTests
         foreach (var degrees in new[] { 0, 12, -12, 25, 180, 192 })
         {
             using var rotated = ImageTransforms.Rotate(image, degrees);
-            Assert.AreEqual("0109521234543213", decoder.Decode(rotated.View, suppressDuplicates: false)?.Text, $"{degrees} degrees");
+            var actualValue = decoder.Decode(rotated.View, suppressDuplicates: false)?.Text;
+            Assert.AreEqual("0109521234543213", actualValue, $"{degrees} degrees");
         }
     }
 
@@ -314,8 +323,8 @@ public class LinearDecoderTests
         var result = DecodeMiddleRow(new BbCode128Reader(), modules, BbBarcodeFormat.Code128);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(2, result.Points.Length);
-        Assert.IsTrue(result.Points[0].X < result.Points[1].X);
+        Assert.HasCount(2, result.Points);
+        Assert.IsLessThan(result.Points[1].X, result.Points[0].X);
         Assert.AreEqual(result.Points[0].Y, result.Points[1].Y);
     }
 

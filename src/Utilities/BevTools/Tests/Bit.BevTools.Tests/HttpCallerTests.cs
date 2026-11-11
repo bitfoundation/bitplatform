@@ -47,8 +47,8 @@ public class HttpCallerTests : BunitContext
 
         var endpoint = Assert.ContainsSingle(BevHttpEndpoints.Summarize(Session.Http.Snapshot()));
         Assert.AreEqual(("CallerRow.OnInitializedAsync", 1), Assert.ContainsSingle(endpoint.Callers));
-        StringAssert.Contains(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
-            "\"caller\":\"CallerRow.OnInitializedAsync via CallerApi.GetDetailsAsync\"");
+        Assert.Contains("\"caller\":\"CallerRow.OnInitializedAsync via CallerApi.GetDetailsAsync\"",
+BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }));
     }
 
     [TestMethod]
@@ -83,13 +83,13 @@ public class HttpCallerTests : BunitContext
         var request = Assert.ContainsSingle(Session.Http.Snapshot());
         Assert.IsNull(request.Caller);
         // Which reason depends on what ran the test: from a continuation (as MSTest runs it) it says so.
-        StringAssert.StartsWith(request.CallerMissing, "no component on the stack");
-        StringAssert.Contains(BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }),
-            "\"callerMissing\":\"no component on the stack");
+        Assert.StartsWith("no component on the stack", request.CallerMissing);
+        Assert.Contains("\"callerMissing\":\"no component on the stack",
+BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }));
     }
 
     [TestMethod]
-    public void A_continuation_that_another_components_completion_ran_is_not_that_components_request()
+    public async Task A_continuation_that_another_components_completion_ran_is_not_that_components_request()
     {
         // WebAssembly has no synchronization context: completing a task runs what awaited it right there, so the code
         // below the send is whoever completed the task. Here a component opens a gate a service was waiting on.
@@ -102,8 +102,9 @@ public class HttpCallerTests : BunitContext
             new GateOpener().Open(gate);
 
             Assert.IsTrue(seen.IsCompleted);
-            Assert.IsNull(seen.Result.Component, seen.Result.Component);
-            Assert.AreEqual(BevCallSites.AfterCompletion, seen.Result.Missing);
+            var result = await seen;
+            Assert.IsNull(result.Component, result.Component);
+            Assert.AreEqual(BevCallSites.AfterCompletion, result.Missing);
 
             // The control: called by the component directly, it is the component's.
             Assert.AreEqual("GateOpener.Look", new GateOpener().Look().Component);
@@ -119,7 +120,12 @@ public class HttpCallerTests : BunitContext
     {
         var records = Enumerable.Range(0, 7).Select(i => new BevHttpRecord
         {
-            Id = i + 1, StartedAt = DateTimeOffset.UtcNow, Method = "GET", Url = "/api/orders/" + (1001 + i), StatusCode = 200, DurationMs = 5,
+            Id = i + 1,
+            StartedAt = DateTimeOffset.UtcNow,
+            Method = "GET",
+            Url = "/api/orders/" + (1001 + i),
+            StatusCode = 200,
+            DurationMs = 5,
             CallerComponent = "Row" + i + ".OnInitializedAsync",
         }).ToArray();
 
@@ -143,7 +149,7 @@ public class HttpCallerTests : BunitContext
         row.WaitForAssertion(() => Assert.IsTrue(row.Instance.Loaded));
 
         var records = Session.Http.Snapshot();
-        CollectionAssert.AreEqual(new int?[] { 503, 200 }, records.Select(r => r.StatusCode).ToArray());
+        Assert.AreSequenceEqual(new int?[] { 503, 200 }, records.Select(r => r.StatusCode).ToArray());
         Assert.IsTrue(records.All(r => r.Caller == "FactoryCallerRow.OnInitializedAsync via FactoryCallerApi.GetAsync"), string.Join(" | ", records.Select(r => r.Caller ?? "(none)")));
     }
 
@@ -179,19 +185,25 @@ public class HttpCallerTests : BunitContext
         {
             Session.Http.Add(new BevHttpRecord
             {
-                Id = Session.Http.NextId(), StartedAt = start.AddMilliseconds(i * 3), Method = "GET", Url = "/api/orders/" + (1001 + i), StatusCode = 200, DurationMs = 20,
-                CallerComponent = "OrderRow.OnInitializedAsync", CallerVia = "ProductApi.GetOrderDetailsAsync",
+                Id = Session.Http.NextId(),
+                StartedAt = start.AddMilliseconds(i * 3),
+                Method = "GET",
+                Url = "/api/orders/" + (1001 + i),
+                StatusCode = 200,
+                DurationMs = 20,
+                CallerComponent = "OrderRow.OnInitializedAsync",
+                CallerVia = "ProductApi.GetOrderDetailsAsync",
             });
         }
 
         Session.Diagnostics.Evaluate(force: true);
 
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "http.per-item", Session.Diagnostics.Findings).Diagnostic;
-        StringAssert.Contains(finding.Evidence, "sent from OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync ×6");
+        Assert.Contains("sent from OrderRow.OnInitializedAsync via ProductApi.GetOrderDetailsAsync ×6", finding.Evidence);
     }
 }
 
-public sealed class CallerApi(HttpClient client)
+internal sealed class CallerApi(HttpClient client)
 {
     public async Task<string> GetDetailsAsync(int id) => await client.GetStringAsync("api/orders/" + id);
 }
@@ -206,19 +218,19 @@ internal static class GateWaiter
     }
 }
 
-public class GateOpener : ComponentBase
+internal class GateOpener : ComponentBase
 {
     public void Open(TaskCompletionSource gate) => gate.SetResult();
 
     internal BevCallSites.CallSite Look() => BevCallSites.Find(skipFrames: 0);
 }
 
-public sealed class FactoryCallerApi(HttpClient client)
+internal sealed class FactoryCallerApi(HttpClient client)
 {
     public async Task<HttpStatusCode> GetAsync() => (await client.GetAsync("api/orders/7")).StatusCode;
 }
 
-public class FactoryCallerRow : ComponentBase
+internal class FactoryCallerRow : ComponentBase
 {
     [Inject] public FactoryCallerApi Api { get; set; } = default!;
 
@@ -231,7 +243,7 @@ public class FactoryCallerRow : ComponentBase
     }
 }
 
-public class CallerRow : ComponentBase
+internal class CallerRow : ComponentBase
 {
     [Inject] public CallerApi Api { get; set; } = default!;
 
@@ -248,7 +260,7 @@ public class CallerRow : ComponentBase
     }
 }
 
-public class LocalFunctionRow : ComponentBase
+internal class LocalFunctionRow : ComponentBase
 {
     [Inject] public CallerApi Api { get; set; } = default!;
 

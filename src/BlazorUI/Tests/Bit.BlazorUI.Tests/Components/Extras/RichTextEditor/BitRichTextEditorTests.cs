@@ -112,7 +112,7 @@ public class BitRichTextEditorTests : BunitTestContext
             .Select(a => a.Name)
             .Where(n => System.Text.RegularExpressions.Regex.IsMatch(n, "^[a-zA-Z_:][-a-zA-Z0-9_:.]*$") is false)
             .ToArray();
-        Assert.AreEqual(0, invalid.Length, string.Join(", ", invalid));
+        Assert.IsEmpty(invalid, string.Join(", ", invalid));
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.ShowToolbar, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb"));
     }
 
     [TestMethod]
@@ -175,9 +175,9 @@ public class BitRichTextEditorTests : BunitTestContext
             });
         });
 
-        StringAssert.Contains(component.Find(".bit-rte").GetAttribute("style"), "border-color: red");
-        StringAssert.Contains(component.Find(".bit-rte-tlb").GetAttribute("style"), "background: blue");
-        StringAssert.Contains(component.Find(".bit-rte-edt").GetAttribute("style"), "color: green");
+        Assert.Contains("border-color: red", component.Find(".bit-rte").GetAttribute("style")!);
+        Assert.Contains("background: blue", component.Find(".bit-rte-tlb").GetAttribute("style")!);
+        Assert.Contains("color: green", component.Find(".bit-rte-edt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -206,8 +206,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The sizes set the public variables on the instance, which both the surface and the source view read.
         var style = component.Find(".bit-rte").GetAttribute("style");
-        StringAssert.Contains(style, "--bit-RichTextEditor-height:12rem");
-        StringAssert.Contains(style, "--bit-RichTextEditor-max-height:20rem");
+        Assert.Contains("--bit-RichTextEditor-height:12rem", style!);
+        Assert.Contains("--bit-RichTextEditor-max-height:20rem", style);
         Assert.IsNull(component.Find(".bit-rte-edt").GetAttribute("style"));
     }
 
@@ -220,8 +220,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // Unset sizes declare nothing, so a --bit-RichTextEditor-height set on :root or an ancestor applies.
         var style = component.Find(".bit-rte").GetAttribute("style") ?? "";
-        Assert.IsFalse(style.Contains("--bit-RichTextEditor-height"));
-        Assert.IsFalse(style.Contains("--bit-RichTextEditor-max-height"));
+        Assert.DoesNotContain("--bit-RichTextEditor-height", style);
+        Assert.DoesNotContain("--bit-RichTextEditor-max-height", style);
     }
 
     [TestMethod]
@@ -340,8 +340,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The bridge refuses paste/drop/typing on this flag, so it must reflect Disabled too and
         // not only the ReadOnly parameter.
-        Assert.AreEqual(true, SetupOption(LastSetupOptions(), "ReadOnly"));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-src").Count);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(SetupOption(LastSetupOptions(), "ReadOnly")));
+        Assert.IsEmpty(component.FindAll(".bit-rte-src"));
     }
 
     [TestMethod]
@@ -375,21 +375,20 @@ public class BitRichTextEditorTests : BunitTestContext
         // The Inline group must render as a single toolbar group of exactly five toggle buttons -
         // bold, italic, underline, strikethrough, inline code (in that order) - with no other
         // groups or non-button controls (color/font selectors, url/find inputs) leaking in.
-        Assert.AreEqual(1, component.FindAll(".bit-rte-tlb .bit-rte-grp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-tlb .bit-rte-grp"));
 
         var buttons = component.FindAll(".bit-rte-tlb .bit-rte-btn");
-        Assert.AreEqual(5, buttons.Count);
-        CollectionAssert.AreEqual(
-            new[] { "Bold", "Italic", "Underline", "Strikethrough", "Inline code" },
-            buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.HasCount(5, buttons);
+        Assert.AreSequenceEqual(
+            new[] { "Bold", "Italic", "Underline", "Strikethrough", "Inline code" }, buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
         foreach (var button in buttons)
         {
             Assert.AreEqual("button", button.GetAttribute("type"));
         }
 
         // No selectors, color pickers, or text inputs belong to the inline-only toolbar.
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb input").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb select").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb input"));
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb select"));
     }
 
     [TestMethod]
@@ -402,7 +401,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.None);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb .bit-rte-grp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb .bit-rte-grp"));
     }
 
     [TestMethod]
@@ -416,9 +415,8 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         var options = component.FindAll(".bit-rte-sel option").Select(o => o.GetAttribute("value")).ToArray();
-        CollectionAssert.AreEqual(
-            new[] { "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre" },
-            options);
+        Assert.AreSequenceEqual(
+            new[] { "p", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre" }, options);
     }
 
     [TestMethod]
@@ -431,9 +429,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Alignment);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "Align left", "Align center", "Align right", "Justify" },
-            component.FindAll(".bit-rte-btn").Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Align left", "Align center", "Align right", "Justify" }, component.FindAll(".bit-rte-btn").Select(b => b.GetAttribute("aria-label")).ToArray());
     }
 
     [TestMethod]
@@ -446,9 +443,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Lists);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "Bullet list", "Numbered list", "Task list" },
-            component.FindAll(".bit-rte-btn").Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Bullet list", "Numbered list", "Task list" }, component.FindAll(".bit-rte-btn").Select(b => b.GetAttribute("aria-label")).ToArray());
     }
 
     [TestMethod]
@@ -470,7 +466,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldEnableTableOperationsInsideATable()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldEnableTableOperationsInsideATable()
     {
         SetupJsInterop();
 
@@ -479,8 +475,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Table);
         });
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { InTable = true })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { InTable = true })).WaitAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(ButtonByLabel(component, "Delete row").HasAttribute("disabled"));
         Assert.IsFalse(ButtonByLabel(component, "Merge cells").HasAttribute("disabled"));
@@ -505,7 +501,7 @@ public class BitRichTextEditorTests : BunitTestContext
             .Select(g => g.QuerySelector("button")!.GetAttribute("aria-label"))
             .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Bullet list", "Bold", "Undo" }, firstButtonOfEachGroup);
+        Assert.AreSequenceEqual(new[] { "Bullet list", "Bold", "Undo" }, firstButtonOfEachGroup);
     }
 
     [TestMethod]
@@ -564,8 +560,8 @@ public class BitRichTextEditorTests : BunitTestContext
         // Pressing it must not take the focus and the selection out of the text, like every built-in button.
         static string[] Prevented(AngleSharp.Dom.IElement e)
             => e.Attributes.Select(a => a.Name).Where(n => n.Contains("preventdefault", StringComparison.OrdinalIgnoreCase)).ToArray();
-        Assert.AreNotEqual(0, Prevented(callout).Length);
-        CollectionAssert.AreEqual(Prevented(ButtonByLabel(component, "Bold")), Prevented(callout));
+        Assert.IsNotEmpty(Prevented(callout));
+        Assert.AreSequenceEqual(Prevented(ButtonByLabel(component, "Bold")), Prevented(callout));
     }
 
     [TestMethod]
@@ -593,7 +589,7 @@ public class BitRichTextEditorTests : BunitTestContext
         // component down or leak the exception detail into the message.
         Assert.IsNotNull(error);
         Assert.AreEqual("custom-action-failed", error!.Code);
-        Assert.IsFalse(error.Message.Contains("nope"));
+        Assert.DoesNotContain("nope", error.Message);
         Assert.IsNotNull(component.Find(".bit-rte-err"));
     }
 
@@ -666,7 +662,7 @@ public class BitRichTextEditorTests : BunitTestContext
     // ---------------------------------------------------------------- selection state
 
     [TestMethod]
-    public void BitRichTextEditorShouldReflectTheSelectionStateOnToggleButtons()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldReflectTheSelectionStateOnToggleButtons()
     {
         SetupJsInterop();
 
@@ -677,8 +673,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         Assert.AreEqual("false", ButtonByLabel(component, "Bold").GetAttribute("aria-pressed"));
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { Bold = true, InlineCode = true })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Bold = true, InlineCode = true })).WaitAsync(TestContext.CancellationToken);
 
         var bold = ButtonByLabel(component, "Bold");
         Assert.AreEqual("true", bold.GetAttribute("aria-pressed"));
@@ -687,7 +683,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldShowTheActiveColorsInThePickers()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldShowTheActiveColorsInThePickers()
     {
         SetupJsInterop();
 
@@ -696,8 +692,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Color);
         });
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { ForeColor = "#123456", BackColor = "#abcdef" })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { ForeColor = "#123456", BackColor = "#abcdef" })).WaitAsync(TestContext.CancellationToken);
 
         var pickers = component.FindAll("input[type=color]");
         Assert.AreEqual("#123456", pickers[0].GetAttribute("value"));
@@ -705,7 +701,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldPreselectTheActiveFont()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldPreselectTheActiveFont()
     {
         SetupJsInterop();
 
@@ -716,8 +712,8 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.FontSizes, new[] { "12px", "16px" });
         });
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { FontName = "Georgia", FontSize = "16px" })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { FontName = "Georgia", FontSize = "16px" })).WaitAsync(TestContext.CancellationToken);
 
         var selects = component.FindAll(".bit-rte-sel");
         Assert.AreEqual("Georgia", selects[0].GetAttribute("value"));
@@ -725,7 +721,7 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldFallBackToThePlaceholderOptionsForValuesItDoesNotOffer()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldFallBackToThePlaceholderOptionsForValuesItDoesNotOffer()
     {
         SetupJsInterop();
 
@@ -736,8 +732,8 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         // A list item's block, and a font inherited from the page, are values none of the options carry.
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { Block = "li", FontName = "Segoe UI", FontSize = "13px" })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { Block = "li", FontName = "Segoe UI", FontSize = "13px" })).WaitAsync(TestContext.CancellationToken);
 
         var selects = component.FindAll(".bit-rte-sel");
         Assert.AreEqual("p", selects[0].GetAttribute("value"));
@@ -758,7 +754,7 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         var values = component.FindAll(".bit-rte-sel option").Select(o => o.GetAttribute("value")).ToArray();
-        CollectionAssert.AreEqual(new[] { "", "Georgia", "", "42px" }, values);
+        Assert.AreSequenceEqual(new[] { "", "Georgia", "", "42px" }, values);
     }
 
 
@@ -782,10 +778,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.createLink");
         Assert.AreEqual("https://example.com", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
         Assert.AreEqual("Example", invocation.Arguments[3]);
         // The panel closes once the link is applied.
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
     }
 
     [TestMethod]
@@ -860,7 +856,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The panel prefills the existing href and offers Remove instead of a link-text field.
         Assert.AreEqual("https://old.example.com", component.Find(".bit-rte-bar input[type=url]").GetAttribute("value"));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar input[type=text]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar input[type=text]"));
 
         await component.Find(".bit-rte-bar input[type=url]").InputAsync(new() { Value = "https://new.example.com" });
         await ButtonByText(component, ".bit-rte-bar button", "Apply").ClickAsync(new());
@@ -957,7 +953,7 @@ public class BitRichTextEditorTests : BunitTestContext
         var component = RenderComponent<BitRichTextEditor>(parameters =>
             parameters.Add(p => p.OnImageUpload, _ => upload.Task));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-upl"));
 
         var resolving = component.InvokeAsync(() => component.Instance._ResolveImageUrl("a.png", "image/png", "AAAA"));
 
@@ -968,7 +964,7 @@ public class BitRichTextEditorTests : BunitTestContext
         upload.SetResult("https://cdn.example.com/a.png");
         Assert.AreEqual("https://cdn.example.com/a.png", await resolving);
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-rte-upl").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-rte-upl")));
         Assert.IsFalse(component.Find(".bit-rte-edt").HasAttribute("aria-busy"));
     }
 
@@ -1138,7 +1134,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsNull(url);
         Assert.IsNotNull(error);
         Assert.AreEqual("upload-failed", error!.Code);
-        Assert.IsFalse(error.Message.Contains("credentials"));
+        Assert.DoesNotContain("credentials", error.Message);
     }
 
     [TestMethod]
@@ -1211,7 +1207,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await ButtonByText(component, ".bit-rte-bar button", "Embed").ClickAsync(new());
 
         var html = (string)Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.insertMedia").Arguments[1]!;
-        StringAssert.Contains(html, expected);
+        Assert.Contains(expected, html);
     }
 
     [TestMethod]
@@ -1260,7 +1256,7 @@ public class BitRichTextEditorTests : BunitTestContext
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.insertTable");
         Assert.AreEqual(4, invocation.Arguments[1]);
         Assert.AreEqual(3, invocation.Arguments[2]);
-        Assert.AreEqual(true, invocation.Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
     }
 
     [TestMethod]
@@ -1355,8 +1351,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.find"].Last();
         Assert.AreEqual("fox", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
-        Assert.AreEqual(true, invocation.Arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[3]));
     }
 
     [TestMethod]
@@ -1415,7 +1411,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await ButtonByLabel(component, "Find and replace").ClickAsync(new());
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.clearFind");
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
     }
 
 
@@ -1432,12 +1428,12 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         await ButtonByLabel(component, "Insert emoji").ClickAsync(new());
-        Assert.IsTrue(component.FindAll(".bit-rte-emoji-head").Count > 1);
+        Assert.IsGreaterThan(1, component.FindAll(".bit-rte-emoji-head").Count);
 
         await component.Find(".bit-rte-emoji-panel input").InputAsync(new() { Value = "rocket" });
 
         var shown = component.FindAll(".bit-rte-emoji");
-        Assert.AreEqual(1, shown.Count);
+        Assert.ContainsSingle(shown);
         Assert.AreEqual("🚀", shown[0].TextContent);
 
         await shown[0].ClickAsync(new());
@@ -1457,7 +1453,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await ButtonByLabel(component, "Insert emoji").ClickAsync(new());
         await component.Find(".bit-rte-emoji-panel input").InputAsync(new() { Value = "zzzzzz" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-emoji").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-emoji"));
         Assert.IsNotNull(component.Find(".bit-rte-emoji-empty"));
     }
 
@@ -1475,13 +1471,13 @@ public class BitRichTextEditorTests : BunitTestContext
 
         Assert.IsNotNull(component.Find(".bit-rte-slash"));
         var items = component.FindAll(".bit-rte-slash-item");
-        Assert.AreEqual(10, items.Count);
+        Assert.HasCount(10, items);
         Assert.AreEqual("Heading 1", items[0].TextContent);
 
         await items[0].ClickAsync(new());
 
         Assert.AreEqual("h1", Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applySlashCommand").Arguments[1]);
-        Assert.AreEqual(0, component.FindAll(".bit-rte-slash").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-slash"));
     }
 
     [TestMethod]
@@ -1496,7 +1492,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await component.Find(".bit-rte-slash input").InputAsync(new() { Value = "todo" });
 
         var items = component.FindAll(".bit-rte-slash-item");
-        Assert.AreEqual(1, items.Count);
+        Assert.ContainsSingle(items);
         Assert.AreEqual("Task list", items[0].TextContent);
     }
 
@@ -1512,7 +1508,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-slash").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-slash"));
     }
 
 
@@ -1577,7 +1573,7 @@ public class BitRichTextEditorTests : BunitTestContext
         // and the floating selection toolbar, not only by a toolbar button.
         Assert.IsTrue(handled);
         Assert.IsNotNull(component.Find(".bit-rte-bar input[type=url]"));
-        Assert.AreEqual(0, component.FindAll(".bit-rte-tlb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-tlb"));
     }
 
     [TestMethod]
@@ -1619,7 +1615,7 @@ public class BitRichTextEditorTests : BunitTestContext
         // The panel lives in the toolbar, so with the link group off the keystroke must fall
         // through to the browser instead of being swallowed for a panel that cannot appear.
         Assert.IsFalse(handled);
-        Assert.AreEqual(0, component.FindAll(".bit-rte-bar").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-bar"));
     }
 
     [TestMethod]
@@ -1688,13 +1684,13 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
 
-        CollectionAssert.Contains(combos, "ctrl+b");
-        CollectionAssert.Contains(combos, "ctrl+j");
+        Assert.Contains("ctrl+b", combos);
+        Assert.Contains("ctrl+j", combos);
         // A combo mapped to an unknown command must not be advertised as owned, or the bridge
         // would suppress a browser default for a keystroke nothing handles.
-        CollectionAssert.DoesNotContain(combos, "ctrl+q");
+        Assert.DoesNotContain("ctrl+q", combos);
         // The list is sorted so an unchanged configuration serializes identically each render.
-        CollectionAssert.AreEqual(combos.OrderBy(c => c, StringComparer.Ordinal).ToArray(), combos);
+        Assert.AreSequenceEqual(combos.OrderBy(c => c, StringComparer.Ordinal).ToArray(), combos);
     }
 
     [TestMethod]
@@ -1715,9 +1711,9 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // _OnShortcut declines "link" with the link group off, so the bridge must not swallow
         // the browser default for it - neither the ctrl+k default nor a custom binding.
-        CollectionAssert.DoesNotContain(combos, "ctrl+k");
-        CollectionAssert.DoesNotContain(combos, "ctrl+l");
-        CollectionAssert.Contains(combos, "ctrl+b");
+        Assert.DoesNotContain("ctrl+k", combos);
+        Assert.DoesNotContain("ctrl+l", combos);
+        Assert.Contains("ctrl+b", combos);
     }
 
     [TestMethod]
@@ -1736,7 +1732,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
 
-        CollectionAssert.Contains(combos, "ctrl+k");
+        Assert.Contains("ctrl+k", combos);
     }
 
 
@@ -1777,8 +1773,8 @@ public class BitRichTextEditorTests : BunitTestContext
             new BitRichTextEditorContentFacts(true, false, 10, 2)));
 
         var footer = component.Find(".bit-rte-cnt").TextContent;
-        StringAssert.Contains(footer, "2 words");
-        StringAssert.Contains(footer, "10/10");
+        Assert.Contains("2 words", footer);
+        Assert.Contains("10/10", footer);
         // Reaching the cap is called out rather than silently swallowing further input.
         Assert.IsNotNull(component.Find(".bit-rte-cnt-over"));
     }
@@ -1799,10 +1795,10 @@ public class BitRichTextEditorTests : BunitTestContext
         // Each count is a full template rather than a number glued to a word, so one word does not
         // read "1 words" - and a translator keeps control of the plural.
         var footer = component.Find(".bit-rte-cnt").TextContent;
-        StringAssert.Contains(footer, "1 word ");
-        StringAssert.Contains(footer, "1 char");
-        Assert.IsFalse(footer.Contains("1 words"));
-        Assert.IsFalse(footer.Contains("1 chars"));
+        Assert.Contains("1 word ", footer);
+        Assert.Contains("1 char", footer);
+        Assert.DoesNotContain("1 words", footer);
+        Assert.DoesNotContain("1 chars", footer);
     }
 
     [TestMethod]
@@ -1840,8 +1836,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         Assert.IsNotNull(error);
         Assert.AreEqual("command-failed", error!.Code);
-        StringAssert.Contains(error.Message, "bold");
-        Assert.IsFalse(error.Message.Contains("NS_ERROR_FAILURE"));
+        Assert.Contains("bold", error.Message);
+        Assert.DoesNotContain("NS_ERROR_FAILURE", error.Message);
     }
 
     [TestMethod]
@@ -1959,7 +1955,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var commands = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.exec"]
             .Select(i => i.Arguments[1]).ToArray();
-        CollectionAssert.AreEqual(new object[] { "undo", "redo" }, commands);
+        Assert.AreSequenceEqual(new object[] { "undo", "redo" }, commands);
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.selectAll");
     }
 
@@ -2049,7 +2045,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(editor, reference.Value);
 
         dispose.SetVoidResult();
@@ -2112,12 +2108,12 @@ public class BitRichTextEditorTests : BunitTestContext
         var options = LastSetupOptions();
         Assert.AreEqual(500, SetupOption(options, "Debounce"));
         Assert.AreEqual(42, SetupOption(options, "MaxLength"));
-        Assert.AreEqual(true, SetupOption(options, "PlainTextPaste"));
-        Assert.AreEqual(false, SetupOption(options, "AutoLink"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(SetupOption(options, "PlainTextPaste")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(SetupOption(options, "AutoLink")));
         // The selection rectangle is a layout read on every selection change, so the bridge is told
         // whether anything needs it.
-        Assert.AreEqual(false, SetupOption(options, "QuickToolbar"));
-        Assert.AreEqual(false, SetupOption(options, "HasUpload"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(SetupOption(options, "QuickToolbar")));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(SetupOption(options, "HasUpload")));
         Assert.IsNull(SetupOption(options, "Policy"));
     }
 
@@ -2175,7 +2171,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // ...but a real change must.
         component.Render(parameters => parameters.Add(p => p.DebounceMs, 800));
-        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.updateOptions"].Count > unchanged);
+        Assert.IsGreaterThan(unchanged, Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.updateOptions"].Count);
     }
 
 
@@ -2203,7 +2199,7 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
-        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge.");
+        Assert.IsGreaterThan(before, after, "The Value update should route through the sanitize bridge.");
     }
 
     [TestMethod]
@@ -2224,7 +2220,7 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         var after = Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count;
-        Assert.IsTrue(after > before, "The Value update should route through the sanitize bridge even without an explicit policy.");
+        Assert.IsGreaterThan(before, after, "The Value update should route through the sanitize bridge even without an explicit policy.");
     }
 
     [TestMethod]
@@ -2264,7 +2260,7 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         // A tightened allowlist has to clean what is already loaded, not just future input.
-        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count > before);
+        Assert.IsGreaterThan(before, Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count);
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateOptions");
     }
 
@@ -2323,10 +2319,10 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The bridge compares lowercase names, so the payload is normalized on the way out.
         var policy = SetupOption(LastSetupOptions(), "Policy")!;
-        CollectionAssert.AreEqual(new[] { "p", "strong" }, (string[])SetupOption(policy, "AllowedTags")!);
-        CollectionAssert.AreEqual(new[] { "https" }, (string[])SetupOption(policy, "AllowedUriSchemes")!);
+        Assert.AreSequenceEqual(new[] { "p", "strong" }, (string[])SetupOption(policy, "AllowedTags")!);
+        Assert.AreSequenceEqual(new[] { "https" }, (string[])SetupOption(policy, "AllowedUriSchemes")!);
         var attributes = (Dictionary<string, string[]>)SetupOption(policy, "AllowedAttributes")!;
-        CollectionAssert.AreEqual(new[] { "href" }, attributes["a"]);
+        Assert.AreSequenceEqual(new[] { "href" }, attributes["a"]);
     }
 
     [TestMethod]
@@ -2336,19 +2332,19 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // Alignment, indentation, colors and font sizes are all emitted as style/align attributes
         // by the formatting commands; dropping them would show formatting the saved value lacks.
-        Assert.IsTrue(policy.AllowedAttributes["*"].Contains("style"));
-        Assert.IsTrue(policy.AllowedAttributes["*"].Contains("align"));
+        Assert.Contains("style", policy.AllowedAttributes["*"]);
+        Assert.Contains("align", policy.AllowedAttributes["*"]);
         // Column resizing writes a width attribute onto the cell.
-        Assert.IsTrue(policy.AllowedAttributes["td"].Contains("width"));
+        Assert.Contains("width", policy.AllowedAttributes["td"]);
         // Checklists are plain list items carrying their state in data-checked.
-        Assert.IsTrue(policy.AllowedAttributes["li"].Contains("data-checked"));
+        Assert.Contains("data-checked", policy.AllowedAttributes["li"]);
         // Media embeds are on by default; the sanitize pass pairs the tag with a host allowlist,
         // so an iframe only survives when it points at an approved embed host over https.
-        Assert.IsTrue(policy.AllowedTags.Contains("iframe"));
-        Assert.IsTrue(policy.AllowedAttributes["iframe"].Contains("allowfullscreen"));
+        Assert.Contains("iframe", policy.AllowedTags);
+        Assert.Contains("allowfullscreen", policy.AllowedAttributes["iframe"]);
         Assert.IsNotNull(policy.AllowedIframeHosts);
-        CollectionAssert.Contains(policy.AllowedIframeHosts!.ToArray(), "www.youtube-nocookie.com");
-        CollectionAssert.Contains(policy.AllowedIframeHosts!.ToArray(), "player.vimeo.com");
+        Assert.Contains("www.youtube-nocookie.com", policy.AllowedIframeHosts!.ToArray());
+        Assert.Contains("player.vimeo.com", policy.AllowedIframeHosts!.ToArray());
     }
 
     [TestMethod]
@@ -2392,8 +2388,7 @@ public class BitRichTextEditorTests : BunitTestContext
         });
 
         var policy = SetupOption(LastSetupOptions(), "Policy")!;
-        CollectionAssert.AreEqual(new[] { "player.vimeo.com", "maps.example.com" },
-            (string[])SetupOption(policy, "AllowedIframeHosts")!);
+        Assert.AreSequenceEqual(new[] { "player.vimeo.com", "maps.example.com" }, (string[])SetupOption(policy, "AllowedIframeHosts")!);
     }
 
     [TestMethod]
@@ -2403,7 +2398,7 @@ public class BitRichTextEditorTests : BunitTestContext
         first.AllowedTags.Add("marquee");
 
         // Callers are told they may mutate the default; that must not leak into the next editor.
-        Assert.IsFalse(BitRichTextEditorSanitizationPolicy.Default.AllowedTags.Contains("marquee"));
+        Assert.DoesNotContain("marquee", BitRichTextEditorSanitizationPolicy.Default.AllowedTags);
     }
 
 
@@ -2426,20 +2421,20 @@ public class BitRichTextEditorTests : BunitTestContext
     // ---------------------------------------------------------------- selection toolbar
 
     [TestMethod]
-    public void BitRichTextEditorShouldNotShowTheQuickToolbarByDefault()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldNotShowTheQuickToolbarByDefault()
     {
         SetupJsInterop();
 
         var component = RenderComponent<BitRichTextEditor>();
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { HasSelection = true })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { HasSelection = true })).WaitAsync(TestContext.CancellationToken);
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-quick"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldShowTheQuickToolbarOnlyWhileSomethingIsSelected()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldShowTheQuickToolbarOnlyWhileSomethingIsSelected()
     {
         SetupJsInterop();
 
@@ -2448,26 +2443,26 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.ShowQuickToolbar, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-quick"));
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { HasSelection = true, SelectionTop = 120, SelectionLeft = 40, SelectionHeight = 18 })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { HasSelection = true, SelectionTop = 120, SelectionLeft = 40, SelectionHeight = 18 })).WaitAsync(TestContext.CancellationToken);
 
         var bar = component.Find(".bit-rte-quick");
         Assert.AreEqual("toolbar", bar.GetAttribute("role"));
 
         // It is anchored above the selection and formatted with an invariant decimal separator, so
         // the declaration is not dropped under a comma-decimal culture.
-        StringAssert.Contains(bar.GetAttribute("style"), "top:76px");
-        StringAssert.Contains(bar.GetAttribute("style"), "left:40px");
+        Assert.Contains("top:76px", bar.GetAttribute("style")!);
+        Assert.Contains("left:40px", bar.GetAttribute("style")!);
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState())).Wait();
-        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState())).WaitAsync(TestContext.CancellationToken);
+        Assert.IsEmpty(component.FindAll(".bit-rte-quick"));
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldFlipTheQuickToolbarBelowASelectionNearTheTop()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldFlipTheQuickToolbarBelowASelectionNearTheTop()
     {
         SetupJsInterop();
 
@@ -2476,15 +2471,15 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.ShowQuickToolbar, true);
         });
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { HasSelection = true, SelectionTop = 4, SelectionHeight = 20 })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { HasSelection = true, SelectionTop = 4, SelectionHeight = 20 })).WaitAsync(TestContext.CancellationToken);
 
         // Placing it above would put the bar off the top of the component, so it goes below instead.
-        StringAssert.Contains(component.Find(".bit-rte-quick").GetAttribute("style"), "top:32px");
+        Assert.Contains("top:32px", component.Find(".bit-rte-quick").GetAttribute("style")!);
     }
 
     [TestMethod]
-    public void BitRichTextEditorShouldHideTheQuickToolbarWhileReadOnly()
+    public async global::System.Threading.Tasks.Task BitRichTextEditorShouldHideTheQuickToolbarWhileReadOnly()
     {
         SetupJsInterop();
 
@@ -2494,10 +2489,10 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        component.InvokeAsync(() => component.Instance._OnSelectionChanged(
-            new BitRichTextEditorSelectionState { HasSelection = true })).Wait();
+        await component.InvokeAsync(() => component.Instance._OnSelectionChanged(
+            new BitRichTextEditorSelectionState { HasSelection = true })).WaitAsync(TestContext.CancellationToken);
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-quick"));
     }
 
     [TestMethod]
@@ -2591,13 +2586,13 @@ public class BitRichTextEditorTests : BunitTestContext
         SetupJsInterop();
 
         RenderComponent<BitRichTextEditor>();
-        Assert.AreEqual(false, SetupOption(LastSetupOptions(), "Mentions"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(SetupOption(LastSetupOptions(), "Mentions")));
 
         RenderComponent<BitRichTextEditor>(parameters =>
         {
             parameters.Add(p => p.OnMentionSearch, People("Ada"));
         });
-        Assert.AreEqual(true, SetupOption(LastSetupOptions(), "Mentions"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(SetupOption(LastSetupOptions(), "Mentions")));
     }
 
     [TestMethod]
@@ -2612,13 +2607,13 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
 
-        Assert.AreEqual(3, component.FindAll(".bit-rte-mention-menu .bit-rte-slash-item").Count);
+        Assert.HasCount(3, component.FindAll(".bit-rte-mention-menu .bit-rte-slash-item"));
 
         await component.Find(".bit-rte-mention-menu input").InputAsync(new() { Value = "grace" });
 
         var items = component.FindAll(".bit-rte-mention-menu .bit-rte-slash-item");
-        Assert.AreEqual(1, items.Count);
-        StringAssert.Contains(items[0].TextContent, "Grace Hopper");
+        Assert.ContainsSingle(items);
+        Assert.Contains("Grace Hopper", items[0].TextContent);
     }
 
     [TestMethod]
@@ -2638,12 +2633,12 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var html = (string)Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applyMention").Arguments[1]!;
         // The id has to reach the markup, or the host cannot resolve the mention when reading back.
-        StringAssert.Contains(html, "data-mention-id=\"0\"");
-        StringAssert.Contains(html, "@Ada Lovelace");
+        Assert.Contains("data-mention-id=\"0\"", html);
+        Assert.Contains("@Ada Lovelace", html);
         Assert.IsNotNull(picked);
         Assert.AreEqual("Ada Lovelace", picked!.Display);
         // The menu closes once a mention is picked.
-        Assert.AreEqual(0, component.FindAll(".bit-rte-mention-menu").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-mention-menu"));
     }
 
     [TestMethod]
@@ -2664,9 +2659,9 @@ public class BitRichTextEditorTests : BunitTestContext
         var html = (string)Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applyMention").Arguments[1]!;
         // Host-supplied text is data, so neither the id nor the display name may break out of the
         // attribute or the element they are written into.
-        Assert.IsFalse(html.Contains("<script>"));
-        Assert.IsFalse(html.Contains("onerror=\"x"));
-        StringAssert.Contains(html, "&lt;script&gt;");
+        Assert.DoesNotContain("<script>", html);
+        Assert.DoesNotContain("onerror=\"x", html);
+        Assert.Contains("&lt;script&gt;", html);
     }
 
     [TestMethod]
@@ -2685,7 +2680,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.AreEqual("true", component.FindAll(".bit-rte-mention-menu .bit-rte-slash-item")[1].GetAttribute("aria-selected"));
 
         await component.Find(".bit-rte-mention-menu input").KeyDownAsync(Key.Enter);
-        Assert.AreEqual(0, component.FindAll(".bit-rte-mention-menu").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-mention-menu"));
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applyMention");
     }
 
@@ -2702,7 +2697,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
         await component.Find(".bit-rte-mention-menu input").KeyDownAsync(Key.Escape);
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-mention-menu").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-mention-menu"));
     }
 
     [TestMethod]
@@ -2717,7 +2712,7 @@ public class BitRichTextEditorTests : BunitTestContext
             parameters.Add(p => p.OnMentionSearch, People("Ada"));
         });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
 
@@ -2726,7 +2721,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await input.KeyDownAsync(Key.Escape);
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -2746,7 +2741,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         Assert.IsNotNull(error);
         Assert.AreEqual("mention-search-failed", error!.Code);
-        Assert.IsFalse(error.Message.Contains("directory offline"));
+        Assert.DoesNotContain("directory offline", error.Message);
     }
 
     [TestMethod]
@@ -2762,7 +2757,7 @@ public class BitRichTextEditorTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
 
-        Assert.AreEqual(0, component.FindAll(".bit-rte-mention-menu").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-mention-menu"));
     }
 
     [TestMethod]
@@ -2772,8 +2767,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // A mention is a span carrying the host's id; dropping the attribute would turn a saved
         // mention back into plain text on reload.
-        Assert.IsTrue(policy.AllowedAttributes["span"].Contains("data-mention-id"));
-        Assert.IsTrue(policy.AllowedAttributes["*"].Contains("class"));
+        Assert.Contains("data-mention-id", policy.AllowedAttributes["span"]);
+        Assert.Contains("class", policy.AllowedAttributes["*"]);
     }
 
 
@@ -2818,7 +2813,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-rte-bar input[type=checkbox]").HasAttribute("checked"));
 
         await ButtonByText(component, ".bit-rte-bar button", "Apply").ClickAsync(new());
-        Assert.AreEqual(true, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateLink").Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateLink").Arguments[2]));
     }
 
     [TestMethod]
@@ -2857,9 +2852,9 @@ public class BitRichTextEditorTests : BunitTestContext
 
         // The panels share one strip under the toolbar, so opening another tool closes find - and
         // closing it has to take its highlight markup out of the content with it.
-        Assert.AreEqual(0, component.FindAll("input[aria-label='Replace with']").Count);
+        Assert.IsEmpty(component.FindAll("input[aria-label='Replace with']"));
         Assert.IsNotNull(component.Find(".bit-rte-bar input[type=url]"));
-        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.clearFind") > clearedBefore);
+        Assert.IsGreaterThan(clearedBefore, InvokeCount("BitBlazorUI.RichTextEditor.clearFind"));
     }
 
     [TestMethod]
@@ -2875,7 +2870,7 @@ public class BitRichTextEditorTests : BunitTestContext
         await ButtonByLabel(component, "Insert image").ClickAsync(new());
         await ButtonByLabel(component, "Find and replace").ClickAsync(new());
 
-        Assert.AreEqual(0, component.FindAll("input[aria-label='Image URL']").Count);
+        Assert.IsEmpty(component.FindAll("input[aria-label='Image URL']"));
         Assert.IsNotNull(component.Find("input[aria-label='Find']"));
     }
 
@@ -2919,8 +2914,8 @@ public class BitRichTextEditorTests : BunitTestContext
         // Coming back must not restore a panel still holding the previous search and its
         // highlights: the panels belong to the rendered view, so entering source view closes them.
         await ButtonByLabel(component, "HTML source view").ClickAsync(new());
-        Assert.AreEqual(0, component.FindAll("input[aria-label='Find']").Count);
-        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.clearFind") > 0);
+        Assert.IsEmpty(component.FindAll("input[aria-label='Find']"));
+        Assert.IsGreaterThan(0, InvokeCount("BitBlazorUI.RichTextEditor.clearFind"));
     }
 
 
@@ -3062,8 +3057,8 @@ public class BitRichTextEditorTests : BunitTestContext
 
         var combos = (string[])SetupOption(LastSetupOptions(), "ShortcutKeys")!;
 
-        CollectionAssert.Contains(combos, "ctrl+alt+1");
-        CollectionAssert.Contains(combos, "ctrl+alt+0");
+        Assert.Contains("ctrl+alt+1", combos);
+        Assert.Contains("ctrl+alt+0", combos);
     }
 
 
@@ -3283,12 +3278,12 @@ public class BitRichTextEditorTests : BunitTestContext
             SelectionLeft = 40,
             SelectionHeight = 20
         }));
-        Assert.AreEqual(1, component.FindAll(".bit-rte-quick").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rte-quick"));
 
         // The panel and the floating bar occupy the same corner of the editor, so the bar steps
         // aside rather than covering the fields the panel just opened.
         await ButtonByLabel(component, "Insert or edit link").ClickAsync(new());
-        Assert.AreEqual(0, component.FindAll(".bit-rte-quick").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rte-quick"));
     }
 
 
@@ -3301,21 +3296,23 @@ public class BitRichTextEditorTests : BunitTestContext
 
         RenderComponent<BitRichTextEditor>();
         // The typographic input rules rewrite what was typed, so they stay off unless asked for.
-        Assert.AreEqual(false, SetupOption(LastSetupOptions(), "SmartTypography"));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(SetupOption(LastSetupOptions(), "SmartTypography")));
 
         var component = RenderComponent<BitRichTextEditor>(parameters =>
         {
             parameters.Add(p => p.SmartTypography, true);
         });
-        Assert.AreEqual(true, SetupOption(LastSetupOptions(), "SmartTypography"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(SetupOption(LastSetupOptions(), "SmartTypography")));
 
         var pushed = InvokeCount("BitBlazorUI.RichTextEditor.updateOptions");
         component.Render(parameters => parameters.Add(p => p.SmartTypography, false));
-        Assert.IsTrue(InvokeCount("BitBlazorUI.RichTextEditor.updateOptions") > pushed);
+        Assert.IsGreaterThan(pushed, InvokeCount("BitBlazorUI.RichTextEditor.updateOptions"));
     }
 
     private sealed class TestLocalizer(Dictionary<string, string> labels) : IBitRichTextEditorLocalizer
     {
         public string? this[string key] => labels.TryGetValue(key, out var value) ? value : null;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

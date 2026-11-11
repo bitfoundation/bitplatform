@@ -25,7 +25,7 @@ public class DefinitionChangeTests
         // Replaced in the list, as the form's own list of fields draws it - without NotifyDefinitionChanged.
         form.Fields[0] = BormBuilder.Create().Text("name", f => f.OnChange(_ => calls.Add("new"))).Build().Fields[0];
         state.SetValue("name", "b");
-        CollectionAssert.AreEqual(new[] { "old", "new" }, calls);
+        Assert.AreSequenceEqual(new[] { "old", "new" }, calls);
         Assert.AreSame(form.Fields[0], state.FindField("name"));
 
         var city = new BormFieldDefinition("city", BormFieldType.Select);
@@ -72,7 +72,7 @@ public class DefinitionChangeTests
     }
 
     [TestMethod]
-    public void A_removed_field_takes_its_messages_and_flags_with_it_but_not_the_users_other_answers()
+    public async global::System.Threading.Tasks.Task A_removed_field_takes_its_messages_and_flags_with_it_but_not_the_users_other_answers()
     {
         var form = BormBuilder.Create()
             .Text("name", f => f.Required())
@@ -81,8 +81,8 @@ public class DefinitionChangeTests
         var state = new BormState(form, new BormDictionaryDataAccessor());
 
         state.SetValue("name", "Ada");
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
-        Assert.HasCount(1, state.MessagesFor("legacy"));
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
+        Assert.ContainsSingle(state.MessagesFor("legacy"));
 
         form.Fields.Remove(form.FindField("legacy")!);
         state.NotifyDefinitionChanged();
@@ -92,7 +92,7 @@ public class DefinitionChangeTests
         Assert.IsTrue(state.IsValid);
         Assert.AreEqual("Ada", state.GetValue("name"));
         Assert.IsTrue(state.IsDirty("name"));
-        Assert.IsTrue(state.ValidateAsync().AsTask().Result);
+        Assert.IsTrue((await state.ValidateAsync().AsTask()));
     }
 
     [TestMethod]
@@ -111,19 +111,20 @@ public class DefinitionChangeTests
         state.Reset();
         Assert.AreEqual("NL", data["country"]);
     }
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }
 
 [TestClass]
 public class ScaleTests
 {
-    public sealed class Line
+    internal sealed class Line
     {
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public decimal Total { get; set; }
     }
 
-    public sealed class Order
+    internal sealed class Order
     {
         public List<Line> Lines { get; set; } = [];
         public decimal Total { get; set; }
@@ -225,6 +226,6 @@ public class MalformedPathTests : ComponentTestBase
 
         var cut = Render<BormView>(p => p.Add(x => x.State, state).Add(x => x.ShowErrorSummary, true));
 
-        StringAssert.Contains(cut.Markup, "The server did not like this.");
+        Assert.Contains("The server did not like this.", cut.Markup);
     }
 }

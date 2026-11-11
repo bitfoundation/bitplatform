@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Bmotion.Tests.Engine;
@@ -68,7 +68,7 @@ public class CapabilitiesTests
             new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000" },
             Bm.Tween(0.5).ToConfig());
 
-        Assert.IsFalse(logger.Warnings.Any(w => w.Contains("Blazor Server")));
+        Assert.DoesNotContain(w => w.Contains("Blazor Server"), logger.Warnings);
     }
 
     private sealed class ListLogger<T> : ILogger<T>

@@ -1,11 +1,6 @@
 namespace Boilerplate.WorkbenchTests.Infrastructure;
 
-/// <summary>
-/// A reviewer's copy of the review, opened through the relay the way a circuit opens it, from this machine or, with
-/// <c>isLocal</c> false, from a request that came through a tunnel, and with <c>isInvited</c> from a browser an invite
-/// link was opened in.
-/// </summary>
-public sealed class WorkbenchTestReviewer : IAsyncDisposable
+internal sealed class WorkbenchTestReviewer : IAsyncDisposable
 {
     private readonly AsyncServiceScope scope;
 

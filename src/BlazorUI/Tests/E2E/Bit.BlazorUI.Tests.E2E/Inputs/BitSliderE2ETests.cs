@@ -142,10 +142,10 @@ public class BitSliderE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"sld-basic\"");
-        StringAssert.Contains(html, "type=\"range\"");
-        StringAssert.Contains(html, "bit-sld-thb");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"sld-basic\"", html);
+        Assert.Contains("type=\"range\"", html);
+        Assert.Contains("bit-sld-thb", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Route);
         await Expect(Input("sld-basic")).ToBeVisibleAsync();
@@ -181,7 +181,7 @@ public class BitSliderE2ETests : E2ETestBase
         await Expect(root).ToHaveClassAsync(HasClass("bit-sld-err"));
         await Page.ClickAsync("#btn-runtime-size");
         await Expect(root).ToHaveClassAsync(HasClass("bit-sld-lg"));
-        Assert.IsTrue(Px(await CssAsync(Thumb("sld-runtime"), "width")) > Px(thumbBefore));
+        Assert.IsGreaterThan(Px(thumbBefore), Px(await CssAsync(Thumb("sld-runtime"), "width")));
 
         await Page.ClickAsync("#btn-runtime-max");
         await Expect(Input("sld-runtime")).ToHaveAttributeAsync("max", "20");
@@ -233,7 +233,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         await ExpectTextAsync("basic-value", "3");
         await ExpectThumbAtAsync("sld-basic", 0.3);
-        Assert.IsTrue(int.Parse(await Page.Locator("#basic-change-count").InnerTextAsync()) >= 3, "The drag did not report its steps.");
+        Assert.IsGreaterThanOrEqualTo(3, int.Parse(await Page.Locator("#basic-change-count").InnerTextAsync()), "The drag did not report its steps.");
 
         // Dragging past the end holds the value to the end of the scale.
         await DragAsync("sld-basic", 0.3, 1.3);
@@ -309,7 +309,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         await ClickAtAsync("sld-disabled", 0.9);
         await ExpectTextAsync("disabled-value", "9");
-        Assert.IsTrue(int.Parse(await Page.Locator("#disabled-clicks").InnerTextAsync()) >= 1, "The page's handlers did not run once enabled.");
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse(await Page.Locator("#disabled-clicks").InnerTextAsync()), "The page's handlers did not run once enabled.");
     }
 
     [TestMethod]
@@ -435,7 +435,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         // The labels sit under the track.
         var track = await BoxAsync(Root("sld-mark-labels").Locator(".bit-sld-trk"));
-        Assert.IsTrue((await BoxAsync(labels.Nth(0))).Y >= track.Y + track.Height - 1);
+        Assert.IsGreaterThanOrEqualTo(track.Y + track.Height - 1, (await BoxAsync(labels.Nth(0))).Y);
 
         await Expect(Root("sld-mark-step").Locator(".bit-sld-mlb")).ToHaveTextAsync(["$0", "$200", "$400", "$600", "$800", "$1,000"]);
         await Expect(Root("sld-mark-step").Locator(".bit-sld-mrk")).ToHaveCountAsync(6);
@@ -516,7 +516,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         var box = await BoxAsync(root.Locator(".bit-sld-box"));
         Assert.AreEqual(192, box.Height, 1, "The default length is 12rem.");
-        Assert.IsTrue(box.Height > box.Width);
+        Assert.IsGreaterThan(box.Width, box.Height);
 
         await Expect(Fill("sld-vertical")).ToHaveAttributeAsync("style", new Regex("^bottom:0%;height:40%"));
         await ExpectThumbAtAsync("sld-vertical", 0.4, Axis.Vertical);
@@ -558,7 +558,7 @@ public class BitSliderE2ETests : E2ETestBase
         await Expect(ValueLabels("sld-vertical-range").Nth(1)).ToHaveTextAsync("2");
         var top = await BoxAsync(ValueLabels("sld-vertical-range").Nth(0));
         var bottom = await BoxAsync(ValueLabels("sld-vertical-range").Nth(1));
-        Assert.IsTrue(top.Y < bottom.Y);
+        Assert.IsLessThan(bottom.Y, top.Y);
 
         await DragAsync("sld-vertical-range", 0.7, 0.9, Axis.Vertical);
         await ExpectTextAsync("vertical-range-value", "2-9");
@@ -573,7 +573,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         await Expect(Root("sld-vertical-marks").Locator(".bit-sld-mlb")).ToHaveTextAsync(["0", "2", "4", "6", "8", "10"]);
         var labels = Root("sld-vertical-marks").Locator(".bit-sld-mlb");
-        Assert.IsTrue((await BoxAsync(labels.Nth(0))).Y > (await BoxAsync(labels.Nth(5))).Y, "The marks do not run bottom-up.");
+        Assert.IsGreaterThan((await BoxAsync(labels.Nth(5))).Y, (await BoxAsync(labels.Nth(0))).Y, "The marks do not run bottom-up.");
 
         Assert.AreEqual(288, (await BoxAsync(Root("sld-vertical-tall").Locator(".bit-sld-box"))).Height, 1);
     }
@@ -649,7 +649,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         var labelBox = await BoxAsync(label);
         var thumbBox = await BoxAsync(Thumb("sld-tl-on"));
-        Assert.IsTrue(labelBox.Y + labelBox.Height <= thumbBox.Y + 0.5, "The label is not above the thumb.");
+        Assert.IsLessThanOrEqualTo(thumbBox.Y + 0.5, labelBox.Y + labelBox.Height, "The label is not above the thumb.");
         Assert.AreEqual(thumbBox.X + thumbBox.Width / 2, labelBox.X + labelBox.Width / 2, 1.5, "The label is not centred on the thumb.");
 
         await Input("sld-tl-on").FocusAsync();
@@ -896,7 +896,7 @@ public class BitSliderE2ETests : E2ETestBase
         await ExpectTextAsync("change-value", "60");
         await ExpectTextAsync("change-end-count", "1");
         await ExpectTextAsync("change-end-value", "60");
-        Assert.IsTrue(int.Parse(await Page.Locator("#change-count").InnerTextAsync()) > 3, "The drag did not report its steps.");
+        Assert.IsGreaterThan(3, int.Parse(await Page.Locator("#change-count").InnerTextAsync()), "The drag did not report its steps.");
 
         await Page.Keyboard.PressAsync("ArrowRight");
         await ExpectTextAsync("change-value", "61");
@@ -913,7 +913,7 @@ public class BitSliderE2ETests : E2ETestBase
         await ExpectTextAsync("range-change-value", "20-80");
         await ExpectTextAsync("range-change-end-count", "1");
         await ExpectTextAsync("range-change-end-value", "20-80");
-        Assert.IsTrue(int.Parse(await Page.Locator("#range-change-count").InnerTextAsync()) > 3, "The drag did not report its steps.");
+        Assert.IsGreaterThan(3, int.Parse(await Page.Locator("#range-change-count").InnerTextAsync()), "The drag did not report its steps.");
     }
 
     [TestMethod]
@@ -952,7 +952,7 @@ public class BitSliderE2ETests : E2ETestBase
         await Expect(input).ToHaveAttributeAsync("name", "days");
         await Expect(input).ToHaveAttributeAsync("data-input", "days");
         var asterisk = await root.Locator(".bit-sld-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.StartsWith(asterisk, "\"*\"");
+        Assert.StartsWith("\"*\"", asterisk);
 
         await Page.ClickAsync("#sld-form-submit");
 
@@ -1024,7 +1024,7 @@ public class BitSliderE2ETests : E2ETestBase
         // Without a LargeStep the Page keys are the browser's own jump, which is larger than a step.
         await Page.Keyboard.PressAsync("PageDown");
         await Expect(Page.Locator("#keys-value")).Not.ToHaveTextAsync("1000");
-        Assert.IsTrue(double.Parse(await Page.Locator("#keys-value").InnerTextAsync(), CultureInfo.InvariantCulture) < 990);
+        Assert.IsLessThan(990, double.Parse(await Page.Locator("#keys-value").InnerTextAsync(), CultureInfo.InvariantCulture));
     }
 
     [TestMethod]
@@ -1087,7 +1087,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         await Expect(Input("sld-description")).ToHaveAccessibleDescriptionAsync("In thousands of euros.");
         await Expect(Root("sld-description").Locator(".bit-sld-dsc")).ToHaveCSSAsync("position", "absolute");
-        Assert.IsTrue((await BoxAsync(Root("sld-description").Locator(".bit-sld-dsc"))).Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await BoxAsync(Root("sld-description").Locator(".bit-sld-dsc"))).Width);
 
         var labelled = Root("sld-labelled-group");
         await Expect(labelled).ToHaveAccessibleNameAsync("Delivery window");
@@ -1207,7 +1207,7 @@ public class BitSliderE2ETests : E2ETestBase
         }
 
         Assert.AreEqual(unset, colors["pri"], "Unset is not primary.");
-        Assert.IsTrue(colors.Values.Distinct().Count() >= 12, string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
+        Assert.IsGreaterThanOrEqualTo(12, colors.Values.Distinct().Count(), string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
     }
 
     [TestMethod]
@@ -1220,14 +1220,14 @@ public class BitSliderE2ETests : E2ETestBase
         await Expect(Root($"sld-size-{smaller}")).ToHaveClassAsync(HasClass($"bit-sld-{smaller}"));
         await Expect(Root($"sld-size-{larger}")).ToHaveClassAsync(HasClass($"bit-sld-{larger}"));
 
-        Assert.IsTrue((await BoxAsync(Thumb($"sld-size-{larger}"))).Width > (await BoxAsync(Thumb($"sld-size-{smaller}"))).Width, "thumb");
-        Assert.IsTrue(Px(await CssAsync(Fill($"sld-size-{larger}"), "height")) > Px(await CssAsync(Fill($"sld-size-{smaller}"), "height")), "rail");
+        Assert.IsGreaterThan((await BoxAsync(Thumb($"sld-size-{smaller}"))).Width, (await BoxAsync(Thumb($"sld-size-{larger}"))).Width, "thumb");
+        Assert.IsGreaterThan(Px(await CssAsync(Fill($"sld-size-{smaller}"), "height")), Px(await CssAsync(Fill($"sld-size-{larger}"), "height")), "rail");
 
         foreach (var part in new[] { ".bit-sld-lbl", ".bit-sld-vlb", ".bit-sld-mlb", ".bit-sld-tlb" })
         {
             var small = Px(await ComputedStyleAsync($"#sld-size-{smaller} {part}", "font-size"));
             var large = Px(await ComputedStyleAsync($"#sld-size-{larger} {part}", "font-size"));
-            Assert.IsTrue(large > small, $"{part}: {large} is not larger than {small}.");
+            Assert.IsGreaterThan(small, large, $"{part}: {large} is not larger than {small}.");
         }
     }
 
@@ -1238,11 +1238,11 @@ public class BitSliderE2ETests : E2ETestBase
 
         var small = await BoxAsync(Root("sld-size-vsm").Locator(".bit-sld-box"));
         var large = await BoxAsync(Root("sld-size-vlg").Locator(".bit-sld-box"));
-        Assert.IsTrue(large.Height > small.Height);
-        Assert.IsTrue(small.Width >= 23.9, $"{small.Width}");
+        Assert.IsGreaterThan(small.Height, large.Height);
+        Assert.IsGreaterThanOrEqualTo(23.9, small.Width, $"{small.Width}");
 
         var smallBox = await BoxAsync(Root("sld-size-sm").Locator(".bit-sld-box"));
-        Assert.IsTrue(smallBox.Height >= 23.9, $"{smallBox.Height}");
+        Assert.IsGreaterThanOrEqualTo(23.9, smallBox.Height, $"{smallBox.Height}");
     }
 
     // ---------------------------------------------------------------- style & class
@@ -1380,7 +1380,7 @@ public class BitSliderE2ETests : E2ETestBase
         await Expect(tick).ToHaveCSSAsync("background-color", "rgb(25, 26, 27)");
         await Expect(tick).ToHaveCSSAsync("width", "5px");
 
-        StringAssert.StartsWith(await CssAsync(Fill("sld-vars"), "transition-duration"), "0.3s");
+        Assert.StartsWith("0.3s", await CssAsync(Fill("sld-vars"), "transition-duration"));
         Assert.AreEqual(150, (await BoxAsync(Root("sld-vars-vertical").Locator(".bit-sld-box"))).Height, 1);
     }
 
@@ -1486,7 +1486,7 @@ public class BitSliderE2ETests : E2ETestBase
 
         var lower = await BoxAsync(Root("sld-rtl-range").Locator(".bit-sld-thb-lwr"));
         var upper = await BoxAsync(Root("sld-rtl-range").Locator(".bit-sld-thb-upr"));
-        Assert.IsTrue(lower.X > upper.X, "The lower thumb is not on the right.");
+        Assert.IsGreaterThan(upper.X, lower.X, "The lower thumb is not on the right.");
 
         await DragAsync("sld-rtl-range", 0.2, 0.4, Axis.Rtl);
         await ExpectTextAsync("rtl-range-value", "40-60");
@@ -1507,15 +1507,15 @@ public class BitSliderE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        StringAssert.StartsWith(await CssAsync(Fill("sld-motion"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(Fill("sld-motion"), "transition-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         await Expect(Fill("sld-motion")).Not.ToHaveCSSAsync("transition-duration", new Regex("^0\\.1s"));
         var reduced = (await CssAsync(Fill("sld-motion"), "transition-duration")).Split(',')[0].Trim();
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture) < 0.001, reduced);
+        Assert.IsLessThan(0.001, double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture), reduced);
 
         await Expect(Root("sld-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.StartsWith(await CssAsync(Fill("sld-motion-forced"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(Fill("sld-motion-forced"), "transition-duration"));
     }
 }

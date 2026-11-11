@@ -43,14 +43,14 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         });
 
         // The provider is the app's data source: without Preload it is not called before the page is interactive.
-        Assert.AreEqual(0, requests.Count);
+        Assert.IsEmpty(requests);
 
         // The first page is what the list does first once it is interactive, so it is shown as on its way rather
         // than as a blank box.
-        StringAssert.Contains(html, "bit-isc-ldg");
-        StringAssert.Contains(html, "Loading...");
-        Assert.IsFalse(html.Contains("bit-isc-emp"));
-        Assert.IsFalse(html.Contains("bit-isc-btn"));
+        Assert.Contains("bit-isc-ldg", html);
+        Assert.Contains("Loading...", html);
+        Assert.DoesNotContain("bit-isc-emp", html);
+        Assert.DoesNotContain("bit-isc-btn", html);
     }
 
     [TestMethod]
@@ -68,9 +68,9 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         });
 
         // The manual mode fetches its first page by itself too, so the Load more button is not what it shows first.
-        Assert.AreEqual(0, requests.Count);
-        StringAssert.Contains(html, "Fetching the feed;");
-        Assert.IsFalse(html.Contains("bit-isc-btn"));
+        Assert.IsEmpty(requests);
+        Assert.Contains("Fetching the feed;", html);
+        Assert.DoesNotContain("bit-isc-btn", html);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         });
 
         // A disabled list loads nothing, interactive or not, so it is not shown as loading either.
-        Assert.IsFalse(html.Contains("bit-isc-ldg"));
+        Assert.DoesNotContain("bit-isc-ldg", html);
     }
 
     [TestMethod]
@@ -103,11 +103,11 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         });
 
         // Preload is the opt-in for fetching the first page on the server, so its items are in the HTML.
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         Assert.AreEqual(1, Count(html, "Item 0;"));
         Assert.AreEqual(1, Count(html, "Item 9;"));
-        Assert.IsFalse(html.Contains("Item 10;"));
-        Assert.IsFalse(html.Contains("bit-isc-ldg"));
+        Assert.DoesNotContain("Item 10;", html);
+        Assert.DoesNotContain("bit-isc-ldg", html);
     }
 
     [TestMethod]
@@ -124,10 +124,10 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
             [nameof(BitInfiniteScrolling<int>.Manual)] = true,
         });
 
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         Assert.AreEqual(1, Count(html, "Item 0;"));
         // The first page is in, so the button for the next one is too.
-        StringAssert.Contains(html, "bit-isc-btn");
+        Assert.Contains("bit-isc-btn", html);
     }
 
     [TestMethod]
@@ -144,8 +144,8 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
             parameters.Add(p => p.PageSize, 10);
         });
 
-        Assert.AreEqual(0, requests.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-isc-ldg").Count);
+        Assert.IsEmpty(requests);
+        Assert.IsEmpty(component.FindAll(".bit-isc-ldg"));
     }
 
     [TestMethod]
@@ -171,12 +171,12 @@ public class BitInfiniteScrollingPrerenderTests : BunitTestContext
         // The preload is still running when the first render's own first page would be fetched, and the observer may
         // fire meanwhile too: neither asks for it a second time.
         _ = component.InvokeAsync(() => component.Instance._LoadMoreItems());
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
 
         component.InvokeAsync(pending.SetResult);
 
-        component.WaitForAssertion(() => Assert.AreEqual(10, component.Instance.Items.Count));
-        Assert.AreEqual(1, requests.Count);
+        component.WaitForAssertion(() => Assert.HasCount(10, component.Instance.Items));
+        Assert.ContainsSingle(requests);
         Assert.AreEqual(1, Count(component.Markup, "Item 0;"));
     }
 }

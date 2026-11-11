@@ -1,8 +1,8 @@
-namespace Bit.Blex.Tests;
+﻿namespace Bit.Blex.Tests;
 
 /// <summary>The classic mistake, both ways: a list mutated in place, and one replaced.</summary>
 [BlexStoreAttribute(Name = "basket")]
-public partial class BasketStore
+internal partial class BasketStore
 {
     [BlexStateAttribute] private List<string> _items = [];
     [BlexStateAttribute] private int _version;
@@ -111,18 +111,18 @@ public class WhenAsyncTests
         var counter = new CounterStore();
         manager.Register(counter);
 
-        var when = manager.WhenAsync(() => counter.Count >= 2);
+        var when = manager.WhenAsync(() => counter.Count >= 2, TestContext.CancellationToken);
         counter.Increment();
         Assert.IsFalse(when.IsCompleted);
 
         counter.Increment();
-        await when.WaitAsync(TimeSpan.FromSeconds(5));
+        await when.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsFalse(manager.HasObservers, "the waiter lets go of the pipeline once done");
     }
 
     [TestMethod]
     public void It_completes_at_once_when_the_condition_already_holds()
-        => Assert.IsTrue(new BlexManager().WhenAsync(() => true).IsCompletedSuccessfully);
+        => Assert.IsTrue(new BlexManager().WhenAsync(() => true, TestContext.CancellationToken).IsCompletedSuccessfully);
 
     [TestMethod]
     public async Task It_sees_an_effect_finish()
@@ -132,10 +132,10 @@ public class WhenAsyncTests
         manager.Register(store);
         var run = store.Slow();
 
-        var settled = manager.WhenAsync(() => !store.SlowIsLoading);
+        var settled = manager.WhenAsync(() => !store.SlowIsLoading, TestContext.CancellationToken);
         store.Gate.SetResult();
 
-        await settled.WaitAsync(TimeSpan.FromSeconds(5));
+        await settled.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await run;
     }
 
@@ -149,10 +149,10 @@ public class WhenAsyncTests
         var snapshot = manager.CaptureGlobalState();
         counter.Reset();
 
-        var restored = manager.WhenAsync(() => counter.Count == 5);
+        var restored = manager.WhenAsync(() => counter.Count == 5, TestContext.CancellationToken);
         manager.RestoreGlobalState(snapshot);
 
-        await restored.WaitAsync(TimeSpan.FromSeconds(5));
+        await restored.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -176,10 +176,12 @@ public class WhenAsyncTests
         var counter = new CounterStore();
         manager.Register(counter);
 
-        var when = manager.WhenAsync(() => counter.Count > 0 ? throw new InvalidOperationException("bad") : false);
+        var when = manager.WhenAsync(() => counter.Count > 0 ? throw new InvalidOperationException("bad") : false, TestContext.CancellationToken);
         counter.Increment();
 
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => when);
         Assert.AreEqual("bad", error.Message);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

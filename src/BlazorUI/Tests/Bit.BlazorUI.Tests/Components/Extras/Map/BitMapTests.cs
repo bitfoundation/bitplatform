@@ -82,7 +82,7 @@ public class BitMapTests : BunitTestContext
             .Where(i => i.Identifier == INIT)
             .ToList();
 
-        Assert.AreEqual(1, initCalls.Count);
+        Assert.ContainsSingle(initCalls);
     }
 
     [TestMethod]
@@ -100,10 +100,10 @@ public class BitMapTests : BunitTestContext
         var scriptIndex = allCalls.IndexOf(INIT_SCRIPTS);
         var initIndex = allCalls.IndexOf(INIT);
 
-        Assert.IsTrue(stylesheetIndex >= 0, "Stylesheets should be loaded");
-        Assert.IsTrue(scriptIndex >= 0, "Scripts should be loaded");
-        Assert.IsTrue(initIndex > stylesheetIndex, "Init should come after stylesheets");
-        Assert.IsTrue(initIndex > scriptIndex, "Init should come after scripts");
+        Assert.IsGreaterThanOrEqualTo(0, stylesheetIndex, "Stylesheets should be loaded");
+        Assert.IsGreaterThanOrEqualTo(0, scriptIndex, "Scripts should be loaded");
+        Assert.IsGreaterThan(stylesheetIndex, initIndex, "Init should come after stylesheets");
+        Assert.IsGreaterThan(scriptIndex, initIndex, "Init should come after scripts");
     }
 
     [TestMethod]
@@ -121,8 +121,8 @@ public class BitMapTests : BunitTestContext
         var firstStylesheetCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_STYLESHEETS);
         var firstScriptCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == INIT_SCRIPTS);
 
-        Assert.IsTrue(firstStylesheetCalls >= 1, "First mount should request stylesheets");
-        Assert.IsTrue(firstScriptCalls >= 1, "First mount should request scripts");
+        Assert.IsGreaterThanOrEqualTo(1, firstStylesheetCalls, "First mount should request stylesheets");
+        Assert.IsGreaterThanOrEqualTo(1, firstScriptCalls, "First mount should request scripts");
 
         RenderComponent<BitMap<BitLeafletMapProvider>>();
 
@@ -189,7 +189,7 @@ public class BitMapTests : BunitTestContext
             .Where(i => i.Identifier == SYNC)
             .ToList();
 
-        Assert.AreEqual(1, syncCalls.Count, "Sync should be called once when provider options change");
+        Assert.ContainsSingle(syncCalls, "Sync should be called once when provider options change");
     }
 
     [TestMethod]
@@ -235,7 +235,7 @@ public class BitMapTests : BunitTestContext
             .Where(i => i.Identifier == DISPOSE)
             .ToList();
 
-        Assert.AreEqual(1, disposeCalls.Count, "JS dispose should be called during component disposal");
+        Assert.ContainsSingle(disposeCalls, "JS dispose should be called during component disposal");
     }
 
     [TestMethod]
@@ -268,7 +268,7 @@ public class BitMapTests : BunitTestContext
             .Where(i => i.Identifier == INIT)
             .ToList();
 
-        Assert.AreEqual(1, initCalls.Count);
+        Assert.ContainsSingle(initCalls);
     }
 
     [TestMethod]
@@ -293,8 +293,8 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Provider, new TestMapProviderA());
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_INIT),
-            "Provider A should be initialized on first render");
+        Assert.ContainsSingle(i => i.Identifier == A_INIT,
+Context.JSInterop.Invocations, "Provider A should be initialized on first render");
 
         // Swap to a derived provider with a different JsObjectName
         component.Render(parameters =>
@@ -302,10 +302,10 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Provider, new TestMapProviderB());
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_DISPOSE),
-            "Provider A should be disposed when JsObjectName changes");
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == B_INIT),
-            "Provider B should be initialized when JsObjectName changes");
+        Assert.ContainsSingle(i => i.Identifier == A_DISPOSE,
+Context.JSInterop.Invocations, "Provider A should be disposed when JsObjectName changes");
+        Assert.ContainsSingle(i => i.Identifier == B_INIT,
+Context.JSInterop.Invocations, "Provider B should be initialized when JsObjectName changes");
     }
 
     [TestMethod]
@@ -337,7 +337,7 @@ public class BitMapTests : BunitTestContext
         var addMarkerTask = component.Instance.AddMarker(new BitMapMarker { Id = "x", Position = new(0, 0) });
         Assert.IsTrue(addMarkerTask.IsCompleted);
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == A_ADD_MARKER));
+        Assert.ContainsSingle(i => i.Identifier == A_ADD_MARKER, Context.JSInterop.Invocations);
 
         // Swap to provider B - the marker should be re-applied via B's JS object.
         component.Render(parameters =>
@@ -345,8 +345,8 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Provider, new TestMapProviderB());
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == B_ADD_MARKER),
-            "Imperatively-added marker must be replayed on the new provider");
+        Assert.ContainsSingle(i => i.Identifier == B_ADD_MARKER,
+Context.JSInterop.Invocations, "Imperatively-added marker must be replayed on the new provider");
     }
 
     [TestMethod]
@@ -447,7 +447,7 @@ public class BitMapTests : BunitTestContext
             .Where(i => i.Identifier == DISPOSE)
             .ToList();
 
-        Assert.AreEqual(1, disposeCalls.Count);
+        Assert.ContainsSingle(disposeCalls);
     }
 
 
@@ -467,8 +467,8 @@ public class BitMapTests : BunitTestContext
                 Microsoft.AspNetCore.Components.EventCallback.Factory.Create<BitMapLoadState>(this, s => states.Add(s)));
         });
 
-        CollectionAssert.Contains(states, BitMapLoadState.Loading);
-        CollectionAssert.Contains(states, BitMapLoadState.Ready);
+        Assert.Contains(BitMapLoadState.Loading, states);
+        Assert.Contains(BitMapLoadState.Ready, states);
         Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState);
         Assert.IsNull(component.Instance.LoadError);
     }
@@ -504,7 +504,7 @@ public class BitMapTests : BunitTestContext
         var component = RenderComponent<BitMap<WebGlTestProvider>>();
 
         Assert.AreEqual(BitMapLoadState.Ready, component.Instance.LoadState);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.WebGlTestProvider.init"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.WebGlTestProvider.init", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -599,7 +599,7 @@ public class BitMapTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsReady);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == INIT),
             "The map must not be initialized when its library failed to load");
-        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.ScriptLoad));
+        Assert.Contains(e => e.Source == BitMapInteropErrorSource.ScriptLoad, errors);
     }
 
     [TestMethod]
@@ -619,9 +619,9 @@ public class BitMapTests : BunitTestContext
         var options = (Dictionary<string, object?>)attach.Arguments[4]!;
 
         Assert.AreEqual("BitMapLeaflet", options["jsObjectName"]);
-        Assert.AreEqual(false, options["autoResize"]);
-        Assert.AreEqual(true, options["cooperativeGestures"]);
-        Assert.AreEqual(false, options["escapeToExit"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["autoResize"]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(options["cooperativeGestures"]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["escapeToExit"]));
         Assert.AreEqual("ctrl + scroll", options["wheelHint"]);
         Assert.IsNotNull(options["hintId"], "The hint element id must be sent when cooperative gestures are on");
     }
@@ -636,7 +636,7 @@ public class BitMapTests : BunitTestContext
         var attach = Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH);
         var options = (Dictionary<string, object?>)attach.Arguments[4]!;
 
-        Assert.AreEqual(false, options["cooperativeGestures"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["cooperativeGestures"]));
         Assert.IsNull(options["hintId"]);
     }
 
@@ -650,8 +650,8 @@ public class BitMapTests : BunitTestContext
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
 
         var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
-        Assert.AreEqual(true, options["keyboardNavigation"]);
-        Assert.AreEqual(true, options["respectReducedMotion"]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(options["keyboardNavigation"]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(options["respectReducedMotion"]));
 
         component.Render(parameters =>
         {
@@ -660,10 +660,10 @@ public class BitMapTests : BunitTestContext
         });
 
         var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
-        Assert.AreEqual(2, attaches.Count, "A change to either setting re-attaches the chrome");
+        Assert.HasCount(2, attaches, "A change to either setting re-attaches the chrome");
         options = (Dictionary<string, object?>)attaches[1].Arguments[4]!;
-        Assert.AreEqual(false, options["keyboardNavigation"]);
-        Assert.AreEqual(false, options["respectReducedMotion"], "ForceAnimation opts the keyboard moves back into animating");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["keyboardNavigation"]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["respectReducedMotion"]), "ForceAnimation opts the keyboard moves back into animating");
     }
 
     // The popup's auto-pan favours its start edge when it cannot fit, so the chrome is handed the direction Dir names and
@@ -681,13 +681,13 @@ public class BitMapTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Rtl));
 
         var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
-        Assert.AreEqual(2, attaches.Count, "A change of Dir re-attaches the chrome");
-        Assert.AreEqual(true, ((Dictionary<string, object?>)attaches[1].Arguments[4]!)["explicitRtl"]);
+        Assert.HasCount(2, attaches, "A change of Dir re-attaches the chrome");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(((Dictionary<string, object?>)attaches[1].Arguments[4]!)["explicitRtl"]));
 
         component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Auto));
 
         attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
-        Assert.AreEqual(3, attaches.Count);
+        Assert.HasCount(3, attaches);
         Assert.IsNull(((Dictionary<string, object?>)attaches[2].Arguments[4]!)["explicitRtl"], "Auto takes the direction of the content");
     }
 
@@ -701,13 +701,13 @@ public class BitMapTests : BunitTestContext
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
 
         var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
-        Assert.AreEqual(false, options["overlay"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["overlay"]));
 
         component.Render(parameters => parameters.AddChildContent("<div>legend</div>"));
 
         var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
-        Assert.AreEqual(2, attaches.Count, "An overlay coming re-attaches the chrome");
-        Assert.AreEqual(true, ((Dictionary<string, object?>)attaches[1].Arguments[4]!)["overlay"]);
+        Assert.HasCount(2, attaches, "An overlay coming re-attaches the chrome");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(((Dictionary<string, object?>)attaches[1].Arguments[4]!)["overlay"]));
     }
 
     // Attaching the chrome again drops the anchor of an open popup with the rest of its state, so the popup is
@@ -731,12 +731,11 @@ public class BitMapTests : BunitTestContext
 
         var invocations = Context.JSInterop.Invocations.ToList();
         var anchors = invocations.Where(i => i.Identifier == TRACK_ANCHOR).ToList();
-        Assert.AreEqual(anchorsBefore + 1, anchors.Count, "The open popup is anchored again");
-        Assert.IsTrue(invocations.IndexOf(anchors[^1]) > invocations.FindLastIndex(i => i.Identifier == CHROME_ATTACH),
-                      "Anchored after the attach that dropped it");
+        Assert.HasCount(anchorsBefore + 1, anchors, "The open popup is anchored again");
+        Assert.IsGreaterThan(invocations.FindLastIndex(i => i.Identifier == CHROME_ATTACH), invocations.IndexOf(anchors[^1]), "Anchored after the attach that dropped it");
         Assert.AreEqual(50.45, anchors[^1].Arguments[2]);
         Assert.AreEqual(30.52, anchors[^1].Arguments[3]);
-        Assert.AreEqual(false, anchors[^1].Arguments[4], "A re-attach does not pan the map to the popup");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(anchors[^1].Arguments[4]), "A re-attach does not pan the map to the popup");
     }
 
     [TestMethod]
@@ -779,9 +778,8 @@ public class BitMapTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
-        Assert.AreEqual(1, identifiers.Count(i => i == CHROME_DETACH));
-        Assert.IsTrue(identifiers.LastIndexOf(CHROME_DETACH) < identifiers.LastIndexOf(DISPOSE),
-            "The chrome must be detached before the provider disposes the map");
+        Assert.ContainsSingle(i => i == CHROME_DETACH, identifiers);
+        Assert.IsLessThan(identifiers.LastIndexOf(DISPOSE), identifiers.LastIndexOf(CHROME_DETACH), "The chrome must be detached before the provider disposes the map");
     }
 
     [TestMethod]
@@ -800,7 +798,7 @@ public class BitMapTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        component.WaitForAssertion(() => Assert.HasCount(1, dispose.Invocations));
+        component.WaitForAssertion(() => Assert.ContainsSingle(dispose.Invocations));
         Assert.AreSame(map, reference.Value);
 
         dispose.SetVoidResult();
@@ -833,7 +831,7 @@ public class BitMapTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        component.WaitForAssertion(() => Assert.HasCount(1, dispose.Invocations));
+        component.WaitForAssertion(() => Assert.ContainsSingle(dispose.Invocations));
 
         await component.InvokeAsync(() => map._OnViewChanged(ViewPayload(51.5, -0.12, 13)));
         await component.InvokeAsync(() => map._OnFullscreenChanged(true));
@@ -862,8 +860,8 @@ public class BitMapTests : BunitTestContext
 
         var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
         var waitIndex = identifiers.IndexOf(CHROME_WAIT_VISIBLE);
-        Assert.IsTrue(waitIndex >= 0, "LazyLoad must wait for the container to become visible");
-        Assert.IsTrue(waitIndex < identifiers.IndexOf(INIT), "The map must not be created before it is visible");
+        Assert.IsGreaterThanOrEqualTo(0, waitIndex, "LazyLoad must wait for the container to become visible");
+        Assert.IsLessThan(identifiers.IndexOf(INIT), waitIndex, "The map must not be created before it is visible");
 
         var wait = Context.JSInterop.Invocations.First(i => i.Identifier == CHROME_WAIT_VISIBLE);
         Assert.AreEqual("400px", wait.Arguments[2]);
@@ -900,14 +898,11 @@ public class BitMapTests : BunitTestContext
 
         var scriptCalls = Context.JSInterop.Invocations.Where(i => i.Identifier == INIT_SCRIPTS).ToList();
 
-        Assert.AreEqual(2, scriptCalls.Count, "Each provider type must request its scripts");
-        CollectionAssert.AreEqual(
-            new[] { "https://cdn.example.com/shared-map.js" },
-            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray());
-        CollectionAssert.AreEqual(
-            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray(),
-            ((IEnumerable<string>)scriptCalls[1].Arguments[0]!).ToArray(),
-            "Both must ask under the same URL, which is the key the JS side dedupes on");
+        Assert.HasCount(2, scriptCalls, "Each provider type must request its scripts");
+        Assert.AreSequenceEqual(
+            new[] { "https://cdn.example.com/shared-map.js" }, ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray());
+        Assert.AreSequenceEqual(
+            ((IEnumerable<string>)scriptCalls[0].Arguments[0]!).ToArray(), ((IEnumerable<string>)scriptCalls[1].Arguments[0]!).ToArray(), "Both must ask under the same URL, which is the key the JS side dedupes on");
     }
 
     [TestMethod]
@@ -952,10 +947,10 @@ public class BitMapTests : BunitTestContext
         SetupSuccessfulMount();
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
-        Assert.AreEqual(0, component.FindAll(".bit-map-gesture-hint").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-gesture-hint"));
 
         component.Render(parameters => parameters.Add(p => p.CooperativeGestures, true));
-        Assert.AreEqual(1, component.FindAll(".bit-map-gesture-hint").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-map-gesture-hint"));
         Assert.AreEqual("true", component.Find(".bit-map-gesture-hint").GetAttribute("aria-hidden"),
             "The hint duplicates what the keyboard instructions already say, so it stays out of the a11y tree");
     }
@@ -972,7 +967,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.ZoomOut(2);
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == ZOOM_BY).ToList();
-        Assert.AreEqual(2, calls.Count);
+        Assert.HasCount(2, calls);
         Assert.AreEqual(1d, calls[0].Arguments[1]);
         Assert.AreEqual(-2d, calls[1].Arguments[1]);
     }
@@ -1008,7 +1003,7 @@ public class BitMapTests : BunitTestContext
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
         var call = Context.JSInterop.Invocations.Single(i => i.Identifier == SET_VIEW);
-        Assert.AreEqual(false, call.Arguments[4], "The jump must not animate");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(call.Arguments[4]), "The jump must not animate");
     }
 
     [TestMethod]
@@ -1022,7 +1017,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.FlyTo(new(10, 20), 8, essential: true);
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+        Assert.ContainsSingle(i => i.Identifier == FLY_TO, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1035,7 +1030,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.FlyTo(new(10, 20), 8);
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+        Assert.ContainsSingle(i => i.Identifier == FLY_TO, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1054,7 +1049,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(48.8566, result.Position.Latitude);
         Assert.AreEqual(2.3522, result.Position.Longitude);
         Assert.AreEqual(25d, result.AccuracyMeters);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == SET_VIEW));
+        Assert.ContainsSingle(i => i.Identifier == SET_VIEW, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1095,7 +1090,7 @@ public class BitMapTests : BunitTestContext
 
         Assert.AreEqual("Head office", payload["alt"]);
         Assert.AreEqual(0.5d, payload["opacity"]);
-        Assert.AreEqual(true, payload["riseOnHover"]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(payload["riseOnHover"]));
     }
 
     [TestMethod]
@@ -1122,7 +1117,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual("3", style["dashOffset"]);
         Assert.AreEqual("square", style["lineCap"]);
         Assert.AreEqual("bevel", style["lineJoin"]);
-        Assert.AreEqual(false, style["fill"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(style["fill"]));
     }
 
     // A color is handed to the script as written - a theme variable included - and resolved there, on the map's probe;
@@ -1180,8 +1175,8 @@ public class BitMapTests : BunitTestContext
         var polylines = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE).Skip(polylinesBefore)
             .Select(i => (string)i.Arguments[1]!).ToList();
 
-        CollectionAssert.AreEquivalent(new[] { "themed", "variable" }, markers);
-        CollectionAssert.AreEquivalent(new[] { "themed", "weighted", "fill" }, polylines);
+        Assert.AreSequenceEqual(new[] { "themed", "variable" }, markers, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "themed", "weighted", "fill" }, polylines, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1212,12 +1207,12 @@ public class BitMapTests : BunitTestContext
             UrlTemplate = "https://example.com/{z}/{x}/{y}.png",
         });
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
-        CollectionAssert.AreEqual(new[] { "route" }, component.Instance.LayerIds.ToArray());
-        CollectionAssert.AreEqual(new[] { "labels" }, component.Instance.TileOverlayIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "route" }, component.Instance.LayerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "labels" }, component.Instance.TileOverlayIds.ToArray());
 
         await component.Instance.RemoveMarker("a");
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.MarkerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.MarkerIds.ToArray());
     }
 
     [TestMethod]
@@ -1321,7 +1316,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(48.8566, call.Arguments[1]);
         Assert.AreEqual(2.3522, call.Arguments[2]);
         Assert.AreEqual(9d, call.Arguments[3]);
-        Assert.AreEqual(false, call.Arguments[4], "A bound camera jumps rather than animating");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(call.Arguments[4]), "A bound camera jumps rather than animating");
     }
 
     [TestMethod]
@@ -1339,7 +1334,7 @@ public class BitMapTests : BunitTestContext
         component.Render(parameters => parameters.Bind(p => p.Center, new BitMapLatLng(10, 20), _ => { }));
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == SET_VIEW).ToList();
-        Assert.AreEqual(before + 1, calls.Count);
+        Assert.HasCount(before + 1, calls);
         Assert.AreEqual(10d, calls[^1].Arguments[1]);
         Assert.AreEqual(20d, calls[^1].Arguments[2]);
     }
@@ -1443,7 +1438,7 @@ public class BitMapTests : BunitTestContext
             ]);
         });
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
     }
 
     [TestMethod]
@@ -1465,7 +1460,7 @@ public class BitMapTests : BunitTestContext
         });
 
         // The first application of a collection is itself a wholesale change, so it batches.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS));
+        Assert.ContainsSingle(i => i.Identifier == SYNC_MARKERS, Context.JSInterop.Invocations);
 
         var before = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_MARKER);
         var syncsBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS);
@@ -1483,7 +1478,7 @@ public class BitMapTests : BunitTestContext
         });
 
         var added = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER).Skip(before).ToList();
-        Assert.AreEqual(1, added.Count, "Only the moved marker should be re-sent");
+        Assert.ContainsSingle(added, "Only the moved marker should be re-sent");
         Assert.AreEqual("b", added[0].Arguments[1]);
         Assert.AreEqual(syncsBefore, Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS),
             "A single moved marker is not enough to justify replacing the whole set");
@@ -1515,8 +1510,8 @@ public class BitMapTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_MARKER));
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, component.Instance.MarkerIds.ToArray());
+        Assert.ContainsSingle(i => i.Identifier == REMOVE_MARKER, Context.JSInterop.Invocations);
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, component.Instance.MarkerIds.ToArray());
     }
 
     [TestMethod]
@@ -1550,7 +1545,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(syncsBefore + 1, Context.JSInterop.Invocations.Count(i => i.Identifier == SYNC_MARKERS));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_MARKER),
             "A wholesale replacement is one batched call, not three removes plus three adds");
-        CollectionAssert.AreEqual(new[] { "x", "y", "z" }, component.Instance.MarkerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "x", "y", "z" }, component.Instance.MarkerIds.ToArray());
     }
 
     [TestMethod]
@@ -1597,9 +1592,8 @@ public class BitMapTests : BunitTestContext
         await component.Instance.AddMarker(new BitMapMarker { Id = "b", Position = new(1, 1), Focusable = false });
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_MARKER).ToList();
-        Assert.AreEqual(true, ((Dictionary<string, object?>)calls[0].Arguments[2]!)["focusable"],
-            "Markers are keyboard-reachable by default");
-        Assert.AreEqual(false, ((Dictionary<string, object?>)calls[1].Arguments[2]!)["focusable"]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(((Dictionary<string, object?>)calls[0].Arguments[2]!)["focusable"]), "Markers are keyboard-reachable by default");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(((Dictionary<string, object?>)calls[1].Arguments[2]!)["focusable"]));
     }
 
     [TestMethod]
@@ -1641,7 +1635,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(12d, options["maxZoom"]);
         Assert.AreEqual(5, options["minPoints"]);
         Assert.AreEqual("#ff0000", options["color"]);
-        Assert.AreEqual(false, options["cullOffscreen"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["cullOffscreen"]));
     }
 
     [TestMethod]
@@ -1664,8 +1658,8 @@ public class BitMapTests : BunitTestContext
 
         var pushes = Context.JSInterop.Invocations.Where(i => i.Identifier == CLUSTER_SET_MARKERS).ToList();
         var lastIds = (string[])pushes[^1].Arguments[1]!;
-        CollectionAssert.AreEqual(new[] { "a", "b" }, lastIds);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, lastIds);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
     }
 
     [TestMethod]
@@ -1684,7 +1678,7 @@ public class BitMapTests : BunitTestContext
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_MARKER));
         var pushes = Context.JSInterop.Invocations.Where(i => i.Identifier == CLUSTER_SET_MARKERS).ToList();
-        CollectionAssert.AreEqual(new[] { "b" }, (string[])pushes[^1].Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "b" }, (string[])pushes[^1].Arguments[1]!);
     }
 
     [TestMethod]
@@ -1709,10 +1703,10 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerClick(CLUSTER_ID);
 
-        Assert.AreEqual(0, markerClicks.Count);
-        Assert.AreEqual(1, clusterClicks.Count);
+        Assert.IsEmpty(markerClicks);
+        Assert.ContainsSingle(clusterClicks);
         Assert.AreEqual(CLUSTER_ID, clusterClicks[0].ClusterId);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
+        Assert.ContainsSingle(i => i.Identifier == CLUSTER_EXPAND, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1731,7 +1725,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerClick("a");
 
-        CollectionAssert.AreEqual(new[] { "a" }, markerClicks);
+        Assert.AreSequenceEqual(new[] { "a" }, markerClicks);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
     }
 
@@ -1750,7 +1744,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerDoubleClick("a");
 
-        CollectionAssert.AreEqual(new[] { "a" }, doubleClicks);
+        Assert.AreSequenceEqual(new[] { "a" }, doubleClicks);
     }
 
     [TestMethod]
@@ -1774,7 +1768,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerDoubleClick(CLUSTER_ID);
 
-        Assert.AreEqual(0, doubleClicks.Count);
+        Assert.IsEmpty(doubleClicks);
         Assert.AreEqual(0, clusterClicks);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_EXPAND));
     }
@@ -1798,8 +1792,8 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerDoubleClick("a");
 
-        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.Callback
-                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.OnMarkerDoubleClick)));
+        Assert.Contains(e => e.Source == BitMapInteropErrorSource.Callback
+                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.OnMarkerDoubleClick), errors);
     }
 
     private const string LEAFLET_SET_MARKER_DOUBLE_CLICK = "BitBlazorUI.BitMapLeaflet.setMarkerDoubleClick";
@@ -1819,8 +1813,8 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.OnMarkerDoubleClick, Microsoft.AspNetCore.Components.EventCallback.Factory.Create<string>(this, _ => { }));
         });
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == LEAFLET_SET_MARKER_DOUBLE_CLICK).ToList();
-        Assert.AreEqual(1, calls.Count);
-        Assert.AreEqual(true, calls[0].Arguments[1]);
+        Assert.ContainsSingle(calls);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(calls[0].Arguments[1]));
     }
 
     [TestMethod]
@@ -1838,9 +1832,9 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.OnMarkerDoubleClick, default(Microsoft.AspNetCore.Components.EventCallback<string>)));
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == LEAFLET_SET_MARKER_DOUBLE_CLICK).ToList();
-        Assert.AreEqual(2, calls.Count);
-        Assert.AreEqual(true, calls[0].Arguments[1]);
-        Assert.AreEqual(false, calls[1].Arguments[1]);
+        Assert.HasCount(2, calls);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(calls[0].Arguments[1]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(calls[1].Arguments[1]));
     }
 
     [TestMethod]
@@ -1857,10 +1851,10 @@ public class BitMapTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Provider, new TestMapProviderB()));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.TestProviderA.setMarkerDoubleClick"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.TestProviderA.setMarkerDoubleClick", Context.JSInterop.Invocations);
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.TestProviderB.setMarkerDoubleClick").ToList();
-        Assert.AreEqual(1, calls.Count);
-        Assert.AreEqual(true, calls[0].Arguments[1]);
+        Assert.ContainsSingle(calls);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(calls[0].Arguments[1]));
     }
 
     // BitMap calls a provider's script through the JsObjectName the provider names (BitMapJsRuntimeExtensions), which
@@ -1903,7 +1897,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance._OnMarkerClick(CLUSTER_ID);
 
         var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
-        Assert.AreEqual(false, expand.Arguments[3]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(expand.Arguments[3]));
     }
 
     [TestMethod]
@@ -1920,8 +1914,8 @@ public class BitMapTests : BunitTestContext
 
         var expand = Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND);
         Assert.AreEqual(24, expand.Arguments[2]);
-        Assert.AreEqual(true, expand.Arguments[3]);
-        Assert.AreEqual(true, expand.Arguments[4], "Without a reduced-motion preference the zoom into a bubble animates.");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(expand.Arguments[3]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(expand.Arguments[4]), "Without a reduced-motion preference the zoom into a bubble animates.");
     }
 
     [TestMethod]
@@ -1937,7 +1931,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerClick(CLUSTER_ID);
 
-        Assert.AreEqual(false, Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND).Arguments[4]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations.Single(i => i.Identifier == CLUSTER_EXPAND).Arguments[4]));
     }
 
     [TestMethod]
@@ -1977,7 +1971,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnViewChanged(ViewPayload(10, 20, 8));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_RENDER));
+        Assert.ContainsSingle(i => i.Identifier == CLUSTER_RENDER, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2004,7 +1998,7 @@ public class BitMapTests : BunitTestContext
 
         component.Render(parameters => parameters.Add<BitMapClustering?>(p => p.Clustering, null));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISABLE));
+        Assert.ContainsSingle(i => i.Identifier == CLUSTER_DISABLE, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2024,7 +2018,7 @@ public class BitMapTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Provider, new TestMapProviderB()));
 
         var configures = Context.JSInterop.Invocations.Where(i => i.Identifier == CLUSTER_CONFIGURE).ToList();
-        Assert.AreEqual(2, configures.Count);
+        Assert.HasCount(2, configures);
         Assert.AreEqual("TestProviderA", configures[0].Arguments[1]);
         Assert.AreEqual("TestProviderB", configures[1].Arguments[1]);
     }
@@ -2044,7 +2038,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISCARD));
+        Assert.ContainsSingle(i => i.Identifier == CLUSTER_DISCARD, Context.JSInterop.Invocations);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == CLUSTER_DISABLE));
     }
 
@@ -2061,10 +2055,9 @@ public class BitMapTests : BunitTestContext
         Assert.IsTrue(component.Instance.IsLayerVisible("route"));
 
         await component.Instance.SetLayerVisible("route", false);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_LAYER));
+        Assert.ContainsSingle(i => i.Identifier == REMOVE_LAYER, Context.JSInterop.Invocations);
         Assert.IsFalse(component.Instance.IsLayerVisible("route"));
-        CollectionAssert.Contains(component.Instance.LayerIds.ToArray(), "route",
-            "A hidden layer is still part of the map's definition");
+        Assert.Contains("route", component.Instance.LayerIds.ToArray(), "A hidden layer is still part of the map's definition");
 
         var addsBefore = Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_POLYLINE);
         await component.Instance.SetLayerVisible("route", true);
@@ -2084,8 +2077,8 @@ public class BitMapTests : BunitTestContext
         await component.Instance.SetLayerVisible("route", true);
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_LAYER));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == ADD_POLYLINE),
-            "Showing an already-visible layer must not redraw it");
+        Assert.ContainsSingle(i => i.Identifier == ADD_POLYLINE,
+Context.JSInterop.Invocations, "Showing an already-visible layer must not redraw it");
     }
 
     [TestMethod]
@@ -2099,10 +2092,10 @@ public class BitMapTests : BunitTestContext
         await component.Instance.SetLayerStyle("route", new BitMapVectorPathStyle { Color = "#ff0000", Weight = 8 });
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == ADD_POLYLINE).ToList();
-        Assert.AreEqual(2, calls.Count);
+        Assert.HasCount(2, calls);
 
         var path = (object[])calls[^1].Arguments[2]!;
-        Assert.AreEqual(2, path.Length, "The geometry has to survive a restyle");
+        Assert.HasCount(2, path, "The geometry has to survive a restyle");
 
         var style = (Dictionary<string, object?>)calls[^1].Arguments[3]!;
         Assert.AreEqual("#ff0000", style["color"]);
@@ -2168,7 +2161,7 @@ public class BitMapTests : BunitTestContext
             .Select(i => (string)i.Arguments[1]!)
             .ToList();
 
-        CollectionAssert.AreEqual(new[] { "visible" }, replayed);
+        Assert.AreSequenceEqual(new[] { "visible" }, replayed);
     }
 
     [TestMethod]
@@ -2184,7 +2177,7 @@ public class BitMapTests : BunitTestContext
         });
 
         await component.Instance.SetTileOverlayVisible("labels", false);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY));
+        Assert.ContainsSingle(i => i.Identifier == REMOVE_TILE_OVERLAY, Context.JSInterop.Invocations);
         Assert.IsFalse(component.Instance.IsTileOverlayVisible("labels"));
 
         await component.Instance.SetTileOverlayVisible("labels", true);
@@ -2270,7 +2263,7 @@ public class BitMapTests : BunitTestContext
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
 
         Assert.IsTrue(await component.Instance.RequestFullscreen());
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == REQUEST_FULLSCREEN));
+        Assert.ContainsSingle(i => i.Identifier == REQUEST_FULLSCREEN, Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2296,7 +2289,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance._OnFullscreenChanged(false);
         Assert.IsFalse(component.Instance.IsFullscreen);
 
-        CollectionAssert.AreEqual(new[] { true, false }, reported);
+        Assert.AreSequenceEqual(new[] { true, false }, reported);
     }
 
     [TestMethod]
@@ -2318,11 +2311,11 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual("Our offices", component.Find(".bit-map-marker-table caption").TextContent.Trim());
 
         var rows = component.FindAll(".bit-map-marker-table tbody tr");
-        Assert.AreEqual(2, rows.Count);
-        StringAssert.Contains(rows[0].TextContent, "Kyiv office");
+        Assert.HasCount(2, rows);
+        Assert.Contains("Kyiv office", rows[0].TextContent);
         // The component formats coordinates in the current culture, so the expectation has to too.
-        StringAssert.Contains(rows[0].TextContent, 50.45.ToString("F5"));
-        StringAssert.Contains(rows[1].TextContent, "Lviv office");
+        Assert.Contains(50.45.ToString("F5"), rows[0].TextContent);
+        Assert.Contains("Lviv office", rows[1].TextContent);
     }
 
     [TestMethod]
@@ -2332,7 +2325,7 @@ public class BitMapTests : BunitTestContext
 
         var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-marker-list").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-marker-list"));
     }
 
     [TestMethod]
@@ -2350,7 +2343,7 @@ public class BitMapTests : BunitTestContext
         var list = component.Find(".bit-map-marker-list");
         // bit-map-help clips it out of sight while leaving it in the accessibility tree - unlike
         // display:none, which would remove it from both.
-        StringAssert.Contains(list.GetAttribute("class"), "bit-map-help");
+        Assert.Contains("bit-map-help", list.GetAttribute("class")!);
         Assert.IsNull(list.GetAttribute("aria-hidden"));
     }
 
@@ -2372,10 +2365,10 @@ public class BitMapTests : BunitTestContext
         await component.Instance.AddMarker(new BitMapMarker { Id = "d4", Position = new(3, 3) });
 
         var names = component.FindAll(".bit-map-marker-table tbody th").Select(e => e.TextContent.Trim()).ToArray();
-        CollectionAssert.AreEqual(new[] { "Alt name", "Title name", "Popup name", "d4" }, names);
+        Assert.AreSequenceEqual(new[] { "Alt name", "Title name", "Popup name", "d4" }, names);
 
         var actionLabel = component.FindAll(".bit-map-marker-table-action")[0].GetAttribute("aria-label");
-        StringAssert.Contains(actionLabel, "Alt name");
+        Assert.Contains("Alt name", actionLabel!);
     }
 
     [TestMethod]
@@ -2400,10 +2393,10 @@ public class BitMapTests : BunitTestContext
         var setView = Context.JSInterop.Invocations.Single(i => i.Identifier == SET_VIEW);
         Assert.AreEqual(50.45, setView.Arguments[1]);
         Assert.AreEqual(14d, setView.Arguments[3]);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup", Context.JSInterop.Invocations);
         // A keyboard user reaching the marker through the list gets the same event a mouse user
         // gets by clicking the pin.
-        CollectionAssert.AreEqual(new[] { "kyiv" }, clicked);
+        Assert.AreSequenceEqual(new[] { "kyiv" }, clicked);
     }
 
     [TestMethod]
@@ -2420,13 +2413,13 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
         await component.Instance.AddMarker(new BitMapMarker { Id = "b", Position = new(1, 1) });
-        Assert.AreEqual(2, component.FindAll(".bit-map-marker-table tbody tr").Count);
+        Assert.HasCount(2, component.FindAll(".bit-map-marker-table tbody tr"));
 
         await component.Instance.RemoveMarker("a");
-        Assert.AreEqual(1, component.FindAll(".bit-map-marker-table tbody tr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-map-marker-table tbody tr"));
 
         await component.Instance.ClearMarkers();
-        Assert.AreEqual(0, component.FindAll(".bit-map-marker-table tbody tr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-marker-table tbody tr"));
     }
 
     [TestMethod]
@@ -2455,7 +2448,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.AddMarker(new BitMapMarker { Id = "only", Position = new(0, 0) });
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-marker-table").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-marker-table"));
         Assert.AreEqual("only", component.Find(".custom-list li").TextContent.Trim());
     }
 
@@ -2476,7 +2469,7 @@ public class BitMapTests : BunitTestContext
             .Single(i => i.Identifier == INIT).Arguments[4]!;
         var additional = (Dictionary<string, object?>)options["additionalOptions"]!;
 
-        Assert.AreEqual(false, additional["zoomAnimation"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(additional["zoomAnimation"]));
         Assert.AreEqual(120, additional["wheelPxPerZoomLevel"]);
     }
 
@@ -2567,10 +2560,10 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
 
-        Assert.IsTrue(errors.Any(e => e.Source == BitMapInteropErrorSource.Callback
-                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.ViewAnnouncementFormatter)));
+        Assert.Contains(e => e.Source == BitMapInteropErrorSource.Callback
+                                   && e.Context == nameof(BitMap<BitLeafletMapProvider>.ViewAnnouncementFormatter), errors);
         // The built-in wording stands in, so the move is still announced.
-        StringAssert.Contains(component.Find(".bit-map-live").TextContent, "zoom level 5");
+        Assert.Contains("zoom level 5", component.Find(".bit-map-live").TextContent);
     }
 
     [TestMethod]
@@ -2589,7 +2582,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance._OnContextMenu(
             JsonSerializer.Deserialize<JsonElement>("""{"lat":51.5,"lng":-0.12}"""));
 
-        Assert.AreEqual(1, positions.Count);
+        Assert.ContainsSingle(positions);
         Assert.AreEqual(51.5, positions[0].Latitude);
         Assert.AreEqual(-0.12, positions[0].Longitude);
     }
@@ -2605,7 +2598,7 @@ public class BitMapTests : BunitTestContext
 
         var options = (Dictionary<string, object?>)Context.JSInterop.Invocations
             .Single(i => i.Identifier == INIT).Arguments[4]!;
-        Assert.AreEqual(false, options["suppressBrowserContextMenu"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(options["suppressBrowserContextMenu"]));
     }
 
     [TestMethod]
@@ -2620,7 +2613,7 @@ public class BitMapTests : BunitTestContext
 
         var options = (Dictionary<string, object?>)Context.JSInterop.Invocations
             .Single(i => i.Identifier == INIT).Arguments[4]!;
-        Assert.AreEqual(true, options["suppressBrowserContextMenu"]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(options["suppressBrowserContextMenu"]));
     }
 
     [TestMethod]
@@ -2645,7 +2638,7 @@ public class BitMapTests : BunitTestContext
             .Single(i => i.Identifier == ADD_MARKER).Arguments[2]!;
 
         Assert.AreEqual("Plain text", payload["tooltipText"]);
-        Assert.AreEqual(true, payload["tooltipPermanent"]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(payload["tooltipPermanent"]));
         Assert.AreEqual("right", payload["tooltipDirection"]);
     }
 
@@ -2697,14 +2690,15 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.AddMarker(new BitMapMarker { Id = "kyiv", Position = new(50.45, 30.52), Alt = "Kyiv <b>office</b>" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
 
         await component.Instance._OnMarkerClick("kyiv");
 
-        Assert.AreEqual(1, component.FindAll(".bit-map-popup").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-map-popup"));
         // Rendered as text, not markup: the angle brackets survive as characters.
         Assert.AreEqual("Kyiv <b>office</b>", component.Find(".popup-name").TextContent);
-        Assert.AreEqual("kyiv", component.Instance.OpenPopupMarker?.Id);
+        var actualValue = component.Instance.OpenPopupMarker?.Id;
+        Assert.AreEqual("kyiv", actualValue);
 
         var anchor = Context.JSInterop.Invocations.Single(i => i.Identifier == TRACK_ANCHOR);
         Assert.AreEqual(50.45, anchor.Arguments[2]);
@@ -2721,7 +2715,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance._OnMarkerClick("a");
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR));
     }
 
@@ -2741,12 +2735,12 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
         await component.Instance._OnMarkerClick("a");
-        Assert.AreEqual(1, component.FindAll(".bit-map-popup").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-map-popup"));
 
         await component.Instance._OnClick(JsonSerializer.Deserialize<JsonElement>("""{"lat":1,"lng":1}"""));
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == UNTRACK_ANCHOR));
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
+        Assert.ContainsSingle(i => i.Identifier == UNTRACK_ANCHOR, Context.JSInterop.Invocations);
         Assert.AreEqual(1, closed);
     }
 
@@ -2770,8 +2764,8 @@ public class BitMapTests : BunitTestContext
         component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsNull(component.Instance.OpenPopupMarker);
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count, "with the popup closed nothing in the map claims the key");
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"), "with the popup closed nothing in the map claims the key");
     }
 
     [TestMethod]
@@ -2789,9 +2783,10 @@ public class BitMapTests : BunitTestContext
         await component.Instance._OnMarkerClick("a");
 
         component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+        var actualValue = component.Instance.OpenPopupMarker?.Id;
 
-        Assert.AreEqual("a", component.Instance.OpenPopupMarker?.Id);
-        Assert.AreEqual(1, component.FindAll(".bit-map-popup").Count);
+        Assert.AreEqual("a", actualValue);
+        Assert.ContainsSingle(component.FindAll(".bit-map-popup"));
     }
 
     [TestMethod]
@@ -2811,7 +2806,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.RemoveMarker("a");
 
         Assert.IsNull(component.Instance.OpenPopupMarker);
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
     }
 
     [TestMethod]
@@ -2833,7 +2828,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.SyncMarkers([new BitMapMarker { Id = "b", Position = new(1, 1) }]);
 
         Assert.IsNull(component.Instance.OpenPopupMarker);
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
     }
 
     [TestMethod]
@@ -2853,7 +2848,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.SyncMarkers([new BitMapMarker { Id = "a", Position = new(10, 20) }]);
 
         var anchors = Context.JSInterop.Invocations.Where(i => i.Identifier == TRACK_ANCHOR).ToList();
-        Assert.AreEqual(anchorsBefore + 1, anchors.Count);
+        Assert.HasCount(anchorsBefore + 1, anchors);
         Assert.AreEqual(10d, anchors[^1].Arguments[2]);
         Assert.AreEqual(20d, anchors[^1].Arguments[3]);
     }
@@ -2879,10 +2874,10 @@ public class BitMapTests : BunitTestContext
         });
 
         var anchors = Context.JSInterop.Invocations.Where(i => i.Identifier == TRACK_ANCHOR).ToList();
-        Assert.AreEqual(anchorsBefore + 1, anchors.Count, "The popup has to follow its marker");
+        Assert.HasCount(anchorsBefore + 1, anchors, "The popup has to follow its marker");
         Assert.AreEqual(10d, anchors[^1].Arguments[2]);
         Assert.AreEqual(20d, anchors[^1].Arguments[3]);
-        Assert.AreEqual(false, anchors[^1].Arguments[4], "Auto-pan is spent as the popup opens, not re-armed by every move");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(anchors[^1].Arguments[4]), "Auto-pan is spent as the popup opens, not re-armed by every move");
     }
 
     [TestMethod]
@@ -2940,7 +2935,7 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual("Dismiss", close.GetAttribute("aria-label"));
 
         close.Click();
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
     }
 
     [TestMethod]
@@ -2959,7 +2954,7 @@ public class BitMapTests : BunitTestContext
 
         component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-popup"));
     }
 
     [TestMethod]
@@ -2978,8 +2973,9 @@ public class BitMapTests : BunitTestContext
         await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(1, 2), Alt = "Somewhere" });
 
         component.Find(".bit-map-marker-table-action").Click();
+        var actualValue = component.Instance.OpenPopupMarker?.Id;
 
-        Assert.AreEqual("a", component.Instance.OpenPopupMarker?.Id);
+        Assert.AreEqual("a", actualValue);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"),
             "With a template configured the provider's own popup is not the one to open");
     }
@@ -2998,7 +2994,7 @@ public class BitMapTests : BunitTestContext
 
         component.Find(".bit-map-marker-table-action").Click();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.openMarkerPopup", Context.JSInterop.Invocations);
     }
 
     [TestMethod,
@@ -3014,7 +3010,7 @@ public class BitMapTests : BunitTestContext
         var closed = await component.Instance.CloseMarkerPopup();
 
         Assert.AreEqual(wasOpen, closed);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.closeMarkerPopup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.BitMapLeaflet.closeMarkerPopup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -3092,8 +3088,8 @@ public class BitMapTests : BunitTestContext
         // longitude the constructor would reject.
         var moved = new BitMapLatLng(0, 179.9).Offset(50_000, 90);
 
-        Assert.IsTrue(moved.Longitude < 0, $"expected a wrapped longitude, got {moved.Longitude}");
-        Assert.IsTrue(moved.Longitude > -180);
+        Assert.IsLessThan(0, moved.Longitude, $"expected a wrapped longitude, got {moved.Longitude}");
+        Assert.IsGreaterThan(-180, moved.Longitude);
     }
 
     [TestMethod]
@@ -3410,7 +3406,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.ClearTileOverlays();
 
         Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY));
-        Assert.AreEqual(0, component.Instance.TileOverlayIds.Count);
+        Assert.IsEmpty(component.Instance.TileOverlayIds);
     }
 
     [TestMethod]
@@ -3431,7 +3427,7 @@ public class BitMapTests : BunitTestContext
         await component.Instance.ClearTileOverlays();
 
         Assert.AreEqual(before, Context.JSInterop.Invocations.Count(i => i.Identifier == REMOVE_TILE_OVERLAY));
-        Assert.AreEqual(0, component.Instance.TileOverlayIds.Count);
+        Assert.IsEmpty(component.Instance.TileOverlayIds);
         Assert.IsFalse(component.Instance.IsTileOverlayVisible("radar"));
     }
 
@@ -3577,12 +3573,12 @@ public class BitMapTests : BunitTestContext
         // The recorded invocations are grouped by identifier rather than kept in call order, so it is the last configure
         // naming B, and the last snapshot holding the marker, that show the swap handed the set over.
         var invocations = Context.JSInterop.Invocations;
-        Assert.AreEqual(1, invocations.Count(i => i.Identifier == B_INIT), "the swap has to reach provider B");
+        Assert.ContainsSingle(i => i.Identifier == B_INIT, invocations, "the swap has to reach provider B");
         Assert.AreEqual(0, invocations.Count(i => i.Identifier == B_ADD_MARKER),
             "the clustering layer owns what the provider draws");
         Assert.AreEqual("TestProviderB", invocations.Last(i => i.Identifier == CLUSTER_CONFIGURE).Arguments[1],
             "the clustering layer is re-pointed at B");
-        CollectionAssert.AreEqual(new[] { "x" }, (string[])invocations.Last(i => i.Identifier == CLUSTER_SET_MARKERS).Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "x" }, (string[])invocations.Last(i => i.Identifier == CLUSTER_SET_MARKERS).Arguments[1]!);
     }
 
     // ---------------------------------------------------------------- provider swap
@@ -3627,9 +3623,9 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.Markers, markers);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == B_SYNC_MARKERS),
-            "the bound collection must be pushed to the new backend");
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
+        Assert.ContainsSingle(i => i.Identifier == B_SYNC_MARKERS,
+Context.JSInterop.Invocations, "the bound collection must be pushed to the new backend");
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.MarkerIds.ToArray());
     }
 
     // ---------------------------------------------------------------- popup
@@ -3719,8 +3715,7 @@ public class BitMapTests : BunitTestContext
 
         Assert.IsNotNull(component.Instance.OpenPopupMarker);
         Assert.AreEqual(9d, component.Instance.OpenPopupMarker.Position.Latitude);
-        Assert.IsTrue(Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR) > anchorsBefore,
-            "the popup has to follow its marker to its new position");
+        Assert.IsGreaterThan(anchorsBefore, Context.JSInterop.Invocations.Count(i => i.Identifier == TRACK_ANCHOR), "the popup has to follow its marker to its new position");
     }
 
     // ---------------------------------------------------------------- lazy load teardown
@@ -3741,7 +3736,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE));
+        Assert.ContainsSingle(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE, Context.JSInterop.Invocations);
     }
 
     // ---------------------------------------------------------------- view announcements
@@ -3822,7 +3817,7 @@ public class BitMapTests : BunitTestContext
 
         // The second view is kept for the end of the window rather than spoken over the first or dropped.
         Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
-        CollectionAssert.AreEqual(new[] { 5d }, formatted);
+        Assert.AreSequenceEqual(new[] { 5d }, formatted);
 
         // Disposal takes the held-back announcement with it rather than leaving a timer behind.
         await component.Instance.DisposeAsync();
@@ -3858,7 +3853,7 @@ public class BitMapTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual("zoom 7", component.Find(".bit-map-live").TextContent), TimeSpan.FromSeconds(10));
 
         // The view superseded inside the window is never spoken; the last one is, from the dispatcher.
-        CollectionAssert.AreEqual(new[] { 5d, 7d }, formatted.Select(f => f.Zoom).ToArray());
+        Assert.AreSequenceEqual(new[] { 5d, 7d }, formatted.Select(f => f.Zoom).ToArray());
         Assert.IsTrue(formatted[^1].OnDispatcher);
     }
 
@@ -3895,14 +3890,14 @@ public class BitMapTests : BunitTestContext
         await component.Instance.OpenPopup("a");
 
         var anchor = Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR);
-        Assert.AreEqual(true, anchor.Arguments[4], "PopupAutoPan is on by default");
-        Assert.AreEqual(true, anchor.Arguments[5], "the pan animates without a reduced-motion preference");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(anchor.Arguments[4]), "PopupAutoPan is on by default");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(anchor.Arguments[5]), "the pan animates without a reduced-motion preference");
 
         await component.Instance.ClosePopup();
         component.Render(parameters => parameters.Add(p => p.PopupAutoPan, false));
         await component.Instance.OpenPopup("a");
 
-        Assert.AreEqual(false, Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR).Arguments[4]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations.Last(i => i.Identifier == TRACK_ANCHOR).Arguments[4]));
     }
 
     [TestMethod]
@@ -3931,12 +3926,23 @@ public class BitMapTests : BunitTestContext
             parameters.Add(p => p.ChildContent, (Microsoft.AspNetCore.Components.RenderFragment)(b => b.AddContent(0, "overlay")));
             parameters.Add(p => p.Classes, new BitMapClassStyles
             {
-                Root = "c-root", Canvas = "c-canvas", Overlay = "c-overlay", Instructions = "c-help", GestureHint = "c-hint",
-                Popup = "c-popup", PopupCloseButton = "c-close", PopupBody = "c-body", MarkerList = "c-list", MarkerListButton = "c-btn",
+                Root = "c-root",
+                Canvas = "c-canvas",
+                Overlay = "c-overlay",
+                Instructions = "c-help",
+                GestureHint = "c-hint",
+                Popup = "c-popup",
+                PopupCloseButton = "c-close",
+                PopupBody = "c-body",
+                MarkerList = "c-list",
+                MarkerListButton = "c-btn",
             });
             parameters.Add(p => p.Styles, new BitMapClassStyles
             {
-                Root = "--s-root: 1", Canvas = "--s-canvas: 1", Popup = "--s-popup: 1", MarkerListButton = "--s-btn: 1",
+                Root = "--s-root: 1",
+                Canvas = "--s-canvas: 1",
+                Popup = "--s-popup: 1",
+                MarkerListButton = "--s-btn: 1",
             });
         });
 
@@ -3945,20 +3951,20 @@ public class BitMapTests : BunitTestContext
 
         var root = component.Find(".bit-map");
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "--s-root: 1");
+        Assert.Contains("--s-root: 1", root.GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-map-canvas").ClassList.Contains("c-canvas"));
-        StringAssert.Contains(component.Find(".bit-map-canvas").GetAttribute("style"), "--s-canvas: 1");
+        Assert.Contains("--s-canvas: 1", component.Find(".bit-map-canvas").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-map-overlay").ClassList.Contains("c-overlay"));
         Assert.IsTrue(component.Find(".bit-map > .bit-map-help").ClassList.Contains("c-help"));
         Assert.IsTrue(component.Find(".bit-map-gesture-hint").ClassList.Contains("c-hint"));
         Assert.IsTrue(component.Find(".bit-map-popup").ClassList.Contains("c-popup"));
-        StringAssert.Contains(component.Find(".bit-map-popup").GetAttribute("style"), "--s-popup: 1");
+        Assert.Contains("--s-popup: 1", component.Find(".bit-map-popup").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-map-popup-close").ClassList.Contains("c-close"));
         Assert.IsTrue(component.Find(".bit-map-popup-body").ClassList.Contains("c-body"));
         Assert.IsTrue(component.Find(".bit-map-marker-list").ClassList.Contains("c-list"));
         Assert.IsTrue(component.Find(".bit-map-marker-table-action").ClassList.Contains("c-btn"));
-        StringAssert.Contains(component.Find(".bit-map-marker-table-action").GetAttribute("style"), "--s-btn: 1");
+        Assert.Contains("--s-btn: 1", component.Find(".bit-map-marker-table-action").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -4005,7 +4011,7 @@ public class BitMapTests : BunitTestContext
 
         await component.Instance.FlyTo(new(10, 20), 8);
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == FLY_TO));
+        Assert.ContainsSingle(i => i.Identifier == FLY_TO, Context.JSInterop.Invocations);
     }
 
     [TestMethod]

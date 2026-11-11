@@ -217,14 +217,14 @@ public sealed class LayerGroupTests
         var group = (GroupLayer)grouped.Layers[0];
         Assert.AreEqual(groupId, group.Id);
         Assert.AreEqual("Pair", group.Name);
-        CollectionAssert.AreEqual(new[] { layers[0].Id, layers[1].Id }, group.Layers.Select(l => l.Id).ToArray(), "in the order they were");
+        Assert.AreSequenceEqual(new[] { layers[0].Id, layers[1].Id }, group.Layers.Select(l => l.Id).ToArray(), "in the order they were");
         var renderer = new DocumentRenderer();
         using (var before = renderer.Render(document, source))
         using (var after = renderer.Render(grouped, source))
             Assert.AreEqual(0, TestImages.MaxChannelDifference(before, after));
 
         var ungrouped = grouped.Ungroup(groupId.Value);
-        CollectionAssert.AreEqual(layers.Select(l => l.Id).ToArray(), ungrouped.Layers.Select(l => l.Id).ToArray());
+        Assert.AreSequenceEqual(layers.Select(l => l.Id).ToArray(), ungrouped.Layers.Select(l => l.Id).ToArray());
         Assert.AreSame(document, document.GroupLayers([Guid.NewGuid()], out var none));
         Assert.IsNull(none);
     }
@@ -249,9 +249,9 @@ public sealed class LayerGroupTests
         Assert.AreEqual(0.5f, faded.FindLayer(c.Id)!.Opacity);
         Assert.AreSame(a, faded.Layers[0]);
         var moved = document.MoveLayer(c.Id, 0);
-        CollectionAssert.AreEqual(new[] { c.Id, b.Id }, ((GroupLayer)moved.Layers[1]).Layers.Select(l => l.Id).ToArray(), "moved within its group");
+        Assert.AreSequenceEqual(new[] { c.Id, b.Id }, ((GroupLayer)moved.Layers[1]).Layers.Select(l => l.Id).ToArray(), "moved within its group");
         var removed = document.RemoveLayer(b.Id);
-        Assert.HasCount(1, ((GroupLayer)removed.Layers[1]).Layers);
+        Assert.ContainsSingle(((GroupLayer)removed.Layers[1]).Layers);
         Assert.AreSame(document, document.RemoveLayer(Guid.NewGuid()));
     }
 
@@ -278,11 +278,11 @@ public sealed class LayerGroupTests
         var document = ImageDocument.Create(new Size(8, 8)).AddLayer(a).AddLayer(inner).AddLayer(c);
 
         var into = document.MoveLayerIntoGroup(c.Id, inner.Id);
-        CollectionAssert.AreEqual(new[] { a.Id, inner.Id }, into.Layers.Select(l => l.Id).ToArray());
-        CollectionAssert.AreEqual(new[] { b.Id, c.Id }, ((GroupLayer)into.Layers[1]).Layers.Select(l => l.Id).ToArray(), "on top of the group's layers");
+        Assert.AreSequenceEqual(new[] { a.Id, inner.Id }, into.Layers.Select(l => l.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { b.Id, c.Id }, ((GroupLayer)into.Layers[1]).Layers.Select(l => l.Id).ToArray(), "on top of the group's layers");
 
         var outOf = into.MoveLayerOutOfGroup(b.Id);
-        CollectionAssert.AreEqual(new[] { a.Id, inner.Id, b.Id }, outOf.Layers.Select(l => l.Id).ToArray(), "directly above the group");
+        Assert.AreSequenceEqual(new[] { a.Id, inner.Id, b.Id }, outOf.Layers.Select(l => l.Id).ToArray(), "directly above the group");
         Assert.AreSame(document, document.MoveLayerOutOfGroup(a.Id), "a layer in no group stays");
 
         var nested = document.MoveLayerIntoGroup(a.Id, inner.Id).GroupLayers([inner.Id], out var outerId);
@@ -300,7 +300,7 @@ public sealed class LayerGroupTests
 
         var deeper = $$"""{"type":"group","layers":[{{BmageJson.SerializeObject(layer)}}]}""";
         var error = Assert.ThrowsExactly<ImageDocumentFormatException>(() => BmageJson.DeserializeObject<Layer>(deeper));
-        StringAssert.Contains(error.Message, "nest");
+        Assert.Contains("nest", error.Message);
     }
 
     [TestMethod]
@@ -337,19 +337,22 @@ public sealed class LayerGroupTests
             inner,
             new ImageLayer { Image = disc, Bounds = new RectangleF(20, 10, 24, 24) },
             new FillLayer(Red) { ClipToLayerBelow = true, BlendMode = BlendMode.Multiply },
-        ]) { Isolated = true, Opacity = 0.8f };
+        ])
+        { Isolated = true, Opacity = 0.8f };
         using var session = new ImageEditSession(source.Clone());
         var renderer = new DocumentRenderer();
 
         session.Apply(d => d.AddLayer(group), "group");
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         using (var expected = renderer.Render(session.Document, session.Original))
             Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, preview));
 
         // Through the session's caches, after a layer inside the group changes.
         session.Apply(d => d.UpdateLayer(inner with { Opacity = 0.4f }), "fade");
-        preview = await session.RenderPreviewAsync();
+        preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         using (var expected = renderer.Render(session.Document, session.Original))
             Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, preview));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

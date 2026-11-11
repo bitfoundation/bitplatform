@@ -73,10 +73,10 @@ public class BitCheckboxE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"cb-basic\"");
-        StringAssert.Contains(html, "bit-chb-inp");
-        StringAssert.Contains(html, "Basic checkbox");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"cb-basic\"", html);
+        Assert.Contains("bit-chb-inp", html);
+        Assert.Contains("Basic checkbox", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"cb-default-checked\"[^>]*class=\"[^\"]*bit-chb-ckd"), "The checked-by-default checkbox is prerendered checked.");
 
         await OpenAsync(Url);
@@ -251,16 +251,16 @@ public class BitCheckboxE2ETests : E2ETestBase
             switch (side)
             {
                 case "end":
-                    Assert.IsTrue(box.X + box.Width <= text.X + 0.5, $"{id}: the label is after the box.");
+                    Assert.IsLessThanOrEqualTo(text.X + 0.5, box.X + box.Width, $"{id}: the label is after the box.");
                     break;
                 case "start":
-                    Assert.IsTrue(text.X + text.Width <= box.X + 0.5, $"{id}: the label is before the box.");
+                    Assert.IsLessThanOrEqualTo(box.X + 0.5, text.X + text.Width, $"{id}: the label is before the box.");
                     break;
                 case "top":
-                    Assert.IsTrue(text.Y + text.Height <= box.Y + 0.5, $"{id}: the label is above the box.");
+                    Assert.IsLessThanOrEqualTo(box.Y + 0.5, text.Y + text.Height, $"{id}: the label is above the box.");
                     break;
                 case "bottom":
-                    Assert.IsTrue(box.Y + box.Height <= text.Y + 0.5, $"{id}: the label is below the box.");
+                    Assert.IsLessThanOrEqualTo(text.Y + 0.5, box.Y + box.Height, $"{id}: the label is below the box.");
                     break;
             }
         }
@@ -301,7 +301,7 @@ public class BitCheckboxE2ETests : E2ETestBase
 
         var wrapped = await BoxOfAsync(Text("cb-wrap"));
         var single = await BoxOfAsync(Text("cb-nowrap"));
-        Assert.IsTrue(wrapped.Height > single.Height * 1.5, "Without NoWrap the same label wraps onto several lines.");
+        Assert.IsGreaterThan(single.Height * 1.5, wrapped.Height, "Without NoWrap the same label wraps onto several lines.");
         await Expect(Label("cb-nowrap")).ToHaveAttributeAsync("title", "Send me a weekly digest of everything that happened in my workspace");
     }
 
@@ -328,7 +328,7 @@ public class BitCheckboxE2ETests : E2ETestBase
 
         var text = await BoxOfAsync(Text("cb-desc"));
         var line = await BoxOfAsync(description);
-        Assert.IsTrue(line.Y >= text.Y + text.Height - 1, "The description sits under the label.");
+        Assert.IsGreaterThanOrEqualTo(text.Y + text.Height - 1, line.Y, "The description sits under the label.");
         Assert.AreEqual(text.X, line.X, 1.5, "The description lines up with the label rather than the box.");
     }
 
@@ -707,10 +707,10 @@ public class BitCheckboxE2ETests : E2ETestBase
         await Expect(Root("cb-required")).ToHaveClassAsync(HasClass("bit-chb-req"));
 
         var asterisk = await Text("cb-required").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(asterisk, "*");
+        Assert.Contains("*", asterisk);
 
         var templated = await Page.Locator("#cb-required-tpl .bit-chb-tpl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.Contains(templated, "*");
+        Assert.Contains("*", templated);
 
         var color = await Text("cb-required").EvaluateAsync<string>("el => getComputedStyle(el, '::after').color");
         Assert.AreEqual(await ResolveColorAsync("var(--bit-clr-req)"), color);
@@ -829,7 +829,7 @@ public class BitCheckboxE2ETests : E2ETestBase
     public async Task AutoFocus_FocusesTheCheckboxOnItsFirstRender()
     {
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Url}/autofocus");
-        StringAssert.Contains(await response.TextAsync(), "autofocus");
+        Assert.Contains("autofocus", await response.TextAsync());
 
         await OpenAsync($"{Url}/autofocus");
 
@@ -868,8 +868,8 @@ public class BitCheckboxE2ETests : E2ETestBase
         var root = await BoxOfAsync(Root("cb-arialabel"));
         var label = await BoxOfAsync(Label("cb-arialabel"));
 
-        Assert.IsTrue(root.Width >= 24, $"The click target is {root.Width}px wide.");
-        Assert.IsTrue(label.Height >= 24, $"The click target is {label.Height}px high.");
+        Assert.IsGreaterThanOrEqualTo(24, root.Width, $"The click target is {root.Width}px wide.");
+        Assert.IsGreaterThanOrEqualTo(24, label.Height, $"The click target is {label.Height}px high.");
     }
 
     [TestMethod]
@@ -1146,8 +1146,8 @@ public class BitCheckboxE2ETests : E2ETestBase
 
         var inline = await BoxOfAsync(Label("cb-var-minheight"));
         var floor = await BoxOfAsync(Label("cb-ltr"));
-        Assert.IsTrue(inline.Height < 24, $"--bit-Checkbox-min-height: 0 lets the target shrink ({inline.Height}px).");
-        Assert.IsTrue(floor.Height >= 24, $"The default target is at least 24px ({floor.Height}px).");
+        Assert.IsLessThan(24, inline.Height, $"--bit-Checkbox-min-height: 0 lets the target shrink ({inline.Height}px).");
+        Assert.IsGreaterThanOrEqualTo(24, floor.Height, $"The default target is at least 24px ({floor.Height}px).");
     }
 
     [TestMethod]
@@ -1162,14 +1162,14 @@ public class BitCheckboxE2ETests : E2ETestBase
         {
             var box = await BoxOfAsync(Box(id));
             var text = await BoxOfAsync(Text(id));
-            Assert.IsTrue(box.X > text.X, $"{id}: the box is to the right of the label.");
+            Assert.IsGreaterThan(text.X, box.X, $"{id}: the box is to the right of the label.");
         }
 
         await Expect(Root("cb-rtl-inherited")).Not.ToHaveAttributeAsync("dir", new Regex(".*"));
 
         var ltrBox = await BoxOfAsync(Box("cb-ltr"));
         var ltrText = await BoxOfAsync(Text("cb-ltr"));
-        Assert.IsTrue(ltrBox.X < ltrText.X, "Left to right, the box is to the left of the label.");
+        Assert.IsLessThan(ltrText.X, ltrBox.X, "Left to right, the box is to the left of the label.");
     }
 
     [TestMethod]
@@ -1267,13 +1267,13 @@ public class BitCheckboxE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.Contains(await StyleOfAsync(Box("cb-motion"), "transition-duration"), "0.1s");
+        Assert.Contains("0.1s", await StyleOfAsync(Box("cb-motion"), "transition-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         await Expect(Box("cb-motion")).Not.ToHaveCSSAsync("transition-duration", new Regex(@"0\.1s"));
         await Expect(Root("cb-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.Contains(await StyleOfAsync(Box("cb-motion-forced"), "transition-duration"), "0.1s");
+        Assert.Contains("0.1s", await StyleOfAsync(Box("cb-motion-forced"), "transition-duration"));
     }
 
     [TestMethod]

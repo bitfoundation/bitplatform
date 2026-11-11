@@ -16,7 +16,7 @@ namespace Bit.Blex.Tests;
 /// arguments. Faking the two interop interfaces keeps that testable without dragging a rendering
 /// harness in.
 /// </remarks>
-public sealed class FakeJsModule : IJSObjectReference
+internal sealed class FakeJsModule : IJSObjectReference
 {
     /// <summary>Every invocation, in order.</summary>
     public List<(string Identifier, object?[] Args)> Calls { get; } = [];
@@ -63,7 +63,7 @@ public sealed class FakeJsModule : IJSObjectReference
 }
 
 /// <summary>An <see cref="IJSRuntime"/> whose only trick is handing out a <see cref="FakeJsModule"/> for <c>import</c>.</summary>
-public sealed class FakeJsRuntime : IJSRuntime
+internal sealed class FakeJsRuntime : IJSRuntime
 {
     /// <summary>The module every <c>import</c> resolves to.</summary>
     public FakeJsModule Module { get; } = new();

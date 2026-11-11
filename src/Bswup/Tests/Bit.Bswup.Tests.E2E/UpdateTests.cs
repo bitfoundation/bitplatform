@@ -23,7 +23,7 @@ public class UpdateTests : BswupTest
 
         await Expect(Page.Locator("#bit-bswup-reload")).ToBeVisibleAsync(new() { Timeout = 120_000 });
         await Expect(Page.Locator("#bit-bswup-reload-status")).ToHaveTextAsync("A new version is ready to install.");
-        await Task.Delay(2000);
+        await Task.Delay(2000, TestContext.CancellationToken);
         await ExpectLoadsAsync(1);
 
         await Page.Locator("#bit-bswup-reload").ClickAsync();
@@ -120,7 +120,7 @@ public class UpdateTests : BswupTest
         await Expect(Page.Locator("#bit-bswup-reload")).ToBeHiddenAsync();
         await ExpectLoadsAsync(1);
         Assert.IsTrue(await IsControlledAsync());
-        CollectionAssert.AreEqual(new[] { BucketName(original.Version) }, await BswupCacheNamesAsync());
+        Assert.AreSequenceEqual(new[] { BucketName(original.Version) }, await BswupCacheNamesAsync());
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class UpdateTests : BswupTest
         var updatedRoot = BucketName((await Session.ManifestAsync(AppPath)).Version);
         var names = await EventuallyAsync(() => BswupCacheNamesAsync(), names => names.Contains(updatedRoot) && names.Contains(BucketName(RootVersion)) is false,
             "the root app's update to replace its own bucket");
-        CollectionAssert.Contains(names, standaloneBucket, "Updating the root app pruned the sub-path app's cache.");
+        Assert.Contains(standaloneBucket, names, "Updating the root app pruned the sub-path app's cache.");
 
         // And the sub-path app still runs from its own worker and cache.
         await standalone.ReloadAsync();

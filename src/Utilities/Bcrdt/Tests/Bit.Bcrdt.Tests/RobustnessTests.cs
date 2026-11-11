@@ -70,8 +70,7 @@ public class RobustnessTests
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or IndexOutOfRangeException)
             {
-                Assert.Fail(
-                    $"A corrupted update produced {ex.GetType().Name} instead of a clean rejection: {ex.Message}");
+                throw new global::System.InvalidOperationException($"A corrupted update produced {ex.GetType().Name} instead of a clean rejection: {ex.Message}", ex);
             }
         }
     }
@@ -92,8 +91,7 @@ public class RobustnessTests
             }
             catch (Exception ex)
             {
-                Assert.Fail(
-                    $"Payload of {payload.Length} byte(s) produced {ex.GetType().Name}: {ex.Message}");
+                throw new global::System.InvalidOperationException($"Payload of {payload.Length} byte(s) produced {ex.GetType().Name}: {ex.Message}", ex);
             }
         }
     }
@@ -110,14 +108,17 @@ public class RobustnessTests
 
         foreach (byte[] payload in BcrdtUpdateCorrupter.Garbage().Concat(BcrdtUpdateCorrupter.Truncations(update)))
         {
+            var rejected = false;
             try
             {
                 target.ApplyUpdate(payload);
             }
             catch (Exception ex) when (IsRejection(ex))
             {
-                Assert.AreEqual(before, BcrdtConvergenceHarness.Describe(target));
+                rejected = true;
             }
+
+            if (rejected) Assert.AreEqual(before, BcrdtConvergenceHarness.Describe(target));
         }
     }
 
@@ -274,8 +275,8 @@ public class RobustnessTests
         int total = updates.Sum(u => u.Length);
         byte[] merged = BcrdtUpdateOperations.Merge([.. updates.Select(u => (ReadOnlyMemory<byte>)u)]);
 
-        Assert.IsTrue(
-            merged.Length * 4 < total,
+        Assert.IsLessThan(
+            total, merged.Length * 4,
             $"Compaction of {updates.Count} updates went from {total} to {merged.Length} bytes, " +
             "which is not the reduction run-length encoding should give.");
     }
@@ -305,7 +306,7 @@ public class RobustnessTests
         byte[] full = source.EncodeStateAsUpdate();
         byte[] diff = BcrdtUpdateOperations.Diff(full, midpoint);
 
-        Assert.IsTrue(diff.Length < 200, $"Diff was {diff.Length} bytes; expected only the tail.");
+        Assert.IsLessThan(200, diff.Length, $"Diff was {diff.Length} bytes; expected only the tail.");
 
         using var target = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         target.ApplyUpdate(BcrdtUpdateOperations.Diff(full, new BcrdtStateVector()));

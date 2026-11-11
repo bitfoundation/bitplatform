@@ -28,7 +28,7 @@ public class GraphUtilsTests
         BlowGraphUtils.AddEdge(new BlowConnection("a", "b", "out1", null), edges);
         BlowGraphUtils.AddEdge(new BlowConnection("a", "b", "out2", null), edges);
 
-        Assert.AreEqual(2, edges.Count);
+        Assert.HasCount(2, edges);
     }
 
     [TestMethod]
@@ -54,8 +54,8 @@ public class GraphUtilsTests
 
         BlowGraphUtils.AddEdge(connection, edges);
 
-        Assert.AreEqual(2, edges.Count);
-        Assert.AreEqual(2, edges.Select(e => e.Id).Distinct().Count());
+        Assert.HasCount(2, edges);
+        Assert.HasCount(2, edges.Select(e => e.Id).Distinct());
     }
 
     [TestMethod]
@@ -170,7 +170,7 @@ public class GraphUtilsTests
             new() { Id = "e2", Source = "c", Target = "a", TargetHandle = "in" },
         };
 
-        Assert.AreEqual(2, BlowGraphUtils.GetNodeConnections("a", edges).Count);
+        Assert.HasCount(2, BlowGraphUtils.GetNodeConnections("a", edges));
         Assert.ContainsSingle(BlowGraphUtils.GetNodeConnections("a", edges, BlowHandleType.Source));
         Assert.ContainsSingle(BlowGraphUtils.GetNodeConnections("a", edges, BlowHandleType.Target));
         Assert.ContainsSingle(BlowGraphUtils.GetHandleConnections("a", BlowHandleType.Source, "out", edges));

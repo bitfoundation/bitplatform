@@ -18,21 +18,21 @@ public class BitToggleStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the default an
         // unset one stands for - including the geometry a glyph in the knob floors, which an explicit Size floors too.
-        StringAssert.Contains(stylesheet, "--bit-tgl-trk-w: var(--bit-tgl-trk-w-base, var(--bit-Toggle-track-width, #{$siz-switch-w-md}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-trk-h: var(--bit-tgl-trk-h-base, var(--bit-Toggle-track-height, #{$siz-switch-h-md}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-thb-size: var(--bit-tgl-thb-size-base, var(--bit-Toggle-thumb-size, #{$siz-switch-thumb-md}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-trk-w: var(--bit-tgl-trk-w-tic, var(--bit-Toggle-track-width, ");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-tgl-lbl-fontsize, var(--bit-Toggle-label-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-tgl-des-fontsize, var(--bit-Toggle-description-font-size, #{$tg-fs-xs}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-tgl-stx-fontsize, var(--bit-Toggle-text-font-size, inherit));");
-        StringAssert.Contains(stylesheet, "padding-inline: var(--bit-tgl-cnn-pad, var(--bit-Toggle-content-padding, #{spacing(0.375)}));");
+        Assert.Contains("--bit-tgl-trk-w: var(--bit-tgl-trk-w-base, var(--bit-Toggle-track-width, #{$siz-switch-w-md}));", stylesheet);
+        Assert.Contains("--bit-tgl-trk-h: var(--bit-tgl-trk-h-base, var(--bit-Toggle-track-height, #{$siz-switch-h-md}));", stylesheet);
+        Assert.Contains("--bit-tgl-thb-size: var(--bit-tgl-thb-size-base, var(--bit-Toggle-thumb-size, #{$siz-switch-thumb-md}));", stylesheet);
+        Assert.Contains("--bit-tgl-trk-w: var(--bit-tgl-trk-w-tic, var(--bit-Toggle-track-width, ", stylesheet);
+        Assert.Contains("font-size: var(--bit-tgl-lbl-fontsize, var(--bit-Toggle-label-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-tgl-des-fontsize, var(--bit-Toggle-description-font-size, #{$tg-fs-xs}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-tgl-stx-fontsize, var(--bit-Toggle-text-font-size, inherit));", stylesheet);
+        Assert.Contains("padding-inline: var(--bit-tgl-cnn-pad, var(--bit-Toggle-content-padding, #{spacing(0.375)}));", stylesheet);
 
         // So does an explicit Color, for the checked colors it paints and the focus ring.
-        StringAssert.Contains(stylesheet, "--bit-tgl-trk-clr-bg: var(--bit-tgl-clr, var(--bit-Toggle-checked-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-thb-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-checked-thumb-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-cnn-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-content-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "--bit-tgl-trk-clr-bg: var(--bit-tgl-clr-hover, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color)))");
+        Assert.Contains("--bit-tgl-trk-clr-bg: var(--bit-tgl-clr, var(--bit-Toggle-checked-background, #{$clr-pri}));", stylesheet);
+        Assert.Contains("--bit-tgl-thb-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-checked-thumb-color, #{$clr-pri-text}));", stylesheet);
+        Assert.Contains("--bit-tgl-cnn-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-content-color, #{$clr-pri-text}));", stylesheet);
+        Assert.Contains("--bit-tgl-trk-clr-bg: var(--bit-tgl-clr-hover, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover}));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color)))", stylesheet);
 
         // The values the parameters publish are never read behind a public variable. The glyph, the spinner and their
         // sizes follow the knob and the track rather than a parameter, so they stay the variables'.
@@ -53,7 +53,7 @@ public class BitToggleStylesheetTests
                                          "--bit-tgl-trk-h-ico", "--bit-tgl-thb-size-ico", "--bit-tgl-cnn-fontsize", "--bit-tgl-cnn-pad",
                                          "--bit-tgl-lbl-fontsize", "--bit-tgl-stx-fontsize", "--bit-tgl-des-fontsize" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

@@ -32,8 +32,8 @@ public class BitLayoutParamsTests : BunitTestContext
     [TestMethod]
     public void BitLayoutParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLayout)}", BitLayoutParams.ParamName);
-        Assert.AreEqual("BitParams.BitLayout", BitLayoutParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLayout)}", new BitLayoutParams().Name);
+        Assert.AreEqual("BitParams.BitLayout", new BitLayoutParams().Name);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class BitLayoutParamsTests : BunitTestContext
                                           .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length > 10, $"Only {parameters.Length} parameters were found on {nameof(BitLayout)}.");
+        Assert.IsGreaterThan(10, parameters.Length, $"Only {parameters.Length} parameters were found on {nameof(BitLayout)}.");
 
         foreach (var name in parameters)
         {
@@ -102,11 +102,11 @@ public class BitLayoutParamsTests : BunitTestContext
 
         // HideHeader written as false by the layout opts it out of the cascaded one, so its header is rendered, while
         // the cascaded HideFooter it left alone still takes the footer out.
-        Assert.AreEqual(1, component.FindAll(".bit-lyt-hdr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-lyt-hdr"));
         Assert.IsFalse(root.ClassList.Contains("bit-lyt-nhd"));
-        Assert.AreEqual(0, component.FindAll(".bit-lyt-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lyt-ftr"));
         Assert.IsTrue(root.ClassList.Contains("bit-lyt-nft"));
-        StringAssert.Contains(root.GetAttribute("style")!, "--bit-lyt-gap:1rem");
+        Assert.Contains("--bit-lyt-gap:1rem", root.GetAttribute("style")!);
     }
 
     // Gives every property of the params object a value of its own type, and hands back what each of them was given
@@ -145,7 +145,7 @@ public class BitLayoutParamsTests : BunitTestContext
     {
         var type = component.GetType();
 
-        Assert.IsTrue(expected.Count > 10, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
+        Assert.IsGreaterThan(10, expected.Count, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
 
         foreach (var (name, value) in expected)
         {

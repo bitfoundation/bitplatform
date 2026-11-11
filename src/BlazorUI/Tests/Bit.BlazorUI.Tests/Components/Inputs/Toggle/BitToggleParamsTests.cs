@@ -75,8 +75,12 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.IsTrue(instance.AllowDisabledFocus);
         Assert.IsTrue(instance.AutoLoading);
         Assert.IsTrue(instance.StopPropagation);
-        Assert.AreEqual(BitIconInfo.Css("off-glyph").GetCssClasses(), instance.OffIcon?.GetCssClasses());
-        Assert.AreEqual(BitIconInfo.Css("on-glyph").GetCssClasses(), instance.OnIcon?.GetCssClasses());
+        var expectedValue = BitIconInfo.Css("off-glyph").GetCssClasses();
+        var actualValue = instance.OffIcon?.GetCssClasses();
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = BitIconInfo.Css("on-glyph").GetCssClasses();
+        var actualValue2 = instance.OnIcon?.GetCssClasses();
+        Assert.AreEqual(expectedValue1, actualValue2);
         Assert.AreEqual("Cancel", instance.OffIconName);
         Assert.AreEqual("Accept", instance.OnIconName);
         Assert.AreEqual("Cascaded on", instance.OnText);
@@ -104,13 +108,13 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.AreEqual("checkbox", button.GetAttribute("role"));
         Assert.AreEqual("the-panel", button.GetAttribute("aria-controls"));
         Assert.AreEqual("an-external-heading", button.GetAttribute("aria-labelledby"));
-        StringAssert.Contains(button.GetAttribute("aria-describedby"), "an-external-hint");
+        Assert.Contains("an-external-hint", button.GetAttribute("aria-describedby")!);
         Assert.AreEqual("Cascaded aria label", button.GetAttribute("aria-label"));
         Assert.AreEqual("Cascaded title", button.GetAttribute("title"));
         Assert.AreEqual("4", button.GetAttribute("tabindex"));
         Assert.IsTrue(button.HasAttribute("autofocus"));
         Assert.AreEqual("true", button.GetAttribute("aria-busy"));
-        Assert.AreEqual(1, component.FindAll(".bit-tgl-spn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgl-spn"));
     }
 
     [TestMethod]
@@ -127,7 +131,7 @@ public class BitToggleParamsTests : BunitTestContext
         var root = component.Find(".bit-tgl");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-tgl-lbl").ClassList.Contains("cascaded-label"));
         Assert.AreEqual("color: green;", component.Find(".bit-tgl-lbl").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-tgl-btn").ClassList.Contains("cascaded-button"));
@@ -147,7 +151,7 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find("button").HasAttribute("disabled"));
     }
 
@@ -247,9 +251,9 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.IsNull(root.GetAttribute("style"));
         Assert.AreEqual("switch", button.GetAttribute("role"));
         Assert.IsFalse(button.HasAttribute("title"));
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-lbl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-stx").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-des").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-lbl"));
+        Assert.IsEmpty(component.FindAll(".bit-tgl-stx"));
+        Assert.IsEmpty(component.FindAll(".bit-tgl-des"));
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
     }
 }

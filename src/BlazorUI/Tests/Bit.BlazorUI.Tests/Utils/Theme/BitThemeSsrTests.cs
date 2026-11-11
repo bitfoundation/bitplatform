@@ -13,8 +13,8 @@ public sealed class BitThemeSsrTests
     {
         var script = BitThemeSsr.InlineHeadScript;
 
-        StringAssert.StartsWith(script, "<script>", StringComparison.Ordinal);
-        StringAssert.EndsWith(script, "</script>", StringComparison.Ordinal);
+        Assert.StartsWith("<script>", script, StringComparison.Ordinal);
+        Assert.EndsWith("</script>", script, StringComparison.Ordinal);
         Assert.IsTrue(script.Contains(BitThemeSsr.InlineHeadScriptBody, StringComparison.Ordinal));
     }
 
@@ -48,8 +48,8 @@ public sealed class BitThemeSsrTests
     {
         var script = BitThemeSsr.BuildInlineHeadScript("abc123");
 
-        StringAssert.StartsWith(script, "<script nonce=\"abc123\">", StringComparison.Ordinal);
-        StringAssert.EndsWith(script, "</script>", StringComparison.Ordinal);
+        Assert.StartsWith("<script nonce=\"abc123\">", script, StringComparison.Ordinal);
+        Assert.EndsWith("</script>", script, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -78,8 +78,7 @@ public sealed class BitThemeSsrTests
         var systemOverridesBase = body.IndexOf(
             $"if(r.hasAttribute('{BitThemeAttributeNames.ThemeSystem}')){{base=m?dk:lt;}}",
             StringComparison.Ordinal);
-        Assert.IsTrue(systemOverridesBase >= 0,
-            "Inline script must resolve the OS theme when bit-theme-system is present, overriding the explicit base.");
+        Assert.IsGreaterThanOrEqualTo(0, systemOverridesBase, "Inline script must resolve the OS theme when bit-theme-system is present, overriding the explicit base.");
 
         Assert.IsTrue(body.Contains($"if(r.hasAttribute('{BitThemeAttributeNames.ThemePersist}'))", StringComparison.Ordinal),
             "Inline script must read stored values from localStorage when bit-theme-persist is present.");
@@ -89,17 +88,14 @@ public sealed class BitThemeSsrTests
 
         // Read up front (a stored pair set aside is resolved against it), applied here.
         var persistedReadsStorage = body.IndexOf("var cur=base;if(s){", StringComparison.Ordinal);
-        Assert.IsTrue(persistedReadsStorage >= 0,
-            "Inline script must apply the persisted preference over the base.");
+        Assert.IsGreaterThanOrEqualTo(0, persistedReadsStorage, "Inline script must apply the persisted preference over the base.");
 
         // A persisted preference is applied AFTER the system override, so it wins (highest precedence).
-        Assert.IsTrue(persistedReadsStorage > systemOverridesBase,
-            "Persisted preference must be resolved after (and therefore win over) the bit-theme-system override.");
+        Assert.IsGreaterThan(systemOverridesBase, persistedReadsStorage, "Persisted preference must be resolved after (and therefore win over) the bit-theme-system override.");
 
         // A literal "system" value (explicit attribute or persisted) is resolved to OS light/dark last.
         var systemValueResolvesLast = body.IndexOf("if(cur==='system'){cur=m?dk:lt;}", StringComparison.Ordinal);
-        Assert.IsTrue(systemValueResolvesLast > persistedReadsStorage,
-            "A literal 'system' value must be resolved to the OS theme after the persisted preference is read.");
+        Assert.IsGreaterThan(persistedReadsStorage, systemValueResolvesLast, "A literal 'system' value must be resolved to the OS theme after the persisted preference is read.");
     }
 
     [TestMethod]
@@ -127,10 +123,10 @@ public sealed class BitThemeSsrTests
         var body = BitThemeSsr.InlineHeadScriptBody;
 
         var pairRead = body.IndexOf($"g('{BitThemeAttributeNames.ThemePairStorageKey}','{BitThemeCookie.PairCookieName}')", StringComparison.Ordinal);
-        Assert.IsTrue(pairRead >= 0, "Inline script must read the stored pair from the names BitThemeAttributeNames / BitThemeCookie publish.");
+        Assert.IsGreaterThanOrEqualTo(0, pairRead, "Inline script must read the stored pair from the names BitThemeAttributeNames / BitThemeCookie publish.");
 
         var baseResolved = body.IndexOf("var base=", StringComparison.Ordinal);
-        Assert.IsTrue(pairRead < baseResolved, "The stored pair must be read before the base theme is resolved against it.");
+        Assert.IsLessThan(baseResolved, pairRead, "The stored pair must be read before the base theme is resolved against it.");
 
         Assert.IsTrue(body.Contains("if(s){cur=s==='system'?s:sc?(sc==='dark'?dk:lt):av(s)?s:/dark$/.test(s)?dk:lt;}", StringComparison.Ordinal),
             "A preference stored as a theme of the declared pair, or one the page no longer offers, must follow the pair (#13686), and be applied as it is otherwise.");
@@ -429,14 +425,13 @@ public sealed class BitThemeSsrTests
         // Blazor renders a bool `true` attribute as a valueless marker and a string as name="value",
         // so the map has to distinguish the two - that is the whole point of the overload.
         var concrete = BitThemeSsr.BuildRootThemeAttributeMap("dark");
-        CollectionAssert.AreEquivalent(new[] { BitThemeAttributeNames.Theme }, concrete.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { BitThemeAttributeNames.Theme }, concrete.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("dark", concrete[BitThemeAttributeNames.Theme]);
 
         var system = BitThemeSsr.BuildRootThemeAttributeMap("system", defaultTheme: "light");
-        CollectionAssert.AreEquivalent(
-            new[] { BitThemeAttributeNames.ThemeSystem, BitThemeAttributeNames.ThemeDefault },
-            system.Keys.ToArray());
-        Assert.AreEqual(true, system[BitThemeAttributeNames.ThemeSystem]);
+        Assert.AreSequenceEqual(
+            new[] { BitThemeAttributeNames.ThemeSystem, BitThemeAttributeNames.ThemeDefault }, system.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(system[BitThemeAttributeNames.ThemeSystem]));
         Assert.AreEqual("light", system[BitThemeAttributeNames.ThemeDefault]);
     }
 
@@ -464,7 +459,7 @@ public sealed class BitThemeSsrTests
                                   .Split(' ', StringSplitOptions.RemoveEmptyEntries)
                                   .OrderBy(a => a, StringComparer.Ordinal);
 
-        CollectionAssert.AreEqual(expected.ToArray(), rendered.ToArray());
+        Assert.AreSequenceEqual(expected.ToArray(), rendered.ToArray());
     }
 
     [TestMethod]
@@ -483,9 +478,9 @@ public sealed class BitThemeSsrTests
         });
 
         Assert.AreEqual(BitThemePresets.Fluent2Dark, map[BitThemeAttributeNames.Theme]);
-        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersist]);
-        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersistCookie]);
-        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeViewTransition]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(map[BitThemeAttributeNames.ThemePersist]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(map[BitThemeAttributeNames.ThemePersistCookie]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(map[BitThemeAttributeNames.ThemeViewTransition]));
         Assert.AreEqual("--bit-clr-bg-sec", map[BitThemeAttributeNames.ThemeColorMeta]);
         Assert.AreEqual(BitThemePresets.Fluent2Light, map[BitThemeAttributeNames.ThemeLight]);
         Assert.AreEqual(BitThemePresets.Fluent2Dark, map[BitThemeAttributeNames.ThemeDark]);
@@ -499,7 +494,7 @@ public sealed class BitThemeSsrTests
         var withOptions = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions());
         var withoutOptions = BitThemeSsr.BuildRootThemeAttributeMap("dark");
 
-        CollectionAssert.AreEqual(withoutOptions.ToArray(), withOptions.ToArray());
+        Assert.AreSequenceEqual(withoutOptions.ToArray(), withOptions.ToArray());
     }
 
     [TestMethod]
@@ -509,7 +504,7 @@ public sealed class BitThemeSsrTests
         // exactly how the client reads that.
         var map = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions { ThemeColorMeta = true });
 
-        Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeColorMeta]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(map[BitThemeAttributeNames.ThemeColorMeta]));
 
         var off = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions { ThemeColorMeta = false });
 
@@ -528,6 +523,6 @@ public sealed class BitThemeSsrTests
         });
 
         Assert.IsFalse(attributes.Contains("<script>", StringComparison.Ordinal));
-        StringAssert.Contains(attributes, "&quot;&gt;&lt;script&gt;", StringComparison.Ordinal);
+        Assert.Contains("&quot;&gt;&lt;script&gt;", attributes, StringComparison.Ordinal);
     }
 }

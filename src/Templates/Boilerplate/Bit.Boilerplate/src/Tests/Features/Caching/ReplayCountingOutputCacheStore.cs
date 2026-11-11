@@ -2,13 +2,9 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace Boilerplate.Tests.Features.Caching;
 
-/// <summary>
-/// Wraps whichever <see cref="IOutputCacheStore"/> is registered and counts the reads it answered, so a test can tell
-/// a response replayed from the cache apart from one the app simply produced again.
-/// </summary>
-public sealed class ReplayCountingOutputCacheStore(IOutputCacheStore inner, ReplayCountingOutputCacheStore.Counter counter) : IOutputCacheStore
+internal sealed class ReplayCountingOutputCacheStore(IOutputCacheStore inner, ReplayCountingOutputCacheStore.Counter counter) : IOutputCacheStore
 {
-    public sealed class Counter
+    internal sealed class Counter
     {
         private int count;
 
@@ -36,7 +32,7 @@ public sealed class ReplayCountingOutputCacheStore(IOutputCacheStore inner, Repl
         => inner.EvictByTagAsync(tag, cancellationToken);
 }
 
-public static class ReplayCountingOutputCacheStoreExtensions
+internal static class ReplayCountingOutputCacheStoreExtensions
 {
     /// <summary>
     /// Decorates the registered store rather than replacing it, so the real memory store still stores and evicts.

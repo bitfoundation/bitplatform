@@ -23,7 +23,7 @@ public class BitChoiceGroupValidationTests : BunitTestContext
 
         Assert.AreEqual(0, component.Instance.ValidCount);
         Assert.AreEqual(1, component.Instance.InvalidCount);
-        Assert.AreEqual(1, component.FindAll(".validation-message").Count);
+        Assert.ContainsSingle(component.FindAll(".validation-message"));
 
         // The invalid state belongs to the choice as a whole, so the group carries it as well as every radio.
         Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
@@ -45,7 +45,7 @@ public class BitChoiceGroupValidationTests : BunitTestContext
         Assert.AreEqual("B", component.Instance.TestModel.Choice);
         Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-invalid"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
 
         component.Find("form").Submit();
 
@@ -64,7 +64,7 @@ public class BitChoiceGroupValidationTests : BunitTestContext
         Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-invalid"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
     }
 
     [TestMethod]

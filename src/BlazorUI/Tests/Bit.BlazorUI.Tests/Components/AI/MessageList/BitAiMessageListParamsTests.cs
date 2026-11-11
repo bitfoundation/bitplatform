@@ -63,7 +63,7 @@ public class BitAiMessageListParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiMessageListParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiMessageList", BitAiMessageListParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiMessageList", new BitAiMessageListParams().Name);
         Assert.AreEqual(BitAiMessageListParams.ParamName, new BitAiMessageListParams().Name);
     }
 
@@ -118,6 +118,6 @@ public class BitAiMessageListParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
-        Assert.HasCount(1, component.FindAll("article"));
+        Assert.ContainsSingle(component.FindAll("article"));
     }
 }

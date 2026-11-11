@@ -21,7 +21,7 @@ public partial class BitLabelStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         foreach (var name in documented)
         {
@@ -29,7 +29,7 @@ public partial class BitLabelStylesheetTests
             // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
             var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
 
-            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
+            Assert.Contains(read, stylesheet, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -43,7 +43,7 @@ public partial class BitLabelStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -58,7 +58,7 @@ public partial class BitLabelStylesheetTests
     [TestMethod]
     public void BitLabelShouldInheritTheColorOfItsContainerByDefault()
     {
-        StringAssert.Contains(ReadStylesheet(), "color: var(--bit-Label-color, inherit);");
+        Assert.Contains("color: var(--bit-Label-color, inherit);", ReadStylesheet());
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public partial class BitLabelStylesheetTests
     {
         // The theme's field-label weight is what the inputs caption themselves with, so reading it keeps a standalone
         // label in step with them under every preset rather than pinning the Fluent semibold.
-        StringAssert.Contains(ReadStylesheet(), "font-weight: var(--bit-Label-font-weight, #{$tg-field-label-font-weight});");
+        Assert.Contains("font-weight: var(--bit-Label-font-weight, #{$tg-field-label-font-weight});", ReadStylesheet());
     }
 
     [TestMethod,
@@ -77,8 +77,8 @@ public partial class BitLabelStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n.bit-lbl-{size} {{");
 
-        StringAssert.Contains(block, "font-size: $tg-fs-");
-        Assert.IsFalse(block.Contains("--bit-Label-"), $"The {size} size reads a public variable.");
+        Assert.Contains("font-size: $tg-fs-", block);
+        Assert.DoesNotContain("--bit-Label-", block, $"The {size} size reads a public variable.");
     }
 
     [TestMethod]
@@ -86,8 +86,8 @@ public partial class BitLabelStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-lbl-#{$role} {");
 
-        StringAssert.Contains(block, "color: role($tokens, fg);");
-        Assert.IsFalse(block.Contains("--bit-Label-"), "The Color classes read a public variable.");
+        Assert.Contains("color: role($tokens, fg);", block);
+        Assert.DoesNotContain("--bit-Label-", block, "The Color classes read a public variable.");
     }
 
     [TestMethod]
@@ -95,8 +95,8 @@ public partial class BitLabelStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
-        StringAssert.Contains(block, "color: $clr-fg-dis;");
-        Assert.IsFalse(block.Contains("--bit-Label-"));
+        Assert.Contains("color: $clr-fg-dis;", block);
+        Assert.DoesNotContain("--bit-Label-", block);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public partial class BitLabelStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &.bit-dis {");
 
         // Inheriting rather than naming the disabled color is what also carries the GrayText of a forced-colors mode.
-        StringAssert.Contains(block, ".bit-lbl-rqi,\n        .bit-lbl-opi {\n            color: inherit;");
+        Assert.Contains(".bit-lbl-rqi,\n        .bit-lbl-opi {\n            color: inherit;", block);
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public partial class BitLabelStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(block, ".bit-lbl.bit-dis {\n        color: GrayText;");
+        Assert.Contains(".bit-lbl.bit-dis {\n        color: GrayText;", block);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public partial class BitLabelStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &:focus-visible {");
 
         // The mixin draws the themed ring and brings a Highlight outline back in a forced-colors mode.
-        StringAssert.Contains(block, "@include focus-ring-own(var(--bit-Label-focus-color));");
+        Assert.Contains("@include focus-ring-own(var(--bit-Label-focus-color));", block);
     }
 
     [TestMethod]
@@ -133,9 +133,9 @@ public partial class BitLabelStylesheetTests
         // The clipping is only lifted while a control inside the label has the focus, so a control it wraps is never
         // focused out of sight, while a label focused itself stays hidden. The condition is inside :where(), so the
         // rule keeps the weight of its one class and a Class of the page still overrides it.
-        StringAssert.Contains(stylesheet, ".bit-lbl-vhd:where(:not(:focus-within), :focus) {");
+        Assert.Contains(".bit-lbl-vhd:where(:not(:focus-within), :focus) {", stylesheet);
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\.bit-lbl-vhd\s*\{"), "The visually hidden label is clipped regardless of the focus.");
-        Assert.IsFalse(stylesheet.Contains(".bit-lbl-vhd:not("), "The focus condition raises the specificity of the rule.");
+        Assert.DoesNotContain(".bit-lbl-vhd:not(", stylesheet, "The focus condition raises the specificity of the rule.");
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public partial class BitLabelStylesheetTests
         {
             var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-lbl-{indicator} {{");
 
-            StringAssert.Contains(block, "margin-inline-start: var(--bit-Label-indicator-gap, ");
+            Assert.Contains("margin-inline-start: var(--bit-Label-indicator-gap, ", block);
         }
     }
 
@@ -159,23 +159,23 @@ public partial class BitLabelStylesheetTests
         // The label keeps its own display, so its text-align still positions the content and a display set through
         // the style still truncates; it clips whatever overflows it.
         var noWrap = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-nwr {");
-        Assert.IsFalse(noWrap.Contains("display:"), "The label is turned into a flex container, which ignores its text-align.");
-        StringAssert.Contains(noWrap, "overflow: hidden;");
-        StringAssert.Contains(noWrap, "white-space: nowrap;");
-        StringAssert.Contains(noWrap, ".bit-lbl-rqi,\n    .bit-lbl-opi {\n        flex-shrink: 0;");
-        Assert.IsFalse(noWrap.Contains("text-overflow"), "The ellipsis is put on the whole label, indicator included.");
+        Assert.DoesNotContain("display:", noWrap, "The label is turned into a flex container, which ignores its text-align.");
+        Assert.Contains("overflow: hidden;", noWrap);
+        Assert.Contains("white-space: nowrap;", noWrap);
+        Assert.Contains(".bit-lbl-rqi,\n    .bit-lbl-opi {\n        flex-shrink: 0;", noWrap);
+        Assert.DoesNotContain("text-overflow", noWrap, "The ellipsis is put on the whole label, indicator included.");
 
         // The content and its indicator are an inline row no wider than the label, lined up on their text baseline
         // as the wrapping label lines them up.
         var row = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-row {");
-        StringAssert.Contains(row, "display: inline-flex;");
-        StringAssert.Contains(row, "max-width: 100%;");
-        StringAssert.Contains(row, "align-items: baseline;");
+        Assert.Contains("display: inline-flex;", row);
+        Assert.Contains("max-width: 100%;", row);
+        Assert.Contains("align-items: baseline;", row);
 
         var text = SourceFiles.GetScssBlock(stylesheet, "\n.bit-lbl-txt {");
-        StringAssert.Contains(text, "min-width: 0;");
-        StringAssert.Contains(text, "overflow: hidden;");
-        StringAssert.Contains(text, "text-overflow: ellipsis;");
+        Assert.Contains("min-width: 0;", text);
+        Assert.Contains("overflow: hidden;", text);
+        Assert.Contains("text-overflow: ellipsis;", text);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

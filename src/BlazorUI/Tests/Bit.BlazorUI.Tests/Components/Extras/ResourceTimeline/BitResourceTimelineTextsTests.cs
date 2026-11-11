@@ -31,8 +31,7 @@ public partial class BitResourceTimelineTextsTests
         var overlap = engine.Keys.Intersect(markup).ToList();
         Assert.IsEmpty(overlap, "A text is both one of the engine and one of the markup: " + string.Join(", ", overlap));
 
-        CollectionAssert.AreEquivalent(engine.Keys.Concat(markup).Order(StringComparer.Ordinal).ToArray(),
-                                       TextNames().Order(StringComparer.Ordinal).ToArray());
+        Assert.AreSequenceEqual(engine.Keys.Concat(markup).Order(StringComparer.Ordinal).ToArray(), TextNames().Order(StringComparer.Ordinal).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -59,7 +58,7 @@ public partial class BitResourceTimelineTextsTests
 
         // A text the markup reads but the facade hands the engine is a warning in the console; one the facade keeps from
         // the engine but nothing reads is a text no app can change anything with.
-        CollectionAssert.AreEqual(MarkupTexts().Order(StringComparer.Ordinal).ToArray(), read);
+        Assert.AreSequenceEqual(MarkupTexts().Order(StringComparer.Ordinal).ToArray(), read);
     }
 
     [TestMethod]
@@ -69,7 +68,7 @@ public partial class BitResourceTimelineTextsTests
 
         var names = document.RootElement.EnumerateObject().Select(p => p.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(TextNames(), names);
+        Assert.AreSequenceEqual(TextNames(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(document.RootElement.EnumerateObject().All(p => p.Value.ValueKind == JsonValueKind.String));
     }
 
@@ -86,7 +85,7 @@ public partial class BitResourceTimelineTextsTests
 
             if (property.Name.EndsWith("Format", StringComparison.Ordinal))
             {
-                StringAssert.Contains(value, "{0}", $"{property.Name} is a format without a placeholder.");
+                Assert.Contains("{0}", value, $"{property.Name} is a format without a placeholder.");
 
                 // The markup formats the group button labels with string.Format and the name of the group alone, so a
                 // placeholder past {0} there throws; the engine formats the rest with the same syntax and up to four.

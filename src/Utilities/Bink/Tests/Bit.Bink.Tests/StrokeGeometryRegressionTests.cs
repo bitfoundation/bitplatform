@@ -48,7 +48,7 @@ public class StrokeGeometryRegressionTests(TestContext output)
         output.WriteLine($"{count} points -> " + string.Join(" ", samples.Select(v => v.ToString("0.00"))));
         foreach (float coverage in samples)
         {
-            Assert.IsTrue(coverage > 4.5f, $"a {count}-point stroke tapered outside its taper zone: {string.Join(" ", samples)}");
+            Assert.IsGreaterThan(4.5f, coverage, $"a {count}-point stroke tapered outside its taper zone: {string.Join(" ", samples)}");
         }
     }
 }

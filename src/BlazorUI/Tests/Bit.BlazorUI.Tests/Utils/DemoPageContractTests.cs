@@ -56,7 +56,7 @@ public partial class DemoPageContractTests
     {
         var files = ExampleFiles().ToArray();
 
-        Assert.IsTrue(files.Length > 50, $"Only {files.Length} demo files with examples were found.");
+        Assert.IsGreaterThan(50, files.Length, $"Only {files.Length} demo files with examples were found.");
 
         var offenders = new List<string>();
 
@@ -113,7 +113,7 @@ public partial class DemoPageContractTests
             }
         }
 
-        Assert.IsTrue(files > 50, $"Only {files} demo files with examples were numbered.");
+        Assert.IsGreaterThan(50, files, $"Only {files} demo files with examples were numbered.");
 
         Fail(offenders,
             "The examples of a demo file (of each tab of a multi-API component) are numbered from 1 with no gap in the " +
@@ -205,7 +205,7 @@ public partial class DemoPageContractTests
             }
         }
 
-        Assert.IsTrue(links > 20, $"Only {links} links to an example were found; the reading of the pages is broken.");
+        Assert.IsGreaterThan(20, links, $"Only {links} links to an example were found; the reading of the pages is broken.");
 
         Fail(offenders, "A link to #exampleN points at an example of the file it is in (of its own tab, for a multi-API component); renumbering a section renumbers the links to it.");
     }
@@ -215,12 +215,12 @@ public partial class DemoPageContractTests
     {
         var navItems = ReadNavItems();
 
-        Assert.IsTrue(navItems.Count > 80, $"Only {navItems.Count} nav items with a url were read off MainLayout.razor.NavItems.cs.");
+        Assert.IsGreaterThan(80, navItems.Count, $"Only {navItems.Count} nav items with a url were read off MainLayout.razor.NavItems.cs.");
 
         var offenders = new List<string>();
         var pages = DemoPages().ToArray();
 
-        Assert.IsTrue(pages.Length > 80, $"Only {pages.Length} demo pages were found.");
+        Assert.IsGreaterThan(80, pages.Length, $"Only {pages.Length} demo pages were found.");
 
         foreach (var page in pages)
         {
@@ -273,7 +273,7 @@ public partial class DemoPageContractTests
                                             .Select(m => (ComponentSubEnum)m.Invoke(null, [.. m.GetParameters().Select(p => p.DefaultValue)])!)
                                             .ToDictionary(t => t.Name!, t => (Id: t.Id!, Factory: $"DemoSharedEnums.{t.Name}"), StringComparer.Ordinal);
 
-        Assert.IsTrue(shared.Count > 20, $"Only {shared.Count} shared tables were read off DemoSharedEnums.");
+        Assert.IsGreaterThan(20, shared.Count, $"Only {shared.Count} shared tables were read off DemoSharedEnums.");
 
         var demoPage = SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Components", "DemoPage.razor.cs");
 
@@ -333,7 +333,7 @@ public partial class DemoPageContractTests
             }
         }
 
-        Assert.IsTrue(rows > 100, $"Only {rows} parameter rows typed with a shared enum were read; the reading of the pages is broken.");
+        Assert.IsGreaterThan(100, rows, $"Only {rows} parameter rows typed with a shared enum were read; the reading of the pages is broken.");
 
         Fail(offenders,
             "A parameter row whose Type is an enum with a shared table (DemoSharedEnums, or BitComponentBase's BitDir and BitVisibility), " +
@@ -349,7 +349,7 @@ public partial class DemoPageContractTests
                          .Where(f => IsExcluded(f) is false)
                          .ToArray();
 
-        Assert.IsTrue(files.Length > 300, $"Only {files.Length} .razor files were found.");
+        Assert.IsGreaterThan(300, files.Length, $"Only {files.Length} .razor files were found.");
 
         var offenders = new List<string>();
 
@@ -378,7 +378,7 @@ public partial class DemoPageContractTests
     {
         var found = FindCommentsInsideTags(razor).ToArray();
 
-        Assert.AreEqual(1, found.Length, razor);
+        Assert.ContainsSingle(found, razor);
         Assert.AreEqual(tag, found[0].Tag);
     }
 
@@ -391,7 +391,7 @@ public partial class DemoPageContractTests
     [DataRow("<p>if a <b then</p> @* fine *@")]
     public void ACommentOutsideATagShouldNotBeFound(string razor)
     {
-        Assert.AreEqual(0, FindCommentsInsideTags(razor).Count(), razor);
+        Assert.IsEmpty(FindCommentsInsideTags(razor), razor);
     }
 
     [TestMethod]

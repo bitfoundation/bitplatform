@@ -169,7 +169,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         async Task<string> middleware(string input)
         {
             middlewareCalled = input == html;
-            await Task.Delay(1);
+            await Task.Delay(1, TestContext.CancellationToken);
             return processedHtml;
         }
 
@@ -232,7 +232,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         {
             middlewareCalled = true;
             middlewareInput = input;
-            await Task.Delay(1);
+            await Task.Delay(1, TestContext.CancellationToken);
             return csharpProcessedHtml;
         }
 
@@ -277,8 +277,8 @@ public class BitMarkdownViewerTests : BunitTestContext
             [nameof(BitMarkdownViewerLegacy.NoPrerender)] = true,
         });
 
-        StringAssert.Contains(html, "bit-mdv-lgc");
-        Assert.IsFalse(html.Contains("Title"));
+        Assert.Contains("bit-mdv-lgc", html);
+        Assert.DoesNotContain("Title", html);
     }
 
     [TestMethod]
@@ -304,7 +304,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         Assert.AreEqual("root", root.GetAttribute("data-test"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+        Assert.Contains("padding:1px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -323,5 +323,7 @@ public class BitMarkdownViewerTests : BunitTestContext
         // The cancellation source is disposed with the component, so a second disposal must not reach it again.
         await component.Instance.DisposeAsync();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 

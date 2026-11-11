@@ -50,7 +50,7 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
 
         // Its cells grow to share the width of the screen.
         var day = await BoxAsync(Day(pid, Today));
-        Assert.IsTrue(day.Width > 36, $"A day of the panel is a touch-sized cell ({day.Width}px).");
+        Assert.IsGreaterThan(36, day.Width, $"A day of the panel is a touch-sized cell ({day.Width}px).");
 
         await Day(pid, 2024, 6, 20).TapAsync();
         await Expect(Page.Locator("#resp-value")).ToHaveTextAsync("2024-06-20 00:00");
@@ -82,10 +82,10 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
         // The month header and the buttons that move between the months start below the notch (and an app shell's
         // top bar), where they can be read and pressed.
         var header = await BoxAsync(Callout(pid).Locator(".bit-dtp-pkh").First);
-        Assert.IsTrue(header.Y >= 47, $"The month header sits under the notch ({header.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, header.Y, $"The month header sits under the notch ({header.Y}px).");
 
         var previous = await BoxAsync(Callout(pid).Locator(".bit-dtp-nbt").First);
-        Assert.IsTrue(previous.Y >= 47, $"The month navigation sits under the notch ({previous.Y}px).");
+        Assert.IsGreaterThanOrEqualTo(47, previous.Y, $"The month navigation sits under the notch ({previous.Y}px).");
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
 
         var field = await BoxAsync(Page.Locator("#dp-narrow .bit-dtp-wrp"));
         var callout = await BoxAsync(Callout(pid));
-        Assert.IsTrue(Math.Abs(callout.Y - (field.Y + field.Height + 1)) <= 2, "Not Responsive, the callout still drops from its field.");
+        Assert.IsLessThanOrEqualTo(2, Math.Abs(callout.Y - (field.Y + field.Height + 1)), "Not Responsive, the callout still drops from its field.");
         Assert.IsTrue(callout.X >= 0 && callout.X + callout.Width <= 390 + 1, "The callout fits the screen.");
 
         var title = Callout(pid).Locator(".bit-dtp-dwp .bit-dtp-ptb");

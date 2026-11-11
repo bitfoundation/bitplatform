@@ -3,7 +3,7 @@ using Microsoft.Extensions.AI;
 
 namespace Boilerplate.LandingPage.Tests.Infrastructure;
 
-public sealed class RecordingChatClient : IChatClient
+internal sealed class RecordingChatClient : IChatClient
 {
     public ChatOptions? Options { get; private set; }
 

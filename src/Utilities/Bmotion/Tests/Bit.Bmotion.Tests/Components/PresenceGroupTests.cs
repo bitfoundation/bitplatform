@@ -54,7 +54,7 @@ public class PresenceGroupTests
 
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a", "c", "b" }));
 
-        CollectionAssert.AreEqual(new[] { "a", "c", "b" }, Rows(cut));
+        Assert.AreSequenceEqual(new[] { "a", "c", "b" }, Rows(cut));
         Assert.AreEqual("1", LastOpacityTarget(ctx, "item-c"), "the new item enters");
         Assert.AreEqual(aPlays, ctx.Interop.Calls.Count(c => c.Method == "playWaapiAnimation" && (string?)c.Args[0] == "item-a"),
             "kept items are not replayed");
@@ -71,15 +71,15 @@ public class PresenceGroupTests
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a", "c" }));
 
         // Still mounted, anchored where it was, and playing its exit.
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, Rows(cut));
+        Assert.AreSequenceEqual(new[] { "a", "b", "c" }, Rows(cut));
         Assert.AreEqual("0", LastOpacityTarget(ctx, "item-b"));
         Assert.AreEqual(0, exits);
 
         await ctx.FinishWaapiAsync("item-b");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a", "c" }, Rows(cut)));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a", "c" }, Rows(cut)));
         // Exactly-once is pinned (and currently ignored) by OnExitComplete_FiresOncePerRemovedItem.
-        cut.WaitForAssertion(() => Assert.IsTrue(exits >= 1, "the finished exit must be reported"));
+        cut.WaitForAssertion(() => Assert.IsGreaterThanOrEqualTo(1, exits, "the finished exit must be reported"));
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class PresenceGroupTests
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a" }));
         await ctx.FinishWaapiAsync("item-b");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, Rows(cut)));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a" }, Rows(cut)));
         // Give a duplicate callback every chance to land: it would come from b's disposal, which the
         // render above has already performed.
         await cut.InvokeAsync(() => { });
@@ -113,7 +113,7 @@ public class PresenceGroupTests
 
         Assert.AreEqual("1", LastOpacityTarget(ctx, "item-b"), "the revived item plays its enter again");
         await ctx.FinishWaapiAsync();
-        CollectionAssert.AreEqual(new[] { "a", "b" }, Rows(cut));
+        Assert.AreSequenceEqual(new[] { "a", "b" }, Rows(cut));
         Assert.AreEqual(0, exits, "a cancelled exit must never be reported");
     }
 
@@ -130,7 +130,7 @@ public class PresenceGroupTests
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a" }));
         await ctx.FinishWaapiAsync("item-b");
 
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, Rows(cut)), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a" }, Rows(cut)), TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public class PresenceGroupTests
         cut.Render(ps => ps.Add(p => p.Items, new[] { "a" }));
 
         var popped = ctx.Interop.ArgsOf("popLayout").Select(a => (string?)a[0]).ToArray();
-        CollectionAssert.AreEqual(new[] { "item-b" }, popped);
+        Assert.AreSequenceEqual(new[] { "item-b" }, popped);
     }
 
     [TestMethod]

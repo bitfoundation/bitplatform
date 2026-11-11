@@ -20,19 +20,19 @@ public partial class BitPhoneInputStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // field an unset one stands for.
-        StringAssert.Contains(stylesheet, "--bit-phi-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-lbl-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-label-font-size, var(--bit-PhoneInput-font-size, #{$tg-fs-sm})));");
-        StringAssert.Contains(stylesheet, "--bit-phi-h: var(--bit-phi-sz-h, var(--bit-PhoneInput-min-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-inp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-padding, 0 #{$siz-ctrl-pad-x-md}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-drp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-dropdown-padding, 0 #{$siz-ctrl-pad-x-md}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-flg: var(--bit-phi-sz-icon, var(--bit-PhoneInput-flag-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-itm-h: var(--bit-phi-sz-itm-h, var(--bit-PhoneInput-item-height, #{$siz-item-md}));");
+        Assert.Contains("--bit-phi-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-phi-lbl-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-label-font-size, var(--bit-PhoneInput-font-size, #{$tg-fs-sm})));", stylesheet);
+        Assert.Contains("--bit-phi-h: var(--bit-phi-sz-h, var(--bit-PhoneInput-min-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("--bit-phi-inp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-padding, 0 #{$siz-ctrl-pad-x-md}));", stylesheet);
+        Assert.Contains("--bit-phi-drp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-dropdown-padding, 0 #{$siz-ctrl-pad-x-md}));", stylesheet);
+        Assert.Contains("--bit-phi-flg: var(--bit-phi-sz-icon, var(--bit-PhoneInput-flag-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("--bit-phi-itm-h: var(--bit-phi-sz-itm-h, var(--bit-PhoneInput-item-height, #{$siz-item-md}));", stylesheet);
 
         // So do an explicit Background, Border and Color - the Border kind before the main color of the Color role.
-        StringAssert.Contains(stylesheet, "--bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));");
-        StringAssert.Contains(stylesheet, "--bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));");
-        StringAssert.Contains(stylesheet, "--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));");
+        Assert.Contains("--bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));", stylesheet);
+        Assert.Contains("--bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));", stylesheet);
+        Assert.Contains("--bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));", stylesheet);
+        Assert.Contains("--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));", stylesheet);
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -47,11 +47,11 @@ public partial class BitPhoneInputStylesheetTests
         foreach (var property in new[] { "--bit-phi-sz-fs", "--bit-phi-sz-h", "--bit-phi-sz-pad", "--bit-phi-sz-icon", "--bit-phi-sz-itm-h",
                                          "--bit-phi-role-main", "--bit-phi-role-focus", "--bit-phi-kind-bg", "--bit-phi-kind-brd", "--bit-phi-kind-brd-hover" })
         {
-            StringAssert.Contains(resets, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", resets);
         }
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi {"), "@include phi-resets;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi-cal {"), "@include phi-resets;");
+        Assert.Contains("@include phi-resets;", SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi {"));
+        Assert.Contains("@include phi-resets;", SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi-cal {"));
     }
 
     [TestMethod]
@@ -61,9 +61,9 @@ public partial class BitPhoneInputStylesheetTests
 
         // The label above the field and the one heading the responsive panel are the same Label, so both read the size
         // phi-vars resolves - an explicit Size, then the label and font variables - which the callout includes too.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-lbl {"), "font-size: var(--bit-phi-lbl-fs);");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-rlb {"), "font-size: var(--bit-phi-lbl-fs);");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-cal {"), "@include phi-vars;");
+        Assert.Contains("font-size: var(--bit-phi-lbl-fs);", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-lbl {"));
+        Assert.Contains("font-size: var(--bit-phi-lbl-fs);", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-rlb {"));
+        Assert.Contains("@include phi-vars;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-phi-cal {"));
     }
 
     [TestMethod]
@@ -72,11 +72,11 @@ public partial class BitPhoneInputStylesheetTests
         var stylesheet = ReadStylesheet();
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(44, documented.Length, "The header does not document the forty-four public variables.");
+        Assert.HasCount(44, documented, "The header does not document the forty-four public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}", $"{name} is documented but never read.");
+            Assert.Contains($"var({name}", stylesheet, $"{name} is documented but never read.");
         }
 
         // Every read has a fallback, so an unset variable leaves the default in place - except the focus color,
@@ -95,7 +95,7 @@ public partial class BitPhoneInputStylesheetTests
 
         foreach (var name in ReadVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct())
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -116,18 +116,18 @@ public partial class BitPhoneInputStylesheetTests
         // to left: the direction is read off the group it sits in, whatever made that right to left - and the box
         // itself keeps to the right hand side of the field.
         var rule = SourceFiles.GetScssBlock(stylesheet, "\n.bit-phi-fgp:dir(rtl) > .bit-phi-inp {");
-        StringAssert.Contains(rule, "direction: ltr;");
-        StringAssert.Contains(rule, "text-align: right;");
+        Assert.Contains("direction: ltr;", rule);
+        Assert.Contains("text-align: right;", rule);
 
         // An engine without :dir() is left with the dir attribute an explicit Dir renders, through child combinators
         // only, so a nested field reading the other way is never reached.
         var fallback = SourceFiles.GetScssBlock(stylesheet, "\n@supports not selector(:dir(rtl)) {");
-        StringAssert.Contains(fallback, ".bit-phi[dir=\"rtl\"] > .bit-phi-fgp > .bit-phi-inp {");
-        StringAssert.Contains(fallback, "direction: ltr;");
-        StringAssert.Contains(fallback, "text-align: right;");
+        Assert.Contains(".bit-phi[dir=\"rtl\"] > .bit-phi-fgp > .bit-phi-inp {", fallback);
+        Assert.Contains("direction: ltr;", fallback);
+        Assert.Contains("text-align: right;", fallback);
 
         // The responsive panel follows the class the callout carries for an explicit Dir, or the direction it is laid out in.
-        StringAssert.Contains(stylesheet, "\n.bit-phi-res:is(.bit-rtl, :dir(rtl)) {");
+        Assert.Contains("\n.bit-phi-res:is(.bit-rtl, :dir(rtl)) {", stylesheet);
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "PhoneInput", "BitPhoneInput.scss");

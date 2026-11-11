@@ -40,7 +40,7 @@ public sealed class SplitTextTests : BmotionPageTest
     {
         var container = Page.Locator("h2.words");
         await Assertions.Expect(container.Locator(".unit")).ToHaveCountAsync(3);
-        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, (await container.Locator(".unit").AllTextContentsAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "one", "two", "three" }, (await container.Locator(".unit").AllTextContentsAsync()).ToArray());
         await ExpectEventAsync("words:complete");
     }
 
@@ -50,7 +50,7 @@ public sealed class SplitTextTests : BmotionPageTest
         var units = Page.Locator(".lines .unit");
         await Assertions.Expect(units).ToHaveCountAsync(2);
         Assert.AreEqual("block", await units.First.EvaluateAsync<string>("el => getComputedStyle(el).display"));
-        CollectionAssert.AreEqual(new[] { "first line", "second line" }, (await units.AllTextContentsAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "first line", "second line" }, (await units.AllTextContentsAsync()).ToArray());
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public sealed class SplitTextTests : BmotionPageTest
 
         // 1.2s linear: still fading in after half a second, not done like the library's 0.3s default.
         var opacity = Number(await Page.Locator(".configured .unit").First.EvaluateAsync<string>("el => getComputedStyle(el).opacity"));
-        Assert.IsTrue(opacity < 0.9, $"The config's transition was ignored: opacity {opacity} after 0.5s.");
+        Assert.IsLessThan(0.9, opacity, $"The config's transition was ignored: opacity {opacity} after 0.5s.");
         await ExpectEventAsync("configured:complete", timeout: 5_000);
     }
 }

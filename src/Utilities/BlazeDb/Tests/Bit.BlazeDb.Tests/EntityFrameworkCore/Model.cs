@@ -8,7 +8,7 @@ namespace Bit.BlazeDb.Tests.EntityFrameworkCore;
 /// </summary>
 [BlazeDbTable("people")]
 [BlazeDbCompoundIndex("CityAge", nameof(City), nameof(Age))]
-public partial class Person
+internal partial class Person
 {
     [BlazeDbKey]
     public int Id { get; set; }
@@ -31,7 +31,7 @@ public partial class Person
 
 /// <summary>A second table, so saves spanning two tables can be shown to be one transaction.</summary>
 [BlazeDbTable("orders")]
-public partial class Order
+internal partial class Order
 {
     [BlazeDbKey]
     public int Id { get; set; }
@@ -42,7 +42,7 @@ public partial class Order
     public decimal Total { get; set; }
 }
 
-public sealed class PeopleContext : DbContext
+internal sealed class PeopleContext : DbContext
 {
     public PeopleContext(DbContextOptions<PeopleContext> options) : base(options)
     {
@@ -58,7 +58,7 @@ public sealed class PeopleContext : DbContext
 }
 
 /// <summary>A context that knows only part of the store, for sharing it with <see cref="PeopleContext"/>.</summary>
-public sealed class PeopleOnlyContext : DbContext
+internal sealed class PeopleOnlyContext : DbContext
 {
     public PeopleOnlyContext(DbContextOptions<PeopleOnlyContext> options) : base(options)
     {
@@ -67,7 +67,7 @@ public sealed class PeopleOnlyContext : DbContext
     public DbSet<Person> People => Set<Person>();
 }
 
-public sealed class FilteredPeopleContext : DbContext
+internal sealed class FilteredPeopleContext : DbContext
 {
     public FilteredPeopleContext(DbContextOptions<FilteredPeopleContext> options) : base(options)
     {
@@ -79,7 +79,7 @@ public sealed class FilteredPeopleContext : DbContext
         modelBuilder.Entity<Person>().HasQueryFilter(p => p.Active);
 }
 
-public sealed class NamedFilterPeopleContext : DbContext
+internal sealed class NamedFilterPeopleContext : DbContext
 {
     public NamedFilterPeopleContext(DbContextOptions<NamedFilterPeopleContext> options) : base(options)
     {
@@ -104,7 +104,7 @@ public enum TagKind : byte
 /// attributes and to convert predicate values before handing them to an index.
 /// </summary>
 [BlazeDbTable("tags")]
-public partial class Tag
+internal partial class Tag
 {
     [BlazeDbKey]
     public string Slug { get; set; } = "";
@@ -125,7 +125,7 @@ public partial class Tag
 /// them by value for the originals a save hands the engine.
 /// </summary>
 [BlazeDbTable("notes")]
-public partial class Note
+internal partial class Note
 {
     [BlazeDbKey]
     public int Id { get; set; }

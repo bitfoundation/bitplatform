@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -33,7 +33,7 @@ public class BmotionComponentTests
 
         var div = cut.Find("div");
         Assert.AreEqual("box", div.Id);
-        StringAssert.Contains(div.GetAttribute("style"), "opacity");
+        Assert.Contains("opacity", div.GetAttribute("style")!);
         Assert.AreEqual("box", div.GetAttribute("class"));
     }
 
@@ -47,7 +47,7 @@ public class BmotionComponentTests
 
         Assert.AreEqual("authored", cut.Find("div").Id);
         // The engine must register the adopted id, not a generated one.
-        Assert.IsTrue(ctx.Interop.Calls.Any(c => c.Method == "registerElement" && (string?)c.Args[0] == "authored"));
+        Assert.Contains(c => c.Method == "registerElement" && (string?)c.Args[0] == "authored", ctx.Interop.Calls);
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class BmotionComponentTests
         // ("opacity:0" is also a prefix of "opacity:0.7").
         var style = cut.Find("div").GetAttribute("style")!;
         var idx = style.LastIndexOf("opacity:", StringComparison.Ordinal);
-        Assert.IsTrue(idx >= 0, $"expected an opacity declaration in: {style}");
+        Assert.IsGreaterThanOrEqualTo(0, idx, $"expected an opacity declaration in: {style}");
         var lastOpacity = style[(idx + "opacity:".Length)..].Split(';', 2)[0].Trim();
         Assert.AreEqual("0.7", lastOpacity, $"authored opacity must be the effective (last) one: {style}");
     }

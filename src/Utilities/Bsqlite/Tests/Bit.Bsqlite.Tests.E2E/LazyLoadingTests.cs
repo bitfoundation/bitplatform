@@ -34,16 +34,20 @@ public sealed class LazyLoadingTests : DemoTest
 
     protected override async Task<string> StartHostAsync()
     {
+        string? unavailableReason = null;
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Bsqlite", "BSQLITE", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The lazy loading tests could not run: " + reason);
-            Assert.Inconclusive("The lazy loading tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The lazy loading tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The lazy loading tests could not run: " + unavailableReason);
         }
 
         return _sample!.BaseUrl;
@@ -90,7 +94,8 @@ public sealed class LazyLoadingTests : DemoTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the page, which opens no
         // database there.
         var response = await GotoSampleAsync(page, problems, "/products");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("<h1>Products</h1>", prerendered);
         Assert.Contains("Opening the database once the page runs in the browser", prerendered);
@@ -165,7 +170,7 @@ public sealed class LazyLoadingTests : DemoTest
         }
         catch (Exception ex) when (ex is PlaywrightException or System.TimeoutException)
         {
-            lock (problems) Assert.Fail($"{failure} ({ex.Message}). The page reported:{Environment.NewLine}{string.Join(Environment.NewLine, problems)}");
+            lock (problems) throw new global::System.InvalidOperationException($"{failure} ({ex.Message}). The page reported:{Environment.NewLine}{string.Join(Environment.NewLine, problems)}", ex);
         }
     }
 

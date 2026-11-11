@@ -50,7 +50,7 @@ public sealed class BitThemeFactoryTests
         Assert.IsNull(theme.Shape.BorderRadius, "Shape");
 
         var cssVars = BitThemeUtilities.ToCssVariables(theme);
-        Assert.IsTrue(cssVars.Count > 0, "some variables must be emitted");
+        Assert.IsNotEmpty(cssVars, "some variables must be emitted");
         Assert.IsTrue(cssVars.Keys.All(k => k.StartsWith("--bit-clr-pri", StringComparison.Ordinal)),
             $"only primary variables may be emitted, got: {string.Join(", ", cssVars.Keys.Where(k => !k.StartsWith("--bit-clr-pri", StringComparison.Ordinal)))}");
     }
@@ -70,11 +70,11 @@ public sealed class BitThemeFactoryTests
         var mainColor = new BitInternalColor(dark.Main!);
         var (mainL, _, mainH) = BitThemeOklch.FromRgb(mainColor.R, mainColor.G, mainColor.B);
 
-        Assert.IsTrue(mainL > brandL, $"dark main {dark.Main} must be lighter than brand {brand}");
+        Assert.IsGreaterThan(brandL, mainL, $"dark main {dark.Main} must be lighter than brand {brand}");
 
         var hueDelta = Math.Abs(mainH - brandH);
         if (hueDelta > 180) hueDelta = 360 - hueDelta;
-        Assert.IsTrue(hueDelta < 3.0, $"dark main {dark.Main} hue drifted {hueDelta:F1}° from brand {brand}");
+        Assert.IsLessThan(3.0, hueDelta, $"dark main {dark.Main} hue drifted {hueDelta:F1}° from brand {brand}");
     }
 
     [TestMethod]
@@ -91,13 +91,11 @@ public sealed class BitThemeFactoryTests
         var packagedColor = new BitInternalColor("#4FA3F4");
         var (packagedL, _, packagedH) = BitThemeOklch.FromRgb(packagedColor.R, packagedColor.G, packagedColor.B);
 
-        Assert.IsTrue(Math.Abs(derivedL - packagedL) < 0.02,
-            $"derived dark main {derived} (L={derivedL:F4}) should sit within 0.02 OKLab lightness of packaged #4FA3F4 (L={packagedL:F4})");
+        Assert.IsLessThan(0.02, Math.Abs(derivedL - packagedL), $"derived dark main {derived} (L={derivedL:F4}) should sit within 0.02 OKLab lightness of packaged #4FA3F4 (L={packagedL:F4})");
 
         var hueDelta = Math.Abs(derivedH - packagedH);
         if (hueDelta > 180) hueDelta = 360 - hueDelta;
-        Assert.IsTrue(hueDelta < 3.0,
-            $"derived dark main {derived} (H={derivedH:F1}°) should share the hue of packaged #4FA3F4 (H={packagedH:F1}°)");
+        Assert.IsLessThan(3.0, hueDelta, $"derived dark main {derived} (H={derivedH:F1}°) should share the hue of packaged #4FA3F4 (H={packagedH:F1}°)");
     }
 
     [TestMethod]
@@ -109,20 +107,19 @@ public sealed class BitThemeFactoryTests
         const double floor = 3.0;
 
         for (var r = 0; r <= 0xFF; r += 0x33)
-        for (var g = 0; g <= 0xFF; g += 0x33)
-        for (var b = 0; b <= 0xFF; b += 0x33)
-        {
-            var brand = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
-            var p = BitThemeFactory.CreateDarkTheme(brand).Color.Primary;
+            for (var g = 0; g <= 0xFF; g += 0x33)
+                for (var b = 0; b <= 0xFF; b += 0x33)
+                {
+                    var brand = FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
+                    var p = BitThemeFactory.CreateDarkTheme(brand).Color.Primary;
 
-            foreach (var (name, hex) in new[] { ("Main", p.Main!), ("MainHover", p.MainHover!), ("MainActive", p.MainActive!) })
-            {
-                var ratio = BitThemeColorContrast.GetContrastRatio(p.Text!, hex);
-                Assert.IsTrue(
-                    ratio >= floor,
-                    $"Text {p.Text} on {name} {hex} (brand {brand}) is {ratio:F2}:1, below the {floor}:1 floor");
-            }
-        }
+                    foreach (var (name, hex) in new[] { ("Main", p.Main!), ("MainHover", p.MainHover!), ("MainActive", p.MainActive!) })
+                    {
+                        var ratio = BitThemeColorContrast.GetContrastRatio(p.Text!, hex);
+                        Assert.IsGreaterThanOrEqualTo(
+        floor, ratio, $"Text {p.Text} on {name} {hex} (brand {brand}) is {ratio:F2}:1, below the {floor}:1 floor");
+                    }
+                }
     }
 
     // ── Multi-role seeds ──────────────────────────────────────────────────────

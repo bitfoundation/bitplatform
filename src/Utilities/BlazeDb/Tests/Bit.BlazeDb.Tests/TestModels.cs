@@ -7,9 +7,9 @@ namespace Bit.BlazeDb.Tests;
 /// A hand-written descriptor equivalent to what the source generator emits, so engine tests
 /// do not depend on the generator.
 /// </summary>
-public sealed record Person(int Id, string Name, int Age);
+internal sealed record Person(int Id, string Name, int Age);
 
-public static class PersonTable
+internal static class PersonTable
 {
     public static readonly BlazeDbTableDescriptor<int, Person> Descriptor = new(
         "people",

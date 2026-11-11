@@ -47,8 +47,8 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
                                  .Where(p => p is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "items", "error" }, parts);
-        Assert.AreEqual(0, component.FindAll(".bit-chg-itl .bit-chg-erm").Count);
+        Assert.AreSequenceEqual(new[] { "items", "error" }, parts);
+        Assert.IsEmpty(component.FindAll(".bit-chg-itl .bit-chg-erm"));
     }
 
     [TestMethod]
@@ -61,14 +61,14 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
 
         var root = component.Find(".bit-chg");
 
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-inv"));
         Assert.IsFalse(root.HasAttribute("aria-invalid"));
         Assert.IsFalse(root.HasAttribute("aria-describedby"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
 
         // a form full of plain choice groups does not carry an empty live region per group
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -85,13 +85,13 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
         Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-invalid") == "true"));
 
         // the flag says the choice was rejected; it does not invent a line saying why
-        Assert.AreEqual(0, component.FindAll(".bit-chg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-erm"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
 
         Assert.IsFalse(component.Find(".bit-chg").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-invalid"));
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
     }
 
     [TestMethod]
@@ -114,13 +114,13 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-chg-icn input").Count);
+        Assert.HasCount(2, component.FindAll(".bit-chg-icn input"));
         Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-invalid") == "true"));
 
         // an option renders its radio itself, and is pushed a re-render when only the group's parameters change
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
 
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
         });
 
         Assert.AreEqual("Templated message", component.Find(".bit-chg-erm .custom-error").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-chg-erm").TextContent.Contains("Plain message"));
+        Assert.DoesNotContain("Plain message", component.Find(".bit-chg-erm").TextContent);
 
         // the plain text is not on screen, so it is not what the live region announces either
         Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
@@ -203,7 +203,7 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
         });
 
         // the flag on its own has nothing to say, and so no live region to say it in
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "انتخاب نامعتبر"));
@@ -266,7 +266,7 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
 
         Assert.AreEqual("A", component.Instance.Value);
         Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent.Trim());
-        Assert.IsFalse(component.FindAll(".bit-chg-icn input").Any(i => i.HasAttribute("aria-invalid")));
+        Assert.DoesNotContain(i => i.HasAttribute("aria-invalid"), component.FindAll(".bit-chg-icn input"));
     }
 
     [TestMethod]
@@ -291,13 +291,13 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
 
         // the page's own reference is kept, and the two lines are read in the order they sit on the page: the
         // description under the label, the error line under the items
-        CollectionAssert.AreEqual(new[] { "shipping-hint", descriptionId, errorId }, describedBy);
+        Assert.AreSequenceEqual(new[] { "shipping-hint", descriptionId, errorId }, describedBy);
 
         var lines = root.Children.Select(c => c.ClassList.Contains("bit-chg-erm") ? "error" : c.ClassList.Contains("bit-chg-gds") ? "description" : null)
                                  .Where(l => l is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "description", "error" }, lines);
+        Assert.AreSequenceEqual(new[] { "description", "error" }, lines);
     }
 
     [TestMethod]
@@ -349,7 +349,7 @@ public class BitChoiceGroupErrorMessageTests : BunitTestContext
 
         // the base class registers the class for any rejection, the form's and the app's alike, so the two together
         // still make a single one
-        Assert.AreEqual(1, component.Find(".bit-chg").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-chg").ClassList);
         Assert.AreEqual("true", component.Find(".bit-chg").GetAttribute("aria-invalid"));
         Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("aria-invalid") == "true"));
 

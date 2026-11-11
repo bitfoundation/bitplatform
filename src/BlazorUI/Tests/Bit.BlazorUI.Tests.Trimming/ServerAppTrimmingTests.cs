@@ -31,9 +31,7 @@ public sealed class ServerAppTrimmingTests
         // The trimming only ever runs where its switch is on, which a server app turns on itself.
         foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Extras, "styles/bit.blazorui.extras.css"), (AI, "styles/bit.blazorui.ai.css"), (Icons, "styles/bit.blazorui.icons.css") })
         {
-            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
-                                      File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
-                                      $"{package}/{bundle} was changed by a publish that did not ask for the trimming.");
+            Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))), File.ReadAllBytes(publish.GetAssetPath(package, bundle)), $"{package}/{bundle} was changed by a publish that did not ask for the trimming.");
         }
 
         Assert.IsTrue(Directory.Exists(publish.GetAssetPath(Legacy, "pdf.js")), "A vendor folder was left out of a publish that did not ask for the trimming.");
@@ -44,15 +42,15 @@ public sealed class ServerAppTrimmingTests
     {
         Trimmed.AssertSucceeded();
 
-        CollectionAssert.AreEqual(new[] { "BitButton", "BitDropdown", "BitTextField", "BitTooltip", "BitIcon", "BitText" }, Trimmed.KeptStyles(Core));
-        CollectionAssert.AreEqual(new[] { "BitErrorBoundary" }, Trimmed.KeptStyles(Extras));
-        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptStyles(AI));
-        CollectionAssert.AreEqual(Array.Empty<string>(), Trimmed.KeptStyles(Legacy));
+        Assert.AreSequenceEqual(new[] { "BitButton", "BitDropdown", "BitTextField", "BitTooltip", "BitIcon", "BitText" }, Trimmed.KeptStyles(Core));
+        Assert.AreSequenceEqual(new[] { "BitErrorBoundary" }, Trimmed.KeptStyles(Extras));
+        Assert.AreSequenceEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptStyles(AI));
+        Assert.AreSequenceEqual(Array.Empty<string>(), Trimmed.KeptStyles(Legacy));
 
         // Every variant of the core bundle keeps the same components: they differ in their theme, never in their parts.
         foreach (var bundle in new[] { "styles/bit.blazorui.fluent.css", "styles/bit.blazorui.fluent-dark.css", "styles/bit.blazorui.fluent-light.css" })
         {
-            CollectionAssert.AreEqual(Trimmed.KeptStyles(Core), Trimmed.KeptStyles(Core, bundle), bundle);
+            Assert.AreSequenceEqual(Trimmed.KeptStyles(Core), Trimmed.KeptStyles(Core, bundle), bundle);
         }
     }
 
@@ -66,21 +64,21 @@ public sealed class ServerAppTrimmingTests
         // (wwwroot/scripts/fixture.js) calls through window.BitBlazorUI, which nothing of its .NET code names.
         foreach (var expected in new[] { "general", "Utils.Keys", "BitTextField", "Utils.Escape", "Callouts", "Callouts.Registry", "Utils.Tooltips", "Utils.Focus", "PageVisibility" })
         {
-            CollectionAssert.Contains(scripts, expected, $"The trimmed core script is missing {expected}.");
+            Assert.Contains(expected, scripts, $"The trimmed core script is missing {expected}.");
         }
 
         // What no component of the app reaches - nor the services AddBitBlazorUIServices registers, which the app never
         // asks for: the modal's and the snack bars' scripts, the theme's (no bit-theme attribute is written anywhere).
         foreach (var unexpected in new[] { "BitScrollablePane", "BitSwiper", "BitSplitter", "BitFileUpload", "SnackBars", "BitTheme", "BitPivot", "Stickies" })
         {
-            CollectionAssert.DoesNotContain(scripts, unexpected, $"The trimmed core script keeps {unexpected}, which nothing the app renders uses.");
+            Assert.DoesNotContain(unexpected, scripts, $"The trimmed core script keeps {unexpected}, which nothing the app renders uses.");
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), Trimmed.KeptScripts(Legacy));
+        Assert.AreSequenceEqual(Array.Empty<string>(), Trimmed.KeptScripts(Legacy));
 
         // The copy button's script, named by its interop identifier, and none of the AI scripts of the components the app
         // does not render.
-        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptScripts(AI));
+        Assert.AreSequenceEqual(new[] { "BitAiCopyButton" }, Trimmed.KeptScripts(AI));
     }
 
     [TestMethod]
@@ -103,14 +101,14 @@ public sealed class ServerAppTrimmingTests
 
         // BitIconName.Add is a const, so the name is a literal of the app's own code; nothing names Airplane. (Not Delete,
         // which the string table of the AI package - BitAiStrings, reached from every AI component - names as a word.)
-        StringAssert.Contains(css, ".bit-icon--Add::before");
-        Assert.IsFalse(css.Contains(".bit-icon--Airplane::before"), "A glyph nothing names was kept.");
-        StringAssert.Contains(css, "@font-face");
+        Assert.Contains(".bit-icon--Add::before", css);
+        Assert.DoesNotContain(".bit-icon--Airplane::before", css, "A glyph nothing names was kept.");
+        Assert.Contains("@font-face", css);
 
         // A name the code does not carry - read out of data - is kept by naming it in the csproj.
         var named = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "FixtureIcons=Airplane");
         named.AssertSucceeded();
-        StringAssert.Contains(named.ReadAsset(Icons, "styles/bit.blazorui.icons.css"), ".bit-icon--Airplane::before");
+        Assert.Contains(".bit-icon--Airplane::before", named.ReadAsset(Icons, "styles/bit.blazorui.icons.css"));
     }
 
     [TestMethod]
@@ -118,7 +116,7 @@ public sealed class ServerAppTrimmingTests
     {
         // The default (BitBlazorUITrimIconFont Auto) cuts it on Node.js, which this machine has.
         Trimmed.AssertSucceeded();
-        StringAssert.Contains(Trimmed.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ");
+        Assert.Contains("Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ", Trimmed.Output);
         AssertTheFontDrawsTheStylesheetsGlyphs(Trimmed);
     }
 
@@ -128,8 +126,8 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", $"BitBlazorUINodePath={NoNode}");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "FabMDL2.4.66.woff2 cut down by .NET, since Node.js: ");
-        Assert.IsFalse(publish.Output.Contains("BITBLAZORUI006"), "The font was cut, yet the publish warns it was not.");
+        Assert.Contains("FabMDL2.4.66.woff2 cut down by .NET, since Node.js: ", publish.Output);
+        Assert.DoesNotContain("BITBLAZORUI006", publish.Output, "The font was cut, yet the publish warns it was not.");
         AssertTheFontDrawsTheStylesheetsGlyphs(publish);
     }
 
@@ -139,9 +137,9 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "BitBlazorUITrimIconFont=Node", $"BitBlazorUINodePath={NoNode}");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "BITBLAZORUI006");
-        CollectionAssert.AreEqual(File.ReadAllBytes(FullFont), File.ReadAllBytes(publish.GetAssetPath(Icons, Font)), "A font no engine could cut was not published whole.");
-        Assert.IsFalse(publish.ReadAsset(Icons, "styles/bit.blazorui.icons.css").Contains(".bit-icon--Airplane::before"), "The stylesheet was published whole along with the font.");
+        Assert.Contains("BITBLAZORUI006", publish.Output);
+        Assert.AreSequenceEqual(File.ReadAllBytes(FullFont), File.ReadAllBytes(publish.GetAssetPath(Icons, Font)), "A font no engine could cut was not published whole.");
+        Assert.DoesNotContain(".bit-icon--Airplane::before", publish.ReadAsset(Icons, "styles/bit.blazorui.icons.css"), "The stylesheet was published whole along with the font.");
     }
 
     [TestMethod]
@@ -152,13 +150,13 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet", "FixtureIcons=Delete|U+E8FB");
         publish.AssertSucceeded();
 
-        CollectionAssert.AreEquivalent(new[] { "Delete", "Accept" }, KeptGlyphs(publish).Select(g => g.Name).ToList());
-        StringAssert.Contains(publish.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> 2 of ");
-        Assert.IsFalse(publish.Output.Contains("since Node.js"), "BitBlazorUITrimIconFont=DotNet tried Node.js.");
+        Assert.AreSequenceEqual(new[] { "Delete", "Accept" }, KeptGlyphs(publish).Select(g => g.Name).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.Contains("Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> 2 of ", publish.Output);
+        Assert.DoesNotContain("since Node.js", publish.Output, "BitBlazorUITrimIconFont=DotNet tried Node.js.");
         AssertTheFontDrawsTheStylesheetsGlyphs(publish);
 
         // Nothing else is trimmed by it.
-        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+        Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
     }
 
     [TestMethod]
@@ -170,9 +168,9 @@ public sealed class ServerAppTrimmingTests
                                         $"FixtureScanAssemblies={typeof(PackageAssets).Assembly.Location}");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "BITBLAZORUI002");
-        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
-        CollectionAssert.AreEqual(new[] { "Delete" }, KeptGlyphs(publish).Select(g => g.Name).ToList());
+        Assert.Contains("BITBLAZORUI002", publish.Output);
+        Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+        Assert.AreSequenceEqual(new[] { "Delete" }, KeptGlyphs(publish).Select(g => g.Name).ToList());
         AssertTheFontDrawsTheStylesheetsGlyphs(publish);
     }
 
@@ -182,8 +180,8 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "BitBlazorUITrimIconFont=DotNet");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "BITBLAZORUI007");
-        Assert.AreEqual(0, KeptGlyphs(publish).Count);
+        Assert.Contains("BITBLAZORUI007", publish.Output);
+        Assert.IsEmpty(KeptGlyphs(publish));
     }
 
     [TestMethod]
@@ -194,7 +192,7 @@ public sealed class ServerAppTrimmingTests
         foreach (var (package, folder) in new[] { (Legacy, "pdf.js"), (Legacy, "quilljs"), (Legacy, "chart.js"), (Legacy, "marked"), (Extras, "flags"), (Extras, "leaflet"), (Extras, "openlayers") })
         {
             Assert.IsFalse(Directory.Exists(Trimmed.GetAssetPath(package, folder)), $"{package}/{folder} was published though nothing the app runs loads it.");
-            Assert.IsFalse(Trimmed.ReadEndpoints().Any(e => e.GetProperty("Route").GetString()!.StartsWith($"_content/{package}/{folder}/", StringComparison.Ordinal)),
+            Assert.DoesNotContain(e => e.GetProperty("Route").GetString()!.StartsWith($"_content/{package}/{folder}/", StringComparison.Ordinal), Trimmed.ReadEndpoints(),
                            $"{package}/{folder} still has endpoints.");
         }
 
@@ -218,7 +216,7 @@ public sealed class ServerAppTrimmingTests
         var labelled = endpoints.Where(e => e.GetProperty("EndpointProperties").EnumerateArray()
                                              .Any(p => p.GetProperty("Name").GetString() == "label" && p.GetProperty("Value").GetString() == "_content/Bit.BlazorUI/styles/bit.blazorui.css"))
                                 .ToList();
-        Assert.IsTrue(labelled.Count > 0, "No endpoint carries the label of the trimmed core stylesheet.");
+        Assert.IsNotEmpty(labelled, "No endpoint carries the label of the trimmed core stylesheet.");
         Assert.IsTrue(labelled.All(e => e.GetProperty("Route").GetString()!.StartsWith("_content/Bit.BlazorUI/styles/bit.blazorui.", StringComparison.Ordinal)));
     }
 
@@ -229,10 +227,10 @@ public sealed class ServerAppTrimmingTests
         publish.AssertSucceeded();
 
         // A component is kept with everything it reaches; a script or a stylesheet by its own name.
-        CollectionAssert.Contains(publish.KeptStyles(Core), "BitCard");
-        CollectionAssert.Contains(publish.KeptStyles(Core), "BitSwiper");
-        CollectionAssert.Contains(publish.KeptScripts(Core), "BitScrollablePane");
-        CollectionAssert.Contains(publish.KeptScripts(Core), "BitSwiper");
+        Assert.Contains("BitCard", publish.KeptStyles(Core));
+        Assert.Contains("BitSwiper", publish.KeptStyles(Core));
+        Assert.Contains("BitScrollablePane", publish.KeptScripts(Core));
+        Assert.Contains("BitSwiper", publish.KeptScripts(Core));
     }
 
     [TestMethod]
@@ -240,15 +238,15 @@ public sealed class ServerAppTrimmingTests
     {
         var component = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "FixtureComponents=BitNoSuchComponent");
         Assert.AreNotEqual(0, component.ExitCode, "A <BitBlazorUIComponent> naming no type was let through.");
-        StringAssert.Contains(component.Output, "<BitBlazorUIComponent Include=\"BitNoSuchComponent\" /> names no type");
+        Assert.Contains("<BitBlazorUIComponent Include=\"BitNoSuchComponent\" /> names no type", component.Output);
 
         var asset = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "FixtureAssets=NoSuchScript");
         Assert.AreNotEqual(0, asset.ExitCode, "A <BitBlazorUIAsset> naming no piece was let through.");
-        StringAssert.Contains(asset.Output, "<BitBlazorUIAsset Include=\"NoSuchScript\" /> names no script or component stylesheet");
+        Assert.Contains("<BitBlazorUIAsset Include=\"NoSuchScript\" /> names no script or component stylesheet", asset.Output);
 
         var icon = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimIcons=Explicit", "FixtureIcons=U+0041");
         Assert.AreNotEqual(0, icon.ExitCode, "A <BitBlazorUIIcon> naming no glyph was let through.");
-        StringAssert.Contains(icon.Output, "<BitBlazorUIIcon Include=\"U+0041\" /> names no icon of Bit.BlazorUI.Icons");
+        Assert.Contains("<BitBlazorUIIcon Include=\"U+0041\" /> names no icon of Bit.BlazorUI.Icons", icon.Output);
     }
 
     [TestMethod]
@@ -258,8 +256,7 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUIScan=None");
         publish.AssertSucceeded();
 
-        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")),
-                                  File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+        Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
     }
 
     [TestMethod]
@@ -272,9 +269,7 @@ public sealed class ServerAppTrimmingTests
 
         foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Icons, "styles/bit.blazorui.icons.css") })
         {
-            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
-                                      File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
-                                      $"{package}/{bundle} was trimmed off names that say nothing of the app's components.");
+            Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))), File.ReadAllBytes(publish.GetAssetPath(package, bundle)), $"{package}/{bundle} was trimmed off names that say nothing of the app's components.");
         }
     }
 
@@ -340,8 +335,8 @@ public sealed class ServerAppTrimmingTests
             try { await document.fonts.load('16px ""Fabric MDL2""', glyph); } catch { }
             return [...document.fonts].filter(f => f.family.replace(/""/g, '') === 'Fabric MDL2').map(f => f.status);
         }", JsonSerializer.Deserialize<string>(add));
-        CollectionAssert.Contains(fontStatus, "loaded", $"The icon font did not load in {engine}: {string.Join(", ", fontStatus)}");
-        CollectionAssert.DoesNotContain(fontStatus, "error", $"The icon font failed to load in {engine}.");
+        Assert.Contains("loaded", fontStatus, $"The icon font did not load in {engine}: {string.Join(", ", fontStatus)}");
+        Assert.DoesNotContain("error", fontStatus, $"The icon font failed to load in {engine}.");
 
         // The AI package's copy button: its glyph drawn from the package's own font, its script reached on a press.
         await session.AssertAiCopyButtonWorksAsync();
@@ -359,7 +354,7 @@ public sealed class ServerAppTrimmingTests
 
         CollectionAssert.IsSubsetOf(Trimmed.KeptStyles(Core), publish.KeptStyles(Core));
         CollectionAssert.IsSubsetOf(Trimmed.KeptScripts(Core), publish.KeptScripts(Core));
-        CollectionAssert.DoesNotContain(publish.KeptStyles(Core), "BitSwiper");
+        Assert.DoesNotContain("BitSwiper", publish.KeptStyles(Core));
         publish.AssertScriptsAreThePiecesInOrder(Core);
         publish.AssertStylesAreThePiecesInOrder(Core);
     }
@@ -372,9 +367,8 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", $"FixtureScanAssemblies={typeof(Bit.BlazorUI.Build.PackageAssets).Assembly.Location}");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "BITBLAZORUI002");
-        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")),
-                                  File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+        Assert.Contains("BITBLAZORUI002", publish.Output);
+        Assert.AreSequenceEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")), File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
     }
 
     [TestMethod]
@@ -386,7 +380,7 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "FixturePublishTrimmed=true");
         publish.AssertSucceeded();
 
-        StringAssert.Contains(publish.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
+        Assert.Contains("Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ", publish.Output);
         Assert.AreNotEqual(new FileInfo(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")).Length,
                            new FileInfo(publish.GetAssetPath(Core, "styles/bit.blazorui.css")).Length);
     }
@@ -403,8 +397,8 @@ public sealed class ServerAppTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", $"FixtureScanFiles={page}");
         publish.AssertSucceeded();
 
-        CollectionAssert.Contains(publish.KeptScripts(Core), "BitTheme");
-        CollectionAssert.DoesNotContain(Trimmed.KeptScripts(Core), "BitTheme");
+        Assert.Contains("BitTheme", publish.KeptScripts(Core));
+        Assert.DoesNotContain("BitTheme", Trimmed.KeptScripts(Core));
     }
 
     private const string Font = "fonts/FabMDL2.4.66.woff2";
@@ -436,8 +430,8 @@ public sealed class ServerAppTrimmingTests
 
         // The font has no glyph for some of the stylesheet's icons (ContactInfoMirrored), cut or not.
         var drawn = KeptGlyphs(publish).Select(g => g.Codepoint).Where(fullCmap.ContainsKey).ToList();
-        CollectionAssert.AreEquivalent(drawn, cutCmap.Keys.ToList(), "The published font does not hold exactly the glyphs of the published stylesheet.");
-        Assert.AreEqual(drawn.Count + 1, cut.Glyphs.Count, "The published font holds glyphs beside .notdef and those of the published stylesheet.");
+        Assert.AreSequenceEqual(drawn, cutCmap.Keys.ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The published font does not hold exactly the glyphs of the published stylesheet.");
+        Assert.HasCount(drawn.Count + 1, cut.Glyphs, "The published font holds glyphs beside .notdef and those of the published stylesheet.");
 
         foreach (var codepoint in drawn)
         {

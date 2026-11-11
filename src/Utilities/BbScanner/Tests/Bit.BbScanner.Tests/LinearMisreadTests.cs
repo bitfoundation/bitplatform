@@ -357,7 +357,9 @@ public class LinearMisreadTests
         Assert.IsEmpty(wrong);
 
         using var whole = SyntheticImage.FromLinear(modules, scale: 3, height: 40);
-        Assert.AreEqual(symbol.Extension, DecodeMiddle(new BbEanUpcReader(), whole, BbBarcodeFormat.Ean13)?.Payload.Extension);
+        var expectedValue = symbol.Extension;
+        var actualValue = DecodeMiddle(new BbEanUpcReader(), whole, BbBarcodeFormat.Ean13)?.Payload.Extension;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -374,16 +376,20 @@ public class LinearMisreadTests
     public void IntactSymbolsStillDecodeAfterTheTruncationGuards()
     {
         using var itf = SyntheticImage.FromLinear(LinearEncoders.Itf("12345678901231"), scale: 3, height: 40);
-        Assert.AreEqual("12345678901231", DecodeMiddle(new BbItfReader(), itf, BbBarcodeFormat.Itf)?.Payload.Text);
+        var actualValue = DecodeMiddle(new BbItfReader(), itf, BbBarcodeFormat.Itf)?.Payload.Text;
+        Assert.AreEqual("12345678901231", actualValue);
 
         using var code39 = SyntheticImage.FromLinear(LinearEncoders.Code39("SHIPMENT-4471"), scale: 3, height: 40);
-        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbCode39Reader(), code39, BbBarcodeFormat.Code39)?.Payload.Text);
+        var actualValue1 = DecodeMiddle(new BbCode39Reader(), code39, BbBarcodeFormat.Code39)?.Payload.Text;
+        Assert.AreEqual("SHIPMENT-4471", actualValue1);
 
         using var code128 = SyntheticImage.FromLinear(LinearEncoders.Code128("SHIPMENT-4471"), scale: 3, height: 40);
-        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbCode128Reader(), code128, BbBarcodeFormat.Code128)?.Payload.Text);
+        var actualValue2 = DecodeMiddle(new BbCode128Reader(), code128, BbBarcodeFormat.Code128)?.Payload.Text;
+        Assert.AreEqual("SHIPMENT-4471", actualValue2);
 
         using var ean = SyntheticImage.FromLinear(LinearEncoders.Ean13("4006381333931"), scale: 3, height: 40);
-        Assert.AreEqual("4006381333931", DecodeMiddle(new BbEanUpcReader(), ean, BbBarcodeFormat.All)?.Payload.Text);
+        var actualValue3 = DecodeMiddle(new BbEanUpcReader(), ean, BbBarcodeFormat.All)?.Payload.Text;
+        Assert.AreEqual("4006381333931", actualValue3);
     }
 
     [TestMethod]
@@ -444,7 +450,7 @@ public class LinearMisreadTests
         // requires, which leaves a residual only when the damage begins exactly there, and the
         // pipeline then re-reads on parallel lines (see the next test). Anything above a
         // fraction of a percent at row level is a regression.
-        Assert.IsTrue(misreads * 200 <= 400, string.Join("; ", misreadDetails));
+        Assert.IsLessThanOrEqualTo(400, misreads * 200, string.Join("; ", misreadDetails));
     }
 
     [TestMethod]

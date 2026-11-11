@@ -74,7 +74,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
     [TestMethod]
     public void BitPhoneInputParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitPhoneInput", BitPhoneInputParams.ParamName);
+        Assert.AreEqual("BitParams.BitPhoneInput", new BitPhoneInputParams().Name);
     }
 
     [TestMethod]
@@ -112,8 +112,9 @@ public class BitPhoneInputParamsTests : BunitTestContext
         foreach (var name in own)
         {
             var target = typeof(BitPhoneInput).GetProperty(name);
+            var actualValue = target?.GetCustomAttribute<ParameterAttribute>();
 
-            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitPhoneInput has no {name} parameter.");
+            Assert.IsNotNull(actualValue, $"BitPhoneInput has no {name} parameter.");
             Assert.IsFalse(_notCascaded.Contains(name), $"{name} belongs to a single field and must not be cascaded.");
         }
     }
@@ -150,7 +151,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-phi-suc"));
         Assert.IsTrue(root.ClassList.Contains("bit-phi-und"));
         Assert.IsTrue(root.ClassList.Contains("bit-phi-fwd"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
 
         Assert.IsTrue(component.Find(".bit-phi-fgp").ClassList.Contains("cascaded-field-group"));
@@ -186,7 +187,7 @@ public class BitPhoneInputParamsTests : BunitTestContext
         component.Find("input.bit-phi-inp").Change("1701234567");
         component.Find("button.bit-phi-cbt").Click();
 
-        StringAssert.StartsWith(component.Find(".bit-phi-lvr").TextContent, "Gelöscht");
+        Assert.StartsWith("Gelöscht", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -287,6 +288,6 @@ public class BitPhoneInputParamsTests : BunitTestContext
 
         component.Find("button.bit-phi-drp").Click();
 
-        Assert.AreEqual(2, component.FindAll("button.bit-phi-itm").Count);
+        Assert.HasCount(2, component.FindAll("button.bit-phi-itm"));
     }
 }

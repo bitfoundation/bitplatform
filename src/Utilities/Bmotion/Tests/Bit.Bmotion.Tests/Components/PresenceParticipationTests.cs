@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -84,12 +84,12 @@ public class PresenceParticipationTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
         Assert.AreEqual(1, leaving, "the component sees it is no longer present, and starts its exit once");
-        Assert.AreEqual(1, cut.FindAll("div.own-exit").Count, "mounted while its exit plays");
+        Assert.ContainsSingle(cut.FindAll("div.own-exit"), "mounted while its exit plays");
         Assert.AreEqual(0, exits);
 
         await cut.InvokeAsync(exitDone.SetResult);
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.own-exit").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.own-exit")));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
     }
 
@@ -104,11 +104,11 @@ public class PresenceParticipationTests
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
         await ctx.FinishWaapiAsync("box"); // the Bmotion's exit is over
-        Assert.AreEqual(1, cut.FindAll("div.own-exit").Count, "the component's exit is still playing");
+        Assert.ContainsSingle(cut.FindAll("div.own-exit"), "the component's exit is still playing");
         Assert.AreEqual(0, exits);
 
         await cut.InvokeAsync(exitDone.SetResult);
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
     }
 
@@ -124,7 +124,7 @@ public class PresenceParticipationTests
         cut.Render(ps => ps.Add(p => p.IsPresent, true));
         await cut.InvokeAsync(exitDone.SetResult); // the overtaken exit reports in
 
-        Assert.AreEqual(1, cut.FindAll("div.own-exit").Count, "back, so it stays");
+        Assert.ContainsSingle(cut.FindAll("div.own-exit"), "back, so it stays");
         Assert.AreEqual(0, exits);
         var registration = cut.FindComponent<OwnExit>().Instance.Registration!;
         Assert.IsTrue(registration.IsPresent);
@@ -141,7 +141,7 @@ public class PresenceParticipationTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
         cut.InvokeAsync(() => cut.FindComponent<OwnExit>().Instance.Registration!.Dispose());
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.own-exit").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.own-exit")));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
     }
 

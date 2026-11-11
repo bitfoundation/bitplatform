@@ -19,11 +19,11 @@ public partial class BitFullCalendarStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(25, documented.Length, "The stylesheet does not document the twenty-five public variables.");
+        Assert.HasCount(25, documented, "The stylesheet does not document the twenty-five public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -37,7 +37,7 @@ public partial class BitFullCalendarStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -54,8 +54,8 @@ public partial class BitFullCalendarStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "@media (forced-colors: active) {");
-        StringAssert.Contains(stylesheet, "@media print {");
+        Assert.Contains("@media (forced-colors: active) {", stylesheet);
+        Assert.Contains("@media print {", stylesheet);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public partial class BitFullCalendarStylesheetTests
     {
         var body = SourceFiles.StripScssComments(ReadStylesheet());
 
-        Assert.IsFalse(body.Contains("#fff"), "A literal white is used instead of a theme token.");
+        Assert.DoesNotContain("#fff", body, "A literal white is used instead of a theme token.");
         Assert.IsFalse(Regex.IsMatch(body, @"rgba\(\s*0\s*,\s*0\s*,\s*0"), "A literal black shadow is used instead of an elevation token.");
     }
 

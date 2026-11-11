@@ -75,7 +75,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind.EndsWith(" section", StringComparison.Ordinal) && meta.Contains(hit.Title)), query);
+            Assert.DoesNotContain(hit => hit.Kind.EndsWith(" section", StringComparison.Ordinal) && meta.Contains(hit.Title), result.Hits, query);
         }
     }
 
@@ -85,14 +85,15 @@ public partial class McpSearchTests
         // The kit's tests are named as sentences about storage ("Export_ThrowsForADatabaseThatDoesNotExist"); hit
         // one by one they would answer every question about exporting or throwing with a test.
         var result = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = "export throws", ["limit"] = 50 });
+        var actualValue = result.Hits.Any(hit => hit.Context?.EndsWith("ConformanceTests", StringComparison.Ordinal) is true && hit.Kind == "API method");
 
-        Assert.IsFalse(result.Hits.Any(hit => hit.Context?.EndsWith("ConformanceTests", StringComparison.Ordinal) is true && hit.Kind == "API method"),
+        Assert.IsFalse(actualValue,
             string.Join(" | ", result.Hits.Select(hit => hit.Title)));
 
         var kit = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = "conformance", ["limit"] = 12 });
 
-        Assert.IsTrue(kit.Hits.Any(hit => hit.Title == "BsqliteStorageProviderConformanceTests"));
-        Assert.IsTrue(kit.Hits.Any(hit => hit.Title == "BsqliteStorageProviderConformanceTests.CreateProvider"), "What a test class overrides stays findable.");
+        Assert.Contains(hit => hit.Title == "BsqliteStorageProviderConformanceTests", kit.Hits);
+        Assert.Contains(hit => hit.Title == "BsqliteStorageProviderConformanceTests.CreateProvider", kit.Hits, "What a test class overrides stays findable.");
     }
 
     [TestMethod]
@@ -139,7 +140,7 @@ public partial class McpSearchTests
 
         Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.DidYouMean);
-        CollectionAssert.Contains(result.DidYouMean, "BsqlitePersistence");
+        Assert.Contains("BsqlitePersistence", result.DidYouMean);
         Assert.Contains("didYouMean", result.Message!);
     }
 
@@ -189,7 +190,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = new Dictionary<string, object?>();
             for (var i = 0; i < match.Groups["name"].Captures.Count; i++)

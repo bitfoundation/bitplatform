@@ -146,7 +146,7 @@ public class BitMediaQueryE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#mdq-invalid")).ToHaveTextAsync("never");
         await Expect(Page.Locator("#invalid-last")).ToHaveTextAsync("False");
-        Assert.IsTrue(warnings.Any(w => w.Contains("is not a valid media query")), "No warning named the invalid query.");
+        Assert.Contains(w => w.Contains("is not a valid media query"), warnings, "No warning named the invalid query.");
     }
 
     [TestMethod]
@@ -177,9 +177,9 @@ public class BitMediaQueryE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"mdq-default\" class=\"bit-mdq\"><b>guessed</b></div>");
-        StringAssert.Contains(html, "<div id=\"mdq-nodefault\" class=\"bit-mdq\"><i>not yet</i></div>");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("<div id=\"mdq-default\" class=\"bit-mdq\"><b>guessed</b></div>", html);
+        Assert.Contains("<div id=\"mdq-nodefault\" class=\"bit-mdq\"><i>not yet</i></div>", html);
+        Assert.Contains("id=\"status\">Loading", html);
 
         await OpenAsync(Route);
 

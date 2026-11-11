@@ -11,7 +11,7 @@ namespace Boilerplate.WorkbenchTests.Infrastructure;
 /// <c>isLocal</c> false, one opened through a tunnel. The stores save nowhere, and the review document stays in memory
 /// unless a <c>server</c> is given, whose review it then joins through the relay.
 /// </summary>
-public static class WorkbenchBunit
+internal static class WorkbenchBunit
 {
     public static BunitContext Create(bool isLocal = true, WorkbenchTestServer? server = null)
     {

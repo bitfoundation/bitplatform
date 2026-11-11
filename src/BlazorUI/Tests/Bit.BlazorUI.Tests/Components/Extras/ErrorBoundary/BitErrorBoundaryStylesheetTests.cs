@@ -38,13 +38,13 @@ public class BitErrorBoundaryStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-ErrorBoundary-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
             Assert.IsTrue(Regex.IsMatch(stylesheet, $@"var\({variable}, [^)]"), $"{variable} is read without a fallback.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -55,7 +55,7 @@ public class BitErrorBoundaryStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-ErrorBoundary-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     // The exception block takes the focus to stay reachable with a keyboard (WCAG 2.1.1), so it is drawn with the
@@ -67,8 +67,8 @@ public class BitErrorBoundaryStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-erb-exp {");
 
-        StringAssert.Contains(block, "&:focus-visible {");
-        StringAssert.Contains(block, "@include focus-ring;");
+        Assert.Contains("&:focus-visible {", block);
+        Assert.Contains("@include focus-ring;", block);
     }
 
     // The root AutoFocus parks the focus on is an anchor, as a dialog's root is: nothing is operated there, and a ring
@@ -80,8 +80,8 @@ public class BitErrorBoundaryStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-erb {");
 
-        StringAssert.Contains(block, "&.bit-erb-anc {");
-        StringAssert.Contains(block, "@include focus-anchor;");
+        Assert.Contains("&.bit-erb-anc {", block);
+        Assert.Contains("@include focus-anchor;", block);
     }
 
     // One class each, so that a Classes.Title or Classes.Message rule of the app's wins over them, and the color handed
@@ -97,7 +97,7 @@ public class BitErrorBoundaryStylesheetTests
 
         var block = SourceFiles.GetScssBlock(stylesheet, $"\n.{part} {{");
 
-        StringAssert.Contains(block, $"--bit-Text-color: var({variable}, ");
+        Assert.Contains($"--bit-Text-color: var({variable}, ", block);
         Assert.IsFalse(Regex.IsMatch(block, @"^\s*color\s*:", RegexOptions.Multiline), $".{part} sets the color BitText sets.");
     }
 

@@ -239,13 +239,13 @@ public class BitAiErrorViewE2ETests : E2ETestBase
 
         var (ltrIconLeft, _, _, _) = await View("erv-ltr").Locator(".bit-msg-ict").RectAsync();
         var (ltrTextLeft, _, _, _) = await View("erv-ltr").Locator(".bit-aierv-txt").RectAsync();
-        Assert.IsTrue(ltrIconLeft < ltrTextLeft, "Left to right, the icon leads the text from the left.");
+        Assert.IsLessThan(ltrTextLeft, ltrIconLeft, "Left to right, the icon leads the text from the left.");
 
         foreach (var id in new[] { "erv-rtl", "erv-rtl-inherited" })
         {
             var (_, _, iconRight, _) = await View(id).Locator(".bit-msg-ict").RectAsync();
             var (_, _, textRight, _) = await View(id).Locator(".bit-aierv-txt").RectAsync();
-            Assert.IsTrue(iconRight > textRight, $"{id}: right to left, the icon leads the text from the right.");
+            Assert.IsGreaterThan(textRight, iconRight, $"{id}: right to left, the icon leads the text from the right.");
             await Expect(View(id).Locator(".bit-aierv-txt")).ToHaveCSSAsync("direction", "rtl");
         }
 

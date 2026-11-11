@@ -141,7 +141,7 @@ public class RoutingExportAndRunTests : BunitContext
         var texts = doc.Descendants(Svg + "text").Select(t => t.Value).ToList();
         CollectionAssert.IsSubsetOf(new[] { "Start", "Group", "Inside", "go" }, texts);
         Assert.DoesNotContain("Hidden", texts);
-        Assert.HasCount(1, doc.Descendants(Svg + "marker"));
+        Assert.ContainsSingle(doc.Descendants(Svg + "marker"));
         Assert.AreEqual("Flow diagram", doc.Root!.Element(Svg + "title")!.Value);
 
         // A child is placed inside its group: 200 + 50.
@@ -171,12 +171,16 @@ public class RoutingExportAndRunTests : BunitContext
         var paths = doc.Descendants(Svg + "path").Where(p => p.Parent!.Name != Svg + "marker").ToList();
         var markers = doc.Descendants(Svg + "marker").ToList();
 
-        CollectionAssert.AreEqual(new[] { "m0", "m1", "m2", "m3" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "7", "7", "12", "7" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "7", "7", "5", "7" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "m0", "m1", "m2", "m3" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "7", "7", "12", "7" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "7", "7", "5", "7" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
         Assert.AreEqual("red", markers[1].Element(Svg + "path")!.Attribute("stroke")!.Value);
-        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)", "url(#m3)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null, null, null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+        var expectedValue = new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)", "url(#m3)" };
+        var actualValue = paths.Select(p => p.Attribute("marker-end")?.Value).ToArray();
+        Assert.AreSequenceEqual(expectedValue, actualValue);
+        var expectedValue1 = new[] { null, "url(#m1)", null, null, null };
+        var actualValue2 = paths.Select(p => p.Attribute("marker-start")?.Value).ToArray();
+        Assert.AreSequenceEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -251,10 +255,10 @@ public class RoutingExportAndRunTests : BunitContext
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
         var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
 
-        CollectionAssert.AreEqual(new[] { "shown" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
-        Assert.IsEmpty(doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "an edge to a node left out was drawn");
-        CollectionAssert.AreEqual(new[] { "shown" }, cut.FindAll(".bit-blow-node").Select(n => n.GetAttribute("data-id")).ToArray(),
-            "the canvas drew a node the export leaves out");
+        Assert.AreSequenceEqual(new[] { "shown" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
+        var actualValue = doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker");
+        Assert.IsEmpty(actualValue, "an edge to a node left out was drawn");
+        Assert.AreSequenceEqual(new[] { "shown" }, cut.FindAll(".bit-blow-node").Select(n => n.GetAttribute("data-id")).ToArray(), "the canvas drew a node the export leaves out");
         Assert.IsEmpty(cut.FindAll(".bit-blow-edge"), "the canvas drew an edge the export leaves out");
     }
 
@@ -269,9 +273,10 @@ public class RoutingExportAndRunTests : BunitContext
 
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
         var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
+        var actualValue = doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker");
 
-        Assert.HasCount(1, doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "the export left the edge out");
-        Assert.HasCount(1, cut.FindAll(".bit-blow-edge[data-id='e']"), "the canvas left the edge out");
+        Assert.ContainsSingle(actualValue, "the export left the edge out");
+        Assert.ContainsSingle(cut.FindAll(".bit-blow-edge[data-id='e']"), "the canvas left the edge out");
     }
 
     [TestMethod]
@@ -303,11 +308,11 @@ public class RoutingExportAndRunTests : BunitContext
         var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [], new BlowSvgExportOptions { Background = null }));
 
-        Assert.HasCount(1, cut.FindAll(".bit-blow-node[data-id='a']"), "the canvas does not draw the second either");
+        Assert.ContainsSingle(cut.FindAll(".bit-blow-node[data-id='a']"), "the canvas does not draw the second either");
         var rect = doc.Descendants(Svg + "rect").Single();
         Assert.AreEqual(("0", "0", "100", "40"),
             (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value, rect.Attribute("width")!.Value, rect.Attribute("height")!.Value));
-        CollectionAssert.AreEqual(new[] { "first" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "first" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
     }
 
     [TestMethod]
@@ -329,7 +334,7 @@ public class RoutingExportAndRunTests : BunitContext
         Assert.IsEmpty(doc.Descendants(Svg + "script"));
         Assert.DoesNotContain("javascript", svg);
         Assert.DoesNotContain("onload", svg);
-        Assert.IsTrue(doc.Descendants(Svg + "text").Any(t => t.Value == "<script>alert(1)</script> & \"quotes\""));
+        Assert.Contains(t => t.Value == "<script>alert(1)</script> & \"quotes\"", doc.Descendants(Svg + "text"));
     }
 
     [TestMethod]
@@ -359,9 +364,9 @@ public class RoutingExportAndRunTests : BunitContext
 
         Assert.IsTrue(cut.Find(".bit-blow-node[data-id='a']").ClassList.Contains("bit-blow-run-succeeded"));
         Assert.IsTrue(cut.Find(".bit-blow-node[data-id='b']").ClassList.Contains("bit-blow-run-failed"));
-        Assert.IsFalse(cut.Find(".bit-blow-node[data-id='c']").ClassName!.Contains("bit-blow-run-"));
+        Assert.DoesNotContain("bit-blow-run-", cut.Find(".bit-blow-node[data-id='c']").ClassName!);
         var ids = cut.Find(".bit-blow-node[data-id='b']").GetAttribute("aria-describedby")!.Split(' ');
-        StringAssert.StartsWith(cut.Find($"[id='{ids[0]}']").TextContent, "Failed: Malformed input.");
+        Assert.StartsWith("Failed: Malformed input.", cut.Find($"[id='{ids[0]}']").TextContent);
 
         // The run moves on: the same dictionary, changed, handed over again.
         states["c"] = new(BlowRunStatus.Running);

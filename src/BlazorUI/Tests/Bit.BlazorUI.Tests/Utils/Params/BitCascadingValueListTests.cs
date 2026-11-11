@@ -13,7 +13,7 @@ public class BitCascadingValueListTests
         var list = new BitCascadingValueList();
         list.Add<int?>(5, "Number", isFixed: true);
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.AreEqual(typeof(int?), list[0].ValueType);
         Assert.AreEqual(5, list[0].Value);
         Assert.AreEqual("Number", list[0].Name);
@@ -50,7 +50,7 @@ public class BitCascadingValueListTests
 
         var list = new BitCascadingValueList { cascadingValue };
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.AreSame(cascadingValue, list[0]);
         Assert.AreEqual(typeof(string), list[0].ValueType);
     }
@@ -61,7 +61,7 @@ public class BitCascadingValueListTests
         var list = new BitCascadingValueList();
         list.Add((BitCascadingValue?)null);
 
-        Assert.AreEqual(0, list.Count);
+        Assert.IsEmpty(list);
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class BitCascadingValueListTests
         list.AddIf(true, "kept", "Greeting");
         list.AddIf(false, "dropped", "Greeting");
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.AreEqual("kept", list[0].Value);
     }
 
@@ -120,7 +120,7 @@ public class BitCascadingValueListTests
             { (int?)null, "Count" }
         };
 
-        Assert.AreEqual(3, list.Count);
+        Assert.HasCount(3, list);
         Assert.AreEqual(typeof(string), list[0].ValueType);
         Assert.AreEqual(typeof(int), list[1].ValueType);
         Assert.AreEqual(typeof(int?), list[2].ValueType);
@@ -134,7 +134,7 @@ public class BitCascadingValueListTests
 
         var list = new BitCascadingValueList(source);
 
-        Assert.AreEqual(2, list.Count);
+        Assert.HasCount(2, list);
         Assert.AreSame(source[0], list[0]);
     }
 
@@ -166,7 +166,7 @@ public class BitCascadingValueListTests
         list.AddIf(false, dropped);
         list.AddIf(true, (BitCascadingValue?)null);
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.AreSame(kept, list[0]);
     }
 
@@ -208,7 +208,7 @@ public class BitCascadingValueListTests
         var list = new BitCascadingValueList();
         list.AddIf(false, BitCascadingValue.Lazy<int?>(() => { calls++; return 5; }));
 
-        Assert.AreEqual(0, list.Count);
+        Assert.IsEmpty(list);
         Assert.AreEqual(0, calls);
     }
 
@@ -222,7 +222,7 @@ public class BitCascadingValueListTests
         list.AddIf(true, lazy);
         list.Add(BitCascadingValue.From(7, "Seven"));
 
-        Assert.AreEqual(2, list.Count);
+        Assert.HasCount(2, list);
         Assert.AreSame(lazy, list[0]);
         Assert.AreEqual(typeof(int?), list[0].ValueType);
         Assert.AreEqual(typeof(int), list[1].ValueType);

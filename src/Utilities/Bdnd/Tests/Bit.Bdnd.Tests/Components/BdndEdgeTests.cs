@@ -217,7 +217,7 @@ public class BdndEdgeTests : BdndComponentTestBase
         await EdgeAsync(Target(cut), "top");
         var leave = HoverAsync(Target(cut), isOver: false);
         gate.SetResult();
-        await Task.WhenAll(enter, leave).WaitAsync(TimeSpan.FromSeconds(10));
+        await Task.WhenAll(enter, leave).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.IsFalse(_states.Last.IsOver, "the leave, reported last, wins");
         Assert.IsNull(_states.Last.ClosestEdge);
@@ -354,4 +354,6 @@ public class BdndEdgeTests : BdndComponentTestBase
         Assert.AreEqual((int)BdndEdges.Vertical, item.Edges);
         Assert.AreSequenceEqual(new[] { listId }, (string[])call.Arguments[1]!);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

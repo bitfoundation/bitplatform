@@ -12,15 +12,15 @@ public class BitMenuButtonOptionsOrderTests : BunitTestContext
     {
         var component = RenderComponent<BitMenuButtonOptionsOrderTest>(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Middle", "Last" }, GetItemTexts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTexts(component));
     }
 
     private static string[] GetItemTexts(IRenderedComponent<BitMenuButtonOptionsOrderTest> component)

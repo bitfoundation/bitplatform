@@ -49,7 +49,7 @@ public class BitTextInputBaseTests : BunitTestContext
         input.Input("t");
         input.Input("ty");
 
-        CollectionAssert.AreEqual(new[] { "t", "ty" }, values);
+        Assert.AreSequenceEqual(new[] { "t", "ty" }, values);
     }
 
     [TestMethod]
@@ -72,8 +72,8 @@ public class BitTextInputBaseTests : BunitTestContext
         // The change event the browser raises as the field loses focus carries the text the input event committed.
         input.Change("typed");
 
-        CollectionAssert.AreEqual(new[] { "typed" }, changedValues);
-        CollectionAssert.AreEqual(new[] { "typed" }, changes);
+        Assert.AreSequenceEqual(new[] { "typed" }, changedValues);
+        Assert.AreSequenceEqual(new[] { "typed" }, changes);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BitTextInputBaseTests : BunitTestContext
         // Trim belongs to the change event alone, so the same text commits a different value there.
         input.Change("typed ");
 
-        CollectionAssert.AreEqual(new[] { "typed ", "typed" }, changes);
+        Assert.AreSequenceEqual(new[] { "typed ", "typed" }, changes);
         Assert.AreEqual("typed", component.Instance.Value);
     }
 
@@ -131,7 +131,7 @@ public class BitTextInputBaseTests : BunitTestContext
 
         await typing;
 
-        CollectionAssert.AreEqual(new[] { "typed", "typed" }, changes);
+        Assert.AreSequenceEqual(new[] { "typed", "typed" }, changes);
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public class BitTextInputBaseTests : BunitTestContext
         // change event raised on blur reports "abc" again so the app ends on the text the field holds.
         await input.ChangeAsync(new ChangeEventArgs { Value = "abc" });
 
-        CollectionAssert.AreEqual(new[] { "abc", "ab", "abc" }, finished);
+        Assert.AreSequenceEqual(new[] { "abc", "ab", "abc" }, finished);
     }
 
     [TestMethod]
@@ -199,7 +199,7 @@ public class BitTextInputBaseTests : BunitTestContext
         await typing;
 
         // The change event committed the text the keystroke was waiting to, so the keystroke had nothing left to commit.
-        CollectionAssert.AreEqual(new[] { "typed" }, values);
+        Assert.AreSequenceEqual(new[] { "typed" }, values);
     }
 
     [TestMethod]
@@ -273,7 +273,7 @@ public class BitTextInputBaseTests : BunitTestContext
         await second;
 
         // The first keystroke's wait was cancelled by the second one, so only the text the burst ended on is committed.
-        CollectionAssert.AreEqual(new[] { "ty" }, values);
+        Assert.AreSequenceEqual(new[] { "ty" }, values);
     }
 
     [TestMethod]
@@ -296,7 +296,7 @@ public class BitTextInputBaseTests : BunitTestContext
         // of the field drops the wait.
         _ = input.InputAsync(new ChangeEventArgs { Value = "ty" });
 
-        CollectionAssert.AreEqual(new[] { "t" }, values);
+        Assert.AreSequenceEqual(new[] { "t" }, values);
     }
 
     [TestMethod]

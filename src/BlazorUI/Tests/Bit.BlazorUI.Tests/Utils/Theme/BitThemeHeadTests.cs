@@ -19,9 +19,8 @@ public class BitThemeHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitThemeHead>();
 
-        StringAssert.Contains(component.Markup, BitThemeSsr.InlineHeadScriptBody, StringComparison.Ordinal,
-            "The inline resolution script is the reason this component sits at the top of <head>.");
-        StringAssert.Contains(component.Markup, "name=\"theme-color\"", StringComparison.Ordinal);
+        Assert.Contains(BitThemeSsr.InlineHeadScriptBody, component.Markup, StringComparison.Ordinal, "The inline resolution script is the reason this component sits at the top of <head>.");
+        Assert.Contains("name=\"theme-color\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -30,12 +29,10 @@ public class BitThemeHeadTests : BunitTestContext
         var component = RenderComponent<BitThemeHead>(parameters => parameters
             .Add(p => p.PersistedPreference, BitThemePresets.FluentLight));
 
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.FluentLight], StringComparison.OrdinalIgnoreCase,
-            "A visitor with a stored preference is painted that theme, so the chrome must carry that theme's surface.");
+        Assert.Contains(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.FluentLight], component.Markup, StringComparison.OrdinalIgnoreCase, "A visitor with a stored preference is painted that theme, so the chrome must carry that theme's surface.");
         // Still corrected: the head script prefers localStorage over the cookie this response was
         // rendered from, so a resolved theme is not the same as an agreed one.
-        StringAssert.Contains(component.Markup, "querySelector", StringComparison.Ordinal,
-            "The client can re-resolve to a theme the cookie never mentioned; the tag has to follow it.");
+        Assert.Contains("querySelector", component.Markup, StringComparison.Ordinal, "The client can re-resolve to a theme the cookie never mentioned; the tag has to follow it.");
     }
 
     private static readonly Dictionary<string, string> PairColors = new(StringComparer.Ordinal)
@@ -58,7 +55,7 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.DarkTheme, BitThemePresets.MaterialDark)
             .Add(p => p.ThemeColors, PairColors));
 
-        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+        Assert.Contains("content=\"#222222\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -74,7 +71,7 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.AvailableThemes, [BitThemePresets.MaterialLight, BitThemePresets.MaterialDark])
             .Add(p => p.ThemeColors, PairColors));
 
-        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+        Assert.Contains("content=\"#222222\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -91,9 +88,8 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.AvailableThemes, [BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark])
             .Add(p => p.ThemeColors, PairColors));
 
-        StringAssert.Contains(component.Markup, "content=\"#111111\"", StringComparison.Ordinal);
-        StringAssert.Contains(component.Markup, "c=/dark$/.test(t)?'#111111':'#eeeee1';", StringComparison.Ordinal,
-            "The correction script's scheme fallback must be the declared pair's, not the set-aside one's.");
+        Assert.Contains("content=\"#111111\"", component.Markup, StringComparison.Ordinal);
+        Assert.Contains("c=/dark$/.test(t)?'#111111':'#eeeee1';", component.Markup, StringComparison.Ordinal, "The correction script's scheme fallback must be the declared pair's, not the set-aside one's.");
     }
 
     [TestMethod]
@@ -115,7 +111,7 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.ThemeColors, PairColors));
 
         Assert.AreEqual(BitThemePresets.MaterialDark, attributes[BitThemeAttributeNames.Theme]);
-        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+        Assert.Contains("content=\"#222222\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -134,7 +130,7 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.ThemeColors, PairColors));
 
         // "dark" is offered by neither list, and goes to the dark theme of the pair the parameters name.
-        StringAssert.Contains(component.Markup, "content=\"#111111\"", StringComparison.Ordinal);
+        Assert.Contains("content=\"#111111\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -149,7 +145,7 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.PersistedThemePair, $"{BitThemePresets.MaterialLight} {BitThemePresets.MaterialDark}")
             .Add(p => p.ThemeColors, PairColors));
 
-        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+        Assert.Contains("content=\"#222222\"", component.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -165,16 +161,14 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
 
         var script = component.Markup[component.Markup.IndexOf("querySelector", StringComparison.Ordinal)..];
-        StringAssert.Contains(script, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialLight], StringComparison.OrdinalIgnoreCase,
-            "A stored material-light is a light name the configured light surface does not cover, so it has to be carried by name.");
-        StringAssert.Contains(script, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialDark], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialLight], script, StringComparison.OrdinalIgnoreCase, "A stored material-light is a light name the configured light surface does not cover, so it has to be carried by name.");
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialDark], script, StringComparison.OrdinalIgnoreCase);
         // The scheme fallback is a statement of its own rather than the right side of an `||`: in one
         // expression the ternary would swallow the lookup (`a||b?c:d` is `(a||b)?c:d`) and every
         // resolved name would get the light color. The guard is a typeof so a name that reaches
         // Object.prototype - 'constructor', 'toString' - falls through instead of painting a function.
-        StringAssert.Contains(script, "if(typeof c!=='string')", StringComparison.Ordinal);
-        StringAssert.DoesNotMatch(script, new System.Text.RegularExpressions.Regex(@"\}\[t\]\s*\|\|"),
-            "A lookup or-ed straight into the ternary is the precedence trap this shape exists to avoid.");
+        Assert.Contains("if(typeof c!=='string')", script, StringComparison.Ordinal);
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\}\[t\]\s*\|\|"), script, "A lookup or-ed straight into the ternary is the precedence trap this shape exists to avoid.");
     }
 
     [TestMethod]
@@ -196,10 +190,8 @@ public class BitThemeHeadTests : BunitTestContext
         var component = RenderComponent<BitThemeHead>(parameters => parameters
             .Add(p => p.ThemeColors, colors));
 
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex(@"\}\[t\]"),
-            "No entry of this map needs naming; the scheme fallback resolves all four, so no lookup object is emitted at all.");
-        StringAssert.Contains(component.Markup, "var c=/dark$/.test(t)?", StringComparison.Ordinal,
-            "What is left is the scheme test alone.");
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\}\[t\]"), component.Markup, "No entry of this map needs naming; the scheme fallback resolves all four, so no lookup object is emitted at all.");
+        Assert.Contains("var c=/dark$/.test(t)?", component.Markup, StringComparison.Ordinal, "What is left is the scheme test alone.");
     }
 
     [TestMethod]
@@ -217,10 +209,8 @@ public class BitThemeHeadTests : BunitTestContext
 
         var component = RenderComponent<BitThemeHead>();
 
-        StringAssert.Contains(component.Markup, $"'{BitThemePresets.MaterialDark}':'{BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark]}'", StringComparison.OrdinalIgnoreCase,
-            "material-dark's page surface is not the core dark one, so the fallback would paint the chrome wrong for it.");
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex($"'{BitThemePresets.FluentDark}':"),
-            "fluent-dark shares the core dark surface, so naming it would be dead weight in front of every first paint.");
+        Assert.Contains($"'{BitThemePresets.MaterialDark}':'{BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark]}'", component.Markup, StringComparison.OrdinalIgnoreCase, "material-dark's page surface is not the core dark one, so the fallback would paint the chrome wrong for it.");
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex($"'{BitThemePresets.FluentDark}':"), component.Markup, "fluent-dark shares the core dark surface, so naming it would be dead weight in front of every first paint.");
     }
 
     [TestMethod]
@@ -238,10 +228,8 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.PersistedPreference, "acme-noon")
             .Add(p => p.ThemeColors, colors));
 
-        StringAssert.Contains(component.Markup, "#ABCDEF", StringComparison.OrdinalIgnoreCase,
-            "The only light-side entry of the supplied map, rather than the packaged light surface.");
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], System.Text.RegularExpressions.RegexOptions.IgnoreCase),
-            "The packaged surfaces are the last resort, not the first one past a missing name.");
+        Assert.Contains("#ABCDEF", component.Markup, StringComparison.OrdinalIgnoreCase, "The only light-side entry of the supplied map, rather than the packaged light surface.");
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], System.Text.RegularExpressions.RegexOptions.IgnoreCase), component.Markup, "The packaged surfaces are the last resort, not the first one past a missing name.");
     }
 
     [TestMethod, DoNotParallelize]
@@ -264,8 +252,7 @@ public class BitThemeHeadTests : BunitTestContext
                 .Add(p => p.PersistedPreference, "acme-dark")
                 .Add(p => p.ThemeColors, colors));
 
-            StringAssert.Contains(component.Markup, dark.BackgroundPrimary!, StringComparison.OrdinalIgnoreCase,
-                "The core dark surface is a constant of the stylesheet, not something the registry has to be asked for.");
+            Assert.Contains(dark.BackgroundPrimary!, component.Markup, StringComparison.OrdinalIgnoreCase, "The core dark surface is a constant of the stylesheet, not something the registry has to be asked for.");
         }
         finally
         {
@@ -285,11 +272,10 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.DarkTheme, "FLUENT2-DARK")
             .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
 
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(component.Markup, "c=/dark$/.test(t)?", StringComparison.Ordinal);
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex("t==='"),
-            "fluent2-dark ends in dark once normalized, so the suffix test covers it and no by-name check is needed.");
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], component.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], component.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("c=/dark$/.test(t)?", component.Markup, StringComparison.Ordinal);
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("t==='"), component.Markup, "fluent2-dark ends in dark once normalized, so the suffix test covers it and no by-name check is needed.");
     }
 
     [TestMethod]
@@ -299,9 +285,9 @@ public class BitThemeHeadTests : BunitTestContext
         // correction script carries the client's answer back before first paint.
         var component = RenderComponent<BitThemeHead>();
 
-        StringAssert.Contains(component.Markup, "querySelector", StringComparison.Ordinal);
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("querySelector", component.Markup, StringComparison.Ordinal);
+        Assert.Contains(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Light], component.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], component.Markup, StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]
@@ -314,8 +300,8 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
             .Add(p => p.ThemeColors, BitThemeSurfaces.BackgroundSecondary));
 
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], StringComparison.OrdinalIgnoreCase);
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Light], component.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.Fluent2Dark], component.Markup, StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]
@@ -326,8 +312,7 @@ public class BitThemeHeadTests : BunitTestContext
         var component = RenderComponent<BitThemeHead>(parameters => parameters
             .Add(p => p.PersistedPreference, "acme-dark"));
 
-        StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], StringComparison.OrdinalIgnoreCase,
-            "An unknown -dark name resolves to the dark entry, the same way every other layer classifies names.");
+        Assert.Contains(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], component.Markup, StringComparison.OrdinalIgnoreCase, "An unknown -dark name resolves to the dark entry, the same way every other layer classifies names.");
     }
 
     [TestMethod]
@@ -336,9 +321,8 @@ public class BitThemeHeadTests : BunitTestContext
         var component = RenderComponent<BitThemeHead>(parameters => parameters
             .Add(p => p.EmitThemeColor, false));
 
-        StringAssert.Contains(component.Markup, BitThemeSsr.InlineHeadScriptBody, StringComparison.Ordinal);
-        StringAssert.DoesNotMatch(component.Markup, new System.Text.RegularExpressions.Regex("theme-color"),
-            "A host page keeping its own tag (a media-qualified pair, say) must not get a second one.");
+        Assert.Contains(BitThemeSsr.InlineHeadScriptBody, component.Markup, StringComparison.Ordinal);
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("theme-color"), component.Markup, "A host page keeping its own tag (a media-qualified pair, say) must not get a second one.");
     }
 
     [TestMethod]
@@ -350,10 +334,10 @@ public class BitThemeHeadTests : BunitTestContext
             .Add(p => p.Nonce, "r4nd0m"));
 
         var scripts = component.Markup.Split("<script", StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(2, scripts.Length, "Expected the resolution script and the theme-color correction script.");
+        Assert.HasCount(2, scripts, "Expected the resolution script and the theme-color correction script.");
         foreach (var script in scripts)
         {
-            StringAssert.StartsWith(script.TrimStart(), "nonce=\"r4nd0m\"", StringComparison.Ordinal);
+            Assert.StartsWith("nonce=\"r4nd0m\"", script.TrimStart(), StringComparison.Ordinal);
         }
     }
 
@@ -377,14 +361,11 @@ public class BitThemeHeadTests : BunitTestContext
         var script = component.Markup[component.Markup.IndexOf("querySelector", StringComparison.Ordinal)..];
 
         // By name, since the map carries no 'midnight' entry for the lookup table to name it with.
-        StringAssert.Contains(script, "t==='midnight'", StringComparison.Ordinal,
-            "The configured dark preset has to be recognized by name, not only by the suffix.");
+        Assert.Contains("t==='midnight'", script, StringComparison.Ordinal, "The configured dark preset has to be recognized by name, not only by the suffix.");
         // And the suffix stays: the name check covers the configured preset, not every dark name a
         // client may resolve to (an app's own 'acme-dark', a design system's preset).
-        StringAssert.Contains(script, "/dark$/.test(t)", StringComparison.Ordinal,
-            "The suffix rule is the fallback for every OTHER dark name, so it has to survive.");
-        StringAssert.Contains(script, BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], StringComparison.OrdinalIgnoreCase,
-            "'midnight' resolves to the dark side, so the dark surface is what that branch paints.");
+        Assert.Contains("/dark$/.test(t)", script, StringComparison.Ordinal, "The suffix rule is the fallback for every OTHER dark name, so it has to survive.");
+        Assert.Contains(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.Dark], script, StringComparison.OrdinalIgnoreCase, "'midnight' resolves to the dark side, so the dark surface is what that branch paints.");
     }
 
     [TestMethod]
@@ -401,13 +382,11 @@ public class BitThemeHeadTests : BunitTestContext
 
             if (attributes.TryGetValue(BitThemeAttributeNames.Theme, out var theme))
             {
-                StringAssert.Contains(component.Markup, BitThemeSurfaces.BackgroundPrimary[(string)theme], StringComparison.OrdinalIgnoreCase,
-                    $"'{preference}' renders {theme}, so the chrome must carry that theme's surface.");
+                Assert.Contains(BitThemeSurfaces.BackgroundPrimary[(string)theme], component.Markup, StringComparison.OrdinalIgnoreCase, $"'{preference}' renders {theme}, so the chrome must carry that theme's surface.");
             }
             else
             {
-                StringAssert.Contains(component.Markup, "querySelector", StringComparison.Ordinal,
-                    $"'{preference}' leaves the theme to the client, so the correction script must be emitted.");
+                Assert.Contains("querySelector", component.Markup, StringComparison.Ordinal, $"'{preference}' leaves the theme to the client, so the correction script must be emitted.");
             }
         }
     }

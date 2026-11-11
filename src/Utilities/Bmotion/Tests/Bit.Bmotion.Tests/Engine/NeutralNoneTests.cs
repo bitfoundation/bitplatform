@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -65,7 +65,7 @@ public class NeutralNoneTests
         await engine.AnimateToAsync("el", Values(("boxShadow", "none")), Bm.Tween(0.3).ToConfig());
 
         var kf = Keyframes(interop);
-        Assert.AreEqual(2, kf.Length, "a timeline, not a one-step snap");
+        Assert.HasCount(2, kf, "a timeline, not a one-step snap");
         Assert.AreEqual("0px 0px 0px 0px rgba(0,0,0,0)", kf[^1]["boxShadow"]);
         interop.FinishWaapi();
         var frame = engine.ComputeFrame(0);
@@ -84,7 +84,7 @@ public class NeutralNoneTests
         var written = new List<string>();
         for (int i = 0; i <= 14; i++)
             if (engine.ComputeFrame(i * 16.0)?.GetValueOrDefault("el")?.TryGetValue("filter", out var v) == true) written.Add(v);
-        Assert.IsTrue(written.Any(w => w is not "none" and not "blur(0px)" and not "blur(8px)"), string.Join(" | ", written));
+        Assert.Contains(w => w is not "none" and not "blur(0px)" and not "blur(8px)", written, string.Join(" | ", written));
         Assert.AreEqual("blur(8px)", written[^1]);
     }
 
@@ -100,7 +100,7 @@ public class NeutralNoneTests
         var written = new List<string>();
         for (int i = 0; i <= 16; i++)
             if (engine.ComputeFrame(i * 16.0)?.GetValueOrDefault("el")?.TryGetValue("filter", out var v) == true) written.Add(v);
-        Assert.IsTrue(written.Any(w => w.StartsWith("blur(") && w != "blur(0px)"), string.Join(" | ", written));
+        Assert.Contains(w => w.StartsWith("blur(") && w != "blur(0px)", written, string.Join(" | ", written));
         Assert.AreEqual("none", written[^1]);
     }
 }

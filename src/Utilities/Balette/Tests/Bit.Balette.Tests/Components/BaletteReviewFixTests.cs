@@ -169,8 +169,8 @@ public class HistoryLoadCancellationTests
         await Assert.ThrowsAsync<OperationCanceledException>(() => history.RecordAsync("a", cancelled.Token));
 
         // The load it started goes on for everyone else, and the history works afterwards.
-        await history.EnsureLoadedAsync();
-        await history.RecordAsync("b");
+        await history.EnsureLoadedAsync(TestContext.CancellationToken);
+        await history.RecordAsync("b", TestContext.CancellationToken);
         Assert.IsTrue(history.IsLoaded);
         Assert.AreEqual(1, history.Get("b")!.Count);
     }
@@ -185,4 +185,6 @@ public class HistoryLoadCancellationTests
 
         public ValueTask SaveAsync(IReadOnlyDictionary<string, BaletteCommandUsage> usage, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

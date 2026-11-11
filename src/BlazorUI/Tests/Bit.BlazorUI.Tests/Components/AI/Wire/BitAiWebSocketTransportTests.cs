@@ -59,7 +59,7 @@ public class BitAiWebSocketTransportTests
         await using var app = await Host(MapChatClient, chatClient);
 
         await using var session = new BitAiChatSession(new BitAiWebSocketTransport(Address(app)), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
 
         Assert.IsNull(session.LastError);
         Assert.AreEqual("Hello over a WebSocket", session.Conversation.Messages[1].GetText());
@@ -75,7 +75,7 @@ public class BitAiWebSocketTransportTests
         await using var app = await Host(MapChatClient, new BitAiFakeChatClient(BitAiFakeChatClient.Text(text)));
 
         await using var session = new BitAiChatSession(new BitAiWebSocketTransport(Address(app)), null, Options);
-        await session.SubmitAsync(new string('y', 100_000));
+        await session.SubmitAsync(new string('y', 100_000), cancellationToken: TestContext.CancellationToken);
 
         Assert.IsNull(session.LastError);
         Assert.AreEqual(text, session.Conversation.Messages[1].GetText());
@@ -88,9 +88,10 @@ public class BitAiWebSocketTransportTests
         await using var app = await Host(MapChatClient, chatClient);
 
         await using var session = new BitAiChatSession(new BitAiWebSocketTransport(Address(app)), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.IsFalse(session.LastError!.Message.Contains("secret", StringComparison.Ordinal));
     }
 
@@ -123,14 +124,14 @@ public class BitAiWebSocketTransportTests
 
         var transport = new BitAiWebSocketTransport(Address(app));
         var events = new List<BitAiEvent>();
-        await foreach (var evt in transport.StreamAsync(new BitAiRequest([])))
+        await foreach (var evt in transport.StreamAsync(new BitAiRequest([]), TestContext.CancellationToken))
         {
             events.Add(evt);
             if (evt is not BitAiToolApprovalRequestedEvent) continue;
 
             // Sent while the handler has not got to WaitAsync yet: the broker keeps it for the handler.
-            await transport.SendApprovalAsync(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved));
-            Assert.IsTrue(await taken.Task.WaitAsync(TimeSpan.FromSeconds(10)));
+            await transport.SendApprovalAsync(new BitAiApprovalResponse("t1", "delete_file", BitAiApprovalDecision.Approved), TestContext.CancellationToken);
+            Assert.IsTrue(await taken.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
             waiting.SetResult();
         }
 
@@ -144,9 +145,10 @@ public class BitAiWebSocketTransportTests
         await using var app = await Host(a => a.MapBitAiWebSocket(Path, (_, _, _) => BitAiTransportEndToEndTests.Unwritable()));
 
         await using var session = new BitAiChatSession(new BitAiWebSocketTransport(Address(app)), null, Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
+        var actualValue = session.LastError?.Code;
 
-        Assert.AreEqual("server_error", session.LastError?.Code);
+        Assert.AreEqual("server_error", actualValue);
         Assert.AreEqual("Before", session.Conversation.Messages[1].GetText());
     }
 
@@ -160,7 +162,7 @@ public class BitAiWebSocketTransportTests
             new BitAiWebSocketTransport(Address(app), new BitAiWebSocketTransportOptions { MaxMessageSize = 4096 }),
             null,
             Options);
-        await session.SubmitAsync("hi");
+        await session.SubmitAsync("hi", cancellationToken: TestContext.CancellationToken);
 
         Assert.IsNotNull(session.LastError);
         Assert.AreNotEqual(10_000, session.Conversation.Messages[1].GetText().Length);
@@ -186,17 +188,17 @@ public class BitAiWebSocketTransportTests
         using var socket = new ClientWebSocket();
         await socket.ConnectAsync(Address(app, "ws"), CancellationToken.None);
         await SendAsync(socket, BitAiWireSerializer.SerializeRequest(BitAiWireSerializer.ToSnapshot(new BitAiRequest([]))));
-        await asked.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await asked.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Another reply's call, then this one's twice: only the first decision on this reply's call is taken.
         await SendAsync(socket, BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("someone-elses", "x", BitAiApprovalDecision.Approved)));
         await SendAsync(socket, BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "x", BitAiApprovalDecision.Approved)));
         await SendAsync(socket, BitAiWireSerializer.SerializeApproval(new BitAiApprovalResponse("t1", "x", BitAiApprovalDecision.Rejected)));
 
-        await release.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await release.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await DrainAsync(socket);
 
-        CollectionAssert.AreEqual(new[] { "t1" }, decided);
+        Assert.AreSequenceEqual(new[] { "t1" }, decided);
     }
 
     [TestMethod]
@@ -212,12 +214,12 @@ public class BitAiWebSocketTransportTests
         var reading = Task.Run(async () =>
         {
             await foreach (var _ in transport.StreamAsync(new BitAiRequest([]), stop.Token)) { }
-        });
+        }, TestContext.CancellationToken);
 
-        await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await stop.CancelAsync();
 
-        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         await Assert.ThrowsAsync<OperationCanceledException>(() => reading);
     }
 
@@ -229,13 +231,13 @@ public class BitAiWebSocketTransportTests
 
         await using var app = await Host(a => a.MapBitAiWebSocket(Path, (_, _, ct) => UntilCancelled(started, cancelled, ct)));
 
-        await foreach (var evt in new BitAiWebSocketTransport(Address(app)).StreamAsync(new BitAiRequest([])))
+        await foreach (var evt in new BitAiWebSocketTransport(Address(app)).StreamAsync(new BitAiRequest([]), TestContext.CancellationToken))
         {
             Assert.IsInstanceOfType<BitAiMessageStartedEvent>(evt);
             break;
         }
 
-        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -286,7 +288,7 @@ public class BitAiWebSocketTransportTests
         await using var app = await Host(MapChatClient);
         using var client = new HttpClient();
 
-        using var response = await client.GetAsync(Address(app));
+        using var response = await client.GetAsync(Address(app), TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -299,7 +301,7 @@ public class BitAiWebSocketTransportTests
         var transport = new BitAiWebSocketTransport(Address(app));
         var failure = await Assert.ThrowsExactlyAsync<HttpRequestException>(async () =>
         {
-            await foreach (var _ in transport.StreamAsync(new BitAiRequest([]))) { }
+            await foreach (var _ in transport.StreamAsync(new BitAiRequest([]), TestContext.CancellationToken)) { }
         });
 
         Assert.AreEqual(HttpStatusCode.Forbidden, failure.StatusCode);
@@ -328,8 +330,6 @@ public class BitAiWebSocketTransportTests
     public void TheSignalRTransportsDefaultsAreTheHubsMethods()
     {
         // The SignalR client package cannot reference the hub (Bit.BlazorUI.AI.Server), so it writes the names out.
-        Assert.AreEqual(BitAiHub.StreamMethodName, BitAiSignalRTransportOptions.DefaultStreamMethodName);
-        Assert.AreEqual(BitAiHub.ApprovalMethodName, BitAiSignalRTransportOptions.DefaultApprovalMethodName);
         Assert.AreEqual(BitAiHub.StreamMethodName, new BitAiSignalRTransportOptions().StreamMethodName);
         Assert.AreEqual(BitAiHub.ApprovalMethodName, new BitAiSignalRTransportOptions().ApprovalMethodName);
     }
@@ -337,7 +337,11 @@ public class BitAiWebSocketTransportTests
     [TestMethod]
     public void TheSseTransportsMediaTypeIsTheEndpoints()
     {
-        Assert.AreEqual(BitAiSseEndpointRouteBuilderExtensions.EventStreamContentType, BitAiSseTransport.EventStreamContentType);
+        // Inspect the loaded client binary rather than a constant inlined into this test assembly.
+        var clientContentType = typeof(BitAiSseTransport).GetField(
+            nameof(BitAiSseTransport.EventStreamContentType),
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)!.GetRawConstantValue();
+        Assert.AreEqual(BitAiSseEndpointRouteBuilderExtensions.EventStreamContentType, clientContentType);
     }
 
     private static async IAsyncEnumerable<BitAiEvent> AskThenWait(TaskCompletionSource asked, TaskCompletionSource release, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -387,4 +391,6 @@ public class BitAiWebSocketTransportTests
             await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, timeout.Token);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

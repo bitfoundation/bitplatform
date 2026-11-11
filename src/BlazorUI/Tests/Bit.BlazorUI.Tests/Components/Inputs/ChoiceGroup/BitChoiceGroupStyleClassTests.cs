@@ -257,7 +257,7 @@ public class BitChoiceGroupStyleClassTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
 
         // Exactly one variant class, so a re-render never leaves the previous one behind.
-        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-chg-txt" or "bit-chg-otl" or "bit-chg-fil"));
+        Assert.ContainsSingle(c => c is "bit-chg-txt" or "bit-chg-otl" or "bit-chg-fil", root.ClassList);
     }
 
     [TestMethod]

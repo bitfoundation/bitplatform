@@ -25,9 +25,9 @@ public class EncryptionTests
         using var storage = Wrap(inner);
         var payload = Encoding.UTF8.GetBytes("the quick brown fox");
 
-        await storage.WriteAtomicAsync("snapshot", payload);
+        await storage.WriteAtomicAsync("snapshot", payload, TestContext.CancellationToken);
 
-        Assert.AreSequenceEqual(payload, await storage.ReadAsync("snapshot"));
+        Assert.AreSequenceEqual(payload, await storage.ReadAsync("snapshot", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -37,12 +37,12 @@ public class EncryptionTests
         using var storage = Wrap(inner);
         var payload = Encoding.UTF8.GetBytes("super-secret-value");
 
-        await storage.WriteAtomicAsync("snapshot", payload);
+        await storage.WriteAtomicAsync("snapshot", payload, TestContext.CancellationToken);
 
-        var stored = await inner.ReadAsync("snapshot");
+        var stored = await inner.ReadAsync("snapshot", TestContext.CancellationToken);
         Assert.IsNotNull(stored);
         Assert.DoesNotContain("super-secret-value", Encoding.UTF8.GetString(stored!));
-        Assert.IsTrue(stored!.Length > payload.Length);
+        Assert.IsGreaterThan(payload.Length, stored!.Length);
     }
 
     [TestMethod]
@@ -51,11 +51,11 @@ public class EncryptionTests
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
 
-        await storage.AppendAsync("wal", "alpha"u8.ToArray());
-        await storage.AppendAsync("wal", "beta"u8.ToArray());
-        await storage.AppendAsync("wal", "gamma"u8.ToArray());
+        await storage.AppendAsync("wal", "alpha"u8.ToArray(), TestContext.CancellationToken);
+        await storage.AppendAsync("wal", "beta"u8.ToArray(), TestContext.CancellationToken);
+        await storage.AppendAsync("wal", "gamma"u8.ToArray(), TestContext.CancellationToken);
 
-        var read = await storage.ReadAsync("wal");
+        var read = await storage.ReadAsync("wal", TestContext.CancellationToken);
         Assert.AreEqual("alphabetagamma", Encoding.UTF8.GetString(read!));
     }
 
@@ -65,10 +65,10 @@ public class EncryptionTests
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
 
-        await storage.AppendAsync("wal", "same"u8.ToArray());
-        await storage.AppendAsync("wal", "same"u8.ToArray());
+        await storage.AppendAsync("wal", "same"u8.ToArray(), TestContext.CancellationToken);
+        await storage.AppendAsync("wal", "same"u8.ToArray(), TestContext.CancellationToken);
 
-        var stored = (await inner.ReadAsync("wal"))!;
+        var stored = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
         var half = stored.Length / 2;
         Assert.IsFalse(Enumerable.SequenceEqual(stored[..half], stored[half..]));
     }
@@ -77,7 +77,7 @@ public class EncryptionTests
     public async Task Missing_File_Still_Reads_As_Null()
     {
         using var storage = Wrap(new BlazeDbInMemoryStorage());
-        Assert.IsNull(await storage.ReadAsync("nope"));
+        Assert.IsNull(await storage.ReadAsync("nope", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -85,10 +85,10 @@ public class EncryptionTests
     {
         // Encrypting a browser database must not cost it the engine's quota handling.
         using var quotaAware = Wrap(new QuotaLimitedStorage { QuotaBytes = 1234 });
-        Assert.AreEqual(1234, (await quotaAware.GetQuotaAsync())!.Value.QuotaBytes);
+        Assert.AreEqual(1234, (await quotaAware.GetQuotaAsync(TestContext.CancellationToken))!.Value.QuotaBytes);
 
         using var plain = Wrap(new BlazeDbInMemoryStorage());
-        Assert.IsNull(await plain.GetQuotaAsync());
+        Assert.IsNull(await plain.GetQuotaAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -97,11 +97,11 @@ public class EncryptionTests
         var inner = new BlazeDbInMemoryStorage();
         using (var writer = Wrap(inner, seed: 1))
         {
-            await writer.WriteAtomicAsync("snapshot", "payload"u8.ToArray());
+            await writer.WriteAtomicAsync("snapshot", "payload"u8.ToArray(), TestContext.CancellationToken);
         }
 
         using var reader = Wrap(inner, seed: 2);
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await reader.ReadAsync("snapshot"));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await reader.ReadAsync("snapshot", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -109,13 +109,13 @@ public class EncryptionTests
     {
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
-        await storage.WriteAtomicAsync("snapshot", "payload"u8.ToArray());
+        await storage.WriteAtomicAsync("snapshot", "payload"u8.ToArray(), TestContext.CancellationToken);
 
-        var stored = (await inner.ReadAsync("snapshot"))!;
+        var stored = (await inner.ReadAsync("snapshot", TestContext.CancellationToken))!;
         stored[^1] ^= 0xFF;
-        await inner.WriteAtomicAsync("snapshot", stored);
+        await inner.WriteAtomicAsync("snapshot", stored, TestContext.CancellationToken);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("snapshot"));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("snapshot", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -123,12 +123,12 @@ public class EncryptionTests
     {
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
-        await storage.WriteAtomicAsync("wal", "payload"u8.ToArray());
+        await storage.WriteAtomicAsync("wal", "payload"u8.ToArray(), TestContext.CancellationToken);
 
         // The file name is bound in as associated data, so moving the bytes breaks the seal.
-        await inner.WriteAtomicAsync("snapshot", (await inner.ReadAsync("wal"))!);
+        await inner.WriteAtomicAsync("snapshot", (await inner.ReadAsync("wal", TestContext.CancellationToken))!, TestContext.CancellationToken);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("snapshot"));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("snapshot", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -139,15 +139,15 @@ public class EncryptionTests
         // would be dropped without a word.
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
-        await storage.AppendAsync("wal", "first"u8.ToArray());
-        await storage.AppendAsync("wal", "second"u8.ToArray());
+        await storage.AppendAsync("wal", "first"u8.ToArray(), TestContext.CancellationToken);
+        await storage.AppendAsync("wal", "second"u8.ToArray(), TestContext.CancellationToken);
 
         // Frame layout: version(1) nonce(12) length(4) header crc(4) body. Inflate the first length.
-        var stored = (await inner.ReadAsync("wal"))!;
+        var stored = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
         stored[1 + 12 + 2] = 0x7F;
-        await inner.WriteAtomicAsync("wal", stored);
+        await inner.WriteAtomicAsync("wal", stored, TestContext.CancellationToken);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("wal"));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await storage.ReadAsync("wal", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -155,15 +155,15 @@ public class EncryptionTests
     {
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
-        await storage.AppendAsync("wal", "committed"u8.ToArray());
-        var complete = (await inner.ReadAsync("wal"))!;
-        await storage.AppendAsync("wal", "interrupted"u8.ToArray());
+        await storage.AppendAsync("wal", "committed"u8.ToArray(), TestContext.CancellationToken);
+        var complete = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
+        await storage.AppendAsync("wal", "interrupted"u8.ToArray(), TestContext.CancellationToken);
 
         // Simulate a crash midway through the second append.
-        var torn = (await inner.ReadAsync("wal"))!;
-        await inner.WriteAtomicAsync("wal", torn[..(complete.Length + 9)]);
+        var torn = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
+        await inner.WriteAtomicAsync("wal", torn[..(complete.Length + 9)], TestContext.CancellationToken);
 
-        Assert.AreEqual("committed", Encoding.UTF8.GetString((await storage.ReadAsync("wal"))!));
+        Assert.AreEqual("committed", Encoding.UTF8.GetString((await storage.ReadAsync("wal", TestContext.CancellationToken))!));
     }
 
     [TestMethod]
@@ -173,17 +173,17 @@ public class EncryptionTests
         // append landing behind it would be swallowed along with it on every later read.
         var inner = new BlazeDbInMemoryStorage();
         using var storage = Wrap(inner);
-        await storage.AppendAsync("wal", "committed"u8.ToArray());
-        var complete = (await inner.ReadAsync("wal"))!;
-        await storage.AppendAsync("wal", "interrupted"u8.ToArray());
-        var torn = (await inner.ReadAsync("wal"))!;
-        await inner.WriteAtomicAsync("wal", torn[..(complete.Length + 9)]);
+        await storage.AppendAsync("wal", "committed"u8.ToArray(), TestContext.CancellationToken);
+        var complete = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
+        await storage.AppendAsync("wal", "interrupted"u8.ToArray(), TestContext.CancellationToken);
+        var torn = (await inner.ReadAsync("wal", TestContext.CancellationToken))!;
+        await inner.WriteAtomicAsync("wal", torn[..(complete.Length + 9)], TestContext.CancellationToken);
 
-        Assert.AreEqual("committed", Encoding.UTF8.GetString((await storage.ReadAsync("wal"))!));
+        Assert.AreEqual("committed", Encoding.UTF8.GetString((await storage.ReadAsync("wal", TestContext.CancellationToken))!));
 
-        await storage.AppendAsync("wal", "later"u8.ToArray());
+        await storage.AppendAsync("wal", "later"u8.ToArray(), TestContext.CancellationToken);
 
-        Assert.AreEqual("committedlater", Encoding.UTF8.GetString((await storage.ReadAsync("wal"))!));
+        Assert.AreEqual("committedlater", Encoding.UTF8.GetString((await storage.ReadAsync("wal", TestContext.CancellationToken))!));
     }
 
     [TestMethod]
@@ -196,27 +196,27 @@ public class EncryptionTests
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(PersonTable.Descriptor);
 
-        var db = await BlazeDbDatabase.OpenAsync(options());
+        var db = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "one", 1));
-        await db.FlushAsync();
-        var whole = (await inner.ReadAsync(inner.Wal()))!;
+        await db.FlushAsync(TestContext.CancellationToken);
+        var whole = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!;
 
         db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "two", 2));
-        await db.FlushAsync();
-        var torn = (await inner.ReadAsync(inner.Wal()))!;
+        await db.FlushAsync(TestContext.CancellationToken);
+        var torn = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!;
         await db.DisposeAsync();
 
         // Crash midway through the frame the second flush was writing.
-        await inner.WriteAtomicAsync(inner.Wal(), torn[..(whole.Length + 9)]);
+        await inner.WriteAtomicAsync(inner.Wal(), torn[..(whole.Length + 9)], TestContext.CancellationToken);
 
-        var reopened = await BlazeDbDatabase.OpenAsync(options());
+        var reopened = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         Assert.AreEqual(1, reopened.GetTable(PersonTable.Descriptor).Count);
 
         reopened.GetTable(PersonTable.Descriptor).Insert(new Person(3, "three", 3));
-        await reopened.FlushAsync();
+        await reopened.FlushAsync(TestContext.CancellationToken);
         await reopened.DisposeAsync();
 
-        var third = await BlazeDbDatabase.OpenAsync(options());
+        var third = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         await using var owned = third;
         Assert.AreEqual(2, third.GetTable(PersonTable.Descriptor).Count);
         Assert.AreEqual("three", third.GetTable(PersonTable.Descriptor).Get(3)!.Name);
@@ -232,25 +232,25 @@ public class EncryptionTests
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(PersonTable.Descriptor);
 
-        var db = await BlazeDbDatabase.OpenAsync(options());
+        var db = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         var ends = new List<int>();
         for (var id = 1; id <= 3; id++)
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(id, "p" + id, id));
-            await db.FlushAsync();
-            ends.Add((await inner.ReadAsync(inner.Wal()))!.Length);
+            await db.FlushAsync(TestContext.CancellationToken);
+            ends.Add((await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!.Length);
         }
         await db.DisposeAsync();
 
         // Every frame left is authentic, so only the sequence of the commits inside them gives the gap away.
-        var wal = (await inner.ReadAsync(inner.Wal()))!;
+        var wal = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!;
         var dropped = wal[..ends[0]].Concat(wal[ends[1]..]).ToArray();
-        await inner.WriteAtomicAsync(inner.Wal(), dropped);
+        await inner.WriteAtomicAsync(inner.Wal(), dropped, TestContext.CancellationToken);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options()));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken));
 
         // Nothing was cut away: the third commit is still there for whoever recovers the file.
-        CollectionAssert.AreEqual(dropped, await inner.ReadAsync(inner.Wal()));
+        Assert.AreSequenceEqual(dropped, await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -267,24 +267,24 @@ public class EncryptionTests
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(PersonTable.Descriptor);
 
-        await using (var earlier = await BlazeDbDatabase.OpenAsync(options()))
+        await using (var earlier = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken))
         {
             earlier.GetTable(PersonTable.Descriptor).Insert(new Person(1, "planted", 1));
-            await earlier.FlushAsync();
+            await earlier.FlushAsync(TestContext.CancellationToken);
         }
-        var oldLog = (await inner.ReadAsync(inner.Wal()))!;
-        await inner.DeleteAsync("manifest.blz");
-        await inner.DeleteAsync(inner.Wal());
+        var oldLog = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!;
+        await inner.DeleteAsync("manifest.blz", TestContext.CancellationToken);
+        await inner.DeleteAsync(inner.Wal(), TestContext.CancellationToken);
 
-        await using (var current = await BlazeDbDatabase.OpenAsync(options()))
+        await using (var current = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken))
         {
             current.GetTable(PersonTable.Descriptor).Insert(new Person(2, "genuine", 2));
-            await current.FlushAsync();
+            await current.FlushAsync(TestContext.CancellationToken);
         }
         var log = inner.Wal();
-        await inner.WriteAtomicAsync(log, oldLog.Concat((await inner.ReadAsync(log))!).ToArray());
+        await inner.WriteAtomicAsync(log, oldLog.Concat((await inner.ReadAsync(log, TestContext.CancellationToken))!).ToArray(), TestContext.CancellationToken);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options()));
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -297,20 +297,20 @@ public class EncryptionTests
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(PersonTable.Descriptor);
 
-        var db = await BlazeDbDatabase.OpenAsync(options());
+        var db = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "one", 1));
-        await db.FlushAsync();
-        var first = (await inner.ReadAsync(inner.Wal()))!.Length;
+        await db.FlushAsync(TestContext.CancellationToken);
+        var first = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!.Length;
         people.Update(new Person(1, "uno", 1));
         people.Insert(new Person(2, "two", 2));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
 
-        var wal = (await inner.ReadAsync(inner.Wal()))!;
-        await inner.WriteAtomicAsync(inner.Wal(), wal.Concat(wal[..first]).ToArray());
+        var wal = (await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken))!;
+        await inner.WriteAtomicAsync(inner.Wal(), wal.Concat(wal[..first]).ToArray(), TestContext.CancellationToken);
 
-        var reopened = await BlazeDbDatabase.OpenAsync(options());
+        var reopened = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken);
         await using var owned = reopened;
         Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
         Assert.AreEqual("uno", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
@@ -328,14 +328,14 @@ public class EncryptionTests
             {
                 Storage = storage,
                 FlushInterval = TimeSpan.FromHours(1),
-            }.AddTable(TodoItem.Table));
+            }.AddTable(TodoItem.Table), TestContext.CancellationToken);
             db.GetTable(TodoItem.Table).Insert(new TodoItem { Id = id, Title = "encrypted at rest" });
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             await db.DisposeAsync();
         }
 
         // Nothing readable is left behind on the underlying storage.
-        var walBytes = await inner.ReadAsync(inner.Wal());
+        var walBytes = await inner.ReadAsync(inner.Wal(), TestContext.CancellationToken);
         Assert.IsNotNull(walBytes);
         Assert.DoesNotContain("encrypted at rest", Encoding.UTF8.GetString(walBytes!));
 
@@ -345,7 +345,7 @@ public class EncryptionTests
             {
                 Storage = storage,
                 FlushInterval = TimeSpan.FromHours(1),
-            }.AddTable(TodoItem.Table));
+            }.AddTable(TodoItem.Table), TestContext.CancellationToken);
             await using var owned = reopened;
 
             Assert.AreEqual("encrypted at rest", reopened.GetTable(TodoItem.Table).Get(id)!.Title);
@@ -363,20 +363,20 @@ public class EncryptionTests
             FlushInterval = TimeSpan.FromHours(1),
         }.AddTable(TodoItem.Table);
 
-        var db = await BlazeDbDatabase.OpenAsync(options);
+        var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken);
         var todos = db.GetTable(TodoItem.Table);
         for (var i = 0; i < 50; i++)
         {
             todos.Insert(new TodoItem { Id = Guid.NewGuid(), Title = "row " + i });
         }
-        await db.CheckpointAsync();
+        await db.CheckpointAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
 
         var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             Storage = storage,
             FlushInterval = TimeSpan.FromHours(1),
-        }.AddTable(TodoItem.Table));
+        }.AddTable(TodoItem.Table), TestContext.CancellationToken);
         await using var owned = reopened;
 
         Assert.AreEqual(50, reopened.GetTable(TodoItem.Table).Count);
@@ -394,7 +394,7 @@ public class EncryptionTests
 
         Assert.AreSequenceEqual(a, b);
         Assert.IsFalse(a.SequenceEqual(c));
-        Assert.AreEqual(32, a.Length);
+        Assert.HasCount(32, a);
     }
 
     [TestMethod]
@@ -413,11 +413,13 @@ public class EncryptionTests
 
         using (var storage = new BlazeDbEncryptedStorage(inner, new BlazeDbAesGcmCipher(key), ownsCipher: true))
         {
-            await storage.WriteAtomicAsync("snapshot", "payload"u8.ToArray());
+            await storage.WriteAtomicAsync("snapshot", "payload"u8.ToArray(), TestContext.CancellationToken);
         }
 
         var sameKey = BlazeDbEncryptedStorage.DeriveKey("hunter2-but-longer", salt, iterations: 1000);
         using var reader = new BlazeDbEncryptedStorage(inner, new BlazeDbAesGcmCipher(sameKey), ownsCipher: true);
-        Assert.AreSequenceEqual("payload"u8.ToArray(), await reader.ReadAsync("snapshot"));
+        Assert.AreSequenceEqual("payload"u8.ToArray(), await reader.ReadAsync("snapshot", TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

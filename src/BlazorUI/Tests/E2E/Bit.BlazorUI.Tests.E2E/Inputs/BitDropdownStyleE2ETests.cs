@@ -92,8 +92,8 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         var defaultFont = await PxAsync(TextContainer("dd-size-none"), "font-size");
 
         if (size == "Medium") Assert.AreEqual(defaultFont, font, "An unset Size stands for Medium.");
-        if (size == "Small") Assert.IsTrue(font < defaultFont);
-        if (size == "Large") Assert.IsTrue(font > defaultFont);
+        if (size == "Small") Assert.IsLessThan(defaultFont, font);
+        if (size == "Large") Assert.IsGreaterThan(defaultFont, font);
     }
 
     [TestMethod]
@@ -200,11 +200,11 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
 
         var rtlCaret = await BoxAsync(Page.Locator("#dd-rtl .bit-drp-wrp > .bit-drp-icn"));
         var rtlText = await BoxAsync(TextContainer("dd-rtl"));
-        Assert.IsTrue(rtlCaret.X < rtlText.X, "The chevron sits at the left end of an RTL field.");
+        Assert.IsLessThan(rtlText.X, rtlCaret.X, "The chevron sits at the left end of an RTL field.");
 
         var ltrCaret = await BoxAsync(Page.Locator("#dd-ltr .bit-drp-wrp > .bit-drp-icn"));
         var ltrText = await BoxAsync(TextContainer("dd-ltr"));
-        Assert.IsTrue(ltrCaret.X > ltrText.X, "The chevron sits at the right end of an LTR field.");
+        Assert.IsGreaterThan(ltrText.X, ltrCaret.X, "The chevron sits at the right end of an LTR field.");
 
         var root = await BoxAsync(Root("dd-rtl"));
         var labelText = await Page.Locator("#dd-rtl > label").EvaluateAsync<double>("el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().right; }");
@@ -223,11 +223,11 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
 
         var box = await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-chb"));
         var text = await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-itx"));
-        Assert.IsTrue(box.X > text.X, "The check box sits on the right of the text.");
+        Assert.IsGreaterThan(text.X, box.X, "The check box sits on the right of the text.");
 
         var searchIcon = await BoxAsync(callout.Locator(".bit-drp-sic"));
         var searchInput = await BoxAsync(callout.Locator(".bit-drp-sin"));
-        Assert.IsTrue(searchIcon.X > searchInput.X, "The search glyph sits at the right end of the search box.");
+        Assert.IsGreaterThan(searchInput.X, searchIcon.X, "The search glyph sits at the right end of the search box.");
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(callout).ToBeHiddenAsync();
@@ -235,7 +235,7 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         var ltr = await OpenDropdownAsync("dd-ltr");
         var ltrBox = await BoxAsync(Option(ltr, "Banana").Locator(".bit-drp-chb"));
         var ltrText = await BoxAsync(Option(ltr, "Banana").Locator(".bit-drp-itx"));
-        Assert.IsTrue(ltrBox.X < ltrText.X, "The check box sits on the left of the text in LTR.");
+        Assert.IsLessThan(ltrText.X, ltrBox.X, "The check box sits on the left of the text in LTR.");
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         var field = await BoxAsync(Trigger("dd-rtl-preserve"));
         var box = await BoxAsync(callout);
 
-        Assert.IsTrue(box.Width < field.Width - 100, "The callout keeps its own width.");
+        Assert.IsLessThan(field.Width - 100, box.Width, "The callout keeps its own width.");
         Assert.AreEqual(field.X + field.Width, box.X + box.Width, 1.5, "The callout ends where the RTL field starts.");
     }
 
@@ -280,7 +280,7 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         var rtl = await TargetShadowAsync("dd-rtl-combo");
 
         Assert.AreNotEqual(ltr, rtl);
-        StringAssert.Contains(rtl, "-");
+        Assert.Contains("-", rtl);
         Assert.IsFalse(Regex.IsMatch(ltr, @"inset\s+-|\)\s+-\d|\s-\d+px\s+0px\s+0px\s+0px\s+inset"), $"The LTR bar is drawn on the left edge: {ltr}");
     }
 
@@ -294,7 +294,7 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
 
         var caret = await BoxAsync(Page.Locator("#dd-rtl-inherit .bit-drp-wrp > .bit-drp-icn"));
         var text = await BoxAsync(TextContainer("dd-rtl-inherit"));
-        Assert.IsTrue(caret.X < text.X, "An inherited RTL lays the field out right to left.");
+        Assert.IsLessThan(text.X, caret.X, "An inherited RTL lays the field out right to left.");
 
         var callout = await OpenDropdownAsync("dd-rtl-inherit");
 
@@ -303,6 +303,6 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
 
         var box = await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-chb"));
         var itemText = await BoxAsync(Option(callout, "Banana").Locator(".bit-drp-itx"));
-        Assert.IsTrue(box.X > itemText.X, "The check box sits on the right of the text.");
+        Assert.IsGreaterThan(itemText.X, box.X, "The check box sits on the right of the text.");
     }
 }

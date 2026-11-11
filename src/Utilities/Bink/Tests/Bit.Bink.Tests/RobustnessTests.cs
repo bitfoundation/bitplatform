@@ -438,6 +438,6 @@ public class UntrustedInputTests
 
         BinkPngExportResult result = BinkPngExporter.ExportWithDetails(document);
         Assert.AreEqual(1, result.SkippedImages);
-        Assert.IsTrue(result.Bytes.Length > 0);
+        Assert.IsNotEmpty(result.Bytes);
     }
 }

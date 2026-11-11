@@ -24,8 +24,8 @@ public sealed partial class BitAiGlyphFontTests
         var missing = used.Except(declared, StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         var unused = declared.Except(used, StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Drawn but not in the AI glyph subset: {string.Join(", ", missing)}");
-        Assert.AreEqual(0, unused.Length, $"In the AI glyph subset but drawn by no component: {string.Join(", ", unused)}");
+        Assert.IsEmpty(missing, $"Drawn but not in the AI glyph subset: {string.Join(", ", missing)}");
+        Assert.IsEmpty(unused, $"In the AI glyph subset but drawn by no component: {string.Join(", ", unused)}");
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public sealed partial class BitAiGlyphFontTests
 
         var copies = DeclaredGlyphs().Where(core.Contains).Order(StringComparer.Ordinal).ToArray();
 
-        Assert.AreEqual(0, copies.Length, $"Already in the core font, so plain IconName draws them: {string.Join(", ", copies)}");
+        Assert.IsEmpty(copies, $"Already in the core font, so plain IconName draws them: {string.Join(", ", copies)}");
     }
 
     [TestMethod]
@@ -50,8 +50,7 @@ public sealed partial class BitAiGlyphFontTests
         Assert.IsTrue(File.Exists(SourceFiles.GetPath("Bit.BlazorUI.AI", "wwwroot", "fonts", url.Groups["file"].Value)),
                       $"wwwroot/fonts/{url.Groups["file"].Value} is missing.");
 
-        StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI.AI", "Styles", "bit.blazorui.ai.scss"), "fabric.mdl2.bit.blazoui.ai.scss",
-                              "The bundle does not import the AI glyph subset.");
+        Assert.Contains("fabric.mdl2.bit.blazoui.ai.scss", SourceFiles.Read("Bit.BlazorUI.AI", "Styles", "bit.blazorui.ai.scss"), "The bundle does not import the AI glyph subset.");
     }
 
     private static string[] DeclaredGlyphs()

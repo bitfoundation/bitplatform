@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using ButilTests.Harness.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace ButilTests.Hosting.Infrastructure;
 
 /// <summary>The harness web host in one render mode and script-loading mode, in memory, with every log entry captured.</summary>
-public sealed class HarnessHostFactory(string mode, string scripts = HarnessScripts.Bundle) : WebApplicationFactory<ButilTests.Harness.Web.Components.App>
+internal sealed class HarnessHostFactory(string mode, string scripts = HarnessScripts.Bundle) : WebApplicationFactory<ButilTests.Harness.Web.Components.App>
 {
     private static readonly ConcurrentDictionary<(string Mode, string Scripts), Lazy<HarnessHostFactory>> _shared = new();
 

@@ -2,6 +2,8 @@
 using Bit.Bsqlite.Demo.Server.Services;
 using Bit.Bsqlite.Demo.Server.Controllers;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Bsqlite.Tests.Mcp;
 
 /// <summary>
@@ -82,9 +84,12 @@ public partial class BsqliteServiceTests
     [TestMethod]
     public void A_backend_is_resolved_however_it_is_named()
     {
-        Assert.AreEqual("cache-storage", BsqliteStorageCatalog.Find("CacheStorage")?.Name);
-        Assert.AreEqual("in-memory", BsqliteStorageCatalog.Find("InMemory")?.Name);
-        Assert.AreEqual("opfs", BsqliteStorageCatalog.Find("Bit.Bsqlite.Storage.Opfs")?.Name);
+        var actualValue = BsqliteStorageCatalog.Find("CacheStorage")?.Name;
+        Assert.AreEqual("cache-storage", actualValue);
+        var actualValue1 = BsqliteStorageCatalog.Find("InMemory")?.Name;
+        Assert.AreEqual("in-memory", actualValue1);
+        var actualValue2 = BsqliteStorageCatalog.Find("Bit.Bsqlite.Storage.Opfs")?.Name;
+        Assert.AreEqual("opfs", actualValue2);
         Assert.IsNull(BsqliteStorageCatalog.Find("localstorage"));
         Assert.IsNull(BsqliteStorageCatalog.Instance("acme-encrypted"));
     }
@@ -180,8 +185,8 @@ public partial class BsqliteServiceTests
         var result = BsqliteSearchIndex.Search("zzzz\u2028qqqq\u0085zqzq\u202Eqzqz\fzzqq\u000Bqqzz\u200Bzqqz", 12);
 
         Assert.IsEmpty(result.Hits);
-        CollectionAssert.AreEqual(new[] { "zzzz", "qqqq", "zqzq", "qzqz", "zzqq", "qqzz", "zqqz" }, result.Terms);
-        Assert.IsFalse(result.Message!.Any(BsqliteText.IsUnsafe));
+        Assert.AreSequenceEqual(new[] { "zzzz", "qqqq", "zqzq", "qzqz", "zzqq", "qqzz", "zqqz" }, result.Terms);
+        Assert.DoesNotContain(BsqliteText.IsUnsafe, result.Message!);
     }
 
     [TestMethod]

@@ -13,7 +13,7 @@ public class RevalidateTests : BunitTestContext
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/data/view");
         var cut = RenderComponent<RevalidateHost>();
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
+        cut.WaitForAssertion(() => Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent));
         return (cut, Services.GetRequiredService<IBrouter>());
     }
 
@@ -31,7 +31,7 @@ public class RevalidateTests : BunitTestContext
             Assert.AreEqual(2, cut.Instance.ParentLoaderRuns);
             Assert.AreEqual(2, cut.Instance.ChildLoaderRuns);
             // The cascaded data refreshed in the DOM.
-            Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-2"));
+            Assert.Contains("child-2", cut.Find("[data-testid=child-data]").TextContent);
         });
     }
 

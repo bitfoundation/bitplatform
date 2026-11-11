@@ -34,7 +34,7 @@ public class BitPdfStringEncodingTests
     public void ALiteralStringShouldDecodeOneToThreeDigitOctalEscapes()
     {
         // \101 = 'A', \60 = '0', \0053 = \005 then '3', \7 = 0x07, \777 overflows and keeps the low byte.
-        CollectionAssert.AreEqual(new byte[] { 0x41, 0x30, 0x05, 0x33, 0x07, 0xFF }, StringBytes(@"(\101\60\0053\7\777)"));
+        Assert.AreSequenceEqual(new byte[] { 0x41, 0x30, 0x05, 0x33, 0x07, 0xFF }, StringBytes(@"(\101\60\0053\7\777)"));
     }
 
     [TestMethod]
@@ -49,7 +49,7 @@ public class BitPdfStringEncodingTests
         Assert.AreEqual("a)b(c", Latin1(@"(a\)b\(c)"));
         // The string ends at the first unescaped ')', and the next token follows it.
         var array = (List<object?>)Parse(@"[(x\)) (y)]");
-        Assert.AreEqual(2, array.Count);
+        Assert.HasCount(2, array);
         Assert.AreEqual("x)", ((BitPdfString)array[0]!).AsLatin1());
     }
 
@@ -108,13 +108,13 @@ public class BitPdfStringEncodingTests
     [TestMethod]
     public void AHexStringWithAnOddDigitCountShouldPadTheLastNibbleWithZero()
     {
-        CollectionAssert.AreEqual(new byte[] { 0x90, 0x1F, 0xA0 }, StringBytes("<901FA>"));
+        Assert.AreSequenceEqual(new byte[] { 0x90, 0x1F, 0xA0 }, StringBytes("<901FA>"));
     }
 
     [TestMethod]
     public void AnEmptyHexStringShouldBeEmpty()
     {
-        Assert.AreEqual(0, StringBytes("<>").Length);
+        Assert.IsEmpty(StringBytes("<>"));
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class BitPdfStringEncodingTests
 
         var document = BitPdfDocument.Load(WithInfoAndOutline("(t)", "(a)", hex));
 
-        Assert.AreEqual(2, document.Outline.Count);
+        Assert.HasCount(2, document.Outline);
         Assert.AreEqual("Глава 1", document.Outline[0].Title);
         Assert.AreEqual(1, document.Outline[0].PageNumber);
         Assert.AreEqual("Chapter (two)", document.Outline[1].Title);

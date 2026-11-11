@@ -36,12 +36,12 @@ public class BitTooltipStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Tooltip-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -52,7 +52,7 @@ public class BitTooltipStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-Tooltip-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -76,15 +76,15 @@ public class BitTooltipStylesheetTests
                      ("--bit-ttp-clr-fg", "--bit-Tooltip-color"),
                  })
         {
-            StringAssert.Contains(root, $"{property}: var({variable}, ");
+            Assert.Contains($"{property}: var({variable}, ", root);
         }
 
         var sizes = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ttp-sm {");
         var colors = SourceFiles.GetScssBlock(stylesheet, "@each $role, $tokens in $bit-color-roles");
 
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-ttp {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-ttp-sm {", System.StringComparison.Ordinal));
-        StringAssert.Contains(sizes, "--bit-ttp-fontsize: #{$tg-fs-xs};");
-        StringAssert.Contains(colors, "--bit-ttp-clr-bg: #{role($tokens, main)};");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-ttp-sm {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-ttp {", System.StringComparison.Ordinal));
+        Assert.Contains("--bit-ttp-fontsize: #{$tg-fs-xs};", sizes);
+        Assert.Contains("--bit-ttp-clr-bg: #{role($tokens, main)};", colors);
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class BitTooltipStylesheetTests
                      "text-transform: none;",
                  })
         {
-            StringAssert.Contains(surface, declaration);
+            Assert.Contains(declaration, surface);
         }
     }
 
@@ -120,12 +120,12 @@ public class BitTooltipStylesheetTests
         // The arrow casts the shadow of the surface (none in Material, the outline of a dark theme), and is drawn
         // above the surface so that outline is not painted across its base - cut to its outer half, so it is not
         // painted over the content either.
-        StringAssert.Contains(arrow, "box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});");
-        StringAssert.Contains(arrow, "z-index: calc(var(--bit-ttp-zindex) + 1);");
+        Assert.Contains("box-shadow: var(--bit-Tooltip-shadow, #{$box-shadow-tooltip});", arrow);
+        Assert.Contains("z-index: calc(var(--bit-ttp-zindex) + 1);", arrow);
 
         // The cut is the side's to pick, one per side, and the arrow reads whichever one it was given.
-        StringAssert.Contains(arrow, "clip-path: var(--bit-ttp-arw-clip);");
-        Assert.AreEqual(6, Regex.Matches(stylesheet, @"--bit-ttp-arw-clip: #\{\$arrow-clip-(br|tl|tr|bl)\};").Count);
+        Assert.Contains("clip-path: var(--bit-ttp-arw-clip);", arrow);
+        Assert.HasCount(6, Regex.Matches(stylesheet, @"--bit-ttp-arw-clip: #\{\$arrow-clip-(br|tl|tr|bl)\};"));
     }
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Tooltip", "BitTooltip.scss");

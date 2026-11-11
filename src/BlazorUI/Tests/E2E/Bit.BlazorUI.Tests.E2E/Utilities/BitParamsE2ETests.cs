@@ -22,9 +22,9 @@ public class BitParamsE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<button id=\"btn-cascaded\" class=\"bit-btn-otl bit-btn-err bit-btn-lg bit-btn\"");
-        StringAssert.Contains(html, "<span id=\"tag-cascaded\" class=\"bit-tag-suc bit-tag-sm bit-tag-txt bit-tag\"");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("<button id=\"btn-cascaded\" class=\"bit-btn-otl bit-btn-err bit-btn-lg bit-btn\"", html);
+        Assert.Contains("<span id=\"tag-cascaded\" class=\"bit-tag-suc bit-tag-sm bit-tag-txt bit-tag\"", html);
+        Assert.Contains("id=\"status\">Loading", html);
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class BitParamsE2ETests : E2ETestBase
         await Expect(cascaded).ToHaveCSSAsync("border-top-color", await ResolveColorAsync("var(--bit-clr-err)"));
         await Expect(cascaded).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
         await Expect(outside).ToHaveCSSAsync("background-color", await ResolveColorAsync("var(--bit-clr-pri)"));
-        Assert.IsTrue((await cascaded.BoundingBoxAsync())!.Height > (await outside.BoundingBoxAsync())!.Height, "The cascaded Large size did not make the button taller.");
+        Assert.IsGreaterThan((await outside.BoundingBoxAsync())!.Height, (await cascaded.BoundingBoxAsync())!.Height, "The cascaded Large size did not make the button taller.");
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class BitParamsE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#tag-own")).ToHaveClassAsync(HasClass("bit-tag-lg"));
         await Expect(Page.Locator("#tag-own")).ToHaveClassAsync(HasClass("bit-tag-suc"));
-        Assert.IsTrue((await Page.Locator("#tag-own").BoundingBoxAsync())!.Height > (await Page.Locator("#tag-cascaded").BoundingBoxAsync())!.Height);
+        Assert.IsGreaterThan((await Page.Locator("#tag-cascaded").BoundingBoxAsync())!.Height, (await Page.Locator("#tag-own").BoundingBoxAsync())!.Height);
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class BitParamsE2ETests : E2ETestBase
         await Expect(button).ToHaveClassAsync(HasClass("bit-btn-sm"));
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag-sm"));
         await Expect(own).ToHaveClassAsync(HasClass("bit-btn-lg"));
-        Assert.IsTrue((await button.BoundingBoxAsync())!.Height < heightBefore, "The cascaded Small size did not make the button shorter.");
+        Assert.IsLessThan(heightBefore, (await button.BoundingBoxAsync())!.Height, "The cascaded Small size did not make the button shorter.");
 
         await Page.ClickAsync("#btn-compact");
         await Expect(Page.Locator("#compact")).ToHaveTextAsync("False");

@@ -36,7 +36,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("root-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsNotNull(picker.Find(".bit-aimds > .bit-drp.bit-aimds-drp"));
     }
 
@@ -148,7 +148,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
 
         var groups = picker.FindAll(".bit-drp-ihd").Select(g => g.TextContent.Trim()).ToList();
 
-        CollectionAssert.AreEqual(new[] { "A series", "B series", "acme", "Other" }, groups);
+        Assert.AreSequenceEqual(new[] { "A series", "B series", "acme", "Other" }, groups);
     }
 
     [TestMethod]
@@ -157,7 +157,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
         var picker = RenderComponent<BitAiModelSelector>(p => p.Add(c => c.Models, [new BitAiModel("one", "One"), new BitAiModel("two", "Two")]));
 
         Assert.IsEmpty(picker.FindAll(".bit-drp-ihd"));
-        CollectionAssert.AreEqual(new[] { "One", "Two" }, OptionTexts(picker).ToArray());
+        Assert.AreSequenceEqual(new[] { "One", "Two" }, OptionTexts(picker).ToArray());
     }
 
     // A dropdown handed new items is a dropdown whose items changed: the picker hands it new ones only when they read
@@ -181,7 +181,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
         var shown = Items();
         picker.Render(p => p.Add(c => c.Models, [Alpha]).Add(c => c.ShowDeprecated, true));
         Assert.AreNotSame(shown, Items());
-        CollectionAssert.AreEqual(new[] { "Alpha" }, OptionTexts(picker).ToArray());
+        Assert.AreSequenceEqual(new[] { "Alpha" }, OptionTexts(picker).ToArray());
     }
 
     // A host that keeps one list and replaces a model in it, leaving its count as it was, has the new model offered and
@@ -200,7 +200,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
         models[0] = gamma;
         picker.Render(p => p.Add(c => c.Models, models).Add(c => c.ModelId, "gamma"));
 
-        CollectionAssert.AreEqual(new[] { "Gamma", "Beta" }, OptionTexts(picker).ToArray());
+        Assert.AreSequenceEqual(new[] { "Gamma", "Beta" }, OptionTexts(picker).ToArray());
         Assert.AreSame(gamma, picker.Instance.Selected);
         Assert.IsEmpty(bound);
     }
@@ -253,7 +253,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
             .Add(c => c.Models, [Alpha, Beta])
             .Add(c => c.ModelIdChanged, id => changes.Add(id)));
 
-        picker.WaitForAssertion(() => Assert.HasCount(1, changes));
+        picker.WaitForAssertion(() => Assert.ContainsSingle(changes));
 
         // The parent takes the value up, as a binding does, and clears it later.
         picker.Render(p => p.Add(c => c.ModelId, "alpha"));
@@ -288,7 +288,7 @@ public class BitAiModelSelectorTests : BitAiTestBase
 
         var picker = RenderComponent<BitAiModelSelector>(p => p.Add(c => c.Catalog, catalog));
 
-        CollectionAssert.AreEqual(new[] { "Alpha", "Beta" }, OptionTexts(picker).ToArray());
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta" }, OptionTexts(picker).ToArray());
         Assert.AreEqual("beta", SelectedValue(picker));
     }
 

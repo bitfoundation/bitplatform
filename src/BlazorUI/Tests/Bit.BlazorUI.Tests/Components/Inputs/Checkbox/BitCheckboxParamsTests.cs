@@ -51,8 +51,8 @@ public class BitCheckboxParamsTests : BunitTestContext
     [TestMethod]
     public void BitCheckboxParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCheckbox)}", BitCheckboxParams.ParamName);
-        Assert.AreEqual("BitParams.BitCheckbox", BitCheckboxParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCheckbox)}", new BitCheckboxParams().Name);
+        Assert.AreEqual("BitParams.BitCheckbox", new BitCheckboxParams().Name);
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public class BitCheckboxParamsTests : BunitTestContext
                                          .Where(n => typeof(BitCheckboxParams).GetProperty(n) is null)
                                          .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"{nameof(BitCheckboxParams)} is missing: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"{nameof(BitCheckboxParams)} is missing: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -347,8 +347,9 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
         Assert.IsTrue(label.ClassList.Contains("custom-label"));
         Assert.IsTrue(description.ClassList.Contains("custom-description"));
+        var actualValue = checkbox.GetAttribute("style")?.Contains("color: red;");
 
-        Assert.IsTrue(checkbox.GetAttribute("style")?.Contains("color: red;"));
+        Assert.IsTrue(actualValue);
         Assert.AreEqual("margin: 5px;", container.GetAttribute("style"));
         Assert.AreEqual("padding: 10px;", box.GetAttribute("style"));
         Assert.AreEqual("opacity: 0.5;", icon.GetAttribute("style"));
@@ -374,7 +375,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         var pushed = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setProperty");
 
         Assert.AreEqual("indeterminate", pushed.Arguments[1]);
-        Assert.AreEqual(true, pushed.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(pushed.Arguments[2]));
     }
 
     [TestMethod]
@@ -395,7 +396,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
 
         // The disabled state a cascade hands down reaches the native control the same way a written one does.
@@ -415,8 +416,8 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-chb-md"));
         Assert.IsFalse(root.ClassList.Contains("bit-chb-ind"));
         Assert.IsFalse(root.ClassList.Contains("bit-chb-ckd"));
-        Assert.AreEqual(0, component.FindAll(".bit-chb-txt").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-chb-des").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-txt"));
+        Assert.IsEmpty(component.FindAll(".bit-chb-des"));
         Assert.IsFalse(component.Find("input").HasAttribute("disabled"));
     }
 }

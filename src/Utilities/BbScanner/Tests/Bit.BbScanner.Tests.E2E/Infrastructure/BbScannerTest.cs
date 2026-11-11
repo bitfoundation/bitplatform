@@ -17,7 +17,7 @@ public abstract class BbScannerTest
     protected virtual string BaseUrl => Session.Host!.BaseUrl;
 
     /// <summary>The generated camera clips, and the directory a test may write files of its own into.</summary>
-    protected CameraClips Clips => Session.Clips!;
+    private protected CameraClips Clips => Session.Clips!;
 
     /// <summary>The rotating multi symbology clip.</summary>
     protected string RotatingClip => Clips.Rotating;
@@ -55,14 +55,14 @@ public abstract class BbScannerTest
     /// <summary>Opens a browser whose camera is the given clip, and a page on the demo.</summary>
     /// <param name="clipPath">Y4M file the fake camera plays, or <see langword="null"/> for the rotating clip.</param>
     /// <param name="grantPermission">Whether the camera permission prompt is auto-accepted.</param>
-    protected Task<ScannerSession> OpenAsync(string? clipPath = null, bool grantPermission = true)
+    private protected Task<ScannerSession> OpenAsync(string? clipPath = null, bool grantPermission = true)
         => OpenAsync(BaseUrl, clipPath, grantPermission);
 
     /// <summary>
     /// Opens a browser whose camera is the given clip, and a page on the Blazor Server sample: the scanner on a circuit.
     /// The test is inconclusive where the sample has not been built - or fails, on a build server.
     /// </summary>
-    protected async Task<ScannerSession> OpenOnServerAsync(string? clipPath = null, bool grantPermission = true)
+    private protected async Task<ScannerSession> OpenOnServerAsync(string? clipPath = null, bool grantPermission = true)
     {
         var host = await ServerSampleHost.GetAsync();
         if (host.Unavailable is { } reason)

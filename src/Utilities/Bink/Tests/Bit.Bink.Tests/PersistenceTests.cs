@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bit.Bink.Tests.Components;
 using Bunit;
 using Microsoft.JSInterop;
@@ -156,7 +156,7 @@ public sealed class PersistenceTests
         Assert.IsFalse(autosave.HasUnsavedChanges);
         Assert.IsNotNull(autosave.LastSaved);
         Assert.IsTrue(document.IsDirty, "Autosaving is a recovery copy; it does not count as the application saving.");
-        BinkDocument? restored = await BinkAutosave.RestoreAsync(store, "board");
+        BinkDocument? restored = await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(1, restored!.ElementCount);
     }
 
@@ -178,7 +178,7 @@ public sealed class PersistenceTests
             clock.Advance(TimeSpan.FromSeconds(1));
         }
         await saved;
-        Assert.AreEqual(10, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+        Assert.AreEqual(10, (await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken))!.ElementCount);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public sealed class PersistenceTests
 
         document.AddElement(Stroke(0));
         clock.Advance(TimeSpan.FromSeconds(3));
-        Exception error = await failed.Task.WaitAsync(Wait);
+        Exception error = await failed.Task.WaitAsync(Wait, TestContext.CancellationToken);
         Assert.IsInstanceOfType<IOException>(error);
         Assert.AreSame(error, autosave.LastError);
         Assert.IsTrue(autosave.HasUnsavedChanges);
@@ -203,7 +203,7 @@ public sealed class PersistenceTests
         clock.Advance(TimeSpan.FromSeconds(11));
         await saved;
         Assert.IsNull(autosave.LastError);
-        Assert.IsNotNull(await store.LoadAsync("board"));
+        Assert.IsNotNull(await store.LoadAsync("board", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -215,17 +215,17 @@ public sealed class PersistenceTests
         await using var autosave = new BinkAutosave(document, store, "board", new BinkAutosaveOptions { TimeProvider = clock });
         document.AddElement(Stroke(0));
         clock.Advance(TimeSpan.FromSeconds(3));
-        await store.Writing.Task.WaitAsync(Wait);
+        await store.Writing.Task.WaitAsync(Wait, TestContext.CancellationToken);
 
         // The save under way serialized one element; the second arrives while it is being written.
         document.AddElement(Stroke(1));
-        Task saving = autosave.SaveNowAsync();
+        Task saving = autosave.SaveNowAsync(TestContext.CancellationToken);
         Assert.IsFalse(saving.IsCompleted);
         store.Release.SetResult();
-        await saving.WaitAsync(Wait);
+        await saving.WaitAsync(Wait, TestContext.CancellationToken);
 
         Assert.IsFalse(autosave.HasUnsavedChanges);
-        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken))!.ElementCount);
     }
 
     [TestMethod]
@@ -256,8 +256,8 @@ public sealed class PersistenceTests
         document.AddElement(Stroke(0));
         clock.Advance(TimeSpan.FromSeconds(3));
 
-        await second.Task.WaitAsync(Wait);
-        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+        await second.Task.WaitAsync(Wait, TestContext.CancellationToken);
+        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken))!.ElementCount);
     }
 
     [TestMethod]
@@ -277,15 +277,15 @@ public sealed class PersistenceTests
 
         // The exception is the caller's to hear, not a failed save to report and try again.
         document.AddElement(Stroke(0));
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => autosave.SaveNowAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => autosave.SaveNowAsync(TestContext.CancellationToken));
         Assert.IsNull(autosave.LastError);
         Assert.AreEqual(0, failures);
         Assert.IsFalse(autosave.HasUnsavedChanges);
 
         throwing = false;
         document.AddElement(Stroke(1));
-        await autosave.SaveNowAsync();
-        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+        await autosave.SaveNowAsync(TestContext.CancellationToken);
+        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken))!.ElementCount);
     }
 
     [TestMethod]
@@ -303,13 +303,13 @@ public sealed class PersistenceTests
         };
         document.AddElement(Stroke(0));
         clock.Advance(TimeSpan.FromSeconds(3));
-        await failed.Task.WaitAsync(Wait);
+        await failed.Task.WaitAsync(Wait, TestContext.CancellationToken);
 
         // Nobody awaited that timer save; the saves after it do not hear its handler's exception either.
         store.Failing = false;
-        await autosave.SaveNowAsync().WaitAsync(Wait);
+        await autosave.SaveNowAsync(TestContext.CancellationToken).WaitAsync(Wait, TestContext.CancellationToken);
         Assert.IsNull(autosave.LastError);
-        Assert.IsNotNull(await store.LoadAsync("board"));
+        Assert.IsNotNull(await store.LoadAsync("board", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -320,16 +320,16 @@ public sealed class PersistenceTests
         var document = new BinkDocument();
         var autosave = new BinkAutosave(document, store, "board", new BinkAutosaveOptions { TimeProvider = clock });
         document.AddElement(Stroke(0));
-        await autosave.SaveNowAsync();
-        Assert.IsNotNull(await store.LoadAsync("board"));
+        await autosave.SaveNowAsync(TestContext.CancellationToken);
+        Assert.IsNotNull(await store.LoadAsync("board", TestContext.CancellationToken));
 
-        await autosave.DiscardAsync();
-        Assert.IsNull(await store.LoadAsync("board"));
+        await autosave.DiscardAsync(TestContext.CancellationToken);
+        Assert.IsNull(await store.LoadAsync("board", TestContext.CancellationToken));
         Assert.IsFalse(autosave.HasUnsavedChanges);
 
         document.AddElement(Stroke(1));
         await autosave.DisposeAsync();
-        BinkDocument? restored = await BinkAutosave.RestoreAsync(store, "board");
+        BinkDocument? restored = await BinkAutosave.RestoreAsync(store, "board", cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(2, restored!.ElementCount, "Disposing saved the change that was still waiting.");
     }
 
@@ -343,7 +343,7 @@ public sealed class PersistenceTests
 
         document.Apply(new BinkAddElementOperation(document.Layers[0].Id, Stroke(0)), BinkChangeOrigin.Remote);
         clock.Advance(TimeSpan.FromMinutes(1));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.AreEqual(0, store.Saves);
     }
 
@@ -351,13 +351,15 @@ public sealed class PersistenceTests
     public async Task Restoring_reads_nothing_or_reports_a_copy_that_is_not_a_drawing()
     {
         var store = new BinkMemoryDocumentStore();
-        Assert.IsNull(await BinkAutosave.RestoreAsync(store, "missing"));
+        Assert.IsNull(await BinkAutosave.RestoreAsync(store, "missing", cancellationToken: TestContext.CancellationToken));
 
-        await store.SaveAsync("broken", "{\"format\":\"bink\",\"version\":99}"u8.ToArray());
+        await store.SaveAsync("broken", "{\"format\":\"bink\",\"version\":99}"u8.ToArray(), TestContext.CancellationToken);
         string? error = null;
-        Assert.IsNull(await BinkAutosave.RestoreAsync(store, "broken", onError: e => error = e));
+        Assert.IsNull(await BinkAutosave.RestoreAsync(store, "broken", onError: e => error = e, cancellationToken: TestContext.CancellationToken));
         Assert.Contains("newer version", error!);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>The IndexedDB store's contract with its browser module.</summary>
@@ -378,11 +380,11 @@ public sealed class BrowserDocumentStoreTests : BunitContext
         module.Setup<bool>("storeDelete", _ => true).SetResult(true);
         await using var store = new BinkBrowserDocumentStore(JSInterop.JSRuntime);
 
-        await store.SaveAsync("board", stored);
-        CollectionAssert.AreEqual(stored, (byte[])module.Invocations.Single(i => i.Identifier == "storeSave").Arguments[1]!);
-        CollectionAssert.AreEqual(stored, await store.LoadAsync("board"));
-        Assert.IsNull(await store.LoadAsync("missing"), "Nothing stored is the marker byte alone, read as null.");
-        Assert.IsTrue(await store.DeleteAsync("board"));
+        await store.SaveAsync("board", stored, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(stored, (byte[])module.Invocations.Single(i => i.Identifier == "storeSave").Arguments[1]!);
+        Assert.AreSequenceEqual(stored, await store.LoadAsync("board", TestContext.CancellationToken));
+        Assert.IsNull(await store.LoadAsync("missing", TestContext.CancellationToken), "Nothing stored is the marker byte alone, read as null.");
+        Assert.IsTrue(await store.DeleteAsync("board", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -391,6 +393,8 @@ public sealed class BrowserDocumentStoreTests : BunitContext
         BunitJSModuleInterop module = JSInterop.SetupModule(ModulePath);
         module.Setup<IJSStreamReference>("storeLoad", _ => true).SetResult(new TestStreamReference([1, .. new byte[2048]]));
         await using var store = new BinkBrowserDocumentStore(JSInterop.JSRuntime) { MaxDocumentBytes = 1024 };
-        await Assert.ThrowsExactlyAsync<IOException>(() => store.LoadAsync("board"));
+        await Assert.ThrowsExactlyAsync<IOException>(() => store.LoadAsync("board", TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

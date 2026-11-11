@@ -45,7 +45,7 @@ public class DurabilityTests
 
         var db = await OpenAsync(storage);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         // Simulated crash: the instance is abandoned without DisposeAsync.
 
         await using var reopened = await OpenAsync(storage);
@@ -60,7 +60,7 @@ public class DurabilityTests
         var db = await OpenAsync(storage);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Durable", 1));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         people.Insert(new Person(2, "Volatile", 2));
         // Crash before the group-commit interval elapses.
 
@@ -82,7 +82,7 @@ public class DurabilityTests
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (DateTime.UtcNow < deadline)
         {
-            await Task.Delay(50);
+            await Task.Delay(50, TestContext.CancellationToken);
             await using var probe = await OpenAsync(storage);
             if (probe.GetTable(PersonTable.Descriptor).Contains(1))
             {
@@ -173,12 +173,12 @@ public class DurabilityTests
         var db = await OpenAsync(storage);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Ada", 36));
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
-        Assert.AreEqual(10, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        Assert.HasCount(10, storage.Inner.GetFile(storage.Inner.Wal())!);
 
         storage.FailAfterBytes = null;
         people.Insert(new Person(2, "Grace", 45));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
 
         await using var reopened = await OpenAsync(storage);
@@ -197,7 +197,7 @@ public class DurabilityTests
         var db = await OpenAsync(storage);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Ada", 36));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         var record = storage.Inner.GetFile(storage.Inner.Wal())!.Length;
 
         people.Update(new Person(1, "Eve", 37)); // A, the same size as the record above
@@ -208,13 +208,13 @@ public class DurabilityTests
             transaction.Commit(); // B
         }
         storage.FailAfterWrite = true;
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync(TestContext.CancellationToken));
         var written = storage.Inner.GetFile(storage.Inner.Wal())!.Length;
 
         storage.FailAfterWrite = false;
         storage.FailAfterBytes = record + 10;
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
-        Assert.AreEqual(written + record + 10, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync(TestContext.CancellationToken));
+        Assert.HasCount(written + record + 10, storage.Inner.GetFile(storage.Inner.Wal())!);
         // Simulated crash: the instance is abandoned before a later flush repairs the log.
 
         await using (var reopened = await OpenAsync(storage))
@@ -223,13 +223,13 @@ public class DurabilityTests
             Assert.AreEqual(new Person(1, "Ivy", 38), recovered.Get(1));
             Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
             // Recovery cuts the torn B away; the second A is intact, so it stays, skipped as a commit already seen.
-            Assert.AreEqual(written + record, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
+            Assert.HasCount(written + record, storage.Inner.GetFile(storage.Inner.Wal())!);
 
             // The log goes on from where recovery left it.
 
             storage.FailAfterBytes = null;
             recovered.Insert(new Person(3, "Cy", 41));
-            await reopened.FlushAsync();
+            await reopened.FlushAsync(TestContext.CancellationToken);
         }
 
         await using var final = await OpenAsync(storage);
@@ -282,7 +282,7 @@ public class DurabilityTests
         await using (var db = await OpenAsync(storage))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
         }
 
@@ -292,7 +292,7 @@ public class DurabilityTests
         storage.SetFile(storage.Wal(), wal);
 
         await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
-        CollectionAssert.AreEqual(wal, storage.GetFile(storage.Wal()), "The commit behind the damaged record was cut away.");
+        Assert.AreSequenceEqual(wal, storage.GetFile(storage.Wal()), "The commit behind the damaged record was cut away.");
     }
 
     [TestMethod]
@@ -308,7 +308,7 @@ public class DurabilityTests
             for (var id = 1; id <= 3; id++)
             {
                 db.GetTable(PersonTable.Descriptor).Insert(new Person(id, "p" + id, id));
-                await db.FlushAsync();
+                await db.FlushAsync(TestContext.CancellationToken);
                 ends.Add(storage.GetFile(storage.Wal())!.Length);
             }
         }
@@ -320,7 +320,7 @@ public class DurabilityTests
 
         var error = await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
         Assert.Contains($"byte {ends[0]}", error.Message);
-        CollectionAssert.AreEqual(flipped, storage.GetFile(storage.Wal()));
+        Assert.AreSequenceEqual(flipped, storage.GetFile(storage.Wal()));
 
         // A record missing outright, with the ones around it intact, is a gap in the sequence.
         var dropped = wal[..ends[0]].Concat(wal[ends[1]..]).ToArray();
@@ -328,7 +328,7 @@ public class DurabilityTests
 
         error = await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
         Assert.Contains("commit 3 follows commit 1", error.Message);
-        CollectionAssert.AreEqual(dropped, storage.GetFile(storage.Wal()));
+        Assert.AreSequenceEqual(dropped, storage.GetFile(storage.Wal()));
     }
 
     [TestMethod]
@@ -367,7 +367,7 @@ public class DurabilityTests
         await using (var db = await OpenAsync(storage))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
         }
 
@@ -395,7 +395,7 @@ public class DurabilityTests
                 people.Upsert(new Person(i, $"Person {i}", i));
             }
             people.Delete(50);
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
 
             Assert.IsNotNull(storage.FindFile("snapshot", 2));
             Assert.IsNull(storage.FindFile("wal", 1));
@@ -422,7 +422,7 @@ public class DurabilityTests
             Storage = storage,
             FlushInterval = TimeSpan.FromMilliseconds(20),
             CheckpointWalSize = 2 * 1024,
-        }.AddTable(PersonTable.Descriptor));
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
         await using (db)
         {
             var people = db.GetTable(PersonTable.Descriptor);
@@ -434,7 +434,7 @@ public class DurabilityTests
             var deadline = DateTime.UtcNow.AddSeconds(5);
             while (DateTime.UtcNow < deadline && !storage.FileNames.Any(f => f.StartsWith("snapshot-")))
             {
-                await Task.Delay(50);
+                await Task.Delay(50, TestContext.CancellationToken);
             }
             Assert.Contains(f => f.StartsWith("snapshot-"), storage.FileNames);
         }
@@ -475,7 +475,7 @@ public class DurabilityTests
                 people.Insert(new Person(2, "Discard", 2));
                 // Disposed without commit -> rollback.
             }
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
         }
 
         await using var reopened = await OpenAsync(storage);
@@ -507,7 +507,7 @@ public class DurabilityTests
         await using (var db = await OpenAsync(storage))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
 
         var snapshot = storage.GetFile(storage.Snapshot(2))!;
@@ -525,7 +525,7 @@ public class DurabilityTests
 
         using var txn = db.BeginTransaction();
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await db.CheckpointAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await db.CheckpointAsync(TestContext.CancellationToken));
         txn.Commit();
     }
 
@@ -543,7 +543,7 @@ public class DurabilityTests
                 {
                     people.Insert(new Person(i, $"Person {i}", i));
                 }
-                await db.CheckpointAsync();
+                await db.CheckpointAsync(TestContext.CancellationToken);
                 people.Insert(new Person(21, "After", 21));
             }
 
@@ -573,16 +573,16 @@ public class DurabilityTests
 
             await using var db = await OpenAsync(writer);
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
 
             using var follower = BlazeDbFileStorage.OpenReadOnly(directory)!;
-            await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await follower.AppendAsync("wal-1.blz", new byte[1]));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await follower.AppendAsync("wal-1.blz", new byte[1], TestContext.CancellationToken));
             await using var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
             {
                 Storage = follower,
                 ReadOnly = true,
                 FlushInterval = Never,
-            }.AddTable(PersonTable.Descriptor));
+            }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
             Assert.AreEqual("Ada", replica.GetTable(PersonTable.Descriptor).Get(1)!.Name);
 
             // Disposing the writer's storage frees the directory for the next writer.
@@ -609,11 +609,11 @@ public class DurabilityTests
             await using (var db = await OpenAsync(storage))
             {
                 db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-                await db.CheckpointAsync();
+                await db.CheckpointAsync(TestContext.CancellationToken);
                 db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Grace", 45));
             }
 
-            await BlazeDbDatabase.DeleteAsync(storage);
+            await BlazeDbDatabase.DeleteAsync(storage, TestContext.CancellationToken);
             Assert.IsEmpty(inner.FileNames);
 
             await using (var fresh = await OpenAsync(storage))
@@ -636,12 +636,12 @@ public class DurabilityTests
         await using (var db = await OpenAsync(earlier))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Old one", 1));
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             var firstLogName = earlier.Wal(1);
             var firstLog = earlier.GetFile(firstLogName)!;
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Old two", 2));
-            await db.FlushAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
             earlier.SetFile(firstLogName, firstLog);
         }
 
@@ -659,8 +659,8 @@ public class DurabilityTests
         {
             var people = db.GetTable(PersonTable.Descriptor);
             people.Insert(new Person(10, "New one", 10));
-            await db.FlushAsync();
-            await db.CheckpointAsync();
+            await db.FlushAsync(TestContext.CancellationToken);
+            await db.CheckpointAsync(TestContext.CancellationToken);
             people.Insert(new Person(20, "New two", 20));
         }
 
@@ -678,21 +678,21 @@ public class DurabilityTests
             Storage = storage,
             FlushInterval = Never,
             OnCheckpoint = announced.Add,
-        }.AddTable(PersonTable.Descriptor));
+        }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken);
 
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         storage.Undeletable = storage.Inner.Wal();
 
         // The new generation is durable; the old log merely could not be removed.
-        await db.CheckpointAsync();
+        await db.CheckpointAsync(TestContext.CancellationToken);
         Assert.AreSequenceEqual([2UL], announced);
         Assert.IsNull(db.LastBackgroundError);
         Assert.IsNotNull(storage.Inner.FindFile("wal", 1));
 
         // The removal is tried again at the next checkpoint.
         storage.Undeletable = null;
-        await db.CheckpointAsync();
+        await db.CheckpointAsync(TestContext.CancellationToken);
         Assert.AreSequenceEqual([2UL, 3UL], announced);
         Assert.IsNull(storage.Inner.FindFile("wal", 1));
         Assert.IsNull(storage.Inner.FindFile("wal", 2));
@@ -744,7 +744,7 @@ public class DurabilityTests
             .AddTable(TodoItem.Table);
 
         var id = Guid.NewGuid();
-        await using (var db = await BlazeDbDatabase.OpenAsync(options()))
+        await using (var db = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken))
         {
             var todos = db.GetTable(TodoItem.Table);
             todos.Insert(new TodoItem
@@ -757,10 +757,10 @@ public class DurabilityTests
                 Tags = ["a", "b"],
                 Scores = [9, 8],
             });
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
 
-        await using (var reopened = await BlazeDbDatabase.OpenAsync(options()))
+        await using (var reopened = await BlazeDbDatabase.OpenAsync(options(), TestContext.CancellationToken))
         {
             var todo = reopened.GetTable(TodoItem.Table).Get(id);
             Assert.IsNotNull(todo);
@@ -771,4 +771,6 @@ public class DurabilityTests
             Assert.AreSequenceEqual([9, 8], todo.Scores);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

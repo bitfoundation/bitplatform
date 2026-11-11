@@ -38,9 +38,9 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         component.WaitForPages(1);
 
         Assert.AreEqual(BitPdfRenderMode.Html, component.Instance.RenderMode);
-        Assert.AreEqual(0, component.FindAll("[data-page='1'] canvas").Count);
-        Assert.IsTrue(component.FindAll("[data-page='1'] .bit-pdv-html-page span").Count > 0);
-        Assert.AreEqual(0, Context.InvocationsOf(PaintCall).Count);
+        Assert.IsEmpty(component.FindAll("[data-page='1'] canvas"));
+        Assert.IsNotEmpty(component.FindAll("[data-page='1'] .bit-pdv-html-page span"));
+        Assert.IsEmpty(Context.InvocationsOf(PaintCall));
     }
 
     [TestMethod]
@@ -57,10 +57,10 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
 
         // The page is a canvas the script paints from the display list, while the text layer still
         // carries the words for selection and search.
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] canvas[data-bit-pdv-canvas]").Count));
-        StringAssert.Contains(component.Find("[data-page='1'] .bit-pdv-text-layer").TextContent, "Hello");
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-page='1'] canvas[data-bit-pdv-canvas]")));
+        Assert.Contains("Hello", component.Find("[data-page='1'] .bit-pdv-text-layer").TextContent);
 
-        component.WaitForAssertion(() => Assert.IsTrue(Context.InvocationsOf(PaintCall).Count > 0));
+        component.WaitForAssertion(() => Assert.IsNotEmpty(Context.InvocationsOf(PaintCall)));
         var paint = Context.InvocationsOf(PaintCall)[0];
         Assert.AreEqual(1.0, paint.Arguments[2]);
     }
@@ -74,17 +74,17 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         });
 
         component.WaitForPages(1);
-        Assert.AreEqual(0, component.FindAll("[data-page='1'] canvas").Count);
+        Assert.IsEmpty(component.FindAll("[data-page='1'] canvas"));
 
         // Same document, another mode: the page fragments are built again rather than kept.
         component.Render(parameters => parameters.Add(p => p.RenderMode, BitPdfRenderMode.Canvas));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='1'] canvas[data-bit-pdv-canvas]").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-page='1'] canvas[data-bit-pdv-canvas]")));
 
         component.Render(parameters => parameters.Add(p => p.RenderMode, BitPdfRenderMode.Html));
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll("[data-page='1'] canvas").Count));
-        Assert.IsTrue(component.FindAll("[data-page='1'] .bit-pdv-html-page span").Count > 0);
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll("[data-page='1'] canvas")));
+        Assert.IsNotEmpty(component.FindAll("[data-page='1'] .bit-pdv-html-page span"));
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         component.WaitForPages(1);
 
         Assert.AreEqual(BitPdfTextCoalescing.Exact, component.Instance.TextCoalescing);
-        CollectionAssert.AreEqual(new[] { "Hel", "lo" }, PaintedTexts(component));
+        Assert.AreSequenceEqual(new[] { "Hel", "lo" }, PaintedTexts(component));
     }
 
     // The text of every painted span of the first page, in paint order.
@@ -122,15 +122,15 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
 
         component.WaitForPages(1);
 
-        CollectionAssert.AreEqual(new[] { "Hello" }, PaintedTexts(component));
+        Assert.AreSequenceEqual(new[] { "Hello" }, PaintedTexts(component));
 
         // The public fragment follows the parameter too.
-        StringAssert.Contains(component.Instance.RenderPageHtml(1), ">Hello</span>");
+        Assert.Contains(">Hello</span>", component.Instance.RenderPageHtml(1));
 
         // Switching back rebuilds the page with one span per run again.
         component.Render(parameters => parameters.Add(p => p.TextCoalescing, BitPdfTextCoalescing.Exact));
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "Hel", "lo" }, PaintedTexts(component)));
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "Hel", "lo" }, PaintedTexts(component)));
     }
 
     [TestMethod]
@@ -144,10 +144,10 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         // The selection layer holds the line as one run in both modes; only the painted layer tells them apart.
         static int Count(string html, string text) => (html.Length - html.Replace(text, string.Empty).Length) / text.Length;
 
-        StringAssert.Contains(exact, ">Hel</span>");
-        StringAssert.Contains(exact, ">lo</span>");
-        Assert.IsFalse(compact.Contains(">Hel</span>"));
-        Assert.IsFalse(compact.Contains(">lo</span>"));
+        Assert.Contains(">Hel</span>", exact);
+        Assert.Contains(">lo</span>", exact);
+        Assert.DoesNotContain(">Hel</span>", compact);
+        Assert.DoesNotContain(">lo</span>", compact);
         Assert.AreEqual(Count(exact, ">Hello</span>") + 1, Count(compact, ">Hello</span>"), "Compact paints the two runs as one.");
     }
 
@@ -161,7 +161,7 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         });
 
         component.WaitForPages(6);
-        Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count);
+        Assert.ContainsSingle(component.FindAll("[data-page='1'] .bit-pdv-html-page"));
 
         await component.InvokeAsync(() => component.Instance.LastPage());
 
@@ -169,14 +169,14 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         // to be built again when it is scrolled back into view.
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll("[data-page='6'] .bit-pdv-html-page").Count);
-            Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-page-placeholder").Count);
+            Assert.ContainsSingle(component.FindAll("[data-page='6'] .bit-pdv-html-page"));
+            Assert.ContainsSingle(component.FindAll("[data-page='1'] .bit-pdv-page-placeholder"));
         });
-        Assert.AreEqual(1, component.FindAll("[data-page] .bit-pdv-html-page").Count);
-        StringAssert.Contains(component.Find("[data-page='1']").GetAttribute("style"), "height:");
+        Assert.ContainsSingle(component.FindAll("[data-page] .bit-pdv-html-page"));
+        Assert.Contains("height:", component.Find("[data-page='1']").GetAttribute("style")!);
 
         // An evicted page is not a failed one.
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -192,8 +192,8 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.LastPage());
 
         // Two pages are far below the default cap of 24, so both stay built.
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-page='6'] .bit-pdv-html-page").Count));
-        Assert.AreEqual(1, component.FindAll("[data-page='1'] .bit-pdv-html-page").Count);
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-page='6'] .bit-pdv-html-page")));
+        Assert.ContainsSingle(component.FindAll("[data-page='1'] .bit-pdv-html-page"));
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
             parameters.Add(p => p.MaxRenderedThumbnailCount, 1);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll("[data-thumb]")));
 
         // The sidebar's spy asks for the thumbnails it scrolls into view, one after the other.
         await component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([1, 2, 3]));
@@ -214,8 +214,8 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
         // Each one built evicts the ones outside its window, so only the last one asked for stays.
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll("[data-thumb='3'] .bit-pdv-html-page").Count);
-            Assert.AreEqual(1, component.FindAll("[data-thumb] .bit-pdv-html-page").Count);
+            Assert.ContainsSingle(component.FindAll("[data-thumb='3'] .bit-pdv-html-page"));
+            Assert.ContainsSingle(component.FindAll("[data-thumb] .bit-pdv-html-page"));
         });
     }
 
@@ -228,11 +228,11 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll("[data-thumb]")));
 
         await component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([1, 2, 3]));
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll("[data-thumb] .bit-pdv-html-page").Count));
+        component.WaitForAssertion(() => Assert.HasCount(3, component.FindAll("[data-thumb] .bit-pdv-html-page")));
     }
 
     [TestMethod]
@@ -245,14 +245,14 @@ public class BitPdfViewerRenderModeTests : BunitTestContext
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-thumb]").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-thumb]")));
 
         component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([1])).GetAwaiter().GetResult();
 
         // The script paints the main surface's canvases only, so a thumbnail that was a canvas would stay
         // blank: it is built as self-contained HTML instead.
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("[data-thumb='1'] .bit-pdv-html-page").Count));
-        Assert.AreEqual(0, component.FindAll("[data-thumb='1'] canvas").Count);
-        Assert.IsTrue(component.FindAll("[data-thumb='1'] .bit-pdv-html-page span").Count > 0);
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("[data-thumb='1'] .bit-pdv-html-page")));
+        Assert.IsEmpty(component.FindAll("[data-thumb='1'] canvas"));
+        Assert.IsNotEmpty(component.FindAll("[data-thumb='1'] .bit-pdv-html-page span"));
     }
 }

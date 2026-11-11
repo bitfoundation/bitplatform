@@ -21,9 +21,9 @@ public class BrouterSourceCatalogTests
     {
         var readme = BrouterSourceCatalog.Readme;
 
-        Assert.IsTrue(readme.Length > 10_000, $"The README came back as {readme.Length} characters; it is not being embedded.");
-        StringAssert.Contains(readme, "## Install");
-        StringAssert.Contains(readme, "## Quick start");
+        Assert.IsGreaterThan(10_000, readme.Length, $"The README came back as {readme.Length} characters; it is not being embedded.");
+        Assert.Contains("## Install", readme);
+        Assert.Contains("## Quick start", readme);
     }
 
     [TestMethod]
@@ -40,8 +40,8 @@ public class BrouterSourceCatalogTests
         // The install section opens with a fenced shell block; its content has to survive intact.
         var install = BrouterSourceCatalog.GetGuideSection("Install")!;
 
-        StringAssert.Contains(install, "dotnet add package Bit.Brouter");
-        StringAssert.Contains(install, "AddBitBrouterServices");
+        Assert.Contains("dotnet add package Bit.Brouter", install);
+        Assert.Contains("AddBitBrouterServices", install);
     }
 
     [TestMethod]
@@ -49,7 +49,7 @@ public class BrouterSourceCatalogTests
     {
         var section = BrouterSourceCatalog.GetGuideSection("Async guards")!;
 
-        StringAssert.StartsWith(section, "## Async guards");
+        Assert.StartsWith("## Async guards", section);
 
         // The heading that follows it in the README is not part of it.
         Assert.IsFalse(section.Contains("## Leave guards", StringComparison.Ordinal), "The section ran past its own end.");
@@ -60,8 +60,8 @@ public class BrouterSourceCatalogTests
     {
         var section = BrouterSourceCatalog.GetGuideSection("Data loader")!;
 
-        StringAssert.Contains(section, "### Preloading");
-        StringAssert.Contains(section, "### Deferred (streamed) data");
+        Assert.Contains("### Preloading", section);
+        Assert.Contains("### Deferred (streamed) data", section);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BrouterSourceCatalogTests
             var text = BrouterSourceCatalog.GetGuideSection(section.Heading);
 
             Assert.IsNotNull(text, $"'{section.Heading}' is listed but cannot be read.");
-            StringAssert.Contains(text, section.Heading);
+            Assert.Contains(section.Heading, text);
         }
     }
 
@@ -121,10 +121,10 @@ public class BrouterSourceCatalogTests
             "Sample/Maui/wwwroot/index.html",
         })
         {
-            CollectionAssert.Contains(paths, expected, $"'{expected}' is not embedded.");
+            Assert.Contains(expected, paths, $"'{expected}' is not embedded.");
         }
 
-        Assert.IsTrue(paths.Count(path => path.StartsWith("Demo/", StringComparison.Ordinal)) > 20,
+        Assert.IsGreaterThan(20, paths.Count(path => path.StartsWith("Demo/", StringComparison.Ordinal)),
             "Barely any of the demo's files are embedded; the glob is not matching what it used to.");
     }
 
@@ -140,7 +140,7 @@ public class BrouterSourceCatalogTests
         {
             var component = $"{page.PageType.Name}.razor";
 
-            Assert.IsFalse(paths.Any(path => path.EndsWith(component, StringComparison.OrdinalIgnoreCase)),
+            Assert.DoesNotContain(path => path.EndsWith(component, StringComparison.OrdinalIgnoreCase), paths,
                 $"'{component}' is a documentation page, and is being handed out as source as well as rendered.");
         }
 
@@ -148,7 +148,7 @@ public class BrouterSourceCatalogTests
         // answer no question about Brouter either.
         foreach (var noise in new[] { ".css", ".js", "/Shared/", "McpDemoClient.cs", "/Platforms/" })
         {
-            Assert.IsFalse(paths.Any(path => path.Contains(noise, StringComparison.OrdinalIgnoreCase)),
+            Assert.DoesNotContain(path => path.Contains(noise, StringComparison.OrdinalIgnoreCase), paths,
                 $"'{noise}' files are embedded, and there is no question about routing they answer.");
         }
     }
@@ -158,8 +158,7 @@ public class BrouterSourceCatalogTests
     {
         // %(RecursiveDir) only captures what a '**' matched, so a glob with a fixed folder prefix
         // flattens the file to the root of its group. Two paths here are written out for that reason.
-        CollectionAssert.Contains(BrouterSourceCatalog.SourceFiles.Select(file => file.Path).ToArray(),
-            "Demo/Server/Components/Pages/Host.razor");
+        Assert.Contains("Demo/Server/Components/Pages/Host.razor", BrouterSourceCatalog.SourceFiles.Select(file => file.Path).ToArray());
 
         Assert.IsNull(BrouterSourceCatalog.GetSourceFile("Demo/Server/Pages/Host.razor"),
             "The host page is embedded without the folder it lives in.");
@@ -176,7 +175,7 @@ public class BrouterSourceCatalogTests
             .Select(file => file.Path)
             .ToArray();
 
-        CollectionAssert.Contains(core, "Sample/Core/Extensions/IServiceCollectionExtensions.cs");
+        Assert.Contains("Sample/Core/Extensions/IServiceCollectionExtensions.cs", core);
 
         foreach (var path in core)
         {
@@ -248,7 +247,7 @@ public class BrouterSourceCatalogTests
         var demo = BrouterSourceCatalog.SourceFiles.Where(file => file.Kind == "Demo").ToArray();
         var described = demo.Count(file => file.Description is not null);
 
-        Assert.IsTrue(described > demo.Length / 2,
+        Assert.IsGreaterThan(demo.Length / 2, described,
             $"Only {described} of {demo.Length} of the demo's source files carry a description.");
     }
 }

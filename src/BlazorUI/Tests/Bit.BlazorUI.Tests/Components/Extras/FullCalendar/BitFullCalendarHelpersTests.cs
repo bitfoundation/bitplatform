@@ -28,9 +28,9 @@ public class BitFullCalendarHelpersTests
         var result = BitFullCalendarHelpers.NormalizeHiddenDays(
             [DayOfWeek.Saturday, DayOfWeek.Saturday, (DayOfWeek)42, DayOfWeek.Sunday]);
 
-        Assert.AreEqual(2, result.Count);
-        Assert.IsTrue(result.Contains(DayOfWeek.Saturday));
-        Assert.IsTrue(result.Contains(DayOfWeek.Sunday));
+        Assert.HasCount(2, result);
+        Assert.Contains(DayOfWeek.Saturday, result);
+        Assert.Contains(DayOfWeek.Sunday, result);
     }
 
     [TestMethod]
@@ -38,14 +38,14 @@ public class BitFullCalendarHelpersTests
     {
         var all = Enum.GetValues<DayOfWeek>().ToArray();
 
-        Assert.AreEqual(0, BitFullCalendarHelpers.NormalizeHiddenDays(all).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.NormalizeHiddenDays(all));
     }
 
     [TestMethod]
     public void NormalizeHiddenDaysShouldTreatNullAndEmptyAsNothingHidden()
     {
-        Assert.AreEqual(0, BitFullCalendarHelpers.NormalizeHiddenDays(null).Count);
-        Assert.AreEqual(0, BitFullCalendarHelpers.NormalizeHiddenDays([]).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.NormalizeHiddenDays(null));
+        Assert.IsEmpty(BitFullCalendarHelpers.NormalizeHiddenDays([]));
     }
 
     [TestMethod]
@@ -75,10 +75,10 @@ public class BitFullCalendarHelpersTests
         var dates = BitFullCalendarHelpers.GetWeekDates(
             new DateTime(2024, 5, 15), EnUs, DayOfWeek.Monday, [DayOfWeek.Saturday, DayOfWeek.Sunday]);
 
-        Assert.AreEqual(5, dates.Length);
+        Assert.HasCount(5, dates);
         Assert.AreEqual(new DateTime(2024, 5, 13), dates[0]);
         Assert.AreEqual(new DateTime(2024, 5, 17), dates[^1]);
-        Assert.IsFalse(dates.Any(d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday));
+        Assert.DoesNotContain(d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday, dates);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class BitFullCalendarHelpersTests
     {
         var headers = BitFullCalendarHelpers.GetWeekDayHeaders(EnUs, DayOfWeek.Monday, [DayOfWeek.Sunday]);
 
-        Assert.AreEqual(6, headers.Length);
+        Assert.HasCount(6, headers);
         Assert.AreEqual(EnUs.DateTimeFormat.GetShortestDayName(DayOfWeek.Monday), headers[0]);
         Assert.AreEqual(EnUs.DateTimeFormat.GetShortestDayName(DayOfWeek.Saturday), headers[^1]);
     }
@@ -96,7 +96,7 @@ public class BitFullCalendarHelpersTests
     {
         var headers = BitFullCalendarHelpers.GetAbbreviatedWeekDayHeaders(EnUs, DayOfWeek.Monday, [DayOfWeek.Sunday]);
 
-        Assert.AreEqual(6, headers.Length);
+        Assert.HasCount(6, headers);
         Assert.AreEqual(EnUs.DateTimeFormat.GetAbbreviatedDayName(DayOfWeek.Monday), headers[0]);
     }
 
@@ -107,7 +107,7 @@ public class BitFullCalendarHelpersTests
             new DateTime(2024, 5, 15), EnUs, DayOfWeek.Monday, [DayOfWeek.Saturday, DayOfWeek.Sunday]);
 
         Assert.AreEqual(0, cells.Count % 5, "every row must keep the same number of visible columns");
-        Assert.IsFalse(cells.Any(c => c.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday));
+        Assert.DoesNotContain(c => c.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday, cells);
         // Every weekday of the month is still present.
         Assert.AreEqual(23, cells.Count(c => c.CurrentMonth));
     }
@@ -292,9 +292,9 @@ public class BitFullCalendarHelpersTests
     [TestMethod]
     public void GetSlotMinutesShouldListEverySlotOffsetAscending()
     {
-        CollectionAssert.AreEqual(new[] { 0, 30 }, BitFullCalendarHelpers.GetSlotMinutes(30));
-        CollectionAssert.AreEqual(new[] { 0, 15, 30, 45 }, BitFullCalendarHelpers.GetSlotMinutes(15));
-        CollectionAssert.AreEqual(new[] { 0 }, BitFullCalendarHelpers.GetSlotMinutes(60));
+        Assert.AreSequenceEqual(new[] { 0, 30 }, BitFullCalendarHelpers.GetSlotMinutes(30));
+        Assert.AreSequenceEqual(new[] { 0, 15, 30, 45 }, BitFullCalendarHelpers.GetSlotMinutes(15));
+        Assert.AreSequenceEqual(new[] { 0 }, BitFullCalendarHelpers.GetSlotMinutes(60));
     }
 
     [TestMethod]
@@ -371,7 +371,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([ev], day, day.AddDays(7));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreSame(ev, result[0], "a one-off event is passed through untouched");
     }
 
@@ -383,7 +383,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(4));
 
-        Assert.AreEqual(5, result.Count);
+        Assert.HasCount(5, result);
         Assert.AreEqual(start, result[0].StartDate);
         Assert.AreEqual(start.AddDays(4), result[^1].StartDate);
         Assert.IsTrue(result.All(o => o.EndDate - o.StartDate == TimeSpan.FromHours(1)), "every occurrence keeps the master's length");
@@ -397,9 +397,8 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(9));
 
-        CollectionAssert.AreEqual(
-            new[] { start, start.AddDays(3), start.AddDays(6), start.AddDays(9) },
-            result.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { start, start.AddDays(3), start.AddDays(6), start.AddDays(9) }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -410,7 +409,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(30));
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
         Assert.AreEqual(start.AddDays(2), result[^1].StartDate);
     }
 
@@ -422,7 +421,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(30));
 
-        Assert.AreEqual(3, result.Count, "Until is inclusive");
+        Assert.HasCount(3, result, "Until is inclusive");
         Assert.AreEqual(start.AddDays(2), result[^1].StartDate);
     }
 
@@ -439,9 +438,8 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(3));
 
-        CollectionAssert.AreEqual(
-            new[] { start, start.AddDays(2), start.AddDays(3) },
-            result.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { start, start.AddDays(2), start.AddDays(3) }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -457,15 +455,14 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(7));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 5, 15, 9, 0, 0), // Wed
                 new DateTime(2024, 5, 17, 9, 0, 0), // Fri
                 new DateTime(2024, 5, 20, 9, 0, 0), // Mon
                 new DateTime(2024, 5, 22, 9, 0, 0), // Wed
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -477,7 +474,7 @@ public class BitFullCalendarHelpersTests
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(21));
 
         Assert.IsTrue(result.All(o => o.StartDate.DayOfWeek == DayOfWeek.Wednesday));
-        Assert.AreEqual(4, result.Count);
+        Assert.HasCount(4, result);
     }
 
     [TestMethod]
@@ -489,14 +486,13 @@ public class BitFullCalendarHelpersTests
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 31));
 
         // February and April have no 31st, so the series simply skips them.
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 1, 31, 9, 0, 0),
                 new DateTime(2024, 3, 31, 9, 0, 0),
                 new DateTime(2024, 5, 31, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -507,14 +503,13 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2032, 12, 31));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 2, 29, 9, 0, 0),
                 new DateTime(2028, 2, 29, 9, 0, 0),
                 new DateTime(2032, 2, 29, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -525,14 +520,13 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 10), new DateTime(2024, 5, 12));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 5, 10, 9, 0, 0),
                 new DateTime(2024, 5, 11, 9, 0, 0),
                 new DateTime(2024, 5, 12, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -544,7 +538,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 9), new DateTime(2024, 5, 9));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreEqual(new DateTime(2024, 5, 8, 9, 0, 0), result[0].StartDate);
     }
 
@@ -559,8 +553,8 @@ public class BitFullCalendarHelpersTests
         Assert.IsTrue(result.All(o => o.SeriesId == "series"));
         Assert.IsTrue(result.All(o => o.IsOccurrence));
         Assert.IsTrue(result.All(o => o.IsReadOnly is false), "an occurrence is as locked as its series, which is not");
-        CollectionAssert.AreEqual(new[] { start.Date, start.Date.AddDays(1) }, result.Select(o => o.OccurrenceDate!.Value).ToArray());
-        Assert.AreEqual(result.Select(o => o.Id).Distinct().Count(), result.Count, "occurrence ids stay unique");
+        Assert.AreSequenceEqual(new[] { start.Date, start.Date.AddDays(1) }, result.Select(o => o.OccurrenceDate!.Value).ToArray());
+        Assert.HasCount(result.Select(o => o.Id).Distinct().Count(), result, "occurrence ids stay unique");
     }
 
     [TestMethod]
@@ -591,7 +585,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(2));
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
     }
 
     [TestMethod]
@@ -604,14 +598,13 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 15), new DateTime(2024, 5, 17));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 5, 15, 9, 0, 0),
                 new DateTime(2024, 5, 16, 9, 0, 0),
                 new DateTime(2024, 5, 17, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -624,7 +617,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 15), new DateTime(2024, 5, 21));
 
-        Assert.IsTrue(result.Count > 0);
+        Assert.IsNotEmpty(result);
         Assert.IsTrue(result.All(o => (o.StartDate.Date - start.Date).Days % 3 == 0), "the series keeps its phase");
         Assert.IsTrue(result.All(o => o.StartDate.Date >= new DateTime(2024, 5, 15)));
     }
@@ -640,13 +633,13 @@ public class BitFullCalendarHelpersTests
         var may = (Start: new DateTime(2024, 5, 1), End: new DateTime(2024, 5, 31));
 
         // Five Wednesdays in May 2024, and the monthly series' own 5th.
-        Assert.AreEqual(5, BitFullCalendarHelpers.ExpandRecurrences([weekly], may.Start, may.End).Count);
-        Assert.AreEqual(1, BitFullCalendarHelpers.ExpandRecurrences([monthly], may.Start, may.End).Count);
+        Assert.HasCount(5, BitFullCalendarHelpers.ExpandRecurrences([weekly], may.Start, may.End));
+        Assert.ContainsSingle(BitFullCalendarHelpers.ExpandRecurrences([monthly], may.Start, may.End));
         // A yearly series only lands in the month it started in.
-        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([yearly], may.Start, may.End).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.ExpandRecurrences([yearly], may.Start, may.End));
 
         var january = BitFullCalendarHelpers.ExpandRecurrences([yearly], new DateTime(2024, 1, 1), new DateTime(2024, 1, 31));
-        Assert.AreEqual(1, january.Count);
+        Assert.ContainsSingle(january);
         Assert.AreEqual(new DateTime(2024, 1, 5, 9, 0, 0), january[0].StartDate);
     }
 
@@ -659,12 +652,11 @@ public class BitFullCalendarHelpersTests
         var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 2500 });
 
         var middle = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2400), start.Date.AddDays(2402));
-        CollectionAssert.AreEqual(
-            new[] { start.AddDays(2400), start.AddDays(2401), start.AddDays(2402) },
-            middle.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { start.AddDays(2400), start.AddDays(2401), start.AddDays(2402) }, middle.Select(o => o.StartDate).ToArray());
 
         var end = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date.AddDays(2498), start.Date.AddDays(2505));
-        CollectionAssert.AreEqual(new[] { start.AddDays(2498), start.AddDays(2499) }, end.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(new[] { start.AddDays(2498), start.AddDays(2499) }, end.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -694,17 +686,16 @@ public class BitFullCalendarHelpersTests
         // From Monday 2020-01-06 every week holds all three: weeks 0 to 832 hold the first 2,499, week 832 the 2,497th
         // to the 2,499th, and the 2,500th is the Monday of week 833.
         var fromMonday = Weekly(firstMonday + time);
-        Assert.AreEqual(3, Starts(fromMonday, mondayBefore, mondayBefore.AddDays(6)).Length);
-        CollectionAssert.AreEqual(new[] { lastMonday + time }, Starts(fromMonday, lastMonday, pastTheEnd));
+        Assert.HasCount(3, Starts(fromMonday, mondayBefore, mondayBefore.AddDays(6)));
+        Assert.AreSequenceEqual(new[] { lastMonday + time }, Starts(fromMonday, lastMonday, pastTheEnd));
 
         // From Wednesday 2020-01-08 week 0 holds only its Wednesday and Friday: weeks 0 to 832 hold 2 + 832 * 3 = 2,498,
         // and the 2,500th is the Wednesday of week 833.
         var fromWednesday = Weekly(firstMonday.AddDays(2) + time);
-        CollectionAssert.AreEqual(
-            new[] { firstMonday.AddDays(2) + time, firstMonday.AddDays(4) + time },
-            Starts(fromWednesday, firstMonday, firstMonday.AddDays(6)));
-        Assert.AreEqual(3, Starts(fromWednesday, mondayBefore, mondayBefore.AddDays(6)).Length);
-        CollectionAssert.AreEqual(new[] { lastMonday + time, lastMonday.AddDays(2) + time }, Starts(fromWednesday, lastMonday, pastTheEnd));
+        Assert.AreSequenceEqual(
+            new[] { firstMonday.AddDays(2) + time, firstMonday.AddDays(4) + time }, Starts(fromWednesday, firstMonday, firstMonday.AddDays(6)));
+        Assert.HasCount(3, Starts(fromWednesday, mondayBefore, mondayBefore.AddDays(6)));
+        Assert.AreSequenceEqual(new[] { lastMonday + time, lastMonday.AddDays(2) + time }, Starts(fromWednesday, lastMonday, pastTheEnd));
     }
 
     [TestMethod]
@@ -719,21 +710,21 @@ public class BitFullCalendarHelpersTests
 
         var daily = BitFullCalendarHelpers.ExpandRecurrences(
             [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily })], rangeStart, rangeEnd);
-        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, daily.Count);
+        Assert.HasCount(BitFullCalendarHelpers.MaxOccurrencesPerSeries, daily);
         Assert.AreEqual(rangeStart + start.TimeOfDay, daily[0].StartDate);
         Assert.AreEqual(rangeEnd + start.TimeOfDay, daily[^1].StartDate);
 
         var skipped = rangeStart.AddDays(10);
         var withASkip = BitFullCalendarHelpers.ExpandRecurrences(
             [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, ExceptionDates = [skipped] })], rangeStart, rangeEnd.AddDays(1));
-        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, withASkip.Count);
-        Assert.IsFalse(withASkip.Any(o => o.OccurrenceDate == skipped));
+        Assert.HasCount(BitFullCalendarHelpers.MaxOccurrencesPerSeries, withASkip);
+        Assert.DoesNotContain(o => o.OccurrenceDate == skipped, withASkip);
         Assert.AreEqual(rangeEnd.AddDays(1) + start.TimeOfDay, withASkip[^1].StartDate);
 
         // A three-day occurrence that started three days before the range still runs into it, so it is shown and counts.
         var threeDays = BitFullCalendarHelpers.ExpandRecurrences(
             [Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily }, TimeSpan.FromDays(3))], rangeStart, rangeEnd);
-        Assert.AreEqual(BitFullCalendarHelpers.MaxOccurrencesPerSeries, threeDays.Count);
+        Assert.HasCount(BitFullCalendarHelpers.MaxOccurrencesPerSeries, threeDays);
         Assert.AreEqual(rangeStart.AddDays(-3) + start.TimeOfDay, threeDays[0].StartDate);
         Assert.AreEqual(rangeEnd.AddDays(-3) + start.TimeOfDay, threeDays[^1].StartDate);
     }
@@ -747,10 +738,10 @@ public class BitFullCalendarHelpersTests
         var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 100 });
 
         var april = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 4, 1), new DateTime(2028, 4, 30));
-        Assert.AreEqual(1, april.Count);
+        Assert.ContainsSingle(april);
         Assert.AreEqual(new DateTime(2028, 4, 15, 9, 0, 0), april[0].StartDate);
 
-        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 5, 1), new DateTime(2028, 5, 31)).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2028, 5, 1), new DateTime(2028, 5, 31)));
     }
 
     [TestMethod]
@@ -762,10 +753,10 @@ public class BitFullCalendarHelpersTests
         var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, Count = 30 });
 
         var march = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 3, 1), new DateTime(2024, 3, 31));
-        Assert.AreEqual(1, march.Count);
+        Assert.ContainsSingle(march);
         Assert.AreEqual(new DateTime(2024, 3, 31, 9, 0, 0), march[0].StartDate);
 
-        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31)).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31)));
     }
 
     [TestMethod]
@@ -776,7 +767,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(7));
 
-        Assert.AreEqual(1, result.Count, "only the first occurrence is representable");
+        Assert.ContainsSingle(result, "only the first occurrence is representable");
     }
 
     [TestMethod]
@@ -785,7 +776,7 @@ public class BitFullCalendarHelpersTests
         var start = new DateTime(2024, 5, 15, 9, 0, 0);
         var series = Series(start, new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 0 });
 
-        Assert.AreEqual(0, BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(5)).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(5)));
     }
 
     [TestMethod]
@@ -802,15 +793,14 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 8, 31));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 5, 21, 9, 0, 0),
                 new DateTime(2024, 6, 18, 9, 0, 0),
                 new DateTime(2024, 7, 16, 9, 0, 0),
                 new DateTime(2024, 8, 20, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -827,15 +817,14 @@ public class BitFullCalendarHelpersTests
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 4, 30));
 
         // March 2024 ends on a Sunday and has five Fridays; the last one is still picked.
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 1, 26, 9, 0, 0),
                 new DateTime(2024, 2, 23, 9, 0, 0),
                 new DateTime(2024, 3, 29, 9, 0, 0),
                 new DateTime(2024, 4, 26, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -852,9 +841,8 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 31));
 
-        CollectionAssert.AreEqual(
-            new[] { new DateTime(2024, 5, 1, 9, 0, 0), new DateTime(2024, 5, 6, 9, 0, 0) },
-            result.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { new DateTime(2024, 5, 1, 9, 0, 0), new DateTime(2024, 5, 6, 9, 0, 0) }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -866,9 +854,8 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 6, 30));
 
-        CollectionAssert.AreEqual(
-            new[] { new DateTime(2024, 5, 14, 9, 0, 0), new DateTime(2024, 6, 11, 9, 0, 0) },
-            result.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { new DateTime(2024, 5, 14, 9, 0, 0), new DateTime(2024, 6, 11, 9, 0, 0) }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -885,7 +872,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 6, 30));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreEqual(new DateTime(2024, 6, 18, 9, 0, 0), result[0].StartDate);
     }
 
@@ -905,14 +892,13 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 12, 31));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 1, 8, 9, 0, 0),
                 new DateTime(2024, 3, 11, 9, 0, 0),
                 new DateTime(2024, 5, 13, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -934,15 +920,13 @@ public class BitFullCalendarHelpersTests
             => [.. BitFullCalendarHelpers.ExpandRecurrences([series], from, to).Select(o => o.StartDate)];
 
         var counted = FirstMondayAndWednesday(until: null);
-        CollectionAssert.AreEqual(
-            new[] { new DateTime(2028, 7, 3, 9, 0, 0), new DateTime(2028, 7, 5, 9, 0, 0) },
-            Starts(counted, new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
-        Assert.AreEqual(0, Starts(counted, new DateTime(2028, 8, 1), new DateTime(2028, 8, 31)).Length);
+        Assert.AreSequenceEqual(
+            new[] { new DateTime(2028, 7, 3, 9, 0, 0), new DateTime(2028, 7, 5, 9, 0, 0) }, Starts(counted, new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
+        Assert.IsEmpty(Starts(counted, new DateTime(2028, 8, 1), new DateTime(2028, 8, 31)));
 
         // An Until reached before the count runs out still ends the series first.
-        CollectionAssert.AreEqual(
-            new[] { new DateTime(2028, 7, 3, 9, 0, 0) },
-            Starts(FirstMondayAndWednesday(new DateTime(2028, 7, 4)), new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
+        Assert.AreSequenceEqual(
+            new[] { new DateTime(2028, 7, 3, 9, 0, 0) }, Starts(FirstMondayAndWednesday(new DateTime(2028, 7, 4)), new DateTime(2028, 7, 1), new DateTime(2028, 7, 31)));
     }
 
     [TestMethod]
@@ -959,14 +943,13 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 1, 1), new DateTime(2026, 12, 31));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 11, 28, 18, 0, 0),
                 new DateTime(2025, 11, 27, 18, 0, 0),
                 new DateTime(2026, 11, 26, 18, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
+            }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -982,7 +965,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 5, 1), new DateTime(2024, 5, 31));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreEqual(new DateTime(2024, 5, 21, 9, 0, 0), result[0].StartDate);
     }
 
@@ -994,9 +977,8 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 2, 29));
 
-        CollectionAssert.AreEqual(
-            new[] { new DateTime(2024, 1, 15, 9, 0, 0), new DateTime(2024, 2, 15, 9, 0, 0) },
-            result.Select(o => o.StartDate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { new DateTime(2024, 1, 15, 9, 0, 0), new DateTime(2024, 2, 15, 9, 0, 0) }, result.Select(o => o.StartDate).ToArray());
     }
 
     [TestMethod]
@@ -1007,7 +989,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, start.Date.AddDays(2));
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
     }
 
     [TestMethod]
@@ -1024,15 +1006,14 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 25));
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 new DateTime(2024, 5, 15, 9, 0, 0),
                 new DateTime(2024, 5, 16, 9, 0, 0),
                 new DateTime(2024, 5, 20, 9, 0, 0),
-            },
-            result.Select(o => o.StartDate).ToArray());
-        Assert.AreEqual(result.Select(o => o.Id).Distinct().Count(), result.Count, "a date both produce is emitted once");
+            }, result.Select(o => o.StartDate).ToArray());
+        Assert.HasCount(result.Select(o => o.Id).Distinct().Count(), result, "a date both produce is emitted once");
         Assert.AreEqual(new DateTime(2024, 5, 20), result[^1].OccurrenceDate);
     }
 
@@ -1050,7 +1031,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], start.Date, new DateTime(2024, 5, 31));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreEqual(start, result[0].StartDate);
     }
 
@@ -1066,7 +1047,7 @@ public class BitFullCalendarHelpersTests
 
         var result = BitFullCalendarHelpers.ExpandRecurrences([series], new DateTime(2024, 6, 1), new DateTime(2024, 6, 30));
 
-        Assert.AreEqual(1, result.Count);
+        Assert.ContainsSingle(result);
         Assert.AreEqual(new DateTime(2024, 6, 1, 9, 0, 0), result[0].StartDate);
     }
 
@@ -1161,8 +1142,8 @@ public class BitFullCalendarHelpersTests
         var withThree = BitFullCalendarHelpers.CalculateMonthEventPositions([], singles, day, EnUs, 3);
         var withFive = BitFullCalendarHelpers.CalculateMonthEventPositions([], singles, day, EnUs, 5);
 
-        Assert.AreEqual(3, withThree.Count, "only the first three fit into a three-slot cell");
-        Assert.AreEqual(5, withFive.Count);
+        Assert.HasCount(3, withThree, "only the first three fit into a three-slot cell");
+        Assert.HasCount(5, withFive);
     }
 
     [TestMethod]
@@ -1176,7 +1157,7 @@ public class BitFullCalendarHelpersTests
 
         var cellEvents = BitFullCalendarHelpers.GetMonthCellEvents(day, events, positions, 2);
 
-        Assert.AreEqual(4, cellEvents.Count, "every event on the day is still reported");
+        Assert.HasCount(4, cellEvents, "every event on the day is still reported");
         Assert.AreEqual(2, cellEvents.Count(e => e.Position >= 0), "only two of them get a visible row");
         Assert.AreEqual(2, cellEvents.Count(e => e.Position < 0));
     }
@@ -1207,8 +1188,8 @@ public class BitFullCalendarHelpersTests
         var all = BitFullCalendarHelpers.GetEventsForDay([timed, allDay, markedSingleDate], day);
         var allDayRow = BitFullCalendarHelpers.GetEventsForDay([timed, allDay, markedSingleDate], day, allDayRowOnly: true);
 
-        Assert.AreEqual(3, all.Count);
-        CollectionAssert.AreEquivalent(new[] { "allday", "marked" }, allDayRow.Select(e => e.Id).ToArray());
+        Assert.HasCount(3, all);
+        Assert.AreSequenceEqual(new[] { "allday", "marked" }, allDayRow.Select(e => e.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1221,8 +1202,8 @@ public class BitFullCalendarHelpersTests
         var mondayWeek = BitFullCalendarHelpers.GetEventsForWeek([ev], new DateTime(2024, 5, 15), EnUs, DayOfWeek.Monday);
         var sundayWeek = BitFullCalendarHelpers.GetEventsForWeek([ev], new DateTime(2024, 5, 15), EnUs, DayOfWeek.Sunday);
 
-        Assert.AreEqual(0, mondayWeek.Count);
-        Assert.AreEqual(1, sundayWeek.Count);
+        Assert.IsEmpty(mondayWeek);
+        Assert.ContainsSingle(sundayWeek);
     }
 
     [TestMethod]
@@ -1242,7 +1223,7 @@ public class BitFullCalendarHelpersTests
         var moment = new DateTime(2024, 5, 15, 13, 5, 0);
 
         Assert.AreEqual("13:05", BitFullCalendarHelpers.FormatTime(moment, use24Hour: true, Invariant));
-        StringAssert.StartsWith(BitFullCalendarHelpers.FormatTime(moment, use24Hour: false, Invariant), "1:05");
+        Assert.StartsWith("1:05", BitFullCalendarHelpers.FormatTime(moment, use24Hour: false, Invariant));
     }
 
     #endregion
@@ -1256,17 +1237,16 @@ public class BitFullCalendarHelpersTests
         // expressed against the same property rather than against the compiled-in 96px.
         var length = BitFullCalendarHelpers.HoursToCssLength(1.5);
 
-        StringAssert.Contains(length, BitFullCalendarHelpers.HourHeightVariableName);
-        StringAssert.Contains(length, "1.5000");
-        StringAssert.StartsWith(length, "calc(");
+        Assert.Contains(BitFullCalendarHelpers.HourHeightVariableName, length);
+        Assert.Contains("1.5000", length);
+        Assert.StartsWith("calc(", length);
     }
 
     [TestMethod]
     public void HoursToCssLengthShouldFallBackToTheBuiltInHourHeight()
     {
-        StringAssert.Contains(
-            BitFullCalendarHelpers.HoursToCssLength(2),
-            BitFullCalendarHelpers.HourHeightPx + "px");
+        Assert.Contains(
+            BitFullCalendarHelpers.HourHeightPx + "px", BitFullCalendarHelpers.HoursToCssLength(2));
     }
 
     [TestMethod]
@@ -1368,9 +1348,9 @@ public class BitFullCalendarHelpersTests
         var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant, "All day");
 
         // No clock time: an all-day event covers whole dates, and the last one is the inclusive end.
-        StringAssert.Contains(text, "All day");
-        StringAssert.Contains(text, "14");
-        Assert.IsFalse(text.Contains("00:00"), "an all-day event has no clock time to report");
+        Assert.Contains("All day", text);
+        Assert.Contains("14", text);
+        Assert.DoesNotContain("00:00", text, "an all-day event has no clock time to report");
     }
 
     [TestMethod]
@@ -1381,7 +1361,7 @@ public class BitFullCalendarHelpersTests
 
         var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant, "All day");
 
-        Assert.IsFalse(text.Contains(" - "), "a single covered date is not a range");
+        Assert.DoesNotContain(" - ", text, "a single covered date is not a range");
     }
 
     [TestMethod]
@@ -1393,9 +1373,9 @@ public class BitFullCalendarHelpersTests
         var text = BitFullCalendarHelpers.BuildEventRangeText(ev, use24Hour: true, Invariant);
 
         // "23:00 - 01:00" on its own would not say which day either end falls on.
-        StringAssert.Contains(text, "23:00");
-        StringAssert.Contains(text, "01:00");
-        StringAssert.Contains(text, "13");
+        Assert.Contains("23:00", text);
+        Assert.Contains("01:00", text);
+        Assert.Contains("13", text);
     }
 
     [TestMethod]
@@ -1406,9 +1386,9 @@ public class BitFullCalendarHelpersTests
 
         var tooltip = BitFullCalendarHelpers.BuildEventTooltip(ev, use24Hour: true, Invariant, "All day");
 
-        StringAssert.StartsWith(tooltip, "Holiday");
-        StringAssert.Contains(tooltip, "All day");
-        Assert.IsFalse(tooltip.Contains("00:00 - 00:00"));
+        Assert.StartsWith("Holiday", tooltip);
+        Assert.Contains("All day", tooltip);
+        Assert.DoesNotContain("00:00 - 00:00", tooltip);
     }
 
     #endregion
@@ -1420,9 +1400,8 @@ public class BitFullCalendarHelpersTests
     {
         var days = BitFullCalendarHelpers.NormalizeBusinessDays(null);
 
-        CollectionAssert.AreEquivalent(
-            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
-            days.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, days.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1431,15 +1410,15 @@ public class BitFullCalendarHelpersTests
         var days = BitFullCalendarHelpers.NormalizeBusinessDays(
             [DayOfWeek.Monday, DayOfWeek.Monday, (DayOfWeek)9]);
 
-        Assert.AreEqual(1, days.Count);
-        Assert.IsTrue(days.Contains(DayOfWeek.Monday));
+        Assert.ContainsSingle(days);
+        Assert.Contains(DayOfWeek.Monday, days);
     }
 
     [TestMethod]
     public void NormalizeBusinessDaysShouldKeepAnEmptySetAsIs()
     {
         // Unlike the hidden days, a week with no business day is a legitimate configuration.
-        Assert.AreEqual(0, BitFullCalendarHelpers.NormalizeBusinessDays([]).Count);
+        Assert.IsEmpty(BitFullCalendarHelpers.NormalizeBusinessDays([]));
     }
 
     [TestMethod]
@@ -1462,8 +1441,8 @@ public class BitFullCalendarHelpersTests
         var natural = BitFullCalendarHelpers.GetCalendarCells(february, Invariant, DayOfWeek.Sunday);
         var padded = BitFullCalendarHelpers.GetCalendarCells(february, Invariant, DayOfWeek.Sunday, fixedWeekCount: true);
 
-        Assert.AreEqual(28, natural.Count);
-        Assert.AreEqual(42, padded.Count);
+        Assert.HasCount(28, natural);
+        Assert.HasCount(42, padded);
         // The padding only trails the month; the leading days are unchanged.
         Assert.AreEqual(natural[0].Date, padded[0].Date);
     }
@@ -1474,9 +1453,8 @@ public class BitFullCalendarHelpersTests
         // August 2026 starts on a Saturday, so it already spans six rows.
         var august = new DateTime(2026, 8, 10);
 
-        Assert.AreEqual(
-            BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday).Count,
-            BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday, fixedWeekCount: true).Count);
+        Assert.HasCount(
+            BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday).Count, BitFullCalendarHelpers.GetCalendarCells(august, Invariant, DayOfWeek.Sunday, fixedWeekCount: true));
     }
 
     [TestMethod]

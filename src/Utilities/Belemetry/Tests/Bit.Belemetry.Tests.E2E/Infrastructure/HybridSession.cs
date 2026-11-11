@@ -5,7 +5,7 @@
 /// receiver of the static SSR web host (any web host would do; that one boots fastest). A failed start is remembered,
 /// so the rest of the class fails fast instead of waiting out the startup timeout once per test.
 /// </summary>
-public static class HybridSession
+internal static class HybridSession
 {
     /// <summary>The web harness host whose receiver collects the hybrid app's exports.</summary>
     public const string CollectorHostMode = "ssr";

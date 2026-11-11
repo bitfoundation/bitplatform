@@ -49,7 +49,7 @@ public class BitAiMessagePartViewParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiMessagePartViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiMessagePartView", BitAiMessagePartViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiMessagePartView", new BitAiMessagePartViewParams().Name);
         Assert.AreEqual(BitAiMessagePartViewParams.ParamName, new BitAiMessagePartViewParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitAiMessagePartViewParams());
     }
@@ -88,8 +88,8 @@ public class BitAiMessagePartViewParamsTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
     }
 
     [TestMethod]

@@ -37,14 +37,14 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
         Assert.AreEqual(error.Id, input.GetAttribute("aria-describedby"));
 
         // Under the field, inside the root, rather than between the label and the field.
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp > .bit-dtrp-wrp ~ .bit-dtrp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp > .bit-dtrp-wrp ~ .bit-dtrp-erm"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, (string?)null));
 
         Assert.IsFalse(component.Find(".bit-dtrp").ClassList.Contains("bit-inv"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
     }
 
     [TestMethod]
@@ -57,10 +57,10 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-dtrp").ClassList.Contains("bit-inv"));
         Assert.IsNull(input.GetAttribute("aria-invalid"));
         Assert.IsNull(input.GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
 
         // A picker that is never wired for an error message carries no empty live region for one.
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -75,7 +75,7 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-dtrp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(input.GetAttribute("aria-describedby"));
     }
 
@@ -91,7 +91,7 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
         var error = component.Find(".bit-dtrp-erm");
 
         Assert.AreEqual("Booked", error.QuerySelector(".custom-error")!.TextContent);
-        Assert.IsFalse(error.TextContent.Contains("the plain text"));
+        Assert.DoesNotContain("the plain text", error.TextContent);
         Assert.IsTrue(component.Find(".bit-dtrp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
 
@@ -122,7 +122,7 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
 
         Assert.AreEqual("the plain text", component.Find(".bit-dtrp > [role=status]").TextContent.Trim());
         Assert.AreEqual(component.Find(".bit-dtrp-erm").Id, component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm ~ span.bit-dtrp-sdt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm ~ span.bit-dtrp-sdt"));
     }
 
     [TestMethod, DataRow(""), DataRow("  ")]
@@ -217,10 +217,10 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
 
         // The message follows the calendar instead of sitting between its label and it, so it carries the direction
         // and the public variables of the root itself.
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp .bit-dtrp-erm").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-cal ~ .bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp .bit-dtrp-erm"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-cal ~ .bit-dtrp-erm"));
         Assert.AreEqual("rtl", error.GetAttribute("dir"));
-        StringAssert.Contains(error.GetAttribute("style"), "--bit-DateRangePicker-invalid-color");
+        Assert.Contains("--bit-DateRangePicker-invalid-color", error.GetAttribute("style")!);
 
         // The announcement still comes out of the root.
         Assert.AreEqual("Those nights are booked.", component.Find(".bit-dtrp > [role=status]").TextContent.Trim());
@@ -290,7 +290,7 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
 
         var input = component.Find(".bit-dtrp-inp");
 
-        Assert.AreEqual(1, component.Find(".bit-dtrp").GetAttribute("class")!.Split(' ').Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-dtrp").GetAttribute("class")!.Split(' '));
         Assert.AreEqual("true", input.GetAttribute("aria-invalid"));
         Assert.AreEqual(component.Find(".bit-dtrp-erm").Id, input.GetAttribute("aria-describedby"));
 
@@ -299,7 +299,7 @@ public class BitDateRangePickerErrorMessageTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-dtrp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
     }
 }

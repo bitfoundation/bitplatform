@@ -62,8 +62,7 @@ public sealed class BitThemePaletteContrastTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has role fills whose on-color falls below {UiContrastFloor}:1: {string.Join("; ", failures)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), failures, $"{paletteFile} has role fills whose on-color falls below {UiContrastFloor}:1: {string.Join("; ", failures)}");
     }
 
     // The surfaces a role is read on when it is not filled - the label of an outlined or text-only variant - with the
@@ -100,8 +99,7 @@ public sealed class BitThemePaletteContrastTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has role foregrounds that are unreadable on the page: {string.Join("; ", failures)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), failures, $"{paletteFile} has role foregrounds that are unreadable on the page: {string.Join("; ", failures)}");
     }
 
     // The one role role-text reads in its main: the brand's link color, which holds AA normal text over the page and the 3:1
@@ -132,8 +130,7 @@ public sealed class BitThemePaletteContrastTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has a primary main that is unreadable as text on the page: {string.Join("; ", failures)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), failures, $"{paletteFile} has a primary main that is unreadable as text on the page: {string.Join("; ", failures)}");
     }
 
     // The surface an outlined or text-only tag is selected and hovered on, and a clickable outlined badge is hovered on: the
@@ -165,8 +162,7 @@ public sealed class BitThemePaletteContrastTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has role foregrounds that are unreadable on their tint: {string.Join("; ", failures)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), failures, $"{paletteFile} has role foregrounds that are unreadable on their tint: {string.Join("; ", failures)}");
     }
 
     // A selected outlined or text-only tag under the pointer: the pointer's wash - the tint while it rests there, a deeper wash
@@ -206,8 +202,7 @@ public sealed class BitThemePaletteContrastTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has role foregrounds that are unreadable under a pointer on a selected tint: {string.Join("; ", failures)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), failures, $"{paletteFile} has role foregrounds that are unreadable under a pointer on a selected tint: {string.Join("; ", failures)}");
     }
 
     // The share of a color in a recipe, read off the stylesheet that writes it.

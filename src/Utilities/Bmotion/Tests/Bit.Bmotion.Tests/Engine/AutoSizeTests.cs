@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -42,7 +42,7 @@ public class AutoSizeTests
 
             await engine.AnimateToAsync("el", Values(("height", "auto")), Bm.Tween(0.3).ToConfig());
 
-            CollectionAssert.AreEqual(new[] { "height" }, (string[])interop.ArgsOf("readStyles").Last()[3]!, "the natural size is measured");
+            Assert.AreSequenceEqual(new[] { "height" }, (string[])interop.ArgsOf("readStyles").Last()[3]!, "the natural size is measured");
             var kf = Keyframes(interop);
             Assert.AreEqual("120px", kf[^1]["height"], "and played to");
             interop.FinishWaapi();
@@ -94,7 +94,7 @@ public class AutoSizeTests
 
         await engine.AnimateToAsync("el", Values(("height", "0px")), Bm.Tween(0.3).ToConfig());
 
-        CollectionAssert.Contains((string[])interop.ArgsOf("readStyles").Last()[1]!, "height", "the size on screen is read");
+        Assert.Contains("height", (string[])interop.ArgsOf("readStyles").Last()[1]!, "the size on screen is read");
         var kf = Keyframes(interop);
         Assert.AreEqual("120px", kf[0]["height"]);
         Assert.AreEqual("0px", kf[^1]["height"]);
@@ -114,7 +114,7 @@ public class AutoSizeTests
         await engine.AnimateToAsync("el", Values(("height", "0px"), ("opacity", 0.5)), Bm.Tween(0.3).ToConfig());
 
         var kf = Keyframes(interop);
-        Assert.AreEqual(2, kf.Length);
+        Assert.HasCount(2, kf);
         Assert.AreEqual("120px", kf[0]["height"]);
         Assert.IsFalse(kf[0].ContainsKey("opacity"), "the rest still starts from what is on screen");
         Assert.AreEqual("0px", kf[1]["height"]);
@@ -122,7 +122,7 @@ public class AutoSizeTests
         // Once the page has been given pixels, the next animation starts from what it shows again.
         interop.FinishWaapi();
         await engine.AnimateToAsync("el", Values(("height", "50px")), Bm.Tween(0.3).ToConfig());
-        Assert.AreEqual(1, Keyframes(interop).Length);
+        Assert.ContainsSingle(Keyframes(interop));
     }
 
     [TestMethod]
@@ -153,8 +153,9 @@ public class AutoSizeTests
         await engine.AnimateToAsync("el", Values(("height", "40px")), Bm.Tween(0.3).ToConfig());
         interop.FinishWaapi();
         var frame = engine.ComputeFrame(0);
+        var actualValue = frame?.GetValueOrDefault("el")?.GetValueOrDefault("height") == "auto";
 
-        Assert.IsFalse(frame?.GetValueOrDefault("el")?.GetValueOrDefault("height") == "auto");
+        Assert.IsFalse(actualValue);
         Assert.AreEqual("40px", State(engine).StringValues["height"]);
     }
 
@@ -197,7 +198,7 @@ public class AutoSizeTests
         await engine.AnimateToAsync("el", Values(("height", new[] { "0px", "auto", "60px" })), Bm.Tween(0.3).ToConfig());
 
         var kf = Keyframes(interop);
-        Assert.IsTrue(kf.Any(k => (string)k["height"] == "120px"), "the auto frame is the natural size");
+        Assert.Contains(k => (string)k["height"] == "120px", kf, "the auto frame is the natural size");
         interop.FinishWaapi();
         engine.ComputeFrame(0);
         Assert.AreEqual("60px", State(engine).StringValues["height"], "it ends where its last frame says");

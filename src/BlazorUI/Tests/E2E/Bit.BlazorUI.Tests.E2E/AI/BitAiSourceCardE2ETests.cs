@@ -246,7 +246,7 @@ public class BitAiSourceCardE2ETests : E2ETestBase
         // The card keeps the width of its box rather than growing to its title.
         var box = await Page.Locator("#long > div").RectAsync();
         var card = await Card("src-long").RectAsync();
-        Assert.IsTrue(card.Right <= box.Right + 1, "The card stays inside its box.");
+        Assert.IsLessThanOrEqualTo(box.Right + 1, card.Right, "The card stays inside its box.");
     }
 
     // ---------- look ----------
@@ -308,16 +308,16 @@ public class BitAiSourceCardE2ETests : E2ETestBase
         {
             var index = await Card(id).Locator(".bit-aisrc-idx").RectAsync();
             var body = await Card(id).Locator(".bit-aisrc-bdy").RectAsync();
-            Assert.IsTrue(index.Left > body.Left, $"{id}: the number leads from the right.");
+            Assert.IsGreaterThan(body.Left, index.Left, $"{id}: the number leads from the right.");
 
             var favicon = await Card(id).Locator(".bit-aisrc-fav").RectAsync();
             var site = await Card(id).Locator(".bit-aisrc-sit > span").RectAsync();
-            Assert.IsTrue(favicon.Left > site.Left, $"{id}: the favicon leads the site line from the right.");
+            Assert.IsGreaterThan(site.Left, favicon.Left, $"{id}: the favicon leads the site line from the right.");
         }
 
         var ltrIndex = await Card("src-ltr").Locator(".bit-aisrc-idx").RectAsync();
         var ltrBody = await Card("src-ltr").Locator(".bit-aisrc-bdy").RectAsync();
-        Assert.IsTrue(ltrIndex.Left < ltrBody.Left, "Left to right, the number leads from the left.");
+        Assert.IsLessThan(ltrBody.Left, ltrIndex.Left, "Left to right, the number leads from the left.");
     }
 
     // ---------- helpers ----------

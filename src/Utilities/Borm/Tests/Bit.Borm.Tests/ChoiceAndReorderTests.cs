@@ -23,8 +23,8 @@ public class OptionIdCollisionTests : ComponentTestBase
 
         var ids = cut.FindAll("input[id]").Select(i => i.GetAttribute("id")).ToList();
 
-        Assert.AreEqual(3, ids.Count);
-        Assert.AreEqual(3, ids.Distinct(StringComparer.Ordinal).Count());
+        Assert.HasCount(3, ids);
+        Assert.HasCount(3, ids.Distinct(StringComparer.Ordinal));
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class OptionRoundTripTests
 }
 
 /// <summary>A bUnit host usable from a test class that is not itself a BunitContext.</summary>
-public sealed class ComponentTestHost : BunitContext
+internal sealed class ComponentTestHost : BunitContext
 {
     public ComponentTestHost() => Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions
         .AddSingleton<IBormFieldRendererRegistry>(Services, new BormFieldRendererRegistry());

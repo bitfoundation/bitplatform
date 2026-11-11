@@ -24,7 +24,7 @@ public class BitRatingValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitRatingValidationTest>(parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
         Assert.IsNull(component.Find(".bit-rtg").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -43,13 +43,13 @@ public class BitRatingValidationMessageTests : BunitTestContext
                                  .Where(p => p is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "items", "error" }, parts);
+        Assert.AreSequenceEqual(new[] { "items", "error" }, parts);
 
         // A pick the form accepts takes the line, and the reference to it, away again.
         component.FindAll(".bit-rtg-btn")[2].Click();
 
         Assert.AreEqual(3, component.Instance.TestModel.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
         Assert.IsNull(component.Find(".bit-rtg").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -101,7 +101,7 @@ public class BitRatingValidationMessageTests : BunitTestContext
 
         // The rating is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
         Assert.IsNull(component.Find(".bit-rtg").GetAttribute("aria-describedby"));
     }
 
@@ -120,7 +120,7 @@ public class BitRatingValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-rtg-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rtg-erm"));
         Assert.AreEqual("Five stars need a written review.", component.Find(".bit-rtg-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -155,7 +155,7 @@ public class BitRatingValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-rtg").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Add a reason", component.Find(".bit-rtg-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-rtg-erm").TextContent.Contains(RangeMessage));
+        Assert.DoesNotContain(RangeMessage, component.Find(".bit-rtg-erm").TextContent);
         Assert.AreEqual("Low scores need a reason before they are published.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -182,12 +182,12 @@ public class BitRatingValidationMessageTests : BunitTestContext
         // The region of the value says the value and nothing else.
         Assert.AreEqual(RangeMessage, wired.Find(".bit-rtg-erm").TextContent.Trim());
         Assert.AreEqual(string.Empty, wired.Find("[role=status]").TextContent.Trim());
-        Assert.IsFalse(wired.FindAll("[aria-live]").Any(r => r.TextContent.Contains(RangeMessage)));
+        Assert.DoesNotContain(r => r.TextContent.Contains(RangeMessage), wired.FindAll("[aria-live]"));
 
         // The messages do not wire a rating for a live region of its errors either.
         Assert.AreEqual(RangeMessage, plain.Find(".bit-rtg-erm").TextContent.Trim());
-        Assert.AreEqual(0, plain.FindAll("[role=status]").Count);
-        Assert.IsFalse(plain.FindAll("[aria-live]").Any(r => r.TextContent.Contains(RangeMessage)));
+        Assert.IsEmpty(plain.FindAll("[role=status]"));
+        Assert.DoesNotContain(r => r.TextContent.Contains(RangeMessage), plain.FindAll("[aria-live]"));
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class BitRatingValidationMessageTests : BunitTestContext
         // the order the line and the description sit in under the items.
         var ids = component.Find(".bit-rtg").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual("page-hint", ids[0]);
         Assert.AreEqual(component.Find(".bit-rtg-erm").Id, ids[1]);
         Assert.AreEqual(component.Find(".bit-rtg-dsc").Id, ids[2]);
@@ -269,11 +269,11 @@ public class BitRatingValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-rtg-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-rtg-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
         Assert.IsNull(component.Find(".bit-rtg").GetAttribute("aria-describedby"));
     }
 
@@ -289,8 +289,8 @@ public class BitRatingValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the rating has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-rtg-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-rtg-erm"));
     }
 
     [TestMethod]

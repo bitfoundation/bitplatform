@@ -18,25 +18,25 @@ public partial class BitNumberFieldStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // field an unset one stands for.
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-fontsize, var(--bit-NumberField-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-label-fontsize, var(--bit-NumberField-label-font-size, #{$tg-fs-sm}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-icon-size, var(--bit-NumberField-icon-size, #{$siz-icon-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-btn-width, var(--bit-NumberField-button-width, #{$siz-ctrl-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-stack-width, var(--bit-NumberField-button-width, #{spacing(3)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-btn-icon-size, var(--bit-NumberField-button-icon-size, #{$tg-fs-xs}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-pad-x, var(--bit-NumberField-padding-inline, #{spacing(1)}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-spn-size, var(--bit-NumberField-spinner-size, calc(var(--bit-NumberField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke})))");
+        Assert.Contains("var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-fontsize, var(--bit-NumberField-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-label-fontsize, var(--bit-NumberField-label-font-size, #{$tg-fs-sm}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-icon-size, var(--bit-NumberField-icon-size, #{$siz-icon-md}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-btn-width, var(--bit-NumberField-button-width, #{$siz-ctrl-md}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-stack-width, var(--bit-NumberField-button-width, #{spacing(3)}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-btn-icon-size, var(--bit-NumberField-button-icon-size, #{$tg-fs-xs}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-pad-x, var(--bit-NumberField-padding-inline, #{spacing(1)}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-spn-size, var(--bit-NumberField-spinner-size, calc(var(--bit-NumberField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke})))", stylesheet);
 
         // So do an explicit Accent, Background and Border, for every color they paint.
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color)))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-icon-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-affix-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-loading-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-spn-clr, var(--bit-NumberField-spinner-color, currentcolor))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr-bg, var(--bit-NumberField-background, #{$clr-bg-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr-brd, var(--bit-NumberField-border-color, #{$clr-brd-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr-brd-hover, var(--bit-NumberField-hover-border-color, #{$clr-brd-pri-hover}))");
+        Assert.Contains("focus-ring-own(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color)))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr, var(--bit-NumberField-icon-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr, var(--bit-NumberField-affix-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr, var(--bit-NumberField-loading-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-spn-clr, var(--bit-NumberField-spinner-color, currentcolor))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr-bg, var(--bit-NumberField-background, #{$clr-bg-pri}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr-brd, var(--bit-NumberField-border-color, #{$clr-brd-pri}))", stylesheet);
+        Assert.Contains("var(--bit-nfl-clr-brd-hover, var(--bit-NumberField-hover-border-color, #{$clr-brd-pri-hover}))", stylesheet);
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -54,12 +54,12 @@ public partial class BitNumberFieldStylesheetTests
                                          "--bit-nfl-stack-width", "--bit-nfl-btn-icon-size", "--bit-nfl-pad-x", "--bit-nfl-spn-size", "--bit-nfl-clr",
                                          "--bit-nfl-clr-focus", "--bit-nfl-clr-bg", "--bit-nfl-clr-brd", "--bit-nfl-clr-brd-hover" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
         // The arc of the spinner reads the Accent before its public variable, so the disabled field hands it the grey
         // of its slot instead - the state is read before the parameter, as everywhere else.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"), "--bit-nfl-spn-clr: currentcolor;");
+        Assert.Contains("--bit-nfl-spn-clr: currentcolor;", SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"));
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "NumberField", "BitNumberField.scss");

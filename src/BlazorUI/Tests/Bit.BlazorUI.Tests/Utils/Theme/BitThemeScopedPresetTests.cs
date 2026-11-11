@@ -81,9 +81,8 @@ public sealed class BitThemeScopedPresetTests
                 .OrderBy(n => n, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.IsTrue(rootNames.Length > 0, $"{file} declares no :root[bit-theme=…] palette selectors.");
-            CollectionAssert.AreEqual(rootNames, scopedNames,
-                $"{file}: every :root[bit-theme=\"X\"] selector must have a ':root [bit-theme=\"X\"]' descendant " +
+            Assert.IsNotEmpty(rootNames, $"{file} declares no :root[bit-theme=…] palette selectors.");
+            Assert.AreSequenceEqual(rootNames, scopedNames, $"{file}: every :root[bit-theme=\"X\"] selector must have a ':root [bit-theme=\"X\"]' descendant " +
                 $"twin (and vice versa) so the palette is scopeable to a subtree. Root: [{string.Join(", ", rootNames)}] " +
                 $"Scoped: [{string.Join(", ", scopedNames)}]");
         }
@@ -114,8 +113,7 @@ public sealed class BitThemeScopedPresetTests
 
         foreach (var preset in new[] { BitThemePresets.Light, BitThemePresets.Dark, BitThemePresets.Fluent, BitThemePresets.FluentLight, BitThemePresets.FluentDark })
         {
-            Assert.IsTrue(scopedNames.Contains(preset),
-                $"Preset '{preset}' has no ':root [bit-theme=\"{preset}\"]' scoped selector in the scheme-bearing palette files.");
+            Assert.Contains(preset, scopedNames, $"Preset '{preset}' has no ':root [bit-theme=\"{preset}\"]' scoped selector in the scheme-bearing palette files.");
         }
     }
 
@@ -138,9 +136,8 @@ public sealed class BitThemeScopedPresetTests
                 .OrderBy(n => n, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.IsTrue(rootNames.Length > 0, $"{file} declares no :root[bit-theme=…] preset selectors.");
-            CollectionAssert.AreEqual(rootNames, scopedNames,
-                $"{file}: every :root[bit-theme=\"X\"] selector must have a ':root [bit-theme=\"X\"]' descendant " +
+            Assert.IsNotEmpty(rootNames, $"{file} declares no :root[bit-theme=…] preset selectors.");
+            Assert.AreSequenceEqual(rootNames, scopedNames, $"{file}: every :root[bit-theme=\"X\"] selector must have a ':root [bit-theme=\"X\"]' descendant " +
                 $"twin (and vice versa) so the preset is scopeable to a subtree. Root: [{string.Join(", ", rootNames)}] " +
                 $"Scoped: [{string.Join(", ", scopedNames)}]");
         }
@@ -162,8 +159,7 @@ public sealed class BitThemeScopedPresetTests
             BitThemePresets.Cupertino, BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
         })
         {
-            Assert.IsTrue(scopedNames.Contains(preset),
-                $"Preset '{preset}' has no ':root [bit-theme=\"{preset}\"]' scoped selector in the Extras preset bundles.");
+            Assert.Contains(preset, scopedNames, $"Preset '{preset}' has no ':root [bit-theme=\"{preset}\"]' scoped selector in the Extras preset bundles.");
         }
     }
 
@@ -199,7 +195,7 @@ public sealed class BitThemeScopedPresetTests
         var scss = ReadStylesFile(Path.Combine("Fluent", "shapes.fluent.scss"));
 
         var declaration = scss.IndexOf("--bit-shd-focus-ring:", StringComparison.Ordinal);
-        Assert.IsTrue(declaration > 0, "shapes.fluent.scss no longer declares --bit-shd-focus-ring.");
+        Assert.IsGreaterThan(0, declaration, "shapes.fluent.scss no longer declares --bit-shd-focus-ring.");
 
         var block = scss[..declaration];
         var selector = block[(block.LastIndexOf('}') + 1)..];

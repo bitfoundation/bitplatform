@@ -24,10 +24,10 @@ public class BitPullToRefreshE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"ptr-basic\" class=\"bit-ptr\" role=\"group\">");
-        StringAssert.Contains(html, "<span role=\"status\" class=\"bit-ptr-vhd\"></span>");
-        StringAssert.Contains(html, "class=\"bit-ptr-spw\"");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("<div id=\"ptr-basic\" class=\"bit-ptr\" role=\"group\">", html);
+        Assert.Contains("<span role=\"status\" class=\"bit-ptr-vhd\"></span>", html);
+        Assert.Contains("class=\"bit-ptr-spw\"", html);
+        Assert.Contains("id=\"status\">Loading", html);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#ptr-basic")).ToHaveCSSAsync("position", "relative");
@@ -694,10 +694,10 @@ public class BitPullToRefreshE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var full = await TransitionMsAsync("#ptr-basic .bit-ptr-lod", "bit-ptr-rtn");
-        Assert.IsTrue(full >= 50, $"The strip does not animate without reduced motion ({full}ms).");
+        Assert.IsGreaterThanOrEqualTo(50, full, $"The strip does not animate without reduced motion ({full}ms).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
-        Assert.IsTrue(await TransitionMsAsync("#ptr-basic .bit-ptr-lod", "bit-ptr-rtn") < 1, "The strip still animates under reduced motion.");
+        Assert.IsLessThan(1, await TransitionMsAsync("#ptr-basic .bit-ptr-lod", "bit-ptr-rtn"), "The strip still animates under reduced motion.");
     }
 
     [TestMethod]

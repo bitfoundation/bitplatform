@@ -21,7 +21,7 @@ public class PromptTests
     public static async Task StartAsync(TestContext _)
     {
         _server = await McpTestServer.StartAsync();
-        _prompts = await _server.Mcp.ListPromptsAsync();
+        _prompts = await _server.Mcp.ListPromptsAsync(cancellationToken: _.CancellationToken);
     }
 
     [ClassCleanup]
@@ -31,7 +31,7 @@ public class PromptTests
     {
         var result = await _server.Mcp.GetPromptAsync(name, ToArguments(arguments));
 
-        Assert.IsTrue(result.Messages.Count > 0, name);
+        Assert.IsNotEmpty(result.Messages, name);
 
         return string.Join("\n", result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
     }
@@ -72,18 +72,19 @@ public class PromptTests
     {
         foreach (var prompt in _prompts)
         {
-            var result = await _server.Mcp.GetPromptAsync(prompt.Name, DefaultArgumentsFor(prompt));
+            var result = await _server.Mcp.GetPromptAsync(prompt.Name, DefaultArgumentsFor(prompt), cancellationToken: TestContext.CancellationToken);
 
-            Assert.IsTrue(result.Messages.Count > 0, prompt.Name);
+            Assert.IsNotEmpty(result.Messages, prompt.Name);
             Assert.IsTrue(result.Messages.All(message => message.Role == Role.User), prompt.Name);
-            Assert.IsTrue(result.Messages.All(message => (message.Content as TextContentBlock)?.Text.Length > 200), prompt.Name);
+            var actualValue = result.Messages.All(message => (message.Content as TextContentBlock)?.Text.Length > 200);
+            Assert.IsTrue(actualValue, prompt.Name);
         }
     }
 
     [TestMethod]
     public async Task EveryPrompt_NamesOnlyToolsThatExist()
     {
-        var tools = (await _server.Mcp.ListToolsAsync()).Select(tool => tool.Name).ToArray();
+        var tools = (await _server.Mcp.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(tool => tool.Name).ToArray();
 
         foreach (var prompt in _prompts)
         {
@@ -94,7 +95,7 @@ public class PromptTests
                          .Select(match => match.Groups["name"].Value)
                          .Distinct())
             {
-                CollectionAssert.Contains(tools, mentioned, $"'{prompt.Name}' tells the agent to call '{mentioned}', which is not a tool");
+                Assert.Contains(mentioned, tools, $"'{prompt.Name}' tells the agent to call '{mentioned}', which is not a tool");
             }
         }
     }
@@ -104,12 +105,12 @@ public class PromptTests
     {
         var text = await TextOfAsync("add-bswup-to-app", new { hostingModel = "unknown" });
 
-        StringAssert.Contains(text, "determine it from the project first");
-        StringAssert.Contains(text, "GetBswupSetupGuide");
-        StringAssert.Contains(text, "externalAssets", "the Blazor Web App trap has to be spelled out");
-        StringAssert.Contains(text, "autostart=\"false\"");
-        StringAssert.Contains(text, "InspectBswupServiceWorker");
-        StringAssert.Contains(text, "service-worker.published.js");
+        Assert.Contains("determine it from the project first", text);
+        Assert.Contains("GetBswupSetupGuide", text);
+        Assert.Contains("externalAssets", text, "the Blazor Web App trap has to be spelled out");
+        Assert.Contains("autostart=\"false\"", text);
+        Assert.Contains("InspectBswupServiceWorker", text);
+        Assert.Contains("service-worker.published.js", text);
     }
 
     [TestMethod]
@@ -117,7 +118,7 @@ public class PromptTests
     {
         var text = await TextOfAsync("add-bswup-to-app", new { hostingModel = "blazor-web-app" });
 
-        StringAssert.Contains(text, "blazor-web-app");
+        Assert.Contains("blazor-web-app", text);
     }
 
     [TestMethod]
@@ -127,7 +128,7 @@ public class PromptTests
         // still get a usable instruction.
         var text = await TextOfAsync("add-bswup-to-app");
 
-        StringAssert.Contains(text, "unknown");
+        Assert.Contains("unknown", text);
     }
 
     [TestMethod]
@@ -135,12 +136,12 @@ public class PromptTests
     {
         var text = await TextOfAsync("configure-bswup-caching", new { requirement = "cache the Google Fonts stylesheet too" });
 
-        StringAssert.Contains(text, "cache the Google Fonts stylesheet too", "the requirement is what the prompt is about");
-        StringAssert.Contains(text, "SearchBswup");
-        StringAssert.Contains(text, "GetBswupServiceWorkerSettings");
-        StringAssert.Contains(text, "InspectBswupServiceWorker");
-        StringAssert.Contains(text, "assetUrls", "the caching check rides on the same call as the review");
-        StringAssert.Contains(text, "ABOVE the `self.importScripts");
+        Assert.Contains("cache the Google Fonts stylesheet too", text, "the requirement is what the prompt is about");
+        Assert.Contains("SearchBswup", text);
+        Assert.Contains("GetBswupServiceWorkerSettings", text);
+        Assert.Contains("InspectBswupServiceWorker", text);
+        Assert.Contains("assetUrls", text, "the caching check rides on the same call as the review");
+        Assert.Contains("ABOVE the `self.importScripts", text);
     }
 
     [TestMethod]
@@ -148,13 +149,13 @@ public class PromptTests
     {
         var text = await TextOfAsync("debug-bswup", new { symptom = "the app never picks up new versions" });
 
-        StringAssert.Contains(text, "the app never picks up new versions");
-        StringAssert.Contains(text, "troubleshooting");
-        StringAssert.Contains(text, "after the `importScripts` line");
-        StringAssert.Contains(text, "only one of the");
-        StringAssert.Contains(text, "AutoReload=\"false\"", "it is behind most 'updates no longer apply themselves' reports - naming the opt-out value is the whole point");
-        StringAssert.Contains(text, "ShowOnUpdate=\"false\"", "it is behind most 'no progress is shown while an update downloads' reports");
-        StringAssert.Contains(text, "both default to `true`", "the prompt must not send the model looking for a default that changed");
+        Assert.Contains("the app never picks up new versions", text);
+        Assert.Contains("troubleshooting", text);
+        Assert.Contains("after the `importScripts` line", text);
+        Assert.Contains("only one of the", text);
+        Assert.Contains("AutoReload=\"false\"", text, "it is behind most 'updates no longer apply themselves' reports - naming the opt-out value is the whole point");
+        Assert.Contains("ShowOnUpdate=\"false\"", text, "it is behind most 'no progress is shown while an update downloads' reports");
+        Assert.Contains("both default to `true`", text, "the prompt must not send the model looking for a default that changed");
     }
 
     [TestMethod]
@@ -162,10 +163,10 @@ public class PromptTests
     {
         var text = await TextOfAsync("remove-bswup");
 
-        StringAssert.Contains(text, "Replace the CONTENT");
-        StringAssert.Contains(text, "Deleting the files instead is the classic mistake");
-        StringAssert.Contains(text, "forceRefresh");
-        StringAssert.Contains(text, "cleanup");
+        Assert.Contains("Replace the CONTENT", text);
+        Assert.Contains("Deleting the files instead is the classic mistake", text);
+        Assert.Contains("forceRefresh", text);
+        Assert.Contains("cleanup", text);
     }
 
     private static Dictionary<string, object?> DefaultArgumentsFor(McpClientPrompt prompt)
@@ -180,4 +181,6 @@ public class PromptTests
 
         return string.Join("\n", result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

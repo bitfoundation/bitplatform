@@ -59,7 +59,7 @@ public class BitPdfViewerParamsTests : BunitTestContext
     [TestMethod]
     public void BitPdfViewerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitPdfViewer", BitPdfViewerParams.ParamName);
+        Assert.AreEqual("BitParams.BitPdfViewer", new BitPdfViewerParams().Name);
         Assert.AreEqual(BitPdfViewerParams.ParamName, new BitPdfViewerParams().Name);
     }
 
@@ -74,7 +74,7 @@ public class BitPdfViewerParamsTests : BunitTestContext
                                              .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                              .ToArray();
 
-        Assert.IsTrue(parameters.Length > 20, "The reflection found too few parameters to be trusted.");
+        Assert.IsGreaterThan(20, parameters.Length, "The reflection found too few parameters to be trusted.");
 
         foreach (var name in parameters)
         {
@@ -92,8 +92,9 @@ public class BitPdfViewerParamsTests : BunitTestContext
         foreach (var name in own)
         {
             var target = typeof(BitPdfViewer).GetProperty(name);
+            var actualValue = target?.GetCustomAttribute<ParameterAttribute>();
 
-            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitPdfViewer has no {name} parameter.");
+            Assert.IsNotNull(actualValue, $"BitPdfViewer has no {name} parameter.");
             Assert.IsFalse(_notCascaded.Contains(name), $"{name} belongs to a single viewer and must not be cascaded.");
         }
     }
@@ -117,21 +118,21 @@ public class BitPdfViewerParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-PdfViewer-height:20rem");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-PdfViewer-width:30rem");
+        Assert.Contains("--bit-PdfViewer-height:20rem", root.GetAttribute("style")!);
+        Assert.Contains("--bit-PdfViewer-width:30rem", root.GetAttribute("style")!);
 
         var toolbar = component.Find(".bit-pdv-toolbar");
 
         Assert.IsTrue(toolbar.ClassList.Contains("cascaded-toolbar"));
-        StringAssert.Contains(toolbar.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", toolbar.GetAttribute("style")!);
         Assert.AreEqual("PDF-Werkzeugleiste", toolbar.GetAttribute("aria-label"));
 
         // Only the two groups asked for: no find, no print, no download.
-        Assert.AreEqual(0, component.FindAll("button[aria-label='Find in document']").Count);
-        Assert.AreEqual(0, component.FindAll("button[aria-label='Print document']").Count);
-        Assert.AreEqual(1, component.FindAll("button[aria-label='Zoom in']").Count);
+        Assert.IsEmpty(component.FindAll("button[aria-label='Find in document']"));
+        Assert.IsEmpty(component.FindAll("button[aria-label='Print document']"));
+        Assert.ContainsSingle(component.FindAll("button[aria-label='Zoom in']"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-toolbar .custom-end").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-toolbar .custom-end"));
         Assert.AreEqual("Dokument", component.Find(".bit-pdv-surface").GetAttribute("aria-label"));
     }
 
@@ -153,8 +154,8 @@ public class BitPdfViewerParamsTests : BunitTestContext
 
         Assert.AreEqual(BitPdfScrollMode.Wrapped, viewer.Instance.CurrentScrollMode);
         Assert.AreEqual(BitPdfCursorTool.Pan, viewer.Instance.CurrentCursorTool);
-        Assert.AreEqual(1, viewer.FindAll(".bit-pdv-pages.bit-pdv-w").Count);
-        Assert.AreEqual(1, viewer.FindAll(".bit-pdv-surface.bit-pdv-pan").Count);
+        Assert.ContainsSingle(viewer.FindAll(".bit-pdv-pages.bit-pdv-w"));
+        Assert.ContainsSingle(viewer.FindAll(".bit-pdv-surface.bit-pdv-pan"));
     }
 
     [TestMethod]
@@ -172,8 +173,8 @@ public class BitPdfViewerParamsTests : BunitTestContext
             builder.AddAttribute(3, nameof(BitPdfViewer.AriaLabel), "Own");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-toolbar").Count);
-        StringAssert.Contains(component.Find(".bit-pdv").GetAttribute("style"), "--bit-PdfViewer-height:5rem");
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-toolbar"));
+        Assert.Contains("--bit-PdfViewer-height:5rem", component.Find(".bit-pdv").GetAttribute("style")!);
         Assert.AreEqual("Own", component.Find(".bit-pdv-surface").GetAttribute("aria-label"));
     }
 
@@ -188,12 +189,12 @@ public class BitPdfViewerParamsTests : BunitTestContext
             parameters.AddChildContent<BitPdfViewer>();
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-toolbar").Count);
-        StringAssert.Contains(component.Find(".bit-pdv").GetAttribute("style"), "--bit-PdfViewer-height:20rem");
+        Assert.IsEmpty(component.FindAll(".bit-pdv-toolbar"));
+        Assert.Contains("--bit-PdfViewer-height:20rem", component.Find(".bit-pdv").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>()));
 
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-toolbar").Count);
-        Assert.IsFalse((component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty).Contains("--bit-PdfViewer-height"));
+        Assert.ContainsSingle(component.FindAll(".bit-pdv-toolbar"));
+        Assert.DoesNotContain("--bit-PdfViewer-height", (component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty));
     }
 }

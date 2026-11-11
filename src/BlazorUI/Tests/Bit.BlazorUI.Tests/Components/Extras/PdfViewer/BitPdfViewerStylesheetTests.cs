@@ -20,11 +20,11 @@ public partial class BitPdfViewerStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(39, documented.Length, "The stylesheet does not document the thirty-nine public variables.");
+        Assert.HasCount(39, documented, "The stylesheet does not document the thirty-nine public variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitPdfViewerStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -57,11 +57,10 @@ public partial class BitPdfViewerStylesheetTests
 
         foreach (var name in DocumentedVariables(ReadStylesheet()))
         {
-            StringAssert.Contains(demo, $"Name = \"{name}\"", $"{name} is missing from the demo page's CSS variables table.");
+            Assert.Contains($"Name = \"{name}\"", demo, $"{name} is missing from the demo page's CSS variables table.");
         }
 
-        Assert.AreEqual(DocumentedVariables(ReadStylesheet()).Length, DemoVariable().Matches(demo).Count,
-                        "The demo page lists a CSS variable the stylesheet does not document.");
+        Assert.HasCount(DocumentedVariables(ReadStylesheet()).Length, DemoVariable().Matches(demo), "The demo page lists a CSS variable the stylesheet does not document.");
     }
 
     [TestMethod]
@@ -69,21 +68,21 @@ public partial class BitPdfViewerStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "$pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(stylesheet, "$pdv-focus-ring: focus-ring-color($pdv-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-btn {"), "@include focus-ring-own($pdv-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-opt {"), "@include focus-ring-own($pdv-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-thumb {"), "@include focus-ring-own($pdv-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-dialog-btn {"), "@include focus-ring-own($pdv-focus-ring);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-search-input,"), "@include focus-ring($pdv-focus, 0);");
+        Assert.Contains("$pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});", stylesheet);
+        Assert.Contains("$pdv-focus-ring: focus-ring-color($pdv-focus);", stylesheet);
+        Assert.Contains("@include focus-ring-own($pdv-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-btn {"));
+        Assert.Contains("@include focus-ring-own($pdv-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-opt {"));
+        Assert.Contains("@include focus-ring-own($pdv-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-thumb {"));
+        Assert.Contains("@include focus-ring-own($pdv-focus-ring);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-dialog-btn {"));
+        Assert.Contains("@include focus-ring($pdv-focus, 0);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-search-input,"));
 
         // The parts that fill (or sit in) a scroll container draw their ring inside, where it cannot be clipped.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-surface {"), "@include pdv-inset-ring;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-outline-node {"), "@include pdv-inset-ring;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-attachment {"), "@include pdv-inset-ring;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-layer {"), "@include pdv-inset-ring;");
+        Assert.Contains("@include pdv-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-surface {"));
+        Assert.Contains("@include pdv-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-outline-node {"));
+        Assert.Contains("@include pdv-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-attachment {"));
+        Assert.Contains("@include pdv-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-layer {"));
         // A link of the document is transparent, and the page clips anything drawn outside it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-page .bit-pdv-html-page a:focus-visible {"), "@include pdv-inset-ring;");
+        Assert.Contains("@include pdv-inset-ring;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-page .bit-pdv-html-page a:focus-visible {"));
     }
 
     [TestMethod]
@@ -92,11 +91,11 @@ public partial class BitPdfViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var bar = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-progress-bar.bit-pdv-det {");
-        StringAssert.Contains(bar, "animation: none;");
-        StringAssert.Contains(bar, "transform-origin: left center;");
+        Assert.Contains("animation: none;", bar);
+        Assert.Contains("transform-origin: left center;", bar);
         // Mirroring the track, rather than the determinate bar's origin alone, turns the indeterminate sweep too - in the
         // direction the track is laid out in, whatever made it right to left.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-progress:is(:dir(rtl), .bit-pdv.bit-rtl > *) {"), "transform: scaleX(-1);");
+        Assert.Contains("transform: scaleX(-1);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-progress:is(:dir(rtl), .bit-pdv.bit-rtl > *) {"));
     }
 
     [TestMethod]
@@ -104,7 +103,7 @@ public partial class BitPdfViewerStylesheetTests
     {
         // Page navigation and the zoom pair step through numbers, which read left to right in either direction:
         // previous and zoom out on the left, next and zoom in on the right.
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pdv-ltr {"), "direction: ltr;");
+        Assert.Contains("direction: ltr;", SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pdv-ltr {"));
     }
 
     [TestMethod]
@@ -113,10 +112,10 @@ public partial class BitPdfViewerStylesheetTests
         var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
         // The page is a picture of the document: its invisible selection layer must stay invisible.
-        StringAssert.Contains(forced, ".bit-pdv-page,");
-        StringAssert.Contains(forced, "forced-color-adjust: none;");
-        StringAssert.Contains(forced, "background: Highlight;");
-        StringAssert.Contains(forced, "color: GrayText;");
+        Assert.Contains(".bit-pdv-page,", forced);
+        Assert.Contains("forced-color-adjust: none;", forced);
+        Assert.Contains("background: Highlight;", forced);
+        Assert.Contains("color: GrayText;", forced);
     }
 
     [TestMethod]
@@ -124,12 +123,12 @@ public partial class BitPdfViewerStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "::highlight(bit-pdv-search) {");
-        StringAssert.Contains(stylesheet, "::highlight(bit-pdv-search-current) {");
+        Assert.Contains("::highlight(bit-pdv-search) {", stylesheet);
+        Assert.Contains("::highlight(bit-pdv-search-current) {", stylesheet);
 
         // The script no longer injects a stylesheet of its own, which no variable could have reached.
         var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "PdfViewer", "BitPdfViewer.ts");
-        Assert.IsFalse(script.Contains("::highlight("), "The script still injects the highlight colors.");
+        Assert.DoesNotContain("::highlight(", script, "The script still injects the highlight colors.");
     }
 
     [TestMethod]
@@ -138,10 +137,10 @@ public partial class BitPdfViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The size parameters set the variables, so the fullscreen rule wins without !important.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv {"), "height: var(--bit-PdfViewer-height, ");
+        Assert.Contains("height: var(--bit-PdfViewer-height, ", SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv {"));
         var fullscreen = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv:fullscreen {");
-        StringAssert.Contains(fullscreen, "height: 100%;");
-        Assert.IsFalse(fullscreen.Contains("!important"), "The fullscreen height still needs !important.");
+        Assert.Contains("height: 100%;", fullscreen);
+        Assert.DoesNotContain("!important", fullscreen, "The fullscreen height still needs !important.");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

@@ -28,7 +28,7 @@ public class PromptAndResourceTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        CollectionAssert.AreEquivalent(_prompts, prompts.Select(p => p.Name).ToArray());
+        Assert.AreSequenceEqual(_prompts, prompts.Select(p => p.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -57,7 +57,7 @@ public class PromptAndResourceTests : McpTestBase
 
             Assert.IsGreaterThan(300, text.Length, $"The '{name}' prompt is too short to be a workflow.");
 
-            Assert.IsTrue(ToolNames.Any(tool => text.Contains(tool, StringComparison.Ordinal)),
+            Assert.Contains(tool => text.Contains(tool, StringComparison.Ordinal), ToolNames,
                 $"The '{name}' prompt names none of this server's tools, so it cannot be telling an agent what order to call them in.");
 
             // The standing rules live in the server's instructions, which the client has had in
@@ -75,7 +75,7 @@ public class PromptAndResourceTests : McpTestBase
 
         var text = string.Join("\n", result.Messages.Select(m => m.Content).OfType<TextContentBlock>().Select(b => b.Text));
 
-        StringAssert.Contains(text, "a product list with filters");
+        Assert.Contains("a product list with filters", text);
     }
 
     [TestMethod]
@@ -86,17 +86,16 @@ public class PromptAndResourceTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        CollectionAssert.AreEquivalent(new[] { "bitblazorui://components", "bitblazorui://theming" },
-            resources.Select(r => r.Uri).ToArray());
+        Assert.AreSequenceEqual(new[] { "bitblazorui://components", "bitblazorui://theming" }, resources.Select(r => r.Uri).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
-        CollectionAssert.AreEquivalent(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "bitblazorui://components/{name}",
             "bitblazorui://components/{name}/examples",
             "bitblazorui://types/{typeName}",
             "bitblazorui://setup/{hostingModel}",
             "bitblazorui://theming/{section}"
-        }, templates.Select(t => t.UriTemplate).ToArray());
+        }, templates.Select(t => t.UriTemplate).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var resource in resources)
         {
@@ -109,8 +108,8 @@ public class PromptAndResourceTests : McpTestBase
         var read = await Mcp.ReadResourceAsync("bitblazorui://components/BitButton", cancellationToken: Ct);
         var text = string.Join("\n", read.Contents.OfType<TextResourceContents>().Select(c => c.Text));
 
-        StringAssert.StartsWith(text, "# BitButton");
-        StringAssert.Contains(text, "AllowDisabledFocus");
+        Assert.StartsWith("# BitButton", text);
+        Assert.Contains("AllowDisabledFocus", text);
     }
 
     [TestMethod]
@@ -122,8 +121,7 @@ public class PromptAndResourceTests : McpTestBase
     {
         var completion = await Mcp.CompleteAsync(new ResourceTemplateReference { Uri = template }, argument, typed, cancellationToken: Ct);
 
-        CollectionAssert.Contains(completion.Completion.Values.ToArray(), expected,
-            $"Completing '{argument}' of {template} with '{typed}' did not offer {expected}.");
+        Assert.Contains(expected, completion.Completion.Values.ToArray(), $"Completing '{argument}' of {template} with '{typed}' did not offer {expected}.");
     }
 
     [TestMethod]
@@ -139,7 +137,7 @@ public class PromptAndResourceTests : McpTestBase
         // with nothing to type it from.
         foreach (var model in new[] { "web-app", "wasm", "server", "hybrid", "unknown" })
         {
-            CollectionAssert.Contains(values, model);
+            Assert.Contains(model, values);
         }
     }
 }

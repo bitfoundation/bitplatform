@@ -22,7 +22,7 @@ public class BitAiCollapsibleTests : BitAiTestBase
 
         Assert.AreEqual("button", header.GetAttribute("type"));
         Assert.AreEqual("true", header.GetAttribute("aria-expanded"));
-        StringAssert.Contains(header.TextContent, "Reasoning");
+        Assert.Contains("Reasoning", header.TextContent);
         Assert.AreEqual("steps", panel.Find($"[id='{header.GetAttribute("aria-controls")}'] .body").TextContent);
     }
 
@@ -34,12 +34,12 @@ public class BitAiCollapsibleTests : BitAiTestBase
             .AddChildContent("<p class='body'>steps</p>"));
 
         Assert.AreEqual("false", panel.Find("button").GetAttribute("aria-expanded"));
-        Assert.AreEqual(0, panel.FindAll(".body").Count);
+        Assert.IsEmpty(panel.FindAll(".body"));
 
         panel.Find("button").Click();
 
         Assert.AreEqual("true", panel.Find("button").GetAttribute("aria-expanded"));
-        Assert.AreEqual(1, panel.FindAll(".body").Count);
+        Assert.ContainsSingle(panel.FindAll(".body"));
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class BitAiCollapsibleTests : BitAiTestBase
         panel.Find("button").Click();
         panel.Find("button").Click();
 
-        CollectionAssert.AreEqual(new[] { true, false }, reported);
+        Assert.AreSequenceEqual(new[] { true, false }, reported);
         Assert.IsFalse(panel.Instance.Open);
     }
 
@@ -68,10 +68,10 @@ public class BitAiCollapsibleTests : BitAiTestBase
         var header = panel.Find("button");
 
         Assert.IsNotNull(header.QuerySelector(".custom-header"));
-        Assert.IsFalse(header.TextContent.Contains("Ignored"));
+        Assert.DoesNotContain("Ignored", header.TextContent);
         // Outside the button, so it is not read as part of the name of the toggle.
         Assert.IsNull(header.QuerySelector(".chip"));
-        Assert.AreEqual(1, panel.FindAll(".chip").Count);
+        Assert.ContainsSingle(panel.FindAll(".chip"));
     }
 
     [TestMethod]
@@ -103,8 +103,8 @@ public class BitAiCollapsibleTests : BitAiTestBase
         Assert.AreEqual("panel", root.Id);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding: 2px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
+        Assert.Contains("padding: 2px", root.GetAttribute("style")!);
         Assert.IsTrue(panel.Find(".bit-acd").ClassList.Contains("accordion-class"));
     }
 
@@ -139,14 +139,14 @@ public class BitAiCollapsibleTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
     [TestMethod]
     public void BitAiCollapsibleParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiCollapsible", BitAiCollapsibleParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiCollapsible", new BitAiCollapsibleParams().Name);
         Assert.AreEqual(BitAiCollapsibleParams.ParamName, new BitAiCollapsibleParams().Name);
     }
 
@@ -172,7 +172,7 @@ public class BitAiCollapsibleTests : BitAiTestBase
                                                  .Where(n => baseParameters.Contains(n) is false && notCascaded.Contains(n) is false)
                                                  .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {

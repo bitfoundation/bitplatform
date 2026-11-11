@@ -7,16 +7,7 @@
 
 namespace Boilerplate.Tests.Infrastructure.Services;
 
-/// <summary>
-/// In UI tests, browser will uses its own storage, but for api tests, we need to fake the storage.
-/// <para>
-/// It models the two stores the shipped implementations have, because <c>AuthManager.StoreTokens</c> asks
-/// <see cref="IsPersistent"/> which of them a key is in and decides "remember me" from the answer. A single-store fake
-/// that hard-coded <c>IsPersistent =&gt; false</c> made that line a constant under test, so no test could reach the
-/// contract the shipped clients have to honour.
-/// </para>
-/// </summary>
-public partial class TestStorageService : IStorageService
+internal partial class TestStorageService : IStorageService
 {
     private readonly Dictionary<string, string?> tempStorage = [];
     private readonly Dictionary<string, string?> persistentStorage = [];

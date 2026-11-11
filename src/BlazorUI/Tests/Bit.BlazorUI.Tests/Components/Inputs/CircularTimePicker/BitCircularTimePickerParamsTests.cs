@@ -61,8 +61,8 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitCircularTimePickerParamsShouldHaveTheCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCircularTimePicker)}", BitCircularTimePickerParams.ParamName);
-        Assert.AreEqual("BitParams.BitCircularTimePicker", BitCircularTimePickerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCircularTimePicker)}", new BitCircularTimePickerParams().Name);
+        Assert.AreEqual("BitParams.BitCircularTimePicker", new BitCircularTimePickerParams().Name);
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
                                                    .Where(n => typeof(BitCircularTimePickerParams).GetProperty(n) is null)
                                                    .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"{nameof(BitCircularTimePickerParams)} is missing: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"{nameof(BitCircularTimePickerParams)} is missing: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-ctp-suc"));
         Assert.IsTrue(root.ClassList.Contains("bit-ctp-und"));
         Assert.IsTrue(root.ClassList.Contains("bit-ctp-nbd"));
-        Assert.AreEqual(2, component.FindAll(".bit-ctp-abn").Count);
+        Assert.HasCount(2, component.FindAll(".bit-ctp-abn"));
         Assert.AreEqual("Cascaded label", component.Find(".bit-ctp-inp").GetAttribute("aria-label"));
 
         // The callout is a sibling of the root, so it carries the cascaded accent and size itself.
@@ -150,7 +150,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
 
         // What the markup left alone still comes from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-ctp-sta"));
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-abn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-abn"));
     }
 
     [TestMethod]
@@ -179,7 +179,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         var picker = component.FindComponent<BitCircularTimePicker>().Instance;
         Assert.AreEqual("Own label", picker.Label);
         Assert.IsNotNull(picker.LabelTemplate);
-        Assert.AreEqual(1, component.FindAll(".cascaded-template").Count);
+        Assert.ContainsSingle(component.FindAll(".cascaded-template"));
     }
 
     [TestMethod]
@@ -420,7 +420,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains("custom-root"));
-        Assert.IsTrue(component.Find(".bit-ctp").GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", component.Find(".bit-ctp").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-ctp-inp").ClassList.Contains("custom-input"));
         Assert.AreEqual("padding: 1px;", component.Find(".bit-ctp-inp").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-ctp-cal").ClassList.Contains("custom-callout"));
@@ -445,7 +445,7 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
 
         // The disabled state and the direction a cascade hands down reach the field and the callout the same way
@@ -467,8 +467,8 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-ctp-pri"));
         Assert.IsFalse(root.ClassList.Contains("bit-ctp-md"));
         Assert.IsFalse(root.ClassList.Contains("bit-ctp-sta"));
-        Assert.AreEqual(1, component.FindAll(".bit-ctp-inp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ctp-abn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ctp-inp"));
+        Assert.IsEmpty(component.FindAll(".bit-ctp-abn"));
         Assert.AreEqual(BitCircularTimePickerView.Hour, component.FindComponent<BitCircularTimePicker>().Instance.View);
     }
 }

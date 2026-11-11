@@ -68,7 +68,7 @@ public sealed class EngineTests : BsqliteTest
     {
         var (version, build) = await OpenHostAsync(Page, new HostOptions { DatabaseName = "async.db", RequiredBuild = "asyncCapable" });
 
-        CollectionAssert.Contains(new[] { "jspi", "asyncify" }, build);
+        Assert.Contains(build, new[] { "jspi", "asyncify" });
         Assert.AreEqual("3.53.0", version);
 
         AssertJson.AreEqual("[[42]]", (await QueryAsync(Page, "SELECT 6 * 7")).Rows);

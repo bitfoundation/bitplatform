@@ -12,7 +12,7 @@ namespace Bit.Butil.Tests.Mcp.Infrastructure;
 /// proves the promise instead of assuming it.
 /// </para>
 /// </summary>
-public sealed partial record ToolCallReference(string Tool, string Argument, string Value)
+internal sealed partial record ToolCallReference(string Tool, string Argument, string Value)
 {
     public static ToolCallReference? Parse(string? text)
     {

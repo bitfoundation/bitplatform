@@ -76,8 +76,8 @@ public class BdndTrimmingTests
             .Distinct()];
 
         // the scan tells the two apart
-        Assert.IsTrue(calls.Any(c => c.PassesArguments && Owner(c.Caller) == typeof(BdndInterop)), "the calls BdndInterop makes pass arguments");
-        Assert.IsTrue(calls.Any(c => c.PassesArguments is false && Owner(c.Caller) == typeof(BdndDraggable<>)), "a draggable's getDragStartRect passes none");
+        Assert.Contains(c => c.PassesArguments && Owner(c.Caller) == typeof(BdndInterop), calls, "the calls BdndInterop makes pass arguments");
+        Assert.Contains(c => c.PassesArguments is false && Owner(c.Caller) == typeof(BdndDraggable<>), calls, "a draggable's getDragStartRect passes none");
         Assert.IsEmpty(unseen, "pass the arguments through a BdndInterop method whose parameters name their types: " + string.Join(", ", unseen));
     }
 
@@ -88,10 +88,10 @@ public class BdndTrimmingTests
         // the roots themselves: through GetBdndInterop, on their way to the interop.
         var calls = Calls().ToList();
 
-        Assert.IsTrue(calls.Any(c => c.Caller.Name == nameof(BitBdnd.GetBdndInterop) && c.Callee.Name == "PreserveInteropContracts"),
+        Assert.Contains(c => c.Caller.Name == nameof(BitBdnd.GetBdndInterop) && c.Callee.Name == "PreserveInteropContracts", calls,
             "GetBdndInterop calls PreserveInteropContracts");
         foreach (var component in new[] { typeof(BdndDraggable<>), typeof(BdndDropTarget<>) })
-            Assert.IsTrue(calls.Any(c => Owner(c.Caller) == component && c.Callee.Name == nameof(BitBdnd.GetBdndInterop)),
+            Assert.Contains(c => Owner(c.Caller) == component && c.Callee.Name == nameof(BitBdnd.GetBdndInterop), calls,
                 $"{component.Name} takes its interop from GetBdndInterop");
     }
 

@@ -69,8 +69,8 @@ public class PlaybackRateOffloadTests
 
         // The browser is told each time - the element's compositor animations play on its clock.
         var calls = interop.ArgsOf("setWaapiPlaybackRate");
-        CollectionAssert.AreEqual(new object?[] { "el", 0.0 }, calls[0]);
-        CollectionAssert.AreEqual(new object?[] { "el", 2.0 }, calls[1]);
+        Assert.AreSequenceEqual(new object?[] { "el", 0.0 }, calls[0]);
+        Assert.AreSequenceEqual(new object?[] { "el", 2.0 }, calls[1]);
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class PlaybackRateOffloadTests
 
         // A compositor animation would run at realtime regardless of the pause.
         Assert.IsFalse(interop.WasCalled("playWaapiAnimation"));
-        CollectionAssert.Contains(State(engine).ActiveProperties.ToArray(), "opacity");
+        Assert.Contains("opacity", State(engine).ActiveProperties.ToArray());
         for (double t = 0; t <= 1000; t += 16) engine.ComputeFrame(t);
         Assert.AreEqual(0, State(engine).NumericValues["opacity"], 1e-9, "paused: it holds");
 
@@ -139,7 +139,7 @@ public class PlaybackRateOffloadTests
 
         // A compositor animation has no frames to report; the frame loop reports every one.
         Assert.IsFalse(interop.WasCalled("playWaapiAnimation"));
-        Assert.IsTrue(frames.Distinct().Count() >= 5, $"expected per-frame reports: {string.Join(", ", frames)}");
+        Assert.IsGreaterThanOrEqualTo(5, frames.Distinct().Count(), $"expected per-frame reports: {string.Join(", ", frames)}");
         Assert.AreEqual("1", frames[^1]);
     }
 
@@ -169,6 +169,6 @@ public class PlaybackRateOffloadTests
             .Add(p => p.ChildContent, (RenderFragment)(b => { b.OpenElement(0, "div"); b.CloseElement(); })));
 
         Assert.IsFalse(ctx.Interop.WasCalled("playWaapiAnimation"));
-        CollectionAssert.Contains(ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray(), "opacity");
+        Assert.Contains("opacity", ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray());
     }
 }

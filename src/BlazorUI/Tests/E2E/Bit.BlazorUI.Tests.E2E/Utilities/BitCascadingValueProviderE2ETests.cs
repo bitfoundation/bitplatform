@@ -21,9 +21,9 @@ public class BitCascadingValueProviderE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<span id=\"basic-theme\">Light</span>");
-        StringAssert.Contains(html, "<span id=\"basic-user\">Yaser Moradi (CEO)</span>");
-        StringAssert.Contains(html, "id=\"status\">Loading");
+        Assert.Contains("<span id=\"basic-theme\">Light</span>", html);
+        Assert.Contains("<span id=\"basic-user\">Yaser Moradi (CEO)</span>", html);
+        Assert.Contains("id=\"status\">Loading", html);
     }
 
     [TestMethod]

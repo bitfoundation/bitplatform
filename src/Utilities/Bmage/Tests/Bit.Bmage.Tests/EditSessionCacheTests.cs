@@ -64,19 +64,19 @@ public sealed class EditSessionCacheTests
         using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 120 });
         session.AddOperation(new BlurFilter(2f));
         session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 80, 40) });
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
 
         for (var step = 1; step <= 5; step++)
         {
             var shape = new LineAnnotation { Start = new Vector2(5, 5), End = new Vector2(20 * step, 15 * step) };
-            var preview = await session.RenderPreviewAsync(d => d.AddAnnotation(shape));
+            var preview = await session.RenderPreviewAsync(d => d.AddAnnotation(shape), TestContext.CancellationToken);
             using var expected = await FreshRender(source, session.Document.AddAnnotation(shape), 120);
             FastPathEquivalenceTests.AssertSamePixels(expected, preview, $"overlay step {step}");
         }
 
         // A redaction is drawn below everything else, so it cannot simply go on top of the kept preview.
         var redaction = new RedactionAnnotation { Rectangle = new RectangleF(0, 0, 60, 60) };
-        var redacted = await session.RenderPreviewAsync(d => d.AddAnnotation(redaction));
+        var redacted = await session.RenderPreviewAsync(d => d.AddAnnotation(redaction), TestContext.CancellationToken);
         using var expectedRedaction = await FreshRender(source, session.Document.AddAnnotation(redaction), 120);
         FastPathEquivalenceTests.AssertSamePixels(expectedRedaction, redacted, "redaction overlay");
     }
@@ -89,22 +89,22 @@ public sealed class EditSessionCacheTests
         var counting = new CountingOperation();
         session.AddOperation(counting);
         session.AddOperation(new BrightnessAdjustment(0.1f));
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, counting.Applied);
 
         for (var i = 1; i <= 5; i++)
         {
             session.ApplyTransient(d => d.ReplaceOperation(1, new BrightnessAdjustment(0.05f * i)));
-            await session.RenderPreviewAsync();
+            await session.RenderPreviewAsync(TestContext.CancellationToken);
         }
         session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(10, 10, 50, 50) });
-        await session.RenderPreviewAsync();
-        await session.RenderPreviewAsync(d => d.AddAnnotation(new LineAnnotation { Start = Vector2.Zero, End = new Vector2(40, 40) }));
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
+        await session.RenderPreviewAsync(d => d.AddAnnotation(new LineAnnotation { Start = Vector2.Zero, End = new Vector2(40, 40) }), TestContext.CancellationToken);
         Assert.AreEqual(1, counting.Applied, "the barrier's output is reused");
 
         var replacement = new CountingOperation();
         session.ApplyTransient(d => d.ReplaceOperation(0, replacement));
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, counting.Applied, "a different operation is not the cached one");
         Assert.AreEqual(1, replacement.Applied, "the replacement runs instead");
     }
@@ -116,17 +116,17 @@ public sealed class EditSessionCacheTests
         using var session = new ImageEditSession(source.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 100 });
         var counting = new CountingOperation();
         session.AddOperation(counting);
-        var first = await session.RenderPreviewAsync();
-        Assert.AreSame(first, await session.RenderPreviewAsync(), "an unchanged document is not rendered again");
+        var first = await session.RenderPreviewAsync(TestContext.CancellationToken);
+        Assert.AreSame(first, await session.RenderPreviewAsync(TestContext.CancellationToken), "an unchanged document is not rendered again");
         Assert.AreEqual(1, counting.Applied);
 
         // Something outside the document, such as a font, changed what it renders to.
         session.Invalidate();
         Assert.IsTrue(session.IsPreviewStale);
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(2, counting.Applied, "nothing from before the invalidation is reused");
         Assert.IsFalse(session.IsPreviewStale);
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(2, counting.Applied, "the render after it is reused again");
     }
 
@@ -138,12 +138,12 @@ public sealed class EditSessionCacheTests
         using var session = new ImageEditSession(first.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 60 });
         var blur = new BlurFilter(2f);
         session.AddOperation(blur);
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
 
         // The same operation instance on another image must not hit the cache of the first.
         session.ReplaceSource(second.Clone());
         session.AddOperation(blur);
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         using var expected = await FreshRender(second, session.Document, 60);
         FastPathEquivalenceTests.AssertSamePixels(expected, preview, "after ReplaceSource");
     }
@@ -174,4 +174,6 @@ public sealed class EditSessionCacheTests
             return GetMutableCopy(source, context);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

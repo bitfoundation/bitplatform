@@ -213,8 +213,8 @@ public class HttpClientProxySourceGeneratorTests
         Assert.AreEqual(HttpMethod.Post, request.Method);
         Assert.AreEqual(Url("api/v1/Product/Create"), request.Uri!.AbsoluteUri);
         Assert.AreEqual("application/json", request.ContentType);
-        StringAssert.Contains(request.Content, "\"name\":\"Phone\"");
-        StringAssert.Contains(request.Content, "\"price\":12.5");
+        Assert.Contains("\"name\":\"Phone\"", request.Content!);
+        Assert.Contains("\"price\":12.5", request.Content);
         Assert.AreEqual("ProductDto", ((Type)request.Options["RequestType"]!).Name);
         Assert.AreEqual("ProductDto", ((Type)request.Options["ResponseType"]!).Name);
     }
@@ -262,7 +262,7 @@ public class HttpClientProxySourceGeneratorTests
 
         Assert.AreEqual(HttpMethod.Post, proxy.Request.Method);
         Assert.AreEqual(Url("api/v1/Identity/SendOtp/?returnUrl=%2Fsettings"), proxy.Request.Uri!.AbsoluteUri);
-        StringAssert.Contains(proxy.Request.Content, "\"email\":\"a@b.c\"");
+        Assert.Contains("\"email\":\"a@b.c\"", proxy.Request.Content!);
     }
 
     [TestMethod]
@@ -600,7 +600,7 @@ public class HttpClientProxySourceGeneratorTests
         Assert.AreEqual("HEAD, OPTIONS, POST, PATCH", string.Join(", ", proxy.Requests.Select(r => r.Method)));
         Assert.AreEqual(Url("api/verbs/post/5"), proxy.Requests[2].Uri!.AbsoluteUri);
         Assert.IsNull(proxy.Requests[2].Content);
-        StringAssert.Contains(proxy.Requests[3].Content, "\"name\":\"n\"");
+        Assert.Contains("\"name\":\"n\"", proxy.Requests[3].Content!);
     }
 
     [TestMethod]
@@ -731,7 +731,7 @@ public class HttpClientProxySourceGeneratorTests
             """);
 
         Assert.AreEqual(Url("api/Keyword/Find/a/?event=2"), proxy.Requests[0].Uri!.AbsoluteUri);
-        StringAssert.Contains(proxy.Requests[1].Content, "\"name\":\"k\"");
+        Assert.Contains("\"name\":\"k\"", proxy.Requests[1].Content!);
     }
 
     [TestMethod]
@@ -797,7 +797,7 @@ public class HttpClientProxySourceGeneratorTests
         Assert.AreEqual(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.AreEqual("\"{id\"", run.TextAt(diagnostic));
         Assert.IsEmpty(run.CompilationDiagnostics, run.Describe("The compilation has errors or warnings", run.CompilationDiagnostics));
-        StringAssert.Contains(run.Source("HttpClientProxy"), "IFineController");
+        Assert.Contains("IFineController", run.Source("HttpClientProxy"));
     }
 
     [TestMethod]
@@ -821,7 +821,7 @@ public class HttpClientProxySourceGeneratorTests
             """);
 
         Assert.IsNull(run.Result.Exception, run.Result.Exception?.ToString());
-        StringAssert.Contains(run.Source("HttpClientProxy"), "IFineController");
+        Assert.Contains("IFineController", run.Source("HttpClientProxy"));
     }
 
     [TestMethod]
@@ -841,8 +841,8 @@ public class HttpClientProxySourceGeneratorTests
         var named = Generate(controller, new Dictionary<string, string> { ["build_property.BitHttpClientProxyName"] = " Access " }).AssertSucceeded();
         var invalid = Generate(controller, new Dictionary<string, string> { ["build_property.BitHttpClientProxyName"] = "1st" });
 
-        StringAssert.Contains(named.Source("HttpClientProxy"), "public static class AccessHttpClientServiceCollectionExtensions");
-        StringAssert.Contains(named.Source("HttpClientProxy"), "public static void AddAccessTypedHttpClients(");
+        Assert.Contains("public static class AccessHttpClientServiceCollectionExtensions", named.Source("HttpClientProxy"));
+        Assert.Contains("public static void AddAccessTypedHttpClients(", named.Source("HttpClientProxy"));
         Assert.AreEqual("BITGEN002", invalid.GeneratorDiagnostics.Single().Id);
         Assert.IsEmpty(invalid.Result.GeneratedSources);
     }

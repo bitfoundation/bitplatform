@@ -20,7 +20,7 @@ public class SearchIndexTests
 
         var rank = Array.FindIndex(hits, hit => hit.Title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase));
 
-        Assert.IsTrue(rank >= 0,
+        Assert.IsGreaterThanOrEqualTo(0, rank,
             $"'{query}' did not surface '{expectedTitle}'. Got: {string.Join(", ", hits.Select(hit => hit.Title))}");
 
         return rank;
@@ -57,7 +57,7 @@ public class SearchIndexTests
         // not work teaches both of them that the tool does not.
         var rank = RankOf(query, expectedTitle, limit: 12);
 
-        Assert.IsTrue(rank <= 2, $"'{query}' put '{expectedTitle}' at rank {rank + 1}");
+        Assert.IsLessThanOrEqualTo(2, rank, $"'{query}' put '{expectedTitle}' at rank {rank + 1}");
     }
 
     [TestMethod]
@@ -95,9 +95,9 @@ public class SearchIndexTests
         {
             var hits = Search(query, 5);
 
-            Assert.IsTrue(hits.Any(hit => hit.Kind != "Source file"),
+            Assert.Contains(hit => hit.Kind != "Source file", hits,
                 $"'{query}' answered with nothing but source files");
-            Assert.IsTrue(hits.Count(hit => hit.Kind == "Source file") <= 2,
+            Assert.IsLessThanOrEqualTo(2, hits.Count(hit => hit.Kind == "Source file"),
                 $"'{query}' filled its first page with source files: {string.Join(", ", hits.Select(hit => hit.Title))}");
         }
     }
@@ -114,7 +114,7 @@ public class SearchIndexTests
             .Where(hit => hit.Kind == "Guide section")
             .ToArray();
 
-        Assert.AreEqual(0, hits.Length, string.Join(", ", hits.Select(hit => hit.Title)));
+        Assert.IsEmpty(hits, string.Join(", ", hits.Select(hit => hit.Title)));
     }
 
     [TestMethod]
@@ -125,8 +125,7 @@ public class SearchIndexTests
         var withSubject = Search("how do I install bswup", 5).Select(hit => hit.Title).ToArray();
         var without = Search("how do I install", 5).Select(hit => hit.Title).ToArray();
 
-        CollectionAssert.AreEqual(without, withSubject,
-            $"naming the subject changed the answer: {string.Join(", ", withSubject)}");
+        Assert.AreSequenceEqual(without, withSubject, $"naming the subject changed the answer: {string.Join(", ", withSubject)}");
     }
 
     [TestMethod]
@@ -140,14 +139,14 @@ public class SearchIndexTests
         // These are the first thing anyone types, and every word of them is on that list - so
         // filtered out unconditionally they would have the library answer its own name with
         // nothing at all, which reads as "no such thing" rather than "ask more precisely".
-        Assert.IsTrue(Search(query, 5).Length > 0, $"'{query}' came back empty");
+        Assert.IsNotEmpty(Search(query, 5), $"'{query}' came back empty");
     }
 
     [TestMethod]
     public void Search_MatchesAcrossThePluralAHeadingHappensToUse()
     {
         // Nobody phrases a question in the number the heading is written in.
-        Assert.IsTrue(Search("event", 30).Any(hit => hit.Kind == "Event" || hit.Title.Contains("Event", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(hit => hit.Kind == "Event" || hit.Title.Contains("Event", StringComparison.OrdinalIgnoreCase), Search("event", 30));
     }
 
     // -- Every hit has to be actionable ----------------------------------------
@@ -158,7 +157,7 @@ public class SearchIndexTests
         foreach (var hit in Search("service worker cache update offline progress", 50))
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(hit.Tool), hit.Title);
-            StringAssert.StartsWith(hit.Tool, "GetBswup", hit.Title);
+            Assert.StartsWith("GetBswup", hit.Tool, hit.Title);
             Assert.IsFalse(string.IsNullOrWhiteSpace(hit.Kind), hit.Title);
         }
     }
@@ -173,7 +172,7 @@ public class SearchIndexTests
 
         foreach (var hit in Search("cache update install handler version scope", 50).Where(hit => narrowed.Contains(hit.Kind)))
         {
-            StringAssert.Contains(hit.Tool, "(name: \"", $"{hit.Kind} '{hit.Title}' points at an unnarrowed call: {hit.Tool}");
+            Assert.Contains("(name: \"", hit.Tool, $"{hit.Kind} '{hit.Title}' points at an unnarrowed call: {hit.Tool}");
         }
     }
 
@@ -199,7 +198,7 @@ public class SearchIndexTests
         foreach (var hit in Search("cache", 50))
         {
             Assert.IsFalse(hit.Snippet.Contains('\n'), hit.Title);
-            Assert.IsTrue(hit.Snippet.Length <= 250, $"{hit.Title}: {hit.Snippet.Length} characters");
+            Assert.IsLessThanOrEqualTo(250, hit.Snippet.Length, $"{hit.Title}: {hit.Snippet.Length} characters");
         }
     }
 
@@ -215,7 +214,7 @@ public class SearchIndexTests
     {
         // Stop words and one/two-letter words match everything and rank nothing; answering with
         // an arbitrary slice of the corpus is worse than answering with none of it.
-        Assert.AreEqual(0, BswupSearchIndex.Search(query!, 12).Length);
+        Assert.IsEmpty(BswupSearchIndex.Search(query!, 12));
     }
 
     [TestMethod]
@@ -227,12 +226,12 @@ public class SearchIndexTests
     {
         var hits = BswupSearchIndex.Search("cache update worker asset", limit);
 
-        Assert.IsTrue(hits.Length <= expectedMax, $"limit {limit} returned {hits.Length} hits");
-        Assert.IsTrue(hits.Length > 0);
+        Assert.IsLessThanOrEqualTo(expectedMax, hits.Length, $"limit {limit} returned {hits.Length} hits");
+        Assert.IsNotEmpty(hits);
     }
 
     [TestMethod]
-    [Timeout(30_000)]
+    [Timeout(30_000, CooperativeCancellation = true)]
     public void Search_IsNotDerailedByAPastedFile()
     {
         // Every term is counted against every entry, so the term count is capped; a pasted file as
@@ -243,8 +242,8 @@ public class SearchIndexTests
 
         var hits = BswupSearchIndex.Search(query, 12);
 
-        Assert.IsTrue(hits.Length > 0, "the one real term in the query still has to be searched for");
-        Assert.IsTrue(hits.Length <= 12, $"the limit still applies to a pasted query; it returned {hits.Length} hits");
+        Assert.IsNotEmpty(hits, "the one real term in the query still has to be searched for");
+        Assert.IsLessThanOrEqualTo(12, hits.Length, $"the limit still applies to a pasted query; it returned {hits.Length} hits");
     }
 
     [TestMethod]
@@ -253,7 +252,7 @@ public class SearchIndexTests
         var lower = Search("assetsexclude");
         var exact = Search("assetsExclude");
 
-        CollectionAssert.AreEqual(exact.Select(hit => hit.Title).ToArray(), lower.Select(hit => hit.Title).ToArray());
+        Assert.AreSequenceEqual(exact.Select(hit => hit.Title).ToArray(), lower.Select(hit => hit.Title).ToArray());
     }
 
     [TestMethod]
@@ -262,6 +261,6 @@ public class SearchIndexTests
         var first = Search("update", 20).Select(hit => hit.Title).ToArray();
         var second = Search("update", 20).Select(hit => hit.Title).ToArray();
 
-        CollectionAssert.AreEqual(first, second, "ties are broken by title, so results cannot reshuffle between calls");
+        Assert.AreSequenceEqual(first, second, "ties are broken by title, so results cannot reshuffle between calls");
     }
 }

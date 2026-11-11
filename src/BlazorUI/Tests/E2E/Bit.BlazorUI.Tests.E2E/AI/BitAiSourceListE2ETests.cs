@@ -47,7 +47,7 @@ public class BitAiSourceListE2ETests : E2ETestBase
         // The heading comes first, the cards under it.
         var top = await heading.RectAsync();
         var first = await Cards("srl-dedupe").First.RectAsync();
-        Assert.IsTrue(first.Top >= top.Bottom, "The cards are under the heading.");
+        Assert.IsGreaterThanOrEqualTo(top.Bottom, first.Top, "The cards are under the heading.");
 
         await Expect(List("srl-no-heading").Locator(".bit-aisrl-hdr")).ToHaveCountAsync(0);
         await Expect(Cards("srl-no-heading")).ToHaveCountAsync(3);
@@ -137,14 +137,14 @@ public class BitAiSourceListE2ETests : E2ETestBase
         var first = await cards.Nth(0).RectAsync();
         var second = await cards.Nth(1).RectAsync();
         Assert.AreEqual(first.Top, second.Top, 1, "Side by side on a wide list.");
-        Assert.IsTrue(second.Left >= first.Right, "The second card is right of the first.");
+        Assert.IsGreaterThanOrEqualTo(first.Right, second.Left, "The second card is right of the first.");
 
         // Below the small breakpoint a card has the whole width.
         await Page.SetViewportSizeAsync(480, 900);
         await Expect(List("srl-grid").Locator("> .bit-aisrl-lst")).ToHaveCSSAsync("grid-template-columns", new Regex(@"^\d+(\.\d+)?px$"));
         first = await cards.Nth(0).RectAsync();
         second = await cards.Nth(1).RectAsync();
-        Assert.IsTrue(second.Top >= first.Bottom, "One card to a row on a narrow screen.");
+        Assert.IsGreaterThanOrEqualTo(first.Bottom, second.Top, "One card to a row on a narrow screen.");
         Assert.AreEqual(first.Left, second.Left, 1);
     }
 
@@ -179,7 +179,7 @@ public class BitAiSourceListE2ETests : E2ETestBase
 
         // Columns no narrower than 400px: two fit in 900px.
         var columns = await ComputedStyleAsync("#srl-vars > .bit-aisrl-lst", "grid-template-columns");
-        Assert.AreEqual(2, columns.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length, columns);
+        Assert.HasCount(2, columns.Split(' ', StringSplitOptions.RemoveEmptyEntries), columns);
     }
 
     [TestMethod]
@@ -205,14 +205,14 @@ public class BitAiSourceListE2ETests : E2ETestBase
         {
             var first = await Cards(id).Nth(0).RectAsync();
             var second = await Cards(id).Nth(1).RectAsync();
-            Assert.IsTrue(first.Left > second.Left, $"{id}: the first card is on the right.");
+            Assert.IsGreaterThan(second.Left, first.Left, $"{id}: the first card is on the right.");
 
             // The words of the heading start on the right.
             var words = await List(id).Locator("> .bit-aisrl-hdr").EvaluateAsync<double[]>(
                 "e => { const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect(); return [b.left, b.right]; }");
             var list = await List(id).RectAsync();
             Assert.AreEqual(list.Right, words[1], 1.5, $"{id}: the heading starts on the right.");
-            Assert.IsTrue(words[0] > list.Left + 20, $"{id}: the heading does not reach the left.");
+            Assert.IsGreaterThan(list.Left + 20, words[0], $"{id}: the heading does not reach the left.");
         }
     }
 

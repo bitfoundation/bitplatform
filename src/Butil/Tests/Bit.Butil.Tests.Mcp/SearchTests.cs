@@ -67,7 +67,7 @@ public class SearchTests : McpTestBase
             Assert.Contains("Clipboard", result.Hits[0].Title,
                 $"The top hit was '{result.Hits[0].Title}', which is not about Clipboard at all.");
 
-            Assert.IsTrue(result.Hits.Take(5).Any(hit => hit.Title.Contains("WriteText", StringComparison.Ordinal)),
+            Assert.Contains(hit => hit.Title.Contains("WriteText", StringComparison.Ordinal), result.Hits.Take(5),
                 $"The member that was named by its own name is not in the top five: {string.Join(" | ", result.Hits.Take(5).Select(hit => hit.Title))}.");
         }
     }
@@ -277,7 +277,7 @@ public class SearchTests : McpTestBase
             Assert.Contains("Docs page", kinds);
             Assert.Contains("Browser support", kinds);
             Assert.Contains("Source file", kinds);
-            Assert.IsTrue(kinds.Any(kind => kind.StartsWith("API ", StringComparison.Ordinal)),
+            Assert.Contains(kind => kind.StartsWith("API ", StringComparison.Ordinal), kinds,
                 $"Nothing from the reflected API surface was indexed. Kinds seen: {string.Join(", ", kinds)}.");
         }
     }

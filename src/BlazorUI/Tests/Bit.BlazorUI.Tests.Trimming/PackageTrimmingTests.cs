@@ -45,43 +45,43 @@ public sealed partial class PackageTrimmingTests
         if (shape == "web-lazy")
         {
             // The lazy scripts: the modules the app can reach and the initializers Blazor imports, no script bundle.
-            CollectionAssert.Contains(published.PublishedModules("Bit.BlazorUI"), "Callouts");
-            CollectionAssert.DoesNotContain(published.PublishedModules("Bit.BlazorUI"), "BitScrollablePane");
+            Assert.Contains("Callouts", published.PublishedModules("Bit.BlazorUI"));
+            Assert.DoesNotContain("BitScrollablePane", published.PublishedModules("Bit.BlazorUI"));
             Assert.IsFalse(published.HasAsset("Bit.BlazorUI", "scripts/bit.blazorui.js"), "A lazy app published the script bundle.");
-            Assert.IsTrue(published.ListedInitializers().Any(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal)),
+            Assert.Contains(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal), published.ListedInitializers(),
                           $"A lazy app does not list the core's initializer: {string.Join(", ", published.ListedInitializers())}");
             CollectionAssert.IsSubsetOf(new[] { "BitButton", "BitDropdown" }, published.KeptStyles("Bit.BlazorUI"));
-            Assert.AreEqual(0, published.PublishedModules("Bit.BlazorUI.AI").Count, $"A lazy app published AI modules it never calls: {string.Join(", ", published.PublishedModules("Bit.BlazorUI.AI"))}");
+            Assert.IsEmpty(published.PublishedModules("Bit.BlazorUI.AI"), $"A lazy app published AI modules it never calls: {string.Join(", ", published.PublishedModules("Bit.BlazorUI.AI"))}");
             return;
         }
 
         // A bundle-mode app has Blazor import none of the lazy scripts' initializers, on any SDK.
-        Assert.IsFalse(published.ListedInitializers().Any(i => i.Contains("Bit.BlazorUI", StringComparison.Ordinal)),
+        Assert.DoesNotContain(i => i.Contains("Bit.BlazorUI", StringComparison.Ordinal), published.ListedInitializers(),
                        $"A bundle-mode app lists an initializer of the lazy scripts: {string.Join(", ", published.ListedInitializers())}");
-        Assert.AreEqual(0, published.PublishedModules("Bit.BlazorUI").Count, "A bundle-mode app published the modules of the lazy scripts.");
+        Assert.IsEmpty(published.PublishedModules("Bit.BlazorUI"), "A bundle-mode app published the modules of the lazy scripts.");
 
         var styles = published.KeptStyles("Bit.BlazorUI");
         CollectionAssert.IsSubsetOf(new[] { "BitButton", "BitDropdown" }, styles, string.Join(", ", styles));
-        CollectionAssert.DoesNotContain(styles, "BitCard");
-        CollectionAssert.Contains(published.KeptScripts("Bit.BlazorUI"), "Callouts");
-        CollectionAssert.DoesNotContain(published.KeptScripts("Bit.BlazorUI"), "BitScrollablePane");
+        Assert.DoesNotContain("BitCard", styles);
+        Assert.Contains("Callouts", published.KeptScripts("Bit.BlazorUI"));
+        Assert.DoesNotContain("BitScrollablePane", published.KeptScripts("Bit.BlazorUI"));
         Assert.AreEqual(0, published.KeptStyles("Bit.BlazorUI.Extras").Count(s => s != "BitErrorBoundary"));
-        Assert.AreEqual(0, published.KeptStyles("Bit.BlazorUI.AI").Count, $"The AI stylesheet keeps {string.Join(", ", published.KeptStyles("Bit.BlazorUI.AI"))}");
-        Assert.AreEqual(0, published.KeptScripts("Bit.BlazorUI.AI").Count, $"The AI script keeps {string.Join(", ", published.KeptScripts("Bit.BlazorUI.AI"))}");
+        Assert.IsEmpty(published.KeptStyles("Bit.BlazorUI.AI"), $"The AI stylesheet keeps {string.Join(", ", published.KeptStyles("Bit.BlazorUI.AI"))}");
+        Assert.IsEmpty(published.KeptScripts("Bit.BlazorUI.AI"), $"The AI script keeps {string.Join(", ", published.KeptScripts("Bit.BlazorUI.AI"))}");
 
         published.AssertScriptsAreThePiecesInOrder("Bit.BlazorUI");
         published.AssertStylesAreThePiecesInOrder("Bit.BlazorUI");
 
-        StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
+        Assert.Contains("Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ", result.Output);
 
         if (shape == "web")
         {
             // The icon stylesheet and its font, cut down to the glyphs kept: the font on Node.js, installed from the
             // package-lock.json the package ships beside its task (tasks/fonttools) - which, not found, would have the .NET cut
             // stand in for it, and say why.
-            StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css -> ");
-            StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ");
-            Assert.IsFalse(result.Output.Contains("since Node.js"), $"The Node.js cut of the icon font failed:\n{Tail(result.Output)}");
+            Assert.Contains("Bit.BlazorUI: Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css -> ", result.Output);
+            Assert.Contains("Bit.BlazorUI: Bit.BlazorUI.Icons/fonts/FabMDL2.4.66.woff2 -> ", result.Output);
+            Assert.DoesNotContain("since Node.js", result.Output, $"The Node.js cut of the icon font failed:\n{Tail(result.Output)}");
         }
 
         if (shape == "wasm")

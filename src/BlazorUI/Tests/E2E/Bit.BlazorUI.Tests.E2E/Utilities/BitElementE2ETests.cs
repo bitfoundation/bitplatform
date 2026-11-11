@@ -22,8 +22,8 @@ public class BitElementE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Contains(html, "<h4 id=\"elm-h4\" class=\"bit-elm\">A heading (h4)</h4>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<h4 id=\"elm-h4\" class=\"bit-elm\">A heading (h4)</h4>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#elm-h4")).ToHaveTextAsync("A heading (h4)");
@@ -110,7 +110,7 @@ public class BitElementE2ETests : E2ETestBase
         var rect = await Page.Locator("#elm-rect").BoundingBoxAsync();
         Assert.AreEqual(160, Math.Round(rect!.Width));
         Assert.AreEqual(48, Math.Round(rect.Height));
-        StringAssert.Contains(await ComputedStyleAsync("#elm-rect", "fill"), "elm-gradient");
+        Assert.Contains("elm-gradient", await ComputedStyleAsync("#elm-rect", "fill"));
 
         Assert.AreEqual("DEMO-BADGE", await TagAsync("#elm-custom"));
         await Expect(Page.Locator("#elm-custom")).ToHaveTextAsync("A custom element");
@@ -357,7 +357,7 @@ public class BitElementE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#elm-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await Page.Locator("#elm-hidden").BoundingBoxAsync())!.Height > 0);
+        Assert.IsGreaterThan(0, (await Page.Locator("#elm-hidden").BoundingBoxAsync())!.Height);
         await Expect(Page.Locator("#elm-collapsed")).ToHaveCSSAsync("display", "none");
 
         await Expect(Page.Locator("#unwrapped-collapsed-host")).ToHaveTextAsync("[Unwrapped content]");

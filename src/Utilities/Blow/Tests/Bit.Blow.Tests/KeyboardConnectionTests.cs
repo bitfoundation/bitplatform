@@ -58,8 +58,8 @@ public class KeyboardConnectionTests : BunitContext
 
         await Key(cut, "a", "c");
         Assert.IsTrue(cut.Instance.IsConnecting);
-        StringAssert.StartsWith(Heard(cut), "Connecting from Source.");
-        Assert.HasCount(1, cut.FindAll(".bit-blow-connectionline"), "nothing shows the connection being made");
+        Assert.StartsWith("Connecting from Source.", Heard(cut));
+        Assert.ContainsSingle(cut.FindAll(".bit-blow-connectionline"), "nothing shows the connection being made");
 
         await NodeElement(cut, "b").FocusAsync(new FocusEventArgs());
         Assert.AreEqual("Press Enter to connect to Sink.", Heard(cut));
@@ -134,9 +134,9 @@ public class KeyboardConnectionTests : BunitContext
             [Measured("split", Out("left", 40), Out("right", 110)), Measured("join", In("x", 40), In("y", 110))]);
 
         await Key(cut, "split", "c");
-        StringAssert.StartsWith(Heard(cut), "Connecting from Split, Left half.");
+        Assert.StartsWith("Connecting from Split, Left half.", Heard(cut));
         await Key(cut, "split", "c");
-        StringAssert.StartsWith(Heard(cut), "Connecting from Split, Right half.");
+        Assert.StartsWith("Connecting from Split, Right half.", Heard(cut));
 
         await NodeElement(cut, "join").FocusAsync(new FocusEventArgs());
         Assert.AreEqual("Press Enter to connect to Join, First.", Heard(cut));
@@ -184,7 +184,7 @@ public class KeyboardConnectionTests : BunitContext
         Assert.IsFalse(cut.Instance.IsConnecting);
         await Key(cut, "a", "K");
         Assert.IsTrue(cut.Instance.IsConnecting);
-        StringAssert.Contains(Heard(cut), "K to choose another port");
+        Assert.Contains("K to choose another port", Heard(cut));
     }
 
     [TestMethod]

@@ -63,7 +63,7 @@ public class AssetCachingAnalysisTests
 
         AssertNotCached(analysis, "service-worker.js");
         AssertNotCached(analysis, "_content/Bit.Bswup/bit-bswup.sw.js");
-        StringAssert.Contains(Decision(analysis, "service-worker.js").Reason, "excluded by");
+        Assert.Contains("excluded by", Decision(analysis, "service-worker.js").Reason);
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class AssetCachingAnalysisTests
         var analysis = Analyze(ServiceWorkerFixtures.Clean, "downloads/report.pdf");
 
         AssertNotCached(analysis, "downloads/report.pdf");
-        StringAssert.Contains(Decision(analysis, "downloads/report.pdf").Reason, "no include pattern matches it");
+        Assert.Contains("no include pattern matches it", Decision(analysis, "downloads/report.pdf").Reason);
     }
 
     [TestMethod]
@@ -80,8 +80,8 @@ public class AssetCachingAnalysisTests
     {
         var analysis = Analyze(ServiceWorkerFixtures.Clean, "css/app.css");
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("service-worker-assets.js", StringComparison.Ordinal)));
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("registered under a custom file name", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("service-worker-assets.js", StringComparison.Ordinal), analysis.Notes);
+        Assert.Contains(note => note.Contains("registered under a custom file name", StringComparison.Ordinal), analysis.Notes);
     }
 
     // -- The file's own lists --------------------------------------------------
@@ -93,7 +93,7 @@ public class AssetCachingAnalysisTests
         var analysis = Analyze(ServiceWorkerFixtures.Clean, "Bit.Bswup.Demo.Client.styles.scp.css");
 
         AssertNotCached(analysis, "Bit.Bswup.Demo.Client.styles.scp.css");
-        StringAssert.Contains(Decision(analysis, "Bit.Bswup.Demo.Client.styles.scp.css").Reason, "self.assetsExclude");
+        Assert.Contains("self.assetsExclude", Decision(analysis, "Bit.Bswup.Demo.Client.styles.scp.css").Reason);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class AssetCachingAnalysisTests
         var analysis = Analyze(script, "downloads/report.pdf");
 
         AssertCached(analysis, "downloads/report.pdf");
-        StringAssert.Contains(Decision(analysis, "downloads/report.pdf").Reason, "self.assetsInclude");
+        Assert.Contains("self.assetsInclude", Decision(analysis, "downloads/report.pdf").Reason);
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public class AssetCachingAnalysisTests
 
         AssertCached(analysis, "css/app.css");
         AssertNotCached(analysis, "_framework/blazor.boot.json");
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("built-in include list is not applied", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("built-in include list is not applied", StringComparison.Ordinal), analysis.Notes);
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class AssetCachingAnalysisTests
         var analysis = Analyze(script, "service-worker.js");
 
         AssertCached(analysis, "service-worker.js");
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("built-in exclude list is not applied", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("built-in exclude list is not applied", StringComparison.Ordinal), analysis.Notes);
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class AssetCachingAnalysisTests
         var analysis = Analyze(script, "css/app.css");
 
         AssertNotCached(analysis, "css/app.css");
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("caseInsensitiveUrl is on", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("caseInsensitiveUrl is on", StringComparison.Ordinal), analysis.Notes);
     }
 
     // -- Mode presets reach the analysis too -----------------------------------
@@ -163,7 +163,7 @@ public class AssetCachingAnalysisTests
     {
         var analysis = Analyze(ServiceWorkerFixtures.WithImport("self.mode = 'InitialPrerender';"), "css/app.css");
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("isPassive is on", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("isPassive is on", StringComparison.Ordinal), analysis.Notes,
             "the preset turns passive caching on, and the analysis has to run against the settings the worker ends up with");
     }
 
@@ -173,7 +173,7 @@ public class AssetCachingAnalysisTests
         // Exactly what the docs site's own worker does.
         var analysis = Analyze(ServiceWorkerFixtures.WithImport("self.mode = 'InitialPrerender';\nself.isPassive = false;"), "css/app.css");
 
-        Assert.IsFalse(analysis.Notes.Any(note => note.Contains("isPassive is on", StringComparison.Ordinal)));
+        Assert.DoesNotContain(note => note.Contains("isPassive is on", StringComparison.Ordinal), analysis.Notes);
     }
 
     // -- Patterns it must refuse to decide on ----------------------------------
@@ -184,7 +184,7 @@ public class AssetCachingAnalysisTests
         var script = ServiceWorkerFixtures.WithImport(@"self.assetsExclude = [/[unclosed/];");
         var analysis = Analyze(script, "css/app.css");
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("could not be evaluated here", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("could not be evaluated here", StringComparison.Ordinal), analysis.Notes,
             "a pattern that was silently dropped would make every URL it governs look decided");
         AssertCached(analysis, "css/app.css");
     }
@@ -198,8 +198,8 @@ public class AssetCachingAnalysisTests
         var script = ServiceWorkerFixtures.WithImport(@"self.assetsExclude = [/unterminated];");
         var analysis = Analyze(script, "css/app.css");
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("/unterminated", StringComparison.Ordinal)
-                                              && note.Contains("could not be evaluated here", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("/unterminated", StringComparison.Ordinal)
+                                              && note.Contains("could not be evaluated here", StringComparison.Ordinal), analysis.Notes,
             $"the pattern was dropped without a word. Notes: {string.Join(" | ", analysis.Notes)}");
     }
 
@@ -219,13 +219,13 @@ public class AssetCachingAnalysisTests
 
         // The contract is what comes back, not how fast: 200 URLs at the 25ms per-match ceiling
         // cost more than the analysis budget on any machine, so the truncation is deterministic.
-        Assert.IsTrue(analysis.Assets.Length < urls.Length, "the pathological pattern cannot have decided every URL in time");
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("were NOT analyzed", StringComparison.Ordinal)),
+        Assert.IsLessThan(urls.Length, analysis.Assets.Length, "the pathological pattern cannot have decided every URL in time");
+        Assert.Contains(note => note.Contains("were NOT analyzed", StringComparison.Ordinal), analysis.Notes,
             $"the truncation has to be said out loud. Notes: {string.Join(" | ", analysis.Notes)}");
 
         // A generous ceiling, and deliberately so: it is here to catch an analysis that stopped
         // being bounded at all, not to measure a loaded build agent.
-        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromMinutes(1),
+        Assert.IsLessThan(TimeSpan.FromMinutes(1), stopwatch.Elapsed,
             $"the analysis must stay bounded; it took {stopwatch.Elapsed}");
     }
 
@@ -237,7 +237,7 @@ public class AssetCachingAnalysisTests
 
         var analysis = Analyze(script, "css/app.css");
 
-        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("only the first", StringComparison.Ordinal)),
+        Assert.Contains(note => note.Contains("only the first", StringComparison.Ordinal), analysis.Notes,
             $"a silently capped list reads as a complete one. Notes: {string.Join(" | ", analysis.Notes)}");
     }
 
@@ -248,9 +248,9 @@ public class AssetCachingAnalysisTests
     {
         var analysis = Analyze(ServiceWorkerFixtures.Clean, "css/app.css");
 
-        Assert.IsTrue(analysis.Include.Any(pattern => pattern.Contains("(built-in)", StringComparison.Ordinal)));
-        Assert.IsTrue(analysis.Exclude.Any(pattern => pattern.Contains("(built-in)", StringComparison.Ordinal)));
-        Assert.IsTrue(analysis.Exclude.Any(pattern => pattern.Contains("(self.assetsExclude)", StringComparison.Ordinal)));
+        Assert.Contains(pattern => pattern.Contains("(built-in)", StringComparison.Ordinal), analysis.Include);
+        Assert.Contains(pattern => pattern.Contains("(built-in)", StringComparison.Ordinal), analysis.Exclude);
+        Assert.Contains(pattern => pattern.Contains("(self.assetsExclude)", StringComparison.Ordinal), analysis.Exclude);
     }
 
     [TestMethod]
@@ -258,8 +258,8 @@ public class AssetCachingAnalysisTests
     {
         var analysis = Analyze(ServiceWorkerFixtures.Clean);
 
-        Assert.AreEqual(0, analysis.Assets.Length);
-        Assert.IsTrue(analysis.Include.Length > 0);
+        Assert.IsEmpty(analysis.Assets);
+        Assert.IsNotEmpty(analysis.Include);
     }
 
     [TestMethod]

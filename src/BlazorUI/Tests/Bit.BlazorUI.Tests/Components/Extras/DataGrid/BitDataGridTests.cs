@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
 [TestClass]
 public class BitDataGridTests : BunitTestContext
 {
-    public class TestRow
+    internal class TestRow
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -94,11 +94,11 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid();
 
         var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
-        Assert.AreEqual(5, rows.Count);
+        Assert.HasCount(5, rows);
 
         var headers = component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Select(h => h.TextContent.Trim()).ToList();
-        CollectionAssert.Contains(headers, "Name");
-        CollectionAssert.Contains(headers, "Price");
+        Assert.Contains("Name", headers);
+        Assert.Contains("Price", headers);
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(new List<TestRow>());
 
         var empty = component.Find(".bit-dtg-empty");
-        StringAssert.Contains(empty.TextContent, "No records to display.");
+        Assert.Contains("No records to display.", empty.TextContent);
     }
 
     [TestMethod]
@@ -119,7 +119,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var empty = component.Find(".bit-dtg-empty");
-        StringAssert.Contains(empty.TextContent, "Keine Daten.");
+        Assert.Contains("Keine Daten.", empty.TextContent);
     }
 
     [TestMethod]
@@ -142,7 +142,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
 
         Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
-        Assert.AreEqual(1, component.Instance.ActiveSorts.Count);
+        Assert.ContainsSingle(component.Instance.ActiveSorts);
     }
 
     [TestMethod]
@@ -212,11 +212,11 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortable: sortable, serverSortable: serverSortable));
         });
 
-        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
 
         await component.InvokeAsync(() => component.Instance.SortByAsync("custom", BitDataGridSortDirection.Ascending));
 
-        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+        Assert.IsEmpty(component.Instance.ActiveSorts);
     }
 
     // In server and infinite mode the grid forwards the sorted column's id, never its SortBy delegate, so a
@@ -267,7 +267,7 @@ public class BitDataGridTests : BunitTestContext
             TemplateOnlyColumn(columnId, withSortBy ? r => r.Price : null, sortable, serverSortable), reads);
 
         Assert.IsFalse(component.Find(".bit-dtg-hcell").ClassList.Contains("bit-dtg-sortable"));
-        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
     }
 
     // The programmatic paths follow the header's rule: a server is not asked to order by an id it was not told to
@@ -280,13 +280,13 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.SortByAsync("actions", BitDataGridSortDirection.Ascending));
 
-        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+        Assert.IsEmpty(component.Instance.ActiveSorts);
 
         var state = component.Instance.GetState();
         state.Sorts.Add(new BitDataGridSortDescriptor { ColumnId = "actions", Direction = BitDataGridSortDirection.Ascending, Priority = 1 });
         await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
 
-        Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+        Assert.IsEmpty(component.Instance.ActiveSorts);
         Assert.IsTrue(reads.All(r => r.Sorts.Count == 0));
     }
 
@@ -310,10 +310,10 @@ public class BitDataGridTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, reads[^1].Sorts.Count);
-            Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
-            Assert.AreEqual(0, reported!.Count);
-            Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+            Assert.IsEmpty(reads[^1].Sorts);
+            Assert.IsEmpty(component.Instance.ActiveSorts);
+            Assert.IsEmpty(reported!);
+            Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
         });
     }
 
@@ -327,10 +327,10 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.Items, CreateRows());
             parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom"));
         });
-        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
 
         component.Render(parameters => parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom", sortBy: r => r.Price)));
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll("button.bit-dtg-htext").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll("button.bit-dtg-htext")));
 
         component.Find("button.bit-dtg-htext").Click();
         Assert.AreEqual("Apple", FirstCellTexts(component)[0]);
@@ -338,8 +338,8 @@ public class BitDataGridTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.ChildContent, TemplateOnlyColumn("custom")));
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
-            Assert.AreEqual(0, component.Instance.ActiveSorts.Count);
+            Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
+            Assert.IsEmpty(component.Instance.ActiveSorts);
             Assert.AreEqual("Banana", FirstCellTexts(component)[0]);
         });
     }
@@ -355,7 +355,7 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, TemplateOnlyColumn("UsedPercent", r => r.Price, true, serverSortable: true));
         });
 
-        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
     }
 
     [TestMethod]
@@ -366,12 +366,12 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "err"));
 
         var names = FirstCellTexts(component);
-        Assert.AreEqual(2, names.Count); // Cherry, Elderberry
-        CollectionAssert.Contains(names.ToList(), "Cherry");
-        CollectionAssert.Contains(names.ToList(), "Elderberry");
+        Assert.HasCount(2, names); // Cherry, Elderberry
+        Assert.Contains("Cherry", names.ToList());
+        Assert.Contains("Elderberry", names.ToList());
 
         await component.InvokeAsync(() => component.Instance.ClearFilterAsync("Name"));
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -383,12 +383,12 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.PageSize, 2);
         });
 
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
         Assert.AreEqual(3, component.Instance.TotalPages);
 
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(3));
 
-        Assert.AreEqual(1, FirstCellTexts(component).Count);
+        Assert.ContainsSingle(FirstCellTexts(component));
         Assert.AreEqual(3, component.Instance.CurrentPage);
     }
 
@@ -405,7 +405,7 @@ public class BitDataGridTests : BunitTestContext
 
         // The parameter itself must stay untouched; only the effective page size changes.
         Assert.AreEqual(2, component.Instance.PageSize);
-        Assert.AreEqual(4, FirstCellTexts(component).Count);
+        Assert.HasCount(4, FirstCellTexts(component));
         Assert.AreEqual(2, component.Instance.TotalPages);
     }
 
@@ -420,11 +420,11 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var rowCheckboxes = component.FindAll(".bit-dtg-cell-select input");
-        Assert.AreEqual(5, rowCheckboxes.Count);
+        Assert.HasCount(5, rowCheckboxes);
 
         rowCheckboxes[0].Change(true);
         Assert.IsNotNull(selected);
-        Assert.AreEqual(1, selected!.Count);
+        Assert.ContainsSingle(selected!);
         Assert.AreEqual("Banana", selected[0].Name);
     }
 
@@ -441,7 +441,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-header-row .bit-dtg-cell-select input, .bit-dtg-header-row input[type=checkbox]").Change(true);
 
         Assert.IsNotNull(selected);
-        Assert.AreEqual(5, selected!.Count);
+        Assert.HasCount(5, selected!);
     }
 
     [TestMethod]
@@ -461,10 +461,10 @@ public class BitDataGridTests : BunitTestContext
         });
         var state = component.Instance.GetState();
 
-        Assert.AreEqual(1, state.Sorts.Count);
-        Assert.AreEqual(1, state.Filters.Count);
+        Assert.ContainsSingle(state.Sorts);
+        Assert.ContainsSingle(state.Filters);
         Assert.AreEqual(4, state.PageSize);
-        Assert.AreEqual(2, state.Columns.Count);
+        Assert.HasCount(2, state.Columns);
 
         // A fresh grid restored from the snapshot reproduces the same view.
         var restored = RenderGrid(configure: parameters =>
@@ -480,7 +480,7 @@ public class BitDataGridTests : BunitTestContext
             .OrderByDescending(r => r.Name, StringComparer.OrdinalIgnoreCase)
             .Select(r => r.Name)
             .ToList();
-        CollectionAssert.AreEqual(expected, names.ToList());
+        Assert.AreSequenceEqual(expected, names.ToList());
     }
 
     [TestMethod]
@@ -496,9 +496,9 @@ public class BitDataGridTests : BunitTestContext
 
         var csv = component.Instance.ToCsv();
 
-        StringAssert.Contains(csv, "'=cmd()");
-        StringAssert.Contains(csv, "-5");
-        Assert.IsFalse(csv.Contains("'-5"), "negative numbers must not get a formula-guard prefix");
+        Assert.Contains("'=cmd()", csv);
+        Assert.Contains("-5", csv);
+        Assert.DoesNotContain("'-5", csv, "negative numbers must not get a formula-guard prefix");
     }
 
     [TestMethod]
@@ -522,12 +522,12 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, Columns());
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell").Count);
+        Assert.HasCount(2, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell"));
 
         visible = false;
         component.Render(parameters => parameters.Add(p => p.ChildContent, Columns()));
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-header-row .bit-dtg-hcell"));
     }
 
     [TestMethod]
@@ -559,7 +559,7 @@ public class BitDataGridTests : BunitTestContext
         component.FindAll(".bit-dtg-cell-command button")[1].Click(); // Cancel
 
         Assert.AreEqual("Banana", items[0].Name);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-editing").Count, "edit mode should have ended");
+        Assert.IsEmpty(component.FindAll(".bit-dtg-editing"), "edit mode should have ended");
     }
 
     [TestMethod]
@@ -593,7 +593,7 @@ public class BitDataGridTests : BunitTestContext
         // Even a forced click must not commit or leave edit mode.
         save.Click();
         Assert.AreEqual("Banana", items[0].Name);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-editing").Count, "row must stay in edit mode");
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-editing"), "row must stay in edit mode");
     }
 
     [TestMethod]
@@ -607,16 +607,16 @@ public class BitDataGridTests : BunitTestContext
 
         // Two operator dropdowns render (Name: text ops, Price: comparison ops).
         var opSelects = component.FindAll(".bit-dtg-filter-op");
-        Assert.AreEqual(2, opSelects.Count);
+        Assert.HasCount(2, opSelects);
 
         // Price > 2 → Banana (2.5), Cherry (10), Date (7).
         component.FindAll(".bit-dtg-filter-op")[1].Change("GreaterThan");
         component.Find("input.bit-dtg-filter-input[inputmode=decimal]").Change("2");
-        Assert.AreEqual(3, FirstCellTexts(component).Count);
+        Assert.HasCount(3, FirstCellTexts(component));
 
         // Switching the operator re-applies the same filter text: Price < 2 → Apple (-5), Elderberry (1).
         component.FindAll(".bit-dtg-filter-op")[1].Change("LessThan");
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -632,7 +632,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find("input.bit-dtg-filter-input:not([inputmode=decimal])").Change("ba");
 
         var names = FirstCellTexts(component);
-        Assert.AreEqual(1, names.Count);
+        Assert.ContainsSingle(names);
         Assert.AreEqual("Banana", names[0]);
     }
 
@@ -658,7 +658,7 @@ public class BitDataGridTests : BunitTestContext
         var headerCells = component.FindAll(".bit-dtg-header-row .bit-dtg-hcell");
         Assert.IsFalse(headerCells[0].ClassList.Contains("bit-dtg-sticky"));
         Assert.IsTrue(headerCells[1].ClassList.Contains("bit-dtg-sticky"));
-        StringAssert.Contains(headerCells[1].GetAttribute("style") ?? "", "inset-inline-end:0px");
+        Assert.Contains("inset-inline-end:0px", headerCells[1].GetAttribute("style") ?? "");
 
         var firstRowCells = component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell");
         Assert.IsTrue(firstRowCells[1].ClassList.Contains("bit-dtg-sticky"));
@@ -784,7 +784,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-resize-overlay").PointerMove(new PointerEventArgs { ClientX = 80 });
 
         // Right to left the resizer sits on the column's left edge, so dragging it left widens it.
-        StringAssert.Contains(component.Markup, "170px");
+        Assert.Contains("170px", component.Markup);
     }
 
     [TestMethod]
@@ -811,7 +811,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Five products with five distinct first letters.
         var footer = component.Find(".bit-dtg-footer-row .bit-dtg-cell");
-        StringAssert.Contains(footer.TextContent, "Custom:5");
+        Assert.Contains("Custom:5", footer.TextContent);
     }
 
     [TestMethod]
@@ -829,8 +829,8 @@ public class BitDataGridTests : BunitTestContext
             .KeyDown(new KeyboardEventArgs { Key = "Delete" });
 
         var texts = FirstCellTexts(component);
-        Assert.AreEqual(4, texts.Count);
-        Assert.IsFalse(texts.Contains("Banana"), "the focused row must be deleted");
+        Assert.HasCount(4, texts);
+        Assert.DoesNotContain("Banana", texts, "the focused row must be deleted");
         // The row that took the deleted row's place now holds the roving tab stop.
         var newFirstCell = component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell");
         Assert.AreEqual("0", newFirstCell.GetAttribute("tabindex"));
@@ -849,7 +849,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
             .KeyDown(new KeyboardEventArgs { Key = "Delete" });
 
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -877,7 +877,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var footer = component.Find(".bit-dtg-footer-row .bit-dtg-cell");
-        StringAssert.Contains(footer.TextContent, "15.5 (all rows)");
+        Assert.Contains("15.5 (all rows)", footer.TextContent);
     }
 
     // A keystroke typed while the search of an earlier one is still being read holds the newer text: the earlier search
@@ -988,13 +988,13 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[0].Click();
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Sorted by Name, ascending");
+        Assert.Contains("Sorted by Name, ascending", component.Find("[aria-live]").TextContent);
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[0].Click();
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Sorted by Name, descending");
+        Assert.Contains("Sorted by Name, descending", component.Find("[aria-live]").TextContent);
 
         component.Find("button[aria-label='Next page']").Click();
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Page 2 of 3");
+        Assert.Contains("Page 2 of 3", component.Find("[aria-live]").TextContent);
     }
 
     [TestMethod]
@@ -1015,12 +1015,11 @@ public class BitDataGridTests : BunitTestContext
 
         using var reader = new System.IO.StreamReader(sheetEntry!.Open());
         var sheet = reader.ReadToEnd();
-        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Banana</t>");
-        StringAssert.Contains(sheet, "<v>-5</v>", "numbers must be native cells, not text");
-        StringAssert.Contains(sheet, "<c t=\"inlineStr\" s=\"1\">", "header cells must use the bold style");
-        StringAssert.Contains(sheet, "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>",
-            "the header row must be frozen (the grid header is always sticky)");
-        StringAssert.Contains(sheet, "<cols>", "grid column widths must carry over");
+        Assert.Contains("<t xml:space=\"preserve\">Banana</t>", sheet);
+        Assert.Contains("<v>-5</v>", sheet, "numbers must be native cells, not text");
+        Assert.Contains("<c t=\"inlineStr\" s=\"1\">", sheet, "header cells must use the bold style");
+        Assert.Contains("<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>", sheet, "the header row must be frozen (the grid header is always sticky)");
+        Assert.Contains("<cols>", sheet, "grid column widths must carry over");
     }
 
     private static async Task<string> ExportSheetXmlAsync(IRenderedComponent<BitDataGrid<TestRow>> component)
@@ -1062,20 +1061,18 @@ public class BitDataGridTests : BunitTestContext
         using var zip = new System.IO.Compression.ZipArchive(stream, System.IO.Compression.ZipArchiveMode.Read);
         using var stylesReader = new System.IO.StreamReader(zip.GetEntry("xl/styles.xml")!.Open());
         var styles = stylesReader.ReadToEnd();
-        StringAssert.Contains(styles, "<fgColor rgb=\"FF112233\"/>", "header fill must carry the sampled background");
-        StringAssert.Contains(styles, "<color rgb=\"FFFFFFFF\"/>", "header font must carry the sampled foreground");
-        StringAssert.Contains(styles, "<i/>", "the sampled italic row font must be written");
-        StringAssert.Contains(styles, "<fgColor rgb=\"FFF4F4F4\"/>", "the stripe fill must be written");
-        StringAssert.Contains(styles, "<left style=\"thin\"><color rgb=\"FFDDDDDD\"/></left>",
-            "Bordered mode must produce vertical borders in the sampled color");
+        Assert.Contains("<fgColor rgb=\"FF112233\"/>", styles, "header fill must carry the sampled background");
+        Assert.Contains("<color rgb=\"FFFFFFFF\"/>", styles, "header font must carry the sampled foreground");
+        Assert.Contains("<i/>", styles, "the sampled italic row font must be written");
+        Assert.Contains("<fgColor rgb=\"FFF4F4F4\"/>", styles, "the stripe fill must be written");
+        Assert.Contains("<left style=\"thin\"><color rgb=\"FFDDDDDD\"/></left>", styles, "Bordered mode must produce vertical borders in the sampled color");
 
         using var sheetReader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
         var sheet = sheetReader.ReadToEnd();
         // Data rows alternate between the default format (implicit) and the stripe format s="2",
         // matching the grid's nth-child(even) striping; Apple is the second data row.
-        StringAssert.Contains(sheet, "<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Apple</t>");
-        Assert.IsFalse(sheet.Contains("<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Banana</t>"),
-            "odd data rows must keep the default (non-stripe) format");
+        Assert.Contains("<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Apple</t>", sheet);
+        Assert.DoesNotContain("<c t=\"inlineStr\" s=\"2\"><is><t xml:space=\"preserve\">Banana</t>", sheet, "odd data rows must keep the default (non-stripe) format");
     }
 
     [TestMethod]
@@ -1106,15 +1103,15 @@ public class BitDataGridTests : BunitTestContext
 
         // Banana is the first data row (sheet row 2): its Name cell merges over the Price column,
         // and the covered Price value is omitted (a merged region keeps only its top-left value).
-        StringAssert.Contains(sheet, "<mergeCells count=\"1\"><mergeCell ref=\"A2:B2\"/></mergeCells>");
-        Assert.IsFalse(sheet.Contains("<v>2.5</v>"), "the value covered by a merged cell must not be written");
+        Assert.Contains("<mergeCells count=\"1\"><mergeCell ref=\"A2:B2\"/></mergeCells>", sheet);
+        Assert.DoesNotContain("<v>2.5</v>", sheet, "the value covered by a merged cell must not be written");
         // Other rows keep their Price values (their spans are inactive).
-        StringAssert.Contains(sheet, "<v>-5</v>");
+        Assert.Contains("<v>-5</v>", sheet);
 
         // CSV has no merge concept and stays flat, covered values included.
         string csv = null!;
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
-        StringAssert.Contains(csv, "2.5");
+        Assert.Contains("2.5", csv);
     }
 
     [TestMethod]
@@ -1141,11 +1138,11 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Pinning is really active on both edges.
-        Assert.IsTrue(component.FindAll(".bit-dtg-header-row .bit-dtg-sticky").Count >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, component.FindAll(".bit-dtg-header-row .bit-dtg-sticky").Count);
 
         string csv = null!;
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
-        StringAssert.StartsWith(csv, "Id,Name,Price", "frozen columns keep the declared order");
+        Assert.StartsWith("Id,Name,Price", csv, "frozen columns keep the declared order");
 
         var sheet = await ExportSheetXmlAsync(component);
         var headerRow = sheet[..sheet.IndexOf("</row>", StringComparison.Ordinal)];
@@ -1156,7 +1153,7 @@ public class BitDataGridTests : BunitTestContext
 
         // The leading Frozen column becomes an Excel freeze pane (together with the header row);
         // FrozenEnd has no workbook equivalent and must not affect the pane.
-        StringAssert.Contains(sheet, "<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>");
+        Assert.Contains("<pane xSplit=\"1\" ySplit=\"1\" topLeftCell=\"B2\" activePane=\"bottomRight\" state=\"frozen\"/>", sheet);
     }
 
     [TestMethod]
@@ -1188,8 +1185,8 @@ public class BitDataGridTests : BunitTestContext
         var sheet = await ExportSheetXmlAsync(component);
 
         Assert.AreEqual(6, sheet.Split("<row>").Length - 1, "export must cover the header plus one row per master item");
-        Assert.IsFalse(sheet.Contains("DETAIL-CONTENT"), "detail template content must not be exported");
-        Assert.IsFalse(sheet.Contains("Computed"), "template-only columns have no field and must be skipped");
+        Assert.DoesNotContain("DETAIL-CONTENT", sheet, "detail template content must not be exported");
+        Assert.DoesNotContain("Computed", sheet, "template-only columns have no field and must be skipped");
     }
 
     [TestMethod]
@@ -1212,14 +1209,14 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Only the first batch is loaded/rendered.
-        component.WaitForAssertion(() => Assert.AreEqual(2, FirstCellTexts(component).Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, FirstCellTexts(component)));
 
         string csv = null!;
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
 
         Assert.IsNotNull(exportRequest, "export must request all rows (Take = null) through OnLoadMore");
         Assert.AreEqual(0, exportRequest!.Skip);
-        foreach (var row in all) StringAssert.Contains(csv, row.Name);
+        foreach (var row in all) Assert.Contains(row.Name, csv);
     }
 
     [TestMethod]
@@ -1249,14 +1246,14 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // The tree renders collapsed: only the root row is visible.
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row"));
 
         string csv = null!;
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
 
-        StringAssert.Contains(csv, "root");
-        StringAssert.Contains(csv, "child-a");
-        StringAssert.Contains(csv, "child-b");
+        Assert.Contains("root", csv);
+        Assert.Contains("child-a", csv);
+        Assert.Contains("child-b", csv);
 
         // The synchronous ToCsv resolves the same rows without a provider round-trip.
         string syncCsv = null!;
@@ -1275,7 +1272,7 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, DefaultColumns());
         });
 
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
         Assert.AreEqual(5, component.Instance.TotalCount);
         Assert.AreEqual(3, component.Instance.TotalPages);
 
@@ -1287,7 +1284,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Cherry", FirstCellTexts(component)[0]);
     }
 
-    public class DatedRow
+    internal class DatedRow
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -1344,7 +1341,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(2, component.Instance.TotalCount);
     }
 
-    public class OffsetDatedRow
+    internal class OffsetDatedRow
     {
         public string Name { get; set; } = string.Empty;
         public DateTime? Created { get; set; }
@@ -1388,22 +1385,22 @@ public class BitDataGridTests : BunitTestContext
 
         // A nullable DateTime: the whole day matches, and a null is never equal to a day and always not-equal.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.Equals, new DateTime(2024, 5, 1)));
-        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+        Assert.AreSequenceEqual(new[] { "Morning" }, Names());
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.NotEquals, new DateTime(2024, 5, 1)));
-        CollectionAssert.AreEqual(new[] { "Unknown", "NextDay" }, Names());
+        Assert.AreSequenceEqual(new[] { "Unknown", "NextDay" }, Names());
 
         // A plain DateTimeOffset: the day is the row's own (23:00 +02:00 is still May 1), with no null to leave out.
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.Equals, new DateTimeOffset(2024, 5, 2, 0, 0, 0, TimeSpan.Zero)));
-        CollectionAssert.AreEqual(new[] { "Unknown", "NextDay" }, Names());
+        Assert.AreSequenceEqual(new[] { "Unknown", "NextDay" }, Names());
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.NotEquals, new DateTimeOffset(2024, 5, 2, 0, 0, 0, TimeSpan.Zero)));
-        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+        Assert.AreSequenceEqual(new[] { "Morning" }, Names());
 
         // A set of days takes the same path once per member.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.In, new[] { new DateTimeOffset(2024, 5, 1, 0, 0, 0, TimeSpan.Zero) }));
-        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+        Assert.AreSequenceEqual(new[] { "Morning" }, Names());
     }
 
     private static IReadOnlyList<string> FirstDatedCellTexts(IRenderedComponent<BitDataGrid<DatedRow>> component)
@@ -1411,7 +1408,7 @@ public class BitDataGridTests : BunitTestContext
             .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
             .ToList();
 
-    public class TreeNode
+    internal class TreeNode
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -1447,18 +1444,18 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, columns);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row"));
 
         // First expand fetches and renders the child.
         component.Find(".bit-dtg-tree-toggle").Click();
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-dtg-body > .bit-dtg-row")));
         Assert.AreEqual(1, providerCalls);
 
         // Collapse and re-expand: served from the cache, no second fetch.
         component.Find(".bit-dtg-tree-toggle").Click();
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row")));
         component.Find(".bit-dtg-tree-toggle").Click();
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-dtg-body > .bit-dtg-row")));
         Assert.AreEqual(1, providerCalls);
     }
 
@@ -1507,13 +1504,13 @@ public class BitDataGridTests : BunitTestContext
         // Expanding the reloaded root fetches its children, rather than showing what the old hierarchy brought back.
         Task newExpand = Task.CompletedTask;
         await component.InvokeAsync(() => { newExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
-        Assert.AreEqual(2, fetches.Count);
+        Assert.HasCount(2, fetches);
         fetches[1].SetResult([new TreeNode { Id = 11, Name = "fresh-child" }]);
         await newExpand;
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
-        StringAssert.Contains(component.Markup, "fresh-child");
-        Assert.IsFalse(component.Markup.Contains("stale-child"));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-dtg-body > .bit-dtg-row")));
+        Assert.Contains("fresh-child", component.Markup);
+        Assert.DoesNotContain("stale-child", component.Markup);
     }
 
     [TestMethod]
@@ -1529,7 +1526,7 @@ public class BitDataGridTests : BunitTestContext
         // The reloaded root is expanded too, and its own fetch is still out when the old one lands.
         Task newExpand = Task.CompletedTask;
         await component.InvokeAsync(() => { newExpand = component.Find(".bit-dtg-tree-toggle").ClickAsync(new MouseEventArgs()); });
-        Assert.AreEqual(2, fetches.Count);
+        Assert.HasCount(2, fetches);
 
         fetches[0].SetResult([new TreeNode { Id = 11, Name = "stale-child" }]);
         await oldExpand;
@@ -1541,8 +1538,8 @@ public class BitDataGridTests : BunitTestContext
         await newExpand;
 
         component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-dtg-tree-toggle").GetAttribute("aria-busy")));
-        StringAssert.Contains(component.Markup, "fresh-child");
-        Assert.IsFalse(component.Markup.Contains("stale-child"));
+        Assert.Contains("fresh-child", component.Markup);
+        Assert.DoesNotContain("stale-child", component.Markup);
     }
 
     [TestMethod]
@@ -1578,11 +1575,11 @@ public class BitDataGridTests : BunitTestContext
         var grid = RenderGrid();
         var attempts = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedTargets"].Count;
 
-        Assert.IsTrue(attempts >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, attempts);
 
         grid.Render();
 
-        Assert.AreEqual(attempts + 1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedTargets"].Count);
+        Assert.HasCount(attempts + 1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedTargets"]);
     }
 
     [TestMethod]
@@ -1610,20 +1607,20 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Before the viewport is measured, everything renders (plain unvirtualized fallback).
-        Assert.AreEqual(30, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])").Count);
+        Assert.HasCount(30, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])"));
 
         // 400px viewport at scroll 0 (+200px overscan) → columns starting before x=600 → 7 columns.
         await component.InvokeAsync(() => component.Instance.OnHorizontalScrollAsync(0, 400));
-        Assert.AreEqual(7, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell[aria-hidden]").Count, "one trailing spacer");
+        Assert.HasCount(7, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])"));
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-header-row .bit-dtg-hcell[aria-hidden]"), "one trailing spacer");
         // Data rows follow the same window: 7 cells + 1 spacer per row.
         var firstRow = component.FindAll(".bit-dtg-body > .bit-dtg-row")[0];
         Assert.AreEqual(7, firstRow.QuerySelectorAll(".bit-dtg-cell:not([aria-hidden])").Length);
 
         // Mid-scroll: window 1800..2600 → columns 16..25 (10) with spacers on both sides.
         await component.InvokeAsync(() => component.Instance.OnHorizontalScrollAsync(2000, 400));
-        Assert.AreEqual(10, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell[aria-hidden]").Count, "leading and trailing spacers");
+        Assert.HasCount(10, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell:not([aria-hidden])"));
+        Assert.HasCount(2, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell[aria-hidden]"), "leading and trailing spacers");
     }
 
     [TestMethod]
@@ -1639,13 +1636,13 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-cell-select input")[0].Change(true); // selects Id 1
-        Assert.AreEqual(1, selected!.Count);
+        Assert.ContainsSingle(selected!);
 
         // Replace the source with a list that no longer contains Id 1.
         var replacement = CreateRows().Where(r => r.Id != 1).ToList();
         component.Render(parameters => parameters.Add(p => p.Items, replacement));
 
-        Assert.AreEqual(0, selected!.Count, "selection must not keep rows that left the data source");
+        Assert.IsEmpty(selected!, "selection must not keep rows that left the data source");
     }
 
     [TestMethod]
@@ -1662,15 +1659,14 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[0]));
         await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[1]));
-        CollectionAssert.AreEquivalent(new[] { 1, 2 }, expanded!.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, expanded!.Select(r => r.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The row leaves through the same list instance, so the Items reference never changes and only
         // the explicit refresh can notice it.
         items.RemoveAt(0);
         await component.InvokeAsync(() => component.Instance.RefreshAsync());
 
-        CollectionAssert.AreEquivalent(new[] { 2 }, expanded!.Select(r => r.Id).ToArray(),
-            "a row removed in place must not stay expanded");
+        Assert.AreSequenceEqual(new[] { 2 }, expanded!.Select(r => r.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "a row removed in place must not stay expanded");
         Assert.IsFalse(component.Instance.IsDetailExpanded(new TestRow { Id = 1 }));
     }
 
@@ -1693,21 +1689,20 @@ public class BitDataGridTests : BunitTestContext
         // Path 1: a replaced materialized source prunes only the rows that left it.
         component.Render(parameters => parameters.Add(p => p.Items, CreateRows().Where(r => r.Id != 1).ToList()));
 
-        CollectionAssert.AreEqual(new[] { 1 }, toggles.Select(t => t.Item.Id).ToArray(),
-            "only the removed row collapsed");
+        Assert.AreSequenceEqual(new[] { 1 }, toggles.Select(t => t.Item.Id).ToArray(), "only the removed row collapsed");
         Assert.IsTrue(toggles.All(t => t.Expanded == false));
 
         // Path 2: a cleared source drops every row, so everything still expanded collapses.
         toggles.Clear();
         component.Render(parameters => parameters.Add(p => p.Items, (IEnumerable<TestRow>?)null));
 
-        CollectionAssert.AreEqual(new[] { 2 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 2 }, toggles.Select(t => t.Item.Id).ToArray());
         Assert.IsTrue(toggles.All(t => t.Expanded == false));
 
         // Nothing is left expanded, so a further prune stays silent.
         toggles.Clear();
         component.Render(parameters => parameters.Add(p => p.Items, CreateRows()));
-        Assert.AreEqual(0, toggles.Count);
+        Assert.IsEmpty(toggles);
     }
 
     [TestMethod]
@@ -1730,7 +1725,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Titles humanize from the resolved path, values render through the same accessor as Field.
         var headers = component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Select(h => h.TextContent.Trim()).ToList();
-        CollectionAssert.AreEqual(new[] { "Name", "Price" }, headers);
+        Assert.AreSequenceEqual(new[] { "Name", "Price" }, headers);
         Assert.AreEqual("Banana", FirstCellTexts(component)[0]);
 
         // The column id falls back to the resolved path, so the programmatic state API keys still work.
@@ -1768,7 +1763,7 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ShowDetailToggle, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-cell-detail").Count, "the toggle column must not render");
+        Assert.IsEmpty(component.FindAll(".bit-dtg-cell-detail"), "the toggle column must not render");
 
         await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(rows[1]));
 
@@ -1777,7 +1772,7 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.CollapseDetailAsync(rows[1]));
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
     }
 
     [TestMethod]
@@ -1791,7 +1786,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Without ExpandDetailOnRowClick the row click is inert: only the toggle button expands.
         component.Find(".bit-dtg-body > .bit-dtg-row").Click();
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
 
         component.Render(parameters =>
         {
@@ -1803,9 +1798,9 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("DETAIL-1", component.Find(".bit-dtg-detail-content").TextContent.Trim());
 
         component.Find(".bit-dtg-body > .bit-dtg-row").Click();
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
 
-        CollectionAssert.AreEqual(new[] { true, false }, toggles.Select(t => t.Expanded).ToArray());
+        Assert.AreSequenceEqual(new[] { true, false }, toggles.Select(t => t.Expanded).ToArray());
         Assert.IsTrue(toggles.All(t => t.Item.Id == 1));
     }
 
@@ -1832,7 +1827,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-expanded"));
 
         component.Find(".bit-dtg-body > .bit-dtg-row").KeyDown(key);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
         Assert.AreEqual("false", component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-expanded"));
     }
 
@@ -1860,7 +1855,7 @@ public class BitDataGridTests : BunitTestContext
 
         // ...and the row keydown stays inert there, so the cell's Enter can't toggle twice.
         navRow.KeyDown("Enter");
-        Assert.AreEqual(0, withCellNav.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(withCellNav.FindAll(".bit-dtg-detail-row"));
     }
 
     [TestMethod]
@@ -1883,7 +1878,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.IsFalse(editedRow.ClassList.Contains("bit-dtg-row-expandable"));
 
         editedRow.KeyDown("Enter");
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count, "expanding would shift the editors mid-edit");
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"), "expanding would shift the editors mid-edit");
     }
 
     [TestMethod]
@@ -1900,7 +1895,7 @@ public class BitDataGridTests : BunitTestContext
         component.FindAll(".bit-dtg-cell-command button")[0].Click();
         component.Find(".bit-dtg-body > .bit-dtg-row").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
     }
 
     [TestMethod]
@@ -1919,25 +1914,25 @@ public class BitDataGridTests : BunitTestContext
 
         // Only the current page is rendered, but every row of the view is expanded - paging to the
         // next page shows its details already open.
-        Assert.AreEqual(2, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.HasCount(2, component.FindAll(".bit-dtg-detail-row"));
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
-        Assert.AreEqual(2, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.HasCount(2, component.FindAll(".bit-dtg-detail-row"));
 
         // The bulk operation reports each row it expanded, not just the rendered page.
-        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(toggles.All(t => t.Expanded));
 
         toggles.Clear();
         await component.InvokeAsync(() => component.Instance.CollapseAllDetailsAsync());
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-detail-row"));
 
-        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(toggles.All(t => t.Expanded == false));
 
         // Nothing left to change: a second bulk call is a no-op and raises no callback.
         toggles.Clear();
         await component.InvokeAsync(() => component.Instance.CollapseAllDetailsAsync());
-        Assert.AreEqual(0, toggles.Count);
+        Assert.IsEmpty(toggles);
     }
 
     [TestMethod]
@@ -1959,7 +1954,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Outgoing changes are reported back through the binding.
         component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].Click();
-        CollectionAssert.AreEquivalent(new[] { 3, 1 }, expanded.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 3, 1 }, expanded.Select(r => r.Id).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -1988,7 +1983,7 @@ public class BitDataGridTests : BunitTestContext
             .ToList();
         var viewportIndex = parts.IndexOf("viewport");
 
-        Assert.AreEqual(expectedAbove + expectedBelow + 1, parts.Count);
+        Assert.HasCount(expectedAbove + expectedBelow + 1, parts);
         Assert.AreEqual(expectedAbove, viewportIndex);
         Assert.AreEqual(expectedBelow, parts.Count - viewportIndex - 1);
     }
@@ -2003,8 +1998,8 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var headers = component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Select(h => h.TextContent.Trim()).ToList();
-        CollectionAssert.AreEqual(new[] { "Name", "Price" }, headers);
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.AreSequenceEqual(new[] { "Name", "Price" }, headers);
+        Assert.HasCount(5, component.FindAll(".bit-dtg-body > .bit-dtg-row"));
     }
 
     // ------------------------------------------------------------ Quick search
@@ -2021,15 +2016,15 @@ public class BitDataGridTests : BunitTestContext
 
         // "err" only appears in names (Cherry, Elderberry), so the text column drives the match.
         component.Find(".bit-dtg-search-input").Input("err");
-        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
 
         // A term that only the numeric Price column can satisfy still matches: search runs over each
         // column's rendered text, not just the string ones.
         component.Find(".bit-dtg-search-input").Input("10");
-        CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
 
         component.Find(".bit-dtg-search-clear").Click();
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
         Assert.IsNull(component.Instance.ActiveSearch);
     }
 
@@ -2057,7 +2052,7 @@ public class BitDataGridTests : BunitTestContext
 
         // "10" is only Cherry's price, and that column opted out - so nothing matches.
         component.Find(".bit-dtg-search-input").Input("10");
-        Assert.AreEqual(0, FirstCellTexts(component).Count);
+        Assert.IsEmpty(FirstCellTexts(component));
         component.Find(".bit-dtg-empty");
     }
 
@@ -2092,13 +2087,13 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SearchDebounce, 0);
             parameters.Add(p => p.SearchText, "Cherry");
         });
-        CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
 
         // The parent never binds SearchText back, so a re-render with the same parameter value must not
         // reset the term the user just typed into the box.
         component.Find(".bit-dtg-search-input").Input("Date");
         component.Render(parameters => parameters.Add(p => p.Striped, false));
-        CollectionAssert.AreEqual(new[] { "Date" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Date" }, FirstCellTexts(component).ToArray());
     }
 
     [TestMethod]
@@ -2112,7 +2107,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Only the string column is translatable, so the term matches on Name.
         await component.InvokeAsync(() => component.Instance.SearchAsync("an"));
-        CollectionAssert.AreEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
     }
 
     [TestMethod]
@@ -2135,7 +2130,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.SearchAsync("err"));
 
         Assert.AreEqual("err", seen);
-        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
     }
 
     [TestMethod]
@@ -2148,10 +2143,10 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("err", state.Search);
 
         await component.InvokeAsync(() => component.Instance.SearchAsync(null));
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
 
         await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
-        CollectionAssert.AreEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry", "Elderberry" }, FirstCellTexts(component).ToArray());
     }
 
     // ------------------------------------------------------------------ Pager
@@ -2170,8 +2165,7 @@ public class BitDataGridTests : BunitTestContext
         var options = component.FindAll(".bit-dtg-page-size option");
         var selected = options.Single(o => o.HasAttribute("selected"));
         Assert.AreEqual("8", selected.GetAttribute("value"));
-        CollectionAssert.AreEqual(new[] { "8", "10", "20", "50", "100" },
-            options.Select(o => o.GetAttribute("value")).ToArray());
+        Assert.AreSequenceEqual(new[] { "8", "10", "20", "50", "100" }, options.Select(o => o.GetAttribute("value")).ToArray());
     }
 
     // ----------------------------------------------------------- Filter row
@@ -2194,8 +2188,7 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.Filterable, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-filter-row").Count,
-            "an empty filter row must not be reserved when no column can be filtered");
+        Assert.IsEmpty(component.FindAll(".bit-dtg-filter-row"), "an empty filter row must not be reserved when no column can be filtered");
     }
 
     // -------------------------------------------------------- Column chooser
@@ -2211,17 +2204,16 @@ public class BitDataGridTests : BunitTestContext
 
         component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
         var boxes = component.FindAll(".bit-dtg-chooser-item input");
-        Assert.AreEqual(2, boxes.Count);
+        Assert.HasCount(2, boxes);
 
         boxes[1].Change(false);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-header-row .bit-dtg-htext"));
 
         // Only one column is left, so its checkbox is disabled and unchecking it is a no-op.
         var remaining = component.FindAll(".bit-dtg-chooser-item input")[0];
         Assert.IsTrue(remaining.HasAttribute("disabled"));
         remaining.Change(false);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-header-row .bit-dtg-htext").Count,
-            "the grid must never be left with no columns");
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-header-row .bit-dtg-htext"), "the grid must never be left with no columns");
     }
 
     [TestMethod]
@@ -2234,10 +2226,10 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-column-chooser").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-column-chooser"));
 
         component.Find(".bit-dtg-column-chooser").KeyDown("Escape");
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-column-chooser").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-column-chooser"));
         Assert.AreEqual("false", component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").GetAttribute("aria-expanded"));
     }
 
@@ -2268,9 +2260,8 @@ public class BitDataGridTests : BunitTestContext
         var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
         // Apple is the only row with a negative price.
         Assert.IsTrue(rows[1].ClassList.Contains("negative"));
-        StringAssert.Contains(rows[1].GetAttribute("style"), "color:red;");
-        StringAssert.Contains(rows[1].GetAttribute("style"), "grid-template-columns:",
-            "the caller's style must be appended to the layout style, not replace it");
+        Assert.Contains("color:red;", rows[1].GetAttribute("style")!);
+        Assert.Contains("grid-template-columns:", rows[1].GetAttribute("style")!, "the caller's style must be appended to the layout style, not replace it");
         Assert.IsFalse(rows[0].ClassList.Contains("negative"));
     }
 
@@ -2284,7 +2275,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.Find(".bit-dtg-loading .my-loader");
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-spinner").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-spinner"));
         Assert.AreEqual("true", component.Find(".bit-dtg-table").GetAttribute("aria-busy"));
     }
 
@@ -2328,14 +2319,14 @@ public class BitDataGridTests : BunitTestContext
 
         var boxes = component.FindAll(".bit-dtg-cell-select input");
         boxes[0].Change(true);
-        CollectionAssert.AreEqual(new[] { 1 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
 
         // Shift is read on mousedown, which precedes the change event carrying the new value.
         var third = component.FindAll(".bit-dtg-cell-select input")[2];
         third.MouseDown(new MouseEventArgs { ShiftKey = true });
         third.Change(true);
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
     }
 
     [TestMethod]
@@ -2357,7 +2348,7 @@ public class BitDataGridTests : BunitTestContext
         fifth.MouseDown(new MouseEventArgs());
         fifth.Change(true);
 
-        CollectionAssert.AreEqual(new[] { 1, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
     }
 
     [TestMethod]
@@ -2380,7 +2371,7 @@ public class BitDataGridTests : BunitTestContext
 
         FirstCellOfRow(component, 2).KeyDown(new KeyboardEventArgs { Key = " " });
 
-        CollectionAssert.AreEqual(new[] { 1, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
     }
 
     private static IElement FirstCellOfRow(IRenderedComponent<BitDataGrid<TestRow>> component, int rowIndex)
@@ -2401,7 +2392,7 @@ public class BitDataGridTests : BunitTestContext
         FirstCellOfRow(component, 0).KeyDown(new KeyboardEventArgs { Key = " " });
         FirstCellOfRow(component, 2).KeyDown(new KeyboardEventArgs { Key = " ", ShiftKey = true });
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
     }
 
     [TestMethod]
@@ -2417,11 +2408,11 @@ public class BitDataGridTests : BunitTestContext
 
         var cell = component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell:not(.bit-dtg-cell-select)");
         cell.KeyDown(new KeyboardEventArgs { Key = " " });
-        CollectionAssert.AreEqual(new[] { 1 }, selected.Select(r => r.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { 1 }, selected.Select(r => r.Id).ToArray());
 
         component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell:not(.bit-dtg-cell-select)")
             .KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
-        CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2, 3, 4, 5 }, selected.Select(r => r.Id).OrderBy(i => i).ToArray());
     }
 
     [TestMethod]
@@ -2438,10 +2429,10 @@ public class BitDataGridTests : BunitTestContext
 
         // The header checkbox covers the page; SelectAllAsync covers every row of the view.
         await component.InvokeAsync(() => component.Instance.SelectAllAsync());
-        Assert.AreEqual(5, selected.Count);
+        Assert.HasCount(5, selected);
 
         await component.InvokeAsync(() => component.Instance.ClearSelectionAsync());
-        Assert.AreEqual(0, selected.Count);
+        Assert.IsEmpty(selected);
     }
 
     [TestMethod]
@@ -2504,7 +2495,7 @@ public class BitDataGridTests : BunitTestContext
 
         Assert.AreEqual(0, copied, "a clipboard the browser refused must be reported as nothing copied");
         var payload = (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!;
-        StringAssert.Contains(payload, "Apple\t-5");
+        Assert.Contains("Apple\t-5", payload);
     }
 
     // --------------------------------------------------------------- Export
@@ -2536,18 +2527,17 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var csv = component.Instance.ToCsv();
-        StringAssert.StartsWith(csv, "Name,Double\r\n");
-        StringAssert.Contains(csv, "Banana,5\r\n");
-        Assert.IsFalse(csv.Contains("Price"), "an Exportable=false column must stay out of the file");
+        Assert.StartsWith("Name,Double\r\n", csv);
+        Assert.Contains("Banana,5\r\n", csv);
+        Assert.DoesNotContain("Price", csv, "an Exportable=false column must stay out of the file");
     }
 
     [TestMethod]
     public void CsvRowsEndWithCrLf()
     {
         var csv = RenderGrid().Instance.ToCsv();
-        StringAssert.Contains(csv, "\r\n");
-        Assert.AreEqual(6, csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries).Length,
-            "a header line plus one line per row");
+        Assert.Contains("\r\n", csv);
+        Assert.HasCount(6, csv.Split("\r\n", StringSplitOptions.RemoveEmptyEntries), "a header line plus one line per row");
     }
 
     [TestMethod]
@@ -2575,8 +2565,8 @@ public class BitDataGridTests : BunitTestContext
         using var reader = new System.IO.StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open());
         var sheet = reader.ReadToEnd();
 
-        StringAssert.Contains(sheet, "<c><v>2</v></c>", "the computed value must be a native numeric cell");
-        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Double</t>");
+        Assert.Contains("<c><v>2</v></c>", sheet, "the computed value must be a native numeric cell");
+        Assert.Contains("<t xml:space=\"preserve\">Double</t>", sheet);
     }
 
     [TestMethod]
@@ -2589,7 +2579,7 @@ public class BitDataGridTests : BunitTestContext
         var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.download"].Single().Arguments;
         Assert.AreEqual("orders.csv", args[0]);
         // Excel decodes a BOM-less CSV with the system code page, so the download carries one.
-        StringAssert.StartsWith((string)args[1]!, "﻿");
+        Assert.StartsWith("﻿", (string)args[1]!);
     }
 
     // ----------------------------------------------------- Toolbar buttons
@@ -2624,8 +2614,8 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderFullToolbar();
 
         var buttons = ToolbarButtons(component);
-        CollectionAssert.AreEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Trim()).ToArray());
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-toolbar .bit-ttp").Count, "a button showing its text needs no tooltip");
+        Assert.AreSequenceEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Trim()).ToArray());
+        Assert.IsEmpty(component.FindAll(".bit-dtg-toolbar .bit-ttp"), "a button showing its text needs no tooltip");
 
         foreach (var button in buttons)
         {
@@ -2634,7 +2624,7 @@ public class BitDataGridTests : BunitTestContext
         }
 
         // The visible text already names every button but Columns, whose name leaves its decorative arrow out.
-        CollectionAssert.AreEqual(new[] { null, null, null, null, "Columns" }, buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(new[] { null, null, null, null, "Columns" }, buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
         Assert.IsTrue(buttons[0].ClassList.Contains("bit-dtg-btn-primary"));
     }
 
@@ -2656,7 +2646,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var buttons = ToolbarButtons(component);
-        Assert.AreEqual(5, buttons.Count);
+        Assert.HasCount(5, buttons);
 
         var glyphs = new[] { "bit-icon--Add", "bit-icon-ex--ClearFilter", "bit-icon-ex--TextDocument", "bit-icon-ex--ExcelDocument", "bit-icon-ex--ColumnOptions" };
         for (var i = 0; i < buttons.Count; i++)
@@ -2701,10 +2691,10 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var buttons = ToolbarButtons(component);
-        CollectionAssert.AreEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Replace("add_circle", "").Trim()).ToArray());
+        Assert.AreSequenceEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Replace("add_circle", "").Trim()).ToArray());
 
         var icons = buttons.Select(b => b.QuerySelector("i.bit-dtg-btn-ico")!).ToArray();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "bit-dtg-btn-ico material-icons",
             "bit-dtg-btn-ico bit-icon bit-icon--FilterSolid",
@@ -2797,7 +2787,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var buttons = ToolbarButtons(component);
-        Assert.AreEqual(5, buttons.Count);
+        Assert.HasCount(5, buttons);
 
         foreach (var button in buttons)
         {
@@ -2832,8 +2822,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Ascending));
 
         // |1| < |2.5| < |-5| < |7| < |10|
-        CollectionAssert.AreEqual(new[] { "Elderberry", "Banana", "Apple", "Date", "Cherry" },
-            FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Elderberry", "Banana", "Apple", "Date", "Cherry" }, FirstCellTexts(component).ToArray());
     }
 
     private sealed class AbsComparer : IComparer<object?>
@@ -2855,14 +2844,14 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
 
         // Every row is its own group here; collapsed groups render headers but no rows.
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-group-row").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.HasCount(5, component.FindAll(".bit-dtg-group-row"));
+        Assert.IsEmpty(component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)"));
 
         await component.InvokeAsync(() => component.Instance.ExpandAllGroupsAsync());
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.HasCount(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)"));
 
         await component.InvokeAsync(() => component.Instance.CollapseAllGroupsAsync());
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)"));
     }
 
     [TestMethod]
@@ -2879,8 +2868,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.UngroupAsync("Name"));
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Price"));
 
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count,
-            "expand-all flips the default every group follows, including groups built later");
+        Assert.HasCount(5, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)"), "expand-all flips the default every group follows, including groups built later");
     }
 
     // --------------------------------------------------------- View events
@@ -2905,22 +2893,22 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-htext")[0].Click();
-        Assert.AreEqual(1, sorts!.Count);
+        Assert.ContainsSingle(sorts!);
         Assert.AreEqual("Name", sorts![0].ColumnId);
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "e"));
-        Assert.AreEqual(1, filters!.Count);
+        Assert.ContainsSingle(filters!);
 
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
-        Assert.AreEqual(1, groups!.Count);
+        Assert.ContainsSingle(groups!);
         await component.InvokeAsync(() => component.Instance.ClearGroupsAsync());
-        Assert.AreEqual(0, groups!.Count);
+        Assert.IsEmpty(groups!);
 
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
         Assert.AreEqual(2, page);
 
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
-        Assert.AreEqual(0, filters!.Count);
+        Assert.IsEmpty(filters!);
     }
 
     // ------------------------------------------------------------- View rows
@@ -2937,8 +2925,8 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.GreaterThan, 2.0));
         await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
 
-        Assert.AreEqual(2, FirstCellTexts(component).Count, "the page holds two rows");
-        CollectionAssert.AreEqual(new[] { "Cherry", "Date", "Banana" }, component.Instance.GetViewItems().Select(r => r.Name).ToList());
+        Assert.HasCount(2, FirstCellTexts(component), "the page holds two rows");
+        Assert.AreSequenceEqual(new[] { "Cherry", "Date", "Banana" }, component.Instance.GetViewItems().Select(r => r.Name).ToList());
     }
 
     [TestMethod]
@@ -2953,26 +2941,26 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnViewChange, (IReadOnlyList<TestRow> rows) => views.Add(rows));
         });
 
-        Assert.AreEqual(1, views.Count, "the first view is reported");
-        Assert.AreEqual(5, views[0].Count);
+        Assert.ContainsSingle(views, "the first view is reported");
+        Assert.HasCount(5, views[0]);
 
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
         component.Render(parameters => parameters.Add(p => p.Striped, false));
-        Assert.AreEqual(1, views.Count, "neither another page nor a render of the parent changes the view");
+        Assert.ContainsSingle(views, "neither another page nor a render of the parent changes the view");
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.GreaterThan, 2.0));
-        Assert.AreEqual(2, views.Count);
-        CollectionAssert.AreEqual(new[] { "Banana", "Cherry", "Date" }, views[1].Select(r => r.Name).ToList());
+        Assert.HasCount(2, views);
+        Assert.AreSequenceEqual(new[] { "Banana", "Cherry", "Date" }, views[1].Select(r => r.Name).ToList());
 
         await component.InvokeAsync(() => component.Instance.SortByAsync("Price", BitDataGridSortDirection.Descending));
-        Assert.AreEqual(3, views.Count, "a new order is a new view");
-        CollectionAssert.AreEqual(new[] { "Cherry", "Date", "Banana" }, views[2].Select(r => r.Name).ToList());
+        Assert.HasCount(3, views, "a new order is a new view");
+        Assert.AreSequenceEqual(new[] { "Cherry", "Date", "Banana" }, views[2].Select(r => r.Name).ToList());
 
         // A row added to the same list in place reaches the view on the parent's next render.
         items.Add(new TestRow { Id = 6, Name = "Fig", Price = 20 });
         component.Render(parameters => parameters.Add(p => p.Striped, true));
-        Assert.AreEqual(4, views.Count);
-        CollectionAssert.AreEqual(new[] { "Fig", "Cherry", "Date", "Banana" }, views[3].Select(r => r.Name).ToList());
+        Assert.HasCount(4, views);
+        Assert.AreSequenceEqual(new[] { "Fig", "Cherry", "Date", "Banana" }, views[3].Select(r => r.Name).ToList());
     }
 
     [TestMethod]
@@ -2996,11 +2984,11 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, DefaultColumns());
         });
 
-        Assert.AreEqual(2, component.Instance.GetViewItems().Count, "only the loaded page is at hand synchronously");
+        Assert.HasCount(2, component.Instance.GetViewItems(), "only the loaded page is at hand synchronously");
 
         IReadOnlyList<TestRow> all = null!;
-        await component.InvokeAsync(async () => all = await component.Instance.GetViewItemsAsync());
-        Assert.AreEqual(5, all.Count);
+        await component.InvokeAsync(async () => all = await component.Instance.GetViewItemsAsync(TestContext.CancellationToken));
+        Assert.HasCount(5, all);
         Assert.IsNull(lastRequest!.Take);
         Assert.AreEqual(0, views, "server mode holds only a window of the view, so it never reports one");
 
@@ -3029,7 +3017,7 @@ public class BitDataGridTests : BunitTestContext
 
         Assert.IsTrue(revealed);
         Assert.AreEqual(2, component.Instance.CurrentPage);
-        CollectionAssert.AreEqual(new[] { "Cherry", "Date" }, FirstCellTexts(component).ToList());
+        Assert.AreSequenceEqual(new[] { "Cherry", "Date" }, FirstCellTexts(component).ToList());
         var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Single().Arguments;
         Assert.AreEqual(5, args[1], "the header row, then the fourth row of the view");
         Assert.AreEqual(-1, args[2], "a row that is not virtualized is rendered, so no position is needed");
@@ -3037,7 +3025,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "an"));
         await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(items[3]));
         Assert.IsFalse(revealed, "a row the filter leaves out is not in the view");
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DataGrid.revealRow"]);
     }
 
     [TestMethod]
@@ -3067,12 +3055,12 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.GroupsInitiallyCollapsed, true);
         });
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Name"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)"));
 
         await component.InvokeAsync(() => component.Instance.RevealItemAsync(items[2]));
 
         var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-group-row)");
-        Assert.AreEqual(1, rows.Count, "only the group holding the row opens");
+        Assert.ContainsSingle(rows, "only the group holding the row opens");
         Assert.AreEqual("Cherry", rows[0].QuerySelector(".bit-dtg-cell")!.TextContent.Trim());
     }
 
@@ -3101,13 +3089,13 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildrenSelector, (Func<TreeNode, IEnumerable<TreeNode>?>)(n => n.Children));
             parameters.Add(p => p.ChildContent, columns);
         });
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row"));
 
         var revealed = false;
         await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(leaf));
 
         Assert.IsTrue(revealed);
-        Assert.AreEqual(4, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count, "root, branch, leaf and branch's sibling");
+        Assert.HasCount(4, component.FindAll(".bit-dtg-body > .bit-dtg-row"), "root, branch, leaf and branch's sibling");
 
         await component.InvokeAsync(async () => revealed = await component.Instance.RevealItemAsync(new TreeNode { Id = 99 }));
         Assert.IsFalse(revealed, "a node that is not in the tree");
@@ -3146,15 +3134,15 @@ public class BitDataGridTests : BunitTestContext
         Action<IReadOnlyList<TestRow>> handler = rows => views.Add(rows);
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.OnViewChange, handler));
 
-        Assert.AreEqual(1, views.Count);
+        Assert.ContainsSingle(views);
         Assert.ThrowsExactly<NotSupportedException>(() => ((IList<TestRow>)views[0])[0] = new TestRow(),
             "the list the grid compares the next view with cannot be changed by the handler");
 
         component.Render(parameters => parameters.Add(p => p.OnViewChange, default(EventCallback<IReadOnlyList<TestRow>>)));
         component.Render(parameters => parameters.Add(p => p.OnViewChange, handler));
 
-        Assert.AreEqual(2, views.Count, "a handler bound again is told the view it has not seen");
-        Assert.AreEqual(5, views[1].Count);
+        Assert.HasCount(2, views, "a handler bound again is told the view it has not seen");
+        Assert.HasCount(5, views[1]);
     }
 
     [TestMethod]
@@ -3179,7 +3167,7 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ChildContent, columns);
         });
 
-        CollectionAssert.AreEqual(new[] { "root", "child" }, view!.Select(n => n.Name).ToList(), "the root beneath its child is the cycle, not a row");
+        Assert.AreSequenceEqual(new[] { "root", "child" }, view!.Select(n => n.Name).ToList(), "the root beneath its child is the cycle, not a row");
     }
 
     [TestMethod]
@@ -3202,15 +3190,15 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.OnViewChange, (IReadOnlyList<TreeNode> rows) => views.Add(rows));
             parameters.Add(p => p.ChildContent, columns);
         });
-        Assert.AreEqual(1, views.Count);
+        Assert.ContainsSingle(views);
 
         component.Find(".bit-dtg-tree-toggle").Click();
-        component.WaitForAssertion(() => Assert.AreEqual(2, views.Count));
-        Assert.AreEqual(2, views[1].Count, "the loaded child joins the view");
+        component.WaitForAssertion(() => Assert.HasCount(2, views));
+        Assert.HasCount(2, views[1], "the loaded child joins the view");
 
         component.Find(".bit-dtg-tree-toggle").Click();
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count));
-        Assert.AreEqual(2, views.Count, "a collapsed branch is still in the view");
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row")));
+        Assert.HasCount(2, views, "a collapsed branch is still in the view");
     }
 
     [TestMethod]
@@ -3233,8 +3221,8 @@ public class BitDataGridTests : BunitTestContext
 
         using var cts = new CancellationTokenSource();
         await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(cts.Token); });
-        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(); });
-        Assert.AreEqual(2, tokens.Count);
+        await component.InvokeAsync(() => { _ = component.Instance.GetViewItemsAsync(TestContext.CancellationToken); });
+        Assert.HasCount(2, tokens);
 
         cts.Cancel();
         Assert.IsTrue(tokens[0].IsCancellationRequested, "the caller's token reaches the provider");
@@ -3256,7 +3244,7 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.AutoFitColumnAsync("Name"));
 
         var template = component.Find(".bit-dtg-table").GetAttribute("style");
-        StringAssert.Contains(template, "240px", "the measured width must become the column's track");
+        Assert.Contains("240px", template!, "the measured width must become the column's track");
     }
 
     // The second press of a double click on a handle fits the column, read off the press's click count: the press opens
@@ -3276,8 +3264,8 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
 
         Assert.AreEqual(1, measures());
-        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the press of a double click starts no drag");
+        Assert.Contains("240px", component.Find(".bit-dtg-table").GetAttribute("style")!);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-resize-overlay"), "the press of a double click starts no drag");
     }
 
     // Over a fast link the overlay of the first press can reach the browser before that press is released, and it goes
@@ -3301,13 +3289,13 @@ public class BitDataGridTests : BunitTestContext
         // press lands on the overlay, which the grid takes down.
         component.Find(".bit-dtg-resize-overlay").PointerMove(new PointerEventArgs { ClientX = 101 });
         component.Find(".bit-dtg-resize-overlay").PointerUp();
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-resize-overlay"));
 
         await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
 
         Assert.AreEqual(1, measures());
-        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the double click leaves no drag behind");
+        Assert.Contains("240px", component.Find(".bit-dtg-table").GetAttribute("style")!);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-resize-overlay"), "the double click leaves no drag behind");
     }
 
     // A column whose handle is gone by the time the second press reaches the overlay - the grid turned off resizing in
@@ -3328,7 +3316,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-resize-overlay").PointerUp();
 
         component.Render(parameters => parameters.Add(p => p.Resizable, false));
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-resizer").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-resizer"));
 
         await component.InvokeAsync(() => overlayPress(new MouseEventArgs { Detail = 2, Button = 0 }));
 
@@ -3407,7 +3395,7 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.AutoFitColumnAsync("Name"));
 
-        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "180px");
+        Assert.Contains("180px", component.Find(".bit-dtg-table").GetAttribute("style")!);
     }
 
     // --------------------------------------------------- Blank filter operators
@@ -3426,20 +3414,20 @@ public class BitDataGridTests : BunitTestContext
 
         var operators = component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0]
             .QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToList();
-        CollectionAssert.Contains(operators, "IsEmpty");
-        CollectionAssert.Contains(operators, "IsNotEmpty");
+        Assert.Contains("IsEmpty", operators);
+        Assert.Contains("IsNotEmpty", operators);
 
         // Choosing a value-less operator applies immediately - there is no value left to enter.
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
 
-        CollectionAssert.AreEqual(new[] { "" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "" }, FirstCellTexts(component).ToArray());
         // The Price column keeps its own editor; only the column that took the blank operator loses one.
         var nameCell = component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[0];
         Assert.AreEqual(0, nameCell.QuerySelectorAll(".bit-dtg-filter-input").Length,
             "a value-less operator must not leave an editor that collects nothing");
 
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsNotEmpty");
-        Assert.AreEqual(4, FirstCellTexts(component).Count);
+        Assert.HasCount(4, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -3455,12 +3443,12 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
-        Assert.AreEqual(1, component.Instance.ActiveFilters.Count);
+        Assert.ContainsSingle(component.Instance.ActiveFilters);
 
         // No text was ever typed, so the descriptor has nothing to re-apply under the new operator.
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("Contains");
-        Assert.AreEqual(0, component.Instance.ActiveFilters.Count);
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.IsEmpty(component.Instance.ActiveFilters);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -3476,7 +3464,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
-        Assert.AreEqual(1, FirstCellTexts(component).Count);
+        Assert.ContainsSingle(FirstCellTexts(component));
 
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
 
@@ -3485,7 +3473,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Contains", component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].GetAttribute("value"));
         var nameCell = component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[0];
         Assert.AreEqual(1, nameCell.QuerySelectorAll(".bit-dtg-filter-input").Length);
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     // ------------------------------------------------------------- Tree ARIA
@@ -3555,12 +3543,12 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("table", table.GetAttribute("role"));
         Assert.AreEqual("7", table.GetAttribute("aria-rowcount"), "a header row, a filter row and five data rows");
         Assert.IsNotNull(table.GetAttribute("aria-colcount"));
-        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count, "no cell of a table is a grid cell");
-        Assert.AreEqual(0, component.FindAll("[tabindex='0'][role=cell], [tabindex='-1'][role=cell]").Count, "and none takes the focus");
+        Assert.IsEmpty(component.FindAll("[role=gridcell]"), "no cell of a table is a grid cell");
+        Assert.IsEmpty(component.FindAll("[tabindex='0'][role=cell], [tabindex='-1'][role=cell]"), "and none takes the focus");
 
         var headers = component.FindAll(".bit-dtg-header-row > [role=columnheader]");
-        Assert.IsTrue(headers.Count > 0);
-        Assert.AreEqual(1, headers.Count(h => h.GetAttribute("aria-sort") == "ascending"), "a table's column header carries its sort as well");
+        Assert.IsNotEmpty(headers);
+        Assert.ContainsSingle(h => h.GetAttribute("aria-sort") == "ascending", headers, "a table's column header carries its sort as well");
 
         var firstRow = component.Find(".bit-dtg-body > .bit-dtg-row");
         Assert.IsTrue(firstRow.QuerySelectorAll(":scope > [aria-colindex]").All(c => c.GetAttribute("role") == "cell"),
@@ -3593,8 +3581,8 @@ public class BitDataGridTests : BunitTestContext
         });
 
         Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
-        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
-        Assert.AreEqual(1, component.FindAll("[role=gridcell][tabindex='0']").Count, "one cell is the grid's tab stop");
+        Assert.IsEmpty(component.FindAll("[role=cell]"));
+        Assert.ContainsSingle(component.FindAll("[role=gridcell][tabindex='0']"), "one cell is the grid's tab stop");
     }
 
     // A detail row is no reason for the grid role: the toggle column's button says whether the detail is open, and a row
@@ -3616,7 +3604,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         Assert.AreEqual("table", rowClick.Find(".bit-dtg-table").GetAttribute("role"));
-        Assert.AreEqual(0, rowClick.FindAll("[role=gridcell]").Count);
+        Assert.IsEmpty(rowClick.FindAll("[role=gridcell]"));
     }
 
     [TestMethod]
@@ -3627,11 +3615,11 @@ public class BitDataGridTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.CellNavigation, true));
         Assert.AreEqual("grid", component.Find(".bit-dtg-table").GetAttribute("role"));
-        Assert.AreEqual(0, component.FindAll("[role=cell]").Count);
+        Assert.IsEmpty(component.FindAll("[role=cell]"));
 
         component.Render(parameters => parameters.Add(p => p.CellNavigation, false));
         Assert.AreEqual("table", component.Find(".bit-dtg-table").GetAttribute("role"));
-        Assert.AreEqual(0, component.FindAll("[role=gridcell]").Count);
+        Assert.IsEmpty(component.FindAll("[role=gridcell]"));
     }
 
     // -------------------------------------------------------- Multi-sorting
@@ -3646,8 +3634,8 @@ public class BitDataGridTests : BunitTestContext
             .Click(new MouseEventArgs { ShiftKey = true });
 
         var sorts = component.Instance.ActiveSorts;
-        Assert.AreEqual(2, sorts.Count, "Shift+click must extend the sort rather than replace it");
-        CollectionAssert.AreEqual(new[] { "Name", "Price" }, sorts.Select(s => s.ColumnId).ToArray());
+        Assert.HasCount(2, sorts, "Shift+click must extend the sort rather than replace it");
+        Assert.AreSequenceEqual(new[] { "Name", "Price" }, sorts.Select(s => s.ColumnId).ToArray());
     }
 
     // ------------------------------------------------------- Range filtering
@@ -3660,18 +3648,17 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", 1d, 7d));
 
         // Half-open: 1 and 2.5 are in, 7 and 10 are out, -5 is below the lower bound.
-        CollectionAssert.AreEqual(new[] { "Banana", "Elderberry" }, FirstCellTexts(component).OrderBy(t => t).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana", "Elderberry" }, FirstCellTexts(component).OrderBy(t => t).ToArray());
 
         var filters = component.Instance.ActiveFilters;
-        Assert.AreEqual(2, filters.Count, "a range must travel as two ordinary comparisons");
-        CollectionAssert.AreEqual(
-            new[] { BitDataGridFilterOperator.GreaterThanOrEqual, BitDataGridFilterOperator.LessThan },
-            filters.Select(f => f.Operator).ToArray());
+        Assert.HasCount(2, filters, "a range must travel as two ordinary comparisons");
+        Assert.AreSequenceEqual(
+            new[] { BitDataGridFilterOperator.GreaterThanOrEqual, BitDataGridFilterOperator.LessThan }, filters.Select(f => f.Operator).ToArray());
 
         // A missing bound clears the column instead of applying half a range.
         await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", null, null));
-        Assert.AreEqual(0, component.Instance.ActiveFilters.Count);
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.IsEmpty(component.Instance.ActiveFilters);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -3690,7 +3677,7 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
         Assert.AreEqual(2, sortReports, "a restore must not feed a persistence handler the state it just supplied");
-        Assert.AreEqual(1, component.Instance.ActiveSorts.Count);
+        Assert.ContainsSingle(component.Instance.ActiveSorts);
     }
 
     // ------------------------------------------------------- Accessible name
@@ -3749,8 +3736,8 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.Height, "300px");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-cell-wrap").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-hcell-wrap").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-cell-wrap"));
+        Assert.IsEmpty(component.FindAll(".bit-dtg-hcell-wrap"));
     }
 
     [TestMethod]
@@ -3766,12 +3753,12 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
-        Assert.IsTrue(rows.Count > 0);
+        Assert.IsNotEmpty(rows);
         foreach (var row in rows)
         {
             var style = row.GetAttribute("style") ?? "";
-            StringAssert.Contains(style, ";height:40px;");
-            Assert.IsFalse(style.Contains("min-height"), style);
+            Assert.Contains(";height:40px;", style);
+            Assert.DoesNotContain("min-height", style, style);
         }
     }
 
@@ -3809,9 +3796,9 @@ public class BitDataGridTests : BunitTestContext
         component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].Click();
         component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].DoubleClick();
 
-        Assert.AreEqual(0, clicked.Count);
-        Assert.AreEqual(0, doubleClicked.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected").Count);
+        Assert.IsEmpty(clicked);
+        Assert.IsEmpty(doubleClicked);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected"));
 
         await component.InvokeAsync(() => component.Instance.OnCellControlClick(false));
         component.FindAll(".bit-dtg-body > .bit-dtg-row")[1].Click();
@@ -3819,7 +3806,7 @@ public class BitDataGridTests : BunitTestContext
 
         Assert.AreEqual("Apple", clicked.Single().Name, "a click on the row itself is the row's again");
         Assert.AreEqual("Apple", doubleClicked.Single().Name);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-body > .bit-dtg-row.bit-dtg-selected"));
     }
 
     [TestMethod]
@@ -3936,18 +3923,18 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BeginEditIsCallableFromCodeAndCommitWritesTheRow()
+    public async global::System.Threading.Tasks.Task BeginEditIsCallableFromCodeAndCommitWritesTheRow()
     {
         var rows = CreateRows();
         var component = RenderGrid(rows, parameters => parameters.Add(p => p.Editable, true));
 
         // The editing lifecycle is public API, so a row double-click (or any chrome of your own) can
         // drive it without going through the command column's buttons.
-        component.InvokeAsync(() => component.Instance.BeginEdit(rows[0])).Wait();
+        await component.InvokeAsync(() => component.Instance.BeginEdit(rows[0])).WaitAsync(TestContext.CancellationToken);
         Assert.AreSame(rows[0], component.Instance.EditingItem);
 
         component.Find(".bit-dtg-row.bit-dtg-editing input.bit-dtg-editor[type=text]").Input("Blueberry");
-        component.InvokeAsync(() => component.Instance.CommitEditAsync()).Wait();
+        await component.InvokeAsync(() => component.Instance.CommitEditAsync()).WaitAsync(TestContext.CancellationToken);
 
         Assert.IsNull(component.Instance.EditingItem);
         Assert.AreEqual("Blueberry", rows[0].Name);
@@ -3993,15 +3980,15 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.ShowToolbar, true);
             parameters.Add(p => p.ShowSearchBox, true);
         });
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-drag-handle").Count);
+        Assert.HasCount(5, component.FindAll(".bit-dtg-drag-handle"));
 
         // A search hides rows exactly like a filter does, so the rendered order no longer maps onto the
         // bound list and a drop would move the row past everything the search removed.
         await component.InvokeAsync(() => component.Instance.SearchAsync("berry"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-drag-handle").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-drag-handle"));
 
         await component.InvokeAsync(() => component.Instance.SearchAsync(null));
-        Assert.AreEqual(5, component.FindAll(".bit-dtg-drag-handle").Count);
+        Assert.HasCount(5, component.FindAll(".bit-dtg-drag-handle"));
     }
 
     // ------------------------------------------------- Keyboard cell navigation
@@ -4029,15 +4016,14 @@ public class BitDataGridTests : BunitTestContext
 
         // Focus the second column's cell in the first row.
         component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell")[1].FocusIn();
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-cell[tabindex='0']").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-cell[tabindex='0']"));
 
         // Hiding that column leaves the focused cell with nothing to render; without a fallback the
         // grid would carry no tabindex 0 at all and drop out of the tab order entirely.
         priceVisible = false;
         component.Render(parameters => parameters.Add(p => p.ChildContent, Columns()));
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-cell[tabindex='0']").Count,
-            "the roving tab stop must fall back to the first cell");
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-cell[tabindex='0']"), "the roving tab stop must fall back to the first cell");
     }
 
     // ------------------------------------------------------- Range filtering
@@ -4048,10 +4034,10 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid();
 
         await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", 1.0, 8.0));
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Filter applied on Price");
+        Assert.Contains("Filter applied on Price", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.ApplyRangeFilterAsync("Price", null, null));
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Filter on Price cleared");
+        Assert.Contains("Filter on Price cleared", component.Find("[aria-live]").TextContent);
     }
 
     // -------------------------------------------------- Selected-rows export
@@ -4076,13 +4062,13 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync(selectedOnly: true));
 
         // The selection is written in view order, not in the order it was picked.
-        StringAssert.StartsWith(csv, "Name,Price\r\nBanana,2.5\r\nCherry,10\r\n");
-        Assert.IsFalse(csv.Contains("Apple"), "unselected rows must stay out of a selected-rows export");
+        Assert.StartsWith("Name,Price\r\nBanana,2.5\r\nCherry,10\r\n", csv);
+        Assert.DoesNotContain("Apple", csv, "unselected rows must stay out of a selected-rows export");
 
         // The full export is unaffected.
         string all = null!;
         await component.InvokeAsync(async () => all = await component.Instance.ToCsvAsync());
-        StringAssert.Contains(all, "Apple");
+        Assert.Contains("Apple", all);
 
         // Nothing selected: only the header line survives.
         await component.InvokeAsync(() => component.Instance.ClearSelectionAsync());
@@ -4114,10 +4100,9 @@ public class BitDataGridTests : BunitTestContext
 
         // 2024-01-01 is serial 45292; a midnight value takes the date-only format (style 3), and a
         // value carrying a time takes the date+time format (style 5).
-        StringAssert.Contains(sheet, "<c s=\"3\"><v>45292</v></c>", "dates must be native date cells, not text");
-        StringAssert.Contains(sheet, "<c s=\"5\"><v>45293.5</v></c>", "a time of day must survive as the serial's fraction");
-        StringAssert.Contains(sheet, "<autoFilter ref=\"A1:B6\"/>",
-            "the header row must carry Excel's own filter affordances");
+        Assert.Contains("<c s=\"3\"><v>45292</v></c>", sheet, "dates must be native date cells, not text");
+        Assert.Contains("<c s=\"5\"><v>45293.5</v></c>", sheet, "a time of day must survive as the serial's fraction");
+        Assert.Contains("<autoFilter ref=\"A1:B6\"/>", sheet, "the header row must carry Excel's own filter affordances");
     }
 
     [TestMethod]
@@ -4141,7 +4126,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var sheet = await ExportSheetXmlAsync(component);
-        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">1899-05-04</t>");
+        Assert.Contains("<t xml:space=\"preserve\">1899-05-04</t>", sheet);
     }
 
     [TestMethod]
@@ -4165,7 +4150,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var sheet = await ExportSheetXmlAsync(component);
-        StringAssert.Contains(sheet, "<t xml:space=\"preserve\">1899-05-04</t>");
+        Assert.Contains("<t xml:space=\"preserve\">1899-05-04</t>", sheet);
     }
 
     // --------------------------------------------------------- Search debounce
@@ -4202,7 +4187,7 @@ public class BitDataGridTests : BunitTestContext
         await Task.WhenAll(keystrokes);
         Assert.AreEqual("che", component.Instance.ActiveSearch);
         Assert.AreEqual(1, searches, "a burst of keystrokes must issue exactly one search");
-        CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
     }
 
     // ------------------------------------------------------- Tree search/filter
@@ -4259,21 +4244,21 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderTree(parameters => parameters.Add(p => p.ShowSearchBox, true));
 
         // Collapsed to the two roots to begin with.
-        CollectionAssert.AreEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
 
         await component.InvokeAsync(() => component.Instance.SearchAsync("cherry"));
 
         // The matching leaf's ancestor is kept so the match stays reachable, and the branch renders
         // expanded even though the user never expanded it; the non-matching branch is pruned.
-        CollectionAssert.AreEqual(new[] { "Fruit", "Cherry" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Cherry" }, TreeRowTexts(component).ToArray());
 
         // A term matching an ancestor keeps its whole subtree.
         await component.InvokeAsync(() => component.Instance.SearchAsync("veget"));
-        CollectionAssert.AreEqual(new[] { "Vegetables", "Carrot" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Vegetables", "Carrot" }, TreeRowTexts(component).ToArray());
 
         // Clearing restores the untouched expand state rather than leaving the branches open.
         await component.InvokeAsync(() => component.Instance.SearchAsync(null));
-        CollectionAssert.AreEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
     }
 
     [TestMethod]
@@ -4289,21 +4274,21 @@ public class BitDataGridTests : BunitTestContext
 
         // The toggle collapses it for real instead of only flipping the chevron.
         branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
-        CollectionAssert.AreEqual(new[] { "Fruit" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit" }, TreeRowTexts(component).ToArray());
         Assert.AreEqual("false", branch().GetAttribute("aria-expanded"));
 
         branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
-        CollectionAssert.AreEqual(new[] { "Fruit", "Cherry" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Cherry" }, TreeRowTexts(component).ToArray());
 
         // A collapse made against one term is not carried into the next, which may keep the branch for
         // a different match entirely.
         branch().QuerySelector(".bit-dtg-tree-toggle")!.Click();
         await component.InvokeAsync(() => component.Instance.SearchAsync("banana"));
-        CollectionAssert.AreEqual(new[] { "Fruit", "Banana" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Banana" }, TreeRowTexts(component).ToArray());
 
         // And it never reaches the real expand state: clearing the search comes back to the roots.
         await component.InvokeAsync(() => component.Instance.SearchAsync(null));
-        CollectionAssert.AreEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Fruit", "Vegetables" }, TreeRowTexts(component).ToArray());
     }
 
     [TestMethod]
@@ -4314,7 +4299,7 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() =>
             component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "arr"));
-        CollectionAssert.AreEqual(new[] { "Vegetables", "Carrot" }, TreeRowTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Vegetables", "Carrot" }, TreeRowTexts(component).ToArray());
 
         // The export includes collapsed branches but still honours the active criteria.
         string csv = null!;
@@ -4345,14 +4330,14 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Unloaded children can't be examined, so pruning would silently search only part of the tree.
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-filter-row").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-search-input").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-filter-row"));
+        Assert.IsEmpty(component.FindAll(".bit-dtg-search-input"));
     }
 
     // ------------------------------------------------------------ Edit guards
 
     [TestMethod]
-    public void ReopeningTheRowAlreadyBeingEditedKeepsTheTypedValue()
+    public async global::System.Threading.Tasks.Task ReopeningTheRowAlreadyBeingEditedKeepsTheTypedValue()
     {
         var rows = CreateRows();
         var component = RenderGrid(rows, parameters => parameters.Add(p => p.Editable, true));
@@ -4361,12 +4346,12 @@ public class BitDataGridTests : BunitTestContext
         component.Find("input.bit-dtg-editor[type=text]").Input("Blueberry");
 
         // A second Edit click (or a double-click on the open row) must not reset the edit buffer.
-        component.InvokeAsync(() => component.Instance.BeginEdit(rows[0])).Wait();
+        await component.InvokeAsync(() => component.Instance.BeginEdit(rows[0])).WaitAsync(TestContext.CancellationToken);
         // The editor never writes the buffer back into the input it is typed into (a render landing
         // mid-typing would put the input back a keystroke), so its starting value stays as rendered.
         Assert.AreEqual("Banana", component.Find("input.bit-dtg-editor[type=text]").GetAttribute("value"));
 
-        component.InvokeAsync(() => component.Instance.CommitEditAsync()).Wait();
+        await component.InvokeAsync(() => component.Instance.CommitEditAsync()).WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual("Blueberry", rows[0].Name);
     }
 
@@ -4386,8 +4371,8 @@ public class BitDataGridTests : BunitTestContext
 
         // Both announce the same sentence, but a live region whose text does not actually change is
         // not re-read, so the two updates must differ (by an unspoken zero-width space).
-        StringAssert.Contains(first, "Filter applied on Name");
-        StringAssert.Contains(second, "Filter applied on Name");
+        Assert.Contains("Filter applied on Name", first);
+        Assert.Contains("Filter applied on Name", second);
         Assert.AreNotEqual(first, second, "a repeated announcement must still be a text change");
     }
 
@@ -4398,18 +4383,18 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple));
 
         await component.InvokeAsync(() => component.Instance.SelectAllAsync());
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "5 rows selected");
+        Assert.Contains("5 rows selected", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.ClearSelectionAsync());
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Selection cleared");
+        Assert.Contains("Selection cleared", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.SortByAsync("Name", BitDataGridSortDirection.Ascending));
         await component.InvokeAsync(() => component.Instance.ClearSortsAsync());
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Sorting cleared");
+        Assert.Contains("Sorting cleared", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "a"));
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "All filters cleared");
+        Assert.Contains("All filters cleared", component.Find("[aria-live]").TextContent);
     }
 
     [TestMethod]
@@ -4476,7 +4461,7 @@ public class BitDataGridTests : BunitTestContext
 
         // The third click would normally drop the sort; here it restarts the cycle instead.
         header().Click();
-        Assert.AreEqual(1, component.Instance.ActiveSorts.Count, "the column must stay sorted");
+        Assert.ContainsSingle(component.Instance.ActiveSorts, "the column must stay sorted");
         Assert.AreEqual(BitDataGridSortDirection.Ascending, component.Instance.ActiveSorts[0].Direction);
     }
 
@@ -4501,7 +4486,7 @@ public class BitDataGridTests : BunitTestContext
         header().Click();
         header().Click();
         header().Click();
-        Assert.AreEqual(0, component.Instance.ActiveSorts.Count, "the column override wins over the grid");
+        Assert.IsEmpty(component.Instance.ActiveSorts, "the column override wins over the grid");
     }
 
     // -------------------------------------------------- Group state snapshots
@@ -4521,20 +4506,19 @@ public class BitDataGridTests : BunitTestContext
 
         var state = component.Instance.GetState();
         Assert.IsTrue(state.GroupsCollapsed);
-        Assert.AreEqual(1, state.GroupExpansionOverrides.Count);
+        Assert.ContainsSingle(state.GroupExpansionOverrides);
 
         // Expand everything, then restore: the snapshot must bring back the one open group.
         await component.InvokeAsync(() => component.Instance.ExpandAllGroupsAsync());
-        Assert.IsTrue(component.FindAll(".bit-dtg-body > .bit-dtg-row").Count > withOneOpen);
+        Assert.IsGreaterThan(withOneOpen, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
 
         await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
-        Assert.AreEqual(withOneOpen, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count);
+        Assert.HasCount(withOneOpen, component.FindAll(".bit-dtg-body > .bit-dtg-row"));
 
         // A later parameter set must not undo the restore: GroupsInitiallyCollapsed is still false, and
         // re-establishing that default would collapse everything the snapshot just re-opened.
         component.Render(parameters => parameters.Add(p => p.Striped, false));
-        Assert.AreEqual(withOneOpen, component.FindAll(".bit-dtg-body > .bit-dtg-row").Count,
-            "a re-render must not discard the restored group expansion");
+        Assert.HasCount(withOneOpen, component.FindAll(".bit-dtg-body > .bit-dtg-row"), "a re-render must not discard the restored group expansion");
     }
 
     // ------------------------------------------------------- Row numbers
@@ -4549,13 +4533,11 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.PageSize, 2);
         });
 
-        CollectionAssert.AreEqual(new[] { "1", "2" },
-            component.FindAll(".bit-dtg-cell-rownumber").Select(c => c.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2" }, component.FindAll(".bit-dtg-cell-rownumber").Select(c => c.TextContent.Trim()).ToArray());
 
         // The numbering is the row's position in the dataset, so page 2 continues rather than restarting.
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
-        CollectionAssert.AreEqual(new[] { "3", "4" },
-            component.FindAll(".bit-dtg-cell-rownumber").Select(c => c.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "3", "4" }, component.FindAll(".bit-dtg-cell-rownumber").Select(c => c.TextContent.Trim()).ToArray());
 
         // The gutter is a real grid column, so it takes colindex 1 and pushes the data columns along.
         var firstRow = component.FindAll(".bit-dtg-body > .bit-dtg-row")[0];
@@ -4572,7 +4554,7 @@ public class BitDataGridTests : BunitTestContext
 
         string csv = null!;
         await component.InvokeAsync(async () => csv = await component.Instance.ToCsvAsync());
-        StringAssert.StartsWith(csv, "Name,Price\r\n", "the gutter is chrome, not data");
+        Assert.StartsWith("Name,Price\r\n", csv, "the gutter is chrome, not data");
     }
 
     [TestMethod]
@@ -4581,19 +4563,19 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid();
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.In, new[] { "apple", "Cherry" }));
-        CollectionAssert.AreEquivalent(new[] { "Apple", "Cherry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Apple", "Cherry" }, FirstCellTexts(component).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.NotIn, new[] { "apple", "Cherry" }));
-        CollectionAssert.AreEquivalent(new[] { "Banana", "Date", "Elderberry" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana", "Date", "Elderberry" }, FirstCellTexts(component).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Members are coerced to the column's type like a single value is.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.In, new object[] { "10", 7 }));
         // Name still excludes Cherry, so only Date (7) is left.
-        CollectionAssert.AreEqual(new[] { "Date" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Date" }, FirstCellTexts(component).ToArray());
 
         // An empty set carries no criterion, so it clears the column's filter instead of emptying the grid.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Price", BitDataGridFilterOperator.In, Array.Empty<double>()));
-        Assert.IsFalse(component.Instance.ActiveFilters.Any(f => f.ColumnId == "Price"));
+        Assert.DoesNotContain(f => f.ColumnId == "Price", component.Instance.ActiveFilters);
     }
 
     [TestMethod]
@@ -4645,14 +4627,14 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var textOps = component.FindAll(".bit-dtg-filter-op")[0].QuerySelectorAll("option").Select(o => o.GetAttribute("value")).ToList();
-        CollectionAssert.Contains(textOps, "In");
-        CollectionAssert.Contains(textOps, "NotIn");
+        Assert.Contains("In", textOps);
+        Assert.Contains("NotIn", textOps);
 
         component.FindAll(".bit-dtg-filter-op")[0].Change("In");
         var nameInput = component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[0].QuerySelector(".bit-dtg-filter-input")!;
         Assert.AreEqual("a, b, c…", nameInput.GetAttribute("placeholder"));
         nameInput.Change("banana,  date ,");
-        CollectionAssert.AreEquivalent(new[] { "Banana", "Date" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana", "Date" }, FirstCellTexts(component).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // A number list is typed as text (a number input cannot hold commas); an entry that does not parse is dropped.
         component.FindAll(".bit-dtg-filter-op")[1].Change("NotIn");
@@ -4660,7 +4642,7 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreNotEqual("number", priceInput.GetAttribute("type"));
         Assert.AreEqual("decimal", priceInput.GetAttribute("inputmode"));
         priceInput.Change("7, x");
-        CollectionAssert.AreEquivalent(new[] { "Banana" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("7, x", component.FindAll(".bit-dtg-filter-row .bit-dtg-hcell")[1].QuerySelector(".bit-dtg-filter-input")!.GetAttribute("value"),
             "the box keeps what was typed; the entry that does not parse is simply not applied");
     }
@@ -4705,13 +4687,13 @@ public class BitDataGridTests : BunitTestContext
         Assert.IsFalse(captured.Disabled);
 
         await component.InvokeAsync(() => captured!.ApplyAsync(BitDataGridFilterOperator.In, new List<string> { "Apple", "Date" }));
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
         Assert.AreEqual(1, filterChanges);
         Assert.AreEqual("In:Apple|Date", component.Find(".custom-filter").TextContent);
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Name");
+        Assert.Contains("Name", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => captured!.ClearAsync());
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
         Assert.AreEqual("none", component.Find(".custom-filter").TextContent);
         Assert.AreEqual(2, filterChanges);
     }
@@ -4727,7 +4709,7 @@ public class BitDataGridTests : BunitTestContext
 
         var other = RenderGrid();
         await other.InvokeAsync(() => other.Instance.ApplyStateAsync(restored));
-        CollectionAssert.AreEquivalent(new[] { "Banana", "Cherry" }, FirstCellTexts(other).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana", "Cherry" }, FirstCellTexts(other).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -4747,12 +4729,12 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() =>
         {
             typing = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").InputAsync(new ChangeEventArgs { Value = "err" });
-            Assert.AreEqual(5, FirstCellTexts(component).Count, "nothing applies before the debounce elapses");
+            Assert.HasCount(5, FirstCellTexts(component), "nothing applies before the debounce elapses");
         });
 
         // The keystroke's handler returns once its debounce has run out and the filter is applied and rendered.
         await typing;
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
         Assert.AreEqual(1, changes);
 
         // The blur that follows (a change event with the text already applied) does not apply it again.
@@ -4780,7 +4762,7 @@ public class BitDataGridTests : BunitTestContext
             typing = component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").InputAsync(new ChangeEventArgs { Value = "err" });
             return component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").ChangeAsync(new ChangeEventArgs { Value = "err" });
         });
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
         Assert.AreEqual(1, changes);
 
         // The keystroke's handler returns once its superseded debounce does - awaited, rather than a sleep past it.
@@ -4798,11 +4780,11 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Input("err");
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
         Assert.AreEqual("err", component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").GetAttribute("value"), "the box keeps what was typed");
 
         component.Find(".bit-dtg-filter-input:not([inputmode=decimal])").Change("err");
-        Assert.AreEqual(2, FirstCellTexts(component).Count);
+        Assert.HasCount(2, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -4816,7 +4798,7 @@ public class BitDataGridTests : BunitTestContext
 
         // Applied at once, but the box is not rewritten to the parsed value's own formatting ("2.5").
         component.Find("input.bit-dtg-filter-input[inputmode=decimal]").Input("2.50");
-        Assert.AreEqual(1, FirstCellTexts(component).Count);
+        Assert.ContainsSingle(FirstCellTexts(component));
         Assert.AreEqual("2.50", component.Find("input.bit-dtg-filter-input[inputmode=decimal]").GetAttribute("value"));
 
         // A programmatic filter replaces what was typed, and the box follows it.
@@ -4848,9 +4830,9 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var negative = component.FindAll(".negative");
-        Assert.AreEqual(1, negative.Count, "only Apple's price is negative");
-        StringAssert.Contains(negative[0].ClassName, "price");
-        StringAssert.EndsWith(negative[0].GetAttribute("style"), "padding:1px;color:red;", "the selector's style comes last");
+        Assert.ContainsSingle(negative, "only Apple's price is negative");
+        Assert.Contains("price", negative[0].ClassName!);
+        Assert.EndsWith("padding:1px;color:red;", negative[0].GetAttribute("style"), "the selector's style comes last");
         Assert.AreEqual(0, component.FindAll(".bit-dtg-cell[style*='color:red']").Count(c => !c.ClassList.Contains("negative")));
     }
 
@@ -4860,11 +4842,11 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.ShowSearchBox, true));
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "err"));
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Filter applied on Name. Rows: 2");
+        Assert.Contains("Filter applied on Name. Rows: 2", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "zzz"));
         Assert.AreEqual("No records match the current filters.", component.Find(".bit-dtg-empty").TextContent.Trim());
-        StringAssert.Contains(component.Find("[aria-live]").TextContent, "Rows: 0");
+        Assert.Contains("Rows: 0", component.Find("[aria-live]").TextContent);
 
         await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
         await component.InvokeAsync(() => component.Instance.SearchAsync("zzz"));
@@ -4897,22 +4879,21 @@ public class BitDataGridTests : BunitTestContext
 
         // Cell mode makes the cells navigable without CellNavigation, and leaves the row only its Delete button.
         Assert.AreEqual("0", DataCell(component, 0, 0).GetAttribute("tabindex"));
-        CollectionAssert.AreEqual(new[] { "Delete" },
-            component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell-command button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Delete" }, component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].QuerySelectorAll(".bit-dtg-cell-command button").Select(b => b.TextContent.Trim()).ToArray());
 
         DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "F2" });
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-editor").Count, "only the Price cell opens");
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-editor"), "only the Price cell opens");
         Assert.AreEqual("Price", component.Instance.EditingColumnId);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-row.bit-dtg-editing").Count, "only the open cell is marked, not its row");
+        Assert.IsEmpty(component.FindAll(".bit-dtg-row.bit-dtg-editing"), "only the open cell is marked, not its row");
         Assert.IsTrue(DataCell(component, 0, 1).ClassList.Contains("bit-dtg-cell-editing"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.focusEditor"),
-            "the focus moves into the editor that opened");
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.DataGrid.focusEditor",
+Context.JSInterop.Invocations, "the focus moves into the editor that opened");
 
         component.Find("input.bit-dtg-editor").Input("4.5");
         DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.AreEqual(4.5, items[0].Price);
-        CollectionAssert.AreEqual(new[] { items[0] }, saved);
+        Assert.AreSequenceEqual(new[] { items[0] }, saved);
         Assert.IsNull(component.Instance.EditingItem);
     }
 
@@ -4962,7 +4943,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find("input.bit-dtg-editor").Input("abc");
         DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.IsNotNull(component.Instance.EditingItem);
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-editor-error").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-editor-error"));
     }
 
     // A dialog, a panel or a modal of a cell's template stops no key, so the cell hears the keys pressed in it on their
@@ -5001,7 +4982,7 @@ public class BitDataGridTests : BunitTestContext
         component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
             .KeyDown(new KeyboardEventArgs { Key = "Delete" });
 
-        Assert.AreEqual(5, FirstCellTexts(component).Count);
+        Assert.HasCount(5, FirstCellTexts(component));
     }
 
     [TestMethod]
@@ -5040,7 +5021,7 @@ public class BitDataGridTests : BunitTestContext
 
         component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
         component.Find(".bit-dtg-column-chooser").KeyDown(new KeyboardEventArgs { Key = "Escape", AltKey = true });
-        Assert.AreEqual(1, component.FindAll(".bit-dtg-column-chooser").Count, "the chooser stays open");
+        Assert.ContainsSingle(component.FindAll(".bit-dtg-column-chooser"), "the chooser stays open");
     }
 
     [TestMethod]
@@ -5077,7 +5058,7 @@ public class BitDataGridTests : BunitTestContext
         DataCell(plain, 0, 0).KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.IsNull(plain.Instance.EditingItem);
         Assert.IsNull(DataCell(plain, 0, 0).GetAttribute("data-bit-esc"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.focusRowCommand"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.DataGrid.focusRowCommand", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -5087,9 +5068,9 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(items, parameters => parameters.Add(p => p.Editable, true));
 
         component.FindAll(".bit-dtg-cell-command button")[0].Click(); // Edit
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.focusEditor"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.DataGrid.focusEditor", Context.JSInterop.Invocations);
         Assert.IsNull(component.Instance.EditingColumnId, "Row mode opens the whole row");
-        Assert.AreEqual(2, component.FindAll(".bit-dtg-editor").Count);
+        Assert.HasCount(2, component.FindAll(".bit-dtg-editor"));
 
         component.FindAll(".bit-dtg-cell-command button")[0].Click(); // Save
         var focusCommand = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.DataGrid.focusRowCommand");
@@ -5115,11 +5096,10 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-cell-command button")[0].Click();
-        CollectionAssert.AreEqual(new[] { "", "Yes", "No" },
-            component.FindAll("select.bit-dtg-editor-tristate option").Select(o => o.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "", "Yes", "No" }, component.FindAll("select.bit-dtg-editor-tristate option").Select(o => o.TextContent).ToArray());
     }
 
-    public class NullableFlagRow
+    internal class NullableFlagRow
     {
         public bool? Flag { get; set; }
     }
@@ -5165,10 +5145,10 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("text", Box().GetAttribute("type"));
         Box().Input("-");
         Assert.AreEqual("-", Box().GetAttribute("value"), "a number not finished yet stays in the box");
-        Assert.AreEqual(5, FirstCellTexts(component).Count, "and filters nothing");
+        Assert.HasCount(5, FirstCellTexts(component), "and filters nothing");
 
         Box().Input("2,5");
-        CollectionAssert.AreEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Banana" }, FirstCellTexts(component).ToArray());
         Assert.AreEqual("2,5", Box().GetAttribute("value"));
     }
 
@@ -5190,7 +5170,7 @@ public class BitDataGridTests : BunitTestContext
         // Row mode: a key typed on another row opens that row, but never by throwing away the open one's edits.
         DataCell(component, 1, 0).KeyDown(new KeyboardEventArgs { Key = "x" });
         Assert.AreEqual("Blueberry", items[0].Name);
-        CollectionAssert.AreEqual(new[] { items[0] }, saved);
+        Assert.AreSequenceEqual(new[] { items[0] }, saved);
         Assert.AreSame(items[1], component.Instance.EditingItem);
     }
 
@@ -5294,7 +5274,7 @@ public class BitDataGridTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.ShowName, false));
 
         component.WaitForAssertion(() => Assert.AreEqual(reads + 1, component.Instance.Reads));
-        Assert.AreEqual(0, component.Instance.Grid!.ActiveSorts.Count);
+        Assert.IsEmpty(component.Instance.Grid!.ActiveSorts);
     }
 
 
@@ -5355,7 +5335,7 @@ public class BitDataGridTests : BunitTestContext
         Enabled = 1,
     }
 
-    public class EnumRow<TValue>
+    internal class EnumRow<TValue>
     {
         public int Id { get; set; }
         public TValue Kind { get; set; } = default!;
@@ -5424,16 +5404,16 @@ public class BitDataGridTests : BunitTestContext
     {
         var component = RenderFruitGrid(configure: parameters => parameters.Add(p => p.Filterable, true));
 
-        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Green apple", "Banana", "Cherry" }, CellTexts(component));
 
         var filter = component.Find("select.bit-dtg-filter-input");
-        CollectionAssert.AreEqual(new[] { "All", "Green apple", "Banana", "Cherry" }, OptionTexts(filter));
+        Assert.AreSequenceEqual(new[] { "All", "Green apple", "Banana", "Cherry" }, OptionTexts(filter));
         // The values stay the members' names, which is what the filter parses back.
-        CollectionAssert.AreEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
+        Assert.AreSequenceEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
 
         filter.Change("Apple");
 
-        CollectionAssert.AreEqual(new[] { "Green apple" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Green apple" }, CellTexts(component));
         Assert.AreEqual(Fruit.Apple, component.Instance.ActiveFilters.Single().Value);
     }
 
@@ -5445,8 +5425,8 @@ public class BitDataGridTests : BunitTestContext
         component.FindAll(".bit-dtg-cell-command button")[0].Click();
 
         var editor = component.Find("select.bit-dtg-editor");
-        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, OptionTexts(editor));
-        CollectionAssert.AreEqual(new[] { "Apple", "Banana", "Cherry" }, OptionValues(editor));
+        Assert.AreSequenceEqual(new[] { "Green apple", "Banana", "Cherry" }, OptionTexts(editor));
+        Assert.AreSequenceEqual(new[] { "Apple", "Banana", "Cherry" }, OptionValues(editor));
         Assert.AreEqual("Apple", editor.GetAttribute("value"));
     }
 
@@ -5460,7 +5440,7 @@ public class BitDataGridTests : BunitTestContext
         });
 
         var cells = component.FindAll(".bit-dtg-body .bit-dtg-cell[title]");
-        CollectionAssert.AreEqual(new[] { "Green apple", "Banana", "Cherry" }, cells.Select(c => c.GetAttribute("title")).ToArray());
+        Assert.AreSequenceEqual(new[] { "Green apple", "Banana", "Cherry" }, cells.Select(c => c.GetAttribute("title")).ToArray());
 
         var checkboxes = component.FindAll(".bit-dtg-body input[type=checkbox]");
         Assert.AreEqual("Select row: Green apple", checkboxes[0].GetAttribute("aria-label"));
@@ -5473,8 +5453,8 @@ public class BitDataGridTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.GroupByAsync("Kind"));
 
-        CollectionAssert.AreEqual(new[] { "Kind: Green apple", "Kind: Banana", "Kind: Cherry" }, GroupTitles(component));
-        StringAssert.Contains(component.Find(".bit-dtg-group-cell button").GetAttribute("aria-label"), "Green apple");
+        Assert.AreSequenceEqual(new[] { "Kind: Green apple", "Kind: Banana", "Kind: Cherry" }, GroupTitles(component));
+        Assert.Contains("Green apple", component.Find(".bit-dtg-group-cell button").GetAttribute("aria-label")!);
     }
 
     [TestMethod]
@@ -5537,12 +5517,12 @@ public class BitDataGridTests : BunitTestContext
             parameters.Add(p => p.SearchDebounce, 0);
         });
 
-        CollectionAssert.AreEqual(new[] { "Hidden", "Missing", "Blank" }, CellTexts(component));
-        CollectionAssert.AreEqual(new[] { "All", "Hidden", "Missing", "Blank" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
-        StringAssert.Contains(component.Instance.ToCsv(), "Hidden");
+        Assert.AreSequenceEqual(new[] { "Hidden", "Missing", "Blank" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "All", "Hidden", "Missing", "Blank" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
+        Assert.Contains("Hidden", component.Instance.ToCsv());
 
         component.Find(".bit-dtg-search-input").Input("hid");
-        CollectionAssert.AreEqual(new[] { "Hidden" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Hidden" }, CellTexts(component));
     }
 
     [TestMethod]
@@ -5550,7 +5530,7 @@ public class BitDataGridTests : BunitTestContext
     {
         var component = RenderEnumGrid([Access.None, Access.Read, Access.Read | Access.Write, Access.Read | Access.Delete, (Access)8]);
 
-        CollectionAssert.AreEqual(new[] { "None", "Read access", "Read access, Write access", "Read access, Delete", "8" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "None", "Read access", "Read access, Write access", "Read access, Delete", "8" }, CellTexts(component));
     }
 
     [TestMethod]
@@ -5560,8 +5540,8 @@ public class BitDataGridTests : BunitTestContext
 
         var filter = component.Find("select.bit-dtg-filter-input");
         // Two members of one value: each option shows its own member, or the two could not be told apart.
-        CollectionAssert.AreEquivalent(new[] { "All", "Off", "Active", "Enabled" }, OptionTexts(filter));
-        CollectionAssert.AreEquivalent(new[] { "", "Off", "Active", "Enabled" }, OptionValues(filter));
+        Assert.AreSequenceEqual(new[] { "All", "Off", "Active", "Enabled" }, OptionTexts(filter), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "", "Off", "Active", "Enabled" }, OptionValues(filter), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -5570,11 +5550,11 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderEnumGrid([Fruit.Apple, Fruit.Cherry], parameters => parameters.Add(p => p.Filterable, true),
             new Dictionary<string, object?> { ["Format"] = "D" });
 
-        CollectionAssert.AreEqual(new[] { "0", "2" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "0", "2" }, CellTexts(component));
 
         var filter = component.Find("select.bit-dtg-filter-input");
-        CollectionAssert.AreEqual(new[] { "All", "0", "1", "2" }, OptionTexts(filter));
-        CollectionAssert.AreEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
+        Assert.AreSequenceEqual(new[] { "All", "0", "1", "2" }, OptionTexts(filter));
+        Assert.AreSequenceEqual(new[] { "", "Apple", "Banana", "Cherry" }, OptionValues(filter));
     }
 
     [TestMethod]
@@ -5597,7 +5577,7 @@ public class BitDataGridTests : BunitTestContext
             Assert.AreEqual("Kind\r\nApple\r\n", payload);
 
             var sheet = await SheetXmlAsync(component);
-            StringAssert.Contains(sheet, "<t xml:space=\"preserve\">Apple</t>");
+            Assert.Contains("<t xml:space=\"preserve\">Apple</t>", sheet);
             Assert.IsFalse(sheet.Contains("Green apple") || sheet.Contains("Fruit:"), "an export must keep the members' names");
         }
     }
@@ -5619,16 +5599,16 @@ public class BitDataGridTests : BunitTestContext
             ["ExportValue"] = (Func<EnumRow<Fruit>, object?>)(r => r.Code),
         });
 
-        CollectionAssert.AreEqual(new[] { "APPLE", "BANANA" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "APPLE", "BANANA" }, CellTexts(component));
         Assert.AreEqual("Kind\r\nC1\r\nC2\r\n", component.Instance.ToCsv());
 
         await component.InvokeAsync(() => component.Instance.CopyToClipboardAsync(component.Instance.Items!.First()));
         Assert.AreEqual("Kind\r\nC1\r\n", (string)Context.JSInterop.Invocations["BitBlazorUI.DataGrid.copyToClipboard"].Single().Arguments[0]!);
-        StringAssert.Contains(await SheetXmlAsync(component), "<t xml:space=\"preserve\">C2</t>");
+        Assert.Contains("<t xml:space=\"preserve\">C2</t>", await SheetXmlAsync(component));
 
         // The quick search of a column with an ExportValue matches that value.
         component.Find(".bit-dtg-search-input").Input("c2");
-        CollectionAssert.AreEqual(new[] { "BANANA" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "BANANA" }, CellTexts(component));
     }
 
     [TestMethod]
@@ -5644,12 +5624,12 @@ public class BitDataGridTests : BunitTestContext
         });
 
         // Banana is left to the default text by the null the delegate returns for it.
-        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Banana", "Fruit:Cherry" }, CellTexts(component));
-        CollectionAssert.AreEqual(new[] { "All", "Fruit:Apple", "Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
+        Assert.AreSequenceEqual(new[] { "Fruit:Apple", "Banana", "Fruit:Cherry" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "All", "Fruit:Apple", "Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-filter-input")));
 
         // The quick search matches the text the cells show, not the members' names.
         component.Find(".bit-dtg-search-input").Input("fruit:ch");
-        CollectionAssert.AreEqual(new[] { "Fruit:Cherry" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Fruit:Cherry" }, CellTexts(component));
     }
 
     [TestMethod]
@@ -5659,7 +5639,7 @@ public class BitDataGridTests : BunitTestContext
 
         component.FindAll(".bit-dtg-cell-command button")[0].Click();
 
-        CollectionAssert.AreEqual(new[] { "Fruit:Apple", "Fruit:Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-editor")));
+        Assert.AreSequenceEqual(new[] { "Fruit:Apple", "Fruit:Banana", "Fruit:Cherry" }, OptionTexts(component.Find("select.bit-dtg-editor")));
     }
 
     [TestMethod]
@@ -5676,13 +5656,13 @@ public class BitDataGridTests : BunitTestContext
 
         // Nothing shows "fruit:b" yet.
         component.Find(".bit-dtg-search-input").Input("fruit:b");
-        Assert.AreEqual(0, GroupTitles(component).Length);
+        Assert.IsEmpty(GroupTitles(component));
 
         // The search the view was worked out with is worked out again with the new text, and the header writes it.
         component.Render(parameters => parameters.Add(p => p.ChildContent,
             KindColumn<Fruit>(new Dictionary<string, object?> { ["ValueText"] = (Func<object, string?>)(v => $"Fruit:{v}") })));
 
-        CollectionAssert.AreEqual(new[] { "Kind: Fruit:Banana" }, GroupTitles(component));
+        Assert.AreSequenceEqual(new[] { "Kind: Fruit:Banana" }, GroupTitles(component));
     }
 
     [TestMethod]
@@ -5695,14 +5675,14 @@ public class BitDataGridTests : BunitTestContext
         }, queryable: true);
 
         component.Find(".bit-dtg-search-input").Input("green");
-        CollectionAssert.AreEqual(new[] { "Green apple" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Green apple" }, CellTexts(component));
 
         component.Find(".bit-dtg-search-input").Input("an");
-        CollectionAssert.AreEqual(new[] { "Banana" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Banana" }, CellTexts(component));
 
         // A term no member's text holds matches no row, rather than leaving the search off.
         component.Find(".bit-dtg-search-input").Input("zzz");
-        Assert.AreEqual(0, CellTexts(component).Length);
+        Assert.IsEmpty(CellTexts(component));
     }
 
     [TestMethod]
@@ -5711,12 +5691,12 @@ public class BitDataGridTests : BunitTestContext
         var yesNo = new Dictionary<string, object?> { ["ValueText"] = (Func<object, string?>)(v => (bool)v ? "Yes" : "No") };
 
         var filtered = RenderEnumGrid([true, false], parameters => parameters.Add(p => p.Filterable, true), yesNo);
-        CollectionAssert.AreEqual(new[] { "Yes", "No" }, CellTexts(filtered));
-        CollectionAssert.AreEqual(new[] { "All", "Yes", "No" }, OptionTexts(filtered.Find("select.bit-dtg-filter-input")));
+        Assert.AreSequenceEqual(new[] { "Yes", "No" }, CellTexts(filtered));
+        Assert.AreSequenceEqual(new[] { "All", "Yes", "No" }, OptionTexts(filtered.Find("select.bit-dtg-filter-input")));
 
         var edited = RenderEnumGrid(new bool?[] { true, null }, parameters => parameters.Add(p => p.Editable, true), yesNo);
         edited.FindAll(".bit-dtg-cell-command button")[0].Click();
-        CollectionAssert.AreEqual(new[] { "", "Yes", "No" }, OptionTexts(edited.Find("select.bit-dtg-editor-tristate")));
+        Assert.AreSequenceEqual(new[] { "", "Yes", "No" }, OptionTexts(edited.Find("select.bit-dtg-editor-tristate")));
     }
 
     [TestMethod]
@@ -5728,11 +5708,11 @@ public class BitDataGridTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Kind", BitDataGridFilterOperator.Contains, "express"));
-        CollectionAssert.AreEqual(new[] { "Express" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Express" }, CellTexts(component));
 
         // A value the delegate leaves to its own text is matched by it.
         await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Kind", BitDataGridFilterOperator.StartsWith, "y"));
-        CollectionAssert.AreEqual(new[] { "Y2" }, CellTexts(component));
+        Assert.AreSequenceEqual(new[] { "Y2" }, CellTexts(component));
     }
 
     [TestMethod]
@@ -5751,4 +5731,6 @@ public class BitDataGridTests : BunitTestContext
         Assert.IsNull((Access.Delete | (Access)8).FindDisplayName(), "a value Enum writes as a number has no member to name");
         Assert.AreSame(EnumExtensions.GetEnumMembers(typeof(Fruit)), EnumExtensions.GetEnumMembers(typeof(Fruit)), "the members of a type are read once");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

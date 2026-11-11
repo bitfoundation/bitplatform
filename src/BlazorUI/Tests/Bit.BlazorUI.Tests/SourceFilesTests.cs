@@ -81,7 +81,7 @@ public class SourceFilesTests
     {
         var failure = Assert.ThrowsExactly<AssertFailedException>(() => SourceFiles.GetScssBlock(".a {\n}", ".b {", "No b."));
 
-        StringAssert.Contains(failure.Message, "No b.");
+        Assert.Contains("No b.", failure.Message);
     }
 
     [TestMethod]
@@ -99,9 +99,9 @@ public class SourceFilesTests
 
         var rules = SourceFiles.GetScssRules(stylesheet);
 
-        CollectionAssert.AreEqual(new[] { "@media (hover: hover)", ".a:hover, .b-#{$x}", "&::after", ".c" }, rules.Select(r => r.Header).ToArray());
-        CollectionAssert.AreEqual(new[] { "@media (hover: hover)", ".a:hover, .b-#{$x}" }, rules[2].Ancestors.ToArray());
-        Assert.AreEqual(0, rules[3].Ancestors.Count);
+        Assert.AreSequenceEqual(new[] { "@media (hover: hover)", ".a:hover, .b-#{$x}", "&::after", ".c" }, rules.Select(r => r.Header).ToArray());
+        Assert.AreSequenceEqual(new[] { "@media (hover: hover)", ".a:hover, .b-#{$x}" }, rules[2].Ancestors.ToArray());
+        Assert.IsEmpty(rules[3].Ancestors);
         Assert.AreEqual(stylesheet.IndexOf(".a:hover", System.StringComparison.Ordinal), rules[1].Index);
     }
 
@@ -112,8 +112,8 @@ public class SourceFilesTests
 
         var rules = SourceFiles.GetScssRules(stylesheet);
 
-        CollectionAssert.AreEqual(new[] { "--x: #{$y}", "@include b", "color: var(--x)" }, rules[0].Declarations.ToArray());
-        CollectionAssert.AreEqual(new[] { "background: red" }, rules[1].Declarations.ToArray());
+        Assert.AreSequenceEqual(new[] { "--x: #{$y}", "@include b", "color: var(--x)" }, rules[0].Declarations.ToArray());
+        Assert.AreSequenceEqual(new[] { "background: red" }, rules[1].Declarations.ToArray());
     }
 
     [TestMethod]
@@ -132,8 +132,8 @@ public class SourceFilesTests
         var list = SourceFiles.GetPrivatePropertyLists(stylesheet).Single();
 
         Assert.AreEqual("a-private-properties", list.Name);
-        CollectionAssert.AreEqual(new[] { "x", "y", "z" }, list.Names.ToArray());
-        CollectionAssert.AreEqual(new[] { ".bit-a", "@mixin b" }, list.Resets.Select(r => r.Rule).ToArray());
+        Assert.AreSequenceEqual(new[] { "x", "y", "z" }, list.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { ".bit-a", "@mixin b" }, list.Resets.Select(r => r.Rule).ToArray());
         Assert.IsTrue(list.Resets.All(r => r.Prefix == "bit-a"));
     }
 
@@ -145,7 +145,7 @@ public class SourceFilesTests
 
         var failure = Assert.ThrowsExactly<AssertFailedException>(() => SourceFiles.GetPrivatePropertyLists(stylesheet));
 
-        StringAssert.Contains(failure.Message, "\"b c\"");
+        Assert.Contains("\"b c\"", failure.Message);
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class SourceFilesTests
         // BitIcon registers its list with @property as well as resetting it.
         var stylesheet = "$a-private-properties: a;\n@each $name in $a-private-properties {\n    @property --bit-a-#{$name} {\n        inherits: false;\n    }\n}";
 
-        Assert.AreEqual(0, SourceFiles.GetPrivatePropertyLists(stylesheet).Single().Resets.Count);
+        Assert.IsEmpty(SourceFiles.GetPrivatePropertyLists(stylesheet).Single().Resets);
     }
 
     [TestMethod]

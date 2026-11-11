@@ -17,11 +17,9 @@ public sealed class BitAccentColorSsrTests
     {
         var script = BitAccentColorSsr.InlineHeadScript;
 
-        StringAssert.StartsWith(script, "<script>", StringComparison.Ordinal,
-            "InlineHeadScript must be drop-in <head> markup, so it has to carry its own script element.");
-        StringAssert.EndsWith(script, "</script>", StringComparison.Ordinal);
-        StringAssert.Contains(script, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
-            "The wrapped body and the raw body must be the same script, or the two APIs drift apart.");
+        Assert.StartsWith("<script>", script, StringComparison.Ordinal, "InlineHeadScript must be drop-in <head> markup, so it has to carry its own script element.");
+        Assert.EndsWith("</script>", script, StringComparison.Ordinal);
+        Assert.Contains(BitAccentColorSsr.InlineHeadScriptBody, script, StringComparison.Ordinal, "The wrapped body and the raw body must be the same script, or the two APIs drift apart.");
     }
 
     [TestMethod]
@@ -36,12 +34,11 @@ public sealed class BitAccentColorSsrTests
     public void BuildInlineHeadScriptEmitsAnEncodedNonceAttribute()
     {
         var script = BitAccentColorSsr.BuildInlineHeadScript("abc123");
-        StringAssert.StartsWith(script, "<script nonce=\"abc123\">", StringComparison.Ordinal);
+        Assert.StartsWith("<script nonce=\"abc123\">", script, StringComparison.Ordinal);
 
         // A tampered nonce must not be able to break out of the attribute context.
         var tampered = BitAccentColorSsr.BuildInlineHeadScript("x\"><script>alert(1)</script>");
-        StringAssert.Contains(tampered, "nonce=\"x&quot;&gt;&lt;script&gt;", StringComparison.Ordinal,
-            "The nonce must be HTML-attribute-encoded so it cannot inject markup.");
+        Assert.Contains("nonce=\"x&quot;&gt;&lt;script&gt;", tampered, StringComparison.Ordinal, "The nonce must be HTML-attribute-encoded so it cannot inject markup.");
     }
 
     [TestMethod]
@@ -51,11 +48,11 @@ public sealed class BitAccentColorSsrTests
         // from BitAccentColorNames is what keeps a rename from silently breaking persistence.
         var body = BitAccentColorSsr.InlineHeadScriptBody;
 
-        StringAssert.Contains(body, $"'{BitAccentColorNames.StorageKey}'", StringComparison.Ordinal);
-        StringAssert.Contains(body, $"'{BitAccentColorNames.CookieName}'", StringComparison.Ordinal);
-        StringAssert.Contains(body, $"'{BitAccentColorNames.CssStorageKey}'", StringComparison.Ordinal);
-        StringAssert.Contains(body, $"'{BitAccentColorNames.Attribute}'", StringComparison.Ordinal);
-        StringAssert.Contains(body, $"'{BitAccentColorNames.StyleElementId}'", StringComparison.Ordinal);
+        Assert.Contains($"'{BitAccentColorNames.StorageKey}'", body, StringComparison.Ordinal);
+        Assert.Contains($"'{BitAccentColorNames.CookieName}'", body, StringComparison.Ordinal);
+        Assert.Contains($"'{BitAccentColorNames.CssStorageKey}'", body, StringComparison.Ordinal);
+        Assert.Contains($"'{BitAccentColorNames.Attribute}'", body, StringComparison.Ordinal);
+        Assert.Contains($"'{BitAccentColorNames.StyleElementId}'", body, StringComparison.Ordinal);
     }
 
     [TestMethod,
@@ -87,11 +84,11 @@ public sealed class BitAccentColorSsrTests
 
         if (text.Length == 0)
         {
-            Assert.AreEqual(0, map.Count, "Both overloads are built from the same resolution, so they cannot disagree on emptiness.");
+            Assert.IsEmpty(map, "Both overloads are built from the same resolution, so they cannot disagree on emptiness.");
         }
         else
         {
-            Assert.AreEqual(1, map.Count);
+            Assert.ContainsSingle(map);
             var token = map[BitAccentColorNames.Attribute] as string;
             Assert.AreEqual(text, $"{BitAccentColorNames.Attribute}=\"{token}\"",
                 "Both overloads are built from the same resolution, so they cannot drift apart.");
@@ -117,10 +114,8 @@ public sealed class BitAccentColorSsrTests
             }
             else
             {
-                StringAssert.Contains(css, darkScope, StringComparison.Ordinal,
-                    $"The {item.Name} accent must have a dark-scheme rule, or dark visitors flash the packaged palette.");
-                StringAssert.Contains(css, lightScope, StringComparison.Ordinal,
-                    $"The {item.Name} accent must have a light-scheme rule, or light visitors flash the packaged palette.");
+                Assert.Contains(darkScope, css, StringComparison.Ordinal, $"The {item.Name} accent must have a dark-scheme rule, or dark visitors flash the packaged palette.");
+                Assert.Contains(lightScope, css, StringComparison.Ordinal, $"The {item.Name} accent must have a light-scheme rule, or light visitors flash the packaged palette.");
             }
         }
     }
@@ -130,7 +125,7 @@ public sealed class BitAccentColorSsrTests
     {
         var css = BitAccentColorSsr.BuildStaticCss([new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" }]);
 
-        StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal);
+        Assert.Contains($"[{BitAccentColorNames.Attribute}=\"dc143c\"]", css, StringComparison.Ordinal);
         Assert.IsFalse(css.Contains(PurpleToken, StringComparison.Ordinal),
             "A custom accent list replaces the defaults; the default palettes must not leak in.");
     }
@@ -141,16 +136,14 @@ public sealed class BitAccentColorSsrTests
         var css = BitAccentColorSsr.BuildSwatchMarkerCss();
 
         var purpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
-        StringAssert.Contains(css, $":root[{BitAccentColorNames.Attribute}=\"{purpleToken}\"] [{BitAccentColorNames.SwatchAttribute}=\"{purpleToken}\"]", StringComparison.Ordinal,
-            "The ring must key on the attribute the inline head script sets pre-paint, and on the token the swatch carries.");
+        Assert.Contains($":root[{BitAccentColorNames.Attribute}=\"{purpleToken}\"] [{BitAccentColorNames.SwatchAttribute}=\"{purpleToken}\"]", css, StringComparison.Ordinal, "The ring must key on the attribute the inline head script sets pre-paint, and on the token the swatch carries.");
 
         var blueToken = BitAccentColorPresets.Blue.TrimStart('#').ToLowerInvariant();
-        StringAssert.Contains(css, $":root:not([{BitAccentColorNames.Attribute}]) [{BitAccentColorNames.SwatchAttribute}=\"{blueToken}\"]", StringComparison.Ordinal,
-            "With no bit-accent attribute set (no override), the packaged primary's swatch must ring.");
+        Assert.Contains($":root:not([{BitAccentColorNames.Attribute}]) [{BitAccentColorNames.SwatchAttribute}=\"{blueToken}\"]", css, StringComparison.Ordinal, "With no bit-accent attribute set (no override), the packaged primary's swatch must ring.");
 
         // The declarations mirror .bit-acs-act, which is what marks the swatch once the C# state
         // takes over at hydration - a different ring would visibly change at that moment.
-        StringAssert.Contains(css, "outline:0.125rem solid var(--bit-acs-clr)", StringComparison.Ordinal);
+        Assert.Contains("outline:0.125rem solid var(--bit-acs-clr)", css, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -169,8 +162,8 @@ public sealed class BitAccentColorSsrTests
         // rendered, where an ArgumentException from the palette factory takes the whole page down.
         var css = BitAccentColorSsr.BuildStaticCss([new BitAccentColorItem { Name = "Crimson", Color = "DC143C" }]);
 
-        StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal);
-        StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal, "The palette must actually be derived, not just scoped.");
+        Assert.Contains($"[{BitAccentColorNames.Attribute}=\"dc143c\"]", css, StringComparison.Ordinal);
+        Assert.Contains("--bit-clr-pri:", css, StringComparison.Ordinal, "The palette must actually be derived, not just scoped.");
     }
 
     [TestMethod]
@@ -182,8 +175,7 @@ public sealed class BitAccentColorSsrTests
             new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" },
         ]);
 
-        StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal,
-            "One unusable entry must not cost the visitor the accents that are usable.");
+        Assert.Contains($"[{BitAccentColorNames.Attribute}=\"dc143c\"]", css, StringComparison.Ordinal, "One unusable entry must not cost the visitor the accents that are usable.");
         Assert.IsFalse(css.Contains("rebeccapurple", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -193,7 +185,7 @@ public sealed class BitAccentColorSsrTests
         var css = BitAccentColorSsr.BuildPrerenderCss("dc143c", [new BitAccentColorItem { Name = "Crimson", Color = "DC143C" }]);
 
         Assert.IsNotNull(css, "A bare-token accent is offered like any other, so the per-request style has to derive it.");
-        StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal);
+        Assert.Contains("--bit-clr-pri:", css, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -211,12 +203,9 @@ public sealed class BitAccentColorSsrTests
         var css = BitAccentColorSsr.BuildPrerenderCss(BitAccentColorPresets.Purple);
 
         Assert.IsNotNull(css);
-        StringAssert.Contains(css, $":root:root[{BitThemeAttributeNames.Theme}$=dark]{{", StringComparison.Ordinal,
-            "The dark rule must key on the same bit-theme attribute the theme scripts set.");
-        StringAssert.Contains(css, $":root:root:not([{BitThemeAttributeNames.Theme}$=dark]){{", StringComparison.Ordinal,
-            "The light rule must cover every non-dark theme, or a custom-named theme paints unaccented.");
-        StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal,
-            "The palette must actually carry the derived tokens.");
+        Assert.Contains($":root:root[{BitThemeAttributeNames.Theme}$=dark]{{", css, StringComparison.Ordinal, "The dark rule must key on the same bit-theme attribute the theme scripts set.");
+        Assert.Contains($":root:root:not([{BitThemeAttributeNames.Theme}$=dark]){{", css, StringComparison.Ordinal, "The light rule must cover every non-dark theme, or a custom-named theme paints unaccented.");
+        Assert.Contains("--bit-clr-pri:", css, StringComparison.Ordinal, "The palette must actually carry the derived tokens.");
     }
 
     [TestMethod]
@@ -224,13 +213,11 @@ public sealed class BitAccentColorSsrTests
     {
         var script = BitAccentColorSsr.PrerenderCssGuardScript;
 
-        StringAssert.StartsWith(script, "<script>", StringComparison.Ordinal);
-        StringAssert.EndsWith(script, "</script>", StringComparison.Ordinal);
+        Assert.StartsWith("<script>", script, StringComparison.Ordinal);
+        Assert.EndsWith("</script>", script, StringComparison.Ordinal);
 
-        StringAssert.Contains(script, $"getAttribute('{BitAccentColorNames.Attribute}')", StringComparison.Ordinal,
-            "The guard compares against the accent the inline head script resolved onto the root element.");
-        StringAssert.Contains(script, $"style[id=\"{BitAccentColorNames.StyleElementId}\"][{BitAccentColorNames.StyleAccentAttribute}]", StringComparison.Ordinal,
-            "Only the marked (server-emitted) style may be dropped; the snapshot the inline head script injects carries the accent it just resolved.");
+        Assert.Contains($"getAttribute('{BitAccentColorNames.Attribute}')", script, StringComparison.Ordinal, "The guard compares against the accent the inline head script resolved onto the root element.");
+        Assert.Contains($"style[id=\"{BitAccentColorNames.StyleElementId}\"][{BitAccentColorNames.StyleAccentAttribute}]", script, StringComparison.Ordinal, "Only the marked (server-emitted) style may be dropped; the snapshot the inline head script injects carries the accent it just resolved.");
     }
 
     [TestMethod]
@@ -238,11 +225,9 @@ public sealed class BitAccentColorSsrTests
     {
         Assert.AreEqual(BitAccentColorSsr.PrerenderCssGuardScript, BitAccentColorSsr.BuildPrerenderCssGuardScript(null));
 
-        StringAssert.StartsWith(BitAccentColorSsr.BuildPrerenderCssGuardScript("abc123"), "<script nonce=\"abc123\">", StringComparison.Ordinal,
-            "The guard runs under the same CSP as the inline head script, so it needs the nonce as much.");
+        Assert.StartsWith("<script nonce=\"abc123\">", BitAccentColorSsr.BuildPrerenderCssGuardScript("abc123"), StringComparison.Ordinal, "The guard runs under the same CSP as the inline head script, so it needs the nonce as much.");
 
-        StringAssert.Contains(BitAccentColorSsr.BuildPrerenderCssGuardScript("x\"><script>alert(1)</script>"), "nonce=\"x&quot;&gt;&lt;script&gt;", StringComparison.Ordinal,
-            "The nonce must be HTML-attribute-encoded so it cannot inject markup.");
+        Assert.Contains("nonce=\"x&quot;&gt;&lt;script&gt;", BitAccentColorSsr.BuildPrerenderCssGuardScript("x\"><script>alert(1)</script>"), StringComparison.Ordinal, "The nonce must be HTML-attribute-encoded so it cannot inject markup.");
     }
 
     [TestMethod]
@@ -258,9 +243,7 @@ public sealed class BitAccentColorSsrTests
     [TestMethod]
     public void DefaultAccentsAreTheSixPresetHues()
     {
-        CollectionAssert.AreEqual(
-            new[] { BitAccentColorPresets.Blue, BitAccentColorPresets.Purple, BitAccentColorPresets.Green, BitAccentColorPresets.Orange, BitAccentColorPresets.Teal, BitAccentColorPresets.Rose },
-            BitAccentColorSwitcher.DefaultAccents.Select(a => a.Color).ToArray(),
-            "The switcher's defaults are pinned to BitAccentColorPresets so the packaged palette (Blue first, i.e. \"no override\") stays the neutral swatch.");
+        Assert.AreSequenceEqual(
+            new[] { BitAccentColorPresets.Blue, BitAccentColorPresets.Purple, BitAccentColorPresets.Green, BitAccentColorPresets.Orange, BitAccentColorPresets.Teal, BitAccentColorPresets.Rose }, BitAccentColorSwitcher.DefaultAccents.Select(a => a.Color).ToArray(), "The switcher's defaults are pinned to BitAccentColorPresets so the packaged palette (Blue first, i.e. \"no override\") stays the neutral swatch.");
     }
 }

@@ -111,7 +111,7 @@ public abstract class PerformanceTestBase
             }
         }
 
-        await _browserLock.WaitAsync();
+        await _browserLock.WaitAsync(TestContext.CancellationToken);
         try
         {
             _browser ??= await LaunchBrowser();
@@ -481,23 +481,23 @@ public abstract class PerformanceTestBase
         if (settle)
         {
             // First pass: queues finalizers, second pass: collects them.
-            await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
-            await Task.Delay(250);
+            await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info", TestContext.CancellationToken);
+            await Task.Delay(250, TestContext.CancellationToken);
         }
 
         HttpResponseMessage response;
         try
         {
-            response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info");
+            response = await _sharedHttpClient.GetAsync($"{BaseUrl}/api/gc-info", TestContext.CancellationToken);
         }
         catch (TaskCanceledException)
         {
-            Assert.Fail("GetServerGCMemoryMB: /api/gc-info request timed out. The test host may be unresponsive.");
+            throw new global::System.InvalidOperationException("GetServerGCMemoryMB: /api/gc-info request timed out. The test host may be unresponsive.");
             return 0; // unreachable, but satisfies the compiler
         }
         catch (Exception ex)
         {
-            Assert.Fail($"GetServerGCMemoryMB: /api/gc-info request failed: {ex.Message}");
+            throw new global::System.InvalidOperationException($"GetServerGCMemoryMB: /api/gc-info request failed: {ex.Message}", ex);
             return 0; // unreachable, but satisfies the compiler
         }
 
@@ -506,7 +506,7 @@ public abstract class PerformanceTestBase
             Assert.Fail($"GetServerGCMemoryMB: /api/gc-info returned {(int)response.StatusCode} {response.ReasonPhrase}");
         }
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         try
         {
@@ -515,7 +515,7 @@ public abstract class PerformanceTestBase
         }
         catch (Exception ex)
         {
-            Assert.Fail($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}");
+            throw new global::System.InvalidOperationException($"GetServerGCMemoryMB: failed to parse 'allocatedMB' from /api/gc-info response. {ex.Message}. Body: {json[..Math.Min(json.Length, 200)]}", ex);
             return 0; // unreachable
         }
     }
@@ -536,7 +536,7 @@ public abstract class PerformanceTestBase
     /// the server, or in wasm mode in the browser's .NET runtime, recorded as <c>.server</c> in either - and the browser's
     /// (<see cref="MeasureInBrowserAsync"/>).
     /// </summary>
-    protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
+    private protected void RecordInteraction(string metric, int count, double serverMs, BrowserTiming browser)
     {
         Record($"{metric}.server", serverMs, "ms", count);
         RecordBrowserTiming(metric, count, browser);
@@ -546,7 +546,7 @@ public abstract class PerformanceTestBase
     /// Records the browser's half of an interaction alone (<see cref="MeasureInBrowserAsync"/>), for one the page's own
     /// stopwatch cannot see the end of - rows a virtualized list renders after the page's render.
     /// </summary>
-    protected void RecordBrowserTiming(string metric, int count, BrowserTiming browser)
+    private protected void RecordBrowserTiming(string metric, int count, BrowserTiming browser)
     {
         Record($"{metric}.browser", browser.Duration, "ms", count);
         Record($"{metric}.domNodes", browser.DomNodes, "nodes", count);
@@ -561,7 +561,7 @@ public abstract class PerformanceTestBase
     /// <param name="LongTasks">The tasks of 50 ms or more the main thread ran in between, wholly or in part; null where the browser does not report them (all but Chromium).</param>
     /// <param name="LongTaskTime">How much of those tasks' time fell in between: a task begun before the click (the click's own) or ended after the end counts for its part inside.</param>
     /// <param name="DomNodes">The elements on the page once it was over.</param>
-    public sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
+    internal sealed record BrowserTiming(double Duration, int? LongTasks, double? LongTaskTime, int DomNodes);
 
     // Arms the page for one interaction: performance.mark "bit-perf:start" as the trigger's click reaches the document,
     // "bit-perf:end" in the frame after the end shows - the #status text reading the given status, or an element matching
@@ -623,7 +623,7 @@ public abstract class PerformanceTestBase
     /// </summary>
     /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null, longer for an
     /// interaction known to take more than its 30 seconds in one of the render modes.</param>
-    protected Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done, TimeSpan? timeout = null)
+    private protected Task<BrowserTiming> MeasureInBrowserAsync(ILocator trigger, string done, TimeSpan? timeout = null)
     {
         return MeasureAsync(trigger, new { status = done, selector = (string?)null }, $"#status did not read '{done}'", timeout);
     }
@@ -635,7 +635,7 @@ public abstract class PerformanceTestBase
     /// Fails when the selector matches before the click, or not within <paramref name="timeout"/> of it.
     /// </summary>
     /// <param name="timeout">How long to wait for the end: <see cref="DefaultTimeout"/> when null.</param>
-    protected async Task<BrowserTiming> MeasureInBrowserUntilAsync(ILocator trigger, string selector, TimeSpan? timeout = null)
+    private protected async Task<BrowserTiming> MeasureInBrowserUntilAsync(ILocator trigger, string selector, TimeSpan? timeout = null)
     {
         if (await Page.Locator(selector).CountAsync() > 0)
         {
@@ -659,7 +659,7 @@ public abstract class PerformanceTestBase
         JsonElement timing;
         try
         {
-            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(wait);
+            timing = await Page.EvaluateAsync<JsonElement>("() => window.__bitPerfInteraction").WaitAsync(wait, TestContext.CancellationToken);
         }
         catch (System.TimeoutException exception)
         {

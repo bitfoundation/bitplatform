@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -78,14 +78,14 @@ public sealed class LayerFeatureTests
         Assert.AreEqual(0.5f, copy.Opacity);
         Assert.AreEqual(BinkBlendMode.Multiply, copy.BlendMode);
         Assert.AreEqual(2, copy.Count);
-        Assert.IsFalse(copy.Elements.Any(e => e.Id == a.Id || e.Id == b.Id), "The copies have new ids.");
+        Assert.DoesNotContain(e => e.Id == a.Id || e.Id == b.Id, copy.Elements, "The copies have new ids.");
         Guid copyGroup = copy.Elements[0].GroupIds.Single();
         Assert.AreNotEqual(group, copyGroup);
         Assert.AreEqual(copyGroup, copy.Elements[1].GroupIds.Single(), "The copies are grouped together, not with the originals.");
         Assert.AreEqual(1, history.UndoCount);
 
         Assert.IsTrue(history.Undo());
-        Assert.AreEqual(2, document.Layers.Count);
+        Assert.HasCount(2, document.Layers);
         Assert.AreEqual(2, document.ElementCount);
     }
 }

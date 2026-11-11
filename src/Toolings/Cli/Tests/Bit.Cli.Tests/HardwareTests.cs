@@ -18,11 +18,11 @@ public class HardwareTests
 
         var containers = Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true }, HostOs.Windows).Single();
         Assert.AreEqual("virtualization", containers.Id);
-        StringAssert.Contains(containers.Text, "the containers Aspire runs need it");
+        Assert.Contains("the containers Aspire runs need it", containers.Text);
         Assert.AreEqual(Hardware.VirtualizationVideo, containers.Link);
 
-        StringAssert.Contains(Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true, Platforms = android }, HostOs.MacOS).Single().Text, "the containers Aspire runs and the Android emulator");
-        StringAssert.Contains(Hardware.Evaluate(off, new ToolNeeds { Platforms = android }, HostOs.Linux).Single().Text, "KVM");
+        Assert.Contains("the containers Aspire runs and the Android emulator", Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true, Platforms = android }, HostOs.MacOS).Single().Text);
+        Assert.Contains("KVM", Hardware.Evaluate(off, new ToolNeeds { Platforms = android }, HostOs.Linux).Single().Text);
 
         Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = false }, HostOs.Windows));
         Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = true }, HostOs.Windows), "A project that runs without its containers gets no virtualization warning.");
@@ -44,8 +44,8 @@ public class HardwareTests
 
         if (text is not null)
         {
-            StringAssert.Contains(warnings.Single().Text, text);
-            StringAssert.Contains(warnings.Single().Text, "16 GB");
+            Assert.Contains(text, warnings.Single().Text);
+            Assert.Contains("16 GB", warnings.Single().Text);
         }
     }
 
@@ -83,7 +83,7 @@ public class HardwareTests
         if (OperatingSystem.IsWindows() is false)
             return;
 
-        StringAssert.Contains(Hardware.WindowsScript(@"d:\Projects\Contoso"), "DriveLetter='D'");
+        Assert.Contains("DriveLetter='D'", Hardware.WindowsScript(@"d:\Projects\Contoso"));
     }
 
     [TestMethod]
@@ -168,6 +168,6 @@ public class HardwareTests
 
         Assert.IsNull(facts.VirtualizationEnabled);
         Assert.IsNull(facts.OnHardDisk);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "diskutil"));
+        Assert.DoesNotContain(c => c.FileName is "diskutil", host.Runner.Calls);
     }
 }

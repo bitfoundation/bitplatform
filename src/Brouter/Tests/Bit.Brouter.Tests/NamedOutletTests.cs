@@ -34,7 +34,7 @@ public class NamedOutletTests : BunitTestContext
         {
             Assert.IsNotNull(cut.Find("[data-testid=b-main]"));
             // Switching to a view-less sibling clears the sidebar.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=a-side]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=a-side]"));
             Assert.AreEqual(string.Empty, cut.Find("[data-testid=side-outlet]").TextContent.Trim());
         });
     }
@@ -46,8 +46,8 @@ public class NamedOutletTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("42"));
-            Assert.IsTrue(cut.Find("[data-testid=u-side]").TextContent.Contains("42"));
+            Assert.Contains("42", cut.Find("[data-testid=u-main]").TextContent);
+            Assert.Contains("42", cut.Find("[data-testid=u-side]").TextContent);
         });
     }
 
@@ -55,24 +55,22 @@ public class NamedOutletTests : BunitTestContext
     public async Task Parameter_change_preserves_outlet_hosted_content_and_named_views_as_a_renavigation()
     {
         var (cut, brouter) = RenderAt<NamedOutletHost>("http://localhost/dash/u/1");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 1")));
+        cut.WaitForAssertion(() => Assert.Contains("user 1", cut.Find("[data-testid=u-main]").TextContent));
 
         await cut.InvokeAsync(() => brouter.Navigate("/dash/u/2"));
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 2"));
-            Assert.IsTrue(cut.Find("[data-testid=u-side]").TextContent.Contains("sidebar for 2"));
+            Assert.Contains("user 2", cut.Find("[data-testid=u-main]").TextContent);
+            Assert.Contains("sidebar for 2", cut.Find("[data-testid=u-side]").TextContent);
 
             // Same entries re-bound, not fresh sessions: the primary content AND the named view
             // each saw exactly one activation and resolved the parameter change as a renavigation -
             // never a deactivation - proving the outlet preserved their component state.
-            CollectionAssert.AreEqual(
-                new[] { "activated:first=True", "renavigated:/dash/u/1->/dash/u/2" },
-                cut.Instance.UMainLog);
-            CollectionAssert.AreEqual(
-                new[] { "activated:first=True", "renavigated:/dash/u/1->/dash/u/2" },
-                cut.Instance.USideLog);
+            Assert.AreSequenceEqual(
+                new[] { "activated:first=True", "renavigated:/dash/u/1->/dash/u/2" }, cut.Instance.UMainLog);
+            Assert.AreSequenceEqual(
+                new[] { "activated:first=True", "renavigated:/dash/u/1->/dash/u/2" }, cut.Instance.USideLog);
         });
     }
 
@@ -82,20 +80,20 @@ public class NamedOutletTests : BunitTestContext
         Services.Configure<BrouterOptions>(o => o.RemountOnParameterChange = true);
 
         var (cut, brouter) = RenderAt<NamedOutletHost>("http://localhost/dash/u/1");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 1")));
+        cut.WaitForAssertion(() => Assert.Contains("user 1", cut.Find("[data-testid=u-main]").TextContent));
 
         await cut.InvokeAsync(() => brouter.Navigate("/dash/u/2"));
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Find("[data-testid=u-main]").TextContent.Contains("user 2"));
-            Assert.IsTrue(cut.Find("[data-testid=u-side]").TextContent.Contains("sidebar for 2"));
+            Assert.Contains("user 2", cut.Find("[data-testid=u-main]").TextContent);
+            Assert.Contains("sidebar for 2", cut.Find("[data-testid=u-side]").TextContent);
 
             // Fresh sessions in BOTH outlets: the primary content and the named view were each
             // disposed with the route's rebuild and mounted anew - never re-bound as a renavigation.
             var rebuilt = new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" };
-            CollectionAssert.AreEqual(rebuilt, cut.Instance.UMainLog);
-            CollectionAssert.AreEqual(rebuilt, cut.Instance.USideLog);
+            Assert.AreSequenceEqual(rebuilt, cut.Instance.UMainLog);
+            Assert.AreSequenceEqual(rebuilt, cut.Instance.USideLog);
         });
     }
 }

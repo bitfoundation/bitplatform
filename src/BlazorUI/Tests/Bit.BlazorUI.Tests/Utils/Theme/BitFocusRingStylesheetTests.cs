@@ -82,8 +82,7 @@ public sealed class BitFocusRingStylesheetTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A component draws its focus color with focus-ring(), which never reads --bit-shd-focus-ring - use focus-ring-own(): {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A component draws its focus color with focus-ring(), which never reads --bit-shd-focus-ring - use focus-ring-own(): {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -105,8 +104,7 @@ public sealed class BitFocusRingStylesheetTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A focus-ring-own() color always resolves, so the ring is never the global one: {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A focus-ring-own() color always resolves, so the ring is never the global one: {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -144,8 +142,7 @@ public sealed class BitFocusRingStylesheetTests
                                    .Select(call => (call.Groups["args"].Value, UnconditionalValues(stylesheet, call.Groups["args"].Value, EnclosingHeaders(stylesheet, call.Index)).Any(ReadsThePrimaryFocusColor)))
                                    .ToArray();
 
-        CollectionAssert.AreEqual(new[] { true, true, true, false, false }, resolved.Select(r => r.Item2).ToArray(),
-                                  string.Join(", ", resolved.Select(r => $"{r.Item1}: {r.Item2}")));
+        Assert.AreSequenceEqual(new[] { true, true, true, false, false }, resolved.Select(r => r.Item2).ToArray(), string.Join(", ", resolved.Select(r => $"{r.Item1}: {r.Item2}")));
     }
 
     [TestMethod]
@@ -154,15 +151,15 @@ public sealed class BitFocusRingStylesheetTests
         var functions = SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss").Replace("\r\n", "\n");
         var mixin = SourceFiles.GetScssBlock(functions, "@mixin focus-ring-own($color, $also: null) {");
 
-        StringAssert.Contains(mixin, "--bit-focus-ring-own: #{focus-ring-layers($color)};");
-        StringAssert.Contains(mixin, "box-shadow: var(--bit-focus-ring-own, #{$box-shadow-focus-ring})#{$kept};");
+        Assert.Contains("--bit-focus-ring-own: #{focus-ring-layers($color)};", mixin);
+        Assert.Contains("box-shadow: var(--bit-focus-ring-own, #{$box-shadow-focus-ring})#{$kept};", mixin);
 
         // The two layers are the recipe of the global token, composed against the element that draws them.
         var layers = SourceFiles.GetScssBlock(functions, "@function focus-ring-layers($color, $offset: $shp-focus-ring-offset) {");
-        StringAssert.Contains(layers, "0 0 0 #{$offset} #{$clr-bg-pri}, 0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color}");
+        Assert.Contains("0 0 0 #{$offset} #{$clr-bg-pri}, 0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color}", layers);
 
         // Box-shadows are stripped in forced-colors mode, so the Highlight outline stays on every ring.
-        StringAssert.Contains(mixin, "@include focus-ring-forced-colors($shp-focus-ring-offset);");
+        Assert.Contains("@include focus-ring-forced-colors($shp-focus-ring-offset);", mixin);
     }
 
     [TestMethod]
@@ -173,7 +170,7 @@ public sealed class BitFocusRingStylesheetTests
         // invalid at computed-value time - so the property is registered as one that does not inherit.
         var general = SourceFiles.Read("Bit.BlazorUI", "Styles", "general.scss").Replace("\r\n", "\n");
 
-        StringAssert.Contains(general, "@property --bit-focus-ring-own {\n    syntax: \"*\";\n    inherits: false;\n}");
+        Assert.Contains("@property --bit-focus-ring-own {\n    syntax: \"*\";\n    inherits: false;\n}", general);
     }
 
     [TestMethod]
@@ -183,17 +180,17 @@ public sealed class BitFocusRingStylesheetTests
         var mixin = SourceFiles.GetScssBlock(functions, "@mixin focus-ring-inset($color, $width: $shp-focus-ring-width, $offset: 0, $band: null, $also: null) {");
 
         // An outline drawn inwards paints nothing outside the element, so no clipping ancestor can cut it off.
-        StringAssert.Contains(mixin, "outline: #{$width} solid #{$color};");
-        StringAssert.Contains(mixin, "outline-offset: calc(-1 * #{$width});");
-        StringAssert.Contains(mixin, "outline-offset: calc(-1 * (#{$width} + #{$offset}));");
+        Assert.Contains("outline: #{$width} solid #{$color};", mixin);
+        Assert.Contains("outline-offset: calc(-1 * #{$width});", mixin);
+        Assert.Contains("outline-offset: calc(-1 * (#{$width} + #{$offset}));", mixin);
 
         // The band is the separator of the outward ring, mirrored onto the inner side of the stroke.
-        StringAssert.Contains(mixin, "$band-color: $clr-bg-pri;");
-        StringAssert.Contains(mixin, "$band-spread: calc(#{$width} + #{$shp-focus-ring-offset});");
-        StringAssert.Contains(mixin, "box-shadow: inset 0 0 0 #{$band-spread} #{$band-color}#{$kept};");
+        Assert.Contains("$band-color: $clr-bg-pri;", mixin);
+        Assert.Contains("$band-spread: calc(#{$width} + #{$shp-focus-ring-offset});", mixin);
+        Assert.Contains("box-shadow: inset 0 0 0 #{$band-spread} #{$band-color}#{$kept};", mixin);
 
         // The outline survives a forced-colors palette, in the system's focus color.
-        StringAssert.Contains(mixin, "@media (forced-colors: active) {\n        outline-color: Highlight;\n    }");
+        Assert.Contains("@media (forced-colors: active) {\n        outline-color: Highlight;\n    }", mixin);
     }
 
     [TestMethod]
@@ -206,8 +203,8 @@ public sealed class BitFocusRingStylesheetTests
         var stylesheet = SourceFiles.ReadStylesheet(["Bit.BlazorUI", "Components", .. path.Split('/')]);
         var block = SourceFiles.GetScssBlock(stylesheet, rule);
 
-        StringAssert.Contains(block, "&:focus-visible {");
-        StringAssert.Contains(block, $"@include focus-ring-inset({color}, $band: true);");
+        Assert.Contains("&:focus-visible {", block);
+        Assert.Contains($"@include focus-ring-inset({color}, $band: true);", block);
     }
 
     [TestMethod]
@@ -227,8 +224,7 @@ public sealed class BitFocusRingStylesheetTests
             }
         }
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A focus ring is drawn inside its element by hand - use focus-ring-inset(): {string.Join(", ", offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A focus ring is drawn inside its element by hand - use focus-ring-inset(): {string.Join(", ", offenders)}");
     }
 
     private static bool ReadsThePrimaryFocusColor(string value) => PrimaryFocusColor.Any(color => value.Contains(color, StringComparison.Ordinal));

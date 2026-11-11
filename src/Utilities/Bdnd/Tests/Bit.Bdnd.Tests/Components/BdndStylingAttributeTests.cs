@@ -50,7 +50,7 @@ public class BdndStylingAttributeTests : BdndComponentTestBase
         var over = cut.FindAll("[data-bit-bdnd-over]");
         Assert.HasCount(2, over);
         var shallow = cut.FindAll("[data-bit-bdnd-over-shallow]");
-        Assert.HasCount(1, shallow);
+        Assert.ContainsSingle(shallow);
         Assert.AreSame(over[1], shallow[0], "the inner target, which comes second in document order");
     }
 

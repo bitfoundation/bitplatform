@@ -41,7 +41,9 @@ public class AppModelTests : BunitContext
         Assert.Contains(b => b is { Target: "<input>", Event: "onchange", Kind: BevEventBindingKind.Bind } && b.Handler.StartsWith("@bind-value", StringComparison.Ordinal), wiring.Bindings);
         Assert.Contains(b => b is { Target: "<a.nav>", Event: "onclick", Handler: "lambda in WiringComponent.BuildRenderTree" }, wiring.Bindings);
         var setter = wiring.Bindings.Single(b => b.Target == "<input.search>");
-        Assert.AreEqual(("oninput", "@bind-value → WiringComponent.OnQuery", BevEventBindingKind.Bind, "OnQuery"), (setter.Event, setter.Handler, setter.Kind, setter.HandlerMethod?.Name), "the setter @bind:set names, and where it is written");
+        var expectedValue = ("oninput", "@bind-value → WiringComponent.OnQuery", BevEventBindingKind.Bind, "OnQuery");
+        var actualValue = (setter.Event, setter.Handler, setter.Kind, setter.HandlerMethod?.Name);
+        Assert.AreEqual(expectedValue, actualValue, "the setter @bind:set names, and where it is written");
         var callback = wiring.Bindings.Single(b => b.Kind == BevEventBindingKind.ChildCallback);
         Assert.AreEqual(("CallbackChild", "OnSelected", "WiringComponent.OnChildSelected", child.InstanceId), (callback.Target, callback.Event, callback.Handler, callback.ChildInstanceId));
         Assert.AreEqual(5, wiring.TotalBindings, "child content and plain attributes are not bindings");
@@ -84,7 +86,7 @@ public class AppModelTests : BunitContext
         Assert.IsFalse(current.Uri!.Contains("abc123", StringComparison.Ordinal));
         var route = routing.Routes.Single(r => r.PageDisplayName == "RoutedPage");
         Assert.AreEqual("Authorize(Roles = Admin)", route.Authorization.Single());
-        StringAssert.Contains(routing.RoutesSource, "AppAssembly");
+        Assert.Contains("AppAssembly", routing.RoutesSource);
     }
 
     [TestMethod]
@@ -95,8 +97,8 @@ public class AppModelTests : BunitContext
         var routing = BevRoutingReader.Read(Session);
 
         Assert.IsNull(routing.Current.PageType);
-        StringAssert.Contains(routing.Current.Source, "No RouteView");
-        StringAssert.Contains(routing.RoutesSource, "No Router");
+        Assert.Contains("No RouteView", routing.Current.Source);
+        Assert.Contains("No Router", routing.RoutesSource);
     }
 
     [TestMethod]
@@ -115,8 +117,8 @@ public class AppModelTests : BunitContext
         Assert.AreEqual("ada", snapshot.Name);
         Assert.Contains("Admin", snapshot.Roles);
         var flat = session.Inspector.Flatten(snapshot);
-        Assert.IsFalse(flat.Values.Any(v => v.Contains("opaque-token-value", StringComparison.Ordinal)), "a claim named like a token is redacted");
-        Assert.IsTrue(flat.Values.Any(v => v.Contains("ada@example.com", StringComparison.Ordinal)));
+        Assert.DoesNotContain(v => v.Contains("opaque-token-value", StringComparison.Ordinal), flat.Values, "a claim named like a token is redacted");
+        Assert.Contains(v => v.Contains("ada@example.com", StringComparison.Ordinal), flat.Values);
 
         authorization.SetNotAuthorized();
         await WaitUntil(() => entry.ChangeCount > 0 && !((BevAuthenticationSnapshot)entry.Provider.GetSnapshot()!).IsAuthenticated);
@@ -142,8 +144,8 @@ public class AppModelTests : BunitContext
         session.Diagnostics.Evaluate(force: true);
 
         var finding = session.Diagnostics.Findings.Single(f => f.Diagnostic.RuleId == "webapp.prerender-refetch");
-        StringAssert.Contains(finding.Diagnostic.Title, "GET /api/products");
-        StringAssert.Contains(finding.Diagnostic.Suggestion, "PersistentState");
+        Assert.Contains("GET /api/products", finding.Diagnostic.Title);
+        Assert.Contains("PersistentState", finding.Diagnostic.Suggestion!);
     }
 
     [TestMethod]
@@ -159,7 +161,7 @@ public class AppModelTests : BunitContext
 
         Assert.IsTrue(state.TryTake<BevPrerenderSummary>(BevPrerenderSummary.StateKey, out var summary));
         Assert.IsNotNull(summary);
-        Assert.IsTrue(summary.Components >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, summary.Components);
         Assert.Contains(r => r.Url == "https://localhost/api/products", summary.Requests);
     }
 
@@ -193,7 +195,7 @@ public class AppModelTests : BunitContext
         foreach (var render in renders)
         {
             var ts = render.GetProperty("ts").GetDouble();
-            Assert.IsTrue(batches.Any(b => b.GetProperty("ts").GetDouble() <= ts && ts + render.GetProperty("dur").GetDouble() <= b.GetProperty("ts").GetDouble() + b.GetProperty("dur").GetDouble() + 0.001),
+            Assert.Contains(b => b.GetProperty("ts").GetDouble() <= ts && ts + render.GetProperty("dur").GetDouble() <= b.GetProperty("ts").GetDouble() + b.GetProperty("dur").GetDouble() + 0.001, batches,
                 "every render lies inside a batch span on the renderer track");
         }
 
@@ -251,7 +253,7 @@ public class AppModelTests : BunitContext
         Assert.IsTrue(condition());
     }
 
-    public sealed class WiringComponent : ComponentBase
+    internal sealed class WiringComponent : ComponentBase
     {
         public string Name { get; set; } = "";
 
@@ -295,7 +297,7 @@ public class AppModelTests : BunitContext
         }
     }
 
-    public sealed class CallbackChild : ComponentBase
+    internal sealed class CallbackChild : ComponentBase
     {
         [Parameter] public EventCallback<int> OnSelected { get; set; }
 
@@ -306,6 +308,7 @@ public class AppModelTests : BunitContext
 
     [Route("/bev-tests/routed/{id:int}")]
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The router discovers this fixture through its public type.")]
     public sealed class RoutedPage : ComponentBase
     {
         [Parameter] public int Id { get; set; }

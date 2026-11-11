@@ -18,8 +18,8 @@ public sealed class RenderingTests : BlowTest
         var page = await OpenAsync("/basic-flow");
         await WaitForEdgesAnchoredAsync(page);
 
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "3", "4" }, await IdsAsync(page));
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "e1-3", "e2-4" }, await IdsAsync(page, "edge"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "e1-2", "e1-3", "e2-4" }, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // Each edge runs from the centre of its source node's source handle to the centre of its target node's
         // target handle. Before the browser layer measures the handles the canvas can only guess (the middle of a
@@ -39,7 +39,7 @@ public sealed class RenderingTests : BlowTest
             var node = await NodeBoxAsync(page, id);
             Assert.IsTrue(pane.Contains(node), $"node {id} {node} is outside the pane {pane}");
         }
-        Assert.IsTrue((await ViewportAsync(page)).Zoom > 1.2, "the initial fit did not zoom the small graph in");
+        Assert.IsGreaterThan(1.2, (await ViewportAsync(page)).Zoom, "the initial fit did not zoom the small graph in");
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public sealed class RenderingTests : BlowTest
         // Zoom in further, so screen pixels and flow units differ by a factor that is not the initial one.
         await WheelAsync(page, (await PaneBoxAsync(page)).Centre, -200);
         var viewport = await ViewportAsync(page);
-        Assert.IsTrue(viewport.Zoom > 1.5, $"the flow did not zoom in: {viewport}");
+        Assert.IsGreaterThan(1.5, viewport.Zoom, $"the flow did not zoom in: {viewport}");
 
         // The zoom handed in is deliberately wrong: the browser layer must measure the scale the viewport is
         // really painted at (a render can lag the zoom C# knows) rather than trust the number it is given.
@@ -192,7 +192,7 @@ public sealed class RenderingTests : BlowTest
             "the edge leaving the bottom of the grown node moved down with it");
 
         var grown = await NodeBoxAsync(page, "grow");
-        Assert.IsTrue(grown.Height > height + 40, $"the node did not grow: {height} -> {grown.Height}");
+        Assert.IsGreaterThan(height + 40, grown.Height, $"the node did not grow: {height} -> {grown.Height}");
         AssertNear(await HandleCentreAsync(page, "grow", "source"), (await EdgeEndsAsync(page, "e2")).Start, 1, "start of e2");
     }
 
@@ -230,8 +230,8 @@ public sealed class RenderingTests : BlowTest
         var page = await OpenAsync("/examples/multi-flows");
         await WaitForEdgesAnchoredAsync(page);
 
-        CollectionAssert.AreEquivalent(new[] { "a1", "a2" }, await IdsAsync(page, flow: 0));
-        CollectionAssert.AreEquivalent(new[] { "b1", "b2", "b3" }, await IdsAsync(page, flow: 1));
+        Assert.AreSequenceEqual(new[] { "a1", "a2" }, await IdsAsync(page, flow: 0), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "b1", "b2", "b3" }, await IdsAsync(page, flow: 1), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var a = await ViewportAsync(page, 0);
         var b = await ViewportAsync(page, 1);

@@ -46,7 +46,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
     [TestMethod]
     public void BitTextShimmerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitTextShimmer", BitTextShimmerParams.ParamName);
+        Assert.AreEqual("BitParams.BitTextShimmer", new BitTextShimmerParams().Name);
         Assert.AreEqual(BitTextShimmerParams.ParamName, new BitTextShimmerParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitTextShimmerParams());
     }
@@ -100,14 +100,14 @@ public class BitTextShimmerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-tsh-pri"));
         Assert.IsTrue(root.ClassList.Contains("bit-tsh-poh"));
         Assert.IsTrue(root.ClassList.Contains("bit-tsh-rev"));
-        StringAssert.Contains(style, "--bit-tsh-angle:20deg");
-        StringAssert.Contains(style, "--bit-tsh-base-clr:gray");
-        StringAssert.Contains(style, "--bit-tsh-delay:100ms");
-        StringAssert.Contains(style, "--bit-tsh-duration:1000ms");
-        StringAssert.Contains(style, "--bit-tsh-gradient-clr:white");
-        StringAssert.Contains(style, "--bit-tsh-iterations:2");
-        StringAssert.Contains(style, "--bit-tsh-repeat-delay:500ms");
-        StringAssert.Contains(style, "--bit-tsh-spread:15px");
+        Assert.Contains("--bit-tsh-angle:20deg", style);
+        Assert.Contains("--bit-tsh-base-clr:gray", style);
+        Assert.Contains("--bit-tsh-delay:100ms", style);
+        Assert.Contains("--bit-tsh-duration:1000ms", style);
+        Assert.Contains("--bit-tsh-gradient-clr:white", style);
+        Assert.Contains("--bit-tsh-iterations:2", style);
+        Assert.Contains("--bit-tsh-repeat-delay:500ms", style);
+        Assert.Contains("--bit-tsh-spread:15px", style);
     }
 
     // A cascaded Spread was asked for, so it wins over --bit-TextShimmer-spread even when it equals the default, and
@@ -117,7 +117,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitTextShimmerParams { Spread = 2 });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:10px");
+        Assert.Contains("--bit-tsh-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -125,7 +125,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
             parameters.AddChildContent(builder => BuildShimmer(builder, null));
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitTextShimmerParams { SpreadLength = "3em" });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
+        Assert.Contains("--bit-tsh-spread:3em", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // A cascaded SpreadLength is a default for the region, so it gives way to a Spread the shimmer sets for itself -
@@ -146,8 +146,8 @@ public class BitTextShimmerParamsTests : BunitTestContext
         var component = RenderWithParams(shimmerParams, builder => builder.AddAttribute(2, nameof(BitTextShimmer.Spread), 5d));
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
-        StringAssert.Contains(style, "--bit-tsh-spread:25px");
-        Assert.IsFalse(style.Contains("3em"));
+        Assert.Contains("--bit-tsh-spread:25px", style);
+        Assert.DoesNotContain("3em", style);
 
         component.Render(parameters =>
         {
@@ -155,7 +155,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
             parameters.AddChildContent(builder => BuildShimmer(builder, null));
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
+        Assert.Contains("--bit-tsh-spread:3em", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // A cascaded GradientColor gives way to a Color role the shimmer asks for itself.
@@ -168,7 +168,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
         var root = component.Find(".bit-tsh");
 
         Assert.IsTrue(root.ClassList.Contains("bit-tsh-err"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-tsh-gradient-clr"));
+        Assert.DoesNotContain("--bit-tsh-gradient-clr", root.GetAttribute("style")!);
     }
 
     // A value of the shimmer's own wins over a cascaded rival of it, but not over one it sets itself.
@@ -185,8 +185,8 @@ public class BitTextShimmerParamsTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-tsh-spread:3em");
-        StringAssert.Contains(style, "--bit-tsh-gradient-clr:white");
+        Assert.Contains("--bit-tsh-spread:3em", style);
+        Assert.Contains("--bit-tsh-gradient-clr:white", style);
     }
 
     // A NaN is ignored by the shimmer, and it must not reset the style on every render for never equaling itself.
@@ -232,7 +232,7 @@ public class BitTextShimmerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
         Assert.IsFalse(root.ClassList.Contains("bit-tsh-rev"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-duration:3000ms");
+        Assert.Contains("--bit-tsh-duration:3000ms", root.GetAttribute("style")!);
     }
 
     // A "pause animations" switch bound to one params object reaches every shimmer under it, and turning it off
@@ -277,8 +277,8 @@ public class BitTextShimmerParamsTests : BunitTestContext
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -307,6 +307,6 @@ public class BitTextShimmerParamsTests : BunitTestContext
         Assert.IsFalse(shimmer.Reversed);
         Assert.AreEqual("P", root.TagName);
         Assert.IsFalse(root.ClassList.Contains("bit-tsh-rev"));
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-tsh-duration"));
+        Assert.DoesNotContain("--bit-tsh-duration", root.GetAttribute("style")!);
     }
 }

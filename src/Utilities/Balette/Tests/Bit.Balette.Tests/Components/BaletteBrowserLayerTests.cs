@@ -46,10 +46,10 @@ public class BaletteBrowserLayerTests : BunitContext
         Assert.HasCount(8, args);
         Assert.Contains("mod+k", (IEnumerable<string>)args[2]!);
         AssertSequence.AreEqual(["f2"], (IEnumerable<string>)args[3]!);
-        Assert.AreEqual(false, args[4]);
+        Assert.IsFalse((bool?)args[4]);
         Assert.AreEqual(750, args[5]);
-        Assert.AreEqual(true, args[6]);
-        Assert.AreEqual(false, args[7]); // not inline
+        Assert.IsTrue((bool?)args[6]);
+        Assert.IsFalse((bool?)args[7]); // not inline
     }
 
     [TestMethod]

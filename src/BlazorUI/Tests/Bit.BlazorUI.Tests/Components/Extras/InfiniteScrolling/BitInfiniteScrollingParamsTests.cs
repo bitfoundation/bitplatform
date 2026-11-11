@@ -74,7 +74,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
     [TestMethod]
     public void BitInfiniteScrollingParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitInfiniteScrolling", BitInfiniteScrollingParams.ParamName);
+        Assert.AreEqual("BitParams.BitInfiniteScrolling", new BitInfiniteScrollingParams().Name);
         Assert.AreEqual(BitInfiniteScrollingParams.ParamName, new BitInfiniteScrollingParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitInfiniteScrollingParams());
     }
@@ -158,13 +158,13 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
             LoadedMessage = "{0} geladen",
         }, provider: PagedProvider(20, requests));
 
-        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll("article").Count));
+        component.WaitForAssertion(() => Assert.HasCount(4, component.FindAll("article")));
 
         var root = component.Find(".bit-isc");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("feed", component.Find(".bit-isc-fed").GetAttribute("role"));
         Assert.AreEqual(4, requests[0].Count);
 
@@ -185,7 +185,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
             AutoLoadLimit = 1,
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-isc-btn").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-isc-btn")));
 
         Assert.AreEqual(1, component.FindComponent<BitInfiniteScrolling<int>>().Instance.AutoLoadLimit);
     }
@@ -202,7 +202,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
             MaxItems = 2,
         }, provider: PagedProvider(20, requests));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, requests.Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(requests));
 
         // The very first request already carries the cascaded page size, narrowed down by the cascaded cap.
         Assert.AreEqual(2, requests[0].Count);
@@ -240,7 +240,7 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
             builder.AddAttribute(6, nameof(BitInfiniteScrolling<int>.Classes), new BitInfiniteScrollingClassStyles { Button = "own-button" });
         }, PagedProvider(20, requests));
 
-        component.WaitForAssertion(() => Assert.AreEqual(6, component.FindComponent<BitInfiniteScrolling<int>>().Instance.Items.Count));
+        component.WaitForAssertion(() => Assert.HasCount(6, component.FindComponent<BitInfiniteScrolling<int>>().Instance.Items));
 
         var root = component.Find(".bit-isc");
 

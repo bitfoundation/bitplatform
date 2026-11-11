@@ -43,16 +43,21 @@ public sealed class LazyLoadingTests
         if (E2EEnvironment.Host is not HarnessHostKinds.WebAssembly || E2EEnvironment.Framework is not "net11.0")
             Assert.Inconclusive($"The lazy loading sample runs on WebAssembly and net11.0 whatever the run drives, so the {HarnessHostKinds.WebAssembly} run on net11.0 tests it, not this {E2EEnvironment.Host} run on {E2EEnvironment.Framework}");
 
+        string? unavailableReason = null;
+
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Bmotion", "BMOTION", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
-            Assert.Inconclusive("The browser tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The browser tests could not run: " + unavailableReason);
         }
     }
 
@@ -116,7 +121,8 @@ public sealed class LazyLoadingTests
         // The server prerenders the router - LazyAssemblyLoader resolved there too - the layout, whose call checks its
         // options against the server's registration, and the card, whose enter it compiles to CSS (BmPrerenderMode.Animate).
         var response = await GotoAsync(page, "/showcase");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("id=\"card\"", prerendered);
         Assert.Contains("--bm-", prerendered);
@@ -245,10 +251,10 @@ public sealed class LazyLoadingTests
                 $"sel => {{ const s = ({MotionState.ProbeFunction})(sel); return !!s && ({predicate})(s); }}",
                 selector, new() { Timeout = timeout, PollingInterval = null });
         }
-        catch (TimeoutException)
+        catch (TimeoutException exception)
         {
             var last = await page.EvaluateAsync<JsonElement>($"sel => ({MotionState.ProbeFunction})(sel)", selector);
-            throw new AssertFailedException($"'{selector}' never satisfied `{predicate}` within {timeout} ms. Last state: {MotionState.From(last)?.ToString() ?? "(no element)"}");
+            throw new TimeoutException($"'{selector}' never satisfied `{predicate}` within {timeout} ms. Last state: {MotionState.From(last)?.ToString() ?? "(no element)"}", exception);
         }
     }
 

@@ -41,11 +41,23 @@ public class BitSnackBarE2ETests : E2ETestBase
 
     private static readonly Dictionary<string, string> FgTokens = new()
     {
-        ["pri"] = "--bit-clr-pri-fg", ["sec"] = "--bit-clr-sec-fg", ["ter"] = "--bit-clr-ter-fg", ["inf"] = "--bit-clr-inf-fg",
-        ["suc"] = "--bit-clr-suc-fg", ["wrn"] = "--bit-clr-wrn-fg", ["swr"] = "--bit-clr-swr-fg", ["err"] = "--bit-clr-err-fg",
-        ["pbg"] = "--bit-clr-fg-pri", ["sbg"] = "--bit-clr-fg-pri", ["tbg"] = "--bit-clr-fg-pri",
-        ["pfg"] = "--bit-clr-fg-pri", ["sfg"] = "--bit-clr-fg-sec", ["tfg"] = "--bit-clr-fg-ter",
-        ["pbr"] = "--bit-clr-fg-pri", ["sbr"] = "--bit-clr-fg-pri", ["tbr"] = "--bit-clr-fg-pri",
+        ["pri"] = "--bit-clr-pri-fg",
+        ["sec"] = "--bit-clr-sec-fg",
+        ["ter"] = "--bit-clr-ter-fg",
+        ["inf"] = "--bit-clr-inf-fg",
+        ["suc"] = "--bit-clr-suc-fg",
+        ["wrn"] = "--bit-clr-wrn-fg",
+        ["swr"] = "--bit-clr-swr-fg",
+        ["err"] = "--bit-clr-err-fg",
+        ["pbg"] = "--bit-clr-fg-pri",
+        ["sbg"] = "--bit-clr-fg-pri",
+        ["tbg"] = "--bit-clr-fg-pri",
+        ["pfg"] = "--bit-clr-fg-pri",
+        ["sfg"] = "--bit-clr-fg-sec",
+        ["tfg"] = "--bit-clr-fg-ter",
+        ["pbr"] = "--bit-clr-fg-pri",
+        ["sbr"] = "--bit-clr-fg-pri",
+        ["tbr"] = "--bit-clr-fg-pri",
     };
 
     private static Regex Any => new(".*");
@@ -103,11 +115,11 @@ public class BitSnackBarE2ETests : E2ETestBase
     {
         var html = await Page.PrerenderedHtmlAsync($"{BaseUrl}/e2e/snack-bar");
 
-        StringAssert.Contains(html, "id=\"snb\"");
-        StringAssert.Contains(html, "role=\"region\"");
-        StringAssert.Contains(html, "aria-label=\"Notifications\"");
-        StringAssert.Contains(html, "aria-live=\"polite\"");
-        StringAssert.Contains(html, "aria-live=\"assertive\"");
+        Assert.Contains("id=\"snb\"", html);
+        Assert.Contains("role=\"region\"", html);
+        Assert.Contains("aria-label=\"Notifications\"", html);
+        Assert.Contains("aria-live=\"polite\"", html);
+        Assert.Contains("aria-live=\"assertive\"", html);
 
         await OpenSnackBarAsync();
         await Expect(Page.Locator("#snb")).ToHaveAttributeAsync("tabindex", "-1");
@@ -174,7 +186,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         var oldest = await Item("Info 1").BoxAsync();
         Assert.AreEqual("bottom", Vertical(newest, height, 8));
         Assert.AreEqual("right", Horizontal(newest, width, 8));
-        Assert.IsTrue(oldest.Bottom <= newest.Top, "The newest item joins the bottom of the stack.");
+        Assert.IsLessThanOrEqualTo(newest.Top, oldest.Bottom, "The newest item joins the bottom of the stack.");
         Assert.AreEqual(10, newest.Top - oldest.Bottom, 0.5, "Items are stacked spacing(1.25) apart.");
     }
 
@@ -201,7 +213,7 @@ public class BitSnackBarE2ETests : E2ETestBase
             if (v != vertical || h != horizontal) failures.Add($"{name}: expected {vertical}/{horizontal}, got {v}/{h}");
         }
 
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     [TestMethod]
@@ -235,7 +247,7 @@ public class BitSnackBarE2ETests : E2ETestBase
                 if (v != vertical || h != rtlHorizontal) failures.Add($"{name}: expected {vertical}/{rtlHorizontal}, got {v}/{h}");
             }
 
-            Assert.AreEqual(0, failures.Count, $"{query}:{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
+            Assert.IsEmpty(failures, $"{query}:{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
         }
     }
 
@@ -314,7 +326,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-info");
         var duration = await Item("Info 1").EvaluateAsync<string>("el => getComputedStyle(el).animationDuration");
         var seconds = double.Parse(duration.TrimEnd('s'), CultureInfo.InvariantCulture);
-        Assert.IsTrue(seconds < 0.001, $"The 600ms slide collapses with the motion tokens ({duration}).");
+        Assert.IsLessThan(0.001, seconds, $"The 600ms slide collapses with the motion tokens ({duration}).");
     }
 
     [TestMethod]
@@ -332,7 +344,7 @@ public class BitSnackBarE2ETests : E2ETestBase
 
         var early = await ScaleXAsync(bar);
         await Page.WaitForFunctionAsync("el => { const t = getComputedStyle(el).transform; return t !== 'none' && parseFloat(t.slice(7)) > 0.3; }", await bar.ElementHandleAsync());
-        Assert.IsTrue(await ScaleXAsync(bar) > early, "The bar fills as the time runs.");
+        Assert.IsGreaterThan(early, await ScaleXAsync(bar), "The bar fills as the time runs.");
 
         await Expect(item).ToHaveCountAsync(0, new() { Timeout = 10000 });
         await Expect(Page.Locator("#dismissed-log")).ToHaveTextAsync("Info 1:Timeout;");
@@ -528,7 +540,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync((float)(box.CenterX), (float)y);
         await Page.Mouse.DownAsync();
         await Page.Mouse.MoveAsync((float)(box.CenterX - 25), (float)y, new() { Steps = 5 });
-        StringAssert.Contains(await item.EvaluateAsync<string>("el => el.style.transform"), "translateX(-25px)");
+        Assert.Contains("translateX(-25px)", await item.EvaluateAsync<string>("el => el.style.transform"));
         await Page.Mouse.UpAsync();
         await Expect(item).ToHaveAttributeAsync("style", new Regex("^(?!.*translateX).*$"));
         await Expect(item).ToBeVisibleAsync();
@@ -673,7 +685,7 @@ public class BitSnackBarE2ETests : E2ETestBase
 
         await SettleAsync(Items.Nth(0));
         await SettleAsync(Items.Nth(1));
-        Assert.IsTrue((await Items.Nth(0).BoxAsync()).Bottom <= (await Items.Nth(1).BoxAsync()).Top, "The newest sits on top.");
+        Assert.IsLessThanOrEqualTo((await Items.Nth(1).BoxAsync()).Top, (await Items.Nth(0).BoxAsync()).Bottom, "The newest sits on top.");
     }
 
     [TestMethod]
@@ -721,7 +733,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         // The icon sits at the start of the header, before the title.
         var icon1 = await Item("Info 1").Locator(".bit-snb-ict").BoxAsync();
         var title1 = await Item("Info 1").Locator(".bit-snb-ttl").BoxAsync();
-        Assert.IsTrue(icon1.Right <= title1.Left);
+        Assert.IsLessThanOrEqualTo(title1.Left, icon1.Right);
 
         await OpenSnackBarAsync("icon=true&ext=true");
         await Page.ClickAsync("#btn-success");
@@ -747,7 +759,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         var item = Item("Deleted 1");
         var action = item.Locator(".bit-snb-act #item-action-btn");
         await Expect(action).ToBeVisibleAsync();
-        Assert.IsTrue((await action.BoxAsync()).Top >= (await item.Locator(".bit-snb-bdy").BoxAsync()).Bottom - 1, "The actions sit under the body.");
+        Assert.IsGreaterThanOrEqualTo((await item.Locator(".bit-snb-bdy").BoxAsync()).Bottom - 1, (await action.BoxAsync()).Top, "The actions sit under the body.");
 
         await action.ClickAsync();
         await Expect(Page.Locator("#action-result")).ToHaveTextAsync("Deleted 1");
@@ -790,7 +802,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Expect(wrapped).Not.ToHaveClassAsync(HasClass("bit-snb-elp"));
         await Expect(wrapped).Not.ToHaveAttributeAsync("title", Any);
         var lineHeight = NotificationsE2EHelpers.Px(await wrapped.EvaluateAsync<string>("el => getComputedStyle(el).fontSize"));
-        Assert.IsTrue((await wrapped.BoxAsync()).Height > lineHeight * 2, "The title wraps onto several lines.");
+        Assert.IsGreaterThan(lineHeight * 2, (await wrapped.BoxAsync()).Height, "The title wraps onto several lines.");
     }
 
     [TestMethod]
@@ -1082,7 +1094,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Expect(Item("Info 1").Locator(".bit-snb-cbt")).ToBeFocusedAsync(new() { Timeout = 5000 }).ContinueWith(t =>
         {
             if (t.IsFaulted) Assert.Fail($"Tab from the region landed on {landed}");
-        });
+        }, TestContext.CancellationToken);
         await Page.Keyboard.PressAsync("F8");
         await Expect(Page.Locator("#snb")).ToBeFocusedAsync();
 
@@ -1287,7 +1299,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Expect(item.Locator(".bit-snb-prb")).ToHaveCSSAsync("height", "6px");
         await Expect(Page.Locator("#snb")).ToHaveCSSAsync("z-index", "77");
         await Expect(Page.Locator("#snb")).ToHaveCSSAsync("row-gap", "18px");
-        Assert.IsTrue((await item.BoxAsync()).Width >= 299.5, "The min-width holds.");
+        Assert.IsGreaterThanOrEqualTo(299.5, (await item.BoxAsync()).Width, "The min-width holds.");
         Assert.AreEqual(400, (await Items.Nth(1).BoxAsync()).Width, 1, "The max-width caps a long item.");
 
         var (width, height) = await ScreenAsync();

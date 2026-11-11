@@ -30,7 +30,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
         await Expect(Option(callout, "Item 0001")).ToHaveAttributeAsync("aria-setsize", "1000");
 
         // The list keeps the height of the whole set, so the scrollbar is the real one.
-        Assert.IsTrue(await scroller.EvaluateAsync<double>("el => el.scrollHeight") > 30000, "The list is as tall as a thousand rows.");
+        Assert.IsGreaterThan(30000, await scroller.EvaluateAsync<double>("el => el.scrollHeight"), "The list is as tall as a thousand rows.");
 
         // The wheel scrolls the real list (by an amount each engine decides), and the rows it scrolls to get rendered.
         await scroller.HoverAsync();
@@ -124,7 +124,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
         await WaitForStableListAsync(callout);
 
         var rendered = await Options(callout).CountAsync();
-        Assert.IsTrue(rendered < 40, $"A small OverscanCount keeps the window small, was {rendered}.");
+        Assert.IsLessThan(40, rendered, $"A small OverscanCount keeps the window small, was {rendered}.");
 
         await Option(callout, "Item 0002").ClickAsync();
         await Expect(Page.Locator("#virt-multi-values")).ToHaveTextAsync("i2");
@@ -165,15 +165,15 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
         await Expect(first).ToHaveAttributeAsync("aria-setsize", "1000");
         await Expect(first).ToHaveAttributeAsync("aria-posinset", "1");
         await Expect(Page.Locator("#provider-search")).ToHaveTextAsync("(null)");
-        Assert.IsTrue(int.Parse((await Page.Locator("#provider-calls").TextContentAsync())!) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await Page.Locator("#provider-calls").TextContentAsync())!));
 
         await ListBox(callout).EvaluateAsync("el => el.scrollTop = 18000");
 
         var deep = Option(callout, "Product 0501");
         await Expect(deep).ToBeVisibleAsync();
         await Expect(deep).ToHaveAttributeAsync("aria-posinset", "501");
-        Assert.IsTrue(int.Parse((await Page.Locator("#provider-start").TextContentAsync())!) > 400, "The window asked for starts where the list was scrolled to.");
-        Assert.IsTrue(int.Parse((await Page.Locator("#provider-count").TextContentAsync())!) > 0);
+        Assert.IsGreaterThan(400, int.Parse((await Page.Locator("#provider-start").TextContentAsync())!), "The window asked for starts where the list was scrolled to.");
+        Assert.IsGreaterThan(0, int.Parse((await Page.Locator("#provider-count").TextContentAsync())!));
 
         await WaitForStableListAsync(callout);
         await deep.ClickAsync();
@@ -249,7 +249,7 @@ public class BitDropdownVirtualizeE2ETests : BitDropdownE2ETestBase
         await Expect(Option(callout, "Product 0417")).ToBeVisibleAsync();
 
         var after = int.Parse((await Page.Locator("#multi-calls").TextContentAsync())!);
-        Assert.IsTrue(after - before <= 2, $"Five scroll positions inside the debounce reach the provider at most twice, reached it {after - before} times.");
+        Assert.IsLessThanOrEqualTo(2, after - before, $"Five scroll positions inside the debounce reach the provider at most twice, reached it {after - before} times.");
     }
 
     [TestMethod]

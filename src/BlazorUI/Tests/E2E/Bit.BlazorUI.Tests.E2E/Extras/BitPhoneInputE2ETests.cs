@@ -241,7 +241,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(Root("phi-required")).ToHaveClassAsync(HasClass("bit-phi-req"));
         await Expect(Input("phi-required")).ToHaveAttributeAsync("aria-required", "true");
         await Expect(Input("phi-required")).ToHaveAttributeAsync("required", "");
-        StringAssert.Contains(await Root("phi-required").Locator("> label").EvaluateAsync<string>("l => getComputedStyle(l, '::after').content"), "*");
+        Assert.Contains("*", await Root("phi-required").Locator("> label").EvaluateAsync<string>("l => getComputedStyle(l, '::after').content"));
 
         await Expect(Input("phi-description")).ToHaveAccessibleDescriptionAsync("Office hours only.");
 
@@ -262,7 +262,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(Dropdown("phi-search")).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(callout.Locator(".bit-phi-srch")).ToBeFocusedAsync();
         await Expect(callout.Locator(".bit-phi-srch")).ToHaveAttributeAsync("placeholder", "Country or code");
-        Assert.IsTrue(await callout.Locator("[role=option]").CountAsync() > 200);
+        Assert.IsGreaterThan(200, await callout.Locator("[role=option]").CountAsync());
 
         var selected = callout.Locator("[role=option][aria-selected=true]");
         await Expect(selected).ToHaveAttributeAsync("title", "France");
@@ -273,7 +273,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await callout.EvaluateAsync("el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished.catch(() => null)))");
         var groupBox = (await Root("phi-search").Locator(".bit-phi-fgp").BoundingBoxAsync())!;
         var calloutBox = (await callout.BoundingBoxAsync())!;
-        Assert.IsTrue(calloutBox.Y >= groupBox.Y + groupBox.Height - 2);
+        Assert.IsGreaterThanOrEqualTo(groupBox.Y + groupBox.Height - 2, calloutBox.Y);
     }
 
     [TestMethod]
@@ -429,7 +429,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("phi-countries");
         var titles = await callout.Locator("[role=option]").EvaluateAllAsync<string[]>("os => os.map(o => o.title)");
-        CollectionAssert.AreEqual(new[] { "Canada", "Germany", "Japan", "Brazil", "Australia" }, titles);
+        Assert.AreSequenceEqual(new[] { "Canada", "Germany", "Japan", "Brazil", "Australia" }, titles);
         await Page.Keyboard.PressAsync("Escape");
 
         callout = await OpenCalloutAsync("phi-exclude");
@@ -615,7 +615,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         await Expect(Input("phi-readonly")).ToHaveAttributeAsync("readonly", "");
         await Expect(Dropdown("phi-readonly")).ToHaveAttributeAsync("tabindex", "-1");
         await Expect(Root("phi-readonly").Locator(".bit-phi-cbt")).ToBeDisabledAsync();
-        StringAssert.Contains(await Input("phi-readonly").GetAttributeAsync("aria-describedby"), await Dropdown("phi-readonly").GetAttributeAsync("id"));
+        Assert.Contains((await Dropdown("phi-readonly").GetAttributeAsync("id"))!, (await Input("phi-readonly").GetAttributeAsync("aria-describedby"))!);
         Assert.AreEqual("hidden", await ComputedStyleAsync("#phi-readonly .bit-phi-car", "visibility"));
 
         await Dropdown("phi-readonly").ClickAsync();
@@ -837,7 +837,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         await Expect(Root("phi-fullwidth")).ToHaveClassAsync(HasClass("bit-phi-fwd"));
         Assert.AreEqual(600, (await Root("phi-fullwidth").Locator(".bit-phi-fgp").BoundingBoxAsync())!.Width, 1);
-        Assert.IsTrue((await Root("phi-notfullwidth").Locator(".bit-phi-fgp").BoundingBoxAsync())!.Width < 590);
+        Assert.IsLessThan(590, (await Root("phi-notfullwidth").Locator(".bit-phi-fgp").BoundingBoxAsync())!.Width);
     }
 
     [TestMethod]
@@ -979,7 +979,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         {
             var dropdownBox = (await Dropdown(id).BoundingBoxAsync())!;
             var inputBox = (await Input(id).BoundingBoxAsync())!;
-            Assert.IsTrue(dropdownBox.X > inputBox.X, $"{id}: the country selector sits at the right.");
+            Assert.IsGreaterThan(inputBox.X, dropdownBox.X, $"{id}: the country selector sits at the right.");
             Assert.AreEqual("ltr", await ComputedStyleAsync($"#{id} .bit-phi-inp", "direction"));
             Assert.AreEqual("right", await ComputedStyleAsync($"#{id} .bit-phi-inp", "text-align"));
         }
@@ -989,7 +989,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
         var option = callout.Locator("[role=option]").First;
         var flag = (await option.Locator(".bit-phi-flg").BoundingBoxAsync())!;
         var name = (await option.Locator(".bit-phi-inm").BoundingBoxAsync())!;
-        Assert.IsTrue(flag.X > name.X);
+        Assert.IsGreaterThan(name.X, flag.X);
     }
 
     [TestMethod]
@@ -1058,7 +1058,7 @@ public class BitPhoneInputE2ETests : E2ETestBase
 
         var callout = await OpenCalloutAsync("phi-maxheight");
         var height = await callout.Locator(".bit-phi-scn").EvaluateAsync<double>("s => s.getBoundingClientRect().height");
-        Assert.IsTrue(height <= 200.5, $"The list is {height}px tall.");
+        Assert.IsLessThanOrEqualTo(200.5, height, $"The list is {height}px tall.");
     }
 
     [TestMethod]
@@ -1105,9 +1105,9 @@ public class BitPhoneInputE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"phi-basic\"");
-        StringAssert.Contains(html, "type=\"tel\"");
-        StringAssert.Contains(html, "Enter your number");
+        Assert.Contains("id=\"phi-basic\"", html);
+        Assert.Contains("type=\"tel\"", html);
+        Assert.Contains("Enter your number", html);
     }
 
     [TestMethod]

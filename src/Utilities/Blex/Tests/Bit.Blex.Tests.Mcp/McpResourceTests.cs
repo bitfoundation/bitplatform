@@ -14,12 +14,12 @@ public class McpResourceTests
     [TestMethod]
     public async Task Every_documentation_page_is_listed_as_something_a_person_can_click()
     {
-        var resources = await McpTestHost.Client.ListResourcesAsync();
+        var resources = await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken);
         var uris = resources.Select(resource => resource.Uri).ToArray();
 
         foreach (var page in DocsPageRenderer.Pages)
         {
-            CollectionAssert.Contains(uris, $"blex://docs/{page.Slug}", $"The '{page.Title}' page is not listed as a resource.");
+            Assert.Contains($"blex://docs/{page.Slug}", uris, $"The '{page.Title}' page is not listed as a resource.");
         }
 
         foreach (var resource in resources)
@@ -32,22 +32,21 @@ public class McpResourceTests
     [TestMethod]
     public async Task The_whole_guide_the_api_and_the_diagnostics_are_listed_alongside_the_pages()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         foreach (var uri in new[] { "blex://guide", "blex://api", "blex://diagnostics" })
         {
-            CollectionAssert.Contains(uris, uri);
+            Assert.Contains(uri, uris);
         }
     }
 
     [TestMethod]
     public async Task The_templated_resources_cover_the_catalogs_too_big_to_enumerate()
     {
-        var templates = await McpTestHost.Client.ListResourceTemplatesAsync();
+        var templates = await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "blex://guide/{heading}", "blex://api/{typeName}", "blex://diagnostics/{code}", "blex://docs/{slug}", "blex://source/{+path}" },
-            templates.Select(template => template.UriTemplate).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "blex://guide/{heading}", "blex://api/{typeName}", "blex://diagnostics/{code}", "blex://docs/{slug}", "blex://source/{+path}" }, templates.Select(template => template.UriTemplate).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var template in templates)
         {
@@ -61,11 +60,11 @@ public class McpResourceTests
     [TestMethod]
     public async Task Every_listed_resource_can_actually_be_read()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
-            Assert.IsTrue(text.Length > 100, $"'{resource.Uri}' answered with {text.Length} characters.");
+            Assert.IsGreaterThan(100, text.Length, $"'{resource.Uri}' answered with {text.Length} characters.");
             Assert.IsFalse(text.StartsWith("No documentation page", StringComparison.Ordinal), $"'{resource.Uri}' is listed but does not resolve.");
             Assert.IsFalse(text.Contains("could not be rendered", StringComparison.Ordinal), $"'{resource.Uri}' could not be rendered.");
         }
@@ -74,11 +73,11 @@ public class McpResourceTests
     [TestMethod]
     public async Task Each_templated_resource_resolves_a_real_key()
     {
-        StringAssert.StartsWith(await ReadAsync("blex://guide/Persistence"), "## Persistence");
-        StringAssert.StartsWith(await ReadAsync("blex://api/BlexOptions"), "# BlexOptions");
-        StringAssert.StartsWith(await ReadAsync("blex://diagnostics/BLEX001"), "# BLEX001");
-        StringAssert.Contains(await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"), "[BlexStore");
-        StringAssert.Contains(await ReadAsync("blex://docs/effects"), "# Effects");
+        Assert.StartsWith("## Persistence", await ReadAsync("blex://guide/Persistence"));
+        Assert.StartsWith("# BlexOptions", await ReadAsync("blex://api/BlexOptions"));
+        Assert.StartsWith("# BLEX001", await ReadAsync("blex://diagnostics/BLEX001"));
+        Assert.Contains("[BlexStore", await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"));
+        Assert.Contains("# Effects", await ReadAsync("blex://docs/effects"));
     }
 
     [TestMethod]
@@ -88,7 +87,7 @@ public class McpResourceTests
         // without encoding it must land on the same file as one that encodes it.
         Assert.AreEqual(await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"),
                         await ReadAsync("blex://source/Demo/Client/Stores/CartStore.cs"));
-        StringAssert.Contains(await ReadAsync("blex://source/Demo/Client/Stores/CartStore.cs"), "[BlexStore");
+        Assert.Contains("[BlexStore", await ReadAsync("blex://source/Demo/Client/Stores/CartStore.cs"));
     }
 
     [TestMethod]
@@ -100,17 +99,17 @@ public class McpResourceTests
         Assert.AreEqual(await McpCall.TextAsync("GetBlexSourceFile", new() { ["path"] = "Demo/Client/Stores/CartStore.cs" }),
                         await ReadAsync("blex://source/Demo%2FClient%2FStores%2FCartStore.cs"));
 
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexDocsPage", new() { ["slug"] = "history" }), await ReadAsync("blex://docs/history"));
+        Assert.Contains(await ReadAsync("blex://docs/history"), await McpCall.TextAsync("GetBlexDocsPage", new() { ["slug"] = "history" }));
     }
 
     [TestMethod]
     public async Task An_unknown_key_answers_with_a_document_saying_so()
     {
-        StringAssert.Contains(await ReadAsync("blex://docs/nope"), "No documentation page has the slug 'nope'");
-        StringAssert.Contains(await ReadAsync("blex://guide/nope"), "no section called 'nope'");
-        StringAssert.Contains(await ReadAsync("blex://api/nope"), "no public type called 'nope'");
-        StringAssert.Contains(await ReadAsync("blex://diagnostics/nope"), "has no diagnostic 'nope'");
-        StringAssert.Contains(await ReadAsync("blex://source/nope"), "No source file at 'nope'");
+        Assert.Contains("No documentation page has the slug 'nope'", await ReadAsync("blex://docs/nope"));
+        Assert.Contains("no section called 'nope'", await ReadAsync("blex://guide/nope"));
+        Assert.Contains("no public type called 'nope'", await ReadAsync("blex://api/nope"));
+        Assert.Contains("has no diagnostic 'nope'", await ReadAsync("blex://diagnostics/nope"));
+        Assert.Contains("No source file at 'nope'", await ReadAsync("blex://source/nope"));
     }
 
     private static async Task<string> ReadAsync(string uri)
@@ -123,4 +122,6 @@ public class McpResourceTests
 
         return text;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

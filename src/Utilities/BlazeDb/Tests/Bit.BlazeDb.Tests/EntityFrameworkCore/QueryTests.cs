@@ -24,7 +24,7 @@ public class QueryTests
         using var test = Seeded();
         using var context = test.CreateContext();
 
-        Assert.AreEqual(5, context.People.ToList().Count);
+        Assert.HasCount(5, context.People.ToList());
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class QueryTests
             .OrderBy(x => x.Name)
             .ToList();
 
-        Assert.AreEqual(3, summaries.Count);
+        Assert.HasCount(3, summaries);
         Assert.AreEqual("Ada", summaries[0].Name);
         Assert.AreEqual(3, summaries[0].Decade);
     }
@@ -246,7 +246,7 @@ public class QueryTests
 
         var people = context.People.AsNoTracking().ToList();
 
-        Assert.AreEqual(5, people.Count);
+        Assert.HasCount(5, people);
         Assert.IsEmpty(context.ChangeTracker.Entries());
     }
 
@@ -257,12 +257,12 @@ public class QueryTests
         using var context = test.CreateContext();
         context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTrackingWithIdentityResolution;
 
-        Assert.AreEqual(5, context.People.ToList().Count);
+        Assert.HasCount(5, context.People.ToList());
         Assert.IsEmpty(context.ChangeTracker.Entries());
 
         // An explicit AsTracking on the query still wins over the context default.
-        Assert.AreEqual(5, context.People.AsTracking().ToList().Count);
-        Assert.AreEqual(5, context.ChangeTracker.Entries().Count());
+        Assert.HasCount(5, context.People.AsTracking().ToList());
+        Assert.HasCount(5, context.ChangeTracker.Entries());
     }
 
     [TestMethod]
@@ -295,9 +295,9 @@ public class QueryTests
         using var test = Seeded();
         await using var context = test.CreateContext();
 
-        Assert.AreEqual(3, (await context.People.Where(p => p.City == "London").ToListAsync()).Count);
-        Assert.AreEqual("Grace", (await context.People.FirstOrDefaultAsync(p => p.Id == 2))!.Name);
-        Assert.AreEqual(5, await context.People.CountAsync());
+        Assert.HasCount(3, await context.People.Where(p => p.City == "London").ToListAsync(TestContext.CancellationToken));
+        Assert.AreEqual("Grace", (await context.People.FirstOrDefaultAsync(p => p.Id == 2, TestContext.CancellationToken))!.Name);
+        Assert.AreEqual(5, await context.People.CountAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -465,4 +465,6 @@ public class QueryTests
         Assert.AreSame(otherContext.People.Local.Single(), PersonById(otherContext, 1));
         Assert.AreEqual("Ada", PersonById(context, 1)!.Name);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

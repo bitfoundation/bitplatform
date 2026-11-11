@@ -87,23 +87,23 @@ public class BitDataGridExportE2ETests : BitDataGridE2ETestBase
         Assert.IsTrue(bytes.Length > 1000 && bytes[0] == (byte)'P' && bytes[1] == (byte)'K', "The download is not a zip package.");
 
         var sheet = ReadZipEntry(bytes, "xl/worksheets/sheet1.xml");
-        StringAssert.Contains(sheet, ">Laptop<");
-        StringAssert.Contains(sheet, ">Desk, oak<");
-        StringAssert.Contains(sheet, ">Released<");
-        Assert.IsFalse(sheet.Contains("Acme"), "A column that is not exportable reached the workbook.");
-        Assert.IsFalse(sheet.Contains("no value to export"), "A template-only column reached the workbook.");
+        Assert.Contains(">Laptop<", sheet);
+        Assert.Contains(">Desk, oak<", sheet);
+        Assert.Contains(">Released<", sheet);
+        Assert.DoesNotContain("Acme", sheet, "A column that is not exportable reached the workbook.");
+        Assert.DoesNotContain("no value to export", sheet, "A template-only column reached the workbook.");
         // The header row and the frozen Id column are a frozen pane, under Excel's own AutoFilter.
-        StringAssert.Contains(sheet, "xSplit=\"1\"");
-        StringAssert.Contains(sheet, "ySplit=\"1\"");
-        StringAssert.Contains(sheet, "<autoFilter ref=\"A1:E7\"/>");
+        Assert.Contains("xSplit=\"1\"", sheet);
+        Assert.Contains("ySplit=\"1\"", sheet);
+        Assert.Contains("<autoFilter ref=\"A1:E7\"/>", sheet);
         // Numbers land as numbers.
-        StringAssert.Contains(sheet, "<v>6000</v>");
+        Assert.Contains("<v>6000</v>", sheet);
 
         // ExcelExportStyled carries the grid's colors: solid fills beyond the two the format requires.
         var styles = ReadZipEntry(bytes, "xl/styles.xml");
-        StringAssert.Contains(styles, "patternType=\"solid\"");
+        Assert.Contains("patternType=\"solid\"", styles);
 
-        StringAssert.Contains(ReadZipEntry(bytes, "[Content_Types].xml"), "spreadsheetml");
+        Assert.Contains("spreadsheetml", ReadZipEntry(bytes, "[Content_Types].xml"));
     }
 
     [TestMethod]
@@ -125,8 +125,8 @@ public class BitDataGridExportE2ETests : BitDataGridE2ETestBase
         var (excelName, excel) = await DownloadAsync(Page.Locator("#btn-export-selected-excel"));
         Assert.AreEqual("products.xlsx", excelName);
         var sheet = ReadZipEntry(excel, "xl/worksheets/sheet1.xml");
-        StringAssert.Contains(sheet, ">Lamp<");
-        Assert.IsFalse(sheet.Contains(">Mug<"), "A row that is not selected reached the selected-rows workbook.");
+        Assert.Contains(">Lamp<", sheet);
+        Assert.DoesNotContain(">Mug<", sheet, "A row that is not selected reached the selected-rows workbook.");
 
         await Page.Locator("#btn-to-csv-selected").ClickAsync();
         await Expect(Text("csv-text")).ToContainTextAsync("Lamp");
@@ -156,7 +156,7 @@ public class BitDataGridExportE2ETests : BitDataGridE2ETestBase
         var (name, bytes) = await DownloadAsync(Toolbar("grid-export-default").GetByRole(AriaRole.Button, new() { Name = "Export CSV" }));
 
         Assert.AreEqual("export.csv", name);
-        StringAssert.StartsWith(Utf8WithoutBom(bytes), "Id,Name\r\n1,Laptop\r\n");
+        Assert.StartsWith("Id,Name\r\n1,Laptop\r\n", Utf8WithoutBom(bytes));
     }
 
     [TestMethod]
@@ -167,16 +167,16 @@ public class BitDataGridExportE2ETests : BitDataGridE2ETestBase
         const string id = "grid-export-infinite";
         await Expect(DataRows(id).First).ToBeVisibleAsync();
         var loaded = await DataRows(id).CountAsync();
-        Assert.IsTrue(loaded < 55, "Every row was loaded before the export, which then proves nothing.");
+        Assert.IsLessThan(55, loaded, "Every row was loaded before the export, which then proves nothing.");
 
         var (name, bytes) = await DownloadAsync(Toolbar(id).GetByRole(AriaRole.Button, new() { Name = "Export CSV" }));
 
         Assert.AreEqual("all-rows.csv", name);
         var lines = Utf8WithoutBom(bytes).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(56, lines.Length, "The export does not hold every row the provider has.");
+        Assert.HasCount(56, lines, "The export does not hold every row the provider has.");
         Assert.AreEqual("55,Row 55", lines[^1]);
         await Expect(Text("infinite-requests")).ToContainTextAsync("[0,all]");
         // The export's rows are not the grid's: it still holds the batches it had loaded.
-        Assert.IsTrue(await DataRows(id).CountAsync() < 55, "The export's rows were added to the grid.");
+        Assert.IsLessThan(55, await DataRows(id).CountAsync(), "The export's rows were added to the grid.");
     }
 }

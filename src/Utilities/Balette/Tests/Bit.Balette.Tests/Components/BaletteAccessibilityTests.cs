@@ -56,7 +56,7 @@ public class BaletteAccessibilityTests : BunitContext
         {
             var heading = group.QuerySelector("[data-balette=group-heading]")!;
             Assert.AreEqual(heading.Id, group.GetAttribute("aria-labelledby"));
-            Assert.IsTrue(group.QuerySelectorAll("[role=option]").Length > 0);
+            Assert.IsGreaterThan(0, group.QuerySelectorAll("[role=option]").Length);
         }
 
         AssertSequence.AreEqual(["Navigation", "Preferences"], groups.Select(g => g.QuerySelector("[data-balette=group-heading]")!.TextContent.Trim()));
@@ -74,7 +74,7 @@ public class BaletteAccessibilityTests : BunitContext
         cut.WaitForAssertion(() => AssertSequence.AreEqual(
             ["Recent", "Suggestions", "Navigation"],
             cut.FindAll("[data-balette=group-heading]").Select(h => h.TextContent.Trim())));
-        Assert.IsTrue(cut.FindAll("[role=listbox] > [role=option]").Count == 0);
+        Assert.IsEmpty(cut.FindAll("[role=listbox] > [role=option]"));
     }
 
     [TestMethod]
@@ -109,7 +109,7 @@ public class BaletteAccessibilityTests : BunitContext
     {
         _service.Register(BaletteCmd.New("Word wrap").Checked(true), BaletteCmd.New("Minimap").Checked(false));
         var history = Services.GetRequiredService<BaletteHistory>();
-        await history.TogglePinAsync("minimap");
+        await history.TogglePinAsync("minimap", TestContext.CancellationToken);
         var cut = await OpenAsync();
 
         cut.WaitForAssertion(() =>
@@ -293,6 +293,8 @@ public class BaletteAccessibilityTests : BunitContext
             ? $"{count} wyniki"
             : $"{count} wyników";
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]

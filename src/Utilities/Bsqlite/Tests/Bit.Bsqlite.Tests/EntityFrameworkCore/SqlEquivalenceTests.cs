@@ -8,9 +8,9 @@ namespace Bit.Bsqlite.EntityFrameworkCore.Tests;
 /// SQL byte-identical to the stock provider. That is the §2 "same model both sides" guardrail.
 /// </summary>
 [TestClass]
-public sealed class SqlEquivalenceTests
+internal sealed class SqlEquivalenceTests
 {
-    public static IEnumerable<(string Name, Func<ProductContext, IQueryable<object>> Query)> Queries =>
+    internal static IEnumerable<(string Name, Func<ProductContext, IQueryable<object>> Query)> Queries =>
     [
         ("simple filter", ctx => ctx.Products.Where(p => p.Name == "widget")),
         ("decimal comparison", ctx => ctx.Products.Where(p => p.Price > 10m)),

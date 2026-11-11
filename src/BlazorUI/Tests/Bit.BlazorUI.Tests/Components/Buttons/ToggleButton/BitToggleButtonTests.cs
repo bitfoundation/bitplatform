@@ -134,7 +134,8 @@ public class BitToggleButtonTests : BunitTestContext
 
         if (hasTabindexAttr)
         {
-            Assert.IsTrue(bitButton?.GetAttribute("tabindex")?.Equals("-1"));
+            var actualValue = bitButton?.GetAttribute("tabindex")?.Equals("-1");
+            Assert.IsTrue(actualValue);
         }
     }
 
@@ -346,7 +347,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         Assert.AreEqual(isLoading, bitToggleButton.ClassList.Contains("bit-tgb-lda"));
         Assert.AreEqual(isLoading, bitToggleButton.HasAttribute("aria-busy"));
-        Assert.AreEqual(isLoading ? 1 : 0, component.FindAll(".bit-tgb-spn").Count);
+        Assert.HasCount(isLoading ? 1 : 0, component.FindAll(".bit-tgb-spn"));
 
         // The pointer is taken away from a loading toggle button whose clicks are being swallowed, and left on a
         // Reclickable one - which is the loading state that still takes them.
@@ -403,7 +404,7 @@ public class BitToggleButtonTests : BunitTestContext
         {
             Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
             Assert.AreEqual("true", component.Find(".bit-tgb").GetAttribute("aria-busy"));
-            Assert.HasCount(1, component.FindAll(".bit-tgb-spn"));
+            Assert.ContainsSingle(component.FindAll(".bit-tgb-spn"));
         });
 
         // and the click guard is up with it, so the second click never reaches the handler
@@ -442,7 +443,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         var click = component.Find(".bit-tgb").ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-tgb-spn")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-tgb-spn")));
 
         tcs.SetResult();
         await click;
@@ -600,7 +601,7 @@ public class BitToggleButtonTests : BunitTestContext
         });
 
         // in the unchecked state the check mark only stays in the DOM to reserve its space
-        Assert.AreEqual(fixedCheckMark ? 1 : 0, component.FindAll(".bit-tgb-chm").Count);
+        Assert.HasCount(fixedCheckMark ? 1 : 0, component.FindAll(".bit-tgb-chm"));
 
         if (fixedCheckMark)
         {
@@ -717,13 +718,13 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OffTemplate, "<span class=\"off-template\">Off</span>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".off-template").Count);
-        Assert.AreEqual(0, component.FindAll(".on-template").Count);
+        Assert.ContainsSingle(component.FindAll(".off-template"));
+        Assert.IsEmpty(component.FindAll(".on-template"));
 
         component.Find(".bit-tgb").Click();
 
-        Assert.AreEqual(1, component.FindAll(".on-template").Count);
-        Assert.AreEqual(0, component.FindAll(".off-template").Count);
+        Assert.ContainsSingle(component.FindAll(".on-template"));
+        Assert.IsEmpty(component.FindAll(".off-template"));
     }
 
     [TestMethod]
@@ -828,8 +829,8 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.LoadingTemplate, "<span class=\"custom-loading\">Saving...</span>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tgb-ldg").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tgb-spn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgb-ldg"));
+        Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
 
         var template = component.Find(".custom-loading");
 
@@ -900,7 +901,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.HasCount(1, component.FindAll(".bit-tgb-spn"));
+            Assert.ContainsSingle(component.FindAll(".bit-tgb-spn"));
             Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-lda"));
         }, TimeSpan.FromSeconds(5));
     }
@@ -1333,7 +1334,7 @@ public class BitToggleButtonTests : BunitTestContext
         });
 
         Assert.IsEmpty(component.FindAll(".bit-tgb-lbl"));
-        Assert.AreEqual(1, component.FindAll(".bit-tgb-spn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgb-spn"));
         Assert.AreEqual("Saving...", component.Find(".bit-tgb-sts").TextContent.Trim());
     }
 
@@ -1357,7 +1358,7 @@ public class BitToggleButtonTests : BunitTestContext
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", bitToggleButton.GetAttribute("dir"));
-        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", bitToggleButton.GetAttribute("style")!);
         Assert.AreEqual("2", bitToggleButton.GetAttribute("tabindex"));
         Assert.AreEqual("button", bitToggleButton.GetAttribute("type"));
     }
@@ -1382,7 +1383,7 @@ public class BitToggleButtonTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1565,17 +1566,17 @@ public class BitToggleButtonTests : BunitTestContext
         var bitToggleButton = component.Find(".bit-tgb");
 
         Assert.IsFalse(bitToggleButton.ClassList.Contains("c-checked"));
-        Assert.IsFalse((bitToggleButton.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
+        Assert.DoesNotContain("color: red;", (bitToggleButton.GetAttribute("style") ?? string.Empty));
 
         bitToggleButton.Click();
 
         Assert.IsTrue(bitToggleButton.ClassList.Contains("c-checked"));
-        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", bitToggleButton.GetAttribute("style")!);
 
         bitToggleButton.Click();
 
         Assert.IsFalse(bitToggleButton.ClassList.Contains("c-checked"));
-        Assert.IsFalse((bitToggleButton.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
+        Assert.DoesNotContain("color: red;", (bitToggleButton.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1638,7 +1639,7 @@ public class BitToggleButtonTests : BunitTestContext
 
         await component.Instance.FocusAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1655,11 +1656,11 @@ public class BitToggleButtonTests : BunitTestContext
 
         component.Find(".bit-tgb").Click();
 
-        CollectionAssert.AreEqual(new[] { "changing:True", "bound:True", "change:True" }, sequence);
+        Assert.AreSequenceEqual(new[] { "changing:True", "bound:True", "change:True" }, sequence);
 
         component.Find(".bit-tgb").Click();
 
-        CollectionAssert.AreEqual(new[] { "changing:True", "bound:True", "change:True", "changing:False", "bound:False", "change:False" }, sequence);
+        Assert.AreSequenceEqual(new[] { "changing:True", "bound:True", "change:True", "changing:False", "bound:False", "change:False" }, sequence);
     }
 
     [TestMethod]
@@ -1744,13 +1745,13 @@ public class BitToggleButtonTests : BunitTestContext
             parameters.Add(p => p.OnTemplate, "<span class=\"on-template\">On</span>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".child").Count);
-        Assert.AreEqual(0, component.FindAll(".on-template").Count);
+        Assert.ContainsSingle(component.FindAll(".child"));
+        Assert.IsEmpty(component.FindAll(".on-template"));
 
         component.Find(".bit-tgb").Click();
 
-        Assert.AreEqual(0, component.FindAll(".child").Count);
-        Assert.AreEqual(1, component.FindAll(".on-template").Count);
+        Assert.IsEmpty(component.FindAll(".child"));
+        Assert.ContainsSingle(component.FindAll(".on-template"));
     }
 
     [TestMethod]

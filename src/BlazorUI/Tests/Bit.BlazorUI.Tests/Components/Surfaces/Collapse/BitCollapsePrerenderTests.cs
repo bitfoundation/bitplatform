@@ -22,12 +22,12 @@ public class BitCollapsePrerenderTests
             [nameof(BitCollapse.ChildContent)] = _content,
         });
 
-        StringAssert.Contains(html, "bit-col-col");
-        StringAssert.Contains(html, "bit-col-cco");
+        Assert.Contains("bit-col-col", html);
+        Assert.Contains("bit-col-cco", html);
         // Closed content is out of reach from the first frame, not only once the runtime arrives.
-        StringAssert.Contains(html, "inert");
-        StringAssert.Contains(html, "tabindex=\"-1\"");
-        StringAssert.Contains(html, "class=\"body\"");
+        Assert.Contains("inert", html);
+        Assert.Contains("tabindex=\"-1\"", html);
+        Assert.Contains("class=\"body\"", html);
     }
 
     [TestMethod]
@@ -39,10 +39,10 @@ public class BitCollapsePrerenderTests
             [nameof(BitCollapse.DefaultExpanded)] = true,
         });
 
-        StringAssert.Contains(html, "bit-col-exp");
-        StringAssert.Contains(html, "bit-col-cex");
-        Assert.IsFalse(html.Contains("inert"));
-        StringAssert.Contains(html, "tabindex=\"0\"");
+        Assert.Contains("bit-col-exp", html);
+        Assert.Contains("bit-col-cex", html);
+        Assert.DoesNotContain("inert", html);
+        Assert.Contains("tabindex=\"0\"", html);
     }
 
     [TestMethod]
@@ -56,8 +56,8 @@ public class BitCollapsePrerenderTests
             [nameof(BitCollapse.HiddenUntilFound)] = true,
         });
 
-        StringAssert.Contains(html, "hidden=\"until-found\"");
-        StringAssert.Contains(html, "bit-col-huf");
-        StringAssert.Contains(html, "class=\"body\"");
+        Assert.Contains("hidden=\"until-found\"", html);
+        Assert.Contains("bit-col-huf", html);
+        Assert.Contains("class=\"body\"", html);
     }
 }

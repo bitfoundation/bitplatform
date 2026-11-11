@@ -41,8 +41,8 @@ public class McpSearchToolTests
         {
             var result = await SearchAsync(query, limit: 8);
 
-            Assert.IsTrue(result.Hits.Length > 0, $"'{query}' matched nothing at all.");
-            Assert.IsTrue(result.Hits.Any(hit => answers.Any(answer => hit.Title.Contains(answer, StringComparison.OrdinalIgnoreCase))),
+            Assert.IsNotEmpty(result.Hits, $"'{query}' matched nothing at all.");
+            Assert.Contains(hit => answers.Any(answer => hit.Title.Contains(answer, StringComparison.OrdinalIgnoreCase)), result.Hits,
                 $"'{query}' surfaced none of [{string.Join(", ", answers)}]. It found: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
         }
     }
@@ -68,7 +68,7 @@ public class McpSearchToolTests
         {
             var result = await SearchAsync(query, limit: 8);
 
-            Assert.IsTrue(result.Hits.Any(hit => hit.Tool == "GetBrouterRouteConstraints()" && titles.Contains(hit.Title)),
+            Assert.Contains(hit => hit.Tool == "GetBrouterRouteConstraints()" && titles.Contains(hit.Title), result.Hits,
                 $"'{query}' surfaced none of [{string.Join(", ", titles)}]. It found: {string.Join(", ", result.Hits.Select(hit => $"{hit.Title} ({hit.Tool})"))}.");
         }
     }
@@ -85,10 +85,10 @@ public class McpSearchToolTests
         {
             var result = await SearchAsync(query, limit: 8);
 
-            Assert.IsTrue(result.Hits.Count(hit => hit.Tool == "GetBrouterRouteConstraints()") <= 1,
+            Assert.IsLessThanOrEqualTo(1, result.Hits.Count(hit => hit.Tool == "GetBrouterRouteConstraints()"),
                 $"'{query}' spent several hits on GetBrouterRouteConstraints: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Title == "Built-in constraint catalog"),
+            Assert.DoesNotContain(hit => hit.Title == "Built-in constraint catalog", result.Hits,
                 $"'{query}' surfaced the whole constraint catalog: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
         }
     }
@@ -111,7 +111,7 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("guard", limit: 10);
 
-        Assert.IsTrue(result.Hits.Any(hit => hit.Title.Contains("guards", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(hit => hit.Title.Contains("guards", StringComparison.OrdinalIgnoreCase), result.Hits,
             "'guard' did not find the sections spelled 'guards'.");
     }
 
@@ -133,7 +133,7 @@ public class McpSearchToolTests
         {
             var result = await SearchAsync(query, limit: 50);
 
-            Assert.IsTrue(result.Hits.Any(hit => hit.Kind == kind),
+            Assert.Contains(hit => hit.Kind == kind, result.Hits,
                 $"'{query}' returned no hit of kind '{kind}'. Kinds found: {string.Join(", ", result.Hits.Select(hit => hit.Kind).Distinct())}.");
         }
     }
@@ -147,7 +147,7 @@ public class McpSearchToolTests
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(hit.Tool), $"'{hit.Title}' tells the caller nothing about how to read it.");
             Assert.IsFalse(string.IsNullOrWhiteSpace(hit.Snippet), $"'{hit.Title}' came back with no snippet.");
-            Assert.IsTrue(hit.Snippet.Length < 400, $"'{hit.Title}' came back with a {hit.Snippet.Length}-character 'snippet'.");
+            Assert.IsLessThan(400, hit.Snippet.Length, $"'{hit.Title}' came back with a {hit.Snippet.Length}-character 'snippet'.");
         }
     }
 
@@ -159,7 +159,7 @@ public class McpSearchToolTests
         // now kept for the answer that has nothing else to say.
         var result = await SearchAsync("How do I redirect from a guard?");
 
-        Assert.IsTrue(result.Hits.Length > 0);
+        Assert.IsNotEmpty(result.Hits);
         Assert.IsNull(result.Terms, "A successful search echoed the words it was ranked by back at the caller.");
         Assert.IsNull(result.Message);
     }
@@ -171,13 +171,13 @@ public class McpSearchToolTests
         // three words you sent were all filler", and the caller cannot tell them apart otherwise.
         var result = await SearchAsync("How do I zzz from a qqq?");
 
-        Assert.AreEqual(0, result.Hits.Length);
+        Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.Terms);
 
         // Filler words rank nothing and would drag in every entry that merely contains them.
-        CollectionAssert.DoesNotContain(result.Terms, "how");
-        CollectionAssert.DoesNotContain(result.Terms, "from");
-        CollectionAssert.Contains(result.Terms, "zzz");
+        Assert.DoesNotContain("how", result.Terms);
+        Assert.DoesNotContain("from", result.Terms);
+        Assert.Contains("zzz", result.Terms);
     }
 
     [TestMethod]
@@ -188,15 +188,13 @@ public class McpSearchToolTests
         var withName = await SearchAsync("brouter keep alive");
         var without = await SearchAsync("keep alive");
 
-        CollectionAssert.AreEqual(
-            without.Hits.Select(hit => hit.Title).ToArray(),
-            withName.Hits.Select(hit => hit.Title).ToArray(),
-            "Naming the library changed the ranking, so the word is still being counted as a term.");
+        Assert.AreSequenceEqual(
+            without.Hits.Select(hit => hit.Title).ToArray(), withName.Hits.Select(hit => hit.Title).ToArray(), "Naming the library changed the ranking, so the word is still being counted as a term.");
 
         // Said on its own it is all there is to go on, so it still has to answer.
         var alone = await SearchAsync("brouter");
 
-        Assert.IsTrue(alone.Hits.Length > 0, "A search for the library's own name came back with nothing.");
+        Assert.IsNotEmpty(alone.Hits, "A search for the library's own name came back with nothing.");
     }
 
     [TestMethod]
@@ -208,7 +206,7 @@ public class McpSearchToolTests
 
         var duplicates = result.Hits.GroupBy(hit => (hit.Title, hit.Tool)).Where(group => group.Count() > 1).ToArray();
 
-        Assert.AreEqual(0, duplicates.Length,
+        Assert.IsEmpty(duplicates,
             $"The same hit came back more than once: {string.Join(", ", duplicates.Select(group => group.Key.Title))}");
     }
 
@@ -216,15 +214,15 @@ public class McpSearchToolTests
     public async Task The_limit_is_honored_and_clamped_at_both_ends()
     {
         var three = await SearchAsync("route", limit: 3);
-        Assert.AreEqual(3, three.Hits.Length);
+        Assert.HasCount(3, three.Hits);
         Assert.IsTrue(three.HasMore, "A cut-short ranking has to say so, or the caller reads three hits as everything there is.");
 
         // A pasted-in limit must not be able to turn one search into the whole index.
         var capped = await SearchAsync("route", limit: 999);
-        Assert.IsTrue(capped.Hits.Length <= 50, $"{capped.Hits.Length} hits came back for a limit of 999.");
+        Assert.IsLessThanOrEqualTo(50, capped.Hits.Length, $"{capped.Hits.Length} hits came back for a limit of 999.");
 
         var zero = await SearchAsync("route", limit: 0);
-        Assert.AreEqual(1, zero.Hits.Length, "A limit of zero should answer with one hit rather than none.");
+        Assert.ContainsSingle(zero.Hits, "A limit of zero should answer with one hit rather than none.");
     }
 
     [TestMethod]
@@ -234,10 +232,10 @@ public class McpSearchToolTests
         // with different fixes, and only one of them is the caller's to fix.
         var result = await SearchAsync("how do the and for");
 
-        Assert.AreEqual(0, result.Hits.Length);
-        Assert.AreEqual(0, result.Terms!.Length);
+        Assert.IsEmpty(result.Hits);
+        Assert.IsEmpty(result.Terms!);
         Assert.IsNotNull(result.Message);
-        StringAssert.Contains(result.Message, "filler word");
+        Assert.Contains("filler word", result.Message);
     }
 
     [TestMethod]
@@ -245,9 +243,9 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("guardz");
 
-        Assert.AreEqual(0, result.Hits.Length);
+        Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.DidYouMean);
-        Assert.IsTrue(result.DidYouMean.Any(title => title.Contains("Guard", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(title => title.Contains("Guard", StringComparison.OrdinalIgnoreCase), result.DidYouMean,
             $"'guardz' suggested {string.Join(", ", result.DidYouMean)}, none of which is about guards.");
     }
 
@@ -256,12 +254,12 @@ public class McpSearchToolTests
     {
         var result = await SearchAsync("kubernetes");
 
-        Assert.AreEqual(0, result.Hits.Length);
+        Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.Message);
 
         // The failure mode this guards against: an agent reading an empty result as "Brouter cannot
         // do this" and writing its own router feature instead.
-        StringAssert.Contains(result.Message, "middleware");
+        Assert.Contains("middleware", result.Message);
     }
 
     [TestMethod]
@@ -274,6 +272,6 @@ public class McpSearchToolTests
 
         // Nothing matched, so the answer says what it was ranked by - which is where the cap shows.
         Assert.IsNotNull(result.Terms);
-        Assert.IsTrue(result.Terms.Length <= 16, $"{result.Terms.Length} terms were searched by; the cap is 16.");
+        Assert.IsLessThanOrEqualTo(16, result.Terms.Length, $"{result.Terms.Length} terms were searched by; the cap is 16.");
     }
 }

@@ -55,8 +55,8 @@ public class BitSliderTests : BunitTestContext
         var slider = com.Find(".bit-sld");
 
         Assert.AreEqual(ranged, slider.ClassList.Contains("bit-sld-rgd"));
-        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-inp").Count);
-        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-thb").Count);
+        Assert.HasCount(ranged ? 2 : 1, com.FindAll(".bit-sld-inp"));
+        Assert.HasCount(ranged ? 2 : 1, com.FindAll(".bit-sld-thb"));
     }
 
     [TestMethod,
@@ -157,12 +157,12 @@ public class BitSliderTests : BunitTestContext
 
         if (expectedStyle is null)
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -263,7 +263,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 3);
         });
 
-        Assert.AreEqual(rendered ? 1 : 0, com.FindAll(".bit-sld-tlb").Count);
+        Assert.HasCount(rendered ? 1 : 0, com.FindAll(".bit-sld-tlb"));
 
         if (expectedClass is not null)
         {
@@ -301,7 +301,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-tlb .custom-thumb");
 
-        Assert.AreEqual(2, labels.Count);
+        Assert.HasCount(2, labels);
         Assert.AreEqual("#2", labels[0].TextContent.Trim());
         Assert.AreEqual("#7", labels[1].TextContent.Trim());
     }
@@ -315,7 +315,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ThumbLabelTemplate, (double v) => $"<span class='custom-thumb'>#{v}</span>");
         });
 
-        Assert.AreEqual(0, com.FindAll(".custom-thumb").Count);
+        Assert.IsEmpty(com.FindAll(".custom-thumb"));
     }
 
     [TestMethod]
@@ -331,7 +331,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-tlb");
 
-        Assert.AreEqual(2, labels.Count);
+        Assert.HasCount(2, labels);
         Assert.AreEqual("2", labels[0].TextContent.Trim());
         Assert.AreEqual("7", labels[1].TextContent.Trim());
     }
@@ -375,7 +375,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, "<span class='custom-label'>Custom</span>");
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-sld-lbl .custom-label").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-sld-lbl .custom-label"));
     }
 
     #endregion
@@ -468,8 +468,8 @@ public class BitSliderTests : BunitTestContext
 
         var fill = com.Find(".bit-sld-fil").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(fill.Contains("NaN"));
-        Assert.IsFalse(fill.Contains("Infinity"));
+        Assert.DoesNotContain("NaN", fill);
+        Assert.DoesNotContain("Infinity", fill);
     }
 
     #endregion
@@ -491,7 +491,7 @@ public class BitSliderTests : BunitTestContext
 
         var inputs = com.FindAll(".bit-sld-inp");
 
-        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
+        Assert.HasCount(ranged ? 2 : 1, inputs);
 
         foreach (var input in inputs)
         {
@@ -544,7 +544,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        Assert.AreEqual(showValue ? (ranged ? 2 : 1) : 0, labels.Count);
+        Assert.HasCount(showValue ? (ranged ? 2 : 1) : 0, labels);
     }
 
     [TestMethod]
@@ -589,7 +589,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // "100" is three characters, one more than "-5".
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:3ch");
+        Assert.Contains("--bit-sld-vlb-min:3ch", com.Find(".bit-sld-vlb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -604,7 +604,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // "1000 kg" - the reservation follows the text that is actually drawn, not the bare number.
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:7ch");
+        Assert.Contains("--bit-sld-vlb-min:7ch", com.Find(".bit-sld-vlb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -622,7 +622,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // "Excellent" is nine characters; the two ends read three.
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+        Assert.Contains("--bit-sld-vlb-min:9ch", com.Find(".bit-sld-vlb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -639,7 +639,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.GetValueText, (double v) => v == 9 ? "Very high" : $"{v:0}");
         });
 
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:9ch");
+        Assert.Contains("--bit-sld-vlb-min:9ch", com.Find(".bit-sld-vlb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -655,7 +655,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.GetValueText, (double v) => v == 500 ? "the middle of it" : $"{v:0}");
         });
 
-        StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+        Assert.Contains("--bit-sld-vlb-min:4ch", com.Find(".bit-sld-vlb").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -685,7 +685,7 @@ public class BitSliderTests : BunitTestContext
                     parameters.Add(p => p.Value, min);
                 });
 
-                StringAssert.Contains(com.Find(".bit-sld-vlb").GetAttribute("style"), $"--bit-sld-vlb-min:{chars}ch", culture.Name);
+                Assert.Contains($"--bit-sld-vlb-min:{chars}ch", com.Find(".bit-sld-vlb").GetAttribute("style")!, culture.Name);
             }
         }
         finally
@@ -706,8 +706,8 @@ public class BitSliderTests : BunitTestContext
         var style = com.Find(".bit-sld-vlb").GetAttribute("style");
 
         // The reservation is written first, so anything the caller sets lands after it and wins.
-        StringAssert.StartsWith(style, "--bit-sld-vlb-min:");
-        StringAssert.Contains(style, "color: tomato;");
+        Assert.StartsWith("--bit-sld-vlb-min:", style);
+        Assert.Contains("color: tomato;", style);
     }
 
     [TestMethod]
@@ -723,9 +723,9 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        Assert.AreEqual(2, labels.Count);
-        StringAssert.Contains(labels[0].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
-        StringAssert.Contains(labels[1].GetAttribute("style"), "--bit-sld-vlb-min:4ch");
+        Assert.HasCount(2, labels);
+        Assert.Contains("--bit-sld-vlb-min:4ch", labels[0].GetAttribute("style")!);
+        Assert.Contains("--bit-sld-vlb-min:4ch", labels[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -740,7 +740,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        Assert.AreEqual(2, labels.Count);
+        Assert.HasCount(2, labels);
         Assert.AreEqual("2", labels[0].TextContent.Trim());
         Assert.AreEqual("7", labels[1].TextContent.Trim());
     }
@@ -911,7 +911,7 @@ public class BitSliderTests : BunitTestContext
         input.Input("3");
         input.Input("4");
 
-        CollectionAssert.AreEqual(new List<double?> { 3, 4 }, values);
+        Assert.AreSequenceEqual(new List<double?> { 3, 4 }, values);
     }
 
     [TestMethod]
@@ -1209,10 +1209,10 @@ public class BitSliderTests : BunitTestContext
 
         // The lower input runs from the start of the scale to the upper value, the upper one from the lower
         // value to the end - the very bounds each of them carries.
-        StringAssert.Contains(lower, "--bit-sld-inp-start:0;");
-        StringAssert.Contains(lower, "--bit-sld-inp-end:0.7");
-        StringAssert.Contains(upper, "--bit-sld-inp-start:0.3;");
-        StringAssert.Contains(upper, "--bit-sld-inp-end:1");
+        Assert.Contains("--bit-sld-inp-start:0;", lower!);
+        Assert.Contains("--bit-sld-inp-end:0.7", lower);
+        Assert.Contains("--bit-sld-inp-start:0.3;", upper!);
+        Assert.Contains("--bit-sld-inp-end:1", upper);
     }
 
     [TestMethod]
@@ -1230,8 +1230,8 @@ public class BitSliderTests : BunitTestContext
         {
             var style = input.GetAttribute("style");
 
-            StringAssert.Contains(style, "--bit-sld-inp-start:0;");
-            StringAssert.Contains(style, "--bit-sld-inp-end:1");
+            Assert.Contains("--bit-sld-inp-start:0;", style!);
+            Assert.Contains("--bit-sld-inp-end:1", style);
         }
     }
 
@@ -1611,8 +1611,8 @@ public class BitSliderTests : BunitTestContext
         });
 
         // Both inputs run across the whole scale here, so the cut sits at the midpoint of each of them.
-        StringAssert.Contains(com.Find(".bit-sld-inp-lwr").GetAttribute("style"), "--bit-sld-inp-mid:0.4");
-        StringAssert.Contains(com.Find(".bit-sld-inp-upr").GetAttribute("style"), "--bit-sld-inp-mid:0.4");
+        Assert.Contains("--bit-sld-inp-mid:0.4", com.Find(".bit-sld-inp-lwr").GetAttribute("style")!);
+        Assert.Contains("--bit-sld-inp-mid:0.4", com.Find(".bit-sld-inp-upr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1630,8 +1630,8 @@ public class BitSliderTests : BunitTestContext
         });
 
         // The lower input runs from 0 to 70 and the upper from 30 to 100, and the midpoint of the pair is 50.
-        StringAssert.Contains(com.Find(".bit-sld-inp-lwr").GetAttribute("style"), "--bit-sld-inp-mid:0.7143");
-        StringAssert.Contains(com.Find(".bit-sld-inp-upr").GetAttribute("style"), "--bit-sld-inp-mid:0.2857");
+        Assert.Contains("--bit-sld-inp-mid:0.7143", com.Find(".bit-sld-inp-lwr").GetAttribute("style")!);
+        Assert.Contains("--bit-sld-inp-mid:0.2857", com.Find(".bit-sld-inp-upr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1676,7 +1676,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.Value, 4D);
         });
 
-        Assert.IsFalse((com.Find(".bit-sld-inp").GetAttribute("style") ?? string.Empty).Contains("--bit-sld-inp-mid"));
+        Assert.DoesNotContain("--bit-sld-inp-mid", (com.Find(".bit-sld-inp").GetAttribute("style") ?? string.Empty));
     }
 
     #endregion
@@ -1694,8 +1694,8 @@ public class BitSliderTests : BunitTestContext
 
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:0%");
-        StringAssert.Contains(style, "width:30%");
+        Assert.Contains("inset-inline-start:0%", style!);
+        Assert.Contains("width:30%", style);
     }
 
     [TestMethod]
@@ -1710,8 +1710,8 @@ public class BitSliderTests : BunitTestContext
 
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:30%");
-        StringAssert.Contains(style, "width:70%");
+        Assert.Contains("inset-inline-start:30%", style!);
+        Assert.Contains("width:70%", style);
         Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-ivt"));
     }
 
@@ -1729,8 +1729,8 @@ public class BitSliderTests : BunitTestContext
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
         // Zero is halfway along a -5..5 scale, and the value covers three tenths of the way to the far end.
-        StringAssert.Contains(style, "inset-inline-start:50%");
-        StringAssert.Contains(style, "width:30%");
+        Assert.Contains("inset-inline-start:50%", style!);
+        Assert.Contains("width:30%", style);
     }
 
     [TestMethod]
@@ -1746,7 +1746,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsOriginFromZero, true);
         });
 
-        StringAssert.Contains(com.Find(".bit-sld-ztk").GetAttribute("style"), "inset-inline-start:20%");
+        Assert.Contains("inset-inline-start:20%", com.Find(".bit-sld-ztk").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1761,8 +1761,8 @@ public class BitSliderTests : BunitTestContext
 
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:60%");
-        StringAssert.Contains(style, "width:25%");
+        Assert.Contains("inset-inline-start:60%", style!);
+        Assert.Contains("width:25%", style);
     }
 
     [TestMethod]
@@ -1777,8 +1777,8 @@ public class BitSliderTests : BunitTestContext
 
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
-        StringAssert.Contains(style, "inset-inline-start:20%");
-        StringAssert.Contains(style, "width:40%");
+        Assert.Contains("inset-inline-start:20%", style!);
+        Assert.Contains("width:40%", style);
     }
 
     [TestMethod,
@@ -1794,7 +1794,7 @@ public class BitSliderTests : BunitTestContext
             if (hasOrigin) parameters.Add(p => p.Origin, 4D);
         });
 
-        Assert.AreEqual(expected, com.FindAll(".bit-sld-ztk").Count);
+        Assert.HasCount(expected, com.FindAll(".bit-sld-ztk"));
     }
 
     [TestMethod]
@@ -1810,9 +1810,9 @@ public class BitSliderTests : BunitTestContext
 
         var fills = com.FindAll(".bit-sld-fil");
 
-        Assert.AreEqual(1, fills.Count);
-        StringAssert.Contains(fills[0].GetAttribute("style"), "inset-inline-start:20%");
-        StringAssert.Contains(fills[0].GetAttribute("style"), "width:40%");
+        Assert.ContainsSingle(fills);
+        Assert.Contains("inset-inline-start:20%", fills[0].GetAttribute("style")!);
+        Assert.Contains("width:40%", fills[0].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1829,11 +1829,11 @@ public class BitSliderTests : BunitTestContext
 
         var fills = com.FindAll(".bit-sld-fil");
 
-        Assert.AreEqual(2, fills.Count);
-        StringAssert.Contains(fills[0].GetAttribute("style"), "inset-inline-start:0%");
-        StringAssert.Contains(fills[0].GetAttribute("style"), "width:35%");
-        StringAssert.Contains(fills[1].GetAttribute("style"), "inset-inline-start:65%");
-        StringAssert.Contains(fills[1].GetAttribute("style"), "width:35%");
+        Assert.HasCount(2, fills);
+        Assert.Contains("inset-inline-start:0%", fills[0].GetAttribute("style")!);
+        Assert.Contains("width:35%", fills[0].GetAttribute("style")!);
+        Assert.Contains("inset-inline-start:65%", fills[1].GetAttribute("style")!);
+        Assert.Contains("width:35%", fills[1].GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1852,11 +1852,11 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.UpperValue, 8D);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-fil").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-fil"));
 
         // The rail, the thumbs and everything else that is not the fill are still there.
-        Assert.AreEqual(1, com.FindAll(".bit-sld-trk").Count);
-        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-thb").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-sld-trk"));
+        Assert.HasCount(ranged ? 2 : 1, com.FindAll(".bit-sld-thb"));
     }
 
     [TestMethod]
@@ -1873,7 +1873,7 @@ public class BitSliderTests : BunitTestContext
 
         var marks = com.FindAll(".bit-sld-mrk");
 
-        Assert.AreEqual(11, marks.Count);
+        Assert.HasCount(11, marks);
         Assert.AreEqual(0, marks.Count(m => m.ClassList.Contains("bit-sld-mrk-act")));
     }
 
@@ -1888,7 +1888,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.IsOriginFromZero, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-ztk").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-ztk"));
     }
 
     [TestMethod]
@@ -1905,7 +1905,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.Origin, 2D);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-ztk").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-ztk"));
     }
 
     [TestMethod]
@@ -1921,8 +1921,8 @@ public class BitSliderTests : BunitTestContext
         var style = com.Find(".bit-sld-fil").GetAttribute("style");
 
         // A vertical slider grows from its bottom edge upwards, so "more" is up.
-        StringAssert.Contains(style, "bottom:0%");
-        StringAssert.Contains(style, "height:30%");
+        Assert.Contains("bottom:0%", style!);
+        Assert.Contains("height:30%", style);
     }
 
     #endregion
@@ -1934,8 +1934,8 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mks").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-mrk"));
+        Assert.IsEmpty(com.FindAll(".bit-sld-mks"));
     }
 
     [TestMethod]
@@ -1949,7 +1949,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowMarks, true);
         });
 
-        Assert.AreEqual(11, com.FindAll(".bit-sld-mrk").Count);
+        Assert.HasCount(11, com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -1964,7 +1964,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowMarks, true);
         });
 
-        Assert.AreEqual(6, com.FindAll(".bit-sld-mrk").Count);
+        Assert.HasCount(6, com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -1981,7 +1981,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.RestrictToMarks, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-mrk"));
 
         com.Find(".bit-sld-inp").Input("37");
 
@@ -1997,8 +1997,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowMarkLabels, true);
         });
 
-        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
-        Assert.AreEqual(5, com.FindAll(".bit-sld-mlb").Count);
+        Assert.HasCount(5, com.FindAll(".bit-sld-mrk"));
+        Assert.HasCount(5, com.FindAll(".bit-sld-mlb"));
     }
 
     [TestMethod]
@@ -2021,7 +2021,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-mlb");
 
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
 
         // A label is written in the reader's culture, as the value label is ("0,0" under de-DE).
         Assert.AreEqual(0D.ToString("0.0", CultureInfo.CurrentCulture), labels[0].TextContent.Trim());
@@ -2029,7 +2029,7 @@ public class BitSliderTests : BunitTestContext
         // A mark that brought a label of its own keeps it, together with its class and its style.
         Assert.AreEqual("Halfway", labels[1].TextContent.Trim());
         Assert.IsTrue(labels[1].ClassList.Contains("own"));
-        StringAssert.Contains(labels[1].GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", labels[1].GetAttribute("style")!);
 
         Assert.AreEqual(4D.ToString("0.0", CultureInfo.CurrentCulture), labels[^1].TextContent.Trim());
 
@@ -2049,8 +2049,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
         });
 
-        Assert.AreEqual(4, com.FindAll(".bit-sld-mrk").Count);
-        Assert.AreEqual(4, com.FindAll(".bit-sld-mlb").Count);
+        Assert.HasCount(4, com.FindAll(".bit-sld-mrk"));
+        Assert.HasCount(4, com.FindAll(".bit-sld-mlb"));
     }
 
     [TestMethod]
@@ -2065,8 +2065,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.MarkLabelTemplate, (BitSliderMark m) => $"<i>#{m.Value}</i>");
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mks").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-mrk"));
+        Assert.IsEmpty(com.FindAll(".bit-sld-mks"));
     }
 
     [TestMethod]
@@ -2084,7 +2084,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-mlb .custom-mark-label");
 
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
         Assert.AreEqual("0:", labels[0].TextContent.Trim());
 
         // It wins over the label the mark brought with it.
@@ -2103,7 +2103,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-mlb");
 
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
         Assert.AreEqual("#0", labels[0].TextContent.Trim());
     }
 
@@ -2138,8 +2138,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(4)]);
         });
 
-        Assert.AreEqual(2, com.FindAll(".bit-sld-mrk").Count);
-        Assert.AreEqual(0, com.FindAll(".bit-sld-mlb").Count);
+        Assert.HasCount(2, com.FindAll(".bit-sld-mrk"));
+        Assert.IsEmpty(com.FindAll(".bit-sld-mlb"));
     }
 
     [TestMethod]
@@ -2155,7 +2155,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         // The cap widens the step until the series fits, which is the cap itself plus the mark on the far end.
-        Assert.AreEqual(201, com.FindAll(".bit-sld-mrk").Count);
+        Assert.HasCount(201, com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -2173,7 +2173,7 @@ public class BitSliderTests : BunitTestContext
 
         var marks = com.FindAll(".bit-sld-mrk");
 
-        Assert.AreEqual(201, marks.Count);
+        Assert.HasCount(201, marks);
     }
 
     [TestMethod]
@@ -2188,7 +2188,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-mlb");
 
-        Assert.AreEqual(5, labels.Count);
+        Assert.HasCount(5, labels);
         Assert.AreEqual("0", labels[0].TextContent.Trim());
         Assert.AreEqual("4", labels[^1].TextContent.Trim());
     }
@@ -2227,11 +2227,11 @@ public class BitSliderTests : BunitTestContext
         var labels = com.FindAll(".bit-sld-mlb");
 
         // Explicit marks take precedence over the generated ones.
-        Assert.AreEqual(3, marks.Count);
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, marks);
+        Assert.HasCount(3, labels);
         Assert.AreEqual("Low", labels[0].TextContent.Trim());
         Assert.AreEqual("High", labels[^1].TextContent.Trim());
-        StringAssert.Contains(marks[1].GetAttribute("style"), "inset-inline-start:50%");
+        Assert.Contains("inset-inline-start:50%", marks[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2249,7 +2249,7 @@ public class BitSliderTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, com.FindAll(".bit-sld-mrk").Count);
+        Assert.ContainsSingle(com.FindAll(".bit-sld-mrk"));
     }
 
     [TestMethod]
@@ -2278,7 +2278,7 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-sld-mrk").ClassList.Contains("custom-mark"));
-        StringAssert.Contains(com.Find(".bit-sld-mrk").GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", com.Find(".bit-sld-mrk").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-sld-mlb").ClassList.Contains("custom-mark"));
     }
 
@@ -3094,7 +3094,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.DefaultUpperValue, 6D);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-inp-bar"));
     }
 
     [TestMethod]
@@ -3112,8 +3112,8 @@ public class BitSliderTests : BunitTestContext
         var bar = com.Find(".bit-sld-inp-bar");
 
         // The band spans the two ends of the range, which is what its thumb is made as wide as.
-        StringAssert.Contains(bar.GetAttribute("style"), "--bit-sld-bar-start:0.2");
-        StringAssert.Contains(bar.GetAttribute("style"), "--bit-sld-bar-end:0.6");
+        Assert.Contains("--bit-sld-bar-start:0.2", bar.GetAttribute("style")!);
+        Assert.Contains("--bit-sld-bar-end:0.6", bar.GetAttribute("style")!);
 
         // Its value is the lower end, and the room it has left is the room the band has left on the scale.
         Assert.AreEqual("0", bar.GetAttribute("min"));
@@ -3153,7 +3153,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.DefaultUpperValue, 4D);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-inp-bar"));
     }
 
     [TestMethod,
@@ -3172,7 +3172,7 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.DefaultUpperValue, 6D);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-inp-bar"));
     }
 
     [TestMethod]
@@ -3363,7 +3363,7 @@ public class BitSliderTests : BunitTestContext
         var bar = com.Find(".bit-sld-inp-bar");
 
         Assert.IsTrue(bar.ClassList.Contains("custom-bar"));
-        StringAssert.Contains(bar.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", bar.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3732,7 +3732,7 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        Assert.AreEqual(ranged ? 2 : 1, labels.Count);
+        Assert.HasCount(ranged ? 2 : 1, labels);
         Assert.IsTrue(labels.All(l => l.GetAttribute("aria-hidden") == "true"));
     }
 
@@ -3877,7 +3877,7 @@ public class BitSliderTests : BunitTestContext
     {
         var com = RenderComponent<BitSlider>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-sld-dsc").Count);
+        Assert.IsEmpty(com.FindAll(".bit-sld-dsc"));
         Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-describedby"));
     }
 
@@ -3995,7 +3995,7 @@ public class BitSliderTests : BunitTestContext
 
         var slider = com.Find(".bit-sld");
 
-        StringAssert.Contains(slider.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", slider.GetAttribute("style")!);
         Assert.IsTrue(slider.ClassList.Contains("custom-class"));
     }
 
@@ -4035,8 +4035,8 @@ public class BitSliderTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-sld-vlb").ClassList.Contains("custom-value"));
         Assert.IsTrue(com.Find(".bit-sld-mrk").ClassList.Contains("custom-mark"));
 
-        StringAssert.Contains(com.Find(".bit-sld").GetAttribute("style"), "font-size:2rem");
-        StringAssert.Contains(com.Find(".bit-sld-fil").GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("font-size:2rem", com.Find(".bit-sld").GetAttribute("style")!);
+        Assert.Contains("opacity:0.5", com.Find(".bit-sld-fil").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -4073,10 +4073,10 @@ public class BitSliderTests : BunitTestContext
         var thumb = com.Find(".bit-sld-thb");
 
         Assert.IsTrue(thumb.ClassList.Contains("custom-thumb"));
-        StringAssert.Contains(thumb.GetAttribute("style"), "border-radius:0.25rem");
+        Assert.Contains("border-radius:0.25rem", thumb.GetAttribute("style")!);
 
         // The position the thumb is drawn at is still there beside the custom style.
-        StringAssert.Contains(thumb.GetAttribute("style"), "inset-inline-start:40%");
+        Assert.Contains("inset-inline-start:40%", thumb.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -4111,8 +4111,8 @@ public class BitSliderTests : BunitTestContext
         Assert.IsTrue(upper.ClassList.Contains("custom-upper-thumb"));
         Assert.IsFalse(upper.ClassList.Contains("custom-lower-thumb"));
 
-        StringAssert.Contains(lower.GetAttribute("style"), "border-color:mediumseagreen");
-        StringAssert.Contains(upper.GetAttribute("style"), "border-color:orangered");
+        Assert.Contains("border-color:mediumseagreen", lower.GetAttribute("style")!);
+        Assert.Contains("border-color:orangered", upper.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -4273,7 +4273,7 @@ public class BitSliderTests : BunitTestContext
 
         var inputs = com.FindAll(".bit-sld-inp");
 
-        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
+        Assert.HasCount(ranged ? 2 : 1, inputs);
 
         foreach (var input in inputs)
         {
@@ -4344,14 +4344,14 @@ public class BitSliderTests : BunitTestContext
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(com.Instance.SliderInputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
 
         await com.InvokeAsync(() => com.Instance.FocusUpperAsync().AsTask());
 
         focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(2, focuses.Count);
+        Assert.HasCount(2, focuses);
         Assert.AreEqual(com.Instance.UpperSliderInputElement.Id, ((ElementReference)focuses[1].Arguments[0]!).Id);
     }
 

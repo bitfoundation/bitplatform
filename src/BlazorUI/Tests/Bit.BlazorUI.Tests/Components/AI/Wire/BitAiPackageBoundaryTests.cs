@@ -64,6 +64,6 @@ public class BitAiPackageBoundaryTests
             .Where(r => r != name && forbidden.Contains(r, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.AreEqual(0, offending.Length, $"{name} references {string.Join(", ", offending)}, which an app installing it must not be made to load.");
+        Assert.IsEmpty(offending, $"{name} references {string.Join(", ", offending)}, which an app installing it must not be made to load.");
     }
 }

@@ -38,8 +38,8 @@ public sealed class TrimmedSizeReportTests
             var bundles = publish.TrimmedBundles;
 
             // Each app renders the core's components, so its report has at least the core's script and stylesheet.
-            Assert.IsTrue(bundles.Any(b => b.Package == "Bit.BlazorUI" && b.Bundle.EndsWith(".js", StringComparison.Ordinal)), $"The {app.App} app's publish reports no core script bundle.");
-            Assert.IsTrue(bundles.Any(b => b.Package == "Bit.BlazorUI" && b.Bundle.EndsWith(".css", StringComparison.Ordinal)), $"The {app.App} app's publish reports no core stylesheet.");
+            Assert.Contains(b => b.Package == "Bit.BlazorUI" && b.Bundle.EndsWith(".js", StringComparison.Ordinal), bundles, $"The {app.App} app's publish reports no core script bundle.");
+            Assert.Contains(b => b.Package == "Bit.BlazorUI" && b.Bundle.EndsWith(".css", StringComparison.Ordinal), bundles, $"The {app.App} app's publish reports no core stylesheet.");
 
             foreach (var bundle in bundles)
             {
@@ -49,7 +49,7 @@ public sealed class TrimmedSizeReportTests
             // A bundle one publish reports more than once has to say the same each time, and is recorded once.
             foreach (var twice in bundles.GroupBy(b => (b.Package, b.Bundle)).Where(g => g.Count() > 1))
             {
-                Assert.AreEqual(1, twice.Distinct().Count(), $"The {app.App} app's publish reports {twice.Key.Package}/{twice.Key.Bundle} differently: {string.Join("; ", twice)}");
+                Assert.ContainsSingle(twice.Distinct(), $"The {app.App} app's publish reports {twice.Key.Package}/{twice.Key.Bundle} differently: {string.Join("; ", twice)}");
             }
 
             return new

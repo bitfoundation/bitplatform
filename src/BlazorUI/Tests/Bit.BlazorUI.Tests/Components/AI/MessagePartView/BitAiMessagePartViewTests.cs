@@ -49,8 +49,8 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         var component = RenderPart(WithArtifact(BitAiArtifactKind.Document, "Project README", "# Hello\n\nWorld"));
 
         Assert.IsFalse(component.Markup.Contains("artifactpartview", StringComparison.OrdinalIgnoreCase));
-        Assert.HasCount(1, component.FindComponents<BitAiArtifactView>());
-        StringAssert.Contains(component.Markup, "Project README");
+        Assert.ContainsSingle(component.FindComponents<BitAiArtifactView>());
+        Assert.Contains("Project README", component.Markup);
         Assert.IsNotNull(component.Find("button[aria-label='Download']"));
         Assert.IsNotNull(component.Find("button[aria-label='Expand']"));
     }
@@ -65,7 +65,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
             .Add(c => c.Conversation, setup.Conversation));
 
         Assert.IsEmpty(component.FindComponents<BitAiArtifactView>());
-        StringAssert.Contains(component.Markup, "Artifact");
+        Assert.Contains("Artifact", component.Markup);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
     {
         var component = RenderPart(WithArtifact(BitAiArtifactKind.Table, "Prices", "name,price\n\"Widget, large\",3\nGadget,4\n"));
 
-        CollectionAssert.AreEqual(new[] { "name", "price" }, component.FindAll("th").Select(th => th.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "name", "price" }, component.FindAll("th").Select(th => th.TextContent).ToArray());
         Assert.AreEqual("Widget, large", component.FindAll("td")[0].TextContent);
         Assert.HasCount(2, component.FindAll("tbody tr"));
     }
@@ -124,9 +124,9 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         var error = new BitAiErrorPart(new BitAiError("boom"));
         var message = Assistant(call, result, error);
 
-        Assert.HasCount(1, RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, call).Add(c => c.Message, message)).FindComponents<BitAiToolCallView>());
-        Assert.HasCount(1, RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, result).Add(c => c.Message, message)).FindComponents<BitAiToolResultView>());
-        Assert.HasCount(1, RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, error).Add(c => c.Message, message)).FindComponents<BitAiErrorView>());
+        Assert.ContainsSingle(RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, call).Add(c => c.Message, message)).FindComponents<BitAiToolCallView>());
+        Assert.ContainsSingle(RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, result).Add(c => c.Message, message)).FindComponents<BitAiToolResultView>());
+        Assert.ContainsSingle(RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, error).Add(c => c.Message, message)).FindComponents<BitAiErrorView>());
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, call).Add(c => c.Message, Assistant(call)));
 
         Assert.IsNotNull(component.Find(".bit-aimpv .my-part"));
-        Assert.HasCount(1, component.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(component.FindComponents<BitAiRendererBoundary>());
         Assert.IsEmpty(component.FindComponents<BitAiToolCallView>());
     }
 
@@ -181,7 +181,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
 
         var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, Assistant(citation)));
 
-        Assert.HasCount(1, component.Find(".bit-aimpv-cit").Children);
+        Assert.ContainsSingle(component.Find(".bit-aimpv-cit").Children);
         Assert.IsEmpty(component.FindAll(".bit-aimpv-cqt"));
         Assert.IsEmpty(component.FindAll(".bit-aimpv-clc"));
         Assert.IsEmpty(component.FindAll("blockquote"));
@@ -283,7 +283,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
 
         var card = component.Find(".bit-aimpv-cit > .bit-aisrc");
         Assert.IsTrue(card.ClassList.Contains("c-card"));
-        StringAssert.Contains(card.GetAttribute("style"), "margin: 2px");
+        Assert.Contains("margin: 2px", card.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aisrc-ttl").ClassList.Contains("c-title"));
 
         Assert.IsTrue(component.Find(".bit-aimpv-cqt").ClassList.Contains("c-quote"));
@@ -339,7 +339,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         var component = RenderComponent<BitAiMessagePartView>(p => p.Add(c => c.Part, citation).Add(c => c.Message, Assistant(citation)));
 
         Assert.AreEqual("Docs", component.Find(".bit-aimpv .my-citation").TextContent);
-        Assert.HasCount(1, component.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(component.FindComponents<BitAiRendererBoundary>());
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         call.SetStatus(BitAiToolCallStatus.Running);
         call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
 
-        component.WaitForAssertion(() => StringAssert.Contains(component.Markup, "Allow search to run?"), TimeSpan.FromSeconds(2));
+        component.WaitForAssertion(() => Assert.Contains("Allow search to run?", component.Markup), TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
@@ -388,8 +388,8 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("part", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -413,7 +413,7 @@ public class BitAiMessagePartViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 

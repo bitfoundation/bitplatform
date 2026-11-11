@@ -44,8 +44,9 @@ public class DocsSearchIndexTests
 
         var json = await Http.GetStringAsync(McpServerFixture.Url(IndexPath));
         _index = JsonSerializer.Deserialize<Index>(json, _json);
+        var actualValue = _index?.Entries;
 
-        Assert.IsNotNull(_index?.Entries, "The search index did not deserialize into anything.");
+        Assert.IsNotNull(actualValue, "The search index did not deserialize into anything.");
 
         return _index.Entries;
     }
@@ -76,7 +77,7 @@ public class DocsSearchIndexTests
         {
             foreach (var page in pages)
             {
-                Assert.IsTrue(indexed.Contains(page), $"{page} is in the sitemap but has no entry of its own in the search index.");
+                Assert.Contains(page, indexed, $"{page} is in the sitemap but has no entry of its own in the search index.");
             }
         }
     }
@@ -98,7 +99,7 @@ public class DocsSearchIndexTests
         {
             foreach (var page in pages)
             {
-                Assert.IsTrue(counts.GetValueOrDefault(page) > 1,
+                Assert.IsGreaterThan(1, counts.GetValueOrDefault(page),
                     $"{page} contributed {counts.GetValueOrDefault(page)} entries: its sections and its API table were not indexed.");
             }
         }
@@ -185,7 +186,7 @@ public class DocsSearchIndexTests
             foreach (var entry in entries)
             {
                 Assert.IsNotEmpty(entry.Title, $"{entry.Url} has an entry with no title.");
-                Assert.IsTrue(pages.Contains(entry.Url.Split('#')[0]), $"{entry.Url} points at a page the site does not publish.");
+                Assert.Contains(entry.Url.Split('#')[0], pages, $"{entry.Url} points at a page the site does not publish.");
                 Assert.IsFalse(entry.Url.EndsWith('#'), $"{entry.Url} carries an empty anchor.");
             }
         }
@@ -200,14 +201,14 @@ public class DocsSearchIndexTests
         using var request = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url(IndexPath));
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 
-        using var response = await Http.SendAsync(request);
-        var compressed = await response.Content.ReadAsByteArrayAsync();
+        using var response = await Http.SendAsync(request, TestContext.CancellationToken);
+        var compressed = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
 
         Assert.Contains("gzip", response.Content.Headers.ContentEncoding, "The index was served uncompressed to a client that asked for gzip.");
 
         using var stream = new GZipStream(new MemoryStream(compressed), CompressionMode.Decompress);
         using var reader = new StreamReader(stream);
-        var json = await reader.ReadToEndAsync();
+        var json = await reader.ReadToEndAsync(TestContext.CancellationToken);
 
         Assert.IsGreaterThan(compressed.Length * 2, json.Length, "The compressed index is barely smaller than the JSON, which means it is not the JSON.");
         Assert.Contains("\"entries\"", json);
@@ -216,7 +217,7 @@ public class DocsSearchIndexTests
     [TestMethod]
     public async Task A_returning_visitor_revalidates_instead_of_downloading_it_again()
     {
-        using var first = await Http.GetAsync(McpServerFixture.Url(IndexPath));
+        using var first = await Http.GetAsync(McpServerFixture.Url(IndexPath), TestContext.CancellationToken);
         var etag = first.Headers.ETag;
 
         Assert.IsNotNull(etag, "The index has no ETag, so every visit downloads it again.");
@@ -224,9 +225,11 @@ public class DocsSearchIndexTests
         using var again = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url(IndexPath));
         again.Headers.IfNoneMatch.Add(etag);
 
-        using var second = await Http.SendAsync(again);
+        using var second = await Http.SendAsync(again, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotModified, second.StatusCode);
-        Assert.IsEmpty(await second.Content.ReadAsByteArrayAsync(), "A 304 answered with a body.");
+        Assert.IsEmpty(await second.Content.ReadAsByteArrayAsync(TestContext.CancellationToken), "A 304 answered with a body.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

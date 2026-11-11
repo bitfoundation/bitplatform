@@ -100,7 +100,7 @@ public class BitAiScrollToLatestE2ETests : E2ETestBase
         Assert.AreNotEqual("none", shadow);
 
         var height = AiE2EHelpers.ParsePx(await ComputedStyleAsync("#stl-basic button", "height"));
-        Assert.IsTrue(AiE2EHelpers.ParsePx(await ComputedStyleAsync("#stl-basic button", "border-top-left-radius")) >= height / 2 - 0.5, "The button is rounded.");
+        Assert.IsGreaterThanOrEqualTo(height / 2 - 0.5, AiE2EHelpers.ParsePx(await ComputedStyleAsync("#stl-basic button", "border-top-left-radius")), "The button is rounded.");
     }
 
     [TestMethod]
@@ -110,10 +110,10 @@ public class BitAiScrollToLatestE2ETests : E2ETestBase
         await ShowAsync();
 
         await Expect(Root("stl-basic")).ToHaveCSSAsync("animation-name", "bit-aistl-ent");
-        Assert.IsTrue(AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#stl-basic", "animation-duration")) > 0);
+        Assert.IsGreaterThan(0, AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#stl-basic", "animation-duration")));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
-        Assert.IsTrue(AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#stl-basic", "animation-duration")) <= 0.001, "The entrance collapses.");
+        Assert.IsLessThanOrEqualTo(0.001, AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#stl-basic", "animation-duration")), "The entrance collapses.");
 
     }
 
@@ -196,7 +196,7 @@ public class BitAiScrollToLatestE2ETests : E2ETestBase
         // The glyph and the label read from the right.
         var icon = await Button("stl-rtl").Locator("i.bit-btn-icn").RectAsync();
         var label = await Button("stl-rtl").Locator(".bit-btn-tcn").RectAsync();
-        Assert.IsTrue(icon.Left > label.Left, "The glyph comes first, at the right.");
+        Assert.IsGreaterThan(label.Left, icon.Left, "The glyph comes first, at the right.");
     }
 
     [TestMethod]

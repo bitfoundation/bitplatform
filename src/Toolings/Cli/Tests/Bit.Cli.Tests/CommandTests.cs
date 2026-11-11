@@ -13,9 +13,8 @@ public class CommandTests
     {
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
-        CollectionAssert.AreEquivalent(
-            new[] { "new", "setup", "run", "diff", "doctor", "trust", "clean", "rename", "remove", "migration", "translate", "decode", "keys", "pipeline", "aot-profile", "telemetry", "update", "about", "admin-helper" },
-            root.Subcommands.Select(c => c.Name).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "new", "setup", "run", "diff", "doctor", "trust", "clean", "rename", "remove", "migration", "translate", "decode", "keys", "pipeline", "aot-profile", "telemetry", "update", "about", "admin-helper" }, root.Subcommands.Select(c => c.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -23,8 +22,8 @@ public class CommandTests
     {
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
-        CollectionAssert.AreEqual(new[] { "migration", "remove" }, CliApp.CommandPath(root.Parse(["migration", "remove"]).CommandResult, root).ToArray());
-        CollectionAssert.AreEqual(new[] { "remove" }, CliApp.CommandPath(root.Parse(["remove"]).CommandResult, root).ToArray());
+        Assert.AreSequenceEqual(new[] { "migration", "remove" }, CliApp.CommandPath(root.Parse(["migration", "remove"]).CommandResult, root).ToArray());
+        Assert.AreSequenceEqual(new[] { "remove" }, CliApp.CommandPath(root.Parse(["remove"]).CommandResult, root).ToArray());
         Assert.IsEmpty(CliApp.CommandPath(root.Parse([]).CommandResult, root));
     }
 
@@ -51,9 +50,9 @@ public class CommandTests
 
         Assert.AreEqual(0, await host.RunAsync("about"));
 
-        StringAssert.Contains(host.Output, BuildInfo.Version);
-        StringAssert.Contains(host.Output, "github.com/bitfoundation/bitplatform");
-        StringAssert.Contains(host.Output, "MIT");
+        Assert.Contains(BuildInfo.Version, host.Output);
+        Assert.Contains("github.com/bitfoundation/bitplatform", host.Output);
+        Assert.Contains("MIT", host.Output);
     }
 
     [TestMethod]
@@ -62,8 +61,8 @@ public class CommandTests
         using var host = new TestHost();
 
         Assert.AreEqual(0, await host.RunAsync("telemetry", "off"));
-        StringAssert.Contains(host.Output, "Telemetry is off");
-        StringAssert.Contains(File.ReadAllText(Path.Combine(host.Home, ".bitplatform", "settings.json")), "\"telemetry\": \"off\"");
+        Assert.Contains("Telemetry is off", host.Output);
+        Assert.Contains("\"telemetry\": \"off\"", File.ReadAllText(Path.Combine(host.Home, ".bitplatform", "settings.json")));
     }
 
     [TestMethod]
@@ -72,8 +71,8 @@ public class CommandTests
         using var host = new TestHost(variables: new Dictionary<string, string> { ["DO_NOT_TRACK"] = "1" });
 
         Assert.AreEqual(0, await host.RunAsync("telemetry", "all"));
-        StringAssert.Contains(host.Output, "DO_NOT_TRACK");
-        StringAssert.Contains(host.Output, "overrides");
+        Assert.Contains("DO_NOT_TRACK", host.Output);
+        Assert.Contains("overrides", host.Output);
     }
 
     [TestMethod]
@@ -82,7 +81,7 @@ public class CommandTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "my-app", "--yes"));
-        StringAssert.Contains(host.Output, "bit new MyApp");
+        Assert.Contains("bit new MyApp", host.Output);
     }
 
     [TestMethod]
@@ -91,7 +90,7 @@ public class CommandTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "--yes"));
-        StringAssert.Contains(host.Output, "bit new <name>");
+        Assert.Contains("bit new <name>", host.Output);
     }
 
     [TestMethod]
@@ -102,7 +101,7 @@ public class CommandTests
         File.WriteAllText(Path.Combine(folder, "keep.txt"), "");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--yes"));
-        StringAssert.Contains(host.Output, "isn't empty");
+        Assert.Contains("isn't empty", host.Output);
     }
 
     [TestMethod]
@@ -111,7 +110,7 @@ public class CommandTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--database", "Oracle", "--yes"));
-        StringAssert.Contains(host.Output, "PostgreSQL");
+        Assert.Contains("PostgreSQL", host.Output);
     }
 
     [TestMethod]
@@ -123,11 +122,11 @@ public class CommandTests
         var exitCode = await host.RunAsync("new", "Contoso.Shop", "--database", "postgresql", "--redis", "--aspire", "false", "--platforms", "web,android", "--dry-run", "--yes");
 
         Assert.AreEqual(0, exitCode, host.Output);
-        StringAssert.Contains(host.Output, "Database: PostgreSQL");
-        StringAssert.Contains(host.Output, "Web, Android");
-        StringAssert.Contains(host.Output, "Dry run");
+        Assert.Contains("Database: PostgreSQL", host.Output);
+        Assert.Contains("Web, Android", host.Output);
+        Assert.Contains("Dry run", host.Output);
         Assert.IsFalse(Directory.Exists(Path.Combine(host.WorkingDirectory, "Contoso.Shop")));
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "new"));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "new", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -140,7 +139,7 @@ public class CommandTests
         Assert.IsFalse(host.Output.Contains("Chromium", StringComparison.Ordinal), host.Output);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "-p:EnforceCodeStyleInBuild", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "isn't an MSBuild property");
+        Assert.Contains("isn't an MSBuild property", host.Output);
     }
 
     [TestMethod]
@@ -150,7 +149,7 @@ public class CommandTests
         host.AllToolsInstalled();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--github-repo", "--no-git", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "can't go with --no-git");
+        Assert.Contains("can't go with --no-git", host.Output);
     }
 
     [TestMethod]
@@ -163,9 +162,9 @@ public class CommandTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--github-repo", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.Output, "GitHub CLI");
-        StringAssert.Contains(host.Output.ReplaceLineEndings(" "), "private GitHub");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "gh" && c.Arguments.FirstOrDefault() is "repo" or "auth"));
+        Assert.Contains("GitHub CLI", host.Output);
+        Assert.Contains("private GitHub", host.Output.ReplaceLineEndings(" "));
+        Assert.DoesNotContain(c => c.FileName is "gh" && c.Arguments.FirstOrDefault() is "repo" or "auth", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -179,9 +178,9 @@ public class CommandTests
         var exitCode = await host.RunAsync("new", "Contoso", "--dry-run", "--yes");
 
         Assert.AreEqual(0, exitCode, host.Output);
-        StringAssert.Contains(host.Output, "Install");
-        StringAssert.Contains(host.Output, "Docker");
-        StringAssert.Contains(host.Output, "sudo");
+        Assert.Contains("Install", host.Output);
+        Assert.Contains("Docker", host.Output);
+        Assert.Contains("sudo", host.Output);
     }
 
     [TestMethod]
@@ -194,7 +193,7 @@ public class CommandTests
 
         host.Runner.NotFound("node");
         Assert.AreEqual(CliApp.ExitCheckFailed, await host.RunAsync("doctor"));
-        StringAssert.Contains(host.Output, "bit doctor --fix");
+        Assert.Contains("bit doctor --fix", host.Output);
     }
 
     [TestMethod]
@@ -203,7 +202,7 @@ public class CommandTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", "--yes"));
-        StringAssert.Contains(host.Output, "isn't a bit Boilerplate project folder");
+        Assert.Contains("isn't a bit Boilerplate project folder", host.Output);
     }
 
     [TestMethod]
@@ -215,7 +214,7 @@ public class CommandTests
         File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Client", "Shop.Client.Maui")).FullName, "Shop.Client.Maui.csproj"), "<Project>\n  <PropertyGroup>\n    <ApplicationId>com.companyname.</ApplicationId>\n  </PropertyGroup>\n</Project>\n");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", folder, "--platforms", "android", "--yes"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "the app id com.companyname.,");
+        Assert.Contains("the app id com.companyname.,", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -232,8 +231,8 @@ public class CommandTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", folder, "--platforms", "android", "--yes"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "the app id com.companyname.,");
-        StringAssert.Contains(host.FlatOutput, maui);
+        Assert.Contains("the app id com.companyname.,", host.FlatOutput);
+        Assert.Contains(maui, host.FlatOutput);
     }
 
     [TestMethod]
@@ -250,7 +249,7 @@ public class CommandTests
 
         var run = host.Runner.Calls.Single();
         Assert.AreEqual("dotnet", run.FileName);
-        CollectionAssert.AreEqual(new[] { minifier, "--decode", map, Path.Combine(host.WorkingDirectory, "trace.txt") }, run.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { minifier, "--decode", map, Path.Combine(host.WorkingDirectory, "trace.txt") }, run.Arguments.ToArray());
         Assert.IsTrue(run.Interactive);
     }
 
@@ -274,11 +273,11 @@ public class CommandTests
 
         Assert.AreEqual(0, await host.RunAsync("decode", map));
 
-        StringAssert.Contains(project, "<PackageDownload Include=\"Bit.Minifier\" Version=\"[10.8.0]\" />");
-        CollectionAssert.Contains(host.Runner.Calls[0].Arguments.ToArray(), $"-p:RestoreRootConfigDirectory={host.WorkingDirectory}");
+        Assert.Contains("<PackageDownload Include=\"Bit.Minifier\" Version=\"[10.8.0]\" />", project!);
+        Assert.Contains($"-p:RestoreRootConfigDirectory={host.WorkingDirectory}", host.Runner.Calls[0].Arguments.ToArray());
         Assert.AreEqual(Path.Combine(host.Environment.BitDirectory, "decode"), Path.GetDirectoryName(host.Runner.Calls[0].WorkingDirectory), "Others can plant build files in the shared temp folder.");
         Assert.IsFalse(Directory.Exists(host.Runner.Calls[0].WorkingDirectory));
-        CollectionAssert.AreEqual(new[] { minifier, "--decode", map }, host.Runner.Calls[1].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { minifier, "--decode", map }, host.Runner.Calls[1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -290,10 +289,10 @@ public class CommandTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("decode", map));
 
-        StringAssert.Contains(host.FlatOutput, "Couldn't restore Bit.Minifier 99.0.0");
-        StringAssert.Contains(host.Output, $"--decode {map}. The package is at https://www.nuget.org/packages/Bit.Minifier/99.0.0");
-        StringAssert.Contains(host.FlatOutput, "error NU1102");
-        Assert.HasCount(1, host.Runner.Calls);
+        Assert.Contains("Couldn't restore Bit.Minifier 99.0.0", host.FlatOutput);
+        Assert.Contains($"--decode {map}. The package is at https://www.nuget.org/packages/Bit.Minifier/99.0.0", host.Output);
+        Assert.Contains("error NU1102", host.FlatOutput);
+        Assert.ContainsSingle(host.Runner.Calls);
     }
 
     [TestMethod]
@@ -307,7 +306,7 @@ public class CommandTests
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("decode", map));
 
-        StringAssert.Contains(host.FlatOutput, "doesn't name the Bit.Minifier that wrote it");
+        Assert.Contains("doesn't name the Bit.Minifier that wrote it", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 

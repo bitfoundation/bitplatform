@@ -26,7 +26,7 @@ public sealed class BinaryWireTests : BsqliteTest
             """);
 
         // magic, version, request count (u32 LE)
-        CollectionAssert.AreEqual(new[] { 0xb5, 1, 1, 0, 0, 0 }, head);
+        Assert.AreSequenceEqual(new[] { 0xb5, 1, 1, 0, 0, 0 }, head);
     }
 
     [TestMethod]

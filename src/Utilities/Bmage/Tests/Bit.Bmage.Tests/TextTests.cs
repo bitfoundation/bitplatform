@@ -67,11 +67,11 @@ public sealed class FontTests
         var square = font.GetGlyphOutline(1);
         Assert.IsNotNull(square);
         Assert.ContainsSingle(square!.Contours);
-        Assert.AreEqual(4, square.Contours[0].Points.Count);
+        Assert.HasCount(4, square.Contours[0].Points);
 
         var ring = font.GetGlyphOutline(3);
         Assert.IsNotNull(ring);
-        Assert.AreEqual(2, ring!.Contours.Count);
+        Assert.HasCount(2, ring!.Contours);
 
         // .notdef is empty in this font.
         Assert.IsNull(font.GetGlyphOutline(0));
@@ -158,8 +158,8 @@ public sealed class FontTextRasterizerTests
         var rasterizer = CreateRasterizer();
         // Six glyphs at 80px each need 480px; a 200px limit must break them across lines.
         var metrics = rasterizer.Measure("A A A A A A", Style() with { MaxWidth = 200 });
-        Assert.IsTrue(metrics.LineCount >= 3, $"Expected wrapping, got {metrics.LineCount} line(s)");
-        Assert.IsTrue(metrics.Width <= 200 + 1, $"Wrapped width {metrics.Width} exceeded the limit");
+        Assert.IsGreaterThanOrEqualTo(3, metrics.LineCount, $"Expected wrapping, got {metrics.LineCount} line(s)");
+        Assert.IsLessThanOrEqualTo(200 + 1, metrics.Width, $"Wrapped width {metrics.Width} exceeded the limit");
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public sealed class FontTextRasterizerTests
         // 'A' is one square, 'C' is a square with a hole, so three contours in total.
         var path = rasterizer.GetTextPath("AC", Vector2.Zero, Style());
         Assert.IsNotNull(path);
-        Assert.AreEqual(3, path!.Contours.Count);
+        Assert.HasCount(3, path!.Contours);
     }
 
     [TestMethod]
@@ -204,7 +204,7 @@ public sealed class FontTextRasterizerTests
 
         var leftInk = FirstInkColumn(left);
         var rightInk = FirstInkColumn(right);
-        Assert.IsTrue(leftInk > rightInk, $"Right aligned text should start further left: left={leftInk} right={rightInk}");
+        Assert.IsGreaterThan(rightInk, leftInk, $"Right aligned text should start further left: left={leftInk} right={rightInk}");
     }
 
     [TestMethod]
@@ -225,7 +225,7 @@ public sealed class FontTextRasterizerTests
         top.DrawText("A", new Vector2(20, 150), Style() with { Baseline = TextBaseline.Top }, rasterizer);
 
         // With a Top baseline the glyph sits below the given y; with an alphabetic baseline it sits above it.
-        Assert.IsTrue(FirstInkRow(top) > FirstInkRow(alphabetic));
+        Assert.IsGreaterThan(FirstInkRow(alphabetic), FirstInkRow(top));
     }
 
     [TestMethod]

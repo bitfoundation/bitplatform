@@ -45,7 +45,7 @@ public sealed class VariantsTests : BmotionPageTest
             await ExpectEventAsync($"item{i}:visible");
         var log = await LoggedAsync();
         var order = Enumerable.Range(0, 4).Select(i => Array.IndexOf(log, $"item{i}:visible")).ToArray();
-        CollectionAssert.AreEqual(order.Order().ToArray(), order, $"Children finished out of stagger order: {string.Join(", ", log)}");
+        Assert.AreSequenceEqual(order.Order().ToArray(), order, $"Children finished out of stagger order: {string.Join(", ", log)}");
 
         for (var i = 0; i < 4; i++)
             await WaitForStateAsync($"#item{i}", "s => Math.abs(s.opacity - 1) < 0.01 && Math.abs(s.x) < 0.5");
@@ -72,8 +72,8 @@ public sealed class VariantsTests : BmotionPageTest
 
         await ExpectEventAsync("last0:visible");
         var log = await LoggedAsync();
-        Assert.IsTrue(Array.IndexOf(log, "last2:visible") < Array.IndexOf(log, "last1:visible"), string.Join(", ", log));
-        Assert.IsTrue(Array.IndexOf(log, "last1:visible") < Array.IndexOf(log, "last0:visible"), string.Join(", ", log));
+        Assert.IsLessThan(Array.IndexOf(log, "last1:visible"), Array.IndexOf(log, "last2:visible"), string.Join(", ", log));
+        Assert.IsLessThan(Array.IndexOf(log, "last0:visible"), Array.IndexOf(log, "last1:visible"), string.Join(", ", log));
     }
 
     [TestMethod]

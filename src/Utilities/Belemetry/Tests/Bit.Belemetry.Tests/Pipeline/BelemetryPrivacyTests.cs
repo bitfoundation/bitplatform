@@ -117,7 +117,7 @@ public class BelemetryPrivacyTests
 
         Assert.AreEqual("[email]", log.Attributes["Email"]);
         Assert.AreEqual("/users/[email]/orders", log.Attributes["url.path"]);
-        CollectionAssert.AreEqual(new[] { "[email]", "plain" }, (string[])log.Attributes["tags"]!);
+        Assert.AreSequenceEqual(new[] { "[email]", "plain" }, (string[])log.Attributes["tags"]!);
         Assert.AreEqual(3L, log.Attributes["count"]);
         Assert.AreEqual("[ip]", log.Attributes["client.address"], "The user's address is personal data.");
         Assert.AreEqual("10.0.0.5", log.Attributes["server.address"], "The server that was called is not.");
@@ -166,7 +166,7 @@ public class BelemetryPrivacyTests
         Assert.AreEqual("1.2.0.0", log.Attributes["AppVersion"]);
         Assert.AreEqual("10.0.0.1", log.Attributes["app.version"]);
         Assert.AreEqual("2.0.0.5", log.Attributes["build_version"]);
-        CollectionAssert.AreEqual(new[] { "[ip]" }, (string[])log.Attributes["Versions"]!, "Only a key ending in the word.");
+        Assert.AreSequenceEqual(new[] { "[ip]" }, (string[])log.Attributes["Versions"]!, "Only a key ending in the word.");
         Assert.AreEqual("[ip]", log.Attributes["conversion"]);
         Assert.AreEqual("[email] 1.2.3.4", log.Attributes["api.version"], "The other patterns still apply.");
         Assert.IsTrue(BelemetryPrivacy.IsVersionKey("os.Version"));
@@ -234,8 +234,8 @@ public class BelemetryPrivacyTests
 
         Create().ApplyToAttributes(attributes);
 
-        CollectionAssert.AreEqual(new[] { "https://x.test/a?token=REDACTED", "https://x.test/b" }, (string[])attributes["url.full"]!);
-        CollectionAssert.AreEqual(new[] { "code=REDACTED&page=2" }, (string[])attributes["url.query"]!);
+        Assert.AreSequenceEqual(new[] { "https://x.test/a?token=REDACTED", "https://x.test/b" }, (string[])attributes["url.full"]!);
+        Assert.AreSequenceEqual(new[] { "code=REDACTED&page=2" }, (string[])attributes["url.query"]!);
     }
 
     [TestMethod]

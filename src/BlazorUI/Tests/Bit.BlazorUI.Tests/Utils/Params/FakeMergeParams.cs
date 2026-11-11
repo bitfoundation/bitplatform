@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Utils.Params;
 
-public sealed class FakeMergeParams : IBitComponentParams
+internal sealed class FakeMergeParams : IBitComponentParams
 {
     public string Name => "M";
 
@@ -19,7 +19,7 @@ public sealed class FakeMergeParams : IBitComponentParams
     public FakeMergeNested? Nested { get; set; }
 }
 
-public sealed class FakeMergeNested
+internal sealed class FakeMergeNested
 {
     public List<string> Tags { get; } = [];
 }
@@ -27,7 +27,7 @@ public sealed class FakeMergeNested
 /// <summary>
 /// Reads a <see cref="FakeMergeParams"/> and counts its own renders.
 /// </summary>
-public sealed class MergeConsumer : ComponentBase
+internal sealed class MergeConsumer : ComponentBase
 {
     [CascadingParameter(Name = "M")] public FakeMergeParams? M { get; set; }
 
@@ -49,7 +49,7 @@ public sealed class MergeConsumer : ComponentBase
 /// A component with no parameters of its own, so a re-render of its parent never reaches what it renders: only a
 /// cascading value that notifies its consumers does.
 /// </summary>
-public sealed class StaticMergeHost : ComponentBase
+internal sealed class StaticMergeHost : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

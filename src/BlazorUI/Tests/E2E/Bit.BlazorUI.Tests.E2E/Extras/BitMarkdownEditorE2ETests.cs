@@ -48,10 +48,10 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Route}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"mde-bind\" class=\"bit-mde\"><div role=\"toolbar\" aria-label=\"Markdown formatting\"");
-        StringAssert.Matches(html, new Regex("<textarea[^>]*id=\"mde-default-txt\"[^>]*>"));
-        StringAssert.Contains(html, "# Default heading</textarea>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"mde-bind\" class=\"bit-mde\"><div role=\"toolbar\" aria-label=\"Markdown formatting\"", html);
+        Assert.MatchesRegex(new Regex("<textarea[^>]*id=\"mde-default-txt\"[^>]*>"), html);
+        Assert.Contains("# Default heading</textarea>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
         await Expect(TextArea("mde-default")).ToHaveValueAsync("# Default heading");
@@ -71,7 +71,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#bind-value")).ToHaveTextAsync("Initial **bound** value typed");
         await Expect(Page.Locator("#last-change")).ToHaveTextAsync("Initial **bound** value typed");
-        Assert.IsTrue(int.Parse((await Page.Locator("#change-count").TextContentAsync())!) >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, int.Parse((await Page.Locator("#change-count").TextContentAsync())!));
 
         // The preview follows.
         await Expect(Page.Locator("#mde-bind .bit-mde-ppn")).ToContainTextAsync("Initial bound value typed");
@@ -193,7 +193,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
 
         var edit = await Page.Locator("#mde-narrow .bit-mde-epn").BoundingBoxAsync();
         var preview = await Page.Locator("#mde-narrow .bit-mde-ppn").BoundingBoxAsync();
-        Assert.IsTrue(preview!.Y >= edit!.Y + edit.Height - 2, "the preview pane does not sit under the edit pane");
+        Assert.IsGreaterThanOrEqualTo(edit!.Y + edit.Height - 2, preview!.Y, "the preview pane does not sit under the edit pane");
         Assert.AreEqual(edit.Width, preview.Width, 2);
 
         var wide = await Page.Locator("#mde-mode .bit-mde-epn").BoundingBoxAsync();
@@ -222,7 +222,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
 
         var root = Root(Page, "mde-fullscreen");
         await Expect(root).ToHaveClassAsync(HasClass("bit-mde-rsz"));
-        StringAssert.Contains(await root.GetAttributeAsync("style"), "--bit-MarkdownEditor-height:10rem");
+        Assert.Contains("--bit-MarkdownEditor-height:10rem", (await root.GetAttributeAsync("style"))!);
         var body = root.Locator(".bit-mde-bdy");
         await Expect(body).ToHaveCSSAsync("height", "160px");
         await Expect(body).ToHaveCSSAsync("resize", "vertical");
@@ -998,8 +998,8 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Button("mde-spelling", "table").ClickAsync();
         await Expect(TextArea("mde-spelling")).ToHaveValueAsync(new Regex("Column 4"));
         var lines = (await TextArea("mde-spelling").InputValueAsync()).TrimEnd('\n').Split('\n');
-        Assert.AreEqual(5, lines.Length, "a header, a separator and three rows");
-        StringAssert.Contains(lines[0], "Column 4");
+        Assert.HasCount(5, lines, "a header, a separator and three rows");
+        Assert.Contains("Column 4", lines[0]);
         Assert.AreEqual(5, lines[0].Count(c => c == '|'));
 
         await SetTextAsync("mde-plus", "word", 0, 4);
@@ -1209,7 +1209,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await RunAsync("tcolbefore");
         var header = (await TextArea("mde-table").InputValueAsync()).Split('\n')[0];
         Assert.AreEqual(4, header.Count(c => c == '|'));
-        Assert.IsTrue(header.IndexOf("Name", StringComparison.Ordinal) > 4, "the new column is not before Name");
+        Assert.IsGreaterThan(4, header.IndexOf("Name", StringComparison.Ordinal), "the new column is not before Name");
 
         await TextArea("mde-table").FillAsync(original);
         await RunAsync("tcoldelete");
@@ -1220,7 +1220,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
             await TextArea("mde-table").FillAsync(original);
             await RunAsync(cmd);
             var separator = (await TextArea("mde-table").InputValueAsync()).Split('\n')[1];
-            StringAssert.Matches(separator, new Regex("^" + pattern), cmd);
+            Assert.MatchesRegex(new Regex("^" + pattern), separator, cmd);
         }
     }
 
@@ -1407,7 +1407,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         // MaxLength caps the text and marks the counter at the limit.
         var counter = Page.Locator("#mde-status-cnt");
         await Expect(TextArea("mde-status")).ToHaveAttributeAsync("maxlength", "30");
-        StringAssert.Contains(await TextArea("mde-status").GetAttributeAsync("aria-describedby"), "mde-status-cnt");
+        Assert.Contains("mde-status-cnt", (await TextArea("mde-status").GetAttributeAsync("aria-describedby"))!);
         await Page.Keyboard.TypeAsync(" six seven eight nine");
         await Expect(counter).ToHaveTextAsync("30 / 30 chars");
         await Expect(counter).ToHaveClassAsync(HasClass("bit-mde-lim"));
@@ -1461,7 +1461,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         var description = root.Locator(".bit-mde-des");
         await Expect(description).ToHaveTextAsync("Markdown is supported.");
         await Expect(description).ToHaveAttributeAsync("id", "mde-form-des");
-        StringAssert.Contains(await textArea.GetAttributeAsync("aria-describedby"), "mde-form-des");
+        Assert.Contains("mde-form-des", (await textArea.GetAttributeAsync("aria-describedby"))!);
 
         // Clicking the label focuses the textarea.
         await label.ClickAsync();
@@ -1599,7 +1599,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
             Assert.AreNotEqual(expected, await ComputedStyleAsync($"#mde-vars-default{selector}", property), $"default {selector} {property}");
         }
 
-        StringAssert.Contains(await ComputedStyleAsync("#mde-vars .bit-mde-txa", "font-family"), "Georgia");
+        Assert.Contains("Georgia", await ComputedStyleAsync("#mde-vars .bit-mde-txa", "font-family"));
     }
 
     [TestMethod]
@@ -1615,11 +1615,11 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         {
             var toolbar = (await Page.Locator($"#{id} .bit-mde-tlb").BoundingBoxAsync())!;
             var first = (await Button(id, "undo").BoundingBoxAsync())!;
-            Assert.IsTrue(first.X > toolbar.X + toolbar.Width / 2, $"{id}: the first button is not on the right");
+            Assert.IsGreaterThan(toolbar.X + toolbar.Width / 2, first.X, $"{id}: the first button is not on the right");
 
             var edit = (await Page.Locator($"#{id} .bit-mde-epn").BoundingBoxAsync())!;
             var preview = (await Page.Locator($"#{id} .bit-mde-ppn").BoundingBoxAsync())!;
-            Assert.IsTrue(edit.X > preview.X, $"{id}: the edit pane is not on the right");
+            Assert.IsGreaterThan(preview.X, edit.X, $"{id}: the edit pane is not on the right");
         }
 
         // The arrows follow what is on screen: ArrowLeft goes to the next button.
@@ -1784,7 +1784,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Height > 0, "a hidden editor keeps its box");
+        Assert.IsGreaterThan(0, (await root.BoundingBoxAsync())!.Height, "a hidden editor keeps its box");
 
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Collapsed");

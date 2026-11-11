@@ -33,7 +33,7 @@ public class StreamingQueryTests
         await using var owned = db;
 
         var seen = 0;
-        await foreach (var _ in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 64))
+        await foreach (var _ in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 64, TestContext.CancellationToken))
         {
             seen++;
         }
@@ -52,7 +52,7 @@ public class StreamingQueryTests
             .OrderBy(t => t.CreatedAt)
             .Skip(2)
             .Take(3)
-            .ToListAsync(batchSize: 2);
+            .ToListAsync(batchSize: 2, TestContext.CancellationToken);
 
         Assert.AreSequenceEqual(["item 4", "item 6", "item 8"], titles.Select(t => t.Title));
     }
@@ -66,12 +66,12 @@ public class StreamingQueryTests
         var titles = new List<string>();
         await foreach (var title in BlazeDbQuery<Guid, TodoItem>.From(todos)
                            .Where(t => !t.Done)
-                           .ExecuteAsync(t => t.Title, batchSize: 2))
+                           .ExecuteAsync(t => t.Title, batchSize: 2, TestContext.CancellationToken))
         {
             titles.Add(title);
         }
 
-        Assert.AreEqual(5, titles.Count);
+        Assert.HasCount(5, titles);
         foreach (var t in titles) Assert.StartsWith("item ", t);
     }
 
@@ -87,15 +87,15 @@ public class StreamingQueryTests
         var enumeration = Task.Run(async () =>
         {
             var index = 0;
-            await foreach (var row in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 1))
+            await foreach (var row in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 1, TestContext.CancellationToken))
             {
                 if (index++ == 10)
                 {
                     _ = Task.Run(() => interleaved = true);
-                    await Task.Delay(20);
+                    await Task.Delay(20, TestContext.CancellationToken);
                 }
             }
-        });
+        }, TestContext.CancellationToken);
 
         await enumeration;
         Assert.IsTrue(interleaved);
@@ -132,9 +132,11 @@ public class StreamingQueryTests
 
         await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(async () =>
         {
-            await foreach (var _ in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 0))
+            await foreach (var _ in BlazeDbQuery<Guid, TodoItem>.From(todos).ExecuteAsync(batchSize: 0, TestContext.CancellationToken))
             {
             }
         });
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

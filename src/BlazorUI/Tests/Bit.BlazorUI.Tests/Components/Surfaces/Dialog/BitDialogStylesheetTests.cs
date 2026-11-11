@@ -84,8 +84,8 @@ public class BitDialogStylesheetTests
         var read = Regex.Matches(GetRules(stylesheet), @"var\((--bit-Dialog-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
         var documented = Regex.Matches(GetHeader(stylesheet), @"(--bit-Dialog-[A-Za-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(_publicVariables.Order().ToArray(), read);
-        CollectionAssert.AreEqual(read.Append(MaxWidthVariable).Order().ToArray(), documented);
+        Assert.AreSequenceEqual(_publicVariables.Order().ToArray(), read);
+        Assert.AreSequenceEqual(read.Append(MaxWidthVariable).Order().ToArray(), documented);
     }
 
     [TestMethod]
@@ -93,9 +93,9 @@ public class BitDialogStylesheetTests
     {
         var rule = GetRule(GetRules(ReadStylesheet()), "ttl");
 
-        StringAssert.Contains(rule, "font-size: var(--bit-Dialog-title-font-size, #{$tg-dialog-title-font-size});");
-        StringAssert.Contains(rule, "font-weight: var(--bit-Dialog-title-font-weight, #{$tg-dialog-title-font-weight});");
-        Assert.IsFalse(rule.Contains("$tg-fs-xl"), "The title is sized off the type ramp rather than the dialog title token every preset retunes.");
+        Assert.Contains("font-size: var(--bit-Dialog-title-font-size, #{$tg-dialog-title-font-size});", rule);
+        Assert.Contains("font-weight: var(--bit-Dialog-title-font-weight, #{$tg-dialog-title-font-weight});", rule);
+        Assert.DoesNotContain("$tg-fs-xl", rule, "The title is sized off the type ramp rather than the dialog title token every preset retunes.");
     }
 
     [TestMethod]
@@ -103,16 +103,16 @@ public class BitDialogStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(rules, "--bit-dlg-text-align: var(--bit-Dialog-text-align, #{$layout-dialog-text-align});");
+        Assert.Contains("--bit-dlg-text-align: var(--bit-Dialog-text-align, #{$layout-dialog-text-align});", rules);
 
         // Set on the title itself, since an application's element rule for h2 wins over an inherited alignment.
         foreach (var text in new[] { "ttl", "sub", "msg" })
         {
-            StringAssert.Contains(GetRule(rules, text), "text-align: var(--bit-dlg-text-align);", $"The {text} does not follow the alignment.");
+            Assert.Contains("text-align: var(--bit-dlg-text-align);", GetRule(rules, text), $"The {text} does not follow the alignment.");
         }
 
         // The wrapper also holds a HeaderTemplate, whose content is the consumer's to lay out.
-        Assert.IsFalse(GetRule(rules, "htc").Contains("text-align"), "A HeaderTemplate is re-aligned along with the title.");
+        Assert.DoesNotContain("text-align", GetRule(rules, "htc"), "A HeaderTemplate is re-aligned along with the title.");
     }
 
     [TestMethod]
@@ -124,9 +124,9 @@ public class BitDialogStylesheetTests
         // they are centred on the surface rather than on the room the button leaves beside them.
         var query = Regex.Match(rules, @"@container style\(--bit-dlg-text-align: center\) \{.*?\n\}", RegexOptions.Singleline).Value;
 
-        StringAssert.Contains(query, ".bit-dlg-htc:not(:last-child) > .bit-dlg-ttl");
-        StringAssert.Contains(query, ".bit-dlg-htc:not(:last-child) > .bit-dlg-sub");
-        StringAssert.Contains(query, "padding-inline-start: $siz-ctrl-md;");
+        Assert.Contains(".bit-dlg-htc:not(:last-child) > .bit-dlg-ttl", query);
+        Assert.Contains(".bit-dlg-htc:not(:last-child) > .bit-dlg-sub", query);
+        Assert.Contains("padding-inline-start: $siz-ctrl-md;", query);
     }
 
     [TestMethod]
@@ -136,8 +136,8 @@ public class BitDialogStylesheetTests
         // out of the stacking of the area it is laid out in.
         var rule = GetRule(GetRules(ReadStylesheet()), "abs");
 
-        StringAssert.Contains(rule, "z-index: auto;");
-        Assert.IsFalse(rule.Contains("--bit-Dialog-z-index"), "An absolutely positioned Dialog reads the public z-index.");
+        Assert.Contains("z-index: auto;", rule);
+        Assert.DoesNotContain("--bit-Dialog-z-index", rule, "An absolutely positioned Dialog reads the public z-index.");
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public class BitDialogStylesheetTests
         foreach (var declaration in new[] { "margin: 0;", "padding: 0;", "font-style: normal;", "font-family: inherit;",
                                             "letter-spacing: normal;", "text-transform: none;", "text-decoration: none;" })
         {
-            StringAssert.Contains(rule, declaration);
+            Assert.Contains(declaration, rule);
         }
     }
 
@@ -162,8 +162,8 @@ public class BitDialogStylesheetTests
         {
             var rule = GetRule(rules, band);
 
-            StringAssert.Contains(rule, "background-color: var(--bit-dlg-bg);", $"The {band} band keeps a background of its own.");
-            StringAssert.Contains(rule, "radius: var(--bit-dlg-radius);", $"The {band} band keeps corners of its own.");
+            Assert.Contains("background-color: var(--bit-dlg-bg);", rule, $"The {band} band keeps a background of its own.");
+            Assert.Contains("radius: var(--bit-dlg-radius);", rule, $"The {band} band keeps corners of its own.");
         }
     }
 
@@ -173,9 +173,9 @@ public class BitDialogStylesheetTests
         var rules = GetRules(ReadStylesheet());
 
         // The spinner is the only sign the work is running, so the busy button is not dimmed like a disabled one.
-        StringAssert.Contains(GetRule(rules, "bct"), "&[aria-busy=\"true\"] {\n            cursor: progress;\n        }");
-        Assert.IsFalse(rules.Contains("&[aria-disabled=\"true\"] {"), "The busy Ok button is dimmed along with the spinner it holds.");
-        StringAssert.Contains(GetRule(rules, "okb"), "&:hover:not(:disabled):not([aria-disabled=\"true\"])");
+        Assert.Contains("&[aria-busy=\"true\"] {\n            cursor: progress;\n        }", GetRule(rules, "bct"));
+        Assert.DoesNotContain("&[aria-disabled=\"true\"] {", rules, "The busy Ok button is dimmed along with the spinner it holds.");
+        Assert.Contains("&:hover:not(:disabled):not([aria-disabled=\"true\"])", GetRule(rules, "okb"));
     }
 
     [TestMethod]
@@ -191,7 +191,7 @@ public class BitDialogStylesheetTests
 
         foreach (var name in _roleColors)
         {
-            Assert.IsTrue(names.Contains(name), $"--bit-dlg-{name} is not reset on the root.");
+            Assert.Contains(name, names, $"--bit-dlg-{name} is not reset on the root.");
         }
 
         var root = Regex.Match(GetRules(stylesheet), @"\n\.bit-dlg \{.*?\n\}", RegexOptions.Singleline).Value;
@@ -213,18 +213,18 @@ public class BitDialogStylesheetTests
             Assert.IsFalse(Regex.IsMatch(rule, @"var\(--bit-dlg-clr[a-z-]*\)"), $"The {button} reads a role color with no fallback, which an uncolored Dialog leaves unset.");
         }
 
-        StringAssert.Contains(GetRule(rules, "okb"), "background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr, #{$dlg-okb-background}));");
-        StringAssert.Contains(rules, "$dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});");
+        Assert.Contains("background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr, #{$dlg-okb-background}));", GetRule(rules, "okb"));
+        Assert.Contains("$dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});", rules);
         // The label of the outlined Cancel button is read on the dialog's surface, so under a Color it is the role's text
         // color rather than its main (role-text); its rule keeps the main.
-        StringAssert.Contains(GetRule(rules, "cnb"), "color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr-fg, #{$dlg-cnb-color}));");
-        StringAssert.Contains(GetRule(rules, "cnb"), "border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-color})));");
-        StringAssert.Contains(rules, "--bit-dlg-clr-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(rules, "$dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});");
+        Assert.Contains("color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr-fg, #{$dlg-cnb-color}));", GetRule(rules, "cnb"));
+        Assert.Contains("border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-color})));", GetRule(rules, "cnb"));
+        Assert.Contains("--bit-dlg-clr-fg: #{role-text($role, $tokens)};", rules);
+        Assert.Contains("$dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});", rules);
 
         // The transparent outline at rest is the Cancel button's recipe rather than the Dialog's color, so its public
         // background still applies under an explicit Color.
-        StringAssert.Contains(GetRule(rules, "cnb"), "background-color: var(--bit-dlg-cnb-bg, var(--bit-Dialog-cancel-button-background, transparent));");
+        Assert.Contains("background-color: var(--bit-dlg-cnb-bg, var(--bit-Dialog-cancel-button-background, transparent));", GetRule(rules, "cnb"));
     }
 
     [TestMethod]
@@ -233,20 +233,20 @@ public class BitDialogStylesheetTests
         var rules = GetRules(ReadStylesheet());
 
         // The filled Ok button restyled at rest is not handed back the primary colors under the pointer or while pressed.
-        StringAssert.Contains(rules, "$dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(rules, "$dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));");
+        Assert.Contains("$dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));", rules);
+        Assert.Contains("$dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));", rules);
 
         // The Cancel button is an outline that fills under the pointer, so its states take the primary fill and text
         // until they are given values of their own: a color or background meant for the outline at rest would be
         // unreadable on that fill.
-        StringAssert.Contains(rules, "$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-hover});");
-        StringAssert.Contains(rules, "$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text});");
-        StringAssert.Contains(rules, "$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-active}));");
-        StringAssert.Contains(rules, "$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text}));");
+        Assert.Contains("$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-hover});", rules);
+        Assert.Contains("$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text});", rules);
+        Assert.Contains("$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-active}));", rules);
+        Assert.Contains("$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text}));", rules);
 
         // The states move the private variables the rule at rest paints from, the role color of an explicit Color first.
-        StringAssert.Contains(GetRule(rules, "okb"), "--bit-dlg-okb-bg: var(--bit-dlg-clr-hover, #{$dlg-okb-hover-background});");
-        StringAssert.Contains(GetRule(rules, "cnb"), "--bit-dlg-cnb-bg: var(--bit-dlg-clr-active, #{$dlg-cnb-active-background});");
+        Assert.Contains("--bit-dlg-okb-bg: var(--bit-dlg-clr-hover, #{$dlg-okb-hover-background});", GetRule(rules, "okb"));
+        Assert.Contains("--bit-dlg-cnb-bg: var(--bit-dlg-clr-active, #{$dlg-cnb-active-background});", GetRule(rules, "cnb"));
     }
 
     [TestMethod]
@@ -255,9 +255,9 @@ public class BitDialogStylesheetTests
         var rules = GetRules(ReadStylesheet());
 
         // On the band's descendant rule it would outrank a single class passed through Classes.OkButton / CancelButton.
-        Assert.IsFalse(GetRule(rules, "bct").Contains("border-radius: $shp-radius-button"), "The band sets the radius of its buttons.");
-        StringAssert.Contains(GetRule(rules, "okb"), "border-radius: var(--bit-Dialog-ok-button-radius, #{$shp-radius-button});");
-        StringAssert.Contains(GetRule(rules, "cnb"), "border-radius: var(--bit-Dialog-cancel-button-radius, #{$shp-radius-button});");
+        Assert.DoesNotContain("border-radius: $shp-radius-button", GetRule(rules, "bct"), "The band sets the radius of its buttons.");
+        Assert.Contains("border-radius: var(--bit-Dialog-ok-button-radius, #{$shp-radius-button});", GetRule(rules, "okb"));
+        Assert.Contains("border-radius: var(--bit-Dialog-cancel-button-radius, #{$shp-radius-button});", GetRule(rules, "cnb"));
     }
 
     /// <summary>

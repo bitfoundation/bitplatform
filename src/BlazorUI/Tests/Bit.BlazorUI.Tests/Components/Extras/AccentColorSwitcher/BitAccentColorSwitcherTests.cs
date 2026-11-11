@@ -29,12 +29,12 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var swatches = component.FindAll(".bit-acs-swt");
 
-        Assert.AreEqual(BitAccentColorSwitcher.DefaultAccents.Count, swatches.Count);
+        Assert.HasCount(BitAccentColorSwitcher.DefaultAccents.Count, swatches);
 
         // Blue is the packaged palette's own primary, so it must render as the active swatch on a
         // fresh visit - a switcher with nothing marked would read as "no accent chosen yet".
         var active = component.FindAll(".bit-acs-act");
-        Assert.AreEqual(1, active.Count);
+        Assert.ContainsSingle(active);
         Assert.AreEqual("Default", active[0].GetAttribute("title"));
         Assert.AreEqual("true", active[0].GetAttribute("aria-pressed"));
     }
@@ -58,10 +58,9 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var swatches = component.FindAll(".bit-acs-swt");
 
-        Assert.AreEqual(2, swatches.Count);
+        Assert.HasCount(2, swatches);
         Assert.AreEqual("Crimson", swatches[0].GetAttribute("title"));
-        StringAssert.Contains(swatches[0].GetAttribute("style"), "--bit-acs-clr:#DC143C", System.StringComparison.Ordinal,
-            "The swatch paints itself through the --bit-acs-clr custom property.");
+        Assert.Contains("--bit-acs-clr:#DC143C", swatches[0].GetAttribute("style")!, System.StringComparison.Ordinal, "The swatch paints itself through the --bit-acs-clr custom property.");
     }
 
     [TestMethod]
@@ -77,8 +76,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             });
         });
 
-        StringAssert.Contains(component.Find(".bit-acs-swt").GetAttribute("style"), "--bit-acs-clr:#DC143C", System.StringComparison.Ordinal,
-            "A bare token is a valid accent everywhere else in the feature, and '--bit-acs-clr:DC143C' is not a color - the swatch would paint nothing.");
+        Assert.Contains("--bit-acs-clr:#DC143C", component.Find(".bit-acs-swt").GetAttribute("style")!, System.StringComparison.Ordinal, "A bare token is a valid accent everywhere else in the feature, and '--bit-acs-clr:DC143C' is not a color - the swatch would paint nothing.");
     }
 
     [TestMethod,
@@ -117,12 +115,12 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var swatches = component.FindAll(".bit-acs-swt");
         Assert.IsTrue(swatches.All(s => s.ClassList.Contains("custom-swatch")));
-        StringAssert.Contains(swatches[0].GetAttribute("style"), "outline-width:3px", System.StringComparison.Ordinal);
+        Assert.Contains("outline-width:3px", swatches[0].GetAttribute("style")!, System.StringComparison.Ordinal);
 
         // ActiveSwatch composes on top of Swatch for the active one only.
         var active = component.Find(".bit-acs-act");
         Assert.IsTrue(active.ClassList.Contains("custom-active"));
-        Assert.AreEqual(1, swatches.Count(s => s.ClassList.Contains("custom-active")));
+        Assert.ContainsSingle(s => s.ClassList.Contains("custom-active"), swatches);
     }
 
     [TestMethod]
@@ -152,8 +150,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         Assert.AreEqual(purpleToken, purple.GetAttribute(BitAccentColorNames.SwatchAttribute),
             "Each swatch must carry its token for the attribute-keyed rules to target.");
 
-        Assert.AreEqual(0, component.FindAll("style").Count,
-            "The marker CSS belongs to the head, where the response's CSP nonce is: a style element rendered here has none to carry, so a style-src 'nonce-…' policy would block it and leave no swatch marked.");
+        Assert.IsEmpty(component.FindAll("style"), "The marker CSS belongs to the head, where the response's CSP nonce is: a style element rendered here has none to carry, so a style-src 'nonce-…' policy would block it and leave no swatch marked.");
     }
 
     [TestMethod]
@@ -177,8 +174,8 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(0, component.FindAll("script").Count, "A caller-supplied id must not be able to open an element of its own.");
-        Assert.AreEqual(0, component.FindAll("style").Count);
+        Assert.IsEmpty(component.FindAll("script"), "A caller-supplied id must not be able to open an element of its own.");
+        Assert.IsEmpty(component.FindAll("style"));
         Assert.AreEqual(hostileId, component.Find(".bit-acs").GetAttribute("id"),
             "The id must survive as one attribute value - parsed as anything else, it escaped.");
     }
@@ -202,14 +199,13 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         });
 
         var active = component.FindAll(".bit-acs-act");
-        Assert.AreEqual(1, active.Count);
+        Assert.ContainsSingle(active);
         Assert.AreEqual("Default", active[0].GetAttribute("title"),
             "Nothing is persisted here, so the packaged primary is the active accent.");
 
         // The hand-off is whole: the marker CSS's selectors outrank a single class, so a token left
         // on a swatch would keep painting the built-in ring over an app's Classes.ActiveSwatch.
-        Assert.IsFalse(component.FindAll(".bit-acs-swt").Any(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)),
-            "Once the class marks the swatch, no swatch may still carry the token the marker CSS keys on.");
+        Assert.DoesNotContain(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute), component.FindAll(".bit-acs-swt"), "Once the class marks the swatch, no swatch may still carry the token the marker CSS keys on.");
     }
 
     [TestMethod]
@@ -229,15 +225,14 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         });
 
         Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)));
-        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
-            "Before the restore lands the C# state may be another visitor's, so the class marks nothing.");
+        Assert.IsEmpty(component.FindAll(".bit-acs-act"), "Before the restore lands the C# state may be another visitor's, so the class marks nothing.");
 
         getPersisted.SetResult(null);
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll(".bit-acs-act").Count);
-            Assert.IsFalse(component.FindAll(".bit-acs-swt").Any(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)));
+            Assert.ContainsSingle(component.FindAll(".bit-acs-act"));
+            Assert.DoesNotContain(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute), component.FindAll(".bit-acs-swt"));
         });
     }
 
@@ -280,7 +275,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         var apply = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.AccentColor.apply");
         Assert.AreEqual(PurpleToken, apply.Arguments[0]);
         Assert.IsNull(apply.Arguments[1], "The default None strategy keeps no palette snapshot.");
-        Assert.AreEqual(false, apply.Arguments[3], "The default None strategy sets no bit-accent attribute.");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(apply.Arguments[3]), "The default None strategy sets no bit-accent attribute.");
         Assert.AreEqual((int)BitAccentColorPersistence.LocalStorage, apply.Arguments[4],
             "The persistence flags must reach the JS side - they decide which stores are written and which are cleaned up.");
     }
@@ -324,7 +319,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var swatches = component.FindAll(".bit-acs-swt");
 
-        Assert.AreEqual(1, swatches.Count);
+        Assert.ContainsSingle(swatches);
         Assert.AreEqual("Indigo", swatches[0].GetAttribute("title"),
             "An explicit Config parameter must win over the DI-registered configuration.");
     }
@@ -463,7 +458,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         foreach (var swatch in component.FindAll(".bit-acs-swt"))
         {
-            StringAssert.Contains(swatch.GetAttribute("style"), expected, System.StringComparison.Ordinal);
+            Assert.Contains(expected, swatch.GetAttribute("style")!, System.StringComparison.Ordinal);
         }
     }
 
@@ -481,7 +476,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         });
 
         // Only a missing # is supplied; anything else is the author's spelling, and a non-hex value gets no #.
-        StringAssert.Contains(component.Find(".bit-acs-swt").GetAttribute("style"), "--bit-acs-clr:rebeccapurple", System.StringComparison.Ordinal);
+        Assert.Contains("--bit-acs-clr:rebeccapurple", component.Find(".bit-acs-swt").GetAttribute("style")!, System.StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -528,7 +523,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
 
         Assert.AreEqual(0, changed);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.AccentColor.apply", Context.JSInterop.Invocations);
         Assert.AreEqual("Default", component.Find(".bit-acs-act").GetAttribute("title"));
     }
 
@@ -549,8 +544,8 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         // The packaged primary reproduces the packaged palette: nothing is applied, the stores and the attribute
         // are cleared instead.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.clear"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AccentColor.apply", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.AccentColor.clear", Context.JSInterop.Invocations);
         Assert.AreEqual(BitAccentColorPresets.Blue, changed);
         Assert.AreEqual("Default", component.Find(".bit-acs-act").GetAttribute("title"));
     }
@@ -565,17 +560,17 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitAccentColorSwitcherClassStyles { Root = "padding:4px", ActiveSwatch = "border-color:red" });
         });
 
-        StringAssert.Contains(component.Find(".bit-acs").GetAttribute("style"), "padding:4px", System.StringComparison.Ordinal);
+        Assert.Contains("padding:4px", component.Find(".bit-acs").GetAttribute("style")!, System.StringComparison.Ordinal);
 
         var swatches = component.FindAll(".bit-acs-swt");
-        Assert.AreEqual(1, swatches.Count(s => s.GetAttribute("style")!.Contains("border-color:red")));
-        StringAssert.Contains(swatches.First(s => s.GetAttribute("title") == "Default").GetAttribute("style"), "border-color:red", System.StringComparison.Ordinal);
+        Assert.ContainsSingle(s => s.GetAttribute("style")!.Contains("border-color:red"), swatches);
+        Assert.Contains("border-color:red", swatches.First(s => s.GetAttribute("title") == "Default").GetAttribute("style")!, System.StringComparison.Ordinal);
 
         swatches.First(s => s.GetAttribute("title") == "Purple").Click();
 
         swatches = component.FindAll(".bit-acs-swt");
-        Assert.AreEqual(1, swatches.Count(s => s.GetAttribute("style")!.Contains("border-color:red")));
-        StringAssert.Contains(swatches.First(s => s.GetAttribute("title") == "Purple").GetAttribute("style"), "border-color:red", System.StringComparison.Ordinal);
+        Assert.ContainsSingle(s => s.GetAttribute("style")!.Contains("border-color:red"), swatches);
+        Assert.Contains("border-color:red", swatches.First(s => s.GetAttribute("title") == "Purple").GetAttribute("style")!, System.StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -622,12 +617,12 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         Assert.AreEqual("accents", root.Id);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px", System.StringComparison.Ordinal);
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden", System.StringComparison.Ordinal);
+        Assert.Contains("margin:1px", root.GetAttribute("style")!, System.StringComparison.Ordinal);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!, System.StringComparison.Ordinal);
 
         component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
 
-        StringAssert.Contains(component.Find(".bit-acs").GetAttribute("style"), "display:none", System.StringComparison.Ordinal);
+        Assert.Contains("display:none", component.Find(".bit-acs").GetAttribute("style")!, System.StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -661,6 +656,6 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         // An accent none of the swatches offers rings none of them.
         service.ApplyAsync("#123456").GetAwaiter().GetResult();
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-acs-act")));
     }
 }

@@ -1,7 +1,9 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 using Bit.Bdnd.Demo.Client.Examples;
 using Bit.Utilities.Demo;
+
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
 
 namespace Bit.Bdnd.Tests.Mcp;
 

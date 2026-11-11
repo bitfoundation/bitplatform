@@ -59,9 +59,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         var component = RenderYear();
 
         var titles = component.FindAll(".bit-bfc-year-month-title").Select(t => t.TextContent.Trim()).ToArray();
-        CollectionAssert.AreEqual(
-            new[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" },
-            titles);
+        Assert.AreSequenceEqual(
+            new[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }, titles);
 
         // Every title is a native button, so a month is reachable from the keyboard.
         Assert.IsTrue(component.FindAll(".bit-bfc-year-month-title").All(t => t.TagName == "BUTTON" && t.GetAttribute("type") == "button"));
@@ -73,13 +72,12 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         var component = RenderYear();
 
         var headers = component.FindAll(".bit-bfc-year-weekdays");
-        Assert.AreEqual(12, headers.Count);
+        Assert.HasCount(12, headers);
         Assert.IsTrue(headers.All(h => h.GetAttribute("aria-hidden") == "true"), "the busy days name their own dates");
 
-        CollectionAssert.AreEqual(
-            new[] { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" },
-            headers[0].QuerySelectorAll(".bit-bfc-year-weekday").Select(d => d.TextContent.Trim()).ToArray());
-        StringAssert.Contains(headers[0].GetAttribute("style"), "repeat(7, minmax(0, 1fr))");
+        Assert.AreSequenceEqual(
+            new[] { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" }, headers[0].QuerySelectorAll(".bit-bfc-year-weekday").Select(d => d.TextContent.Trim()).ToArray());
+        Assert.Contains("repeat(7, minmax(0, 1fr))", headers[0].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -98,14 +96,13 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         var component = RenderYear(configure: p => p.Add(c => c.Settings, new BitFullCalendarSettings { HiddenDays = [DayOfWeek.Saturday, DayOfWeek.Sunday] }));
 
         var headers = component.FindAll(".bit-bfc-year-weekdays")[0];
-        CollectionAssert.AreEqual(
-            new[] { "Mo", "Tu", "We", "Th", "Fr" },
-            headers.QuerySelectorAll(".bit-bfc-year-weekday").Select(d => d.TextContent.Trim()).ToArray());
-        StringAssert.Contains(headers.GetAttribute("style"), "repeat(5, minmax(0, 1fr))");
-        StringAssert.Contains(component.FindAll(".bit-bfc-year-days")[0].GetAttribute("style"), "repeat(5, minmax(0, 1fr))");
+        Assert.AreSequenceEqual(
+            new[] { "Mo", "Tu", "We", "Th", "Fr" }, headers.QuerySelectorAll(".bit-bfc-year-weekday").Select(d => d.TextContent.Trim()).ToArray());
+        Assert.Contains("repeat(5, minmax(0, 1fr))", headers.GetAttribute("style")!);
+        Assert.Contains("repeat(5, minmax(0, 1fr))", component.FindAll(".bit-bfc-year-days")[0].GetAttribute("style")!);
 
         // May 2, 2026 is a Saturday, so it is not drawn at all.
-        Assert.IsFalse(component.FindAll(".bit-bfc-year-day.has-events").Any(d => d.Id.EndsWith("20260502")));
+        Assert.DoesNotContain(d => d.Id.EndsWith("20260502"), component.FindAll(".bit-bfc-year-day.has-events"));
     }
 
     [TestMethod]
@@ -127,9 +124,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         });
 
         Assert.AreEqual("2026", component.Find(".bit-bfc-header-title").TextContent.Trim());
-        CollectionAssert.AreEqual(
-            Enumerable.Range(1, 12).Select(m => culture.DateTimeFormat.GetMonthName(m)).ToArray(),
-            component.FindAll(".bit-bfc-year-month-title").Select(t => t.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(
+            Enumerable.Range(1, 12).Select(m => culture.DateTimeFormat.GetMonthName(m)).ToArray(), component.FindAll(".bit-bfc-year-month-title").Select(t => t.TextContent.Trim()).ToArray());
         // March is the third grid, and holds today.
         Assert.IsNotNull(component.FindAll(".bit-bfc-year-month")[2].QuerySelector(".bit-bfc-year-day.has-events[aria-current='date']"));
         Assert.AreEqual(31, component.FindAll(".bit-bfc-year-month")[2].QuerySelectorAll(".bit-bfc-year-day:not(.other-month)").Length);
@@ -143,7 +139,7 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         // March 2026 starts on a Sunday and ends on a Tuesday, so its grid is padded with April 1 - 4 only.
         var march = component.FindAll(".bit-bfc-year-month")[2];
         var others = march.QuerySelectorAll(".bit-bfc-year-day.other-month");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4" }, others.Select(d => d.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, others.Select(d => d.TextContent.Trim()).ToArray());
         Assert.IsTrue(others.All(d => d.GetAttribute("aria-hidden") == "true"));
         Assert.IsTrue(others.All(d => d.TagName == "DIV"));
 
@@ -163,9 +159,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         var component = RenderYear();
 
         var days = component.FindAll(".bit-bfc-year-day.has-events");
-        CollectionAssert.AreEqual(
-            new[] { "20260105", "20260120", "20260318", "20260319", "20260330", "20260502" },
-            days.Select(d => d.Id[^8..]).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "20260105", "20260120", "20260318", "20260319", "20260330", "20260502" }, days.Select(d => d.Id[^8..]).ToArray());
         Assert.IsTrue(days.All(d => d.TagName == "BUTTON" && d.GetAttribute("type") == "button"));
         Assert.IsTrue(days.All(d => d.HasAttribute("data-bit-bfc-roving")));
     }
@@ -207,7 +202,7 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         Assert.AreEqual("true", day.QuerySelector(".bit-bfc-year-day-bullets")!.GetAttribute("aria-hidden"));
 
         // The name still counts every event of the day.
-        StringAssert.EndsWith(day.GetAttribute("aria-label"), "5 event(s)");
+        Assert.EndsWith("5 event(s)", day.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -220,10 +215,10 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         ]);
 
         var bullets = component.FindAll(".bit-bfc-year-day.has-events .bit-bfc-bullet");
-        Assert.AreEqual(2, bullets.Count);
-        StringAssert.Contains(bullets[0].GetAttribute("style"), "--bit-bfc-evt-color:#2563eb;");
+        Assert.HasCount(2, bullets);
+        Assert.Contains("--bit-bfc-evt-color:#2563eb;", bullets[0].GetAttribute("style")!);
         Assert.AreNotEqual(bullets[0].GetAttribute("style"), bullets[1].GetAttribute("style"));
-        Assert.IsFalse(bullets[1].GetAttribute("style")!.Contains(BitFullCalendarColorScheme.DefaultCssValue));
+        Assert.DoesNotContain(BitFullCalendarColorScheme.DefaultCssValue, bullets[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -234,9 +229,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
             new() { Id = "trip", Title = "Trip", StartDate = new DateTime(2026, 6, 8, 9, 0, 0), EndDate = new DateTime(2026, 6, 10, 17, 0, 0) },
         ]);
 
-        CollectionAssert.AreEqual(
-            new[] { "20260608", "20260609", "20260610" },
-            component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "20260608", "20260609", "20260610" }, component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
     }
 
     [TestMethod]
@@ -248,9 +242,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         ]);
 
         // A 00:00 end is exclusive, so June 10 itself is free.
-        CollectionAssert.AreEqual(
-            new[] { "20260608", "20260609" },
-            component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "20260608", "20260609" }, component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
     }
 
     [TestMethod]
@@ -264,7 +257,7 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         ]);
 
         // Dec 31, 2025 and Jan 1, 2027 are drawn as padding of January and December, never as busy days.
-        CollectionAssert.AreEqual(new[] { "20260701" }, component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
+        Assert.AreSequenceEqual(new[] { "20260701" }, component.FindAll(".bit-bfc-year-day.has-events").Select(d => d.Id[^8..]).ToArray());
     }
 
     [TestMethod]
@@ -272,9 +265,9 @@ public class BitFullCalendarYearViewTests : BunitTestContext
     {
         var component = RenderYear([]);
 
-        Assert.AreEqual(12, component.FindAll(".bit-bfc-year-month").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-year-day.has-events").Count);
-        Assert.AreEqual(0, component.FindAll("[data-bit-bfc-roving]").Count);
+        Assert.HasCount(12, component.FindAll(".bit-bfc-year-month"));
+        Assert.IsEmpty(component.FindAll(".bit-bfc-year-day.has-events"));
+        Assert.IsEmpty(component.FindAll("[data-bit-bfc-roving]"));
     }
 
     #endregion
@@ -292,10 +285,9 @@ public class BitFullCalendarYearViewTests : BunitTestContext
 
         var dialog = component.Find(".bit-bfc-dialog");
         Assert.AreEqual("dialog", dialog.GetAttribute("role"));
-        StringAssert.Contains(dialog.QuerySelector("h3")!.TextContent, "Wednesday, March 18, 2026");
-        CollectionAssert.AreEqual(
-            new[] { "mar18", "mar18b" },
-            dialog.QuerySelectorAll(".bit-bfc-agenda-item").Select(i => i.GetAttribute("data-bit-bfc-event")).ToArray());
+        Assert.Contains("Wednesday, March 18, 2026", dialog.QuerySelector("h3")!.TextContent);
+        Assert.AreSequenceEqual(
+            new[] { "mar18", "mar18b" }, dialog.QuerySelectorAll(".bit-bfc-agenda-item").Select(i => i.GetAttribute("data-bit-bfc-event")).ToArray());
     }
 
     [TestMethod]
@@ -303,11 +295,11 @@ public class BitFullCalendarYearViewTests : BunitTestContext
     {
         var component = RenderYear();
         component.FindAll(".bit-bfc-year-day.has-events")[0].Click();
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-dialog"));
 
         component.Find(".bit-bfc-overlay").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-dialog"));
     }
 
     [TestMethod]
@@ -336,8 +328,8 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Month, component.Instance.State.View);
         Assert.AreEqual(BitFullCalendarView.Month, changedTo);
         Assert.AreEqual(new DateTime(2026, 5, 1), component.Instance.State.SelectedDate.Date);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-year").Count);
-        Assert.IsTrue(component.FindAll(".bit-bfc-month-cell").Count > 0);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-year"));
+        Assert.IsNotEmpty(component.FindAll(".bit-bfc-month-cell"));
     }
 
     [TestMethod]
@@ -363,7 +355,7 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         component.FindAll(".bit-bfc-year-month-title")[8].Click();
 
         Assert.AreEqual(BitFullCalendarView.Year, component.Instance.State.View);
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-year").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bfc-year"));
     }
 
     #endregion
@@ -380,7 +372,7 @@ public class BitFullCalendarYearViewTests : BunitTestContext
         ]);
 
         Assert.AreEqual("20260203", RovingDay(component));
-        Assert.AreEqual(1, component.FindAll(".bit-bfc-year-day.has-events").Count(d => d.GetAttribute("tabindex") == "0"));
+        Assert.ContainsSingle(d => d.GetAttribute("tabindex") == "0", component.FindAll(".bit-bfc-year-day.has-events"));
         Assert.AreEqual("-1", component.FindAll(".bit-bfc-year-day.has-events")[1].GetAttribute("tabindex"));
     }
 

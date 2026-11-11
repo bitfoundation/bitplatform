@@ -59,9 +59,9 @@ public class HtmlToMarkdownServiceTests
         // own content and the rest of the page would render as prose.
         var markdown = "<pre><code>```csharp\nvar x = 1;\n```</code></pre>".ToMarkdown();
 
-        StringAssert.StartsWith(markdown, "````\n");
-        StringAssert.EndsWith(markdown, "\n````");
-        StringAssert.Contains(markdown, "```csharp");
+        Assert.StartsWith("````\n", markdown);
+        Assert.EndsWith("\n````", markdown);
+        Assert.Contains("```csharp", markdown);
     }
 
     [TestMethod]
@@ -79,9 +79,9 @@ public class HtmlToMarkdownServiceTests
     {
         var markdown = "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>".ToMarkdown();
 
-        StringAssert.Contains(markdown, "| A | B |");
-        StringAssert.Contains(markdown, "| --- | --- |");
-        StringAssert.Contains(markdown, "| 1 | 2 |");
+        Assert.Contains("| A | B |", markdown);
+        Assert.Contains("| --- | --- |", markdown);
+        Assert.Contains("| 1 | 2 |", markdown);
     }
 
     [TestMethod]
@@ -136,8 +136,8 @@ public class HtmlToMarkdownServiceTests
 
         var markdown = page.ToMarkdown();
 
-        Assert.IsTrue(markdown.Length < page.Length / 2, $"The Markdown ({markdown.Length}) is not much smaller than the HTML ({page.Length}).");
-        StringAssert.Contains(markdown, "## Guards");
+        Assert.IsLessThan(page.Length / 2, markdown.Length, $"The Markdown ({markdown.Length}) is not much smaller than the HTML ({page.Length}).");
+        Assert.Contains("## Guards", markdown);
         Assert.IsFalse(markdown.Contains("class=", StringComparison.Ordinal));
     }
 }

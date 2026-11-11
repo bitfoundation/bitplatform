@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
 /// Publishes a project of the source tree with a set of properties, once per set: the tests asking about the same
 /// scenario read the same publish.
 /// </summary>
-public static class Publisher
+internal static class Publisher
 {
     private static readonly Dictionary<string, PublishResult> Results = [];
     private static readonly SemaphoreSlim Gate = new(1, 1);

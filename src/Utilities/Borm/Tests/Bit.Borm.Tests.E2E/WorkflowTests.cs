@@ -98,7 +98,7 @@ public sealed class WorkflowTests : BormTest
         var results = page.Locator("#borm_CustomerId_list > option");
         await EventuallyAsync(async () => await results.CountAsync() == 8, "eight customers in Lisbon were offered");
         foreach (var value in await results.EvaluateAllAsync<string[]>("os => os.map(o => o.value)"))
-            StringAssert.Contains(value, "Lisbon");
+            Assert.Contains("Lisbon", value);
 
         // Text committed before its results arrived is searched for exactly, and stored as the id behind it.
         await EnterAsync(customer, "Northwind Bank · Paris");
@@ -147,7 +147,7 @@ public sealed class WorkflowTests : BormTest
         // A reload is an external navigation: the browser's own prompt, and then the draft comes back.
         acceptDialogs = true;
         await page.ReloadAsync();
-        Assert.IsTrue(dialogs.Contains("beforeunload"), $"the browser was not asked before the reload ({string.Join(", ", dialogs)})");
+        Assert.Contains("beforeunload", dialogs, $"the browser was not asked before the reload ({string.Join(", ", dialogs)})");
         await WaitForInteractiveAsync(page);
 
         await Expect(Control(page, "FullName")).ToHaveValueAsync("Ada Lovelace");
@@ -161,7 +161,7 @@ public sealed class WorkflowTests : BormTest
         await page.Locator(".bb-docs-sidebar a[href='/builder']").ClickAsync();
         await EventuallyAsync(() => Task.FromResult(page.Url == BaseUrl + "/builder"),
             $"accepting the guard's question left the form (still on {page.Url}, asked: {string.Join(", ", dialogs)})");
-        Assert.IsTrue(dialogs.Contains("confirm"), "the guard did not ask after the draft came back");
+        Assert.Contains("confirm", dialogs, "the guard did not ask after the draft came back");
     }
 
     [TestMethod]
@@ -202,7 +202,7 @@ public sealed class WorkflowTests : BormTest
         var label = await company.BoundingBoxAsync();
         Assert.IsNotNull(field);
         Assert.IsNotNull(label);
-        Assert.IsTrue(label.X + label.Width > field.X + field.Width - 2, "the label does not start at the right edge");
+        Assert.IsGreaterThan(field.X + field.Width - 2, label.X + label.Width, "the label does not start at the right edge");
     }
 
     [TestMethod]

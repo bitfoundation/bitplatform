@@ -32,9 +32,9 @@ public class BitNavOptionE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{PAGE}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"onav-basic\"");
-        StringAssert.Contains(html, "href=\"/e2e/nav/url/home\"");
-        StringAssert.Contains(html, ">Books</span>");
+        Assert.Contains("id=\"onav-basic\"", html);
+        Assert.Contains("href=\"/e2e/nav/url/home\"", html);
+        Assert.Contains(">Books</span>", html);
     }
 
     [TestMethod]
@@ -120,7 +120,7 @@ public class BitNavOptionE2ETests : E2ETestBase
 
         await Expect(Nav("onav-fit")).ToHaveClassAsync(HasClass("bit-nav-ftw"));
         Assert.AreEqual(container.Width, full.Width, 0.5);
-        Assert.IsTrue(fit.Width < container.Width / 2);
+        Assert.IsLessThan(container.Width / 2, fit.Width);
     }
 
     [TestMethod]

@@ -17,13 +17,13 @@ public class BitStackStylesheetTests : BunitTestContext
     {
         var component = RenderComponent<BitStack>();
 
-        StringAssert.Contains(component.Find(".bit-stc").GetAttribute("style")!, "gap:var(--bit-stc-dgap)");
+        Assert.Contains("gap:var(--bit-stc-dgap)", component.Find(".bit-stc").GetAttribute("style")!);
 
         // Declared on the root class of every stack, so a nested stack resolves the public variable against its own
         // ancestors rather than inheriting the value its parent resolved to.
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-stc {");
 
-        StringAssert.Contains(root, "--bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});");
+        Assert.Contains("--bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});", root);
     }
 
     [TestMethod]
@@ -36,8 +36,8 @@ public class BitStackStylesheetTests : BunitTestContext
 
         var style = component.Find(".bit-stc").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "gap:2rem");
-        Assert.IsFalse(style.Contains("--bit-stc-dgap"));
+        Assert.Contains("gap:2rem", style);
+        Assert.DoesNotContain("--bit-stc-dgap", style);
     }
 
     [TestMethod]
@@ -50,8 +50,8 @@ public class BitStackStylesheetTests : BunitTestContext
 
         var style = component.Find(".bit-stc").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "gap:var(--bit-stc-size)");
-        Assert.IsFalse(style.Contains("--bit-stc-dgap"));
+        Assert.Contains("gap:var(--bit-stc-size)", style);
+        Assert.DoesNotContain("--bit-stc-dgap", style);
     }
 
     [TestMethod]
@@ -73,13 +73,13 @@ public class BitStackStylesheetTests : BunitTestContext
 
         // The outer stack hands its base alignment over inline, the inner one declares none - so it would read the
         // outer one's through inheritance unless the class empties the base on every responsive stack.
-        StringAssert.Contains(stacks[0].GetAttribute("style")!, "--bit-stc-ai:center");
-        Assert.IsFalse(stacks[1].GetAttribute("style")!.Contains("--bit-stc-ai"));
+        Assert.Contains("--bit-stc-ai:center", stacks[0].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-stc-ai", stacks[1].GetAttribute("style")!);
 
         var rsp = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-stc-rsp {");
 
-        StringAssert.Contains(rsp, "--bit-stc-ai: initial;");
-        StringAssert.Contains(rsp, "--bit-stc-jc: initial;");
+        Assert.Contains("--bit-stc-ai: initial;", rsp);
+        Assert.Contains("--bit-stc-jc: initial;", rsp);
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class BitStackStylesheetTests : BunitTestContext
 
         // The inline display outranks the display:none of the user agent, so only an important rule can hide it.
         Assert.IsTrue(stack.HasAttribute("hidden"));
-        StringAssert.Contains(stack.GetAttribute("style")!, "display:flex");
+        Assert.Contains("display:flex", stack.GetAttribute("style")!);
 
         // Matched on what the rule does rather than how it is laid out, so it holds nested or written out in full and
         // with any whitespace or comments inside. hidden="until-found" is left to the browser, which reveals it on a

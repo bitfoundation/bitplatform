@@ -77,14 +77,7 @@ public class IdentityRateLimitTests
     /// </summary>
     private async Task AssertHealthIsNotThrottled(string api, DeployedApiClient apiClient)
     {
-        try
-        {
-            using var response = await apiClient.HttpClient.GetAsync("health", TestContext.CancellationToken);
-        }
-        catch (TooManyRequestsException exception)
-        {
-            Assert.Fail($"{api}health was throttled alongside the identity endpoints, so the limiter is not scoped to its policy: {exception.Message}");
-        }
+        using var response = await apiClient.HttpClient.GetAsync("health", TestContext.CancellationToken);
     }
 
     /// <summary>

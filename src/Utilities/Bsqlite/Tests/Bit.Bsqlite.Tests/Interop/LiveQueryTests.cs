@@ -168,7 +168,7 @@ public sealed class LiveQueryTests
         var live = new BsqliteLiveQuery<int>(connection, _ => Task.FromResult(1), ["product"]);
 
 #pragma warning disable xUnit1051 // No token on purpose: disposal alone has to end the stream.
-        await using var enumerator = live.WithCancellation(CancellationToken.None).GetAsyncEnumerator();
+        await using var enumerator = live.WithCancellation(CancellationToken.None).GetAsyncEnumerator(TestContext.CancellationToken);
 #pragma warning restore xUnit1051
         Assert.IsTrue(await enumerator.MoveNextAsync());
 
@@ -199,7 +199,7 @@ public sealed class LiveQueryTests
             async _ =>
             {
                 overlapped |= Interlocked.Increment(ref running) > 1;
-                await Task.Delay(20);
+                await Task.Delay(20, TestContext.CancellationToken);
                 Interlocked.Decrement(ref running);
                 return Interlocked.Increment(ref runs);
             },

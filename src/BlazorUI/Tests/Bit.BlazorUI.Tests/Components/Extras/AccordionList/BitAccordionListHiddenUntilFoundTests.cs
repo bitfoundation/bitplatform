@@ -41,7 +41,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         Assert.AreEqual("until-found", panels[1].GetAttribute("hidden"));
 
         // The panel has to be in the DOM to be found, so LazyContent is set aside.
-        StringAssert.Contains(panels[0].TextContent, "Body A");
+        Assert.Contains("Body A", panels[0].TextContent);
 
         // A disabled item cannot open around the match, so it is not offered to find-in-page.
         Assert.IsFalse(panels[2].HasAttribute("hidden") && panels[2].GetAttribute("hidden") == "until-found");
@@ -52,8 +52,8 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
     {
         var component = RenderComponent<BitAccordionList<BitAccordionListItem>>(parameters => parameters.Add(p => p.Items, GetItems()));
 
-        Assert.IsFalse(component.Markup.Contains("until-found"));
-        Assert.IsFalse(component.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("until-found", component.Markup);
+        Assert.DoesNotContain("onbeforematch", component.Markup);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         // Single-expand mode closes the panel that was open, and the binding hears about it like a click.
         Assert.AreEqual("b", boundKey);
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.IsFalse(component.FindAll(".bit-acd-con")[1].HasAttribute("hidden"));
         Assert.AreEqual("until-found", component.FindAll(".bit-acd-con")[0].GetAttribute("hidden"));
     }
@@ -125,14 +125,14 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         // The page opens the item through ExpandedKey while the reveal waits on OnToggling: that open is the page's own.
         component.Render(parameters => parameters.Add(p => p.ExpandedKey, "b"));
 
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.IsFalse(component.FindAll(".bit-acd-cnt")[1].ClassList.Contains("bit-acd-rvl"));
 
         // Whatever then becomes of the reveal, the open stays the ordinary one.
         toggling.SetResult();
         await reveal;
 
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.IsFalse(component.FindAll(".bit-acd-cnt")[1].ClassList.Contains("bit-acd-rvl"));
     }
 
@@ -150,7 +150,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         var panel = component.FindAll(".bit-acd-con")[0];
 
-        Assert.AreEqual(0, component.Instance.GetExpandedKeys().Count);
+        Assert.IsEmpty(component.Instance.GetExpandedKeys());
         Assert.IsFalse(panel.HasAttribute("hidden"));
         Assert.IsTrue(panel.ClassList.Contains("bit-acd-cco"));
     }
@@ -165,7 +165,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
             parameters.Add(p => p.ReadOnly, true);
         });
 
-        Assert.IsFalse(component.Markup.Contains("until-found"));
+        Assert.DoesNotContain("until-found", component.Markup);
     }
 
     [TestMethod]
@@ -190,7 +190,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         component.FindAll(".bit-acd-con")[1].TriggerEvent("onbeforematch", EventArgs.Empty);
 
-        CollectionAssert.AreEqual(new[] { "two" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "two" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.AreEqual("until-found", component.FindAll(".bit-acd-con")[0].GetAttribute("hidden"));
     }
 
@@ -207,16 +207,16 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         // Nothing is open, so nothing closes above the match and the browser's own scroll is left alone.
         component.FindAll(".bit-acd-con")[0].TriggerEvent("onbeforematch", EventArgs.Empty);
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace", Context.JSInterop.Invocations);
 
         // Item A closes as B is revealed, so B is held where the browser scrolled it.
         component.FindAll(".bit-acd-con")[1].TriggerEvent("onbeforematch", EventArgs.Empty);
 
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace"));
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Extras.keepInPlace", Context.JSInterop.Invocations);
 
         // A revealed panel is never scrolled to again: the browser has already scrolled to the match inside it.
-        component.WaitForAssertion(() => Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+        component.WaitForAssertion(() => Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations));
     }
 
     [TestMethod]
@@ -241,8 +241,8 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         component.FindAll(".bit-acd-con")[2].TriggerEvent("onbeforematch", EventArgs.Empty);
 
-        CollectionAssert.AreEquivalent(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray());
-        CollectionAssert.AreEquivalent(new[] { "b", "c" }, boundKeys);
+        Assert.AreSequenceEqual(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "b", "c" }, boundKeys, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("until-found", component.FindAll(".bit-acd-con")[0].GetAttribute("hidden"));
     }
 
@@ -282,8 +282,8 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
 
         // The click is through OnToggling but still in OnExpand: its state is only half applied, so the reveal
         // keeps on waiting rather than starting a toggle of its own from it.
-        component.WaitForAssertion(() => CollectionAssert.Contains(events, "expand:a"));
-        Assert.IsFalse(events.Contains("toggling:b"));
+        component.WaitForAssertion(() => Assert.Contains("expand:a", events));
+        Assert.DoesNotContain("toggling:b", events);
         Assert.IsFalse(reveal.IsCompleted);
 
         expanding.SetResult();
@@ -291,8 +291,8 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         await click;
         await reveal;
 
-        CollectionAssert.AreEqual(new[] { "toggling:a", "expand:a", "bound:a", "toggling:b", "expand:b", "collapse:a", "bound:b" }, events);
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "toggling:a", "expand:a", "bound:a", "toggling:b", "expand:b", "collapse:a", "bound:b" }, events);
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
     }
 
     [TestMethod]
@@ -321,6 +321,6 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         await click;
         await reveal;
 
-        CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray());
     }
 }

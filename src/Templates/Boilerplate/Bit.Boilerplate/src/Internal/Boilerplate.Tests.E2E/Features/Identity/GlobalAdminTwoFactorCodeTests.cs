@@ -31,7 +31,7 @@ public partial class GlobalAdminTwoFactorCodeTests
         }
         catch (ArgumentException exp)
         {
-            throw new AssertFailedException($"'GlobalAdminAuthenticatorKey' is not the Base32 shared key an authenticator app enrolls with: {exp.Message}", exp);
+            throw new InvalidOperationException($"'GlobalAdminAuthenticatorKey' is not the Base32 shared key an authenticator app enrolls with: {exp.Message}", exp);
         }
 
         var totp = new Totp(sharedKey);

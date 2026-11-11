@@ -41,10 +41,10 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"bc-basic\"");
-        StringAssert.Contains(html, "aria-label=\"Breadcrumb\"");
-        StringAssert.Contains(html, "bit-brc-icn");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"bc-basic\"", html);
+        Assert.Contains("aria-label=\"Breadcrumb\"", html);
+        Assert.Contains("bit-brc-icn", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Url);
         Assert.IsFalse(await IsCircuitDeadAsync());
@@ -336,7 +336,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         var ol = Root("bc-long-default").Locator("ol");
         var item = await BoxAsync(Step("bc-long-default", "Very long folder name 1"));
-        Assert.IsTrue((await BoxAsync(ol)).Height < item.Height * 1.5, "One line.");
+        Assert.IsLessThan(item.Height * 1.5, (await BoxAsync(ol)).Height, "One line.");
         Assert.IsTrue(await ol.EvaluateAsync<bool>("ol => ol.scrollWidth > 300"), "Wider than its container.");
     }
 
@@ -349,7 +349,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         var text = item.Locator(".bit-brc-itx");
         await Expect(text).ToHaveCSSAsync("max-width", "80px");
         await Expect(text).ToHaveCSSAsync("text-overflow", "ellipsis");
-        Assert.IsTrue((await BoxAsync(text)).Width <= 80.5);
+        Assert.IsLessThanOrEqualTo(80.5, (await BoxAsync(text)).Width);
         Assert.IsTrue(await text.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The text is cut.");
         await Expect(item).ToHaveAttributeAsync("title", "Very long folder name 1");
     }
@@ -362,7 +362,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         var root = Root("bc-long-wrap");
         await Expect(root).ToHaveClassAsync(HasClass("bit-brc-wrp"));
         var item = await BoxAsync(Step("bc-long-wrap", "Very long folder name 1"));
-        Assert.IsTrue((await BoxAsync(root.Locator("ol"))).Height > item.Height * 1.8, "More than one line.");
+        Assert.IsGreaterThan(item.Height * 1.8, (await BoxAsync(root.Locator("ol"))).Height, "More than one line.");
 
         var box = await BoxAsync(Page.Locator("#box-wrap"));
         var rights = await root.Locator("ol > li").EvaluateAllAsync<double[]>("lis => lis.map(li => li.getBoundingClientRect().right)");
@@ -383,7 +383,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         var olBox = await BoxAsync(ol);
         var last = await BoxAsync(Step("bc-long-scroll", "Very long folder name 4"));
-        Assert.IsTrue(last.X + last.Width <= olBox.X + olBox.Width + 1, "The current page is in view.");
+        Assert.IsLessThanOrEqualTo(olBox.X + olBox.Width + 1, last.X + last.Width, "The current page is in view.");
     }
 
     [TestMethod]
@@ -399,9 +399,9 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         await Page.WaitForFunctionAsync("() => { const ol = document.querySelector('#bc-auto ol'); return ol.scrollWidth <= 451; }");
         var ol = Root("bc-auto").Locator("ol");
         var item = await BoxAsync(Step("bc-auto", "Very long folder name 4"));
-        Assert.IsTrue((await BoxAsync(ol)).Height < item.Height * 1.5, "The trail stays on one line.");
+        Assert.IsLessThan(item.Height * 1.5, (await BoxAsync(ol)).Height, "The trail stays on one line.");
         // The overflow button sits at the root (OverflowIndex 0) and the current page stays.
-        Assert.IsTrue((await TrailAsync("bc-auto")).StartsWith(More));
+        Assert.StartsWith(More, await TrailAsync("bc-auto"));
 
         await SetWidthAsync("#box-auto", 1000);
         await ExpectTrailAsync("bc-auto", "Very long folder name 1|Very long folder name 2|Very long folder name 3|Very long folder name 4");
@@ -421,7 +421,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         Assert.IsTrue(await last.Locator(".bit-brc-itx").EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The text is cut with an ellipsis.");
         var box = await BoxAsync(Page.Locator("#box-auto"));
         var lastBox = await BoxAsync(last);
-        Assert.IsTrue(lastBox.X + lastBox.Width <= box.X + box.Width + 1, "Nothing runs out of the container.");
+        Assert.IsLessThanOrEqualTo(box.X + box.Width + 1, lastBox.X + lastBox.Width, "Nothing runs out of the container.");
     }
 
     [TestMethod]
@@ -482,14 +482,14 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         var end = Step("bc-icons-end", "Item 1");
         await Expect(end).ToHaveClassAsync(HasClass("bit-brc-eni"));
-        Assert.IsTrue((await BoxAsync(end.Locator("i"))).X > (await BoxAsync(end.Locator(".bit-brc-itx"))).X);
+        Assert.IsGreaterThan((await BoxAsync(end.Locator(".bit-brc-itx"))).X, (await BoxAsync(end.Locator("i"))).X);
 
         var own = Step("bc-icons-end", "Item 3");
         await Expect(own).Not.ToHaveClassAsync(HasClass("bit-brc-eni"));
-        Assert.IsTrue((await BoxAsync(own.Locator("i"))).X < (await BoxAsync(own.Locator(".bit-brc-itx"))).X);
+        Assert.IsLessThan((await BoxAsync(own.Locator(".bit-brc-itx"))).X, (await BoxAsync(own.Locator("i"))).X);
 
         var start = Step("bc-icons", "Item 1");
-        Assert.IsTrue((await BoxAsync(start.Locator("i"))).X < (await BoxAsync(start.Locator(".bit-brc-itx"))).X);
+        Assert.IsLessThan((await BoxAsync(start.Locator(".bit-brc-itx"))).X, (await BoxAsync(start.Locator("i"))).X);
     }
 
     [TestMethod]
@@ -572,7 +572,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         Assert.AreEqual("BreadcrumbList", root.GetProperty("@type").GetString());
 
         var items = root.GetProperty("itemListElement").EnumerateArray().ToArray();
-        Assert.AreEqual(4, items.Length, "The collapsed items are written too.");
+        Assert.HasCount(4, items, "The collapsed items are written too.");
         for (var i = 0; i < items.Length; i++)
         {
             Assert.AreEqual("ListItem", items[i].GetProperty("@type").GetString());
@@ -815,7 +815,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         var item = Step("bc-css-vars-color", "Item 1");
         await Expect(item).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err-fg)"));
-        Assert.IsTrue(ParsePx(await item.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")) < 19);
+        Assert.IsLessThan(19, ParsePx(await item.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")));
     }
 
     [TestMethod]
@@ -851,7 +851,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         var root = Root("bc-rtl");
         await Expect(root).ToHaveAttributeAsync("dir", "rtl");
         await Expect(root).ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxAsync(Step("bc-rtl", "Item 1"))).X > (await BoxAsync(Step("bc-rtl", "Item 3"))).X);
+        Assert.IsGreaterThan((await BoxAsync(Step("bc-rtl", "Item 3"))).X, (await BoxAsync(Step("bc-rtl", "Item 1"))).X);
         await Expect(root.Locator("i.bit-brc-div").First).ToHaveCSSAsync("transform", "matrix(-1, 0, 0, 1, 0, 0)");
 
         await OverflowButton("bc-rtl").ClickAsync();
@@ -871,11 +871,11 @@ public class BitBreadcrumbE2ETests : E2ETestBase
 
         var root = Root("bc-rtl-inherited");
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxAsync(Step("bc-rtl-inherited", "Item 1"))).X > (await BoxAsync(Step("bc-rtl-inherited", "Item 2"))).X);
+        Assert.IsGreaterThan((await BoxAsync(Step("bc-rtl-inherited", "Item 2"))).X, (await BoxAsync(Step("bc-rtl-inherited", "Item 1"))).X);
         await Expect(root.Locator("i.bit-brc-div").First).ToHaveCSSAsync("transform", "matrix(-1, 0, 0, 1, 0, 0)");
 
         var ltr = Root("bc-ltr");
-        Assert.IsTrue((await BoxAsync(Step("bc-ltr", "Item 1"))).X < (await BoxAsync(Step("bc-ltr", "Item 2"))).X);
+        Assert.IsLessThan((await BoxAsync(Step("bc-ltr", "Item 2"))).X, (await BoxAsync(Step("bc-ltr", "Item 1"))).X);
         await Expect(ltr.Locator("i.bit-brc-div").First).ToHaveCSSAsync("transform", new Regex(@"^(none|matrix\(1, 0, 0, 1, 0, 0\))$"));
     }
 
@@ -1033,6 +1033,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
     // Waits for the trail to show the given steps, the overflow button standing as [more].
     private async Task ExpectTrailAsync(string id, string expected)
     {
+        var timedOut = false;
         try
         {
             await Page.WaitForFunctionAsync($@"([id, expected]) => {{
@@ -1043,8 +1044,10 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         }
         catch (TimeoutException)
         {
-            Assert.AreEqual(expected, await TrailAsync(id), $"The trail of {id}.");
+            timedOut = true;
         }
+
+        if (timedOut) Assert.AreEqual(expected, await TrailAsync(id), $"The trail of {id}.");
     }
 
     // Brings an element to the middle of the viewport, so a menu opened from it has room on both sides, and lets the

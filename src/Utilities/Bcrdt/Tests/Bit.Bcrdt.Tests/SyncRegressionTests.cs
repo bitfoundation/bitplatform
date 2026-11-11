@@ -70,12 +70,12 @@ public class SyncRegressionTests
             provider.StatusChanged += _ => statusThreads.Add(Environment.CurrentManagedThreadId);
             return provider;
         });
-        await context.InvokeAsync(() => providerA.ConnectAsync().AsTask());
+        await context.InvokeAsync(() => providerA.ConnectAsync(TestContext.CancellationToken).AsTask());
 
         // B lives on the thread pool, with no context at all, and edits from there.
         BcrdtSyncProvider providerB = await Task.Run(() => new BcrdtSyncProvider(docB, network.CreateTransport("room"), null, Options()));
-        await Task.Run(() => providerB.ConnectAsync().AsTask());
-        await Task.Run(() => docB.GetText("t").Insert(0, "from B"));
+        await Task.Run(() => providerB.ConnectAsync(TestContext.CancellationToken).AsTask(), TestContext.CancellationToken);
+        await Task.Run(() => docB.GetText("t").Insert(0, "from B"), TestContext.CancellationToken);
 
         await AssertEventuallyAsync(
             async () => await context.InvokeAsync(() => docA.GetText("t").ToString()) == "from B",
@@ -106,7 +106,7 @@ public class SyncRegressionTests
         };
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(
             () => transport.State == BcrdtTransportState.Connected,
@@ -124,7 +124,7 @@ public class SyncRegressionTests
         await Assert.ThrowsAsync<OperationCanceledException>(() => provider.ConnectAsync(cancellation.Token).AsTask());
 
         Assert.AreEqual(BcrdtConnectionStatus.Disconnected, provider.Status);
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(1, transport.ConnectCalls);
     }
 
@@ -139,11 +139,11 @@ public class SyncRegressionTests
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => denials == 1, "the refusal should be reported");
         Assert.AreEqual(BcrdtConnectionStatus.Faulted, provider.Status);
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(1, transport.ConnectCalls);
         Assert.AreEqual(1, denials);
     }
@@ -156,7 +156,7 @@ public class SyncRegressionTests
         await using BcrdtSyncProvider provider = await CreateProviderAsync(
             new BcrdtDocument(), transport, options: Options(handshakeTimeout: TimeSpan.FromMilliseconds(10), reconnect: BcrdtReconnectPolicy.None));
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => provider.Status == BcrdtConnectionStatus.Synced, "a lone replica should settle");
 
         transport.SimulateDrop();
@@ -188,15 +188,15 @@ public class SyncRegressionTests
         };
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         transport.Raise(BcrdtTransportState.Faulted, new IOException("Dropped."));
         await AssertEventuallyAsync(() => transport.ConnectCalls == 2, "a reconnect attempt should be under way");
 
-        await provider.DisconnectAsync();
+        await provider.DisconnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => cancelled == 1, "the pending attempt should be cancelled");
         Assert.AreEqual(BcrdtConnectionStatus.Disconnected, provider.Status);
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreNotEqual(BcrdtTransportState.Connected, transport.State);
         Assert.AreEqual(2, transport.ConnectCalls);
     }
@@ -211,12 +211,12 @@ public class SyncRegressionTests
         };
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         transport.Raise(BcrdtTransportState.Faulted, new IOException("Send failed."));
         transport.Raise(BcrdtTransportState.Disconnected);
 
         await AssertEventuallyAsync(() => transport.ConnectCalls == 2, "a reconnect attempt should start");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
 
         Assert.AreEqual(2, transport.ConnectCalls);
         Assert.AreEqual(1, transport.MaxConcurrentConnects);
@@ -237,13 +237,13 @@ public class SyncRegressionTests
         string? reason = null;
         provider.AuthorizationDenied += denied => reason = denied;
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await peer.SendAsync(BcrdtSyncProtocol.EncodeAuth(false, "Not you."));
 
         await AssertEventuallyAsync(
             () => reason == "Not you." && transport.State == BcrdtTransportState.Disconnected,
             "the refusal should be reported and the connection closed");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(BcrdtConnectionStatus.Faulted, provider.Status);
     }
 
@@ -254,10 +254,10 @@ public class SyncRegressionTests
         await using BcrdtSyncProvider provider = await CreateProviderAsync(
             new BcrdtDocument(), network.CreateTransport("room"), options: Options(handshakeTimeout: TimeSpan.FromMilliseconds(10)));
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => provider.Status == BcrdtConnectionStatus.Synced, "a lone replica should settle");
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(BcrdtConnectionStatus.Synced, provider.Status);
     }
@@ -268,10 +268,10 @@ public class SyncRegressionTests
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         BcrdtInMemoryTransport transport = network.CreateTransport("room");
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
 
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(
             () => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep1),
@@ -288,7 +288,7 @@ public class SyncRegressionTests
         int synced = 0;
         provider.Synced += () => Interlocked.Increment(ref synced);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => provider.IsSynced && synced == 1, "nobody to be behind means synced");
     }
@@ -300,11 +300,11 @@ public class SyncRegressionTests
         using var docA = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         docA.GetText("body").Insert(0, "already here");
         await using BcrdtSyncProvider providerA = await CreateProviderAsync(docA, network.CreateTransport("room"));
-        await providerA.ConnectAsync();
+        await providerA.ConnectAsync(TestContext.CancellationToken);
 
         using var docB = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using BcrdtSyncProvider providerB = await CreateProviderAsync(docB, network.CreateTransport("room"));
-        await providerB.ConnectAsync();
+        await providerB.ConnectAsync(TestContext.CancellationToken);
 
         // The handshake timeout is minutes: only the reply can have done this.
         await AssertEventuallyAsync(() => providerB.IsSynced, "the reply proves B holds everything A does");
@@ -318,7 +318,7 @@ public class SyncRegressionTests
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         using var elsewhere = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 7 });
         elsewhere.GetText("t").Insert(0, "abc");
@@ -342,19 +342,19 @@ public class SyncRegressionTests
         using var docB = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
         await using BcrdtSyncProvider providerA = await CreateProviderAsync(docA, network.CreateTransport("room"));
         await using BcrdtSyncProvider providerB = await CreateProviderAsync(docB, network.CreateTransport("room"));
-        await providerA.ConnectAsync();
-        await providerB.ConnectAsync();
+        await providerA.ConnectAsync(TestContext.CancellationToken);
+        await providerB.ConnectAsync(TestContext.CancellationToken);
 
         docA.GetText("body").Insert(0, "hello");
         await AssertEventuallyAsync(() => docB.GetText("body").ToString() == "hello", "the insert should arrive");
 
-        await providerA.DisconnectAsync();
+        await providerA.DisconnectAsync(TestContext.CancellationToken);
 
         // Deletions only: the state vector does not move, so it cannot reveal them.
         docA.GetText("body").Delete(1, 3);
         Assert.AreEqual("ho", docA.GetText("body").ToString());
 
-        await providerA.ConnectAsync();
+        await providerA.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => docB.GetText("body").ToString() == "ho", "the offline deletion should be collected");
         BcrdtConvergenceHarness.AssertStructurallyIdentical(docA, docB);
@@ -403,14 +403,14 @@ public class SyncRegressionTests
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AnswerAnnouncementAsync(peer, room);
 
         await AssertEventuallyAsync(() => provider.IsSynced, "the reply and the delta complete the handshake");
         Assert.AreEqual("hello ", doc.GetText("body").ToString());
-        await Task.Delay(QuietPeriod);
-        Assert.IsFalse(peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep2), "the room held every deletion already");
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
+        Assert.DoesNotContain(message => message.Kind == BcrdtSyncMessageKind.SyncStep2, peer.Received, "the room held every deletion already");
     }
 
     [TestMethod]
@@ -428,14 +428,14 @@ public class SyncRegressionTests
         var network = new BcrdtInMemoryNetwork();
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AnswerAnnouncementAsync(peer, room);
 
         await AssertEventuallyAsync(() => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.SyncStep2), "the room lacks a deletion");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         BcrdtSyncMessage[] pushed = [.. peer.Received.Where(message => message.Kind == BcrdtSyncMessageKind.SyncStep2)];
-        Assert.HasCount(1, pushed);
+        Assert.ContainsSingle(pushed);
 
         room.ApplyUpdate(pushed[0].Payload);
         Assert.AreEqual(" ", room.GetText("body").ToString());
@@ -484,7 +484,7 @@ public class SyncRegressionTests
             new BcrdtDocument(), network.CreateTransport("room"), awareness, Options(heartbeat: TimeSpan.FromMilliseconds(20)));
         int errors = 0;
         provider.Error += _ => Interlocked.Increment(ref errors);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         int republishedBefore = Volatile.Read(ref republished);
         Volatile.Write(ref armed, 1);
@@ -509,7 +509,7 @@ public class SyncRegressionTests
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         await using BcrdtSyncProvider provider = await CreateProviderAsync(
             new BcrdtDocument(), network.CreateTransport("room"), awareness, Options(heartbeat: TimeSpan.FromMilliseconds(20)));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => republished >= 3, "several heartbeats should pass");
         Assert.DoesNotContain(BcrdtSyncMessageKind.Ping, kinds);
@@ -525,14 +525,14 @@ public class SyncRegressionTests
 
         await using BcrdtSyncProvider providerA = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
         await using BcrdtSyncProvider providerB = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
-        await providerB.ConnectAsync();
-        await providerA.ConnectAsync();
+        await providerB.ConnectAsync(TestContext.CancellationToken);
+        await providerA.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => Equals(awarenessB.GetField(1, "name"), "Ada"), "B should see Ada");
 
-        await providerA.DisconnectAsync();
+        await providerA.DisconnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => awarenessB.GetField(1, "name") is null, "B should see Ada leave");
 
-        await providerA.ConnectAsync();
+        await providerA.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => Equals(awarenessB.GetField(1, "name"), "Ada"), "Ada should be back, name and all");
         Assert.IsNotNull(awarenessA.LocalState);
     }
@@ -547,8 +547,8 @@ public class SyncRegressionTests
 
         BcrdtSyncProvider providerA = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }), network.CreateTransport("room"), awarenessA);
         await using BcrdtSyncProvider providerB = await CreateProviderAsync(new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 }), network.CreateTransport("room"), awarenessB);
-        await providerB.ConnectAsync();
-        await providerA.ConnectAsync();
+        await providerB.ConnectAsync(TestContext.CancellationToken);
+        await providerA.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => Equals(awarenessB.GetField(1, "name"), "Ada"), "B should see Ada");
 
         await providerA.DisposeAsync();
@@ -570,7 +570,7 @@ public class SyncRegressionTests
 
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), network.CreateTransport("room"), awareness);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await AssertEventuallyAsync(() => peer.Received.Any(message => message.Kind == BcrdtSyncMessageKind.AwarenessQuery), "the handshake should settle");
         peer.Received.Clear();
 
@@ -593,7 +593,7 @@ public class SyncRegressionTests
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         RawPeer peer = await RawPeer.JoinAsync(network, "room");
         await using BcrdtSyncProvider provider = await CreateProviderAsync(doc, network.CreateTransport("room"), awareness, Options(syncAwareness: false));
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         using var remote = new BcrdtAwarenessStore(77);
         remote.SetLocalState(new Dictionary<string, object?> { ["name"] = "Remote" });
@@ -617,7 +617,7 @@ public class SyncRegressionTests
         Parallel.For(0, 20_000, _ => delays.Add(policy.NextDelay(6)));
 
         foreach (TimeSpan delay in delays) Assert.IsInRange(TimeSpan.Zero, policy.MaxDelay, delay);
-        Assert.IsTrue(delays.Distinct().Count() > 1000, "Concurrent use should still jitter.");
+        Assert.IsGreaterThan(1000, delays.Distinct().Count(), "Concurrent use should still jitter.");
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -630,16 +630,16 @@ public class SyncRegressionTests
         var network = new BcrdtInMemoryNetwork();
         BcrdtInMemoryTransport first = network.CreateTransport("room");
         BcrdtInMemoryTransport second = network.CreateTransport("room");
-        await first.ConnectAsync();
-        await second.ConnectAsync();
+        await first.ConnectAsync(TestContext.CancellationToken);
+        await second.ConnectAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, network.RoomCount);
 
-        await first.DisconnectAsync();
+        await first.DisconnectAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, network.RoomCount);
         second.SimulateDrop();
 
         Assert.AreEqual(0, network.RoomCount);
-        await first.ConnectAsync();
+        await first.ConnectAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, network.MemberCount("room"));
     }
 
@@ -717,7 +717,7 @@ public class SyncRegressionTests
 
         WebSocketReceiveResult result = await client
             .ReceiveAsync(new ArraySegment<byte>(new byte[1024]), CancellationToken.None)
-            .WaitAsync(Patience);
+            .WaitAsync(Patience, TestContext.CancellationToken);
 
         Assert.AreEqual(WebSocketMessageType.Close, result.MessageType);
         Assert.AreEqual(WebSocketCloseStatus.MessageTooBig, result.CloseStatus);
@@ -728,7 +728,7 @@ public class SyncRegressionTests
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket("/ws/{documentId}"));
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc")) { MaxMessageSize = 16 * 1024 };
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
 
         using var sender = new ClientWebSocket();
         await sender.ConnectAsync(new Uri(host.WebSocketBase + "/ws/doc"), CancellationToken.None);
@@ -759,12 +759,12 @@ public class SyncRegressionTests
         var clock = Stopwatch.StartNew();
         while (!colleagueReceives.IsCompleted)
         {
-            Assert.IsTrue(clock.Elapsed < Patience, "a client of the same protected endpoint should hear it");
+            Assert.IsLessThan(Patience, clock.Elapsed, "a client of the same protected endpoint should hear it");
             await insider.SendAsync(BcrdtSyncProtocol.EncodeUpdate([42]), WebSocketMessageType.Binary, true, CancellationToken.None);
-            await Task.WhenAny(colleagueReceives, Task.Delay(200));
+            await Task.WhenAny(colleagueReceives, Task.Delay(200, TestContext.CancellationToken));
         }
 
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.IsFalse(outsiderReceives.IsCompleted, "a client of the open endpoint must not hear the protected one");
     }
 
@@ -796,10 +796,10 @@ public class SyncRegressionTests
         var clock = Stopwatch.StartNew();
         while (!victimReceives.IsCompleted)
         {
-            Assert.IsTrue(clock.Elapsed < Patience, "the victim should hear the ordinary update");
+            Assert.IsLessThan(Patience, clock.Elapsed, "the victim should hear the ordinary update");
             await forger.SendAsync(BcrdtSyncProtocol.EncodeAuth(false, "forged"), WebSocketMessageType.Binary, true, CancellationToken.None);
             await forger.SendAsync(BcrdtSyncProtocol.EncodeUpdate([42]), WebSocketMessageType.Binary, true, CancellationToken.None);
-            await Task.WhenAny(victimReceives, Task.Delay(200));
+            await Task.WhenAny(victimReceives, Task.Delay(200, TestContext.CancellationToken));
         }
 
         WebSocketReceiveResult result = await victimReceives;
@@ -829,7 +829,7 @@ public class SyncRegressionTests
             await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/close-at-once"));
             try
             {
-                await transport.ConnectAsync();
+                await transport.ConnectAsync(TestContext.CancellationToken);
             }
             catch (Exception)
             {
@@ -852,27 +852,27 @@ public class SyncRegressionTests
         {
             try
             {
-                while (true) held.Add(await listener.AcceptSocketAsync());
+                while (true) held.Add(await listener.AcceptSocketAsync(TestContext.CancellationToken));
             }
             catch (Exception)
             {
                 // The listener stopped.
             }
-        });
+        }, TestContext.CancellationToken);
         var address = new Uri($"ws://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/ws/doc");
 
         await using (var transport = new BcrdtWebSocketTransport(address) { ConnectTimeout = TimeSpan.FromMilliseconds(300) })
         {
-            await Assert.ThrowsExactlyAsync<TimeoutException>(() => transport.ConnectAsync().AsTask().WaitAsync(Patience));
+            await Assert.ThrowsExactlyAsync<TimeoutException>(() => transport.ConnectAsync(TestContext.CancellationToken).AsTask().WaitAsync(Patience, TestContext.CancellationToken));
             Assert.AreEqual(BcrdtTransportState.Disconnected, transport.State);
         }
 
         var slowTransport = new BcrdtWebSocketTransport(address) { ConnectTimeout = TimeSpan.FromSeconds(30) };
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), slowTransport);
-        Task connecting = provider.ConnectAsync().AsTask();
+        Task connecting = provider.ConnectAsync(TestContext.CancellationToken).AsTask();
 
-        await provider.DisconnectAsync().AsTask().WaitAsync(Patience);
-        await connecting.WaitAsync(Patience);
+        await provider.DisconnectAsync(TestContext.CancellationToken).AsTask().WaitAsync(Patience, TestContext.CancellationToken);
+        await connecting.WaitAsync(Patience, TestContext.CancellationToken);
         Assert.AreEqual(BcrdtConnectionStatus.Disconnected, provider.Status);
 
         await slowTransport.DisposeAsync();
@@ -887,7 +887,7 @@ public class SyncRegressionTests
         // way the receive loop sees an OperationCanceledException nobody asked for.
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket("/ws/{documentId}"));
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
 
         transport.CurrentSocket!.Abort();
 
@@ -908,17 +908,17 @@ public class SyncRegressionTests
 
         await using (var direct = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc")))
         {
-            await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => direct.ConnectAsync().AsTask());
+            await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => direct.ConnectAsync(TestContext.CancellationToken).AsTask());
         }
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => denials == 1 && provider.Status == BcrdtConnectionStatus.Faulted, "the refusal should be final");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(2, requests);
     }
 
@@ -949,10 +949,10 @@ public class SyncRegressionTests
         }));
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/record-close"));
-        await transport.ConnectAsync();
-        await transport.DisconnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
+        await transport.DisconnectAsync(TestContext.CancellationToken);
 
-        Assert.AreEqual(WebSocketCloseStatus.NormalClosure, await observed.Task.WaitAsync(Patience));
+        Assert.AreEqual(WebSocketCloseStatus.NormalClosure, await observed.Task.WaitAsync(Patience, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -963,12 +963,12 @@ public class SyncRegressionTests
             builder => builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(30)));
 
         await using var transport = new BcrdtWebSocketTransport(new Uri(host.WebSocketBase + "/ws/doc"));
-        await transport.ConnectAsync();
+        await transport.ConnectAsync(TestContext.CancellationToken);
 
         var clock = Stopwatch.StartNew();
-        await host.App.StopAsync();
+        await host.App.StopAsync(TestContext.CancellationToken);
 
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(10), $"Shutdown took {clock.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), clock.Elapsed, $"Shutdown took {clock.Elapsed}.");
         await AssertEventuallyAsync(() => transport.State == BcrdtTransportState.Disconnected, "the client should be told, not aborted");
     }
 
@@ -1015,11 +1015,11 @@ public class SyncRegressionTests
         {
             if (message.Length > 100 * 1024) Interlocked.Increment(ref received);
         };
-        await sender.ConnectAsync();
-        await receiver.ConnectAsync();
+        await sender.ConnectAsync(TestContext.CancellationToken);
+        await receiver.ConnectAsync(TestContext.CancellationToken);
 
         // Far beyond SignalR's 32 KB default, before base64 inflates it by another third.
-        await sender.SendAsync(BcrdtSyncProtocol.EncodeSyncStep2(new byte[200 * 1024]));
+        await sender.SendAsync(BcrdtSyncProtocol.EncodeSyncStep2(new byte[200 * 1024]), TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => received == 1, "the large message should be relayed");
         Assert.AreEqual(BcrdtTransportState.Connected, sender.State);
@@ -1036,8 +1036,8 @@ public class SyncRegressionTests
         ConcurrentQueue<BcrdtTransportState> transitions = [];
         transport.StateChanged += change => transitions.Enqueue(change.State);
 
-        await Assert.ThrowsAsync<Exception>(() => transport.ConnectAsync().AsTask().WaitAsync(Patience));
-        await Task.Delay(QuietPeriod);
+        await Assert.ThrowsAsync<Exception>(() => transport.ConnectAsync(TestContext.CancellationToken).AsTask().WaitAsync(Patience, TestContext.CancellationToken));
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
 
         Assert.AreSequenceEqual([BcrdtTransportState.Connecting], transitions);
         Assert.AreEqual(BcrdtTransportState.Disconnected, transport.State);
@@ -1055,11 +1055,11 @@ public class SyncRegressionTests
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => denials == 1, "the refusal should be reported");
         await AssertEventuallyAsync(() => transport.State == BcrdtTransportState.Disconnected, "the connection should be closed");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(BcrdtConnectionStatus.Faulted, provider.Status);
         Assert.AreEqual(1, denials);
     }
@@ -1091,7 +1091,7 @@ public class SyncRegressionTests
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => transport.State == BcrdtTransportState.Connected, "the retry should get through");
         Assert.AreEqual(0, denials);
@@ -1123,10 +1123,10 @@ public class SyncRegressionTests
         await using BcrdtSyncProvider provider = await CreateProviderAsync(new BcrdtDocument(), transport);
         int denials = 0;
         provider.AuthorizationDenied += _ => Interlocked.Increment(ref denials);
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => denials == 1 && provider.Status == BcrdtConnectionStatus.Faulted, "a user who is not signed in is told so");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(3, negotiations, "a bounded number of attempts, then no more");
     }
 
@@ -1152,7 +1152,7 @@ public class SyncRegressionTests
             builder => builder.Services.AddBitBcrdtHub());
 
         await using var transport = new BcrdtSignalRTransport(host.BaseUrl + "/hub", "doc");
-        await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => transport.ConnectAsync().AsTask());
+        await Assert.ThrowsExactlyAsync<BcrdtTransportAuthorizationException>(() => transport.ConnectAsync(TestContext.CancellationToken).AsTask());
         Assert.AreEqual(1, negotiations);
         Assert.AreEqual(BcrdtTransportState.Disconnected, transport.State);
     }
@@ -1175,17 +1175,17 @@ public class SyncRegressionTests
             // The grant answering its own join is the hub talking to it, not the group.
             if (BcrdtSyncProtocol.Decode(message).Kind != BcrdtSyncMessageKind.Auth) Interlocked.Increment(ref intruderReceived);
         });
-        await admin.StartAsync();
-        await intruder.StartAsync();
+        await admin.StartAsync(TestContext.CancellationToken);
+        await intruder.StartAsync(TestContext.CancellationToken);
 
         // The application's own group, and an intruder who joins a "document" of the same name.
-        await hub.Groups.AddToGroupAsync(admin.ConnectionId!, "admins");
-        await intruder.InvokeAsync(BcrdtSignalRTransport.JoinMethod, "admins");
+        await hub.Groups.AddToGroupAsync(admin.ConnectionId!, "admins", TestContext.CancellationToken);
+        await intruder.InvokeAsync(BcrdtSignalRTransport.JoinMethod, "admins", TestContext.CancellationToken);
 
-        await hub.Clients.Group("admins").SendAsync(BcrdtHub.ReceiveMethod, BcrdtSyncProtocol.EncodePing());
+        await hub.Clients.Group("admins").SendAsync(BcrdtHub.ReceiveMethod, BcrdtSyncProtocol.EncodePing(), TestContext.CancellationToken);
 
         await AssertEventuallyAsync(() => adminReceived == 1, "the application's group should receive it");
-        await Task.Delay(QuietPeriod);
+        await Task.Delay(QuietPeriod, TestContext.CancellationToken);
         Assert.AreEqual(0, intruderReceived);
     }
 
@@ -1237,7 +1237,7 @@ public class SyncRegressionTests
         for (int i = 1; i <= 5; i++) peers[0].Doc.GetText("t").Insert(0, new string('x', i * 10));
         network.Step();
 
-        Assert.AreEqual(5, deliveredLengths.Count);
+        Assert.HasCount(5, deliveredLengths);
         Assert.IsTrue(deliveredLengths.SequenceEqual(deliveredLengths.Order()), "later, longer inserts were sent later");
     }
 
@@ -1328,7 +1328,7 @@ public class SyncRegressionTests
         var clock = Stopwatch.StartNew();
         while (!await condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -1558,16 +1558,18 @@ public class SyncRegressionTests
             await App.DisposeAsync();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>A hub that refuses everyone.</summary>
-public sealed class DenyHub : BcrdtHub
+internal sealed class DenyHub : BcrdtHub
 {
     protected override ValueTask<bool> AuthorizeAsync(string documentId) => ValueTask.FromResult(false);
 }
 
 /// <summary>A hub whose connection drops while a join is still in flight.</summary>
-public sealed class DropDuringJoinHub : BcrdtHub
+internal sealed class DropDuringJoinHub : BcrdtHub
 {
     public override async Task Join(string documentId)
     {

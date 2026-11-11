@@ -94,10 +94,10 @@ public class BitColorPickerE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.AreEqual(200, response.Status);
-        StringAssert.Contains(html, "id=\"clp-basic\"");
-        StringAssert.Contains(html, "class=\"bit-clp-rec");
-        StringAssert.Contains(html, "role=\"slider\"");
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"clp-basic\"", html);
+        Assert.Contains("class=\"bit-clp-rec", html);
+        Assert.Contains("role=\"slider\"", html);
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public class BitColorPickerE2ETests : E2ETestBase
 
         await Expect(Out("drag-ends")).ToHaveTextAsync("1");
         var changes = int.Parse((await Out("drag-changes").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(changes >= 3, $"OnColorChange fires on the steps of the drag ({changes}).");
+        Assert.IsGreaterThanOrEqualTo(3, changes, $"OnColorChange fires on the steps of the drag ({changes}).");
 
         // The fields follow the drag.
         await Expect(await FieldAsync("drag", "hex")).ToHaveValueAsync("#000000FF");
@@ -669,7 +669,7 @@ public class BitColorPickerE2ETests : E2ETestBase
         var sixth = (await swatches.Nth(5).BoundingBoxAsync())!;
         var fifth = (await swatches.Nth(4).BoundingBoxAsync())!;
         Assert.AreEqual(first.X, sixth.X, 1, "The sixth swatch starts the second row.");
-        Assert.IsTrue(sixth.Y > first.Y);
+        Assert.IsGreaterThan(first.Y, sixth.Y);
         Assert.AreEqual(first.Y, fifth.Y, 1);
 
         await swatches.Nth(3).FocusAsync();
@@ -890,7 +890,7 @@ public class BitColorPickerE2ETests : E2ETestBase
         await Page.Mouse.UpAsync();
         await Expect(Out("ev-end")).ToHaveTextAsync("2");
         var changes = int.Parse((await Out("ev-color").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(changes >= 3, $"OnColorChange fires on the steps of the slider ({changes}).");
+        Assert.IsGreaterThanOrEqualTo(3, changes, $"OnColorChange fires on the steps of the slider ({changes}).");
 
         // The alpha alone moves no notation the value has room for: OnColorChange still reports it.
         var before = changes;
@@ -1188,7 +1188,7 @@ public class BitColorPickerE2ETests : E2ETestBase
         var styled = Root("sc-style");
         Assert.AreEqual("230px", await StyleOfAsync(styled, "width"));
         Assert.AreEqual("150px", await StyleOfAsync(styled, "height"));
-        Assert.IsTrue((await Area("sc-style").BoundingBoxAsync())!.Height < (await Area("basic").BoundingBoxAsync())!.Height);
+        Assert.IsLessThan((await Area("basic").BoundingBoxAsync())!.Height, (await Area("sc-style").BoundingBoxAsync())!.Height);
         await Expect(Root("sc-class")).ToHaveClassAsync(HasClass("custom-class"));
     }
 
@@ -1327,11 +1327,11 @@ public class BitColorPickerE2ETests : E2ETestBase
         await swatches.Nth(3).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
         await Expect(swatches.Nth(2)).ToBeFocusedAsync();
-        Assert.IsTrue((await swatches.Nth(0).BoundingBoxAsync())!.X > (await swatches.Nth(1).BoundingBoxAsync())!.X, "The swatches run right to left.");
+        Assert.IsGreaterThan((await swatches.Nth(1).BoundingBoxAsync())!.X, (await swatches.Nth(0).BoundingBoxAsync())!.X, "The swatches run right to left.");
 
         // The light gradient and the hue track mirror too.
-        StringAssert.Contains(await StyleOfAsync(Page.Locator("#rtl-explicit .bit-clp-light"), "background-image"), "to left");
-        StringAssert.Contains(await StyleOfAsync(Page.Locator("#ltr .bit-clp-light"), "background-image"), "to right");
+        Assert.Contains("to left", await StyleOfAsync(Page.Locator("#rtl-explicit .bit-clp-light"), "background-image"));
+        Assert.Contains("to right", await StyleOfAsync(Page.Locator("#ltr .bit-clp-light"), "background-image"));
     }
 
     [TestMethod]
@@ -1383,7 +1383,7 @@ public class BitColorPickerE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-collapsed");
         await Expect(root).ToHaveCSSAsync("display", "none");
-        Assert.IsTrue(await TopAsync() < visibleY - 10);
+        Assert.IsLessThan(visibleY - 10, await TopAsync());
 
         await Page.ClickAsync("#btn-visible");
         await Expect(root).ToBeVisibleAsync();

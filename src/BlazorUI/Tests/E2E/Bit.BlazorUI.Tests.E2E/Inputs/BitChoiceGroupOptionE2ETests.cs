@@ -66,7 +66,7 @@ public class BitChoiceGroupOptionE2ETests : E2ETestBase
 
         const string id = "op-params";
         var values = await Page.Locator($"#{id} .bit-chg-inp").EvaluateAllAsync<string[]>("els => els.map(e => e.value)");
-        CollectionAssert.AreEqual(new[] { "A", "B", "C", "D" }, values);
+        Assert.AreSequenceEqual(new[] { "A", "B", "C", "D" }, values);
         await Expect(Text(id, 0)).ToHaveTextAsync("Option A");
 
         await Expect(Item(id, 0)).ToHaveAttributeAsync("title", "Tooltip A");

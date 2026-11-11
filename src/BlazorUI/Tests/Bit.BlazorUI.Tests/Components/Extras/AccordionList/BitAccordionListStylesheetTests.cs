@@ -27,7 +27,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            Assert.Contains($"var({variable}, ", stylesheet, $"{variable} is never read with a fallback.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -43,7 +43,7 @@ public class BitAccordionListStylesheetTests : BunitTestContext
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-AccordionList-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, documented);
+        Assert.AreSequenceEqual(PublicVariables, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -55,21 +55,21 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         // its own corners and its own outline. Everything from the joined block on is read, not the block alone, so the
         // checks below that something is absent also cover a joined rule written after it.
         var start = stylesheet.IndexOf("\n.bit-acl-jnd {", System.StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "The joined list has no rule of its own.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "The joined list has no rule of its own.");
 
         var joined = stylesheet[start..];
 
         foreach (Match rule in Regex.Matches(joined, @"^\s*(>[^{]+)\{", RegexOptions.Multiline))
         {
-            StringAssert.StartsWith(rule.Groups[1].Value.Trim(), "> .bit-acl-itm", $"'{rule.Groups[1].Value.Trim()}' does not start at the item wrapper.");
+            Assert.StartsWith("> .bit-acl-itm", rule.Groups[1].Value.Trim(), $"'{rule.Groups[1].Value.Trim()}' does not start at the item wrapper.");
         }
 
-        StringAssert.Contains(joined, "gap: 0;");
+        Assert.Contains("gap: 0;", joined);
 
         // The shared line is the top border of the lower item alone, so nothing pairs an item with the one above
         // it: no adjacency, and no overlap sized by one item's border for a line that belongs to the other.
-        StringAssert.Contains(joined, "border-block-end-width: 0;");
-        Assert.IsFalse(joined.Contains("margin-block-start"), "The shared line is drawn by overlapping two borders again.");
+        Assert.Contains("border-block-end-width: 0;", joined);
+        Assert.DoesNotContain("margin-block-start", joined, "The shared line is drawn by overlapping two borders again.");
         Assert.IsFalse(Regex.IsMatch(joined, @"\+\s*\.bit-acl-itm"), "A rule pairs adjacent items, which markup between the options breaks.");
     }
 
@@ -80,9 +80,9 @@ public class BitAccordionListStylesheetTests : BunitTestContext
 
         // :has() is the newest of the selectors that could find it; the last item is found with the older
         // `of S` syntax instead, behind a plain :last-child for the engines that predate that too.
-        Assert.IsFalse(stylesheet.Contains(":has("));
-        StringAssert.Contains(stylesheet, "> .bit-acl-itm:last-child > .bit-acd");
-        StringAssert.Contains(stylesheet, "> .bit-acl-itm:nth-last-child(1 of .bit-acl-itm) > .bit-acd");
+        Assert.DoesNotContain(":has(", stylesheet);
+        Assert.Contains("> .bit-acl-itm:last-child > .bit-acd", stylesheet);
+        Assert.Contains("> .bit-acl-itm:nth-last-child(1 of .bit-acl-itm) > .bit-acd", stylesheet);
     }
 
     [TestMethod]
@@ -98,14 +98,14 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         var root = component.Find(".bit-acl");
 
         Assert.IsTrue(root.ClassList.Contains("bit-acl-jnd"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("gap:"));
+        Assert.DoesNotContain("gap:", (root.GetAttribute("style") ?? string.Empty));
 
         component.Render(parameters => parameters.Add(p => p.Joined, false));
 
         root = component.Find(".bit-acl");
 
         Assert.IsFalse(root.ClassList.Contains("bit-acl-jnd"));
-        StringAssert.Contains(root.GetAttribute("style"), "gap:16px");
+        Assert.Contains("gap:16px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -116,13 +116,13 @@ public class BitAccordionListStylesheetTests : BunitTestContext
 
         // The shared line is the top border of the lower item, so an explicit Border - whose class on the item has put
         // its color in --bit-acd-brd - paints it, while the divider variable restyles the line of an unset one.
-        StringAssert.Contains(divider, "border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));");
+        Assert.Contains("border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));", divider);
         var bordered = SourceFiles.GetScssBlock(divider, "&:is(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {");
-        StringAssert.Contains(bordered, "border-block-start-color: var(--bit-acd-brd);");
-        Assert.IsFalse(bordered.Contains("--bit-AccordionList-divider-color"), "The divider variable wins over an explicit Border.");
+        Assert.Contains("border-block-start-color: var(--bit-acd-brd);", bordered);
+        Assert.DoesNotContain("--bit-AccordionList-divider-color", bordered, "The divider variable wins over an explicit Border.");
 
         // The borderless rule comes after it at the same weight, so NoBorder keeps drawing a divider of its own.
-        Assert.IsTrue(divider.IndexOf("&:is(", System.StringComparison.Ordinal) < divider.IndexOf("&.bit-acd-nbd {", System.StringComparison.Ordinal));
+        Assert.IsLessThan(divider.IndexOf("&.bit-acd-nbd {", System.StringComparison.Ordinal), divider.IndexOf("&:is(", System.StringComparison.Ordinal));
     }
 
     private static string ReadStylesheet()

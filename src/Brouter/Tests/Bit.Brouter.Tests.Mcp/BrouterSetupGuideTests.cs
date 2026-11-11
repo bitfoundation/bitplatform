@@ -1,5 +1,7 @@
 ﻿using Bit.Brouter.Demo.Server.Services;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Brouter.Tests.Mcp;
 
 /// <summary>
@@ -71,9 +73,9 @@ public class BrouterSetupGuideTests
     {
         var guide = BrouterSetupGuide.Get("wasm")!;
 
-        StringAssert.Contains(guide, "```csharp");
-        StringAssert.Contains(guide, "```razor");
-        StringAssert.Contains(guide, "```xml", "The sample's .csproj is quoted without a language, so nobody can tell what it is.");
+        Assert.Contains("```csharp", guide);
+        Assert.Contains("```razor", guide);
+        Assert.Contains("```xml", guide, "The sample's .csproj is quoted without a language, so nobody can tell what it is.");
     }
 
     [TestMethod]
@@ -92,10 +94,10 @@ public class BrouterSetupGuideTests
     {
         // Registering in one of a Web App's two containers is the single most common setup bug, and
         // it fails during prerendering rather than at compile time.
-        StringAssert.Contains(BrouterSetupGuide.Get("wasm")!, "BOTH");
-        StringAssert.Contains(BrouterSetupGuide.Get("auto")!, "both containers");
-        StringAssert.Contains(BrouterSetupGuide.Get("server")!, "single (server) container");
-        StringAssert.Contains(BrouterSetupGuide.Get("standalone-wasm")!, "One project, one DI container");
-        StringAssert.Contains(BrouterSetupGuide.Get("hybrid")!, "One app, one DI container");
+        Assert.Contains("BOTH", BrouterSetupGuide.Get("wasm")!);
+        Assert.Contains("both containers", BrouterSetupGuide.Get("auto")!);
+        Assert.Contains("single (server) container", BrouterSetupGuide.Get("server")!);
+        Assert.Contains("One project, one DI container", BrouterSetupGuide.Get("standalone-wasm")!);
+        Assert.Contains("One app, one DI container", BrouterSetupGuide.Get("hybrid")!);
     }
 }

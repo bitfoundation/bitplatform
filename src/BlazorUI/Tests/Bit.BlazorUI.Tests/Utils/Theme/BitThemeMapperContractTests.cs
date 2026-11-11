@@ -29,7 +29,7 @@ public sealed class BitThemeMapperContractTests
         // A plain motion token is an alias of its unreduced -full token, which the reduced-motion query collapses and
         // ForceAnimation restores, so BitTheme sets it through the -full one it aliases and never itself.
         var missing = expectedKeys.Where(k => !mapped.ContainsKey(k) && !(k.StartsWith("--bit-mot-", StringComparison.Ordinal) && mapped.ContainsKey($"{k}-full"))).ToArray();
-        CollectionAssert.AreEqual(Array.Empty<string>(), missing, $"Mapper missing keys referenced in theme-variables.scss: {string.Join(", ", missing)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), missing, $"Mapper missing keys referenced in theme-variables.scss: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public sealed class BitThemeMapperContractTests
             .Where(key => !Regex.IsMatch(scss, Regex.Escape(key) + "(?![a-z0-9-])"))
             .ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), dead, $"Mapper emits dead tokens: {string.Join(", ", dead)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), dead, $"Mapper emits dead tokens: {string.Join(", ", dead)}");
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public sealed class BitThemeMapperContractTests
 
         Assert.IsFalse(json.Contains("\"secondary\"", StringComparison.Ordinal));
         Assert.IsTrue(json.Contains("\"main\"", StringComparison.Ordinal));
-        Assert.IsTrue(json.Length < 500, "Sparse theme JSON should stay compact.");
+        Assert.IsLessThan(500, json.Length, "Sparse theme JSON should stay compact.");
     }
 
     [TestMethod]

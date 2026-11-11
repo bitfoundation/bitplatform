@@ -90,7 +90,7 @@ public class BitFileUploadE2ETests : E2ETestBase
     {
         var deadline = DateTime.UtcNow.AddSeconds(30);
         while (requests.Count < count && DateTime.UtcNow < deadline) await NextFramesAsync();
-        Assert.AreEqual(count, requests.Count, "Not the expected number of requests.");
+        Assert.HasCount(count, requests, "Not the expected number of requests.");
     }
 
     /// <summary>
@@ -203,10 +203,10 @@ public class BitFileUploadE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"upl-basic\"");
-        StringAssert.Contains(html, "bit-upl-lbl");
-        StringAssert.Contains(html, "Select or drag and drop files");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"upl-basic\"", html);
+        Assert.Contains("bit-upl-lbl", html);
+        Assert.Contains("Select or drag and drop files", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Route);
         await Expect(Browse("upl-basic")).ToBeVisibleAsync();
@@ -239,7 +239,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         var before = Px(await CssAsync(Browse("upl-runtime"), "min-height"));
         await Page.ClickAsync("#btn-runtime-size");
         await Expect(root).ToHaveClassAsync(HasClass("bit-upl-lg"));
-        Assert.IsTrue(Px(await CssAsync(Browse("upl-runtime"), "min-height")) > before);
+        Assert.IsGreaterThan(before, Px(await CssAsync(Browse("upl-runtime"), "min-height")));
         await Page.ClickAsync("#btn-runtime-droparea");
         await Expect(root).ToHaveClassAsync(HasClass("bit-upl-dra"));
         await Expect(root.Locator(".bit-upl-lic")).ToHaveClassAsync(HasClass("bit-icon--CloudUpload"));
@@ -267,7 +267,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Expect(item.Locator(".bit-upl-fs")).ToHaveTextAsync("0 bytes/5 bytes");
         await Expect(item.Locator(".bit-upl-pct")).ToHaveTextAsync("0%");
         await ExpectTextAsync("basic-value", "a.txt");
-        Assert.AreEqual(0, requests.Count, "A pick uploaded nothing by itself.");
+        Assert.IsEmpty(requests, "A pick uploaded nothing by itself.");
 
         var upload = Action("upl-basic", "a.txt", "Upload");
         await Expect(upload).ToHaveAttributeAsync("aria-label", "Upload a.txt");
@@ -280,7 +280,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Expect(item.Locator(".bit-upl-fs")).ToHaveTextAsync("5 bytes/5 bytes");
         await Expect(item.Locator("button.bit-upl-usi")).ToHaveCountAsync(0);
         await ExpectTextAsync("basic-complete", "a.txt:Completed:200");
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         Assert.AreEqual("POST", requests.First().Method);
     }
 
@@ -372,8 +372,8 @@ public class BitFileUploadE2ETests : E2ETestBase
         var startButton = await Browse("upl-label-icon").BoundingBoxAsync();
         var endIcon = await Root("upl-label-end").Locator(".bit-upl-lic").BoundingBoxAsync();
         var endButton = await Browse("upl-label-end").BoundingBoxAsync();
-        Assert.IsTrue(startIcon!.X - startButton!.X < endIcon!.X - endButton!.X, "The icon is not moved to the end.");
-        Assert.IsTrue(endIcon.X + endIcon.Width > endButton.X + endButton.Width / 2, "The End icon is not in the end half.");
+        Assert.IsLessThan(endIcon!.X - endButton!.X, startIcon!.X - startButton!.X, "The icon is not moved to the end.");
+        Assert.IsGreaterThan(endButton.X + endButton.Width / 2, endIcon.X + endIcon.Width, "The End icon is not in the end half.");
 
         await Expect(Root("upl-label-end").Locator(".bit-upl-dsc .dsc-tpl")).ToHaveTextAsync("Images only");
         await Expect(Root("upl-label-external").Locator(".bit-upl-lic")).ToHaveClassAsync(new Regex(@"(^|\s)fa-solid\s+fa-upload(\s|$)"));
@@ -392,7 +392,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Expect(root).ToHaveClassAsync(HasClass("bit-upl-dra"));
         await Expect(root.Locator(".bit-upl-lic")).ToHaveClassAsync(HasClass("bit-icon--CloudUpload"));
         await Expect(Browse("upl-drop-area")).ToHaveCSSAsync("border-top-style", "dashed");
-        Assert.IsTrue((await Browse("upl-drop-area").BoundingBoxAsync())!.Height >= 127.5);
+        Assert.IsGreaterThanOrEqualTo(127.5, (await Browse("upl-drop-area").BoundingBoxAsync())!.Height);
 
         await DragEnterAsync(root, "text/plain", "x.txt");
         await Expect(root).ToHaveClassAsync(HasClass("bit-upl-drg"));
@@ -544,8 +544,8 @@ public class BitFileUploadE2ETests : E2ETestBase
         {
             var a = Path.Combine(folder, "a.txt");
             var b = Path.Combine(folder, "b.txt");
-            await File.WriteAllTextAsync(a, "aaa");
-            await File.WriteAllTextAsync(b, "bbb");
+            await File.WriteAllTextAsync(a, "aaa", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(b, "bbb", TestContext.CancellationToken);
 
             await FileField("upl-append").SetInputFilesAsync(a);
             await FileField("upl-append").SetInputFilesAsync(b);
@@ -637,8 +637,8 @@ public class BitFileUploadE2ETests : E2ETestBase
         var folder = TempDirectory();
         try
         {
-            await File.WriteAllTextAsync(Path.Combine(folder, "one.txt"), "1");
-            await File.WriteAllTextAsync(Path.Combine(folder, "two.txt"), "2");
+            await File.WriteAllTextAsync(Path.Combine(folder, "one.txt"), "1", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(folder, "two.txt"), "2", TestContext.CancellationToken);
             await FileField("upl-directory").SetInputFilesAsync(folder);
             await Expect(Items("upl-directory")).ToHaveCountAsync(2);
             await Expect(Page.Locator("#directory-files")).ToHaveTextAsync(new Regex("one\\.txt"));
@@ -691,10 +691,10 @@ public class BitFileUploadE2ETests : E2ETestBase
         // After a selection OnFilesChange carries the one file whose status moved.
         await Action("upl-events", "ok.bin", "Upload").ClickAsync();
         await Expect(Page.Locator("#events-log")).ToHaveTextAsync("change:2;invalid:big.bin;change:1;uploading:ok.bin;change:1;complete:ok.bin;all:2");
-        Assert.IsTrue(int.Parse(await Page.Locator("#progress-count").InnerTextAsync()) > 0, "OnProgress never fired.");
+        Assert.IsGreaterThan(0, int.Parse(await Page.Locator("#progress-count").InnerTextAsync()), "OnProgress never fired.");
 
         Assert.AreEqual("ok.bin", await UploadSpyAsync("() => window.__uploads[0].headers['x-per-file']"));
-        StringAssert.Contains(await UploadSpyAsync("() => window.__uploads[0].fields.join('&')"), "perfile=ok.bin");
+        Assert.Contains("perfile=ok.bin", await UploadSpyAsync("() => window.__uploads[0].fields.join('&')"));
     }
 
     // ---------------------------------------------------------------- chunked
@@ -718,7 +718,7 @@ public class BitFileUploadE2ETests : E2ETestBase
             ranges.Add($"{headers["content-range"]}|{headers["bit_chunk_from"]}|{headers["bit_chunk_to"]}|{headers["bit_file_size"]}");
         }
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "bytes 0-999/3500|0|1000|3500",
             "bytes 1000-1999/3500|1000|2000|3500",
@@ -738,7 +738,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Action("upl-chunked-auto", "big.bin", "Upload").ClickAsync();
         await ExpectTextAsync("chunk-auto-done", "big.bin");
 
-        Assert.AreEqual(2, requests.Count, "A 700 KB file at 512 KB a chunk is two requests.");
+        Assert.HasCount(2, requests, "A 700 KB file at 512 KB a chunk is two requests.");
         var first = await requests.First().AllHeadersAsync();
         Assert.AreEqual($"bytes 0-{512 * 1024 - 1}/{700 * 1024}", first["content-range"]);
     }
@@ -779,11 +779,11 @@ public class BitFileUploadE2ETests : E2ETestBase
 
         var request = requests.Single();
         Assert.AreEqual("POST", request.Method);
-        StringAssert.Contains(request.Url, "qs1=qsValue1");
+        Assert.Contains("qs1=qsValue1", request.Url);
         Assert.AreEqual("value1", (await request.AllHeadersAsync())["header1"]);
         var fields = await UploadSpyAsync("() => window.__uploads[0].fields.join('&')");
-        StringAssert.Contains(fields, "folder=invoices");
-        StringAssert.Contains(fields, "document=file:invoice.txt");
+        Assert.Contains("folder=invoices", fields);
+        Assert.Contains("document=file:invoice.txt", fields);
         Assert.AreEqual("POST", await UploadSpyAsync("() => window.__uploads[0].method"));
     }
 
@@ -797,8 +797,8 @@ public class BitFileUploadE2ETests : E2ETestBase
         await ExpectTextAsync("providers-done", "p.txt");
 
         var request = requests.Single();
-        StringAssert.Contains(request.Url, "/api/upload?");
-        StringAssert.Contains(request.Url, "sig=signed");
+        Assert.Contains("/api/upload?", request.Url);
+        Assert.Contains("sig=signed", request.Url);
         Assert.IsFalse(request.Url.Contains("upload-fail", StringComparison.Ordinal), "The UploadUrlProvider was not used.");
         Assert.AreEqual("Bearer token-1", (await request.AllHeadersAsync())["authorization"]);
     }
@@ -850,7 +850,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         var requests = Capture("/api/upload-fail");
         await SelectAsync("upl-auto-retry", Text("a.txt"));
         await ExpectTextAsync("auto-retry-failed", "a.txt");
-        Assert.AreEqual(3, requests.Count, "One attempt and two automatic retries.");
+        Assert.HasCount(3, requests, "One attempt and two automatic retries.");
 
         await SelectAsync("upl-retry-provider", Text("p.txt"));
         await ExpectTextAsync("provider-failed", "1,2");
@@ -868,7 +868,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         await SelectAsync("upl-no-retry", Text("n.txt"));
         await ExpectTextAsync("no-retry-failed", "n.txt");
         await NextFramesAsync();
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
     }
 
     // ---------------------------------------------------------------- concurrency & batch
@@ -1213,7 +1213,7 @@ public class BitFileUploadE2ETests : E2ETestBase
         }
 
         Assert.AreEqual(unset, colors["pri"], "Unset is not primary.");
-        Assert.IsTrue(colors.Values.Distinct().Count() >= 12, string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
+        Assert.IsGreaterThanOrEqualTo(12, colors.Values.Distinct().Count(), string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
     }
 
     [TestMethod]
@@ -1248,8 +1248,8 @@ public class BitFileUploadE2ETests : E2ETestBase
 
         await Expect(Root($"upl-size-{smaller}")).ToHaveClassAsync(HasClass($"bit-upl-{smaller}"));
         await Expect(Root($"upl-size-{larger}")).ToHaveClassAsync(HasClass($"bit-upl-{larger}"));
-        Assert.IsTrue(Px(await CssAsync(Browse($"upl-size-{larger}"), "min-height")) > Px(await CssAsync(Browse($"upl-size-{smaller}"), "min-height")), "height");
-        Assert.IsTrue(Px(await CssAsync(Browse($"upl-size-{larger}"), "font-size")) > Px(await CssAsync(Browse($"upl-size-{smaller}"), "font-size")), "font size");
+        Assert.IsGreaterThan(Px(await CssAsync(Browse($"upl-size-{smaller}"), "min-height")), Px(await CssAsync(Browse($"upl-size-{larger}"), "min-height")), "height");
+        Assert.IsGreaterThan(Px(await CssAsync(Browse($"upl-size-{smaller}"), "font-size")), Px(await CssAsync(Browse($"upl-size-{larger}"), "font-size")), "font size");
     }
 
     // ---------------------------------------------------------------- style & class
@@ -1342,7 +1342,7 @@ public class BitFileUploadE2ETests : E2ETestBase
 
         var root = Root("upl-vars");
         var button = Browse("upl-vars");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Width <= 320.5);
+        Assert.IsLessThanOrEqualTo(320.5, (await root.BoundingBoxAsync())!.Width);
         await Expect(button).ToHaveCSSAsync("background-color", "rgb(218, 165, 32)");
         await Expect(button).ToHaveCSSAsync("color", "rgb(1, 2, 3)");
         await Expect(button).ToHaveCSSAsync("border-top-color", "rgb(4, 5, 6)");
@@ -1400,18 +1400,18 @@ public class BitFileUploadE2ETests : E2ETestBase
         await Expect(Root("upl-rtl")).ToHaveAttributeAsync("dir", "rtl");
         var icon = await Root("upl-rtl").Locator(".bit-upl-lic").BoundingBoxAsync();
         var button = await Browse("upl-rtl").BoundingBoxAsync();
-        Assert.IsTrue(icon!.X + icon.Width / 2 > button!.X + button.Width / 2, "The label icon is not at the start (right) of the button.");
+        Assert.IsGreaterThan(button!.X + button.Width / 2, icon!.X + icon.Width / 2, "The label icon is not at the start (right) of the button.");
 
         await SelectAsync("upl-rtl", Text("a.txt"));
         var name = await Item("upl-rtl", "a.txt").Locator(".bit-upl-fn").BoundingBoxAsync();
         var action = await Action("upl-rtl", "a.txt", "Upload").BoundingBoxAsync();
-        Assert.IsTrue(name!.X > action!.X, "The row is not mirrored.");
+        Assert.IsGreaterThan(action!.X, name!.X, "The row is not mirrored.");
 
         await Expect(Root("upl-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         await SelectAsync("upl-rtl-inherited", Text("b.txt"));
         var inheritedName = await Item("upl-rtl-inherited", "b.txt").Locator(".bit-upl-fn").BoundingBoxAsync();
         var inheritedAction = await Action("upl-rtl-inherited", "b.txt", "Upload").BoundingBoxAsync();
-        Assert.IsTrue(inheritedName!.X > inheritedAction!.X, "The inherited direction does not mirror the row.");
+        Assert.IsGreaterThan(inheritedAction!.X, inheritedName!.X, "The inherited direction does not mirror the row.");
     }
 
     [TestMethod]
@@ -1427,7 +1427,7 @@ public class BitFileUploadE2ETests : E2ETestBase
 
         await Expect(button).Not.ToHaveCSSAsync("transition-duration", full);
         var reduced = (await CssAsync(button, "transition-duration")).Split(',')[0].Trim();
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture) < 0.001, reduced);
+        Assert.IsLessThan(0.001, double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture), reduced);
 
         await Expect(Root("upl-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         Assert.AreEqual(full, await CssAsync(Browse("upl-motion-forced"), "transition-duration"));

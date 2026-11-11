@@ -7,14 +7,7 @@ using Boilerplate.Server.Api.Features.Identity.Resources;
 
 namespace Boilerplate.Tests.Infrastructure.Services;
 
-/// <summary>
-/// Replaces <see cref="IdentityEmailService"/> in tests. Every e-mail method is overridden to capture what a test needs
-/// (recipient, token, link) synchronously into a per-server <see cref="EmailCaptureStore"/>, instead of rendering the
-/// e-mail and enqueuing a Hangfire delivery job. This is both simpler - the token and link are direct method arguments,
-/// so there is no e-mail body to parse - and reliable under parallel test load, where the in-memory Hangfire storage can
-/// starve and never run the delivery job. Not calling <c>base</c> also means no e-mail ever reaches SMTP.
-/// </summary>
-public partial class TestIdentityEmailService : IdentityEmailService
+internal partial class TestIdentityEmailService : IdentityEmailService
 {
     private readonly EmailCaptureStore captureStore;
 

@@ -180,7 +180,8 @@ public abstract class BdndTest
     {
         var page = await NewPageAsync(hasTouch);
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} answered {response?.Status}");
         await WaitForInteractiveAsync(page.MainFrame);
         if (bdnd) await WaitForBdndAsync(page.MainFrame);
         return page;
@@ -450,7 +451,7 @@ public abstract class BdndTest
     }
 
     protected static void AssertNear(Point expected, Point actual, double tolerance, string what) =>
-        Assert.IsTrue(expected.DistanceTo(actual) <= tolerance,
+        Assert.IsLessThanOrEqualTo(tolerance, expected.DistanceTo(actual),
             $"{what}: expected {expected} (within {tolerance:0.##}px) but was {actual}");
 
     /// <summary>Everything a page reports going wrong while a test drives it.</summary>

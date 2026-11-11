@@ -20,7 +20,7 @@ public class BitSnackBarParamsTests : BunitTestContext
 
         var snackBars = component.FindComponents<BitSnackBar>();
 
-        Assert.AreEqual(2, snackBars.Count);
+        Assert.HasCount(2, snackBars);
 
         await snackBars[0].Instance.Show("first");
         await snackBars[1].Instance.Show("second");
@@ -31,18 +31,18 @@ public class BitSnackBarParamsTests : BunitTestContext
         Assert.IsTrue(first.ClassList.Contains("cascaded-root"));
 
         var firstStyle = first.GetAttribute("style")!;
-        StringAssert.Contains(firstStyle, "margin: 1px;");
-        StringAssert.Contains(firstStyle, "--bit-snb-off:2rem");
-        StringAssert.Contains(firstStyle, "--bit-snb-max-w:20rem");
-        StringAssert.Contains(firstStyle, "--bit-snb-dur-full:0ms");
+        Assert.Contains("margin: 1px;", firstStyle);
+        Assert.Contains("--bit-snb-off:2rem", firstStyle);
+        Assert.Contains("--bit-snb-max-w:20rem", firstStyle);
+        Assert.Contains("--bit-snb-dur-full:0ms", firstStyle);
 
         var firstItem = snackBars[0].Find(".bit-snb-itm");
         foreach (var cls in new[] { "bit-snb-lg", "bit-snb-otl", "cascaded-item" })
         {
             Assert.IsTrue(firstItem.ClassList.Contains(cls), cls);
         }
-        Assert.AreEqual(1, snackBars[0].FindAll(".bit-snb-ico").Count);
-        Assert.AreEqual(1, snackBars[0].FindAll(".bit-snb-prb").Count);
+        Assert.ContainsSingle(snackBars[0].FindAll(".bit-snb-ico"));
+        Assert.ContainsSingle(snackBars[0].FindAll(".bit-snb-prb"));
         Assert.AreEqual("Dismiss", snackBars[0].Find(".bit-snb-cbt").GetAttribute("aria-label"));
 
         // The second one sets its own position, size and label, which the cascading parameters must not overwrite.
@@ -76,9 +76,9 @@ public class BitSnackBarParamsTests : BunitTestContext
         await snackBar.Instance.Show("second");
 
         // A cascaded MaxItems and Skip keep the second one out, and a cascaded Persistent takes the dismiss button away.
-        Assert.AreEqual(1, snackBar.Instance.Items.Count);
+        Assert.ContainsSingle(snackBar.Instance.Items);
         Assert.AreEqual("first", snackBar.Instance.Items[0].Title);
-        Assert.AreEqual(0, snackBar.FindAll(".bit-snb-cbt").Count);
+        Assert.IsEmpty(snackBar.FindAll(".bit-snb-cbt"));
     }
 
     [TestMethod]
@@ -93,18 +93,18 @@ public class BitSnackBarParamsTests : BunitTestContext
                               .Select(m => m.Groups[1].Value)
                               .ToArray();
 
-        Assert.IsTrue(documented.Length > 0);
+        Assert.IsNotEmpty(documented);
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name},", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name},", stylesheet, $"{name} is documented but never read with a fallback.");
         }
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-SnackBar-[\w-]+),").Select(m => m.Groups[1].Value).Distinct();
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented.");
+            Assert.Contains(name, documented, $"{name} is read but not documented.");
         }
     }
 
@@ -125,7 +125,7 @@ public class BitSnackBarParamsTests : BunitTestContext
                                          .Where(n => paramsProperties.Contains(n) is false)
                                          .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]

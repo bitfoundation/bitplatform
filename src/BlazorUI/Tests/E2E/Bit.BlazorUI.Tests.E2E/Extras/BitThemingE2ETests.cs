@@ -36,9 +36,9 @@ public class BitThemingE2ETests : E2ETestBase
 
         var root = Regex.Match(html, "<div[^>]*id=\"provider-root\"[^>]*>");
         Assert.IsTrue(root.Success, "The provider's element is not in the prerendered HTML.");
-        StringAssert.Contains(root.Value, "display:contents");
-        StringAssert.Contains(root.Value, "--bit-clr-pri:#8A2BE2");
-        StringAssert.Contains(root.Value, "bit-theme-overlay=");
+        Assert.Contains("display:contents", root.Value);
+        Assert.Contains("--bit-clr-pri:#8A2BE2", root.Value);
+        Assert.Contains("bit-theme-overlay=", root.Value);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#provider-button")).ToHaveCSSAsync("background-color", Purple);
@@ -204,7 +204,7 @@ public class BitThemingE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#outside-surface")).Not.ToHaveCSSAsync("background-color", White);
         var background = await ComputedStyleAsync("#outside-surface", "background-color");
-        Assert.IsTrue(Luminance(background) < 0.2, $"The seeded dark theme left a light surface ({background}).");
+        Assert.IsLessThan(0.2, Luminance(background), $"The seeded dark theme left a light surface ({background}).");
 
         await Page.Locator("#btn-clear-body").ClickAsync();
         await Expect(Page.Locator("#outside-surface")).ToHaveCSSAsync("background-color", White);
@@ -347,8 +347,8 @@ public class BitThemingE2ETests : E2ETestBase
         await Expect(Page.Locator("#notified-old")).ToHaveTextAsync("light");
 
         var events = await Page.EvaluateAsync<string[]>("() => window.__themeEvents");
-        Assert.AreEqual(1, events.Length);
-        StringAssert.Contains(events[0], "dark");
+        Assert.ContainsSingle(events);
+        Assert.Contains("dark", events[0]);
 
         Assert.AreEqual("dark", await Page.EvaluateAsync<string>("() => BitBlazorUI.Theme.get()"));
     }

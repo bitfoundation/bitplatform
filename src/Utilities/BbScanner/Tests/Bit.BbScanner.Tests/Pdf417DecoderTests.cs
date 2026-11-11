@@ -124,7 +124,7 @@ public class Pdf417DecoderTests
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
         Assert.AreEqual(4, result.Payload.Columns);
-        Assert.AreEqual(4, result.Points.Length);
+        Assert.HasCount(4, result.Points);
     }
 
     [TestMethod]
@@ -183,7 +183,7 @@ public class Pdf417DecoderTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
-        Assert.IsTrue(result.Payload.ErrorsCorrected >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, result.Payload.ErrorsCorrected);
     }
 
     [TestMethod]
@@ -202,7 +202,7 @@ public class Pdf417DecoderTests
     public void EciIsAppliedToByteCompactedText()
     {
         var utf8 = System.Text.Encoding.UTF8.GetBytes("héllo");
-        Assert.AreEqual(6, utf8.Length);
+        Assert.HasCount(6, utf8);
 
         // One full group of six bytes, as five base 900 codewords.
         long value = 0;
@@ -280,9 +280,9 @@ public class Pdf417DecoderTests
                 Assert.IsTrue(seen.Add(pattern), "Every codeword of a cluster has a pattern of its own.");
 
                 // Seventeen modules, starting with a bar and ending with a space.
-                Assert.IsTrue(pattern < 1 << BbPdf417SymbolTable.ModulesPerCodeword);
-                Assert.IsTrue((pattern & (1 << 16)) != 0, "A symbol character starts with a bar.");
-                Assert.IsTrue((pattern & 1) == 0, "A symbol character ends with a space.");
+                Assert.IsLessThan(1 << BbPdf417SymbolTable.ModulesPerCodeword, pattern);
+                Assert.AreNotEqual(0, pattern & (1 << 16), "A symbol character starts with a bar.");
+                Assert.AreEqual(0, pattern & 1, "A symbol character ends with a space.");
 
                 // Four bars and four spaces of one to six modules each, in the cluster it is listed under.
                 var elements = 0;
@@ -415,8 +415,10 @@ public class Pdf417DecoderTests
 
         using var bits = new BbHybridBinarizer().GetBlackMatrix(rotated.View)!;
         var result = new BbPdf417Reader().Decode(bits, new BbMatrixDecodeOptions(TryHarder: false, AllowInverted: true));
+        var expectedValue = Content;
+        var actualValue = result?.Payload.Text;
 
-        Assert.AreEqual(Content, result?.Payload.Text);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -480,7 +482,7 @@ public class Pdf417DecoderTests
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
         var values = decoder.DecodeAll(frame.View, maxSymbols: 2, suppressDuplicates: false).Select(r => r.Text).Order().ToList();
 
-        CollectionAssert.AreEqual(new[] { "LEFT SYMBOL 0001", "RIGHT SYMBOL 0002" }, values);
+        Assert.AreSequenceEqual(new[] { "LEFT SYMBOL 0001", "RIGHT SYMBOL 0002" }, values);
     }
     [TestMethod]
     public void ByteCompactionRoundTripsEveryLength()

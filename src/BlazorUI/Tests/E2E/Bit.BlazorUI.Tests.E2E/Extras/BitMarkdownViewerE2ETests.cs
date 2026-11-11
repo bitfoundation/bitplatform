@@ -27,9 +27,9 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.AreEqual(200, response.Status);
-        StringAssert.Contains(html, "<div id=\"mdv-basic\" class=\"bit-mdv\"><h1>Heading one</h1>");
-        StringAssert.Contains(html, "<del>strikethrough</del>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"mdv-basic\" class=\"bit-mdv\"><h1>Heading one</h1>", html);
+        Assert.Contains("<del>strikethrough</del>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#mdv-basic h1")).ToHaveTextAsync("Heading one");
@@ -216,7 +216,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         await Expect(refs).ToHaveTextAsync(["1", "1", "2"]);
 
         var firstHref = await refs.Nth(0).GetAttributeAsync("href");
-        StringAssert.Matches(firstHref, new Regex("^/e2e/markdown-viewer#[a-z0-9]+-fn-1$"));
+        Assert.MatchesRegex(new Regex("^/e2e/markdown-viewer#[a-z0-9]+-fn-1$"), firstHref);
         var scope = Regex.Match(firstHref!, "#([a-z0-9]+)-fn-1").Groups[1].Value;
 
         var section = root.Locator("section.footnotes");
@@ -247,7 +247,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
 
         // A second viewer with footnotes on the page uses another scope.
         var localizedHref = await Page.Locator("#mdv-localized sup.footnote-ref a").GetAttributeAsync("href");
-        Assert.IsFalse(localizedHref!.Contains($"#{scope}-"), "two viewers share footnote ids");
+        Assert.DoesNotContain($"#{scope}-", localizedHref!, "two viewers share footnote ids");
     }
 
     [TestMethod]
@@ -273,7 +273,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         Assert.AreEqual("2px", await alert.EvaluateAsync<string>("e => getComputedStyle(e).borderLeftWidth"));
 
         var others = await Page.Locator("#mdv-github .markdown-alert").EvaluateAllAsync<string[]>("els => els.map(e => getComputedStyle(e).borderLeftColor)");
-        Assert.AreEqual(5, others.Distinct().Count(), "the five kinds have five colors");
+        Assert.HasCount(5, others.Distinct(), "the five kinds have five colors");
     }
 
     [TestMethod]
@@ -323,7 +323,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
 
         var softHeight = (await Page.Locator("#mdv-soft p").BoundingBoxAsync())!.Height;
         var hardHeight = (await Page.Locator("#mdv-hard p").BoundingBoxAsync())!.Height;
-        Assert.IsTrue(hardHeight > softHeight * 1.5, "the hard-broken paragraph takes two lines");
+        Assert.IsGreaterThan(softHeight * 1.5, hardHeight, "the hard-broken paragraph takes two lines");
     }
 
     [TestMethod]
@@ -449,7 +449,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         {
             await Expect(cross).ToHaveAttributeAsync("src", "https://images.e2e-cross-origin.test/remote.png");
             await Expect(cross).ToHaveJSPropertyAsync("naturalWidth", 1);
-            Assert.IsTrue(crossOriginRequests > 0);
+            Assert.IsGreaterThan(0, crossOriginRequests);
         }
         else
         {
@@ -495,7 +495,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         var unlimited = await Page.Locator("#mdv-depth-default blockquote").CountAsync();
 
         Assert.AreEqual(6, unlimited);
-        Assert.IsTrue(limited < unlimited, $"MaxNestingDepth=3 still nested {limited} quotes");
+        Assert.IsLessThan(unlimited, limited, $"MaxNestingDepth=3 still nested {limited} quotes");
         await Expect(Page.Locator("#mdv-depth p")).ToContainTextAsync("> deep quote");
         await Expect(Page.Locator("#mdv-depth-default p")).ToHaveTextAsync("deep quote");
     }
@@ -512,7 +512,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
 
         // ToPlainText keeps what the document says, without markup or destinations.
         var excerpt = await Page.Locator("#toc-excerpt").TextContentAsync();
-        StringAssert.Contains(excerpt, "See Installation first and elsewhere.");
+        Assert.Contains("See Installation first and elsewhere.", excerpt!);
         Assert.IsFalse(excerpt!.Contains('#'), "the excerpt carries a destination or a permalink");
     }
 
@@ -665,8 +665,8 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         // The viewer sits in the host's line rather than a line of its own.
         var hostBox = await Page.Locator("#inline-host").BoundingBoxAsync();
         var viewerBox = await inline.BoundingBoxAsync();
-        Assert.IsTrue(hostBox!.Height < viewerBox!.Height * 1.8, "the inline viewer broke the host's line");
-        Assert.IsTrue(viewerBox.X > hostBox.X + 50, "the inline viewer starts a line of its own");
+        Assert.IsLessThan(viewerBox!.Height * 1.8, hostBox!.Height, "the inline viewer broke the host's line");
+        Assert.IsGreaterThan(hostBox.X + 50, viewerBox.X, "the inline viewer starts a line of its own");
 
         var withList = Page.Locator("#mdv-inline-list");
         Assert.AreEqual("DIV", await withList.EvaluateAsync<string>("e => e.tagName"));
@@ -938,9 +938,9 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
             Assert.AreNotEqual(expected, await ComputedStyleAsync(defaultSelector, property), $"{defaultSelector} {property} already had the value");
         }
 
-        StringAssert.Contains(await ComputedStyleAsync(v, "font-family"), "Georgia");
-        StringAssert.Contains(await ComputedStyleAsync($"{v} h2", "font-family"), "Courier New");
-        StringAssert.Contains(await ComputedStyleAsync($"{v} p code", "font-family"), "Consolas");
+        Assert.Contains("Georgia", await ComputedStyleAsync(v, "font-family"));
+        Assert.Contains("Courier New", await ComputedStyleAsync($"{v} h2", "font-family"));
+        Assert.Contains("Consolas", await ComputedStyleAsync($"{v} p code", "font-family"));
 
         // The hover color of a link.
         await Page.Locator($"{v} p a").HoverAsync();
@@ -966,7 +966,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
             // The start-aligned column hugs the right edge, the end-aligned one the left.
             var startCell = await Page.Locator($"{id} td.bit-mdv-align-left").EvaluateAsync<double[]>(
                 "td => { const r = document.createRange(); r.selectNodeContents(td); const t = r.getBoundingClientRect(); const c = td.getBoundingClientRect(); return [t.left - c.left, c.right - t.right]; }");
-            Assert.IsTrue(startCell[1] < startCell[0], $"{id}: the start-aligned cell is not right-aligned");
+            Assert.IsLessThan(startCell[0], startCell[1], $"{id}: the start-aligned cell is not right-aligned");
         }
 
         Assert.IsNull(await Page.Locator("#mdv-rtl-inherited").GetAttributeAsync("dir"));
@@ -1002,7 +1002,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Height > 0, "a hidden viewer keeps its box");
+        Assert.IsGreaterThan(0, (await root.BoundingBoxAsync())!.Height, "a hidden viewer keeps its box");
 
         await Page.ClickAsync("#btn-visibility");
         await Expect(Page.Locator("#visibility")).ToHaveTextAsync("Collapsed");
@@ -1149,7 +1149,7 @@ public class BitMarkdownViewerTouchE2ETests : E2ETestBase
         var wrapper = Page.Locator("#mdv-css-vars .bit-mdv-table-wrapper");
         await Expect(wrapper).ToHaveCSSAsync("overflow-x", "auto");
         var pageWidth = await Page.EvaluateAsync<double>("() => document.documentElement.scrollWidth");
-        Assert.IsTrue(pageWidth <= 390 + 40, $"the document widened the page to {pageWidth}px");
+        Assert.IsLessThanOrEqualTo(390 + 40, pageWidth, $"the document widened the page to {pageWidth}px");
 
         // A tap on a task box of an interactive list ticks it.
         await Page.Locator("#mdv-tasks input.task-list-item-checkbox").Nth(1).TapAsync();

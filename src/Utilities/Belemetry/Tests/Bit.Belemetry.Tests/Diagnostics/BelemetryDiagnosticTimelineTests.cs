@@ -14,7 +14,7 @@ public class BelemetryDiagnosticTimelineTests
 
         Assert.IsFalse(host.Diagnostics.IsEnabled);
         Assert.IsEmpty(host.Diagnostics.GetEvents());
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         Assert.IsFalse(capture.Succeeded);
         Assert.Contains("not enabled", capture.Error!);
         Assert.Throws<InvalidOperationException>(() => capture.Confirm());
@@ -46,7 +46,7 @@ public class BelemetryDiagnosticTimelineTests
         var group = host.Diagnostics.GetExceptionGroups().Single();
         Assert.AreEqual(e.Exception.Fingerprint, group.Fingerprint);
         Assert.AreEqual(1, group.Count);
-        CollectionAssert.AreEqual(new[] { "1.2.3" }, group.Releases.ToArray());
+        Assert.AreSequenceEqual(new[] { "1.2.3" }, group.Releases.ToArray());
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class BelemetryDiagnosticTimelineTests
 
         host.Factory.CreateLogger("App").LogWarning("Cart is slow");
 
-        Assert.HasCount(1, host.Diagnostics.GetEvents());
+        Assert.ContainsSingle(host.Diagnostics.GetEvents());
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class BelemetryDiagnosticTimelineTests
 
         host.Host.Consent.Decide(BelemetryFeatures.Errors);
         var events = host.Diagnostics.GetEvents();
-        Assert.HasCount(1, events, "The decision drops what was not granted.");
+        Assert.ContainsSingle(events, "The decision drops what was not granted.");
         Assert.AreEqual(BelemetryFeatures.Errors, events[0].Feature);
 
         host.Host.Consent.Decide(BelemetryFeatures.None);
@@ -149,7 +149,7 @@ public class BelemetryDiagnosticTimelineTests
         Assert.AreEqual(BelemetryDiagnosticOutcome.Failure, e.Outcome);
         Assert.AreEqual(503, Convert.ToInt32(e.Attributes[BelemetrySemanticConventions.HttpResponseStatusCode]));
         Assert.AreEqual("https://api.shop.test/orders/{n}", e.Attributes["url.template"]);
-        Assert.IsFalse(e.Attributes.Keys.Any(k => k.Contains("header") || k.Contains("body")));
+        Assert.DoesNotContain(k => k.Contains("header") || k.Contains("body"), e.Attributes.Keys);
         Assert.AreEqual(Records.TraceId, e.TraceId);
         Assert.AreEqual(Records.ParentSpanId, e.ParentSpanId);
     }
@@ -197,11 +197,11 @@ public class BelemetryDiagnosticTimelineTests
         Assert.IsFalse(exception.Exception.Handled);
         Assert.AreEqual(traceId, exception.TraceId, "Logged inside the handler: the same trace.");
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         var report = capture.Report;
         Assert.AreEqual("onclick on MyApp.Pages.Orders.Save", report.TriggeringAction);
         Assert.AreEqual("/orders/{id}", report.Route);
-        Assert.IsTrue(report.Findings.Any(f => f.Kind == BelemetryIssueFindingKind.Observed && f.Text.Contains("handled onclick") && f.Text.Contains(traceId)));
+        Assert.Contains(f => f.Kind == BelemetryIssueFindingKind.Observed && f.Text.Contains("handled onclick") && f.Text.Contains(traceId), report.Findings);
         Assert.AreEqual("trace", capture.Components.First().Association);
         Assert.AreEqual("MyApp.Pages.Orders", capture.Components.First().Type);
     }
@@ -252,7 +252,7 @@ public class BelemetryDiagnosticTimelineTests
 
         var events = host.Hub.Global!.Events();
         Assert.IsLessThan(50, events.Count);
-        Assert.IsTrue(events.Any(e => e.Exception is not null));
+        Assert.Contains(e => e.Exception is not null, events);
         Assert.IsGreaterThan(0, host.Hub.Global.Dropped()["memory_limit"]);
     }
 
@@ -267,7 +267,7 @@ public class BelemetryDiagnosticTimelineTests
         logger.LogError(DiagnosticsTestHost.Thrown(() => new TimeoutException("c")), "c");
 
         var groups = host.Diagnostics.GetExceptionGroups();
-        CollectionAssert.AreEquivalent(new[] { "System.TimeoutException", "System.InvalidOperationException" }, groups.Select(g => g.ExceptionType).ToArray());
+        Assert.AreSequenceEqual(new[] { "System.TimeoutException", "System.InvalidOperationException" }, groups.Select(g => g.ExceptionType).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual(2, groups.Single(g => g.ExceptionType == "System.InvalidOperationException").Count);
     }
 
@@ -309,7 +309,7 @@ public class BelemetryDiagnosticTimelineTests
     {
         await using var host = DiagnosticsTestHost.Create();
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "e");
-        await host.Diagnostics.ClearAsync();
+        await host.Diagnostics.ClearAsync(TestContext.CancellationToken);
         Assert.IsEmpty(host.Diagnostics.GetEvents());
         Assert.IsEmpty(host.Diagnostics.GetExceptionGroups());
     }
@@ -328,4 +328,6 @@ public class BelemetryDiagnosticTimelineTests
             _ => null,
         };
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

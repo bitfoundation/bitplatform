@@ -12,10 +12,7 @@ using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.Infrastructure;
 
-/// <summary>
-/// Test server, capable of running backend API and Blazor Server UI for integration and UI tests using Playwright.
-/// </summary>
-public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null) : IAsyncDisposable
+internal partial class AppTestServer(IBrowserContext? ClientBrowserContext = null) : IAsyncDisposable
 {
     private WebApplication? webApp;
     private WebApplicationBuilder? webAppBuilder;

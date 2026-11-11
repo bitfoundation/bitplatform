@@ -60,7 +60,7 @@ public class BitCountryPickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitCountryPickerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitCountryPicker", BitCountryPickerParams.ParamName);
+        Assert.AreEqual("BitParams.BitCountryPicker", new BitCountryPickerParams().Name);
         Assert.AreEqual(BitCountryPickerParams.ParamName, new BitCountryPickerParams().Name);
     }
 
@@ -90,8 +90,9 @@ public class BitCountryPickerParamsTests : BunitTestContext
         foreach (var name in own)
         {
             var target = typeof(BitCountryPicker).GetProperty(name);
+            var actualValue = target?.GetCustomAttribute<ParameterAttribute>();
 
-            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitCountryPicker has no {name} parameter.");
+            Assert.IsNotNull(actualValue, $"BitCountryPicker has no {name} parameter.");
             Assert.IsFalse(_notCascaded.Contains(name), $"{name} belongs to a single field and must not be cascaded.");
         }
     }
@@ -123,7 +124,7 @@ public class BitCountryPickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-cnp-bse"));
         Assert.IsTrue(root.ClassList.Contains("bit-cnp-brn"));
         Assert.IsTrue(root.ClassList.Contains("bit-cnp-und"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
 
         Assert.IsTrue(component.Find(".bit-cnp-fld").ClassList.Contains("cascaded-field"));
@@ -201,7 +202,7 @@ public class BitCountryPickerParamsTests : BunitTestContext
 
         var titles = component.FindAll("button.bit-cnp-itm").Select(i => i.GetAttribute("title")).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Mexico", "United States" }, titles);
+        Assert.AreSequenceEqual(new[] { "Mexico", "United States" }, titles);
         Assert.AreEqual("Buscar", component.Find(".bit-cnp-srch").GetAttribute("placeholder"));
 
         component.Find(".bit-cnp-srch").Input("zzzz");

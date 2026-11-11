@@ -43,8 +43,8 @@ public class BitTextParamsTests : BunitTestContext
     [TestMethod]
     public void BitTextParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitText)}", BitTextParams.ParamName);
-        Assert.AreEqual("BitParams.BitText", BitTextParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitText)}", new BitTextParams().Name);
+        Assert.AreEqual("BitParams.BitText", new BitTextParams().Name);
     }
 
     [TestMethod]

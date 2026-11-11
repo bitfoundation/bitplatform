@@ -38,7 +38,7 @@ public sealed class BitIconFontCutTests
     public void EveryGlyphOfTheIconFontShouldReadAndBeWrittenBackAsItWas()
     {
         var font = Icons.Value;
-        Assert.AreEqual(Big16(font.Tables["maxp"], 4), font.Glyphs.Count, "The glyphs read are not as many as maxp says.");
+        Assert.HasCount(Big16(font.Tables["maxp"], 4), font.Glyphs, "The glyphs read are not as many as maxp says.");
 
         foreach (var glyph in font.Glyphs.Where(g => g.Length > 0))
         {
@@ -46,13 +46,13 @@ public sealed class BitIconFontCutTests
         }
 
         var back = Woff2.Read(Woff2.Write(font));
-        Assert.AreEqual(font.Glyphs.Count, back.Glyphs.Count);
+        Assert.HasCount(font.Glyphs.Count, back.Glyphs);
         for (var i = 0; i < font.Glyphs.Count; i++) AssertSameGlyph(font.Glyphs[i], back.Glyphs[i], $"Glyph {i} changed on its way through the writer.");
 
         // Every table but head, whose loca format and checksum the writer sets.
         foreach (var (tag, table) in font.Tables.Where(t => t.Key != "head"))
         {
-            CollectionAssert.AreEqual(table, back.Tables[tag], $"The '{tag}' table changed on its way through the writer.");
+            Assert.AreSequenceEqual(table, back.Tables[tag], $"The '{tag}' table changed on its way through the writer.");
         }
     }
 
@@ -69,9 +69,9 @@ public sealed class BitIconFontCutTests
         var cmap = TrueTypeSubsetter.ReadCmap(Icons.Value.Tables["cmap"]);
 
         var codepoints = rules.Select(r => (r.Key, Codepoint: IconFontSubsetter.Codepoint(r.Value))).ToList();
-        CollectionAssert.AreEqual(Array.Empty<string>(), codepoints.Where(c => c.Codepoint is null).Select(c => c.Key).ToList(), "These rules draw no codepoint.");
-        CollectionAssert.AreEqual(NoGlyph, codepoints.Where(c => cmap.ContainsKey(c.Codepoint!.Value) is false).Select(c => c.Key).ToList(), "These rules draw a codepoint the font has no glyph for.");
-        Assert.AreEqual(rules.Count, codepoints.Select(c => c.Codepoint).Distinct().Count(), "Two icons draw the same codepoint.");
+        Assert.AreSequenceEqual(Array.Empty<string>(), codepoints.Where(c => c.Codepoint is null).Select(c => c.Key).ToList(), "These rules draw no codepoint.");
+        Assert.AreSequenceEqual(NoGlyph, codepoints.Where(c => cmap.ContainsKey(c.Codepoint!.Value) is false).Select(c => c.Key).ToList(), "These rules draw a codepoint the font has no glyph for.");
+        Assert.HasCount(rules.Count, codepoints.Select(c => c.Codepoint).Distinct(), "Two icons draw the same codepoint.");
     }
 
     [TestMethod]
@@ -84,9 +84,9 @@ public sealed class BitIconFontCutTests
         var cutCmap = TrueTypeSubsetter.ReadCmap(cut.Tables["cmap"]);
 
         // .notdef and the two glyphs, in the font's order, each the font's own and as wide.
-        Assert.AreEqual(3, cut.Glyphs.Count);
+        Assert.HasCount(3, cut.Glyphs);
         Assert.AreEqual(3, Big16(cut.Tables["maxp"], 4));
-        CollectionAssert.AreEquivalent(new[] { Add, Delete }, cutCmap.Keys.ToList());
+        Assert.AreSequenceEqual(new[] { Add, Delete }, cutCmap.Keys.ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         foreach (var character in new[] { Add, Delete })
         {
             AssertSameGlyph(font.Glyphs[cmap[character]], cut.Glyphs[cutCmap[character]], $"U+{character:X4} is not drawn with the font's own glyph.");
@@ -96,7 +96,7 @@ public sealed class BitIconFontCutTests
 
         // The tables indexing glyphs it does not rewrite are left out, and post keeps its header alone.
         CollectionAssert.IsSubsetOf(cut.Tables.Keys.ToList(), new[] { "OS/2", "cmap", "cvt ", "fpgm", "gasp", "head", "hhea", "hmtx", "maxp", "name", "post", "prep" });
-        Assert.AreEqual(32, cut.Tables["post"].Length);
+        Assert.HasCount(32, cut.Tables["post"]);
         Assert.AreEqual(0x0003, Big16(cut.Tables["post"], 0));
     }
 
@@ -116,8 +116,8 @@ public sealed class BitIconFontCutTests
         // It draws nothing whether the font is cut or not, so it costs the cut nothing - as pyftsubset leaves it out too.
         var cut = TrueTypeSubsetter.Subset(Icons.Value, [Add, 'A']);
 
-        CollectionAssert.AreEquivalent(new[] { Add }, TrueTypeSubsetter.ReadCmap(cut.Tables["cmap"]).Keys.ToList());
-        Assert.AreEqual(2, cut.Glyphs.Count);
+        Assert.AreSequenceEqual(new[] { Add }, TrueTypeSubsetter.ReadCmap(cut.Tables["cmap"]).Keys.ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.HasCount(2, cut.Glyphs);
     }
 
     [TestMethod]
@@ -134,9 +134,9 @@ public sealed class BitIconFontCutTests
         var cut = TrueTypeSubsetter.Subset(font, ['A']);
 
         // Glyph 2 (B) is gone, so glyph 3 is glyph 2 now, and the composite says so.
-        Assert.AreEqual(3, cut.Glyphs.Count);
+        Assert.HasCount(3, cut.Glyphs);
         Assert.AreEqual(2, Big16(cut.Glyphs[1], 12), "The composite still names its component by the number it had in the font.");
-        CollectionAssert.AreEqual(simple, cut.Glyphs[2]);
+        Assert.AreSequenceEqual(simple, cut.Glyphs[2]);
         Assert.AreEqual(1, TrueTypeSubsetter.ReadCmap(cut.Tables["cmap"])['A']);
 
         var back = Woff2.Read(Woff2.Write(cut));
@@ -161,13 +161,13 @@ public sealed class BitIconFontCutTests
             var first = Cut(nodePath: null);
             Assert.AreEqual(".NET", first.CutBy);
             Assert.IsFalse(first.Reused);
-            Assert.AreEqual(1, first.Failures.Count);
-            StringAssert.StartsWith(first.Failures[0], "Node.js: ");
+            Assert.ContainsSingle(first.Failures);
+            Assert.StartsWith("Node.js: ", first.Failures[0]);
 
             var again = Cut(nodePath: null);
             Assert.IsTrue(again.Reused, "The cut of the very same inputs was made again.");
             Assert.AreEqual(".NET", again.CutBy);
-            CollectionAssert.AreEqual(first.Failures, again.Failures, "The cut used again does not say why Node.js failed, as the publish that made it did.");
+            Assert.AreSequenceEqual(first.Failures, again.Failures, "The cut used again does not say why Node.js failed, as the publish that made it did.");
 
             // Another node is another try of Node.js.
             Assert.IsFalse(Cut(Path.Combine(output, "node")).Reused, "The cut .NET stood in for was used again for another node.");
@@ -187,8 +187,7 @@ public sealed class BitIconFontCutTests
         var core = SourceFiles.Read("Bit.BlazorUI", "Styles", "fabric.mdl2.bit.blazoui.scss");
         var icons = SourceFiles.Read("Bit.BlazorUI.Icons", "Styles", "fabric.mdl2.icons.scss");
 
-        CollectionAssert.AreEqual(new[] { FontFamilies(icons, "@font-face").Single(), FontFamilies(core, "@font-face").Single() }, FontFamilies(icons, ".bit-icon"),
-                                  "The icons' .bit-icon rule does not draw from its own font, then the core's.");
+        Assert.AreSequenceEqual(new[] { FontFamilies(icons, "@font-face").Single(), FontFamilies(core, "@font-face").Single() }, FontFamilies(icons, ".bit-icon"), "The icons' .bit-icon rule does not draw from its own font, then the core's.");
     }
 
     [TestMethod]
@@ -204,11 +203,10 @@ public sealed class BitIconFontCutTests
         var icons = SourceFiles.Read("Bit.BlazorUI.Icons", "Styles", "fabric.mdl2.icons.scss");
         var outranking = Declarations(stylesheet, $".{glyphClass}.{glyphClass}");
 
-        StringAssert.EndsWith(Declarations(icons, ".bit-icon")["font-family"], "!important", "The icons' .bit-icon rule no longer draws from its font importantly.");
-        CollectionAssert.AreEqual(new[] { "font-family" }, outranking.Keys.ToArray(), $"The .{glyphClass}.{glyphClass} rule outranks the app's classes in more than the font.");
-        StringAssert.EndsWith(outranking["font-family"], "!important", $"The .{glyphClass}.{glyphClass} rule is outranked by the important .bit-icon rule whatever its weight.");
-        CollectionAssert.AreEqual(new[] { FontFamilies(stylesheet, "@font-face").Single() }, FontFamilies(stylesheet, $".{glyphClass}.{glyphClass}"),
-                                  $"The .{glyphClass} rule does not outrank .bit-icon with the package's own font.");
+        Assert.EndsWith("!important", Declarations(icons, ".bit-icon")["font-family"], "The icons' .bit-icon rule no longer draws from its font importantly.");
+        Assert.AreSequenceEqual(new[] { "font-family" }, outranking.Keys.ToArray(), $"The .{glyphClass}.{glyphClass} rule outranks the app's classes in more than the font.");
+        Assert.EndsWith("!important", outranking["font-family"], $"The .{glyphClass}.{glyphClass} rule is outranked by the important .bit-icon rule whatever its weight.");
+        Assert.AreSequenceEqual(new[] { FontFamilies(stylesheet, "@font-face").Single() }, FontFamilies(stylesheet, $".{glyphClass}.{glyphClass}"), $"The .{glyphClass} rule does not outrank .bit-icon with the package's own font.");
     }
 
     [TestMethod]
@@ -224,13 +222,13 @@ public sealed class BitIconFontCutTests
         var full = TrueTypeSubsetter.ReadCmap(Icons.Value.Tables["cmap"]);
 
         var rules = Regex.Matches(stylesheet, $@"\.{Regex.Escape(glyphClass)}--(?<name>[A-Za-z0-9]+)::before\s*\{{[^}}]*\}}").ToList();
-        Assert.AreNotEqual(0, rules.Count, $"{file} has no .{glyphClass}--Name rule.");
+        Assert.IsNotEmpty(rules, $"{file} has no .{glyphClass}--Name rule.");
 
         var missing = rules.Where(r => IconFontSubsetter.Codepoint(r.Value) is not { } codepoint || cmap.GetValueOrDefault(codepoint) is 0 || full.ContainsKey(codepoint) is false)
                            .Select(r => r.Groups["name"].Value)
                            .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Drawn by {file} but not a glyph of {font} cut from FabMDL2: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"Drawn by {file} but not a glyph of {font} cut from FabMDL2: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -274,7 +272,7 @@ public sealed class BitIconFontCutTests
             }
             """, ".x");
 
-        CollectionAssert.AreEqual(new[] { "font-family", "src" }, declarations.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "font-family", "src" }, declarations.Keys.ToArray());
         Assert.AreEqual("\"x\" !important", declarations["font-family"]);
         Assert.AreEqual("url(//cdn.example/x.woff2)", declarations["src"]);
     }

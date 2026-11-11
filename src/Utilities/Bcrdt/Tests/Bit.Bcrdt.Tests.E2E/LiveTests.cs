@@ -28,7 +28,7 @@ public sealed class LiveTests : BcrdtTest
             string[] sockets;
             lock (tab.Sockets) sockets = [.. tab.Sockets];
             var expected = socketPath.Replace("{room}", room, StringComparison.Ordinal);
-            Assert.IsTrue(sockets.Any(url => new Uri(url).AbsolutePath.StartsWith(expected, StringComparison.Ordinal)),
+            Assert.Contains(url => new Uri(url).AbsolutePath.StartsWith(expected, StringComparison.Ordinal), sockets,
                 $"the tab opened no WebSocket to {expected}; it opened {Quote(sockets)}");
         }
 
@@ -121,7 +121,7 @@ public sealed class LiveTests : BcrdtTest
         await EventuallyAsync(async () =>
         {
             int records = await StoredRecordsAsync(writer.Page);
-            await Task.Delay(500);
+            await Task.Delay(500, TestContext.CancellationToken);
             return await StoredRecordsAsync(writer.Page) == records;
         }, () => "the offline edit's writes settled");
         await writer.Page.ReloadAsync();

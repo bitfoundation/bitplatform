@@ -47,16 +47,16 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
         var component = RenderBoundTextField(editContext, model);
 
         // Untouched and not validated yet, the field is valid, as a framework input starts out.
-        CollectionAssert.AreEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
 
         component.Find("input").Change("not an email");
 
-        CollectionAssert.AreEqual(new[] { "invalid", "modified" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "invalid", "modified" }, FieldClasses(component.Find(".bit-tfl")));
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
 
         component.Find("input").Change("ada@bit.com");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
     }
 
@@ -72,7 +72,7 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
         // A submit with the required field left empty: invalid, but not modified, since nobody changed it.
         await component.InvokeAsync(() => editContext.Validate());
 
-        CollectionAssert.AreEqual(new[] { "invalid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "invalid" }, FieldClasses(component.Find(".bit-tfl")));
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
 
         component.Find("input").Change("anything");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
     }
 
     [TestMethod]
@@ -99,14 +99,14 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
 
         component.Find("input").Change("ada@bit.com");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
 
         // MarkAsUnmodified raises no event, so it shows once the form around the input renders it again - as it shows
         // on a framework input's next render.
         editContext.MarkAsUnmodified();
         component.Render(parameters => parameters.Add(p => p.Value, model.Value));
 
-        CollectionAssert.AreEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
     }
 
     [TestMethod]
@@ -120,13 +120,13 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
 
         component.Find("input").Change("ada@bit.com");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
 
         // No parameters pass: the input re-renders on an event of its own, and reads the field as it is then.
         editContext.MarkAsUnmodified();
         component.Find("input").FocusIn();
 
-        CollectionAssert.AreEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "valid" }, FieldClasses(component.Find(".bit-tfl")));
     }
 
     [TestMethod]
@@ -140,16 +140,16 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
 
         component.Find("input").Change("ada@bit.com");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, FieldClasses(component.Find(".bit-tfl")).Length);
+        Assert.IsEmpty(FieldClasses(component.Find(".bit-tfl")));
 
         // And they come back with the validation.
         component.Render(parameters => parameters.Add(p => p.NoValidate, false));
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tfl")));
     }
 
     [TestMethod]
@@ -170,7 +170,7 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
         var root = component.Find(".bit-tfl");
         Assert.IsTrue(root.ClassList.Contains("is-invalid"));
         Assert.IsFalse(root.ClassList.Contains("is-valid"));
-        Assert.AreEqual(0, FieldClasses(root).Length);
+        Assert.IsEmpty(FieldClasses(root));
     }
 
     [TestMethod]
@@ -192,11 +192,11 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
         // The message of a failed parse is the input's own, with no validator involved.
         component.Find(".bit-tpc-inp").Input("nonsense");
 
-        CollectionAssert.AreEqual(new[] { "invalid", "modified" }, FieldClasses(component.Find(".bit-tpc")));
+        Assert.AreSequenceEqual(new[] { "invalid", "modified" }, FieldClasses(component.Find(".bit-tpc")));
 
         component.Find(".bit-tpc-inp").Input("10:30");
 
-        CollectionAssert.AreEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tpc")));
+        Assert.AreSequenceEqual(new[] { "modified", "valid" }, FieldClasses(component.Find(".bit-tpc")));
     }
 
     [TestMethod]
@@ -227,7 +227,7 @@ public class BitInputBaseFieldCssClassTests : BunitTestContext
         {
             component.Find("input").Change("not an email");
 
-            Assert.AreEqual(0, FieldClasses(component.Find(".bit-tfl")).Length);
+            Assert.IsEmpty(FieldClasses(component.Find(".bit-tfl")));
         }
     }
 

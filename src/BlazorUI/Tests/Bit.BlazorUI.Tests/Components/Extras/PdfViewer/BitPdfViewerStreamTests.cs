@@ -32,7 +32,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         Assert.AreEqual(bytes.Length, component.Instance.FileSize);
         Assert.AreEqual(1, factories);
         Assert.IsFalse(component.Find("button[aria-label='Download document']").HasAttribute("disabled"));
-        StringAssert.Contains(component.Markup, "Hello");
+        Assert.Contains("Hello", component.Markup);
         Assert.ThrowsExactly<InvalidOperationException>(() => component.Instance.RenderPageHtml(1));
         Assert.ThrowsExactly<InvalidOperationException>(() => component.Instance.ExtractPageText(1));
         Assert.ThrowsExactly<InvalidOperationException>(() => component.Instance.ExtractText());
@@ -41,20 +41,20 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         byte[]? copy = null, second = null;
         await component.InvokeAsync(async () =>
         {
-            html = await component.Instance.RenderPageHtmlAsync(1);
-            text = await component.Instance.ExtractTextAsync();
-            copy = await component.Instance.GetBytesAsync();
-            second = await component.Instance.GetBytesAsync();
+            html = await component.Instance.RenderPageHtmlAsync(1, TestContext.CancellationToken);
+            text = await component.Instance.ExtractTextAsync(cancellationToken: TestContext.CancellationToken);
+            copy = await component.Instance.GetBytesAsync(TestContext.CancellationToken);
+            second = await component.Instance.GetBytesAsync(TestContext.CancellationToken);
             await component.Instance.Search("Hello");
         });
-        StringAssert.Contains(html!, "Hello");
-        StringAssert.Contains(text!, "Hello");
-        CollectionAssert.AreEqual(bytes, copy!);
-        CollectionAssert.AreEqual(bytes, second!);
+        Assert.Contains("Hello", html!);
+        Assert.Contains("Hello", text!);
+        Assert.AreSequenceEqual(bytes, copy!);
+        Assert.AreSequenceEqual(bytes, second!);
         Assert.AreNotSame(copy, second);
         Assert.IsNull(component.Instance.GetBytes());
         Assert.AreEqual(1, component.Instance.SearchMatchCount);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.AreEqual(0, input.DisposeCount);
         await component.InvokeAsync(() => component.Instance.OpenAsync(null));
         Assert.AreEqual(1, input.DisposeCount);
@@ -83,15 +83,15 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         var reference = (DotNetStreamReference)invocation.Arguments[1]!;
         Assert.IsFalse(reference.Stream is MemoryStream);
         using var copied = new MemoryStream();
-        await reference.Stream.CopyToAsync(copied);
+        await reference.Stream.CopyToAsync(copied, TestContext.CancellationToken);
         planned.SetVoidResult();
         await download;
-        CollectionAssert.AreEqual(bytes, copied.ToArray());
+        Assert.AreSequenceEqual(bytes, copied.ToArray());
         Assert.IsNull(component.Instance.GetBytes());
         Assert.AreEqual(0, input.DisposeCount);
         cancel = true;
         await component.InvokeAsync(() => component.Instance.Download());
-        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.download").Count);
+        Assert.ContainsSingle(Context.InvocationsOf("BitBlazorUI.PdfViewer.download"));
     }
 
     [TestMethod]
@@ -126,9 +126,9 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
                     errors.Add(message);
                     input.FailRead = false;
                     if (replace)
-                        await viewer!.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))).WaitAsync(TimeSpan.FromSeconds(3));
+                        await viewer!.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))).WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
                     else
-                        text = await viewer!.ExtractPageTextAsync(1).WaitAsync(TimeSpan.FromSeconds(3));
+                        text = await viewer!.ExtractPageTextAsync(1, TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
                     // The busy flag must also be cleared before entering host code.
                     cancel = true;
                     await viewer.Download();
@@ -146,18 +146,18 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
             component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
             var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
             using var copied = new MemoryStream();
-            var failure = await Assert.ThrowsAsync<IOException>(() => reference.Stream.CopyToAsync(copied));
+            var failure = await Assert.ThrowsAsync<IOException>(() => reference.Stream.CopyToAsync(copied, TestContext.CancellationToken));
             // Browser arrayBuffer rejects when its .NET stream read fails.
             planned.SetException(new JSException(failure.Message));
-            await download.WaitAsync(TimeSpan.FromSeconds(5));
+            await download.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
             component.WaitForPages(replace ? 2 : 1);
-            CollectionAssert.AreEqual(new[] { failure.Message }, errors);
+            Assert.AreSequenceEqual(new[] { failure.Message }, errors);
             Assert.AreEqual(2, attempts);
             Assert.AreEqual(1, planned.Invocations.Count);
             Assert.AreEqual(replace ? 1 : 0, input.DisposeCount);
-            Assert.AreEqual(0, viewer.FailedPages.Count);
-            if (!replace) StringAssert.Contains(text!, "Hello");
+            Assert.IsEmpty(viewer.FailedPages);
+            if (!replace) Assert.Contains("Hello", text!);
         }
         finally
         {
@@ -189,7 +189,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Download());
         Assert.AreEqual(2, attempts);
         Assert.AreEqual(0, errors);
-        Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.download").Count);
+        Assert.IsEmpty(Context.InvocationsOf("BitBlazorUI.PdfViewer.download"));
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         component.WaitForPages(1);
         await Assert.ThrowsAsync<OperationCanceledException>(() => component.InvokeAsync(() => component.Instance.Download()));
         Assert.AreEqual(0, errors);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -237,16 +237,16 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
             .Add(v => v.OnPasswordRequested, () => Task.FromResult<string?>(++passwords == 1 ? "wrong" : "hunter2")));
         first.WaitForPages(1);
         Assert.AreEqual(2, passwords);
-        Assert.AreEqual(1, opened.Count);
+        Assert.ContainsSingle(opened);
         var second = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source.WithPassword("hunter2")));
         second.WaitForPages(1);
-        Assert.AreEqual(2, opened.Count);
+        Assert.HasCount(2, opened);
         await first.InvokeAsync(() => first.Instance.OpenAsync(null));
         Assert.AreEqual(1, opened[0].DisposeCount);
         Assert.AreEqual(0, opened[1].DisposeCount);
         await first.InvokeAsync(() => first.Instance.OpenAsync(source.WithPassword("hunter2")));
         first.WaitForPages(1);
-        Assert.AreEqual(3, opened.Count);
+        Assert.HasCount(3, opened);
         Assert.AreEqual(0, opened[2].DisposeCount);
     }
 
@@ -286,7 +286,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(token => { entered.TrySetResult(token); return result.Task; }))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
-        var token = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var token = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))));
         component.WaitForPages(2);
         Assert.IsTrue(token.IsCancellationRequested);
@@ -295,7 +295,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, late.DisposeCount));
         Assert.AreEqual(0, errors);
         Assert.AreEqual(2, component.Instance.PageCount);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
     }
 
     [TestMethod]
@@ -309,7 +309,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         input.OnRead = () =>
         {
             started.TrySetResult();
-            if (!release.Wait(TimeSpan.FromSeconds(5))) throw new IOException("Test read timed out.");
+            if (!release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken)) throw new IOException("Test read timed out.");
         };
         var component = RenderComponent<BitPdfViewer>(p => p
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(token =>
@@ -318,14 +318,14 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
                 return Task.FromResult<Stream>(input);
             }))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
-        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         var replacement = component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.MultiPage(2))));
-        try { await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5)); }
+        try { await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken); }
         finally { release.Set(); }
         await replacement;
         component.WaitForPages(2);
         Assert.AreEqual(1, input.DisposeCount);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.AreEqual(0, errors);
         Assert.AreEqual(1, input.ReadCount);
     }
@@ -340,7 +340,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
             .Add(v => v.Source, BitPdfSource.FromStreamFactory(token => { entered.TrySetResult(token); return result.Task; }))
             .Add(v => v.OnDocumentLoaded, EventCallback.Factory.Create(this, () => loaded++))
             .Add(v => v.OnError, EventCallback.Factory.Create<string>(this, _ => errors++)));
-        var token = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var token = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         await component.InvokeAsync(async () => await component.Instance.DisposeAsync());
         Assert.IsTrue(token.IsCancellationRequested);
         var late = new PdfTrackingStream(TestPdf.HelloWorld());
@@ -368,8 +368,8 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = old.Pages);
         Assert.ThrowsExactly<ObjectDisposedException>(() => raw.GetByte());
         Assert.AreSame(replacement, component.Instance.GetBytes());
-        Assert.AreSame(replacement, await component.Instance.GetBytesAsync());
-        StringAssert.Contains(component.Instance.ExtractText(), "Page");
+        Assert.AreSame(replacement, await component.Instance.GetBytesAsync(TestContext.CancellationToken));
+        Assert.Contains("Page", component.Instance.ExtractText());
         Assert.IsFalse(string.IsNullOrEmpty(component.Instance.RenderPageHtml(1)));
     }
 
@@ -390,16 +390,16 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         {
             await component.Instance.GoToPage(4);
             await component.Instance.ShowSidebar(BitPdfSidebar.Thumbnails);
-            await component.Instance.ExtractTextAsync();
-            await component.Instance.RenderPageHtmlAsync(3);
+            await component.Instance.ExtractTextAsync(cancellationToken: TestContext.CancellationToken);
+            await component.Instance.RenderPageHtmlAsync(3, TestContext.CancellationToken);
             await component.Instance.Search("Page");
             await component.Instance.Print();
-            await component.Instance.GetBytesAsync();
+            await component.Instance.GetBytesAsync(TestContext.CancellationToken);
         });
         Assert.AreEqual(0, readsOnDispatcher);
-        Assert.IsTrue(input.ReadCount > 0);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
-        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Count);
+        Assert.IsGreaterThan(0, input.ReadCount);
+        Assert.IsEmpty(component.Instance.FailedPages);
+        Assert.ContainsSingle(Context.InvocationsOf("BitBlazorUI.PdfViewer.print"));
     }
 
     [TestMethod]
@@ -407,15 +407,15 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
     {
         byte[] bytes = TestPdf.HelloWorld();
         var input = new MemoryStream(new byte[9].Concat(bytes).ToArray(), writable: true) { Position = 9 };
-        var source = await BitPdfSource.FromStreamAsync(input, "snapshot.pdf");
+        var source = await BitPdfSource.FromStreamAsync(input, "snapshot.pdf", TestContext.CancellationToken);
         Assert.IsTrue(input.CanRead);
         input.Position = 9;
         input.WriteByte(0);
         input.Dispose();
-        CollectionAssert.AreEqual(bytes, source.Bytes!);
+        Assert.AreSequenceEqual(bytes, source.Bytes!);
         var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source));
         component.WaitForPages(1);
-        StringAssert.Contains(component.Instance.ExtractText(), "Hello");
+        Assert.Contains("Hello", component.Instance.ExtractText());
     }
 
     [TestMethod]
@@ -430,7 +430,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         await Assert.ThrowsAsync<OperationCanceledException>(() => component.Instance.RenderPageHtmlAsync(1, cancellation.Token));
         await Assert.ThrowsAsync<OperationCanceledException>(() => component.Instance.ExtractPageTextAsync(1, cancellation.Token));
         await Assert.ThrowsAsync<OperationCanceledException>(() => component.Instance.ExtractTextAsync(cancellationToken: cancellation.Token));
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.IsNull(component.Instance.GetBytes());
     }
 
@@ -454,17 +454,17 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         input.FailRead = false;
         await component.Find(".bit-pdv-search-input").InputAsync(new ChangeEventArgs { Value = "Page" });
         Assert.AreEqual(3, component.Instance.SearchMatchCount);
-        Assert.AreEqual(2, errors.Count);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.HasCount(2, errors);
+        Assert.IsEmpty(component.Instance.FailedPages);
 
         void AssertSearchFailed(int count)
         {
-            Assert.AreEqual(count, errors.Count);
-            StringAssert.Contains(errors[^1], "Reading the PDF stream failed");
+            Assert.HasCount(count, errors);
+            Assert.Contains("Reading the PDF stream failed", errors[^1]);
             Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
             Assert.AreEqual(0, component.Instance.SearchMatchCount);
             Assert.AreEqual(0, component.Instance.SearchMatchIndex);
-            Assert.AreEqual(0, component.Instance.FailedPages.Count);
+            Assert.IsEmpty(component.Instance.FailedPages);
             Assert.IsNotNull(component.Instance.Document);
         }
     }
@@ -485,11 +485,11 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         component.WaitForPages(3);
         viewer = component.Instance;
         input.FailRead = true;
-        await component.InvokeAsync(() => viewer.Search("Page")).WaitAsync(TimeSpan.FromSeconds(5));
+        await component.InvokeAsync(() => viewer.Search("Page")).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         component.WaitForPages(1);
         Assert.AreEqual(1, errors);
         Assert.AreEqual(1, input.DisposeCount);
-        Assert.AreEqual(0, viewer.FailedPages.Count);
+        Assert.IsEmpty(viewer.FailedPages);
     }
 
     [TestMethod]
@@ -511,18 +511,18 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         input.OnRead = () =>
         {
             entered.TrySetResult();
-            if (!release.Wait(TimeSpan.FromSeconds(5))) throw new IOException("Test read timed out.");
+            if (!release.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken)) throw new IOException("Test read timed out.");
         };
         input.FailRead = true;
         var search = component.InvokeAsync(() => component.Instance.Search("Page"));
-        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         var replacement = component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.HelloWorld())));
-        try { await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5)); }
+        try { await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken); }
         finally { release.Set(); }
-        await Task.WhenAll(search, replacement).WaitAsync(TimeSpan.FromSeconds(5));
+        await Task.WhenAll(search, replacement).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         component.WaitForPages(1);
         Assert.AreEqual(0, errors);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.AreEqual(0, component.Instance.SearchMatchCount);
         Assert.AreEqual(1, input.DisposeCount);
     }
@@ -551,7 +551,7 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         var operation = component.InvokeAsync(async () =>
         {
             if (download) await component.Instance.Download();
-            else result = await component.Instance.GetBytesAsync();
+            else result = await component.Instance.GetBytesAsync(TestContext.CancellationToken);
         });
         DotNetStreamReference? reference = null;
         if (download)
@@ -559,30 +559,30 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
             component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
             reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
         }
-        else await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        else await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         var pages = component.InvokeAsync(() => component.Instance.EnsurePagesRendered([2]));
         var thumbs = component.InvokeAsync(() => component.Instance.EnsureThumbsRendered([3]));
         try
         {
             // Downloads also wait while JS has not yet requested its first bytes:
             // serialization must come from the scheduler, not a blocking server I/O wait.
-            await Task.Delay(100);
+            await Task.Delay(100, TestContext.CancellationToken);
             Assert.IsFalse(pages.IsCompleted, "The page pump must wait asynchronously for the copy.");
             Assert.IsFalse(thumbs.IsCompleted, "The thumbnail pump must wait asynchronously for the copy.");
-            CollectionAssert.AreEqual(new[] { 1 }, rendered);
+            Assert.AreSequenceEqual(new[] { 1 }, rendered);
         }
         finally
         {
             input.Resume.TrySetResult();
-            if (reference is not null) await reference.Stream.CopyToAsync(copied);
+            if (reference is not null) await reference.Stream.CopyToAsync(copied, TestContext.CancellationToken);
             planned.SetVoidResult();
             await operation;
-            await Task.WhenAll(pages, thumbs).WaitAsync(TimeSpan.FromSeconds(5));
+            await Task.WhenAll(pages, thumbs).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         }
-        CollectionAssert.AreEqual(bytes, download ? copied.ToArray() : result!);
-        CollectionAssert.AreEqual(new[] { 1, 2 }, rendered);
-        Assert.AreEqual(0, errors.Count);
-        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.AreSequenceEqual(bytes, download ? copied.ToArray() : result!);
+        Assert.AreSequenceEqual(new[] { 1, 2 }, rendered);
+        Assert.IsEmpty(errors);
+        Assert.IsEmpty(component.Instance.FailedPages);
         Assert.IsNull(component.Instance.GetBytes());
     }
 
@@ -600,18 +600,18 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(1, planned.Invocations.Count));
         var reference = (DotNetStreamReference)planned.Invocations.Single().Arguments[1]!;
         using var copied = new MemoryStream();
-        var transfer = reference.Stream.CopyToAsync(copied);
-        await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var transfer = reference.Stream.CopyToAsync(copied, TestContext.CancellationToken);
+        await input.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         try
         {
             await component.InvokeAsync(() => component.Instance.OpenAsync(BitPdfSource.FromBytes(TestPdf.HelloWorld())))
-                .WaitAsync(TimeSpan.FromSeconds(5));
-            await download.WaitAsync(TimeSpan.FromSeconds(5));
+                .WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            await download.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
             await Assert.ThrowsAsync<OperationCanceledException>(() => transfer);
             component.WaitForPages(1);
             Assert.AreEqual(1, input.DisposeCount);
             Assert.AreEqual(0, errors);
-            Assert.AreEqual(0, component.Instance.FailedPages.Count);
+            Assert.IsEmpty(component.Instance.FailedPages);
         }
         finally
         {
@@ -652,4 +652,6 @@ public partial class BitPdfViewerStreamTests : BunitTestContext
             return await base.ReadAsync(buffer, cancellationToken);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

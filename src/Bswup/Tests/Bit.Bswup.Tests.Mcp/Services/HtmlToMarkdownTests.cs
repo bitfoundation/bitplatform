@@ -20,10 +20,10 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<h1>Title</h1><h2>Section</h2><h3>Sub</h3><h6>Deep</h6>");
 
-        StringAssert.Contains(markdown, "# Title");
-        StringAssert.Contains(markdown, "## Section");
-        StringAssert.Contains(markdown, "### Sub");
-        StringAssert.Contains(markdown, "###### Deep");
+        Assert.Contains("# Title", markdown);
+        Assert.Contains("## Section", markdown);
+        Assert.Contains("### Sub", markdown);
+        Assert.Contains("###### Deep", markdown);
     }
 
     [TestMethod]
@@ -45,13 +45,13 @@ public class HtmlToMarkdownTests
     [TestMethod]
     public void ToMarkdown_WritesAHorizontalRule()
     {
-        StringAssert.Contains(Markdown("<p>a</p><hr /><p>b</p>"), "---");
+        Assert.Contains("---", Markdown("<p>a</p><hr /><p>b</p>"));
     }
 
     [TestMethod]
     public void ToMarkdown_KeepsAnExplicitLineBreak()
     {
-        StringAssert.Contains(Markdown("<p>one<br />two</p>"), "one\ntwo");
+        Assert.Contains("one\ntwo", Markdown("<p>one<br />two</p>"));
     }
 
     // -- Code samples ----------------------------------------------------------
@@ -61,7 +61,7 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<pre><code><span class=\"kw\">self</span>.<span class=\"id\">isPassive</span> = false;</code></pre>");
 
-        StringAssert.Contains(markdown, "```\nself.isPassive = false;\n```");
+        Assert.Contains("```\nself.isPassive = false;\n```", markdown);
         Assert.IsFalse(markdown.Contains("span", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -71,8 +71,8 @@ public class HtmlToMarkdownTests
         // The docs do show Markdown; a three-backtick fence would end inside its own sample.
         var markdown = Markdown("<pre><code>```js\nconst a = 1;\n```</code></pre>");
 
-        StringAssert.Contains(markdown, "````");
-        StringAssert.Contains(markdown, "const a = 1;");
+        Assert.Contains("````", markdown);
+        Assert.Contains("const a = 1;", markdown);
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<pre><code>&lt;script src=&quot;a.js&quot;&gt;&lt;/script&gt;</code></pre>");
 
-        StringAssert.Contains(markdown, "<script src=\"a.js\"></script>");
+        Assert.Contains("<script src=\"a.js\"></script>", markdown);
     }
 
     [TestMethod]
@@ -94,8 +94,8 @@ public class HtmlToMarkdownTests
     [TestMethod]
     public void ToMarkdown_WritesUnorderedAndOrderedLists()
     {
-        StringAssert.Contains(Markdown("<ul><li>one</li><li>two</li></ul>"), "- one\n- two");
-        StringAssert.Contains(Markdown("<ol><li>one</li><li>two</li></ol>"), "1. one\n2. two");
+        Assert.Contains("- one\n- two", Markdown("<ul><li>one</li><li>two</li></ul>"));
+        Assert.Contains("1. one\n2. two", Markdown("<ol><li>one</li><li>two</li></ol>"));
     }
 
     [TestMethod]
@@ -103,8 +103,8 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<ul><li>outer<ul><li>inner</li></ul></li></ul>");
 
-        StringAssert.Contains(markdown, "- outer");
-        StringAssert.Contains(markdown, "  - inner");
+        Assert.Contains("- outer", markdown);
+        Assert.Contains("  - inner", markdown);
         Assert.IsFalse(markdown.Contains("\n\n  -", StringComparison.Ordinal), "a nested list must stay attached to its item");
     }
 
@@ -115,9 +115,9 @@ public class HtmlToMarkdownTests
 
         var lines = markdown.Split('\n');
 
-        StringAssert.Contains(lines[0], "| Name | Default |");
-        StringAssert.Contains(lines[1], "| --- | --- |");
-        StringAssert.Contains(lines[2], "| isPassive | false |");
+        Assert.Contains("| Name | Default |", lines[0]);
+        Assert.Contains("| --- | --- |", lines[1]);
+        Assert.Contains("| isPassive | false |", lines[2]);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<table><tr><td>'strict' | 'lax'</td></tr></table>");
 
-        StringAssert.Contains(markdown, @"'strict' \| 'lax'", "an unescaped pipe splits the row into extra columns");
+        Assert.Contains(@"'strict' \| 'lax'", markdown, "an unescaped pipe splits the row into extra columns");
     }
 
     [TestMethod]
@@ -150,7 +150,7 @@ public class HtmlToMarkdownTests
     {
         var markdown = Markdown("<dl><dt>scope</dt><dd>the service-worker scope</dd></dl>");
 
-        StringAssert.Contains(markdown, "- **scope**: the service-worker scope");
+        Assert.Contains("- **scope**: the service-worker scope", markdown);
     }
 
     // -- Links and images ------------------------------------------------------
@@ -253,6 +253,6 @@ public class HtmlToMarkdownTests
 
         var markdown = html.ToMarkdown();
 
-        Assert.IsTrue(markdown.Length < html.Length / 3, $"{markdown.Length} vs {html.Length}");
+        Assert.IsLessThan(html.Length / 3, markdown.Length, $"{markdown.Length} vs {html.Length}");
     }
 }

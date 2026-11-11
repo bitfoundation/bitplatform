@@ -220,7 +220,7 @@ public class DbContextApiTests
     [TestMethod]
     public async Task An_Existing_Engine_Can_Be_Passed_In()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions());
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions(), TestContext.CancellationToken);
         using var context = new PeopleContext(
             new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(db).Options);
 
@@ -303,4 +303,6 @@ public class DbContextApiTests
 
         public DbSet<Person> People => Set<Person>();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

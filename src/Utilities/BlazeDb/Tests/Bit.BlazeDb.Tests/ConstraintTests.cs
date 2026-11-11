@@ -217,17 +217,19 @@ public class ConstraintTests
         var options = new BlazeDbDatabaseOptions { FlushInterval = TimeSpan.FromHours(1), Storage = storage }
             .AddTable(Account.Table);
 
-        var db = await BlazeDbDatabase.OpenAsync(options);
+        var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken);
         db.GetTable(Account.Table).Insert(Make(1, "ada"));
-        await db.FlushAsync();
+        await db.FlushAsync(TestContext.CancellationToken);
         await db.DisposeAsync();
 
         var reopened = await BlazeDbDatabase.OpenAsync(
-            new BlazeDbDatabaseOptions { FlushInterval = TimeSpan.FromHours(1), Storage = storage }.AddTable(Account.Table));
+            new BlazeDbDatabaseOptions { FlushInterval = TimeSpan.FromHours(1), Storage = storage }.AddTable(Account.Table), TestContext.CancellationToken);
         await using var _ = reopened;
         var accounts = reopened.GetTable(Account.Table);
 
         Assert.AreEqual(1, accounts.Count);
         Assert.ThrowsExactly<BlazeDbUniqueConstraintViolationException>(() => accounts.Insert(Make(2, "ada")));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

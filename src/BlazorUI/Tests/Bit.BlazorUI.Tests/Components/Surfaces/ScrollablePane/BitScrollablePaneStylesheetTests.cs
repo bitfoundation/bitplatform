@@ -32,7 +32,7 @@ public class BitScrollablePaneStylesheetTests
         // the global --bit-shd-focus-ring (see BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet).
         foreach (var variable in PublicVariables.Where(v => v != "--bit-ScrollablePane-focus-color"))
         {
-            StringAssert.Contains(stylesheet, $"var({variable}, ", $"{variable} is not read with a fallback.");
+            Assert.Contains($"var({variable}, ", stylesheet, $"{variable} is not read with a fallback.");
         }
     }
 
@@ -50,7 +50,7 @@ public class BitScrollablePaneStylesheetTests
     {
         var read = Regex.Matches(ReadStylesheet(), @"var\((--bit-ScrollablePane-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read.ToArray());
+        Assert.AreSequenceEqual(PublicVariables, read.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -70,13 +70,13 @@ public class BitScrollablePaneStylesheetTests
 
         // The private names are what the rest of the file reads - and what a pane styled before the public names
         // existed still sets - so they are declared once, on the root, from the public ones.
-        StringAssert.Contains(root, "--bit-scp-sbs: var(--bit-ScrollablePane-scrollbar-size, ");
-        StringAssert.Contains(root, "--bit-scp-sbc: var(--bit-ScrollablePane-scrollbar-thumb-color, ");
-        StringAssert.Contains(root, "--bit-scp-sbch: var(--bit-ScrollablePane-scrollbar-thumb-hover-color, ");
-        StringAssert.Contains(root, "--bit-scp-sbca: var(--bit-ScrollablePane-scrollbar-thumb-active-color, ");
-        StringAssert.Contains(root, "--bit-scp-sbr: var(--bit-ScrollablePane-scrollbar-thumb-radius, ");
-        StringAssert.Contains(root, "--bit-scp-sbt: var(--bit-ScrollablePane-scrollbar-track-color, ");
-        StringAssert.Contains(root, "--bit-scp-fsz: var(--bit-ScrollablePane-fade-size, ");
+        Assert.Contains("--bit-scp-sbs: var(--bit-ScrollablePane-scrollbar-size, ", root);
+        Assert.Contains("--bit-scp-sbc: var(--bit-ScrollablePane-scrollbar-thumb-color, ", root);
+        Assert.Contains("--bit-scp-sbch: var(--bit-ScrollablePane-scrollbar-thumb-hover-color, ", root);
+        Assert.Contains("--bit-scp-sbca: var(--bit-ScrollablePane-scrollbar-thumb-active-color, ", root);
+        Assert.Contains("--bit-scp-sbr: var(--bit-ScrollablePane-scrollbar-thumb-radius, ", root);
+        Assert.Contains("--bit-scp-sbt: var(--bit-ScrollablePane-scrollbar-track-color, ", root);
+        Assert.Contains("--bit-scp-fsz: var(--bit-ScrollablePane-fade-size, ", root);
     }
 
     [TestMethod]
@@ -91,13 +91,12 @@ public class BitScrollablePaneStylesheetTests
         var opening = "@media (forced-colors: active) {\n    .bit-scp-mod,";
         var forced = SourceFiles.GetScssBlock(stylesheet, opening, "The Modern rendering has no forced-colors override.");
 
-        Assert.IsTrue(stylesheet.IndexOf(opening, System.StringComparison.Ordinal) > stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal),
-                      "The forced-colors override does not come after the rendering it overrides.");
+        Assert.IsGreaterThan(stylesheet.IndexOf("scrollbar-color: transparent transparent;", System.StringComparison.Ordinal), stylesheet.IndexOf(opening, System.StringComparison.Ordinal), "The forced-colors override does not come after the rendering it overrides.");
 
         // The idle state is matched at its own specificity, so an auto hiding bar is repainted and never hidden.
-        StringAssert.Contains(forced, ".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {");
-        StringAssert.Contains(forced, "background: Canvas;");
-        StringAssert.Contains(forced, "background-color: CanvasText;");
+        Assert.Contains(".bit-scp-mod.bit-scp-ahs[data-bit-scp-idle]:not([data-bit-scp-drag]) {", forced);
+        Assert.Contains("background: Canvas;", forced);
+        Assert.Contains("background-color: CanvasText;", forced);
     }
 
     [TestMethod]
@@ -108,7 +107,7 @@ public class BitScrollablePaneStylesheetTests
         var fade = stylesheet[start..];
 
         // The mask clips the ring painted outside the border box, so a focused pane must drop it.
-        StringAssert.Contains(fade, "&:focus-visible {\n            mask-image: none;");
+        Assert.Contains("&:focus-visible {\n            mask-image: none;", fade);
     }
 
     [TestMethod]
@@ -117,10 +116,10 @@ public class BitScrollablePaneStylesheetTests
         var stylesheet = ReadStylesheet();
         var media = stylesheet.IndexOf("@media (forced-colors: active), (prefers-contrast: more) {", System.StringComparison.Ordinal);
 
-        Assert.IsTrue(media >= 0, "The fade is not guarded against forced colors and more contrast.");
+        Assert.IsGreaterThanOrEqualTo(0, media, "The fade is not guarded against forced colors and more contrast.");
 
         // A faded band draws content below its contrast, which both preferences ask not to be shown.
-        StringAssert.Contains(stylesheet[media..], ".bit-scp-fad {\n            mask-image: none;");
+        Assert.Contains(".bit-scp-fad {\n            mask-image: none;", stylesheet[media..]);
     }
 
     [TestMethod]
@@ -129,16 +128,16 @@ public class BitScrollablePaneStylesheetTests
         var stylesheet = ReadStylesheet();
         var media = stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal);
 
-        Assert.IsTrue(media >= 0, "The pane has no print rules.");
+        Assert.IsGreaterThanOrEqualTo(0, media, "The pane has no print rules.");
 
         var print = stylesheet[media..];
 
         // The mask it drops is declared at the same specificity, so the print block has to come after it.
-        Assert.IsTrue(media > stylesheet.IndexOf("mask-image: linear-gradient", System.StringComparison.Ordinal));
-        StringAssert.Contains(print, ".bit-scp-fad {\n        mask-image: none;");
+        Assert.IsGreaterThan(stylesheet.IndexOf("mask-image: linear-gradient", System.StringComparison.Ordinal), media);
+        Assert.Contains(".bit-scp-fad {\n        mask-image: none;", print);
 
         // The sizes and the overflow are inline styles, which only !important outranks.
-        StringAssert.Contains(print, ".bit-scp-eop {\n        height: auto !important;\n        max-height: none !important;\n        overflow: visible !important;");
+        Assert.Contains(".bit-scp-eop {\n        height: auto !important;\n        max-height: none !important;\n        overflow: visible !important;", print);
     }
 
     // The header documents the variables in comments; only the rules are what the browser reads.

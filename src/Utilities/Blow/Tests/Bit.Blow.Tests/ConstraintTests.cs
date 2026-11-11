@@ -260,7 +260,7 @@ public class ConstraintTests : BunitContext
         cut.Find(".bit-blow-node").PointerDown(new PointerEventArgs { Button = 0 });
         cut.Find(".bit-blow-edge").PointerDown(new PointerEventArgs { Button = 0 });
 
-        Assert.AreEqual(2, changes.Count);
+        Assert.HasCount(2, changes);
         Assert.ContainsSingle(changes[0].Nodes);
         Assert.ContainsSingle(changes[1].Edges);
     }

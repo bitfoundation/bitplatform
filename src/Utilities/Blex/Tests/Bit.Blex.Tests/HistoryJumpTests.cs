@@ -168,7 +168,7 @@ public class HistoryJumpTests
         var before = history.UndoLabels;
         store.Increment();
         Assert.AreNotSame(before, history.UndoLabels);
-        Assert.AreEqual(2, history.UndoLabels.Count);
+        Assert.HasCount(2, history.UndoLabels);
     }
 
     [TestMethod]

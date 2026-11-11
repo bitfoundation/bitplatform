@@ -96,7 +96,7 @@ public class MoreLayoutTests : BunitContext
         AssertNoOverlap(nodes);
         var copy = nodes.Select(n => n.Clone()).ToList();
         BlowLayout.Tree(copy, edges);
-        CollectionAssert.AreEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList(), "laying out twice differed");
+        Assert.AreSequenceEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList(), "laying out twice differed");
     }
 
     [TestMethod]
@@ -149,7 +149,7 @@ public class MoreLayoutTests : BunitContext
         BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { Iterations = 150, NodeGap = 10 });
         BlowLayout.Force(copy, edges, new BlowForceLayoutOptions { Iterations = 150, NodeGap = 10 });
 
-        CollectionAssert.AreEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList());
+        Assert.AreSequenceEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList());
         AssertNoOverlap(nodes, gap: 10 - 1e-3);
     }
 
@@ -250,7 +250,7 @@ public class MoreLayoutTests : BunitContext
 
         var arranged = await cut.InvokeAsync(() => cut.Instance.LayoutAsync(new BlowGridLayoutOptions(), [nodes[0], nodes[1], nodes[3]]));
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, arranged.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, arranged.Select(n => n.Id).ToArray());
         Assert.AreEqual(new BlowXYPosition(10, 10), nodes[3].Position);
     }
 
@@ -299,7 +299,7 @@ public class MoreLayoutTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.SetCollapsedAsync(nodes[1]));
 
         Assert.IsTrue(nodes[1].Collapsed);
-        CollectionAssert.AreEqual(new[] { "outside", "g" }, cut.FindAll(".bit-blow-node").Select(e => e.GetAttribute("data-id")).ToArray());
+        Assert.AreSequenceEqual(new[] { "outside", "g" }, cut.FindAll(".bit-blow-node").Select(e => e.GetAttribute("data-id")).ToArray());
         Assert.IsTrue(cut.Find(".bit-blow-node[data-id='g']").ClassList.Contains("collapsed"));
         Assert.IsFalse(nodes[2].Selected, "a hidden node stayed selected, for the delete key to remove unseen");
 
@@ -307,7 +307,7 @@ public class MoreLayoutTests : BunitContext
         Assert.AreEqual("outside-a", cut.Find(".bit-blow-edge").GetAttribute("data-id"));
         var end = cut.Instance.GetEdgeContext(edges[0]).Target;
         Assert.AreEqual(new BlowXYPosition(200, 0), end, "the edge does not end at the collapsed group");
-        StringAssert.Contains(cut.Find(".bit-blow-a11y-live").TextContent, "collapsed, 3 nodes hidden");
+        Assert.Contains("collapsed, 3 nodes hidden", cut.Find(".bit-blow-a11y-live").TextContent);
         Assert.AreEqual("collapse", cut.Instance.History!.UndoLabel);
     }
 
@@ -343,6 +343,6 @@ public class MoreLayoutTests : BunitContext
         var read = BlowSerializer.Deserialize(json).Document!;
 
         Assert.IsTrue(read.Nodes.Single(n => n.Id == "g").Collapsed);
-        StringAssert.Contains(json, "\"collapsed\":true");
+        Assert.Contains("\"collapsed\":true", json);
     }
 }

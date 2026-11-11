@@ -69,7 +69,7 @@ public class OperationTests : BortableTestContext
         Assert.AreSequenceEqual(["X"], right);
         Assert.IsNull(Placeholder(l2));
         Assert.IsFalse(HasClass(l1, "A", "bit-bortable-hidden"));
-        Assert.IsFalse(log.Any(r => r.Name is "ItemsChanged" or "Add" or "Remove" or "Sort"));
+        Assert.DoesNotContain(r => r.Name is "ItemsChanged" or "Add" or "Remove" or "Sort", log);
         Assert.IsTrue(Single(log, "End", "L1").Canceled);
     }
 
@@ -102,7 +102,7 @@ public class OperationTests : BortableTestContext
 
         Assert.AreSequenceEqual(["A", "B", "C"], left);
         Assert.AreSequenceEqual(["X"], right);
-        Assert.IsFalse(log.Any(r => r.Name == "ItemsChanged"));
+        Assert.DoesNotContain(r => r.Name == "ItemsChanged", log);
         Assert.IsTrue(Single(log, "End", "L1").Canceled);
     }
 
@@ -360,7 +360,7 @@ public class OperationTests : BortableTestContext
 
         // Shown at once, reported once confirmed.
         Assert.AreSequenceEqual(["X", "A"], right);
-        Assert.IsFalse(log.Any(r => r.Name is "ItemsChanged" or "Add" or "End"));
+        Assert.DoesNotContain(r => r.Name is "ItemsChanged" or "Add" or "End", log);
 
         answer.SetResult(true);
         await drop;
@@ -438,7 +438,7 @@ public class OperationTests : BortableTestContext
 
         // The drop and the next drag both wait for the gate, the drop first: the drag was asked for before the drop
         // was being confirmed, and gets the gate once it is.
-        await Coordinator.Gate.WaitAsync();
+        await Coordinator.Gate.WaitAsync(TestContext.CancellationToken);
         var drop = DropAsync(list);
         var start = StartByKeyAsync(list, b);
         Coordinator.Gate.Release();
@@ -593,7 +593,8 @@ public class OperationTests : BortableTestContext
         await DragStartAsync(list, "A");
 
         Assert.IsFalse(await list.InvokeAsync(() => list.Instance.MoveAsync("C", 0)));
-        Assert.AreEqual("A", Coordinator.Context?.Item);
+        var actualValue = Coordinator.Context?.Item;
+        Assert.AreEqual("A", actualValue);
     }
 
     [TestMethod]
@@ -675,4 +676,6 @@ public class OperationTests : BortableTestContext
         Assert.IsFalse(await list.InvokeAsync(() => list.Instance.MoveAsync("A", 1)));
         Assert.AreSequenceEqual(["A", "B"], items);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

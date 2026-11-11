@@ -88,7 +88,7 @@ public class BelemetryDiagnosticReviewTests
 
         ExecutionContext.Run(captured, _ => logger.LogWarning("Another user's data, later"), null);
 
-        Assert.IsFalse(diagnostics.GetEvents().Any(e => e.Message == "Another user's data, later"));
+        Assert.DoesNotContain(e => e.Message == "Another user's data, later", diagnostics.GetEvents());
     }
 
     [TestMethod]
@@ -112,7 +112,7 @@ public class BelemetryDiagnosticReviewTests
             logger.LogWarning("while the nested scope lives");
             return 0;
         });
-        Assert.HasCount(1, nested.GetEvents(), "One timeline per circuit, whichever scope reads it.");
+        Assert.ContainsSingle(nested.GetEvents(), "One timeline per circuit, whichever scope reads it.");
         await nestedScope.DisposeAsync();
 
         On(circuit, () =>
@@ -120,7 +120,7 @@ public class BelemetryDiagnosticReviewTests
             logger.LogWarning("after it is gone");
             return 0;
         });
-        CollectionAssert.AreEqual(new[] { "while the nested scope lives", "after it is gone" }, diagnostics.GetEvents().Select(e => e.Message).ToArray());
+        Assert.AreSequenceEqual(new[] { "while the nested scope lives", "after it is gone" }, diagnostics.GetEvents().Select(e => e.Message).ToArray());
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class BelemetryDiagnosticReviewTests
         host.Host.Pipeline.Enqueue(span);
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "failed");
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         capture.RedactAttribute("url.template");
 
         Assert.IsTrue(capture.Report.FailedRequests.Single().Text.Contains("REDACTED", StringComparison.Ordinal));
@@ -146,14 +146,14 @@ public class BelemetryDiagnosticReviewTests
     {
         await using var host = DiagnosticsTestHost.Create();
         host.Factory.CreateLogger("App").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("Customer Jane Doe has no address")), "failed");
-        var capture = await host.Diagnostics.CaptureAsync();
-        Assert.HasCount(1, capture.ExceptionGroups);
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
+        Assert.ContainsSingle(capture.ExceptionGroups);
 
         capture.ExcludeEvent(capture.Events.Single(e => e.Exception is not null));
 
         Assert.IsEmpty(capture.ExceptionGroups);
         capture.Confirm();
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         Assert.DoesNotContain("Jane Doe", string.Concat(zip.Entries.Select(e => new StreamReader(e.Open()).ReadToEnd())));
     }
 
@@ -180,14 +180,14 @@ public class BelemetryDiagnosticReviewTests
         var logger = host.Factory.CreateLogger("App");
         logger.LogWarning("a log");
         logger.LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("e")), "an error");
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         Assert.HasCount(2, capture.Events);
 
         host.Host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Logs);
 
         Assert.AreEqual(BelemetryFeatures.Errors, capture.Events.Single().Feature);
         capture.Confirm();
-        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         Assert.DoesNotContain("a log", new StreamReader(zip.GetEntry("timeline.json")!.Open()).ReadToEnd());
     }
 
@@ -216,9 +216,9 @@ public class BelemetryDiagnosticReviewTests
         var module = context.JSInterop.SetupModule(BelemetryJsBridge.ModulePath);
         module.Mode = JSRuntimeMode.Loose;
 
-        await context.Services.GetRequiredService<IBelemetryDiagnostics>().ClearAsync();
+        await context.Services.GetRequiredService<IBelemetryDiagnostics>().ClearAsync(TestContext.CancellationToken);
 
-        Assert.IsTrue(module.Invocations.Any(i => i.Identifier == "clearDiagnostics"));
+        Assert.Contains(i => i.Identifier == "clearDiagnostics", module.Invocations);
     }
 
     [TestMethod]
@@ -227,7 +227,9 @@ public class BelemetryDiagnosticReviewTests
         await using var host = DiagnosticsTestHost.Create(o => o.Diagnostics.IncludeExceptionMessages = false);
         host.Host.Pipeline.Enqueue(new BelemetryLogRecord
         {
-            TimeUnixNano = BelemetryTime.NowUnixNano(), Feature = BelemetryFeatures.Errors, Severity = BelemetrySeverity.Error,
+            TimeUnixNano = BelemetryTime.NowUnixNano(),
+            Feature = BelemetryFeatures.Errors,
+            Severity = BelemetrySeverity.Error,
             Attributes = new BelemetryAttributes().Set(BelemetrySemanticConventions.ExceptionType, "ShippingException").Set(BelemetrySemanticConventions.ExceptionMessage, "Cannot ship to 'Jane Doe'"),
         });
 
@@ -283,10 +285,10 @@ public class BelemetryDiagnosticReviewTests
         context.Services.GetRequiredService<BelemetryPipeline>().Start();
         var diagnostics = context.Services.GetRequiredService<IBelemetryDiagnostics>();
 
-        var lookback = await diagnostics.CaptureAsync(new() { Lookback = TimeSpan.FromMinutes(1) });
-        CollectionAssert.AreEquivalent(new[] { "interaction", "exception" }, lookback.Events.Select(e => e.Name).ToArray());
+        var lookback = await diagnostics.CaptureAsync(new() { Lookback = TimeSpan.FromMinutes(1) }, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { "interaction", "exception" }, lookback.Events.Select(e => e.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
-        var failuresOnly = await diagnostics.CaptureAsync(new() { IncludeRecentActivity = false });
+        var failuresOnly = await diagnostics.CaptureAsync(new() { IncludeRecentActivity = false }, TestContext.CancellationToken);
         Assert.AreEqual("exception", failuresOnly.Events.Single().Name);
         Assert.AreEqual("TypeError", failuresOnly.Subject!.Exception!.Type);
     }
@@ -326,4 +328,6 @@ public class BelemetryDiagnosticReviewTests
             return true;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

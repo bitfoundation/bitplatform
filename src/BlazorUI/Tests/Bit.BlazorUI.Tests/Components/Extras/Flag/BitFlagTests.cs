@@ -21,8 +21,8 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.AreEqual("DIV", root.TagName);
-        Assert.AreEqual(0, component.FindAll("img").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.IsEmpty(component.FindAll(".bit-flg-emj"));
         Assert.IsFalse(root.HasAttribute("role"));
         Assert.IsFalse(root.HasAttribute("tabindex"));
     }
@@ -67,7 +67,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Country, BitCountries.Netherlands);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -82,7 +82,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso2, iso2);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/CA-flat-16.webp");
+        Assert.Contains("flags/CA-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -96,7 +96,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso3, iso3);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/US-flat-16.webp");
+        Assert.Contains("flags/US-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -112,7 +112,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Code, code);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/JP-flat-16.webp");
+        Assert.Contains("flags/JP-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -126,7 +126,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, name);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -141,7 +141,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, "Brazil");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -155,7 +155,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, "Brazil");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/CA-flat-16.webp");
+        Assert.Contains("flags/CA-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, "Brazil");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/US-flat-16.webp");
+        Assert.Contains("flags/US-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -180,7 +180,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, "Brazil");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/JP-flat-16.webp");
+        Assert.Contains("flags/JP-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -191,7 +191,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Country, new BitCountry("Holland", "31", "NL", "NLD"));
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "XK")));
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("XK", component.Find(".bit-flg-fbk").TextContent.Trim());
 
         // A source of the page's own is what covers it, and its failure goes straight on to the fallback.
@@ -220,8 +220,8 @@ public class BitFlagTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-flg-fbk").Count);
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.ContainsSingle(component.FindAll(".bit-flg-fbk"));
     }
 
     [TestMethod]
@@ -237,7 +237,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.SrcPattern, "/flags/{iso3}.svg");
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
 
         component.Render(parameters =>
         {
@@ -258,7 +258,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso2, iso2);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/GB-flat-16.webp");
+        Assert.Contains("flags/GB-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -274,7 +274,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Name, name);
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), $"flags/{expectedIso2}-flat-16.webp");
+        Assert.Contains($"flags/{expectedIso2}-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
     [TestMethod,
@@ -288,7 +288,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso2, iso2);
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]
@@ -299,7 +299,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Code, "0000");
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]
@@ -310,7 +310,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Country, new BitCountry("Nowhere", "0", string.Empty, string.Empty));
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]
@@ -321,14 +321,14 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso2, "nl");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Iso2, "jp");
         });
 
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/JP-flat-16.webp");
+        Assert.Contains("flags/JP-flat-16.webp", component.Find("img").GetAttribute("src")!);
     }
 
 
@@ -407,7 +407,7 @@ public class BitFlagTests : BunitTestContext
         var image = component.Find("img");
 
         Assert.AreEqual("no-referrer", image.GetAttribute("referrerpolicy"));
-        StringAssert.Contains(image.GetAttribute("src"), "flags/NL-flat-16.webp");
+        Assert.Contains("flags/NL-flat-16.webp", image.GetAttribute("src")!);
     }
 
     [TestMethod]
@@ -629,7 +629,7 @@ public class BitFlagTests : BunitTestContext
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
         Assert.AreEqual($"{AssetsFlags}JP-flat-{expectedSize}.webp", component.Find("img").GetAttribute("src"));
-        StringAssert.Contains(style, expectedStyle);
+        Assert.Contains(expectedStyle, style);
 
         // The stylesheet already takes a box to be in the pixels of a 16 pixel image.
         Assert.AreEqual(expectedSize != "16", style.Contains("--bit-flg-crp-s"));
@@ -750,8 +750,8 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.ContainsSingle(component.FindAll(".bit-flg-emj"));
     }
 
     [TestMethod]
@@ -765,7 +765,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.ImageSet, BitFlagImageSet.Flat);
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]
@@ -792,7 +792,7 @@ public class BitFlagTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("!", component.Find(".bit-flg-fbk").TextContent);
         Assert.AreEqual(2, failed);
     }
@@ -816,7 +816,7 @@ public class BitFlagTests : BunitTestContext
         Assert.AreEqual($"{AssetsFlags}JP-flat-48.webp", image.GetAttribute("src"));
         Assert.IsFalse(image.HasAttribute("srcset"));
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:1;--bit-flg-crp-y:8;--bit-flg-crp-w:46;--bit-flg-crp-h:32;--bit-flg-crp-s:48");
+        Assert.Contains("--bit-flg-crp-x:1;--bit-flg-crp-y:8;--bit-flg-crp-w:46;--bit-flg-crp-h:32;--bit-flg-crp-s:48", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -831,7 +831,7 @@ public class BitFlagTests : BunitTestContext
         });
 
         Assert.AreEqual($"{AssetsFlags}JP-shiny-64.webp", component.Find("img").GetAttribute("src"));
-        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"), "--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64");
+        Assert.Contains("--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64", component.Find(".bit-flg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -864,8 +864,8 @@ public class BitFlagTests : BunitTestContext
         var style = root.GetAttribute("style") ?? string.Empty;
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(style, "--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11");
-        Assert.IsFalse(style.Contains("--bit-flg-crp-s"));
+        Assert.Contains("--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11", style);
+        Assert.DoesNotContain("--bit-flg-crp-s", style);
     }
 
     [TestMethod]
@@ -892,7 +892,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.ImageAttributes, new Dictionary<string, object> { { "srcset", "/my-flags/nl@2x.png 2x" } });
         });
 
-        StringAssert.StartsWith(withSet.Find("img").GetAttribute("srcset"), $"{AssetsFlags}NL-flat-16.webp 1x");
+        Assert.StartsWith($"{AssetsFlags}NL-flat-16.webp 1x", withSet.Find("img").GetAttribute("srcset"));
     }
 
     [TestMethod]
@@ -948,8 +948,8 @@ public class BitFlagTests : BunitTestContext
         var missing = offered.Where(name => shipped.Contains(name) is false).Order().ToArray();
         var unused = shipped.Where(name => offered.Contains(name) is false).Order().ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Not shipped: {string.Join(", ", missing.Take(10))}");
-        Assert.AreEqual(0, unused.Length, $"Shipped but never offered: {string.Join(", ", unused.Take(10))}");
+        Assert.IsEmpty(missing, $"Not shipped: {string.Join(", ", missing.Take(10))}");
+        Assert.IsEmpty(unused, $"Shipped but never offered: {string.Join(", ", unused.Take(10))}");
     }
 
 
@@ -965,7 +965,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "?")));
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("?", component.Find(".bit-flg-fbk").TextContent);
     }
 
@@ -978,8 +978,8 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.FallbackTemplate, (RenderFragment)(builder => builder.AddContent(0, "?")));
         });
 
-        Assert.AreEqual(1, component.FindAll("img").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-flg-fbk").Count);
+        Assert.ContainsSingle(component.FindAll("img"));
+        Assert.IsEmpty(component.FindAll(".bit-flg-fbk"));
     }
 
     [TestMethod]
@@ -993,7 +993,7 @@ public class BitFlagTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("!", component.Find(".bit-flg-fbk").TextContent);
     }
 
@@ -1013,12 +1013,12 @@ public class BitFlagTests : BunitTestContext
 
         // A set of the page's own that does not cover a country is better answered with the flag that
         // ships than with nothing at all.
-        StringAssert.Contains(component.Find("img").GetAttribute("src"), "flags/NL-flat-16.webp");
-        Assert.AreEqual(0, component.FindAll(".bit-flg-fbk").Count);
+        Assert.Contains("flags/NL-flat-16.webp", component.Find("img").GetAttribute("src")!);
+        Assert.IsEmpty(component.FindAll(".bit-flg-fbk"));
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("!", component.Find(".bit-flg-fbk").TextContent);
     }
 
@@ -1034,7 +1034,7 @@ public class BitFlagTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]
@@ -1049,7 +1049,7 @@ public class BitFlagTests : BunitTestContext
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
 
         component.Render(parameters =>
         {
@@ -1069,7 +1069,7 @@ public class BitFlagTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onerror", EventArgs.Empty);
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
 
         component.Render(parameters =>
         {
@@ -1092,7 +1092,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Country, BitCountries.Netherlands);
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual("\U0001F1F3\U0001F1F1", component.Find(".bit-flg-emj").TextContent);
         Assert.AreEqual("true", component.Find(".bit-flg-emj").GetAttribute("aria-hidden"));
         Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-emo"));
@@ -1134,7 +1134,7 @@ public class BitFlagTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-emo"));
-        Assert.AreEqual(1, component.FindAll(".bit-flg-emj").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-flg-emj"));
     }
 
     [TestMethod]
@@ -1160,8 +1160,8 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Iso2, "nl");
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.ContainsSingle(component.FindAll(".bit-flg-emj"));
     }
 
     [TestMethod]
@@ -1173,7 +1173,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Code, "0000");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll(".bit-flg-emj"));
         Assert.IsFalse(component.Find(".bit-flg").ClassList.Contains("bit-flg-emo"));
     }
 
@@ -1564,20 +1564,20 @@ public class BitFlagTests : BunitTestContext
 
         var registered = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(1, registered.Count);
-        CollectionAssert.AreEqual(new[] { " ", "Spacebar" }, (string[])registered[0].Arguments[1]!);
+        Assert.ContainsSingle(registered);
+        Assert.AreSequenceEqual(new[] { " ", "Spacebar" }, (string[])registered[0].Arguments[1]!);
 
         // A render that changes nothing about it registers nothing again.
         component.Render(parameters => parameters.Add(p => p.Title, "Netherlands"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"]);
 
         // A disabled flag activates on nothing, so Space scrolls the page the way it does anywhere else.
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
 
-        Assert.AreEqual(2, invocations.Count);
-        Assert.AreEqual(0, ((string[])invocations.Last().Arguments[1]!).Length);
+        Assert.HasCount(2, invocations);
+        Assert.IsEmpty(((string[])invocations.Last().Arguments[1]!));
     }
 
     [TestMethod]
@@ -1791,9 +1791,9 @@ public class BitFlagTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "width:4rem");
-        StringAssert.Contains(style, "height:2rem");
-        StringAssert.Contains(style, "--bit-flg-siz:2rem");
+        Assert.Contains("width:4rem", style);
+        Assert.Contains("height:2rem", style);
+        Assert.Contains("--bit-flg-siz:2rem", style);
     }
 
     [TestMethod]
@@ -1806,8 +1806,8 @@ public class BitFlagTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-flg-siz:4rem");
-        Assert.IsFalse(style.Contains("height:"));
+        Assert.Contains("--bit-flg-siz:4rem", style);
+        Assert.DoesNotContain("height:", style);
     }
 
     [TestMethod]
@@ -1822,13 +1822,13 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "aspect-ratio:3/2");
-        StringAssert.Contains(style, "height:2rem");
+        Assert.Contains("aspect-ratio:3/2", style);
+        Assert.Contains("height:2rem", style);
 
         // The square width every other flag is given has to come off, or the ratio would have nothing
         // left to decide.
         Assert.IsTrue(root.ClassList.Contains("bit-flg-asp"));
-        Assert.IsFalse(style.Contains("width:"));
+        Assert.DoesNotContain("width:", style);
     }
 
     [TestMethod]
@@ -1844,9 +1844,9 @@ public class BitFlagTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "width:3rem");
-        StringAssert.Contains(style, "height:auto");
-        StringAssert.Contains(style, "aspect-ratio:3/2");
+        Assert.Contains("width:3rem", style);
+        Assert.Contains("height:auto", style);
+        Assert.Contains("aspect-ratio:3/2", style);
     }
 
     [TestMethod]
@@ -1958,7 +1958,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11");
+        Assert.Contains("--bit-flg-crp-x:1;--bit-flg-crp-y:2;--bit-flg-crp-w:14;--bit-flg-crp-h:11", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1973,7 +1973,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11");
+        Assert.Contains("--bit-flg-crp-x:2.5;--bit-flg-crp-y:2;--bit-flg-crp-w:11;--bit-flg-crp-h:11", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1989,7 +1989,7 @@ public class BitFlagTests : BunitTestContext
             parameters.Add(p => p.Bordered, true);
         });
 
-        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"), expected);
+        Assert.Contains(expected, component.Find(".bit-flg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2004,7 +2004,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsFalse(root.ClassList.Contains("bit-flg-crp"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-flg-crp"));
+        Assert.DoesNotContain("--bit-flg-crp", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod,
@@ -2075,7 +2075,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), expected);
+        Assert.Contains(expected, root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2109,8 +2109,7 @@ public class BitFlagTests : BunitTestContext
 
         Assert.AreEqual($"{AssetsFlags}JP-flat-64.webp", image.GetAttribute("src"));
         Assert.IsFalse(image.HasAttribute("srcset"));
-        StringAssert.Contains(component.Find(".bit-flg").GetAttribute("style"),
-                              "--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64");
+        Assert.Contains("--bit-flg-crp-x:12;--bit-flg-crp-y:12;--bit-flg-crp-w:40;--bit-flg-crp-h:40;--bit-flg-crp-s:64", component.Find(".bit-flg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2134,7 +2133,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsFalse(root.ClassList.Contains("bit-flg-crp"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-flg-crp"));
+        Assert.DoesNotContain("--bit-flg-crp", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -2149,8 +2148,8 @@ public class BitFlagTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "width:3rem");
-        StringAssert.Contains(style, "height:auto");
+        Assert.Contains("width:3rem", style);
+        Assert.Contains("height:auto", style);
     }
 
     [TestMethod]
@@ -2189,7 +2188,7 @@ public class BitFlagTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-w:12;--bit-flg-crp-h:12");
+        Assert.Contains("--bit-flg-crp-w:12;--bit-flg-crp-h:12", root.GetAttribute("style")!);
     }
 
 
@@ -2207,7 +2206,7 @@ public class BitFlagTests : BunitTestContext
 
         var root = component.Find(".bit-flg");
 
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1rem");
+        Assert.Contains("padding:1rem", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
 
@@ -2225,9 +2224,9 @@ public class BitFlagTests : BunitTestContext
         var image = component.Find("img");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("opacity:0.5", root.GetAttribute("style")!);
         Assert.IsTrue(image.ClassList.Contains("custom-image"));
-        StringAssert.Contains(image.GetAttribute("style"), "object-fit:contain");
+        Assert.Contains("object-fit:contain", image.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2267,12 +2266,12 @@ public class BitFlagTests : BunitTestContext
 
         if (expected.HasValue())
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
         else
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
     }
 

@@ -214,12 +214,12 @@ public class BitMarkdownEditorTests : BunitTestContext
         // rendered inside a dropdown menu). The upload button waits for an upload handler.
         var buttons = component.FindAll(".bit-mde-btn:not(.bit-mde-mi)");
 
-        Assert.AreEqual(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not (BitMarkdownEditorToolbarItemType.Separator or BitMarkdownEditorToolbarItemType.ImageUpload)), buttons.Count);
-        Assert.AreEqual(0, component.FindAll("[data-cmd=upload]").Count);
+        Assert.HasCount(BitMarkdownEditorToolbar.Default.Count(i => i.Type is not (BitMarkdownEditorToolbarItemType.Separator or BitMarkdownEditorToolbarItemType.ImageUpload)), buttons);
+        Assert.IsEmpty(component.FindAll("[data-cmd=upload]"));
 
         // The default toolbar includes a heading dropdown with menu items.
         var menuItems = component.FindAll(".bit-mde-mi");
-        Assert.IsTrue(menuItems.Count >= 6);
+        Assert.IsGreaterThanOrEqualTo(6, menuItems.Count);
     }
 
     [TestMethod]
@@ -235,8 +235,8 @@ public class BitMarkdownEditorTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-mde-btn").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-mde-sep").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mde-btn"));
+        Assert.ContainsSingle(component.FindAll(".bit-mde-sep"));
     }
 
     [TestMethod,
@@ -249,7 +249,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.ShowToolbar, showToolbar);
         });
 
-        Assert.AreEqual(showToolbar ? 1 : 0, component.FindAll(".bit-mde-tlb").Count);
+        Assert.HasCount(showToolbar ? 1 : 0, component.FindAll(".bit-mde-tlb"));
     }
 
     [TestMethod,
@@ -262,7 +262,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.ShowStatusBar, showStatusBar);
         });
 
-        Assert.AreEqual(showStatusBar ? 1 : 0, component.FindAll(".bit-mde-sbr").Count);
+        Assert.HasCount(showStatusBar ? 1 : 0, component.FindAll(".bit-mde-sbr"));
     }
 
     [TestMethod,
@@ -290,7 +290,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var root = component.Find(".bit-mde");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-MarkdownEditor-height:10rem"));
+        Assert.Contains("--bit-MarkdownEditor-height:10rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -318,7 +318,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(editor, reference.Value);
 
         dispose.SetVoidResult();
@@ -355,7 +355,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         Assert.IsFalse(fullScreen);
         Assert.AreEqual(0, submitted);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
     }
 
     [TestMethod]
@@ -459,7 +459,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-mde-txa").ClassList.Contains("txa-class"));
         Assert.IsTrue(component.Find(".bit-mde-ppn").ClassList.Contains("pvw-class"));
         Assert.IsTrue(component.Find(".bit-mde-sbr").ClassList.Contains("sbr-class"));
-        Assert.IsTrue(component.Find(".bit-mde-sbr").GetAttribute("style")!.Contains("color:tomato"));
+        Assert.Contains("color:tomato", component.Find(".bit-mde-sbr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -490,10 +490,10 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.Instance._OnChange("abc");
         Assert.Contains("3 / 5 chars", component.Find(".bit-mde-sbr").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-mde-lim").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-lim"));
 
         await component.Instance._OnChange("abcde");
-        Assert.AreEqual(1, component.FindAll(".bit-mde-lim").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-lim"));
     }
 
     [TestMethod]
@@ -568,7 +568,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Assert.IsNull(insertRow.GetAttribute("aria-checked"));
 
         // The table menu groups its rows, columns and alignments behind separators.
-        Assert.AreEqual(2, component.FindAll("[data-cmd=tabletools] + .bit-mde-ddm .bit-mde-msep").Count);
+        Assert.HasCount(2, component.FindAll("[data-cmd=tabletools] + .bit-mde-ddm .bit-mde-msep"));
     }
 
     [TestMethod]
@@ -750,11 +750,11 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
 
         await component.Instance._OnShortcut("find");
 
-        Assert.AreEqual(1, component.FindAll(".bit-mde-fnd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-fnd"));
     }
 
     [TestMethod]
@@ -763,11 +763,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("[data-cmd=find]").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-mde-fnd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-fnd"));
         Assert.AreEqual("true", component.Find("[data-cmd=find]").GetAttribute("aria-pressed"));
 
         component.Find("[data-cmd=find]").Click();
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
     }
 
     [TestMethod]
@@ -783,7 +783,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         await component.Instance._OnShortcut("find");
 
         await component.Instance._OnEscape();
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
         Assert.IsTrue(component.Instance.FullScreen);
 
         await component.Instance._OnEscape();
@@ -798,7 +798,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         // then: with nothing to close, the key is the dialog's.
         var component = RenderComponent<BitMarkdownEditor>();
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await component.Instance._OnShortcut("find");
 
@@ -808,8 +808,8 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -824,8 +824,8 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         component.Find(".bit-mde-hcr").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-hcr"));
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -844,7 +844,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         await component.Instance._OnEscape();
 
         Assert.IsFalse(component.Instance.FullScreen);
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
     }
 
     [TestMethod]
@@ -857,7 +857,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.FullScreen, true);
         });
 
-        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+        Assert.IsEmpty(component.FindAll("[data-bit-esc]"));
 
         await component.Instance._OnEscape();
 
@@ -892,12 +892,12 @@ public class BitMarkdownEditorTests : BunitTestContext
         // focusEditor is the last argument: the panel selects the match without focusing the
         // textarea, so the next Enter still reaches the find input instead of the document.
         var fromPanel = Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.find"].First();
-        Assert.AreEqual(false, fromPanel.Arguments[^1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(fromPanel.Arguments[^1]));
 
         await component.Instance.FindNext("md");
 
         var fromApi = Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.find"].Last();
-        Assert.AreEqual(true, fromApi.Arguments[^1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(fromApi.Arguments[^1]));
     }
 
     [TestMethod]
@@ -956,7 +956,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         Assert.AreEqual("dialog", dialog.GetAttribute("role"));
         Assert.AreEqual("true", dialog.GetAttribute("aria-modal"));
         // Built from one list in C#, so a shortcut can never be documented in only one place.
-        Assert.IsTrue(component.FindAll(".bit-mde-hcr dl > div").Count >= 20);
+        Assert.IsGreaterThanOrEqualTo(20, component.FindAll(".bit-mde-hcr dl > div").Count);
         Assert.Contains("Alt + ↑ / ↓", dialog.TextContent);
     }
 
@@ -1004,11 +1004,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var replaced = await component.Instance.Replace("a", "b");
 
         Assert.AreEqual(0, replaced);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.insert"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.run"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.undo"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.redo"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceAll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.insert"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.run"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.undo"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.redo"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceAll"]);
     }
 
     [TestMethod]
@@ -1018,7 +1018,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.Instance.ClearDraft();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.clearDraft"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.clearDraft"]);
     }
 
     [TestMethod]
@@ -1027,7 +1027,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         // The whole config only travels with init, so a later change must be pushed across.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.setConfig"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.setConfig"]);
 
         component.Render(parameters =>
         {
@@ -1188,7 +1188,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         component.Find(".bit-mde-fnd .bit-mde-hcl").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
         Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.focus");
     }
 
@@ -1252,7 +1252,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Bind(p => p.FullScreen, fullScreen, v => fullScreen = v);
         });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"]);
 
         component.Find("[data-cmd=fullscreen]").Click();
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.lockScroll", 1);
@@ -1303,11 +1303,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("[data-cmd=help]").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-mde-hcr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-hcr"));
 
         component.Find(".bit-mde-hcr .bit-mde-hcl").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-hcr"));
         Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.focus");
     }
 
@@ -1323,7 +1323,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         var result = component.Instance._ApplyCommand("Table", 0, 0, string.Empty);
 
         Assert.IsTrue(result.Handled);
-        Assert.AreEqual(4, result.Text.Split('\n', System.StringSplitOptions.RemoveEmptyEntries).Length);
+        Assert.HasCount(4, result.Text.Split('\n', System.StringSplitOptions.RemoveEmptyEntries));
         Assert.Contains("| Column 3 |", result.Text);
     }
 
@@ -1337,14 +1337,14 @@ public class BitMarkdownEditorTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "# a heading");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-ppn *").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-ppn *"));
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Mode, BitMarkdownEditorMode.Split);
         });
 
-        Assert.IsTrue(component.FindAll(".bit-mde-ppn *").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-mde-ppn *"));
     }
 
     private bool LastInitConfigFlag(string property) => (bool)LastInitConfigValue(property)!;
@@ -1408,7 +1408,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-lbl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-lbl"));
     }
 
     [TestMethod]
@@ -1422,7 +1422,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         var style = component.Find(".bit-mde").GetAttribute("style");
 
-        Assert.Contains("--bit-MarkdownEditor-min-height:8rem", style);
+        Assert.Contains("--bit-MarkdownEditor-min-height:8rem", style!);
         Assert.Contains("--bit-MarkdownEditor-max-height:30rem", style);
     }
 
@@ -1479,7 +1479,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance._OnSelectionChanged(2, 6, "hello", 4, 3, 4));
 
         var readouts = component.FindAll(".bit-mde-pos");
-        Assert.AreEqual(2, readouts.Count);
+        Assert.HasCount(2, readouts);
         Assert.AreEqual("Ln 4, Col 3", readouts[0].TextContent);
         Assert.AreEqual("4 selected", readouts[1].TextContent);
     }
@@ -1489,7 +1489,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-pos").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-pos"));
     }
 
     [TestMethod]
@@ -1537,7 +1537,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceOne"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceOne"]);
         Assert.AreEqual("1 of 2", component.Find(".bit-mde-fns").TextContent);
     }
 
@@ -1556,7 +1556,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Enter", CtrlKey = true });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceAll"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.replaceAll"]);
     }
 
     [TestMethod]
@@ -1679,10 +1679,10 @@ public class BitMarkdownEditorTests : BunitTestContext
             ]);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-mde-ddm .bit-mde-msep").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-ddm .bit-mde-msep"));
         Assert.AreEqual("separator", component.Find(".bit-mde-msep").GetAttribute("role"));
         // The separator is not one of the items the keyboard walks through.
-        Assert.AreEqual(2, component.FindAll(".bit-mde-ddm .bit-mde-mi").Count);
+        Assert.HasCount(2, component.FindAll(".bit-mde-ddm .bit-mde-mi"));
     }
 
     [TestMethod]
@@ -1760,7 +1760,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         Assert.AreEqual("# a title", component.Find(".bit-mde-ppn .raw-preview").TextContent);
         // The built-in viewer is out of the way entirely, headings and all.
-        Assert.AreEqual(0, component.FindAll(".bit-mde-ppn h1").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-ppn h1"));
     }
 
     [TestMethod]
@@ -1769,13 +1769,13 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("[data-cmd=help]").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-mde-hcr").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-hcr"));
 
         await component.Find(".bit-mde-hcr").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-hcr"));
         // The dialog held the focus, so it is handed back to the editor.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.MarkdownEditor.focus"]);
     }
 
     [TestMethod]
@@ -1787,7 +1787,7 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnEscape());
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-hcr"));
     }
 
     [TestMethod]
@@ -1796,11 +1796,11 @@ public class BitMarkdownEditorTests : BunitTestContext
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("button[data-cmd=\'find\']").Click();
-        Assert.AreEqual(1, component.FindAll(".bit-mde-fnd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-mde-fnd"));
 
         await component.FindAll(".bit-mde-fni")[0].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-fnd"));
     }
 
     [TestMethod]
@@ -1846,7 +1846,7 @@ public class BitMarkdownEditorTests : BunitTestContext
             "talignleft", "taligncenter", "talignright"
         })
         {
-            Assert.AreEqual(1, component.FindAll($"[data-cmd={name}]").Count, name);
+            Assert.ContainsSingle(component.FindAll($"[data-cmd={name}]"), name);
         }
     }
 
@@ -1903,19 +1903,19 @@ public class BitMarkdownEditorTests : BunitTestContext
         var dialog = component.Find("[role=dialog]");
         var id = dialog.GetAttribute("id");
         Assert.IsFalse(string.IsNullOrEmpty(id));
-        Assert.AreEqual(0, component.FindAll(".bit-mde-guard").Count);
+        Assert.IsEmpty(component.FindAll(".bit-mde-guard"));
         var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"];
-        Assert.AreEqual(1, setup.Count);
+        Assert.ContainsSingle(setup);
         Assert.AreEqual(id, setup[0].Arguments[0]);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
 
         component.Find(".bit-mde-hcl").Click();
 
-        Assert.AreEqual(0, component.FindAll("[role=dialog]").Count);
+        Assert.IsEmpty(component.FindAll("[role=dialog]"));
         var dispose = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"];
-        Assert.AreEqual(1, dispose.Count);
+        Assert.ContainsSingle(dispose);
         Assert.AreEqual(id, dispose[0].Arguments[0]);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]

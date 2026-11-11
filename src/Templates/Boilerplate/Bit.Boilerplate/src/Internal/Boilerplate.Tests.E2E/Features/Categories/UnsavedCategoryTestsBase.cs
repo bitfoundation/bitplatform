@@ -41,7 +41,7 @@ public abstract class UnsavedCategoryTestsBase : AppTestBase
         await GoBack(page);
 
         // Refused is nothing happening, which the assertions below would confirm at once; the app gets time to act first.
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.CancellationToken);
 
         await Expect(page).ToHaveURLAsync(new Regex($"{Regex.Escape(PageUrls.Categories)}/?$", RegexOptions.IgnoreCase));
         await Expect(page.GetByText(AppStrings.EditCategory, new() { Exact = true })).ToBeVisibleAsync();

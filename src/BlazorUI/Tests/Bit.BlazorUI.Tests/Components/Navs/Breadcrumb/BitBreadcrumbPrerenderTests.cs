@@ -58,8 +58,8 @@ public class BitBreadcrumbPrerenderTests
         var script = document.QuerySelector("script[type='application/ld+json']");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script.TextContent, "\"BreadcrumbList\"");
-        StringAssert.Contains(script.TextContent, "\"Folder 4\"");
+        Assert.Contains("\"BreadcrumbList\"", script.TextContent);
+        Assert.Contains("\"Folder 4\"", script.TextContent);
     }
 
     private static async Task<IDocument> Prerender(Dictionary<string, object?> parameters)

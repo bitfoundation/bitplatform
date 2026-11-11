@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Bit.Borm.Tests;
@@ -32,7 +32,7 @@ public class StateConsistencyRegressionTests : ComponentTestBase
         // The next form built from the same schema opens empty, and the schema still says "empty".
         var second = new BormState(form, new BormDictionaryDataAccessor());
         Assert.AreEqual(0, second.ArrayCount("Lines"));
-        Assert.AreEqual(0, ((List<object?>)form.FindByPath("Lines")!.DefaultValue!).Count);
+        Assert.IsEmpty((List<object?>)form.FindByPath("Lines")!.DefaultValue!);
     }
 
     [TestMethod]
@@ -245,7 +245,7 @@ public class StateConsistencyRegressionTests : ComponentTestBase
 
         Assert.IsNull(state.GetValue("qty"));
         Assert.IsTrue(state.HasErrors);
-        Assert.HasCount(1, state.MessagesFor("qty"));
+        Assert.ContainsSingle(state.MessagesFor("qty"));
 
         state.SetValue("qty", BormValueConverter.FromInputString("3", null, BormFieldType.Integer));
 
@@ -272,7 +272,7 @@ public class StateConsistencyRegressionTests : ComponentTestBase
         var group = BormConditionGroup.Any(
             new BormPredicateCondition(d => d.GetValue("Age") is long age && age < 18),
             new BormFieldCondition("Guardian", BormConditionOperator.IsNotEmpty));
-        Assert.IsFalse(group.Dependencies.Any());
+        Assert.IsEmpty(group.Dependencies);
 
         var form = BormBuilder.Create()
             .Integer("Age")
@@ -298,7 +298,7 @@ public class StateConsistencyRegressionTests : ComponentTestBase
                 new BormFieldCondition("Missing", BormConditionOperator.IsNotEmpty))))
             .Build();
 
-        Assert.IsTrue(form.Validate().Any(d => d.Message.Contains("Missing", StringComparison.Ordinal)));
+        Assert.Contains(d => d.Message.Contains("Missing", StringComparison.Ordinal), form.Validate());
     }
 
     [TestMethod]
@@ -312,14 +312,14 @@ public class StateConsistencyRegressionTests : ComponentTestBase
         var state = new BormState(form, new BormDictionaryDataAccessor(
             new Dictionary<string, object?> { ["Tags"] = new List<object?> { "a", "a", "b" } }));
         await state.ValidateAsync();
-        Assert.HasCount(1, state.MessagesFor("Tags"));
+        Assert.ContainsSingle(state.MessagesFor("Tags"));
 
         state.AddArrayItem(tags, "Tags");
-        Assert.HasCount(1, state.MessagesFor("Tags"));
+        Assert.ContainsSingle(state.MessagesFor("Tags"));
 
         // Removing a row that was not one of the duplicates changes nothing either…
         state.RemoveArrayItem("Tags", 2);
-        Assert.HasCount(1, state.MessagesFor("Tags"));
+        Assert.ContainsSingle(state.MessagesFor("Tags"));
 
         // …and removing a duplicate clears it.
         state.RemoveArrayItem("Tags", 1);
@@ -335,11 +335,11 @@ public class StateConsistencyRegressionTests : ComponentTestBase
 
         var state = new BormState(form, new BormModelDataAccessor(new RcPerson()));
         state.SetValue("Address.Zip", "abc");
-        Assert.HasCount(1, state.MessagesFor("Address.Zip"));
+        Assert.ContainsSingle(state.MessagesFor("Address.Zip"));
 
         await state.ValidateFieldAsync("Address");
 
-        Assert.HasCount(1, state.MessagesFor("Address.Zip"));
+        Assert.ContainsSingle(state.MessagesFor("Address.Zip"));
         Assert.IsTrue(state.HasErrors);
     }
 
@@ -353,7 +353,8 @@ public class StateConsistencyRegressionTests : ComponentTestBase
         Assert.IsTrue(form.AllFields().Where(f => f.Type == BormFieldType.Array).All(f => f.ItemTemplate is not null));
         var inner = form.FindByPath("Inner")!;
         Assert.IsNull(inner.Children.FirstOrDefault(c => c.Name == "Items"));
-        Assert.IsNotNull(inner.Children.FirstOrDefault(c => c.Name == "Tags")?.ItemTemplate);
+        var actualValue = inner.Children.FirstOrDefault(c => c.Name == "Tags")?.ItemTemplate;
+        Assert.IsNotNull(actualValue);
     }
 
     // ---------------------------------------------------------------- submit
@@ -423,52 +424,52 @@ public class StateConsistencyRegressionTests : ComponentTestBase
     }
 }
 
-public sealed class RcOrder
+internal sealed class RcOrder
 {
     public decimal Price { get; set; }
     public int Quantity { get; set; }
     public RcSummary Summary { get; set; } = new();
 }
 
-public sealed class RcSummary
+internal sealed class RcSummary
 {
     public decimal Total { get; set; }
 }
 
-public sealed class RcTotals
+internal sealed class RcTotals
 {
     public int Quantity { get; set; }
     public decimal Total { get; set; }
     public string? Pick { get; set; }
 }
 
-public sealed class RcPerson
+internal sealed class RcPerson
 {
     public RcAddress Address { get; set; } = new();
 }
 
-public sealed class RcAddress
+internal sealed class RcAddress
 {
     public int Zip { get; set; }
 }
 
-public sealed class RcDeep
+internal sealed class RcDeep
 {
     public RcInner Inner { get; set; } = new();
 }
 
-public sealed class RcInner
+internal sealed class RcInner
 {
     public List<RcItem> Items { get; set; } = [];
     public List<string> Tags { get; set; } = [];
 }
 
-public sealed class RcItem
+internal sealed class RcItem
 {
     public string? Name { get; set; }
 }
 
-public sealed class RcFile(string name, long size) : IBrowserFile
+internal sealed class RcFile(string name, long size) : IBrowserFile
 {
     public string Name => name;
     public DateTimeOffset LastModified => default;

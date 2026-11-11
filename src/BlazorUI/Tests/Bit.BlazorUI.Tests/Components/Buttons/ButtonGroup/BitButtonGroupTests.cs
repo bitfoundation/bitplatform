@@ -27,9 +27,9 @@ public class BitButtonGroupTests : BunitTestContext
         });
 
         var buttons = comp.FindAll("button");
-        Assert.AreEqual(2, buttons.Count);
-        Assert.IsTrue(buttons[0].TextContent.Contains("One"));
-        Assert.IsTrue(buttons[1].TextContent.Contains("Two"));
+        Assert.HasCount(2, buttons);
+        Assert.Contains("One", buttons[0].TextContent);
+        Assert.Contains("Two", buttons[1].TextContent);
     }
 
     [TestMethod]
@@ -85,8 +85,8 @@ public class BitButtonGroupTests : BunitTestContext
 
         // The rendered button with toggled class
         var toggled = comp.FindAll(".bit-btg-chk");
-        Assert.IsTrue(toggled.Count >= 1);
-        Assert.IsTrue(toggled[0].TextContent.Contains("B"));
+        Assert.IsGreaterThanOrEqualTo(1, toggled.Count);
+        Assert.Contains("B", toggled[0].TextContent);
 
         // Click the first button to toggle
         var firstBtn = comp.FindAll("button")[0];
@@ -118,7 +118,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         // the bound key the group starts with is applied, and nothing is raised for it
         var toggled = comp.FindAll(".bit-btg-chk");
-        Assert.HasCount(1, toggled);
+        Assert.ContainsSingle(toggled);
         Assert.Contains("B", toggled[0].TextContent);
         Assert.AreEqual(0, keyChanges);
         Assert.AreEqual(0, toggleChanges);
@@ -131,7 +131,7 @@ public class BitButtonGroupTests : BunitTestContext
         });
 
         toggled = comp.FindAll(".bit-btg-chk");
-        Assert.HasCount(1, toggled);
+        Assert.ContainsSingle(toggled);
         Assert.Contains("A", toggled[0].TextContent);
         Assert.AreEqual(0, keyChanges);
         Assert.AreEqual(0, toggleChanges);
@@ -150,13 +150,13 @@ public class BitButtonGroupTests : BunitTestContext
         // a ToggleKey bound one way is the page deciding the selection, so the group shows it as the Multiple
         // mode shows a one-way ToggleKeys - only a click, which it cannot write back, is refused
         var toggled = comp.FindAll(".bit-btg-chk");
-        Assert.HasCount(1, toggled);
+        Assert.ContainsSingle(toggled);
         Assert.Contains("B", toggled[0].TextContent);
 
         comp.FindAll("button")[0].Click();
 
         toggled = comp.FindAll(".bit-btg-chk");
-        Assert.HasCount(1, toggled);
+        Assert.ContainsSingle(toggled);
         Assert.Contains("B", toggled[0].TextContent);
     }
 
@@ -231,14 +231,18 @@ public class BitButtonGroupTests : BunitTestContext
 
         comp.FindAll("button")[2].Click();
         comp.FindAll("button")[0].Click();
+        var expectedValue = new[] { "a", "c" };
+        var actualValue = toggleKeys?.ToArray();
 
         // Both stay toggled, and the keys follow the order of the items, not the order of the clicks.
-        CollectionAssert.AreEqual(new[] { "a", "c" }, toggleKeys?.ToArray());
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.AreSequenceEqual(expectedValue, actualValue);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-chk"));
 
         comp.FindAll("button")[0].Click();
+        var expectedValue1 = new[] { "c" };
+        var actualValue2 = toggleKeys?.ToArray();
 
-        CollectionAssert.AreEqual(new[] { "c" }, toggleKeys?.ToArray());
+        Assert.AreSequenceEqual(expectedValue1, actualValue2);
     }
 
     [TestMethod]
@@ -262,7 +266,7 @@ public class BitButtonGroupTests : BunitTestContext
         comp.FindAll("button")[1].Click();
         comp.FindAll("button")[2].Click();
 
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-chk"));
     }
 
     [TestMethod]
@@ -282,12 +286,12 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.DefaultToggleKeys, new[] { "a" });
         });
 
-        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-btg-chk"));
 
         // Un-toggling the only toggled item is rejected.
         comp.FindAll("button")[0].Click();
 
-        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-btg-chk"));
     }
 
     [TestMethod]
@@ -515,7 +519,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         Assert.AreEqual("/a", anchor.GetAttribute("href"));
         Assert.AreEqual("_blank", anchor.GetAttribute("target"));
-        Assert.AreEqual(1, comp.FindAll("button.bit-btg-itm").Count);
+        Assert.ContainsSingle(comp.FindAll("button.bit-btg-itm"));
     }
 
     [TestMethod]
@@ -533,7 +537,7 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(1, comp.FindAll(".bit-btg-spn").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-btg-spn"));
         Assert.AreEqual("true", comp.Find("button").GetAttribute("aria-busy"));
 
         comp.Find("button").Click();
@@ -597,7 +601,7 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-btg-dtc"));
         Assert.IsTrue(root.ClassList.Contains("bit-btg-scr"));
         Assert.IsFalse(root.ClassList.Contains("bit-btg-scb"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-ButtonGroup-gap:1rem"));
+        Assert.Contains("--bit-ButtonGroup-gap:1rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -700,7 +704,7 @@ public class BitButtonGroupTests : BunitTestContext
         });
 
         // The indicator is rendered for every button so that toggling never shifts the layout.
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-sin").Count);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-sin"));
     }
 
     [TestMethod]
@@ -743,7 +747,7 @@ public class BitButtonGroupTests : BunitTestContext
         comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
 
         Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-checked"));
-        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-btg-chk"));
     }
 
     [TestMethod]
@@ -764,7 +768,7 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? _) => { });
         });
 
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-chk"));
 
         comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
 
@@ -790,11 +794,11 @@ public class BitButtonGroupTests : BunitTestContext
 
         comp.FindAll("button")[1].Click();
 
-        Assert.AreEqual(1, comp.FindAll(".bit-btg-chk").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-btg-chk"));
 
         comp.Render(parameters => parameters.Add(p => p.Items, NewItems()));
 
-        Assert.AreEqual(0, comp.FindAll(".bit-btg-chk").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-btg-chk"));
     }
 
     [TestMethod]
@@ -1377,7 +1381,7 @@ public class BitButtonGroupTests : BunitTestContext
         // A click is the way a Single-mode selection is taken back, and it still is.
         comp.FindAll("button")[1].Click();
 
-        Assert.AreEqual(0, comp.FindAll(".bit-btg-chk").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-btg-chk"));
     }
 
     [TestMethod]
@@ -1434,7 +1438,7 @@ public class BitButtonGroupTests : BunitTestContext
         comp.FindAll("button")[2].Click();
 
         Assert.AreEqual(0, clicks);
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-chk"));
 
         // Un-toggling one of them brings the capped item back.
         comp.FindAll("button")[0].Click();
@@ -1443,7 +1447,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         comp.FindAll("button")[2].Click();
 
-        Assert.AreEqual(2, comp.FindAll(".bit-btg-chk").Count);
+        Assert.HasCount(2, comp.FindAll(".bit-btg-chk"));
         Assert.AreEqual(2, clicks);
     }
 
@@ -1603,10 +1607,12 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.AreEqual("true", buttons[0].GetAttribute("aria-pressed"));
         Assert.AreEqual("true", buttons[1].GetAttribute("aria-pressed"));
         Assert.AreEqual("false", buttons[2].GetAttribute("aria-pressed"));
+        var expectedValue = new[] { "a", "b" };
+        var actualValue = toggleKeys?.ToArray();
 
         // The cap took the third key, and the bound value is what the page reads its own state back out of:
         // left as it was given, it would say the group holds an item it does not.
-        CollectionAssert.AreEqual(new[] { "a", "b" }, toggleKeys?.ToArray());
+        Assert.AreSequenceEqual(expectedValue, actualValue);
 
         comp.Render(parameters =>
         {
@@ -1616,9 +1622,11 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.ToggleKeys, (IEnumerable<string>?)["b", "no-such-item"]);
             parameters.Add(p => p.ToggleKeysChanged, (IEnumerable<string>? keys) => toggleKeys = keys);
         });
+        var expectedValue1 = new[] { "b" };
+        var actualValue2 = toggleKeys?.ToArray();
 
         // A key naming no item is dropped the same way.
-        CollectionAssert.AreEqual(new[] { "b" }, toggleKeys?.ToArray());
+        Assert.AreSequenceEqual(expectedValue1, actualValue2);
         Assert.AreEqual("true", comp.FindAll("button")[1].GetAttribute("aria-pressed"));
         Assert.AreEqual("false", comp.FindAll("button")[0].GetAttribute("aria-pressed"));
     }
@@ -1733,10 +1741,10 @@ public class BitButtonGroupTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Show, false));
 
-        Assert.AreEqual(0, component.Instance.ToggleKeyChanges.Count);
-        Assert.AreEqual(0, component.Instance.ToggleKeysChanges.Count);
+        Assert.IsEmpty(component.Instance.ToggleKeyChanges);
+        Assert.IsEmpty(component.Instance.ToggleKeysChanges);
         Assert.AreEqual("a", component.Instance.ToggleKey);
-        CollectionAssert.AreEqual(new[] { "a" }, component.Instance.ToggleKeys!.ToArray());
+        Assert.AreSequenceEqual(new[] { "a" }, component.Instance.ToggleKeys!.ToArray());
     }
 
     [TestMethod]
@@ -1746,9 +1754,9 @@ public class BitButtonGroupTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
 
-        CollectionAssert.AreEqual(new string?[] { null }, component.Instance.ToggleKeyChanges);
-        Assert.AreEqual(1, component.Instance.ToggleKeysChanges.Count);
-        Assert.AreEqual(0, component.Instance.ToggleKeysChanges[0]!.Count());
+        Assert.AreSequenceEqual(new string?[] { null }, component.Instance.ToggleKeyChanges);
+        Assert.ContainsSingle(component.Instance.ToggleKeysChanges);
+        Assert.IsEmpty(component.Instance.ToggleKeysChanges[0]!);
     }
 
 
@@ -1772,7 +1780,7 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1796,7 +1804,7 @@ public class BitButtonGroupTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1915,13 +1923,13 @@ public class BitButtonGroupTests : BunitTestContext
 
         Assert.AreEqual("Mute", comp.Find(".bit-btg-btx").TextContent);
         Assert.AreEqual("Turn the sound off", button.GetAttribute("title"));
-        StringAssert.Contains(comp.Find(".bit-btg-ico").ClassName, "bit-icon--Volume3");
+        Assert.Contains("bit-icon--Volume3", comp.Find(".bit-btg-ico").ClassName!);
 
         button.Click();
 
         Assert.AreEqual("Unmute", comp.Find(".bit-btg-btx").TextContent);
         Assert.AreEqual("Turn the sound on", comp.Find("button").GetAttribute("title"));
-        StringAssert.Contains(comp.Find(".bit-btg-ico").ClassName, "bit-icon--Volume0");
+        Assert.Contains("bit-icon--Volume0", comp.Find(".bit-btg-ico").ClassName!);
         Assert.IsTrue(comp.Find("button").ClassList.Contains("bit-btg-chk"));
     }
 
@@ -1961,7 +1969,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         Assert.IsTrue(button.ClassList.Contains("item-class"));
         Assert.IsTrue(button.ClassList.Contains("bit-btg-rvi"));
-        StringAssert.Contains(button.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", button.GetAttribute("style")!);
         Assert.IsTrue(comp.Find(".bit-btg-ico").ClassList.Contains("fa-heart"));
     }
 
@@ -2010,9 +2018,9 @@ public class BitButtonGroupTests : BunitTestContext
 
         // the toggled class and style reach the toggled button alone
         Assert.IsTrue(buttons[0].ClassList.Contains("c-toggled"));
-        StringAssert.Contains(buttons[0].GetAttribute("style"), "color: gold");
+        Assert.Contains("color: gold", buttons[0].GetAttribute("style")!);
         Assert.IsFalse(buttons[1].ClassList.Contains("c-toggled"));
-        Assert.IsFalse((buttons[1].GetAttribute("style") ?? string.Empty).Contains("gold"));
+        Assert.DoesNotContain("gold", (buttons[1].GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -2036,7 +2044,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         var controls = comp.FindAll(".bit-btg-itm");
 
-        Assert.AreEqual(4, controls.Count);
+        Assert.HasCount(4, controls);
         Assert.AreEqual("B", controls[1].QuerySelector(".bit-btg-btx")!.TextContent);
         Assert.AreEqual("true", controls[1].GetAttribute("aria-checked"));
         // the toggle state is written back to the item through the selector
@@ -2066,7 +2074,7 @@ public class BitButtonGroupTests : BunitTestContext
 
         await comp.Instance.FocusAsync();
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2235,12 +2243,12 @@ public class BitButtonGroupTests : BunitTestContext
         new() { Text = "B", Key = "b" }
     ];
 
-    public class KeylessButtonGroupItem
+    internal class KeylessButtonGroupItem
     {
         public string? Text { get; set; }
     }
 
-    public class CustomButtonGroupItem
+    internal class CustomButtonGroupItem
     {
         public string? Text { get; set; }
 

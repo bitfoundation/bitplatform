@@ -39,13 +39,13 @@ public class BitCalloutE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"clo-basic\"");
-        StringAssert.Contains(html, "class=\"bit-clo-acn");
-        StringAssert.Contains(html, "id=\"clo-basic-trigger\"");
-        StringAssert.Contains(html, "id=\"clo-basic-body\"");
-        StringAssert.Contains(html, "id=\"eager-clo-input\"");
-        Assert.IsFalse(html.Contains("id=\"lazy-clo-input\""), "A LazyRender callout prerenders its content.");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"clo-basic\"", html);
+        Assert.Contains("class=\"bit-clo-acn", html);
+        Assert.Contains("id=\"clo-basic-trigger\"", html);
+        Assert.Contains("id=\"clo-basic-body\"", html);
+        Assert.Contains("id=\"eager-clo-input\"", html);
+        Assert.DoesNotContain("id=\"lazy-clo-input\"", html, "A LazyRender callout prerenders its content.");
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -259,7 +259,7 @@ public class BitCalloutE2ETests : E2ETestBase
         var watch = Stopwatch.StartNew();
         await El("clo-hover-delay-trigger").HoverAsync();
         await Expect(callout).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"Opened after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(550, watch.ElapsedMilliseconds, $"Opened after {watch.ElapsedMilliseconds}ms.");
 
         // Restarted ahead of the move that starts the HoverCloseDelay, so the time the move takes to come back is not
         // taken off what is measured.
@@ -267,7 +267,7 @@ public class BitCalloutE2ETests : E2ETestBase
         await El("hover-far").HoverAsync();
         Assert.IsTrue(await callout.IsVisibleAsync(), "Closed without waiting for HoverCloseDelay.");
         await Expect(callout).ToBeHiddenAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 450, $"Closed after {watch.ElapsedMilliseconds}ms.");
+        Assert.IsGreaterThanOrEqualTo(450, watch.ElapsedMilliseconds, $"Closed after {watch.ElapsedMilliseconds}ms.");
     }
 
     [TestMethod]
@@ -403,7 +403,7 @@ public class BitCalloutE2ETests : E2ETestBase
             await CloseByEscapeAsync(callout);
         }
 
-        Assert.AreEqual(4, fills.Distinct().Count(), string.Join(" | ", fills));
+        Assert.HasCount(4, fills.Distinct(), string.Join(" | ", fills));
         Assert.AreEqual(Transparent, fills[3]);
 
         var unset = await OpenCalloutAsync("clo-unset-trigger", "clo-unset-body");
@@ -435,7 +435,7 @@ public class BitCalloutE2ETests : E2ETestBase
             await CloseByEscapeAsync(callout);
         }
 
-        Assert.AreEqual(4, colors.Distinct().Count(), string.Join(" | ", colors));
+        Assert.HasCount(4, colors.Distinct(), string.Join(" | ", colors));
         Assert.AreEqual(Transparent, colors[3]);
 
         var unset = await OpenCalloutAsync("clo-unset-trigger", "clo-unset-body");
@@ -520,14 +520,14 @@ public class BitCalloutE2ETests : E2ETestBase
 
         var capped = await OpenCalloutAsync("clo-maxwidth-trigger", "clo-maxwidth-body");
         var cappedBox = await BoxAsync(capped);
-        Assert.IsTrue(cappedBox.Width <= 256.5, $"MaxWidth 16rem, got {cappedBox.Width}");
-        Assert.IsTrue((await BoxAsync(El("clo-maxwidth-body"))).Height > 30, "The long line does not wrap.");
+        Assert.IsLessThanOrEqualTo(256.5, cappedBox.Width, $"MaxWidth 16rem, got {cappedBox.Width}");
+        Assert.IsGreaterThan(30, (await BoxAsync(El("clo-maxwidth-body"))).Height, "The long line does not wrap.");
         await CloseByEscapeAsync(capped);
 
         var tall = await OpenCalloutAsync("clo-maxheight-trigger", "clo-maxheight-body");
         var tallBox = await BoxAsync(tall);
-        Assert.IsTrue(tallBox.Height <= 192.5, $"MaxHeight 12rem, got {tallBox.Height}");
-        Assert.IsTrue(tallBox.Width >= 223.5, $"MinWidth 14rem, got {tallBox.Width}");
+        Assert.IsLessThanOrEqualTo(192.5, tallBox.Height, $"MaxHeight 12rem, got {tallBox.Height}");
+        Assert.IsGreaterThanOrEqualTo(223.5, tallBox.Width, $"MinWidth 14rem, got {tallBox.Width}");
         Assert.IsTrue(await tall.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"));
         await Expect(tall).ToHaveCSSAsync("overflow-y", "auto");
     }
@@ -543,8 +543,8 @@ public class BitCalloutE2ETests : E2ETestBase
 
         var held = await OpenCalloutAsync("clo-fixedwidth-trigger", "clo-fixedwidth-body");
         var anchorWidth = (await BoxAsync(AnchorOf("clo-fixedwidth-trigger"))).Width;
-        Assert.IsTrue((await BoxAsync(held)).Width <= anchorWidth + 0.5, "wider than its anchor");
-        Assert.IsTrue((await BoxAsync(El("clo-fixedwidth-body"))).Height > 30, "The long line does not wrap.");
+        Assert.IsLessThanOrEqualTo(anchorWidth + 0.5, (await BoxAsync(held)).Width, "wider than its anchor");
+        Assert.IsGreaterThan(30, (await BoxAsync(El("clo-fixedwidth-body"))).Height, "The long line does not wrap.");
     }
 
     [TestMethod]
@@ -569,10 +569,10 @@ public class BitCalloutE2ETests : E2ETestBase
         await body.EvaluateAsync("el => el.scrollTop = 300");
         await NextFramesAsync();
 
-        Assert.IsTrue(await body.EvaluateAsync<double>("el => el.scrollTop") > 0);
+        Assert.IsGreaterThan(0, await body.EvaluateAsync<double>("el => el.scrollTop"));
         Near(headerBefore.Y, (await BoxAsync(header)).Y, "the header moved");
         Near(footerBefore.Y, (await BoxAsync(footer)).Y, "the footer moved");
-        Assert.IsTrue((await BoxAsync(callout)).Y + (await BoxAsync(callout)).Height <= Page.ViewportSize!.Height + 0.5, "The callout runs off the screen.");
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Height + 0.5, (await BoxAsync(callout)).Y + (await BoxAsync(callout)).Height, "The callout runs off the screen.");
     }
 
     [TestMethod]
@@ -586,7 +586,7 @@ public class BitCalloutE2ETests : E2ETestBase
         Assert.IsTrue(maxHeight.EndsWith("px", StringComparison.Ordinal), $"The scroll container is not capped: '{maxHeight}'.");
         Assert.IsTrue(await El("e2e-scroller").EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"));
         var box = await BoxAsync(callout);
-        Assert.IsTrue(box.Y + box.Height <= Page.ViewportSize!.Height + 0.5, "The callout runs off the screen.");
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Height + 0.5, box.Y + box.Height, "The callout runs off the screen.");
         await Expect(El("e2e-scroller-header")).ToBeVisibleAsync();
         await Expect(El("e2e-scroller-footer")).ToBeInViewportAsync();
     }
@@ -1024,7 +1024,7 @@ public class BitCalloutE2ETests : E2ETestBase
 
         await Expect(El("clo-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
         await Expect(El("clo-vis-hidden-trigger")).ToBeHiddenAsync();
-        Assert.IsTrue((await BoxAsync(El("clo-vis-hidden"))).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("clo-vis-hidden"))).Height);
 
         await Expect(El("clo-vis-collapsed")).ToHaveCSSAsync("display", "none");
         await Expect(El("clo-vis-collapsed-trigger")).ToBeHiddenAsync();
@@ -1118,7 +1118,7 @@ public class BitCalloutE2ETests : E2ETestBase
         await Expect(callout).ToHaveAttributeAsync("data-bit-cal-pos", "below");
         var box = await BoxAsync(callout);
         AssertWithinViewport(box);
-        Assert.IsTrue(box.Y < (await BoxAsync(AnchorOf("pl-trigger"))).Y + 32, "The forced callout is not slid back onto the screen over its anchor.");
+        Assert.IsLessThan((await BoxAsync(AnchorOf("pl-trigger"))).Y + 32, box.Y, "The forced callout is not slid back onto the screen over its anchor.");
     }
 
     [TestMethod]
@@ -1247,7 +1247,7 @@ public class BitCalloutE2ETests : E2ETestBase
         var anchor = await BoxAsync(AnchorOf("pl-trigger"));
 
         Near(anchor.X, box.X, "left on the anchor");
-        Assert.IsTrue(box.X + box.Width > Page.ViewportSize!.Width, "The callout was slid back onto the screen.");
+        Assert.IsGreaterThan(Page.ViewportSize!.Width, box.X + box.Width, "The callout was slid back onto the screen.");
     }
 
     [TestMethod]
@@ -1356,7 +1356,7 @@ public class BitCalloutE2ETests : E2ETestBase
         var anchor = await BoxAsync(AnchorOf("res-trigger"));
         var box = await BoxAsync(callout);
         Near(anchor.Y + anchor.Height + 9, box.Y, "below the anchor");
-        Assert.IsTrue(box.Height < Page.ViewportSize!.Height / 2, "A wide screen shows the panel.");
+        Assert.IsLessThan(Page.ViewportSize!.Height / 2, box.Height, "A wide screen shows the panel.");
     }
 
     private async Task<ILocator> OpenCalloutAsync(string triggerId, string bodyId)
@@ -1402,7 +1402,7 @@ public class BitCalloutE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private static void AssertSide(string side, LayoutBox anchor, LayoutBox callout, double distance)

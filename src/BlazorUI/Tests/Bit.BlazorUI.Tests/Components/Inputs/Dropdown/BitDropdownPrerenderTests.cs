@@ -27,15 +27,15 @@ public class BitDropdownPrerenderTests
             },
         });
 
-        StringAssert.Contains(html, "bit-drp");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "Fruit");
-        StringAssert.Contains(html, "name=\"fruit\"");
+        Assert.Contains("bit-drp", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("Fruit", html);
+        Assert.Contains("name=\"fruit\"", html);
         // The trigger names the selection and the mirrored select posts it.
-        StringAssert.Contains(html, "Orange");
-        StringAssert.Contains(html, "<option value=\"f-ora\"");
-        StringAssert.Contains(html, ">Orange</option>");
-        StringAssert.Contains(html, "aria-selected=\"true\"");
-        StringAssert.Contains(html, "bit-input-hidden");
+        Assert.Contains("Orange", html);
+        Assert.Contains("<option value=\"f-ora\"", html);
+        Assert.Contains(">Orange</option>", html);
+        Assert.Contains("aria-selected=\"true\"", html);
+        Assert.Contains("bit-input-hidden", html);
     }
 }

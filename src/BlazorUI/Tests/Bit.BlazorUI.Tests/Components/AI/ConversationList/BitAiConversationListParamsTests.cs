@@ -44,7 +44,7 @@ public class BitAiConversationListParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiConversationListParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiConversationList", BitAiConversationListParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiConversationList", new BitAiConversationListParams().Name);
         Assert.AreEqual(BitAiConversationListParams.ParamName, new BitAiConversationListParams().Name);
     }
 
@@ -95,6 +95,6 @@ public class BitAiConversationListParamsTests : BitAiTestBase
 
         Assert.IsTrue(component.Find(".bit-aicvl").ClassList.Contains("own"));
         Assert.IsFalse(component.Find(".bit-aicvl").ClassList.Contains("cascaded"));
-        Assert.HasCount(1, component.FindAll(".bit-acb"));
+        Assert.ContainsSingle(component.FindAll(".bit-acb"));
     }
 }

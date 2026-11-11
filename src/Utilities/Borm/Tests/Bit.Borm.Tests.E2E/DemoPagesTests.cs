@@ -31,11 +31,11 @@ public sealed class DemoPagesTests : BormTest
         // Prerendered: the first response already carries the layout, marked as not interactive yet, and every
         // form the page goes on to show - before WebAssembly has run a line.
         var html = await response.TextAsync();
-        StringAssert.Contains(html, "data-interactive=\"false\"", $"{path} was not prerendered");
+        Assert.Contains("data-interactive=\"false\"", html, $"{path} was not prerendered");
         await WaitForInteractiveAsync(page);
 
         int forms = await page.Locator("form.bit-borm-form").CountAsync();
-        Assert.AreEqual(forms, Regex.Matches(html, "<form class=\"bit-borm-form").Count,
+        Assert.HasCount(forms, Regex.Matches(html, "<form class=\"bit-borm-form"),
             $"{path} shows {forms} form(s) once interactive, but the prerendered HTML did not carry the same number");
 
         // The stylesheet is not injected by the library: the host page links it, and it has to be there and parsed.
@@ -90,8 +90,9 @@ public sealed class DemoPagesTests : BormTest
         var page = await NewPageAsync(await NewContextAsync());
 
         var response = await GotoAsync(page, "/no-such-form");
+        var actualValue = response?.Status;
 
-        Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
+        Assert.AreEqual(404, actualValue, "an unknown address did not answer 404");
         await WaitForInteractiveAsync(page);
         await Expect(page.Locator("h1")).ToHaveTextAsync("404");
         await Expect(page.Locator("main")).ToContainTextAsync("There is no page at this address");
@@ -113,7 +114,7 @@ public sealed class DemoPagesTests : BormTest
         // async rule still in flight cancelled) and the next one built, all in the same WebAssembly instance.
         var links = page.Locator(".bb-docs-sidebar .bb-docs-section a");
         int count = await links.CountAsync();
-        Assert.IsTrue(count > 15, $"the sidebar offers only {count} demos");
+        Assert.IsGreaterThan(15, count, $"the sidebar offers only {count} demos");
         for (int i = 1; i < count; i++)
         {
             var href = await links.Nth(i).GetAttributeAsync("href");
@@ -146,7 +147,7 @@ public sealed class DemoPagesTests : BormTest
 
         await Expect(code).ToBeVisibleAsync();
         var source = await code.TextContentAsync() ?? "";
-        StringAssert.Contains(source, "<BormView", "the snippet is not the page's markup");
-        StringAssert.Contains(source, "BormBuilder.For<AccountSignup>()", "the snippet does not show how the schema is built");
+        Assert.Contains("<BormView", source, "the snippet is not the page's markup");
+        Assert.Contains("BormBuilder.For<AccountSignup>()", source, "the snippet does not show how the schema is built");
     }
 }

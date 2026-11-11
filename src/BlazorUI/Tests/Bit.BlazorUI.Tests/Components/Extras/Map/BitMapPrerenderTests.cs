@@ -23,7 +23,7 @@ public class BitMapPrerenderTests
         var status = document.QuerySelector(".bit-map-status");
         Assert.IsNotNull(status);
         Assert.AreEqual("status", status.GetAttribute("role"));
-        StringAssert.Contains(status.TextContent, "Loading map");
+        Assert.Contains("Loading map", status.TextContent);
         Assert.AreEqual("true", document.QuerySelector(".bit-map-canvas")!.GetAttribute("aria-busy"));
     }
 

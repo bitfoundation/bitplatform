@@ -23,11 +23,11 @@ public class BitTogglePrerenderTests
             [nameof(BitToggle.ErrorMessage)] = "Rejected.",
         });
 
-        StringAssert.Contains(html, "bit-tgl-chk");
-        StringAssert.Contains(html, "role=\"switch\"");
-        StringAssert.Contains(html, "aria-checked=\"true\"");
-        StringAssert.Contains(html, "Dark mode");
-        StringAssert.Contains(html, "name=\"dark-mode\"");
-        StringAssert.Contains(html, "Rejected.");
+        Assert.Contains("bit-tgl-chk", html);
+        Assert.Contains("role=\"switch\"", html);
+        Assert.Contains("aria-checked=\"true\"", html);
+        Assert.Contains("Dark mode", html);
+        Assert.Contains("name=\"dark-mode\"", html);
+        Assert.Contains("Rejected.", html);
     }
 }

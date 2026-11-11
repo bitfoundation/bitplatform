@@ -56,8 +56,8 @@ public class BitSearchBoxParamsTests : BunitTestContext
     [TestMethod]
     public void BitSearchBoxParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSearchBox)}", BitSearchBoxParams.ParamName);
-        Assert.AreEqual("BitParams.BitSearchBox", BitSearchBoxParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSearchBox)}", new BitSearchBoxParams().Name);
+        Assert.AreEqual("BitParams.BitSearchBox", new BitSearchBoxParams().Name);
     }
 
     [TestMethod]
@@ -199,7 +199,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
 
         // The matching and the announcing of every search box under the cascade are its own policies.
-        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-srb-itm"));
         Assert.AreEqual("2 found", component.Find(".bit-srb-lvr").TextContent.Replace("​", string.Empty).Trim());
     }
 
@@ -223,8 +223,8 @@ public class BitSearchBoxParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -244,7 +244,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-srb").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-srb").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-srb-inp").ClassList.Contains("custom-input"));
         Assert.AreEqual("color: blue;", component.Find(".bit-srb-inp").GetAttribute("style"));
     }
@@ -331,7 +331,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded aria description", instance.AriaDescription);
         Assert.AreEqual("none", instance.AutoCapitalize);
         Assert.AreEqual("off", instance.AutoComplete);
-        Assert.AreEqual((bool?)false, instance.AutoCorrect);
+        Assert.IsFalse(instance.AutoCorrect);
         Assert.IsTrue(instance.AutoFocus);
         Assert.IsTrue(instance.AutoFillSuggestItem);
         Assert.IsTrue(instance.AutoSelectSuggestItem);
@@ -377,7 +377,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowSuggestItemsOnFocus);
         Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.AreEqual((bool?)false, instance.SpellCheck);
+        Assert.IsFalse(instance.SpellCheck);
         Assert.AreSame(@params.Styles, instance.Styles);
         Assert.AreEqual("Cascaded failure", instance.SuggestFailedText);
         Assert.IsTrue(instance.SuggestIgnoreDiacritics);
@@ -450,7 +450,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-srb-bpr"));
         Assert.IsFalse(root.ClassList.Contains("bit-srb-md"));
         Assert.IsFalse(root.ClassList.Contains("bit-dis"));
-        Assert.AreEqual(1, component.FindAll(".bit-srb-iwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-iwp"));
         Assert.AreEqual("searchbox", input.GetAttribute("role"));
         Assert.AreEqual("search", input.GetAttribute("enterkeyhint"));
         Assert.IsFalse(input.HasAttribute("placeholder"));
@@ -485,6 +485,6 @@ public class BitSearchBoxParamsTests : BunitTestContext
                                           .Where(n => paramsProperties.Contains(n) is false)
                                           .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 }

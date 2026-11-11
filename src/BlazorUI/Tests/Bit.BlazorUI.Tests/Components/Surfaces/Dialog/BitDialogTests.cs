@@ -36,11 +36,11 @@ public class BitDialogTests : BunitTestContext
         var okBtn = component.FindAll(".bit-dlg-okb");
         var cancelBtn = component.FindAll(".bit-dlg-cnb");
 
-        Assert.HasCount(1, okBtn);
-        Assert.HasCount(1, cancelBtn);
+        Assert.ContainsSingle(okBtn);
+        Assert.ContainsSingle(cancelBtn);
 
         var overlay = component.FindAll(".bit-dlg-ovl");
-        Assert.HasCount(1, overlay);
+        Assert.ContainsSingle(overlay);
     }
 
     [TestMethod]
@@ -97,11 +97,11 @@ public class BitDialogTests : BunitTestContext
             }));
         });
 
-        Assert.HasCount(1, component.FindAll(".custom-header"));
+        Assert.ContainsSingle(component.FindAll(".custom-header"));
         Assert.IsEmpty(component.FindAll(".bit-dlg-ttl"));
         Assert.IsEmpty(component.FindAll(".bit-dlg-sub"));
         // The close button still sits beside a custom header.
-        Assert.HasCount(1, component.FindAll(".bit-dlg-cls"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg-cls"));
     }
 
     [TestMethod]
@@ -128,8 +128,8 @@ public class BitDialogTests : BunitTestContext
         });
 
         // Body wins when both are set.
-        StringAssert.Contains(component.Find(".bit-dlg-scr-cnt").TextContent, "From Body");
-        Assert.IsFalse(component.Find(".bit-dlg-scr-cnt").TextContent.Contains("From ChildContent"));
+        Assert.Contains("From Body", component.Find(".bit-dlg-scr-cnt").TextContent);
+        Assert.DoesNotContain("From ChildContent", component.Find(".bit-dlg-scr-cnt").TextContent);
     }
 
     [TestMethod]
@@ -448,21 +448,21 @@ public class BitDialogTests : BunitTestContext
             });
         });
 
-        StringAssert.Contains(component.Find(".bit-dlg").GetAttribute("style"), "z-index:1");
-        StringAssert.Contains(component.Find(".bit-dlg-doc").GetAttribute("style"), "opacity:0.9");
-        StringAssert.Contains(component.Find(".bit-dlg-ovl").GetAttribute("style"), "background-color:red");
-        StringAssert.Contains(component.Find(".bit-dlg-ctn").GetAttribute("style"), "width:10rem");
-        StringAssert.Contains(component.Find(".bit-dlg-hdr").GetAttribute("style"), "padding:1rem");
-        StringAssert.Contains(component.Find(".bit-dlg-ttl").GetAttribute("style"), "color:blue");
-        StringAssert.Contains(component.Find(".bit-dlg-sub").GetAttribute("style"), "color:green");
-        StringAssert.Contains(component.Find(".bit-dlg-cls").GetAttribute("style"), "color:pink");
-        StringAssert.Contains(component.Find(".bit-dlg-cli").GetAttribute("style"), "font-size:2rem");
-        StringAssert.Contains(component.Find(".bit-dlg-scr-cnt").GetAttribute("style"), "gap:1rem");
-        StringAssert.Contains(component.Find(".bit-dlg-msg").GetAttribute("style"), "color:gray");
-        StringAssert.Contains(component.Find(".bit-dlg-bct").GetAttribute("style"), "gap:2rem");
-        StringAssert.Contains(component.Find(".bit-dlg-okb").GetAttribute("style"), "color:white");
-        StringAssert.Contains(component.Find(".bit-dlg-cnb").GetAttribute("style"), "color:black");
-        StringAssert.Contains(component.Find(".bit-dlg-ftr").GetAttribute("style"), "padding:2rem");
+        Assert.Contains("z-index:1", component.Find(".bit-dlg").GetAttribute("style")!);
+        Assert.Contains("opacity:0.9", component.Find(".bit-dlg-doc").GetAttribute("style")!);
+        Assert.Contains("background-color:red", component.Find(".bit-dlg-ovl").GetAttribute("style")!);
+        Assert.Contains("width:10rem", component.Find(".bit-dlg-ctn").GetAttribute("style")!);
+        Assert.Contains("padding:1rem", component.Find(".bit-dlg-hdr").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-dlg-ttl").GetAttribute("style")!);
+        Assert.Contains("color:green", component.Find(".bit-dlg-sub").GetAttribute("style")!);
+        Assert.Contains("color:pink", component.Find(".bit-dlg-cls").GetAttribute("style")!);
+        Assert.Contains("font-size:2rem", component.Find(".bit-dlg-cli").GetAttribute("style")!);
+        Assert.Contains("gap:1rem", component.Find(".bit-dlg-scr-cnt").GetAttribute("style")!);
+        Assert.Contains("color:gray", component.Find(".bit-dlg-msg").GetAttribute("style")!);
+        Assert.Contains("gap:2rem", component.Find(".bit-dlg-bct").GetAttribute("style")!);
+        Assert.Contains("color:white", component.Find(".bit-dlg-okb").GetAttribute("style")!);
+        Assert.Contains("color:black", component.Find(".bit-dlg-cnb").GetAttribute("style")!);
+        Assert.Contains("padding:2rem", component.Find(".bit-dlg-ftr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -584,7 +584,7 @@ public class BitDialogTests : BunitTestContext
 
         // A band pinned over the end of the scroller would hide a focused field scrolled underneath it.
         Assert.IsEmpty(component.FindAll(".bit-dlg-scr-cnt .bit-dlg-bct"));
-        Assert.HasCount(1, component.FindAll(".bit-dlg-ctn > .bit-dlg-bct"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg-ctn > .bit-dlg-bct"));
     }
 
     [TestMethod]
@@ -724,7 +724,7 @@ public class BitDialogTests : BunitTestContext
         var overlays = component.FindAll(".bit-dlg-ovl");
 
         // overlay exists regardless, click handling differs
-        Assert.HasCount(1, overlays);
+        Assert.ContainsSingle(overlays);
 
         overlays[0].Click();
 
@@ -866,14 +866,14 @@ public class BitDialogTests : BunitTestContext
         var rootId = component.Find(".bit-dlg").Id;
 
         var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupSurfaceEscape"];
-        Assert.HasCount(1, setup);
+        Assert.ContainsSingle(setup);
         Assert.AreEqual(rootId, setup[0].Arguments[0]);
         Assert.IsInstanceOfType<Microsoft.JSInterop.DotNetObjectReference<BitDialog>>(setup[0].Arguments[1]);
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
         var dispose = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeSurfaceEscape"];
-        Assert.HasCount(1, dispose);
+        Assert.ContainsSingle(dispose);
         Assert.AreEqual(rootId, dispose[0].Arguments[0]);
     }
 
@@ -1516,7 +1516,7 @@ public class BitDialogTests : BunitTestContext
         component.WaitForState(() => component.FindAll(".bit-dlg-cls").Count == 1);
         component.Find(".bit-dlg-cls").Click();
 
-        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5));
+        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsNull(result);
     }
@@ -1531,7 +1531,7 @@ public class BitDialogTests : BunitTestContext
         component.WaitForState(() => component.FindAll(".bit-dlg-ovl").Count == 1);
         component.Find(".bit-dlg-ovl").Click();
 
-        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5));
+        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsNull(result);
     }
@@ -1546,7 +1546,7 @@ public class BitDialogTests : BunitTestContext
         component.WaitForState(() => component.FindAll(".bit-dlg-ctn").Count == 1);
         PressEscape(component);
 
-        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5));
+        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsNull(result);
     }
@@ -1562,7 +1562,7 @@ public class BitDialogTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Close());
 
-        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5));
+        var result = await showTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsNull(result);
     }
@@ -1578,13 +1578,13 @@ public class BitDialogTests : BunitTestContext
 
         var secondShow = component.Instance.Show();
 
-        var firstResult = await firstShow.WaitAsync(TimeSpan.FromSeconds(5));
+        var firstResult = await firstShow.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsNull(firstResult);
 
         component.WaitForState(() => component.FindAll(".bit-dlg-okb").Count == 1);
         component.Find(".bit-dlg-okb").Click();
 
-        Assert.AreEqual(BitDialogResult.Ok, await secondShow.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(BitDialogResult.Ok, await secondShow.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -1618,13 +1618,13 @@ public class BitDialogTests : BunitTestContext
         Assert.IsEmpty(component.FindAll(".bit-dlg"));
 
         await component.InvokeAsync(() => component.Instance.Open());
-        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg"));
 
         await component.InvokeAsync(() => component.Instance.Close());
         Assert.IsEmpty(component.FindAll(".bit-dlg"));
 
         await component.InvokeAsync(() => component.Instance.Toggle());
-        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg"));
 
         await component.InvokeAsync(() => component.Instance.Toggle());
         Assert.IsEmpty(component.FindAll(".bit-dlg"));
@@ -1650,7 +1650,7 @@ public class BitDialogTests : BunitTestContext
     {
         var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.DefaultIsOpen, true));
 
-        Assert.HasCount(1, component.FindAll(".bit-dlg"));
+        Assert.ContainsSingle(component.FindAll(".bit-dlg"));
     }
 
     [TestMethod]
@@ -1698,7 +1698,7 @@ public class BitDialogTests : BunitTestContext
 
         component.Find(".bit-dlg-okb").Click();
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
         // Held shut with aria-disabled rather than disabled: the focus is on the button that was just pressed,
         // and a button that turns disabled drops it onto the page behind the Dialog.
         Assert.IsFalse(component.Find(".bit-dlg-okb").HasAttribute("disabled"));
@@ -1731,7 +1731,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         component.Find(".bit-dlg-okb").Click();
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
 
         component.Find(".bit-dlg-okb").Click();
 
@@ -1758,7 +1758,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         component.Find(".bit-dlg-okb").Click();
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-dlg-spn")), TimeSpan.FromSeconds(5));
 
         // The showing has already been answered, so a second answer must not be able to get in.
         Assert.IsTrue(component.Find(".bit-dlg-cnb").HasAttribute("disabled"));
@@ -1949,7 +1949,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         Assert.AreEqual(1, opened);
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -2053,7 +2053,7 @@ public class BitDialogTests : BunitTestContext
     {
         var component = RenderComponent<BitDialog>(parameters => parameters.Add(p => p.IsOpen, true));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
 
         // The trap stays on the surface, which is the element with the dialog role and the id no consumer
         // can make collide; the root is named to it as the anchor a press on the overlay lands the focus on,
@@ -2186,12 +2186,11 @@ public class BitDialogTests : BunitTestContext
         await component.InvokeAsync(() => { });
 
         Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
         // The third argument is the one that says whether the overflow is being taken or handed back.
-        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
-                              .Any(i => i.Arguments[2] is false));
+        Assert.DoesNotContain(i => i.Arguments[2] is false, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
     }
 
     [TestMethod]
@@ -2208,7 +2207,7 @@ public class BitDialogTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
         Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
-        Assert.AreEqual(true, invocation.Arguments[2]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[2]));
 
         component.Find(".bit-dlg-cls").Click();
 
@@ -2217,7 +2216,7 @@ public class BitDialogTests : BunitTestContext
             var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
             Assert.HasCount(2, invocations);
             Assert.AreEqual(".my-scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -2234,7 +2233,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         component.WaitForAssertion(
-            () => StringAssert.Contains(component.Find(".bit-dlg").GetAttribute("style"), "top:120px"),
+            () => Assert.Contains("top:120px", component.Find(".bit-dlg").GetAttribute("style")!),
             TimeSpan.FromSeconds(5));
     }
 
@@ -2257,7 +2256,7 @@ public class BitDialogTests : BunitTestContext
 
         var style = component.Find(".bit-dlg").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("top:"), $"A fixed Dialog must not carry a top offset, got '{style}'.");
+        Assert.DoesNotContain("top:", style, $"A fixed Dialog must not carry a top offset, got '{style}'.");
     }
 
     [TestMethod]
@@ -2369,7 +2368,7 @@ public class BitDialogTests : BunitTestContext
             Assert.HasCount(2, invocations);
             // The scroller that was locked is the one that gets unlocked, not the one named now.
             Assert.AreEqual(".first-scroller", invocations[1].Arguments[1]);
-            Assert.AreEqual(false, invocations[1].Arguments[2]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -2382,13 +2381,13 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.AutoToggleScroll, true);
         });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]);
 
         await component.Instance.DisposeAsync();
 
         var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"];
         Assert.HasCount(2, invocations);
-        Assert.AreEqual(false, invocations[1].Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocations[1].Arguments[2]));
     }
 
     [TestMethod]
@@ -2462,7 +2461,7 @@ public class BitDialogTests : BunitTestContext
         });
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.DragDrop.remove");
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
     }
 
     [TestMethod]
@@ -2486,7 +2485,7 @@ public class BitDialogTests : BunitTestContext
         var setups = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"];
 
         // Torn down from the handle it was actually put on, and put on the one named now.
-        Assert.HasCount(1, removals);
+        Assert.ContainsSingle(removals);
         Assert.AreEqual(".first-handle", removals[0].Arguments[1]);
         Assert.HasCount(2, setups);
         Assert.AreEqual(".second-handle", setups[1].Arguments[2]);
@@ -2510,7 +2509,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.Message, "A render that changed nothing the handle depends on.");
         });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
     }
 
@@ -2588,7 +2587,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.Message, "A render that changed nothing the trap depends on.");
         });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
     }
 
     [TestMethod]
@@ -3221,7 +3220,7 @@ public class BitDialogTests : BunitTestContext
         var root = component.Find(".bit-dlg");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+        Assert.Contains("color:red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3240,12 +3239,12 @@ public class BitDialogTests : BunitTestContext
 
         if (expectedStyle is null)
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -3264,9 +3263,9 @@ public class BitDialogTests : BunitTestContext
 
         // The Escape listener, the focus trap and the drag handlers are taken back, and the remembered element is
         // released rather than focused: the dialog is going away, not closing.
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeSurfaceEscape"]);
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeSurfaceEscape"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
         Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"][^1].Arguments[0]);
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
     }
@@ -3282,7 +3281,7 @@ public class BitDialogTests : BunitTestContext
 
         await Context.DisposeComponentsAsync();
 
-        Assert.IsNull(await showing.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsNull(await showing.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -3391,12 +3390,12 @@ public class BitDialogTests : BunitTestContext
 
         var style = component.Find(".bit-dlg-ctn").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-dlg-wid:30rem;");
-        StringAssert.Contains(style, "--bit-dlg-mnw:20rem;");
-        StringAssert.Contains(style, "--bit-dlg-mxw:min(100%, 40rem);");
-        StringAssert.Contains(style, "--bit-dlg-hei:24rem;");
-        StringAssert.Contains(style, "--bit-dlg-mnh:10rem;");
-        StringAssert.Contains(style, "--bit-dlg-mxh:80%;");
+        Assert.Contains("--bit-dlg-wid:30rem;", style!);
+        Assert.Contains("--bit-dlg-mnw:20rem;", style);
+        Assert.Contains("--bit-dlg-mxw:min(100%, 40rem);", style);
+        Assert.Contains("--bit-dlg-hei:24rem;", style);
+        Assert.Contains("--bit-dlg-mnh:10rem;", style);
+        Assert.Contains("--bit-dlg-mxh:80%;", style);
     }
 
     [TestMethod]
@@ -3411,9 +3410,9 @@ public class BitDialogTests : BunitTestContext
 
         var style = component.Find(".bit-dlg-ctn").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-dlg-wid:30rem;");
-        StringAssert.Contains(style, "border:1px solid red");
-        Assert.IsTrue(style!.IndexOf("--bit-dlg-wid", StringComparison.Ordinal) < style.IndexOf("border:1px", StringComparison.Ordinal));
+        Assert.Contains("--bit-dlg-wid:30rem;", style!);
+        Assert.Contains("border:1px solid red", style);
+        Assert.IsLessThan(style.IndexOf("border:1px", StringComparison.Ordinal), style!.IndexOf("--bit-dlg-wid", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -3488,7 +3487,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.FullHeight, true);
         });
 
-        StringAssert.Contains(component.Find(".bit-dlg-ctn").GetAttribute("style"), "--bit-dlg-mxw:min(100%,var(");
+        Assert.Contains("--bit-dlg-mxw:min(100%,var(", component.Find(".bit-dlg-ctn").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3500,7 +3499,7 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.MaxWidth, "20rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-dlg-ctn").GetAttribute("style"), "--bit-dlg-mxw:20rem;");
+        Assert.Contains("--bit-dlg-mxw:20rem;", component.Find(".bit-dlg-ctn").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -3508,8 +3507,10 @@ public class BitDialogTests : BunitTestContext
             parameters.Add(p => p.MaxWidth, "40rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-dlg-ctn").GetAttribute("style"), "--bit-dlg-mxw:40rem;");
+        Assert.Contains("--bit-dlg-mxw:40rem;", component.Find(".bit-dlg-ctn").GetAttribute("style")!);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 
     #endregion
 }

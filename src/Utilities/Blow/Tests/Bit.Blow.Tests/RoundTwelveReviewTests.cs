@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -40,7 +40,7 @@ public class RoundTwelveReviewTests : BunitContext
         document.Edges.Add(new BlowEdge { Id = "e", Source = "a", Target = "b", Type = BlowEdgeType.Routed });
 
         var json = BlowSerializer.Serialize(document);
-        StringAssert.Contains(json, "\"type\":\"routed\"");
+        Assert.Contains("\"type\":\"routed\"", json);
 
         var result = BlowSerializer.Deserialize(json);
         Assert.IsTrue(result.Succeeded);
@@ -93,7 +93,7 @@ public class RoundTwelveReviewTests : BunitContext
 
         Assert.IsNotNull(result.Document);
         Assert.AreEqual(1.5, result.Document.Edges.Single().StrokeWidth);
-        Assert.IsTrue(result.Issues.Any(i => i.Code == BlowImportCodes.InvalidValue && i.Path == "$.edges[0].style.strokeWidth"));
+        Assert.Contains(i => i.Code == BlowImportCodes.InvalidValue && i.Path == "$.edges[0].style.strokeWidth", result.Issues);
     }
 
     // ---- connecting by clicks ----
@@ -131,7 +131,7 @@ public class RoundTwelveReviewTests : BunitContext
 
         Assert.IsFalse(cut.Instance.IsConnecting);
         Assert.AreEqual(BlowConnectionRejection.TargetFull, ends.Single().Rejection);
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
     }
 
     [TestMethod]
@@ -149,7 +149,7 @@ public class RoundTwelveReviewTests : BunitContext
         Handle(cut, "t", "target", "in").PointerDown(At(75, 200));
 
         Assert.IsTrue(ends.Single().IsValid, $"refused: {ends.Single().Rejection}");
-        Assert.IsTrue(edges.Any(e => e.Source == "s" && e.Target == "t" && e.TargetHandle == "in"));
+        Assert.Contains(e => e.Source == "s" && e.Target == "t" && e.TargetHandle == "in", edges);
     }
 
     // ---- a keyboard connection aimed at a port that fills ----
@@ -188,7 +188,7 @@ public class RoundTwelveReviewTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.AddEdges(new BlowEdge { Id = "x-t", Source = "x", Target = "t", TargetHandle = "b" }));
         await Node(cut, "t").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
 
-        Assert.IsFalse(edges.Any(e => e.Source == "s"), "connected to a port that was never chosen");
+        Assert.DoesNotContain(e => e.Source == "s", edges, "connected to a port that was never chosen");
         Assert.IsTrue(cut.Instance.IsConnecting);
         Assert.AreEqual(new BlowAriaLabels().ConnectionRejected(BlowConnectionRejection.TargetFull), Heard(cut));
     }
@@ -290,7 +290,7 @@ public class RoundTwelveReviewTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.Announce("Step two of five"));
 
         Assert.AreEqual("Step two of five", Heard(cut));
-        CollectionAssert.AreEqual(before, NodeRenders(cut));
+        Assert.AreSequenceEqual(before, NodeRenders(cut));
     }
 
     [TestMethod]

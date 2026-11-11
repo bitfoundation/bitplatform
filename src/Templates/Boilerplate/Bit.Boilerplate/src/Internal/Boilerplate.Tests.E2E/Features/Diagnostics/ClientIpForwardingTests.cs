@@ -156,7 +156,7 @@ public partial class ClientIpForwardingTests : AppTestBase
             return;
         }
 
-        Assert.HasCount(1, reportedSessionIds, $"An authenticated call has to name exactly one user session. Report:{Environment.NewLine}{serverReport}");
+        Assert.ContainsSingle(reportedSessionIds, $"An authenticated call has to name exactly one user session. Report:{Environment.NewLine}{serverReport}");
 
         if (sessionId is not null)
         {

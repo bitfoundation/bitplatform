@@ -35,7 +35,7 @@ public class CoreEngineTests
         Assert.AreEqual("Hello", map.Get("title"));
         Assert.AreEqual(42L, map.Get("count"));
         Assert.AreEqual(0.5, map.Get("ratio"));
-        Assert.AreEqual(true, map.Get("flag"));
+        Assert.IsTrue((bool?)map.Get("flag"));
         Assert.AreEqual(4, map.Count);
 
         map.Delete("flag");
@@ -153,7 +153,7 @@ public class CoreEngineTests
         a.GetText("body").Insert(0, "y");
         byte[] delta = a.EncodeStateAsUpdate(b.GetStateVector());
 
-        Assert.IsTrue(delta.Length < 200, $"Incremental update was {delta.Length} bytes; expected a small delta.");
+        Assert.IsLessThan(200, delta.Length, $"Incremental update was {delta.Length} bytes; expected a small delta.");
         b.ApplyUpdate(delta);
         Assert.AreEqual(a.GetText("body").ToString(), b.GetText("body").ToString());
     }
@@ -188,7 +188,7 @@ public class CoreEngineTests
         for (int i = 0; i < 2000; i++) text.Insert(text.Count, "a");
 
         int blockCount = doc.Store.GetClientStructs(doc.ClientId)!.Count;
-        Assert.IsTrue(blockCount < 20, $"Sequential typing produced {blockCount} blocks; expected them to merge.");
+        Assert.IsLessThan(20, blockCount, $"Sequential typing produced {blockCount} blocks; expected them to merge.");
         Assert.AreEqual(2000, text.Count);
     }
 
@@ -206,9 +206,9 @@ public class CoreEngineTests
 
         var delta = b.GetText("body").ToDelta();
         Assert.AreEqual("Hello world", b.GetText("body").ToString());
-        Assert.AreEqual(2, delta.Count);
+        Assert.HasCount(2, delta);
         Assert.AreEqual("Hello", delta[0].Content);
-        Assert.AreEqual(true, delta[0].Attributes!["bold"]);
+        Assert.IsTrue((bool?)delta[0].Attributes!["bold"]);
         Assert.AreEqual(" world", delta[1].Content);
         Assert.IsNull(delta[1].Attributes);
     }
@@ -332,6 +332,7 @@ public class CoreEngineTests
         for (int cut = 1; cut < update.Length; cut++)
         {
             string before = BcrdtConvergenceHarness.Describe(target);
+            var rejected = false;
             try
             {
                 target.ApplyUpdate(update.AsMemory(0, cut));
@@ -341,13 +342,16 @@ public class CoreEngineTests
                 // The payload is incomplete. Rejection must be all-or-nothing: the whole update is
                 // decoded before any of it is integrated.
                 rejections++;
-                Assert.AreEqual(before, BcrdtConvergenceHarness.Describe(target));
+                rejected = true;
             }
+
+            if (rejected) Assert.AreEqual(before, BcrdtConvergenceHarness.Describe(target));
         }
 
         // Most prefixes are malformed; the few that happen to be well-formed may apply.
-        Assert.IsTrue(rejections > 0);
-        Assert.Contains("existing", target.GetArray("items").ToArray().Select(v => v?.ToString()));
+        Assert.IsGreaterThan(0, rejections);
+        var actualValue = target.GetArray("items").ToArray().Select(v => v?.ToString());
+        Assert.Contains("existing", actualValue);
     }
 
     [TestMethod]

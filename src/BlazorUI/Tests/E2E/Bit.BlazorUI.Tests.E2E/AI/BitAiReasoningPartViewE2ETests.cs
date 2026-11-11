@@ -180,8 +180,8 @@ public class BitAiReasoningPartViewE2ETests : E2ETestBase
         // The thinking was shown open and growing word by word before the panel collapsed.
         var lengths = await Page.TextLengthsAsync("rpv-live");
         var open = lengths.Where(l => l > 0).ToArray();
-        Assert.IsTrue(open.Length >= 5, $"The reasoning was seen streaming in: {string.Join(",", lengths)}.");
-        Assert.IsTrue(open.Max() >= "The user asks about the cost of a round trip.".Length, $"The reasoning was seen in full: {string.Join(",", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo(5, open.Length, $"The reasoning was seen streaming in: {string.Join(",", lengths)}.");
+        Assert.IsGreaterThanOrEqualTo("The user asks about the cost of a round trip.".Length, open.Max(), $"The reasoning was seen in full: {string.Join(",", lengths)}.");
         Assert.AreEqual(0, lengths[^1], "The panel collapsed at the end.");
 
         // Opened again, it holds the whole of it.
@@ -212,13 +212,13 @@ public class BitAiReasoningPartViewE2ETests : E2ETestBase
             var chevron = await Page.Locator($"#{id} .bit-acd-eiw").RectAsync();
             var title = await Page.Locator($"#{id} .bit-airpv-ttl").RectAsync();
             var icon = await Page.Locator($"#{id} .bit-airpv-ico").RectAsync();
-            Assert.IsTrue(chevron.Left > title.Left, $"{id}: the chevron is at the right of the title.");
-            Assert.IsTrue(icon.Left > title.Left, $"{id}: the icon comes before the title, from the right.");
+            Assert.IsGreaterThan(title.Left, chevron.Left, $"{id}: the chevron is at the right of the title.");
+            Assert.IsGreaterThan(title.Left, icon.Left, $"{id}: the icon comes before the title, from the right.");
         }
 
         var ltrChevron = await Page.Locator("#rpv-ltr .bit-acd-eiw").RectAsync();
         var ltrTitle = await Page.Locator("#rpv-ltr .bit-airpv-ttl").RectAsync();
-        Assert.IsTrue(ltrChevron.Left < ltrTitle.Left, "Left to right, the chevron leads at the left.");
+        Assert.IsLessThan(ltrTitle.Left, ltrChevron.Left, "Left to right, the chevron leads at the left.");
         await Expect(Page.Locator("#rpv-rtl")).ToHaveAttributeAsync("dir", "rtl");
     }
 
@@ -252,8 +252,8 @@ public class BitAiReasoningPartViewE2ETests : E2ETestBase
 
         // Long reasoning scrolls inside the panel rather than pushing the answer away.
         var sizes = await body.EvaluateAsync<double[]>("e => [e.scrollHeight, e.clientHeight]");
-        Assert.IsTrue(sizes[0] > sizes[1], "The reasoning scrolls inside the panel.");
-        Assert.IsTrue(sizes[1] <= 60.5);
+        Assert.IsGreaterThan(sizes[1], sizes[0], "The reasoning scrolls inside the panel.");
+        Assert.IsLessThanOrEqualTo(60.5, sizes[1]);
 
         await Page.Locator("#rpv-defaults button.bit-acd-hdr").ClickAsync();
         var defaults = Page.Locator("#rpv-defaults .bit-airpv-bdy");

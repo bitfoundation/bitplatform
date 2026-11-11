@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E;
 /// Stops what the tests of a run share - the test host and the browsers - once the whole run is over.
 /// </summary>
 [TestClass]
-public sealed class E2ETestRun
+public static class E2ETestRun
 {
     [AssemblyCleanup]
     public static Task Cleanup() => E2ETestBase.ShutdownAsync();

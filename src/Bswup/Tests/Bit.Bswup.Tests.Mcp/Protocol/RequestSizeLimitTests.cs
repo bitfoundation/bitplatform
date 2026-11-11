@@ -44,14 +44,15 @@ public class RequestSizeLimitTests
     [TestMethod]
     public async Task TheMirror_RefusesABodyPastTheCap_WithProblemDetailsThatSayWhatToDo()
     {
-        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", Json(new { script = ServiceWorkerFixtures.Clean, assetUrls = new string('a', PastTheCap) }));
+        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", Json(new { script = ServiceWorkerFixtures.Clean, assetUrls = new string('a', PastTheCap) }), TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, await response.Content.ReadAsStringAsync());
-        Assert.AreEqual("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual("application/problem+json", actualValue);
 
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.CancellationToken);
 
-        StringAssert.Contains(problem.GetProperty("detail").GetString(), "Pass the asset URLs in smaller batches");
+        Assert.Contains("Pass the asset URLs in smaller batches", problem.GetProperty("detail").GetString()!);
     }
 
     [TestMethod]
@@ -70,14 +71,14 @@ public class RequestSizeLimitTests
 
         request.Headers.Accept.ParseAdd("application/json, text/event-stream");
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, await response.Content.ReadAsStringAsync());
+        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
-        var error = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("error");
+        var error = (await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.CancellationToken)).GetProperty("error");
 
         Assert.AreEqual(-32600, error.GetProperty("code").GetInt32(), "an invalid request, in JSON-RPC's terms");
-        StringAssert.Contains(error.GetProperty("message").GetString(), "Pass the asset URLs in smaller batches");
+        Assert.Contains("Pass the asset URLs in smaller batches", error.GetProperty("message").GetString()!);
     }
 
     [TestMethod]
@@ -89,9 +90,9 @@ public class RequestSizeLimitTests
 
         Assert.IsTrue(body.Headers.ContentLength > 760_000, "the fixture has to be the worst case for this to test anything");
 
-        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", body);
+        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", body, TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync());
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -101,16 +102,16 @@ public class RequestSizeLimitTests
         // with the rest" from the tool, not a transport error.
         var urls = string.Join("\n", Enumerable.Range(0, 30_000).Select(index => $"_framework/asset{index}.dll"));
 
-        Assert.IsTrue(urls.Length > 700_000, "the fixture has to be far past the tool's own cut for this to test anything");
+        Assert.IsGreaterThan(700_000, urls.Length, "the fixture has to be far past the tool's own cut for this to test anything");
 
-        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", Json(new { script = ServiceWorkerFixtures.Clean, assetUrls = urls }));
+        var response = await _client.PostAsync("/api/mcp/InspectBswupServiceWorker", Json(new { script = ServiceWorkerFixtures.Clean, assetUrls = urls }), TestContext.CancellationToken);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync());
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
-        var report = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var report = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.CancellationToken);
         var notes = string.Join("\n", report.GetProperty("assets").GetProperty("notes").EnumerateArray().Select(note => note.GetString()));
 
-        StringAssert.Contains(notes, "Ask again with the rest");
+        Assert.Contains("Ask again with the rest", notes);
     }
 
     /// <summary>A JSON body with its length known up front, the way most clients send one.</summary>
@@ -121,4 +122,6 @@ public class RequestSizeLimitTests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
             => builder.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

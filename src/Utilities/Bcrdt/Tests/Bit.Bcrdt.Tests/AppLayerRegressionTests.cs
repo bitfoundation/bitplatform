@@ -141,7 +141,8 @@ public class AppLayerRegressionTests : IDisposable
         b.ApplyUpdate(a.EncodeStateAsUpdate(b.GetStateVector()));
 
         Assert.AreEqual("XXhello big world", b.GetText("body").ToString());
-        Assert.AreEqual(7, caret.Resolve(b)?.Index);
+        var actualValue = caret.Resolve(b)?.Index;
+        Assert.AreEqual(7, actualValue);
         BcrdtConvergenceHarness.AssertConverged(a, b);
     }
 
@@ -711,7 +712,7 @@ public class AppLayerRegressionTests : IDisposable
     public async Task Appends_after_a_torn_record_are_not_stranded_behind_it()
     {
         var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
-        await store.AppendUpdateAsync("doc", ItemUpdate(1, "first"));
+        await store.AppendUpdateAsync("doc", ItemUpdate(1, "first"), TestContext.CancellationToken);
 
         // A crash mid-append leaves a header promising more bytes than were written.
         string log = Directory.EnumerateFiles(_root, "*.bcl").Single();
@@ -721,15 +722,15 @@ public class AppLayerRegressionTests : IDisposable
         byte[] torn = [.. header, 1, 2, 3];
         await using (var stream = new FileStream(log, FileMode.Append))
         {
-            await stream.WriteAsync(torn);
+            await stream.WriteAsync(torn, TestContext.CancellationToken);
         }
 
         // The process restarts and keeps writing.
         var restarted = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
-        await restarted.AppendUpdateAsync("doc", ItemUpdate(2, "second"));
-        await restarted.AppendUpdateAsync("doc", ItemUpdate(3, "third"));
+        await restarted.AppendUpdateAsync("doc", ItemUpdate(2, "second"), TestContext.CancellationToken);
+        await restarted.AppendUpdateAsync("doc", ItemUpdate(3, "third"), TestContext.CancellationToken);
 
-        BcrdtStoredDocument stored = await new BcrdtFileSystemDocumentStore(_root, flushToDisk: false).LoadAsync("doc");
+        BcrdtStoredDocument stored = await new BcrdtFileSystemDocumentStore(_root, flushToDisk: false).LoadAsync("doc", TestContext.CancellationToken);
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 9 });
         doc.ApplyUpdate(stored.Update!);
 
@@ -750,11 +751,11 @@ public class AppLayerRegressionTests : IDisposable
 
         await Task.WhenAll(Enumerable.Range(0, updates.Length).Select(i => Task.Run(async () =>
         {
-            await store.AppendUpdateAsync("doc", updates[i]);
-            if (i % 4 == 0) await store.CompactAsync("doc");
-        })));
+            await store.AppendUpdateAsync("doc", updates[i], TestContext.CancellationToken);
+            if (i % 4 == 0) await store.CompactAsync("doc", TestContext.CancellationToken);
+        }, TestContext.CancellationToken)));
 
-        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        BcrdtStoredDocument stored = await store.LoadAsync("doc", TestContext.CancellationToken);
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 999 });
         doc.ApplyUpdate(stored.Update!);
 
@@ -766,7 +767,7 @@ public class AppLayerRegressionTests : IDisposable
     {
         var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
 
-        BcrdtStoredDocument stored = await store.LoadAsync("../../not-there");
+        BcrdtStoredDocument stored = await store.LoadAsync("../../not-there", TestContext.CancellationToken);
 
         Assert.IsTrue(stored.IsEmpty);
         Assert.IsEmpty(Directory.EnumerateFiles(_root));
@@ -776,12 +777,12 @@ public class AppLayerRegressionTests : IDisposable
     public async Task Deleting_a_document_removes_its_identifier_too()
     {
         var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
-        await store.AppendUpdateAsync("doc", ItemUpdate(1, "x"));
+        await store.AppendUpdateAsync("doc", ItemUpdate(1, "x"), TestContext.CancellationToken);
 
-        await store.DeleteAsync("doc");
+        await store.DeleteAsync("doc", TestContext.CancellationToken);
 
         Assert.IsEmpty(Directory.EnumerateFiles(_root));
-        Assert.IsEmpty(await store.ListAsync());
+        Assert.IsEmpty(await store.ListAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -790,22 +791,22 @@ public class AppLayerRegressionTests : IDisposable
         var store = new BcrdtInMemoryDocumentStore();
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
             doc.GetText("t").Insert(0, "hello");
             doc.GetText("t").Delete(0, 2);
             await persistence.FlushAsync();
         }
 
-        int before = (await store.LoadAsync("doc")).RecordCount;
+        int before = (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount;
         for (int i = 0; i < 3; i++)
         {
             using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = (ulong)(10 + i) });
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "doc", cancellationToken: TestContext.CancellationToken);
             await persistence.FlushAsync();
             Assert.AreEqual("llo", doc.GetText("t").ToString());
         }
 
-        Assert.AreEqual(before, (await store.LoadAsync("doc")).RecordCount);
+        Assert.AreEqual(before, (await store.LoadAsync("doc", TestContext.CancellationToken)).RecordCount);
     }
 
     private sealed class FlakyStore(IBcrdtDocumentStore inner, int failures) : IBcrdtDocumentStore
@@ -840,7 +841,7 @@ public class AppLayerRegressionTests : IDisposable
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
             await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-                doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(5) });
+                doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(5) }, TestContext.CancellationToken);
             persistence.WriteFailed += _ => Interlocked.Increment(ref reported);
 
             doc.GetText("t").Insert(0, "a");
@@ -855,7 +856,7 @@ public class AppLayerRegressionTests : IDisposable
         Assert.AreEqual(3, reported);
 
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        reloaded.ApplyUpdate((await backing.LoadAsync("doc")).Update!);
+        reloaded.ApplyUpdate((await backing.LoadAsync("doc", TestContext.CancellationToken)).Update!);
         Assert.AreEqual("abc", reloaded.GetText("t").ToString());
     }
 
@@ -889,8 +890,8 @@ public class AppLayerRegressionTests : IDisposable
     {
         await using BcrdtCollaborationService service = CreateClient();
 
-        BcrdtCollaborativeDocument first = await service.OpenAsync("doc");
-        BcrdtCollaborativeDocument second = await service.OpenAsync("doc");
+        BcrdtCollaborativeDocument first = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument second = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
         Assert.AreSame(first, second);
 
         await service.CloseAsync("doc");
@@ -939,9 +940,9 @@ public class AppLayerRegressionTests : IDisposable
         store.Gate.SetResult();
         await using BcrdtCollaborationService service = CreateClient(store: store);
 
-        await Assert.ThrowsExactlyAsync<IOException>(async () => await service.OpenAsync("doc"));
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken));
 
-        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc");
+        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual("doc", doc.Id);
     }
 
@@ -978,7 +979,7 @@ public class AppLayerRegressionTests : IDisposable
         using (var saved = new BcrdtDocument())
         {
             saved.GetText("body").Insert(0, "saved earlier");
-            await store.AppendUpdateAsync("doc", saved.EncodeStateAsUpdate());
+            await store.AppendUpdateAsync("doc", saved.EncodeStateAsUpdate(), TestContext.CancellationToken);
         }
 
         await using var service = new BcrdtCollaborationService(
@@ -987,7 +988,7 @@ public class AppLayerRegressionTests : IDisposable
             store);
 
         // Loaded from storage, the document is usable at once; the connection carries on behind it.
-        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc").AsTask().WaitAsync(TimeSpan.FromSeconds(10));
+        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("saved earlier", doc.Text("body").ToString());
         Assert.AreEqual(BcrdtConnectionStatus.Connecting, doc.Sync!.Status);
     }
@@ -1019,7 +1020,7 @@ public class AppLayerRegressionTests : IDisposable
 
         using var impatient = new CancellationTokenSource();
         ValueTask<BcrdtCollaborativeDocument> first = service.OpenAsync("doc", cancellationToken: impatient.Token);
-        ValueTask<BcrdtCollaborativeDocument> second = service.OpenAsync("doc");
+        ValueTask<BcrdtCollaborativeDocument> second = service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
 
         await impatient.CancelAsync();
         await Assert.ThrowsAsync<OperationCanceledException>(async () => await first);
@@ -1038,8 +1039,8 @@ public class AppLayerRegressionTests : IDisposable
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
 
-        await clientA.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
-        BcrdtCollaborativeDocument b = await clientB.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("bob", "Bob", "#00ff00") });
+        await clientA.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
+        BcrdtCollaborativeDocument b = await clientB.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("bob", "Bob", "#00ff00") }, TestContext.CancellationToken);
         await WaitUntilAsync(() => b.Presence.Others.Any(o => o.User.Name == "Ada"), "B sees A");
 
         await clientA.CloseAsync("doc");
@@ -1055,14 +1056,14 @@ public class AppLayerRegressionTests : IDisposable
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
 
-        BcrdtCollaborativeDocument a = await clientA.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
-        BcrdtCollaborativeDocument b = await clientB.OpenAsync("doc");
+        BcrdtCollaborativeDocument a = await clientA.OpenAsync("doc", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
+        BcrdtCollaborativeDocument b = await clientB.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
         await WaitUntilAsync(() => b.Presence.Others.Any(o => o.User.Name == "Ada"), "B sees A");
 
-        await a.DisconnectAsync();
+        await a.DisconnectAsync(TestContext.CancellationToken);
         await WaitUntilAsync(() => b.Presence.Others.Count == 0, "B sees A leave");
 
-        await a.ConnectAsync();
+        await a.ConnectAsync(TestContext.CancellationToken);
         await WaitUntilAsync(() => b.Presence.Others.Any(o => o.User.Name == "Ada"), "B sees Ada again, not an anonymous cursor");
     }
 
@@ -1070,7 +1071,7 @@ public class AppLayerRegressionTests : IDisposable
     public async Task The_default_undo_stack_captures_edits_to_text_obtained_from_the_document()
     {
         await using BcrdtCollaborationService service = CreateClient(undo: true);
-        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc");
+        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
 
         BcrdtText text = doc.Text("body");
         BcrdtTextSynchronizer.Apply(text, "typed");
@@ -1084,7 +1085,7 @@ public class AppLayerRegressionTests : IDisposable
     public async Task A_transaction_opened_inside_another_reports_that_it_is_nested()
     {
         await using BcrdtCollaborationService service = CreateClient();
-        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc");
+        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken);
 
         using BcrdtCollaborativeTransaction outer = doc.BeginTransaction();
         using BcrdtCollaborativeTransaction inner = doc.BeginTransaction();
@@ -1155,7 +1156,7 @@ public class AppLayerRegressionTests : IDisposable
 
         // Loading from the store completes on a thread-pool thread; the sync provider must still be
         // created back on the opening context, because that is the context it applies updates on.
-        await context.RunAsync(async () => await service.OpenAsync("doc"));
+        await context.RunAsync(async () => await service.OpenAsync("doc", cancellationToken: TestContext.CancellationToken));
         Assert.AreSame(context, wiredOn);
 
         await context.RunAsync(async () =>
@@ -1407,7 +1408,7 @@ public class AppLayerRegressionTests : IDisposable
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(50) });
+            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(50) }, TestContext.CancellationToken);
         persistence.WriteFailed += _ => Interlocked.Increment(ref reported);
 
         // One small update, one the store will never accept, one small one - queued together behind a
@@ -1423,8 +1424,8 @@ public class AppLayerRegressionTests : IDisposable
         Task flushed = persistence.FlushAsync();
         await WaitUntilAsync(() => flushed.IsCompleted, "every queued update has been dealt with");
         await Assert.ThrowsExactlyAsync<IOException>(() => flushed);
-        Assert.IsTrue(store.Rejected >= 1);
-        Assert.IsTrue(reported >= 2);
+        Assert.IsGreaterThanOrEqualTo(1, store.Rejected);
+        Assert.IsGreaterThanOrEqualTo(2, reported);
 
         // Not wedged: later changes are stored and flush cleanly.
         doc.GetArray("small").Push("c");
@@ -1433,7 +1434,7 @@ public class AppLayerRegressionTests : IDisposable
         await later;
 
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        reloaded.ApplyUpdate((await backing.LoadAsync("doc")).Update!);
+        reloaded.ApplyUpdate((await backing.LoadAsync("doc", TestContext.CancellationToken)).Update!);
         Assert.AreSequenceEqual(new[] { "a", "b", "c" }, reloaded.GetArray("small").ToArray().Cast<string>());
         Assert.AreEqual(string.Empty, reloaded.GetText("big").ToString());
     }
@@ -1495,4 +1496,6 @@ public class AppLayerRegressionTests : IDisposable
 
         Assert.AreEqual((long)last, awareness.GetField(1, "n"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

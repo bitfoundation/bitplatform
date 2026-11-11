@@ -113,7 +113,7 @@ public class BrowserFindingsTests : ComponentTestBase
 
         await cut.Find("form").SubmitAsync();
 
-        Assert.IsTrue(FocusCalls() > before);
+        Assert.IsGreaterThan(before, FocusCalls());
     }
 
     private int FocusCalls()

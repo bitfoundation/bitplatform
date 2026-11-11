@@ -38,9 +38,9 @@ public class BitMapParamsTests : BunitTestContext
     [TestMethod]
     public void BitMapParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMap<BitLeafletMapProvider>)}", BitMapParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMap<BitLeafletMapProvider>)}", new BitMapParams().Name);
         // One name for every provider type, since every map reads the same object.
-        Assert.AreEqual("BitParams.BitMap", BitMapParams.ParamName);
+        Assert.AreEqual("BitParams.BitMap", new BitMapParams().Name);
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class BitMapParamsTests : BunitTestContext
                                                                 .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                                 .ToArray();
 
-        Assert.IsTrue(parameters.Length > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -145,7 +145,7 @@ public class BitMapParamsTests : BunitTestContext
                                              .Where(p => p.Name != nameof(IBitComponentParams.Name))
                                              .ToArray();
 
-        Assert.IsTrue(properties.Length > 0);
+        Assert.IsNotEmpty(properties);
 
         foreach (var property in properties)
         {
@@ -200,24 +200,24 @@ public class BitMapParamsTests : BunitTestContext
         var component = RenderComponent<BitMapCascadingParamsTest>();
 
         var maps = component.FindAll(".bit-map");
-        Assert.AreEqual(3, maps.Count);
+        Assert.HasCount(3, maps);
 
         // The first map takes everything from the cascade.
         var first = maps[0];
         Assert.IsTrue(first.ClassList.Contains("cascaded"));
         Assert.IsTrue(first.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(first.GetAttribute("style"), "--bit-Map-radius: 1rem");
+        Assert.Contains("--bit-Map-radius: 1rem", first.GetAttribute("style")!);
         Assert.IsNotNull(first.QuerySelector(".bit-map-gesture-hint"), "CooperativeGestures is cascaded");
         Assert.AreEqual("Cascaded keys", first.QuerySelector(".bit-map-help")!.TextContent.Trim());
 
         var canvas = first.QuerySelector(".bit-map-canvas")!;
         Assert.IsTrue(canvas.ClassList.Contains("cascaded-canvas"));
         Assert.AreEqual("cascaded map", canvas.GetAttribute("aria-roledescription"));
-        StringAssert.Contains(canvas.GetAttribute("style"), "--cascaded-canvas: 1");
+        Assert.Contains("--cascaded-canvas: 1", canvas.GetAttribute("style")!);
 
         // The marker list is a sibling of the map, so it is found by its own caption.
         var captions = component.FindAll(".bit-map-marker-table caption");
-        Assert.AreEqual(3, captions.Count, "MarkerListMode is cascaded to every map");
+        Assert.HasCount(3, captions, "MarkerListMode is cascaded to every map");
         Assert.AreEqual("Cascaded caption", captions[0].TextContent.Trim());
     }
 
@@ -236,7 +236,7 @@ public class BitMapParamsTests : BunitTestContext
         Assert.AreEqual("Own keys", second.QuerySelector(".bit-map-help")!.TextContent.Trim());
 
         // A parameter the markup leaves unset is still taken from the cascade.
-        StringAssert.Contains(second.GetAttribute("style"), "--bit-Map-radius: 1rem");
+        Assert.Contains("--bit-Map-radius: 1rem", second.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -264,7 +264,7 @@ public class BitMapParamsTests : BunitTestContext
         Assert.IsNull(first.QuerySelector(".bit-map-gesture-hint"));
         Assert.AreEqual("Use the arrow keys to pan the map, plus and minus to zoom, and Escape to leave the map.",
                         first.QuerySelector(".bit-map-help")!.TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-map-marker-table").Count);
+        Assert.IsEmpty(component.FindAll(".bit-map-marker-table"));
     }
 
     [TestMethod]

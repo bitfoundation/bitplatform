@@ -103,7 +103,7 @@ public sealed class BitThemeDensityAwareTokensTests : BunitTestContext
     {
         var rules = ThemeRules();
 
-        Assert.IsTrue(rules.Length > 0, "Expected the compiled bundles to carry theme scopes.");
+        Assert.IsNotEmpty(rules, "Expected the compiled bundles to carry theme scopes.");
 
         foreach (var rule in rules)
         {
@@ -144,7 +144,7 @@ public sealed class BitThemeDensityAwareTokensTests : BunitTestContext
             "--bit-siz-popup-max-height", "--bit-siz-dialog-max-width",
         ];
 
-        CollectionAssert.AreEquivalent(expected, aliases.Keys.ToArray(), "The density-aware aliases of theme-variables.scss changed.");
+        Assert.AreSequenceEqual(expected, aliases.Keys.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The density-aware aliases of theme-variables.scss changed.");
 
         foreach (var (token, steps) in aliases)
         {
@@ -173,11 +173,11 @@ public sealed class BitThemeDensityAwareTokensTests : BunitTestContext
         {
             if (token == BitCss.Var.Size.ControlMinWidth)
             {
-                Assert.IsTrue(core.Contains(token), "The core stylesheet no longer declares the button minimum width.");
+                Assert.Contains(token, core, "The core stylesheet no longer declares the button minimum width.");
                 continue;
             }
 
-            Assert.IsTrue(core.Contains(steps), $"The core stylesheet declares no default for {steps}, so {token} has nothing to compute from.");
+            Assert.Contains(steps, core, $"The core stylesheet declares no default for {steps}, so {token} has nothing to compute from.");
         }
     }
 
@@ -255,11 +255,11 @@ public sealed class BitThemeDensityAwareTokensTests : BunitTestContext
 
         var style = RenderProviderStyle(theme);
 
-        StringAssert.Contains(style, "--bit-spa-card-md:10px");
-        StringAssert.Contains(style, "--bit-spa-dialog-steps:2");
-        StringAssert.Contains(style, "--bit-siz-ctrl-md:30px");
-        StringAssert.Contains(style, "--bit-siz-item-md-steps:5");
-        StringAssert.Contains(style, "--bit-siz-switch-thumb-lg-steps:2.5");
+        Assert.Contains("--bit-spa-card-md:10px", style);
+        Assert.Contains("--bit-spa-dialog-steps:2", style);
+        Assert.Contains("--bit-siz-ctrl-md:30px", style);
+        Assert.Contains("--bit-siz-item-md-steps:5", style);
+        Assert.Contains("--bit-siz-switch-thumb-lg-steps:2.5", style);
         Assert.IsFalse(style.Contains("calc(", StringComparison.Ordinal), $"Nothing is re-declared over the inputs. Actual: {style}");
     }
 

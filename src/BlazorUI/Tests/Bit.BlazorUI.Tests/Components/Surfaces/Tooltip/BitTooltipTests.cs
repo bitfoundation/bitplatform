@@ -31,7 +31,7 @@ public class BitTooltipTests : BunitTestContext
 
         // By default tooltip should not be visible
         Assert.IsFalse(wrapper.ClassList.Contains("bit-ttp-vis"));
-        Assert.IsTrue(component.Find(".bit-ttp-ctn").TextContent.Contains("This is a tooltip"));
+        Assert.Contains("This is a tooltip", component.Find(".bit-ttp-ctn").TextContent);
 
         var component2 = RenderComponent<BitTooltip>(parameters =>
         {
@@ -54,7 +54,7 @@ public class BitTooltipTests : BunitTestContext
 
         var tooltip = component.Find(".bit-ttp-ctn");
 
-        Assert.IsTrue(tooltip.OuterHtml.Contains("TemplateContent"));
+        Assert.Contains("TemplateContent", tooltip.OuterHtml);
     }
 
     [TestMethod]
@@ -68,8 +68,8 @@ public class BitTooltipTests : BunitTestContext
 
         var tooltip = component.Find(".bit-ttp-ctn");
 
-        Assert.IsTrue(tooltip.TextContent.Contains("TemplateContent"));
-        Assert.IsFalse(tooltip.TextContent.Contains("PlainText"));
+        Assert.Contains("TemplateContent", tooltip.TextContent);
+        Assert.DoesNotContain("PlainText", tooltip.TextContent);
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public class BitTooltipTests : BunitTestContext
         var anchor = component.Find(".anchor-btn");
 
         Assert.IsNotNull(anchor);
-        Assert.IsTrue(anchor.OuterHtml.Contains("Anchor"));
+        Assert.Contains("Anchor", anchor.OuterHtml);
     }
 
     [TestMethod]
@@ -95,8 +95,8 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Anchor, Markup("<button class=\"anchor-btn\">Anchor</button>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".anchor-btn").Count);
-        Assert.AreEqual(0, component.FindAll(".child").Count);
+        Assert.ContainsSingle(component.FindAll(".anchor-btn"));
+        Assert.IsEmpty(component.FindAll(".child"));
     }
 
 
@@ -200,11 +200,11 @@ public class BitTooltipTests : BunitTestContext
     {
         var component = RenderComponent<BitTooltip>(parameters => parameters.Add(p => p.Text, "Tip"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-ttp-arw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ttp-arw"));
 
         component.Render(parameters => parameters.Add(p => p.HideArrow, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-arw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ttp-arw"));
     }
 
 
@@ -298,9 +298,9 @@ public class BitTooltipTests : BunitTestContext
 
         var style = component.Find(".bit-ttp").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-ttp-offset:24px");
-        StringAssert.Contains(style, "--bit-ttp-arrow-size:18px");
-        StringAssert.Contains(style, "--bit-ttp-max-width:10rem");
+        Assert.Contains("--bit-ttp-offset:24px", style!);
+        Assert.Contains("--bit-ttp-arrow-size:18px", style);
+        Assert.Contains("--bit-ttp-max-width:10rem", style);
     }
 
     [TestMethod]
@@ -312,11 +312,11 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.MaxWidth, "10rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-ttp").GetAttribute("style"), "--bit-ttp-max-width:10rem");
+        Assert.Contains("--bit-ttp-max-width:10rem", component.Find(".bit-ttp").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.MaxWidth, "none"));
 
-        StringAssert.Contains(component.Find(".bit-ttp").GetAttribute("style"), "--bit-ttp-max-width:none");
+        Assert.Contains("--bit-ttp-max-width:none", component.Find(".bit-ttp").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -326,9 +326,9 @@ public class BitTooltipTests : BunitTestContext
 
         var style = component.Find(".bit-ttp").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-ttp-offset"));
-        Assert.IsFalse(style.Contains("--bit-ttp-arrow-size"));
-        Assert.IsFalse(style.Contains("--bit-ttp-max-width"));
+        Assert.DoesNotContain("--bit-ttp-offset", style);
+        Assert.DoesNotContain("--bit-ttp-arrow-size", style);
+        Assert.DoesNotContain("--bit-ttp-max-width", style);
     }
 
 
@@ -578,7 +578,7 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
 
         // Well past the delay: a show that was not cancelled would have landed by now.
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.CancellationToken);
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -599,12 +599,13 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
 
         // Well past the delay: a hide that was not cancelled would have landed by now.
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.CancellationToken);
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "Intentionally holds the renderer while its real delay expires to reproduce the event-ordering race.")]
     public async Task BitTooltipShouldNotShowWhenThePointerLeftOnceTheShowDelayHadRunOut()
     {
         // A delay can run out while its continuation still waits for the dispatcher - behind the very handler of the
@@ -630,6 +631,7 @@ public class BitTooltipTests : BunitTestContext
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "Intentionally holds the renderer while its real delay expires to reproduce the event-ordering race.")]
     public async Task BitTooltipShouldNotHideWhenThePointerCameBackOnceTheHideDelayHadRunOut()
     {
         // The same as the show's: a hide whose delay ran out behind the handler of the enter that called it off.
@@ -944,13 +946,13 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.AreEqual(1, shown);
         Assert.AreEqual(0, hidden);
-        Assert.AreEqual(true, toggled);
+        Assert.IsTrue(toggled);
 
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
 
         Assert.AreEqual(1, shown);
         Assert.AreEqual(1, hidden);
-        Assert.AreEqual(false, toggled);
+        Assert.IsFalse(toggled);
     }
 
     [TestMethod]
@@ -981,14 +983,14 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Template, Markup("<span class=\"tpl\">TemplateContent</span>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".tpl").Count);
+        Assert.IsEmpty(component.FindAll(".tpl"));
 
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
 
         // What has been rendered once stays rendered.
         component.Find(".bit-ttp").TriggerEvent("onpointerleave", Mouse());
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
     }
 
     [TestMethod]
@@ -1001,7 +1003,7 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.Template, Markup("<span class=\"tpl\">TemplateContent</span>"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".tpl"));
     }
 
 
@@ -1033,10 +1035,10 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-ttp-ctn").ClassList.Contains("custom-tooltip"));
         Assert.IsTrue(component.Find(".bit-ttp-arw").ClassList.Contains("custom-arrow"));
 
-        StringAssert.Contains(component.Find(".bit-ttp").GetAttribute("style"), "color:red");
-        StringAssert.Contains(component.Find(".bit-ttp-wrp").GetAttribute("style"), "color:green");
-        StringAssert.Contains(component.Find(".bit-ttp-ctn").GetAttribute("style"), "color:blue");
-        StringAssert.Contains(component.Find(".bit-ttp-arw").GetAttribute("style"), "color:yellow");
+        Assert.Contains("color:red", component.Find(".bit-ttp").GetAttribute("style")!);
+        Assert.Contains("color:green", component.Find(".bit-ttp-wrp").GetAttribute("style")!);
+        Assert.Contains("color:blue", component.Find(".bit-ttp-ctn").GetAttribute("style")!);
+        Assert.Contains("color:yellow", component.Find(".bit-ttp-arw").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1052,7 +1054,7 @@ public class BitTooltipTests : BunitTestContext
         var root = component.Find(".bit-ttp");
 
         Assert.IsTrue(root.ClassList.Contains("the-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "padding:1rem");
+        Assert.Contains("padding:1rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1069,7 +1071,7 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-        StringAssert.Contains(root.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1187,13 +1189,13 @@ public class BitTooltipTests : BunitTestContext
             parameters.AddChildContent("<button>Anchor</button>");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-wrp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-ctn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-arw").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ttp-wrp"));
+        Assert.IsEmpty(component.FindAll(".bit-ttp-ctn"));
+        Assert.IsEmpty(component.FindAll(".bit-ttp-arw"));
 
         component.Render(parameters => parameters.Add(p => p.Text, "Tip"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-ttp-wrp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ttp-wrp"));
     }
 
     [TestMethod]
@@ -1269,7 +1271,7 @@ public class BitTooltipTests : BunitTestContext
 
         // The surface is still there: the relationship is about the accessibility tree, not about what
         // is drawn on the screen.
-        Assert.AreEqual(1, component.FindAll(".bit-ttp-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-ttp-ctn"));
     }
 
     [TestMethod]
@@ -1295,13 +1297,13 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.ZIndex, 9999);
         });
 
-        StringAssert.Contains(component.Find(".bit-ttp").GetAttribute("style"), "--bit-ttp-zindex:9999");
+        Assert.Contains("--bit-ttp-zindex:9999", component.Find(".bit-ttp").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.ZIndex, (int?)null));
 
         var style = component.Find(".bit-ttp").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-ttp-zindex"));
+        Assert.DoesNotContain("--bit-ttp-zindex", style);
     }
 
 
@@ -1618,7 +1620,7 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.DefaultIsShown, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-ttp-wrp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-ttp-wrp"));
         Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
     }
 
@@ -1733,7 +1735,7 @@ public class BitTooltipTests : BunitTestContext
         component.Find("#first").TriggerEvent("onpointerenter", Mouse());
 
         Assert.IsTrue(component.Find("#first .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
-        Assert.AreEqual(0, component.FindAll("#third").Count);
+        Assert.IsEmpty(component.FindAll("#third"));
     }
 
     [TestMethod]
@@ -2046,7 +2048,7 @@ public class BitTooltipTests : BunitTestContext
         Assert.AreEqual("tip", invocation.Arguments[0]);
         Assert.AreEqual("tip-ttp", invocation.Arguments[1]);
         Assert.AreEqual("aria-describedby", invocation.Arguments[2]);
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2096,8 +2098,7 @@ public class BitTooltipTests : BunitTestContext
         // Nothing is written, and nothing is taken away later either: no second round trip is made.
         Assert.AreEqual(string.Empty, Context.JSInterop.Invocations
                                              .Single(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip").Arguments[2]);
-        Assert.IsFalse(Context.JSInterop.Invocations
-                              .Any(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2135,8 +2136,8 @@ public class BitTooltipTests : BunitTestContext
 
         // The attribute is written from JavaScript, so a call per render would be a round trip per render
         // for something that changes with the relationship alone.
-        Assert.AreEqual(1, Context.JSInterop.Invocations
-                                 .Count(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Utils.setupTooltip", Context.JSInterop.Invocations
+);
         Assert.AreEqual(0, Context.JSInterop.Invocations
                                  .Count(i => i.Identifier == "BitBlazorUI.Utils.syncAriaDescription"));
     }
@@ -2337,13 +2338,13 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.IsShownChanged, EventCallback.Factory.Create<bool>(this, v => reported = v));
         });
 
-        Assert.AreEqual(true, reported);
+        Assert.IsTrue(reported);
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
         // Bound through the callback, the triggers still drive it.
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(false, reported);
+        Assert.IsFalse(reported);
     }
 
     // A state bound both ways is the tooltip's to change, so the Hide method takes it away and reports it.
@@ -2382,7 +2383,7 @@ public class BitTooltipTests : BunitTestContext
 
         foreach (var declaration in new[] { "margin: 1px;", "--bit-ttp-offset:16px", "--bit-ttp-arrow-size:20px", "--bit-ttp-max-width:12rem", "--bit-ttp-zindex:50" })
         {
-            StringAssert.Contains(style, declaration);
+            Assert.Contains(declaration, style);
         }
 
         Assert.AreEqual("cascaded-ttp", root.GetAttribute("aria-labelledby"));
@@ -2413,8 +2414,8 @@ public class BitTooltipTests : BunitTestContext
 
         var style = root.GetAttribute("style")!;
 
-        StringAssert.Contains(style, "--bit-ttp-offset:4px");
-        Assert.IsFalse(style.Contains("--bit-ttp-offset:16px"));
+        Assert.Contains("--bit-ttp-offset:4px", style);
+        Assert.DoesNotContain("--bit-ttp-offset:16px", style);
 
         Assert.AreEqual("own-ttp", root.GetAttribute("aria-describedby"));
         Assert.IsNull(root.GetAttribute("aria-labelledby"));
@@ -2448,4 +2449,6 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsFalse(component.Find("#cascaded .bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

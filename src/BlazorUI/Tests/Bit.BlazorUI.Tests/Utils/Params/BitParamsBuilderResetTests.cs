@@ -64,8 +64,8 @@ public class BitParamsBuilderResetTests
         }
 
         // Guards the discovery itself: a reflection change that found nothing would otherwise pass vacuously.
-        Assert.IsTrue(tested > 80, $"Only {tested} params types were discovered.");
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsGreaterThan(80, tested, $"Only {tested} params types were discovered.");
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
     [TestMethod]
@@ -164,8 +164,8 @@ public class BitParamsBuilderResetTests
             tested++;
         }
 
-        Assert.IsTrue(tested >= 5, $"Only {tested} params types with a culture were discovered.");
-        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+        Assert.IsGreaterThanOrEqualTo(5, tested, $"Only {tested} params types with a culture were discovered.");
+        Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
     }
 
 

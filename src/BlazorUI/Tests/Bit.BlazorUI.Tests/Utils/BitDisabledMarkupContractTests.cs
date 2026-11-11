@@ -61,7 +61,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Where(t => NativeControls.Contains(t.Name) && DisabledAttribute.IsMatch(t.Tag))
             .ToArray();
 
-        Assert.IsTrue(controls.Length > 300, $"Only {controls.Length} native controls writing disabled were found in the components' markup.");
+        Assert.IsGreaterThan(300, controls.Length, $"Only {controls.Length} native controls writing disabled were found in the components' markup.");
 
         // A hidden input only carries a value to the form; nothing reaches it, so it has no state to report.
         var offenders = controls
@@ -70,8 +70,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Select(t => $"{t.File}:{t.Line} <{t.Name}>")
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        "These native controls write disabled without aria-disabled, which every disabled native control of the " +
+        Assert.IsEmpty(offenders, "These native controls write disabled without aria-disabled, which every disabled native control of the " +
                         $"library writes beside it (see src/BlazorUI/CLAUDE.md):\n{string.Join("\n", offenders)}");
     }
 
@@ -84,7 +83,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .SelectMany(source => BuilderDisabledAttribute.Matches(source.Code).Select(match => (source.File, source.Code, match.Index)))
             .ToArray();
 
-        Assert.IsTrue(writes.Length >= 3, $"Only {writes.Length} RenderTreeBuilder writes of the disabled attribute were found.");
+        Assert.IsGreaterThanOrEqualTo(3, writes.Length, $"Only {writes.Length} RenderTreeBuilder writes of the disabled attribute were found.");
 
         var offenders = writes
             .Where(write =>
@@ -98,8 +97,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Select(write => $"{write.File}:{write.Code.AsSpan(0, write.Index).Count('\n') + 1}")
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        "These RenderTreeBuilder writes of the disabled attribute leave aria-disabled out of the element they write it " +
+        Assert.IsEmpty(offenders, "These RenderTreeBuilder writes of the disabled attribute leave aria-disabled out of the element they write it " +
                         $"on (see src/BlazorUI/CLAUDE.md):\n{string.Join("\n", offenders)}");
     }
 
@@ -116,8 +114,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Select(c => $"{c.Tag.File}:{c.Tag.Line} <{c.Tag.Name} disabled=\"{c.Disabled}\">")
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        "These native controls compute their disabled state inline; compute it once into a local or a property that " +
+        Assert.IsEmpty(offenders, "These native controls compute their disabled state inline; compute it once into a local or a property that " +
                         $"both the disabled and the aria-disabled attribute read (see src/BlazorUI/CLAUDE.md):\n{string.Join("\n", offenders)}");
     }
 
@@ -133,7 +130,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Where(c => c.Disabled is not null && c.AriaDisabled is not null)
             .ToArray();
 
-        Assert.IsTrue(controls.Length > 300, $"Only {controls.Length} native controls writing both attributes were found.");
+        Assert.IsGreaterThan(300, controls.Length, $"Only {controls.Length} native controls writing both attributes were found.");
 
         var offenders = controls
             .Where(c =>
@@ -145,8 +142,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Select(c => $"{c.Tag.File}:{c.Tag.Line} <{c.Tag.Name} disabled=\"{c.Disabled}\" aria-disabled=\"{c.AriaDisabled}\">")
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        "The aria-disabled of these native controls is not true for every state their disabled attribute is (see " +
+        Assert.IsEmpty(offenders, "The aria-disabled of these native controls is not true for every state their disabled attribute is (see " +
                         $"src/BlazorUI/CLAUDE.md):\n{string.Join("\n", offenders)}");
     }
 
@@ -160,8 +156,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
             .Select(t => $"{t.File}:{t.Line} <{t.Name}>")
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        $"These elements write the disabled attribute, which HTML defines on the form controls only:\n{string.Join("\n", offenders)}");
+        Assert.IsEmpty(offenders, $"These elements write the disabled attribute, which HTML defines on the form controls only:\n{string.Join("\n", offenders)}");
     }
 
     [TestMethod]
@@ -193,8 +188,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
                                  .Select(element => element.TagName.ToLowerInvariant() + (element.ClassName is { Length: > 0 } c ? "." + c.Replace(' ', '.') : ""))
                                  .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        $"A disabled {type.Name} renders these elements disabled without aria-disabled=\"true\":\n{string.Join("\n", offenders)}");
+        Assert.IsEmpty(offenders, $"A disabled {type.Name} renders these elements disabled without aria-disabled=\"true\":\n{string.Join("\n", offenders)}");
     }
 
     private IRenderedComponent<BitParams> Render(Type type, bool disabled)
@@ -424,7 +418,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
     {
         var files = EnumeratePackageFiles("*.razor").ToArray();
 
-        Assert.IsTrue(files.Length > 100, $"Only {files.Length} component markup files were found.");
+        Assert.IsGreaterThan(100, files.Length, $"Only {files.Length} component markup files were found.");
 
         foreach (var file in files)
         {

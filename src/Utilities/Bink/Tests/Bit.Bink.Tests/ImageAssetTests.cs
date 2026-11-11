@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -35,8 +35,8 @@ public sealed class ImageAssetTests
         string json = BinkSerializer.Serialize(document);
 
         Assert.AreEqual(1, Occurrences(json, Payload(photo)), "Written once, in the asset table.");
-        StringAssert.Contains(json, "\"version\":2");
-        StringAssert.Contains(json, "\"assets\"");
+        Assert.Contains("\"version\":2", json);
+        Assert.Contains("\"assets\"", json);
         BinkImageElement[] loaded = [.. BinkSerializer.Deserialize(json).AllElements.OfType<BinkImageElement>()];
         Assert.HasCount(3, loaded);
         Assert.AreSame(loaded[0].Source, loaded[1].Source, "The two elements share one picture in memory again.");
@@ -51,13 +51,13 @@ public sealed class ImageAssetTests
         var document = new BinkDocument();
         document.AddElement(new BinkImageElement(Photo(), new BinkRect(0, 0, 64, 48)));
         string json = BinkSerializer.Serialize(document);
-        StringAssert.Contains(json, "\"version\":1");
+        Assert.Contains("\"version\":1", json);
         Assert.DoesNotContain("\"assets\"", json);
 
         // Turned off, every element carries its own picture again, as before the table existed.
         document.AddElement(new BinkImageElement(document.AllElements.OfType<BinkImageElement>().Single().Source, new BinkRect(100, 0, 64, 48)));
         string separate = BinkSerializer.Serialize(document, new BinkSerializerOptions { ShareImageData = false });
-        StringAssert.Contains(separate, "\"version\":1");
+        Assert.Contains("\"version\":1", separate);
         Assert.AreEqual(2, Occurrences(separate, Payload(Photo())));
     }
 
@@ -165,7 +165,7 @@ public sealed class ImageAssetTests
         await using var alexSession = new BinkCollaborationSession(alex, alexWire, "alex");
         // A participant of an earlier version: its messages carry no protocol, which reads as 0.
         TestTransport oldWire = hub.CreateClient();
-        await oldWire.SendAsync(new BinkCollaborationMessage { Kind = BinkCollaborationMessageKind.Presence, SenderId = "old", Sequence = 1, Presence = new BinkPresenceState { ParticipantId = "old" } });
+        await oldWire.SendAsync(new BinkCollaborationMessage { Kind = BinkCollaborationMessageKind.Presence, SenderId = "old", Sequence = 1, Presence = new BinkPresenceState { ParticipantId = "old" } }, TestContext.CancellationToken);
 
         BinkImageSource photo = Photo();
         var image = new BinkImageElement(photo, new BinkRect(0, 0, 64, 48));
@@ -176,9 +176,9 @@ public sealed class ImageAssetTests
 
         // Joining, it gets a document it can open: no asset table, even though two elements show one photo now.
         alex.AddElement(new BinkImageElement(photo, new BinkRect(100, 0, 64, 48)));
-        await oldWire.SendAsync(new BinkCollaborationMessage { Kind = BinkCollaborationMessageKind.SnapshotRequest, SenderId = "old", Sequence = 2 });
+        await oldWire.SendAsync(new BinkCollaborationMessage { Kind = BinkCollaborationMessageKind.SnapshotRequest, SenderId = "old", Sequence = 2 }, TestContext.CancellationToken);
         string snapshot = alexWire.Sent.Last(m => m.Kind == BinkCollaborationMessageKind.Snapshot).Snapshot!;
-        StringAssert.Contains(snapshot, "\"version\":1");
+        Assert.Contains("\"version\":1", snapshot);
         Assert.DoesNotContain("\"assets\"", snapshot);
     }
 
@@ -246,7 +246,7 @@ public sealed class ImageAssetTests
         Assert.AreEqual(1, Requests());
         // The answer does not bring the picture, because there is none; the change is reported and dropped.
         await wire.DeliverAsync(new BinkCollaborationMessage { Kind = BinkCollaborationMessageKind.Snapshot, SenderId = "sam", RecipientId = "zoe", Sequence = 1, Protocol = 1, Snapshot = BinkSerializer.Serialize(zoe) });
-        Assert.HasCount(1, rejected);
+        Assert.ContainsSingle(rejected);
 
         for (int i = 0; i < 5; i++)
         {
@@ -260,4 +260,6 @@ public sealed class ImageAssetTests
         Assert.AreEqual(2, Requests(), "After it, the changes still waiting get one.");
         Assert.AreEqual(0, zoe.ElementCount);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

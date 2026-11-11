@@ -447,8 +447,8 @@ public class HistoryAndClipboardTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.Copy());
         await cut.InvokeAsync(() => cut.Instance.PasteAsync());
 
-        Assert.AreEqual(4, nodes.Count);
-        Assert.AreEqual(2, edges.Count);
+        Assert.HasCount(4, nodes);
+        Assert.HasCount(2, edges);
     }
 
     [TestMethod]
@@ -480,7 +480,7 @@ public class HistoryAndClipboardTests : BunitContext
         Assert.IsTrue(cut.Instance.CanPaste);
 
         await cut.InvokeAsync(() => cut.Instance.PasteAsync());
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
     }
 
     [TestMethod]
@@ -554,7 +554,7 @@ public class HistoryAndClipboardTests : BunitContext
         pane.KeyDown(new KeyboardEventArgs { Key = "c", CtrlKey = true });
         pane.KeyDown(new KeyboardEventArgs { Key = "v", CtrlKey = true });
 
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
         Assert.AreEqual("a-copy", nodes[1].Id);
     }
 
@@ -566,7 +566,7 @@ public class HistoryAndClipboardTests : BunitContext
 
         cut.Find(".bit-blow").KeyDown(new KeyboardEventArgs { Key = "d", CtrlKey = true });
 
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
     }
 
     [TestMethod]

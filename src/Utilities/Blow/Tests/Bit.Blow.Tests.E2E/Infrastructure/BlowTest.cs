@@ -304,11 +304,11 @@ public abstract class BlowTest
     }
 
     protected static void AssertNear(double expected, double actual, double tolerance, string what) =>
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance,
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual),
             $"{what}: expected {expected:0.##} (within {tolerance:0.##}) but was {actual:0.##}");
 
     protected static void AssertNear(Point expected, Point actual, double tolerance, string what) =>
-        Assert.IsTrue(expected.DistanceTo(actual) <= tolerance,
+        Assert.IsLessThanOrEqualTo(tolerance, expected.DistanceTo(actual),
             $"{what}: expected {expected} (within {tolerance:0.##}px) but was {actual}");
 
     /// <summary>Everything a page reports going wrong while a test drives it.</summary>

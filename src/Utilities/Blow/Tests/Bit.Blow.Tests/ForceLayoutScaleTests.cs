@@ -112,7 +112,7 @@ public class ForceLayoutScaleTests
         BlowLayout.Force(copy, edges, new BlowForceLayoutOptions { Iterations = 120 });
 
         Assert.IsTrue(nodes.All(n => double.IsFinite(n.Position.X) && double.IsFinite(n.Position.Y)), "a position is not a number");
-        CollectionAssert.AreEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList());
+        Assert.AreSequenceEqual(nodes.Select(n => n.Position).ToList(), copy.Select(n => n.Position).ToList());
         AssertNoOverlap(nodes);
     }
 
@@ -190,7 +190,7 @@ public class ForceLayoutScaleTests
         BlowLayout.Force(nodes, edges, new BlowForceLayoutOptions { Iterations = 40, Theta = theta });
         BlowLayout.Force(exact, edges, new BlowForceLayoutOptions { Iterations = 40, Theta = 0 });
 
-        CollectionAssert.AreEqual(exact.Select(n => n.Position).ToList(), nodes.Select(n => n.Position).ToList());
+        Assert.AreSequenceEqual(exact.Select(n => n.Position).ToList(), nodes.Select(n => n.Position).ToList());
         AssertNoOverlap(nodes);
     }
 }

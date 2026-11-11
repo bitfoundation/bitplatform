@@ -20,15 +20,15 @@ public class BitAiTokenStreamingTests
         for (var length = chunk; length < source.Length; length += chunk)
         {
             parser.Parse(source[..length], isComplete: false);
-            Assert.IsTrue(parser.StableLength >= previous, "The stable prefix must never shrink while the text only grows.");
+            Assert.IsGreaterThanOrEqualTo(previous, parser.StableLength, "The stable prefix must never shrink while the text only grows.");
             if (parser.StableLength > previous) growths++;
             previous = parser.StableLength;
         }
 
         var final = parser.Parse(source, isComplete: true);
 
-        Assert.IsTrue(growths >= 40, $"The stable prefix grew only {growths} times over 50 paragraphs.");
-        Assert.IsTrue(parser.StableBlockCount >= 49, $"Only {parser.StableBlockCount} blocks became stable.");
+        Assert.IsGreaterThanOrEqualTo(40, growths, $"The stable prefix grew only {growths} times over 50 paragraphs.");
+        Assert.IsGreaterThanOrEqualTo(49, parser.StableBlockCount, $"Only {parser.StableBlockCount} blocks became stable.");
         Assert.AreEqual(BitAiMarkdownSpec.Dump(BitAiMarkdownParser.Parse(source)), BitAiMarkdownSpec.Dump(final));
     }
 }

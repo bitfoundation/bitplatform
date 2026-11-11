@@ -2,7 +2,7 @@
 
 namespace Bit.Cli.Tests.Infrastructure;
 
-public sealed class FakeProcessRunner : IProcessRunner
+internal sealed class FakeProcessRunner : IProcessRunner
 {
     private readonly List<(Func<ProcessSpec, bool> Match, Func<ProcessSpec, CancellationToken, Task<ProcessResult>> Result)> rules = [];
 

@@ -31,16 +31,16 @@ public sealed class PrerenderStaticTests : BmotionPageTest
     {
         var samples = await SampleAsync("#pr-final", 300);
         Assert.IsTrue(samples.All(s => Math.Abs(s.Opacity - 1) < 0.01 && Math.Abs(s.X) < 0.5), $"Not served at rest: {samples[0]}");
-        StringAssert.DoesNotMatch(samples[0].InlineStyle, new System.Text.RegularExpressions.Regex("--bm-a"));
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex("--bm-a"), samples[0].InlineStyle);
     }
 
     [TestMethod]
     public async Task Animate_PlaysTheEnterInPureCss()
     {
-        StringAssert.Contains((await ProbeAsync("#pr-animate")).InlineStyle, "--bm-");
+        Assert.Contains("--bm-", (await ProbeAsync("#pr-animate")).InlineStyle);
 
         var samples = await SampleAsync("#pr-animate", 2_500);
-        Assert.IsTrue(samples.Any(s => s.Opacity is > 0.05 and < 0.95 && s.X is < -1 and > -49), "The CSS enter never showed an intermediate frame.");
+        Assert.Contains(s => s.Opacity is > 0.05 and < 0.95 && s.X is < -1 and > -49, samples, "The CSS enter never showed an intermediate frame.");
         Assert.IsTrue(Math.Abs(samples[^1].Opacity - 1) < 0.01 && Math.Abs(samples[^1].X) < 0.5, $"The CSS enter didn't land at rest: {samples[^1]}");
     }
 
@@ -48,7 +48,7 @@ public sealed class PrerenderStaticTests : BmotionPageTest
     public async Task Animate_ARepeatingAnimationKeepsPlaying()
     {
         var samples = await SampleAsync("#pr-forever", 500);
-        Assert.IsTrue(samples.Select(s => Math.Round(s.Rotate)).Distinct().Count() > 3, "The endless CSS animation isn't playing.");
+        Assert.IsGreaterThan(3, samples.Select(s => Math.Round(s.Rotate)).Distinct().Count(), "The endless CSS animation isn't playing.");
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public sealed class PrerenderReducedMotionTests : BmotionPageTest
 
     protected override string? RenderMode => HarnessHostKinds.Ssr;
 
-    protected override HarnessProfile Profile => HarnessProfile.Strict; // ReducedMotion = User: the OS decides
+    private protected override HarnessProfile Profile => HarnessProfile.Strict; // ReducedMotion = User: the OS decides
 
     protected override void ConfigureContext(BrowserNewContextOptions options) => options.ReducedMotion = ReducedMotion.Reduce;
 
@@ -124,7 +124,7 @@ public sealed class PrerenderReducedMotionTests : BmotionPageTest
         var samples = await SampleAsync("#pr-animate", 2_500);
 
         Assert.IsTrue(samples.All(s => Math.Abs(s.X) < 0.5), "The transform animated although the visitor asked for reduced motion.");
-        Assert.IsTrue(samples.Any(s => s.Opacity is > 0.05 and < 0.95), "The fade should still play under reduced motion.");
+        Assert.Contains(s => s.Opacity is > 0.05 and < 0.95, samples, "The fade should still play under reduced motion.");
     }
 }
 
@@ -161,10 +161,10 @@ public sealed class PrerenderTakeoverTests : BmotionPageTest
         // Never back towards its Initial state: opacity only ever rises, x only ever approaches 0.
         for (var i = 1; i < samples.Count; i++)
         {
-            Assert.IsTrue(samples[i].Opacity >= samples[i - 1].Opacity - 0.02, $"Opacity went back from {samples[i - 1].Opacity} to {samples[i].Opacity}.");
-            Assert.IsTrue(samples[i].X >= samples[i - 1].X - 1, $"x went back from {samples[i - 1].X} to {samples[i].X}.");
+            Assert.IsGreaterThanOrEqualTo(samples[i - 1].Opacity - 0.02, samples[i].Opacity, $"Opacity went back from {samples[i - 1].Opacity} to {samples[i].Opacity}.");
+            Assert.IsGreaterThanOrEqualTo(samples[i - 1].X - 1, samples[i].X, $"x went back from {samples[i - 1].X} to {samples[i].X}.");
         }
-        Assert.IsTrue(Math.Abs(samples[^1].Opacity - 1) < 0.01, $"Didn't land at rest: {samples[^1]}");
+        Assert.IsLessThan(0.01, Math.Abs(samples[^1].Opacity - 1), $"Didn't land at rest: {samples[^1]}");
         await ExpectEventAsync("animate:start", 0);
     }
 
@@ -179,7 +179,7 @@ public sealed class PrerenderTakeoverTests : BmotionPageTest
     public async Task ARepeatingAnimation_IsRestartedByTheRuntime()
     {
         var samples = await SampleAsync("#pr-forever", 500);
-        Assert.IsTrue(samples.Select(s => Math.Round(s.Rotate)).Distinct().Count() > 3, "The endless animation stopped at takeover.");
+        Assert.IsGreaterThan(3, samples.Select(s => Math.Round(s.Rotate)).Distinct().Count(), "The endless animation stopped at takeover.");
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public sealed class StrictOptionsTests : BmotionPageTest
 {
     protected override string Route => "strict";
 
-    protected override HarnessProfile Profile => HarnessProfile.Strict;
+    private protected override HarnessProfile Profile => HarnessProfile.Strict;
 
     protected override void ConfigureContext(BrowserNewContextOptions options) => options.ReducedMotion = ReducedMotion.Reduce;
 
@@ -201,10 +201,10 @@ public sealed class StrictOptionsTests : BmotionPageTest
     public async Task GlobalPrerenderAnimate_AppliesToElementsWithoutTheirOwnMode()
     {
         using var client = new HttpClient();
-        var html = await client.GetStringAsync($"{Host.BaseUrl}/strict?mode=ssr");
+        var html = await client.GetStringAsync($"{Host.BaseUrl}/strict?mode=ssr", TestContext.CancellationToken);
 
         var element = System.Text.RegularExpressions.Regex.Match(html, "<div[^>]*id=\"global\"[^>]*>").Value;
-        StringAssert.Contains(element, "--bm-a");
+        Assert.Contains("--bm-a", element);
     }
 
     [TestMethod]
@@ -226,6 +226,8 @@ public sealed class StrictOptionsTests : BmotionPageTest
         await ExpectEventAsync("css:applied");
         await WaitForStateAsync("#css-target", "s => s.backgroundColor === 'rgb(0, 0, 255)'");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>CSS safe mode in Warn: the value is reported, and still applied.</summary>
@@ -234,7 +236,7 @@ public sealed class CssSafeModeWarnTests : BmotionPageTest
 {
     protected override string Route => "strict";
 
-    protected override HarnessProfile Profile => HarnessProfile.CssWarn;
+    private protected override HarnessProfile Profile => HarnessProfile.CssWarn;
 
     [TestMethod]
     public async Task AnInjectableValue_IsStillApplied()

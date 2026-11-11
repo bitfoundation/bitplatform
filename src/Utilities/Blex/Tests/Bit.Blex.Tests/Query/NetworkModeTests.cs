@@ -1,4 +1,4 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 using static Bit.Blex.Tests.Query.QueryTest;
 
 namespace Bit.Blex.Tests.Query;
@@ -29,7 +29,7 @@ public class NetworkModeTests
         Assert.IsTrue(query.IsFetching);
 
         server.Respond(0, "v");
-        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual("v", query.Data);
     }
 
@@ -52,7 +52,7 @@ public class NetworkModeTests
         client.NotifyReconnected();
         await Until(() => server.Calls == 2);
         server.Respond(1, "v");
-        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsTrue(query.IsSuccess);
     }
 
@@ -68,7 +68,7 @@ public class NetworkModeTests
         Assert.AreEqual(1, server.Calls);
         Assert.IsTrue(query.IsFetching);
         server.Respond(0, "from IndexedDB");
-        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await query.WhenSettledAsync().WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual("from IndexedDB", query.Data);
     }
 
@@ -83,7 +83,7 @@ public class NetworkModeTests
             new BlexMutationOptions<int, int> { OnMutate = by => client.Optimistic<int>(["count"], n => n + by) });
         client.NotifyOffline();
 
-        var sent = increment.MutateAsync(1);
+        var sent = increment.MutateAsync(1, TestContext.CancellationToken);
 
         Assert.IsTrue(increment.IsPending);
         Assert.IsTrue(increment.IsPaused);
@@ -94,7 +94,7 @@ public class NetworkModeTests
         await Until(() => server.Calls == 1);
         Assert.IsFalse(increment.IsPaused);
         server.Respond(0, 2);
-        await sent.WaitAsync(TimeSpan.FromSeconds(5));
+        await sent.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsTrue(increment.IsSuccess);
     }
 
@@ -116,7 +116,7 @@ public class NetworkModeTests
         client.Remove(["b"]);   // its observer starts over on a fresh entry: a new fetch, paused too
         client.NotifyReconnected();
         await Until(() => server.Calls == 1);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
         Assert.AreEqual(1, server.Calls, "the cancelled fetch and the evicted one never ran; only the fresh entry's did");
     }
@@ -130,7 +130,7 @@ public class NetworkModeTests
         using var cts = new CancellationTokenSource();
 
         var read = client.FetchAsync(["n"], server.Fetch(), cancellationToken: cts.Token);
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.CancellationToken);
         Assert.IsFalse(read.IsCompleted);
 
         cts.Cancel();
@@ -153,7 +153,7 @@ public class NetworkModeTests
             (draft, ct) => Task.FromResult(draft),
             new BlexMutationOptions<string, string> { NetworkMode = BlexNetworkMode.Always, Invalidates = [["drafts"]] });
 
-        await save.MutateAsync("x").WaitAsync(TimeSpan.FromSeconds(5));
+        await save.MutateAsync("x", TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsTrue(save.IsSuccess);
         Assert.IsTrue(list.IsPaused, "the list refetches once the network is back");
@@ -185,4 +185,6 @@ public class NetworkModeTests
         client.NotifyOffline();
         Assert.IsFalse(client.IsOnline);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -1,4 +1,4 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests.Query;
@@ -7,7 +7,7 @@ namespace Bit.Blex.Tests.Query;
 /// A server whose every request parks until the test answers it, so a test decides exactly when -- and in
 /// which order -- responses land.
 /// </summary>
-public sealed class FakeServer<T>
+internal sealed class FakeServer<T>
 {
     private readonly List<(TaskCompletionSource<T> Response, CancellationToken Token)> _requests = [];
 
@@ -30,10 +30,10 @@ public sealed class FakeServer<T>
 }
 
 /// <summary>One page of a feed: its number, what it holds, and the next page's number, or <c>null</c> on the last.</summary>
-public sealed record FeedPage(int Number, string Content, int? Next);
+internal sealed record FeedPage(int Number, string Content, int? Next);
 
 /// <summary>A paged server: answers at once unless told to hold, and remembers which pages were asked for.</summary>
-public sealed class PagedServer
+internal sealed class PagedServer
 {
     private readonly List<(int Page, TaskCompletionSource<FeedPage> Response)> _requests = [];
 
@@ -65,7 +65,7 @@ public sealed class PagedServer
 }
 
 /// <summary>A fake clock that counts the timers created on it, so a test advances only once a wait has begun.</summary>
-public sealed class CountingClock : TimeProvider
+internal sealed class CountingClock : TimeProvider
 {
     private readonly FakeTimeProvider _inner = new();
     private int _timers;

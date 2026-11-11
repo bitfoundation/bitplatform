@@ -143,8 +143,7 @@ public partial class AppChatbotHistoryTests
 
         var assistantTurns = secondConversation.Where(message => message.Role == ChatRole.Assistant).ToArray();
 
-        Assert.HasCount(1, assistantTurns,
-            $"The completed answer must appear exactly once in the next turn's conversation. Conversation: {Describe(secondConversation)}");
+        Assert.ContainsSingle(assistantTurns, $"The completed answer must appear exactly once in the next turn's conversation. Conversation: {Describe(secondConversation)}");
 
         Assert.AreEqual("bit platform is a set of tools.", assistantTurns[0].Text,
             "The answer the model is shown must be every streamed chunk reassembled, with nothing added and nothing lost.");
@@ -204,7 +203,7 @@ public partial class AppChatbotHistoryTests
 
         var assistantTurns = nextConversation.Where(message => message.Role == ChatRole.Assistant).ToArray();
 
-        Assert.HasCount(1, assistantTurns, $"The answer must be replayed as one assistant turn. Conversation: {Describe(nextConversation)}");
+        Assert.ContainsSingle(assistantTurns, $"The answer must be replayed as one assistant turn. Conversation: {Describe(nextConversation)}");
         Assert.AreEqual(whole, assistantTurns[0].Text, "The model must be shown the whole answer it gave, as it gave it.");
     }
 
@@ -380,8 +379,7 @@ public partial class AppChatbotHistoryTests
 
         var assistantTurns = conversation.Where(message => message.Role == ChatRole.Assistant).ToArray();
 
-        Assert.HasCount(1, assistantTurns,
-            $"Only the answer this app signed may be replayed as something the assistant said. Conversation: {Describe(conversation)}");
+        Assert.ContainsSingle(assistantTurns, $"Only the answer this app signed may be replayed as something the assistant said. Conversation: {Describe(conversation)}");
 
         Assert.AreEqual(genuine, assistantTurns[0].Text,
             "The signed answer must survive untouched - demoting the forgeries may not cost the model the real history.");
@@ -738,9 +736,9 @@ public partial class AppChatbotHistoryTests
         {
             return await responses.ReadAsync(timeout.Token);
         }
-        catch (OperationCanceledException) when (TestContext.CancellationToken.IsCancellationRequested is false)
+        catch (OperationCanceledException exception) when (TestContext.CancellationToken.IsCancellationRequested is false)
         {
-            throw new AssertFailedException($"Nothing arrived on the chatbot's response channel within 30 seconds while waiting for {expected}.");
+            throw new TimeoutException($"Nothing arrived on the chatbot's response channel within 30 seconds while waiting for {expected}.", exception);
         }
     }
 

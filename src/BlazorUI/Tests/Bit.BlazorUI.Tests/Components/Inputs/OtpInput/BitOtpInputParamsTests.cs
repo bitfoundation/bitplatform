@@ -90,7 +90,7 @@ public class BitOtpInputParamsTests : BunitTestContext
 
         var inputs = com.FindAll(".bit-otp-inp");
 
-        Assert.AreEqual(6, inputs.Count);
+        Assert.HasCount(6, inputs);
         Assert.AreEqual("0", inputs[0].GetAttribute("placeholder"));
         Assert.AreEqual("-1", inputs[1].GetAttribute("tabindex"));
     }
@@ -113,7 +113,7 @@ public class BitOtpInputParamsTests : BunitTestContext
         var root = com.Find(".bit-otp");
 
         // What the component wrote for itself wins over the cascade.
-        Assert.AreEqual(4, com.FindAll(".bit-otp-inp").Count);
+        Assert.HasCount(4, com.FindAll(".bit-otp-inp"));
         Assert.IsTrue(root.ClassList.Contains("bit-otp-err"));
         Assert.IsFalse(root.ClassList.Contains("bit-otp-suc"));
 
@@ -165,7 +165,7 @@ public class BitOtpInputParamsTests : BunitTestContext
 
         var inputs = com.FindAll(".bit-otp-inp");
 
-        Assert.AreEqual(4, inputs.Count);
+        Assert.HasCount(4, inputs);
 
         foreach (var input in inputs)
         {
@@ -216,8 +216,8 @@ public class BitOtpInputParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -244,7 +244,7 @@ public class BitOtpInputParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("custom-root"));
-        StringAssert.Contains(com.Find(".bit-otp").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", com.Find(".bit-otp").GetAttribute("style")!);
         Assert.IsTrue(com.Find(".bit-otp-lbl").ClassList.Contains("custom-label"));
 
         foreach (var input in com.FindAll(".bit-otp-inp"))
@@ -339,11 +339,11 @@ public class BitOtpInputParamsTests : BunitTestContext
         Assert.IsTrue(instance.Required);
 
         // And the markup follows what was cascaded, not only the properties.
-        Assert.AreEqual(7, com.FindAll(".bit-otp-inp").Count);
+        Assert.HasCount(7, com.FindAll(".bit-otp-inp"));
         Assert.AreEqual("Digit 1 of 7", com.Find(".bit-otp-inp").GetAttribute("aria-label"));
         Assert.AreEqual("tel", com.Find(".bit-otp-inp").GetAttribute("inputmode"));
         Assert.AreEqual("off", com.Find(".bit-otp-inp").GetAttribute("autocomplete"));
-        Assert.AreEqual(2, com.FindAll(".bit-otp-sep").Count);
+        Assert.HasCount(2, com.FindAll(".bit-otp-sep"));
         Assert.AreEqual("Cascaded description", com.Find(".bit-otp-dsc").TextContent.Trim());
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-inv"));
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains("bit-otp-ldg"));
@@ -384,7 +384,7 @@ public class BitOtpInputParamsTests : BunitTestContext
         var root = com.Find(".bit-otp");
 
         // Nothing cascades, so the defaults hold: five text inputs, the outline variant, no accent and no size class.
-        Assert.AreEqual(5, com.FindAll(".bit-otp-inp").Count);
+        Assert.HasCount(5, com.FindAll(".bit-otp-inp"));
         Assert.IsTrue(root.ClassList.Contains("bit-otp-otl"));
         Assert.IsFalse(root.ClassList.Contains("bit-otp-pri"));
         Assert.IsFalse(root.ClassList.Contains("bit-otp-md"));
@@ -399,7 +399,7 @@ public class BitOtpInputParamsTests : BunitTestContext
 
         await com.Find(".bit-otp-inp").InputAsync(new ChangeEventArgs { Value = "1" });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.OtpInput.submit"]);
     }
 
     [TestMethod]
@@ -431,6 +431,6 @@ public class BitOtpInputParamsTests : BunitTestContext
                                          .Where(n => paramsProperties.Contains(n) is false)
                                          .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 }

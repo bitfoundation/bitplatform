@@ -43,7 +43,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-inv"));
 
         // The last row of the panel, under the palette too.
-        Assert.AreEqual(1, component.FindAll(".bit-clp-prs + .bit-clp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clp-prs + .bit-clp-erm"));
 
         // A group carries no invalid state of its own: every control that holds the color does, and each of them is
         // described by the line - the first one by the contrast verdict after it.
@@ -53,7 +53,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
 
         var holders = component.FindAll(".bit-clp-inp").Concat(component.FindAll(".bit-clp-fin")).ToList();
 
-        Assert.AreEqual(7, holders.Count);
+        Assert.HasCount(7, holders);
         Assert.IsTrue(holders.All(i => i.GetAttribute("aria-invalid") == "true"));
         Assert.IsTrue(holders.All(i => i.GetAttribute("aria-describedby") == error.Id));
 
@@ -67,7 +67,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
         Assert.AreEqual(contrast.Id, component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.HasAttribute("aria-invalid") is false && i.HasAttribute("aria-describedby") is false));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
     }
 
     [TestMethod]
@@ -82,11 +82,11 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.HasAttribute("aria-describedby") is false));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
 
         // A picker that is never wired for an error message carries no live region at all.
-        Assert.AreEqual(0, component.FindAll(".bit-clp-vhd").Count);
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-vhd"));
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
         Assert.IsTrue(component.FindAll(".bit-clp-inp").All(i => i.GetAttribute("aria-invalid") == "true"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-invalid") == "true"));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
@@ -172,7 +172,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         var error = component.Find(".bit-clp-erm");
 
         Assert.AreEqual("Too close to the background", error.QuerySelector(".custom-error")!.TextContent);
-        Assert.IsFalse(error.TextContent.Contains("the plain text"));
+        Assert.DoesNotContain("the plain text", error.TextContent);
         Assert.IsTrue(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
 
@@ -207,7 +207,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
 
         Assert.AreEqual("the plain text", component.Find(ErrorRegion).TextContent.Trim());
         Assert.AreEqual(component.Find(".bit-clp-erm").Id, component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll($"#{labelId}").Count);
+        Assert.IsEmpty(component.FindAll($"#{labelId}"));
     }
 
     [TestMethod, DataRow(""), DataRow("  ")]
@@ -326,7 +326,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
 
         var error = component.Find(".bit-clp-erm");
 
-        Assert.AreEqual(1, component.Find(".bit-clp").GetAttribute("class")!.Split(' ').Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-clp").GetAttribute("class")!.Split(' '));
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
         Assert.AreEqual("true", component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
         Assert.AreEqual(error.Id, component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
@@ -338,7 +338,7 @@ public class BitColorPickerErrorMessageTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-invalid") == "true"));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
     }
 }

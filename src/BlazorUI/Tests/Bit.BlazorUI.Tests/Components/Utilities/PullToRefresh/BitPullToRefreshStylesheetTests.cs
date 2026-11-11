@@ -20,11 +20,11 @@ public partial class BitPullToRefreshStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitPullToRefreshStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -57,8 +57,8 @@ public partial class BitPullToRefreshStylesheetTests
 
         // Color and CustomColor write --bit-ptr-color inline on the root; the root resets it, so a nested instance
         // does not inherit the color its host was given.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"), "color: var(--bit-ptr-color, var(--bit-PullToRefresh-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr {"), "--bit-ptr-color: initial;");
+        Assert.Contains("color: var(--bit-ptr-color, var(--bit-PullToRefresh-color, #{$clr-fg-pri}));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"));
+        Assert.Contains("--bit-ptr-color: initial;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr {"));
     }
 
     [TestMethod]
@@ -67,12 +67,12 @@ public partial class BitPullToRefreshStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var disc = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spw {");
-        StringAssert.Contains(disc, "width: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));");
-        StringAssert.Contains(disc, "height: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));");
+        Assert.Contains("width: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));", disc);
+        Assert.Contains("height: calc(var(--bit-PullToRefresh-indicator-size, #{$siz-ctrl-md}) * var(--bit-ptr-prg, 0));", disc);
 
         var glyph = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {");
-        StringAssert.Contains(glyph, "width: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));");
-        StringAssert.Contains(glyph, "height: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));");
+        Assert.Contains("width: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));", glyph);
+        Assert.Contains("height: calc(var(--bit-PullToRefresh-glyph-size, #{$siz-icon-lg}) * var(--bit-ptr-prg, 0));", glyph);
     }
 
     [TestMethod]
@@ -81,15 +81,15 @@ public partial class BitPullToRefreshStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The script writes the offset and the turn on the strip as the finger moves; the parts only read them.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spw {"), "margin-top: var(--bit-ptr-off, 0px);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"), "transform: rotate(var(--bit-ptr-rot, 0deg));");
+        Assert.Contains("margin-top: var(--bit-ptr-off, 0px);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spw {"));
+        Assert.Contains("transform: rotate(var(--bit-ptr-rot, 0deg));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"));
 
         // A released pull (held by the script) and a running or complete refresh (rendered by the component) both pin
         // the indicator at its full size, so neither round trip in between draws it at the size the pull last had.
         var held = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-hld .bit-ptr-spw,\n.bit-ptr-swr,\n.bit-ptr-cmp {");
-        StringAssert.Contains(held, "--bit-ptr-prg: 1;");
-        StringAssert.Contains(held, "--bit-ptr-off: 0px;");
-        StringAssert.Contains(held, "--bit-ptr-rot: 0deg;");
+        Assert.Contains("--bit-ptr-prg: 1;", held);
+        Assert.Contains("--bit-ptr-off: 0px;", held);
+        Assert.Contains("--bit-ptr-rot: 0deg;", held);
     }
 
     [TestMethod]
@@ -99,11 +99,11 @@ public partial class BitPullToRefreshStylesheetTests
         var up = SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-up {");
 
         // Child combinators only, so a pull to refresh nested in the anchor of an upward one keeps its own direction.
-        StringAssert.Contains(up, "> .bit-ptr-lod {\n        top: auto;\n        bottom: 0;");
-        StringAssert.Contains(up, "> .bit-ptr-lod > .bit-ptr-spw {\n        margin-top: 0;\n        margin-bottom: var(--bit-ptr-off, 0px);");
+        Assert.Contains("> .bit-ptr-lod {\n        top: auto;\n        bottom: 0;", up);
+        Assert.Contains("> .bit-ptr-lod > .bit-ptr-spw {\n        margin-top: 0;\n        margin-bottom: var(--bit-ptr-off, 0px);", up);
 
         // The settle transitions the whole margin, which is what lets the bottom offset of an upward pull ease back too.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-hld .bit-ptr-spw,"), "transition: margin $mot-duration-short $mot-easing;");
+        Assert.Contains("transition: margin $mot-duration-short $mot-easing;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-hld .bit-ptr-spw,"));
     }
 
     [TestMethod]
@@ -111,8 +111,8 @@ public partial class BitPullToRefreshStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"), "opacity: var(--bit-PullToRefresh-pull-opacity, 0.6);");
-        StringAssert.Contains(stylesheet, ".bit-ptr-crl,\n.bit-ptr-swr,\n.bit-ptr-cmp {\n    .bit-ptr-spn {\n        opacity: 1;");
+        Assert.Contains("opacity: var(--bit-PullToRefresh-pull-opacity, 0.6);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-ptr-spn {"));
+        Assert.Contains(".bit-ptr-crl,\n.bit-ptr-swr,\n.bit-ptr-cmp {\n    .bit-ptr-spn {\n        opacity: 1;", stylesheet);
     }
 
     [TestMethod]
@@ -120,9 +120,9 @@ public partial class BitPullToRefreshStylesheetTests
     {
         var disc = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ptr-spw {");
 
-        StringAssert.Contains(disc, "border-radius: var(--bit-PullToRefresh-indicator-radius, #{$shp-radius-full});");
-        StringAssert.Contains(disc, "box-shadow: var(--bit-PullToRefresh-indicator-shadow, #{$box-shadow-popup});");
-        StringAssert.Contains(disc, "background-color: var(--bit-PullToRefresh-indicator-background, #{$clr-bg-pri});");
+        Assert.Contains("border-radius: var(--bit-PullToRefresh-indicator-radius, #{$shp-radius-full});", disc);
+        Assert.Contains("box-shadow: var(--bit-PullToRefresh-indicator-shadow, #{$box-shadow-popup});", disc);
+        Assert.Contains("background-color: var(--bit-PullToRefresh-indicator-background, #{$clr-bg-pri});", disc);
     }
 
     [TestMethod]
@@ -141,8 +141,8 @@ public partial class BitPullToRefreshStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(block, ".bit-ptr-spw {\n        border: calc(1px * var(--bit-ptr-prg, 0)) solid CanvasText;");
-        StringAssert.Contains(block, ".bit-ptr-crl {\n        border-color: Highlight;");
+        Assert.Contains(".bit-ptr-spw {\n        border: calc(1px * var(--bit-ptr-prg, 0)) solid CanvasText;", block);
+        Assert.Contains(".bit-ptr-crl {\n        border-color: Highlight;", block);
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public partial class BitPullToRefreshStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-PullToRefresh-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(DocumentedVariables(ReadStylesheet()), listed);
+        Assert.AreSequenceEqual(DocumentedVariables(ReadStylesheet()), listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -160,9 +160,9 @@ public partial class BitPullToRefreshStylesheetTests
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-ptr-drg {");
 
-        StringAssert.Contains(block, "user-select: none;");
-        StringAssert.Contains(block, "-webkit-user-select: none;");
-        StringAssert.Contains(block, "cursor: grabbing;");
+        Assert.Contains("user-select: none;", block);
+        Assert.Contains("-webkit-user-select: none;", block);
+        Assert.Contains("cursor: grabbing;", block);
     }
 
     private static string[] DocumentedVariables(string stylesheet)

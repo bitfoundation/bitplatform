@@ -90,9 +90,9 @@ public sealed class ScreenReaderTests : BdndTest
         var cdp = await page.Context.NewCDPSessionAsync(page);
 
         var card = await AccessibilityNodeAsync(cdp, "article.kanban-card");
-        StringAssert.Matches(Value(card, "description"), Instructions, "the description the browser hands a screen reader");
+        Assert.MatchesRegex(Instructions, Value(card, "description"), "the description the browser hands a screen reader");
         Assert.AreEqual("article", Value(card, "role"));
-        Assert.IsTrue(Property(card, "focusable") is "true", "the source is focusable in the accessibility tree");
+        Assert.AreEqual("true", Property(card, "focusable"), "the source is focusable in the accessibility tree");
 
         await Card(page, "Write the docs").FocusAsync();
         await page.Keyboard.PressAsync("Space");

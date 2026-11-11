@@ -38,9 +38,9 @@ public sealed class BitThemeFocusRingReSubstitutionTests : BunitTestContext
 
             var style = RenderProviderStyle(theme);
 
-            StringAssert.Contains(style, $"--bit-shd-focus-ring:{composite}");
+            Assert.Contains($"--bit-shd-focus-ring:{composite}", style);
             // The semantic alias reads the ring, so it is re-declared along with it.
-            StringAssert.Contains(style, "--bit-sem-focus-ring:var(--bit-shd-focus-ring)");
+            Assert.Contains("--bit-sem-focus-ring:var(--bit-shd-focus-ring)", style);
         }
     }
 
@@ -64,7 +64,7 @@ public sealed class BitThemeFocusRingReSubstitutionTests : BunitTestContext
             inputs.AddRange(BitThemeUtilities.ToCssVariables(theme).Keys);
         }
 
-        CollectionAssert.AreEqual(reads, inputs.Distinct().OrderBy(name => name, StringComparer.Ordinal).ToArray());
+        Assert.AreSequenceEqual(reads, inputs.Distinct().OrderBy(name => name, StringComparer.Ordinal).ToArray());
     }
 
     [TestMethod]
@@ -88,8 +88,8 @@ public sealed class BitThemeFocusRingReSubstitutionTests : BunitTestContext
 
         var style = RenderProviderStyle(theme);
 
-        StringAssert.Contains(style, "--bit-shd-focus-ring:0 0 0 3px lime");
-        Assert.AreEqual(1, Regex.Matches(style, "--bit-shd-focus-ring:").Count, style);
+        Assert.Contains("--bit-shd-focus-ring:0 0 0 3px lime", style);
+        Assert.ContainsSingle(Regex.Matches(style, "--bit-shd-focus-ring:"), style);
     }
 
     private static string ScssComposite()

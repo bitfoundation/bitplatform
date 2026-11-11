@@ -25,7 +25,7 @@ public class BitPanelParamsTests : BunitTestContext
     {
         var @params = new BitPanelParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPanel)}", BitPanelParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPanel)}", new BitPanelParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitPanelParams.ParamName, @params.Name);
     }
@@ -63,13 +63,13 @@ public class BitPanelParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-pnl-abs"));
 
         var rootStyle = root.GetAttribute("style")!;
-        StringAssert.Contains(rootStyle, "margin: 1px;");
-        StringAssert.Contains(rootStyle, "--bit-pnl-zin-ovl:1500");
+        Assert.Contains("margin: 1px;", rootStyle);
+        Assert.Contains("--bit-pnl-zin-ovl:1500", rootStyle);
 
         var container = component.Find(".bit-pnl-cnt");
         Assert.IsTrue(container.ClassList.Contains("bit-pnl-start"));
         Assert.IsTrue(container.ClassList.Contains("cascaded-container"));
-        StringAssert.Contains(container.GetAttribute("style"), "width:420px");
+        Assert.Contains("width:420px", container.GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-mfl"));
         Assert.AreEqual("Dismiss", component.Find(".bit-pnl-cls").GetAttribute("aria-label"));
@@ -123,7 +123,7 @@ public class BitPanelParamsTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-pnl-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pnl-ovl"));
 
         var container = component.Find(".bit-pnl-cnt");
         Assert.AreEqual("complementary", container.GetAttribute("role"));
@@ -154,7 +154,7 @@ public class BitPanelParamsTests : BunitTestContext
                                       .Where(n => paramsProperties.Contains(n) is false)
                                       .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -246,13 +246,13 @@ public class BitPanelParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitPanelParams { Placement = BitPlacement.Top, SwipeTrigger = 0.6m, Dir = BitDir.Rtl });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]));
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
 
         Assert.AreEqual(0.6m, arguments[1]);
         Assert.AreEqual("top", arguments[2]);
-        Assert.AreEqual(true, arguments[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(arguments[3]));
         Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
     }
 
@@ -261,7 +261,7 @@ public class BitPanelParamsTests : BunitTestContext
     {
         RenderWithParams(new BitPanelParams { NoSwipe = true });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"]);
     }
 
     [TestMethod]
@@ -295,7 +295,7 @@ public class BitPanelParamsTests : BunitTestContext
         await panel.InvokeAsync(() => panel.Instance._OnTransitionEnd());
 
         Assert.IsFalse(panel.Instance.IsOpen);
-        Assert.AreEqual(1, component.FindAll(".kept").Count);
+        Assert.ContainsSingle(component.FindAll(".kept"));
     }
 
     [TestMethod]
@@ -313,7 +313,7 @@ public class BitPanelParamsTests : BunitTestContext
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.AreEqual("bit-pnl-cnt bit-pnl-end bit-pnl-opn", container.ClassName);
         Assert.AreEqual("dialog", container.GetAttribute("role"));
-        Assert.AreEqual(0, component.FindAll(".bit-pnl-cls").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pnl-cls"));
         Assert.IsFalse(component.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-mfl"));
     }
 

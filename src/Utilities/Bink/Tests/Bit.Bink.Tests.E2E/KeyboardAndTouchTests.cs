@@ -39,7 +39,7 @@ public sealed class KeyboardAndTouchTests : BinkTest
         // With nothing selected the arrow keys are not the canvas's to take: swallowing them would leave a
         // keyboard user unable to scroll the page while the canvas has focus.
         double scroll = await page.EvaluateAsync<double>("() => window.scrollY");
-        Assert.IsTrue(scroll > 0, "the page did not scroll, so the canvas swallowed the arrow keys");
+        Assert.IsGreaterThan(0, scroll, "the page did not scroll, so the canvas swallowed the arrow keys");
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public sealed class KeyboardAndTouchTests : BinkTest
 
         await DrawStrokeAsync(page, (140, 140), (300, 220));
         int drawn = await CountInkAsync(page);
-        Assert.IsTrue(drawn > 100, $"the stroke covers only {drawn} pixels");
+        Assert.IsGreaterThan(100, drawn, $"the stroke covers only {drawn} pixels");
 
         await page.Keyboard.PressAsync("Control+a");
         await page.WaitForTimeoutAsync(250);
@@ -92,7 +92,7 @@ public sealed class KeyboardAndTouchTests : BinkTest
 
         await page.Keyboard.PressAsync("Delete");
         await page.WaitForTimeoutAsync(250);
-        Assert.IsTrue(await CountInkAsync(page) < drawn / 4, "Delete did not remove the selection");
+        Assert.IsLessThan(drawn / 4, await CountInkAsync(page), "Delete did not remove the selection");
     }
 
     [TestMethod]
@@ -102,17 +102,17 @@ public sealed class KeyboardAndTouchTests : BinkTest
 
         await DrawStrokeAsync(page, (120, 120), (300, 220));
         int drawn = await CountInkAsync(page);
-        Assert.IsTrue(drawn > 100, $"the stroke covers only {drawn} pixels");
+        Assert.IsGreaterThan(100, drawn, $"the stroke covers only {drawn} pixels");
 
         await page.Keyboard.PressAsync("Control+a");
         await page.WaitForTimeoutAsync(200);
         await page.Keyboard.PressAsync("Delete");
         await page.WaitForTimeoutAsync(250);
-        Assert.IsTrue(await CountInkAsync(page) < drawn / 4, "Delete did not remove the selection");
+        Assert.IsLessThan(drawn / 4, await CountInkAsync(page), "Delete did not remove the selection");
 
         await page.Keyboard.PressAsync("Control+z");
         await page.WaitForTimeoutAsync(300);
-        Assert.IsTrue(await CountInkAsync(page) > drawn / 2, "undo did not bring the deleted stroke back");
+        Assert.IsGreaterThan(drawn / 2, await CountInkAsync(page), "undo did not bring the deleted stroke back");
     }
 
     [TestMethod]
@@ -188,9 +188,9 @@ public sealed class KeyboardAndTouchTests : BinkTest
             }
             """);
 
-        Assert.IsTrue(box[2] > 100, "the pen stroke was not drawn");
+        Assert.IsGreaterThan(100, box[2], "the pen stroke was not drawn");
         // The palm's path ran from y=500 downwards; nothing may have been drawn anywhere near it.
-        Assert.IsTrue(box[1] < 400 * box[3], $"ink reached y={box[1]}, so the resting palm drew as well");
+        Assert.IsLessThan(400 * box[3], box[1], $"ink reached y={box[1]}, so the resting palm drew as well");
     }
 
     [TestMethod]
@@ -223,7 +223,7 @@ public sealed class KeyboardAndTouchTests : BinkTest
 
         // The view moved, so the existing ink is somewhere else on screen, and the first finger left no mark.
         Assert.IsTrue(after[0] != before[0] || after[1] != before[1], "the two-finger gesture did not pan the view");
-        Assert.IsTrue(inkNow > 100, "the existing stroke disappeared");
-        Assert.IsTrue(after[2] - after[0] < (before[2] - before[0]) * 2 + 60, "a stray stroke was committed by the first finger");
+        Assert.IsGreaterThan(100, inkNow, "the existing stroke disappeared");
+        Assert.IsLessThan((before[2] - before[0]) * 2 + 60, after[2] - after[0], "a stray stroke was committed by the first finger");
     }
 }

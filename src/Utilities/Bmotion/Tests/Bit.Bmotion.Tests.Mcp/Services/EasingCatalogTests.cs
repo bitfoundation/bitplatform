@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Mcp.Services;
+﻿namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
 /// The easing catalog turns preset names into numbers by sampling the library's own easing
@@ -15,8 +15,8 @@ public class EasingCatalogTests
     {
         var catalog = await BmotionEasingCatalog.GetAsync();
 
-        CollectionAssert.AreEquivalent(Enum.GetNames<BmEase>(), catalog.Select(easing => easing.Name).ToArray());
-        Assert.AreEqual(catalog.Length, catalog.Select(easing => easing.Name).Distinct().Count());
+        Assert.AreSequenceEqual(Enum.GetNames<BmEase>(), catalog.Select(easing => easing.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.HasCount(catalog.Length, catalog.Select(easing => easing.Name).Distinct());
     }
 
     [TestMethod]
@@ -24,7 +24,7 @@ public class EasingCatalogTests
     {
         foreach (var easing in await BmotionEasingCatalog.GetAsync())
         {
-            Assert.AreEqual(11, easing.Curve.Length, $"BmEase.{easing.Name} was sampled at {easing.Curve.Length} points.");
+            Assert.HasCount(11, easing.Curve, $"BmEase.{easing.Name} was sampled at {easing.Curve.Length} points.");
             Assert.AreEqual(easing.Curve.Length, easing.Sparkline.Length,
                             $"BmEase.{easing.Name}'s sparkline does not match its curve.");
             Assert.AreNotEqual(string.Empty, easing.Feel.Trim(), $"BmEase.{easing.Name} has no guidance.");
@@ -150,8 +150,8 @@ public class EasingCatalogTests
         var quadIn = catalog.Single(entry => entry.Name == "QuadIn").Curve;
 
         // At a quarter of the way through: decelerating is ahead, accelerating is behind.
-        Assert.IsTrue(quadOut[3] > 0.3, $"QuadOut at t=0.3 is {quadOut[3]}.");
-        Assert.IsTrue(quadIn[3] < 0.3, $"QuadIn at t=0.3 is {quadIn[3]}.");
+        Assert.IsGreaterThan(0.3, quadOut[3], $"QuadOut at t=0.3 is {quadOut[3]}.");
+        Assert.IsLessThan(0.3, quadIn[3], $"QuadIn at t=0.3 is {quadIn[3]}.");
     }
 
     [TestMethod]

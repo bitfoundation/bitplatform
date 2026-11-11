@@ -68,7 +68,9 @@ public class BitBasicListTests : BunitTestContext
                 //When actualRenderedItemCount is smaller than expectedRenderedItemCount, so show all items in viewport then actualRenderedItemCount equals total items count
                 if (actualRenderedItemCount < expectedRenderedItemCount)
                 {
-                    Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
+                    var expectedValue = component?.Instance?.Items?.Count;
+                    var actualValue = actualRenderedItemCount;
+                    Assert.AreEqual(expectedValue, actualValue);
                 }
                 else
                 {
@@ -78,7 +80,9 @@ public class BitBasicListTests : BunitTestContext
             else
             {
                 var actualRenderedItemCount = bitList.GetElementsByClassName("list-item").Length;
-                Assert.AreEqual(component?.Instance?.Items?.Count, actualRenderedItemCount);
+                var expectedValue1 = component?.Instance?.Items?.Count;
+                var actualValue2 = actualRenderedItemCount;
+                Assert.AreEqual(expectedValue1, actualValue2);
             }
         }
         finally
@@ -142,7 +146,7 @@ public class BitBasicListTests : BunitTestContext
         var list = component.Find(".bit-bsl");
 
         Assert.IsTrue(list.ClassList.Contains("custom-class"));
-        StringAssert.Contains(list.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", list.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -181,12 +185,12 @@ public class BitBasicListTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-bsl-lmb").ClassList.Contains("lmb-class"));
         Assert.IsTrue(component.Find(".bit-bsl-lmt").ClassList.Contains("lmt-class"));
 
-        StringAssert.Contains(component.Find(".bit-bsl").GetAttribute("style"), "background: red;");
-        StringAssert.Contains(component.Find(".bit-bsl-hdr").GetAttribute("style"), "background: green;");
-        StringAssert.Contains(component.Find(".bit-bsl-ftr").GetAttribute("style"), "background: blue;");
-        StringAssert.Contains(component.Find(".bit-bsl-itm").GetAttribute("style"), "display: grid;");
-        StringAssert.Contains(component.Find(".bit-bsl-lmb").GetAttribute("style"), "background: yellow;");
-        StringAssert.Contains(component.Find(".bit-bsl-lmt").GetAttribute("style"), "background: pink;");
+        Assert.Contains("background: red;", component.Find(".bit-bsl").GetAttribute("style")!);
+        Assert.Contains("background: green;", component.Find(".bit-bsl-hdr").GetAttribute("style")!);
+        Assert.Contains("background: blue;", component.Find(".bit-bsl-ftr").GetAttribute("style")!);
+        Assert.Contains("display: grid;", component.Find(".bit-bsl-itm").GetAttribute("style")!);
+        Assert.Contains("background: yellow;", component.Find(".bit-bsl-lmb").GetAttribute("style")!);
+        Assert.Contains("background: pink;", component.Find(".bit-bsl-lmt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -223,7 +227,7 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderList(p => p.Add(x => x.Visibility, BitVisibility.Collapsed));
 
-        StringAssert.Contains(component.Find(".bit-bsl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-bsl").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -244,7 +248,7 @@ public class BitBasicListTests : BunitTestContext
             }
         });
 
-        StringAssert.Contains(component.Find(".bit-bsl").GetAttribute("style"), expectedStyle);
+        Assert.Contains(expectedStyle, component.Find(".bit-bsl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -252,13 +256,13 @@ public class BitBasicListTests : BunitTestContext
     {
         var full = RenderList(p => p.Add(x => x.FullSize, true));
         var style = full.Find(".bit-bsl").GetAttribute("style");
-        StringAssert.Contains(style, "width:100%");
-        StringAssert.Contains(style, "height:100%");
+        Assert.Contains("width:100%", style!);
+        Assert.Contains("height:100%", style);
 
         var fit = RenderList(p => p.Add(x => x.FitSize, true));
         style = fit.Find(".bit-bsl").GetAttribute("style");
-        StringAssert.Contains(style, "width:fit-content");
-        StringAssert.Contains(style, "height:fit-content");
+        Assert.Contains("width:fit-content", style!);
+        Assert.Contains("height:fit-content", style);
     }
 
     [TestMethod]
@@ -279,9 +283,9 @@ public class BitBasicListTests : BunitTestContext
 
         var markup = component.Find(".bit-bsl").TextContent;
 
-        StringAssert.Contains(markup, "one");
-        StringAssert.Contains(markup, "two");
-        StringAssert.Contains(markup, "three");
+        Assert.Contains("one", markup);
+        Assert.Contains("two", markup);
+        Assert.Contains("three", markup);
     }
 
     [TestMethod]
@@ -318,7 +322,7 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.EmptyContent, (RenderFragment)(b => b.AddMarkupContent(0, "<div class='empty'>nothing</div>")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".empty").Count);
+        Assert.IsEmpty(component.FindAll(".empty"));
     }
 
     [TestMethod]
@@ -359,13 +363,13 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.LoadingTemplate, (RenderFragment)(b => b.AddContent(0, "loading...")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".row").Count);
+        Assert.IsEmpty(component.FindAll(".row"));
         Assert.AreEqual("loading...", component.Find(".bit-bsl-ldc").TextContent);
 
         component.Render(p => p.Add(x => x.Loading, false));
 
-        Assert.AreEqual(2, component.FindAll(".row").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-ldc").Count);
+        Assert.HasCount(2, component.FindAll(".row"));
+        Assert.IsEmpty(component.FindAll(".bit-bsl-ldc"));
     }
 
     [TestMethod]
@@ -407,8 +411,8 @@ public class BitBasicListTests : BunitTestContext
         component.Render(p => p.Add(x => x.Loading, true));
 
         // A loading list shows the status of its loading content in place of the list altogether.
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-itm").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bsl-ldc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-itm"));
+        Assert.ContainsSingle(component.FindAll(".bit-bsl-ldc"));
 
         component.Render(p =>
         {
@@ -485,7 +489,7 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderLoadMoreList(5, GetTestData(12));
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
         Assert.IsNotNull(component.Find("button.bit-bsl-lmb"));
     }
 
@@ -503,10 +507,10 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderLoadMoreList(5, GetTestData(12));
 
         component.Find("button.bit-bsl-lmb").Click();
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
 
         component.Find("button.bit-bsl-lmb").Click();
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -516,8 +520,8 @@ public class BitBasicListTests : BunitTestContext
 
         component.Find("button.bit-bsl-lmb").Click();
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-lmb").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
+        Assert.IsEmpty(component.FindAll(".bit-bsl-lmb"));
     }
 
     [TestMethod]
@@ -549,7 +553,7 @@ public class BitBasicListTests : BunitTestContext
 
         loadMore.Click();
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -569,13 +573,13 @@ public class BitBasicListTests : BunitTestContext
         // The keys are wired up in the browser, where a key pressed on the wrapper can be told apart from
         // one pressed on a control inside it; the wrapper holds no keyboard handler of its own to fire twice.
         Assert.IsFalse(component.Find(".bit-bsl-lmb").HasAttribute("blazor:onkeydown"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys", Context.JSInterop.Invocations);
 
         component.Find(".bit-bsl-lmb").Click();
         component.Render();
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys"));
+        Assert.HasCount(10, component.FindAll(".row"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Utils.registerButtonKeys", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -584,11 +588,11 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderLoadMoreList(5, GetTestData(12));
 
         component.Find("button.bit-bsl-lmb").Click();
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
 
         component.Render(p => p.Add(x => x.Items, GetTestData(30)));
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -596,11 +600,11 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderLoadMoreList(5, GetTestData(12));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-snt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-snt"));
 
         component.Render(p => p.Add(x => x.AutoLoad, true));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bsl-snt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bsl-snt"));
     }
 
     [TestMethod]
@@ -637,13 +641,13 @@ public class BitBasicListTests : BunitTestContext
         });
 
         var registrations = Context.JSInterop.Invocations["BitBlazorUI.Observers.registerIntersection"];
-        Assert.HasCount(1, registrations);
+        Assert.ContainsSingle(registrations);
         Assert.HasCount(3, registrations[0].Arguments);
 
         // The threshold lives in the sentinel's geometry, which the observer follows by itself.
         component.Render(p => p.Add(x => x.AutoLoadThreshold, 300));
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerIntersection"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Observers.registerIntersection"]);
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Observers.unregisterIntersection"));
     }
 
@@ -705,7 +709,7 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-snt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-snt"));
     }
 
     [TestMethod]
@@ -718,11 +722,11 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
 
         component.Render(p => p.Add(x => x.LoadMore, true));
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -730,12 +734,12 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderLoadMoreList(5, GetTestData(12));
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
 
         component.Render(p => p.Add(x => x.LoadMore, false));
 
-        Assert.AreEqual(12, component.FindAll(".row").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-lmb").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
+        Assert.IsEmpty(component.FindAll(".bit-bsl-lmb"));
     }
 
     [TestMethod]
@@ -743,11 +747,11 @@ public class BitBasicListTests : BunitTestContext
     {
         var component = RenderLoadMoreList(5, GetTestData(12));
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
 
         component.Render(p => p.Add(x => x.LoadMoreSize, 8));
 
-        Assert.AreEqual(8, component.FindAll(".row").Count);
+        Assert.HasCount(8, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -760,11 +764,11 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.ItemsProvider, CreateProvider(GetTestData(7)));
         });
 
-        Assert.AreEqual(7, component.FindAll(".row").Count);
+        Assert.HasCount(7, component.FindAll(".row"));
 
         component.Render(p => p.Add(x => x.ItemsProvider, (BitBasicListItemsProvider<Person>?)null));
 
-        Assert.AreEqual(3, component.FindAll(".row").Count);
+        Assert.HasCount(3, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -780,12 +784,12 @@ public class BitBasicListTests : BunitTestContext
         });
 
         // The first page is still what a disabled list shows; only loading further ones is turned down.
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
         Assert.IsTrue(component.Find("button.bit-bsl-lmb").HasAttribute("disabled"));
 
         component.Find("button.bit-bsl-lmb").Click();
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -816,20 +820,20 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.ItemsProvider, CreateProvider(GetTestData(10), requests));
         });
 
-        Assert.AreEqual(4, component.FindAll(".row").Count);
-        Assert.AreEqual(1, requests.Count);
+        Assert.HasCount(4, component.FindAll(".row"));
+        Assert.ContainsSingle(requests);
         Assert.AreEqual((0, 4), requests[0]);
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
-        Assert.AreEqual(8, component.FindAll(".row").Count);
+        Assert.HasCount(8, component.FindAll(".row"));
         Assert.AreEqual((4, 4), requests[1]);
 
         // The last page is shorter than the one asked for, so it is recognized as the last one without
         // an extra round trip that would have come back empty.
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
-        Assert.AreEqual(10, component.FindAll(".row").Count);
-        Assert.AreEqual(3, requests.Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-lmb").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
+        Assert.HasCount(3, requests);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-lmb"));
     }
 
     [TestMethod]
@@ -848,7 +852,7 @@ public class BitBasicListTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        CollectionAssert.AreEqual(new[] { 4, 8 }, counts);
+        Assert.AreSequenceEqual(new[] { 4, 8 }, counts);
     }
 
     [TestMethod]
@@ -867,7 +871,7 @@ public class BitBasicListTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        CollectionAssert.AreEqual(new[] { true, false, true, false }, states);
+        Assert.AreSequenceEqual(new[] { true, false, true, false }, states);
     }
 
     [TestMethod]
@@ -881,8 +885,8 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.ItemsProvider, CreateProvider(GetTestData(7), requests));
         });
 
-        Assert.AreEqual(7, component.FindAll(".row").Count);
-        Assert.AreEqual(1, requests.Count);
+        Assert.HasCount(7, component.FindAll(".row"));
+        Assert.ContainsSingle(requests);
         Assert.AreEqual((0, int.MaxValue), requests[0]);
     }
 
@@ -896,7 +900,7 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.ItemsProvider, CreateProvider(GetTestData(7)));
         });
 
-        Assert.AreEqual(7, component.FindAll(".row").Count);
+        Assert.HasCount(7, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -910,13 +914,13 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        Assert.AreEqual(3, component.FindAll(".row").Count);
+        Assert.HasCount(3, component.FindAll(".row"));
 
         items.Add(new Person { Id = 4, FirstName = "Person 4" });
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(4, component.FindAll(".row").Count);
+        Assert.HasCount(4, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -925,11 +929,11 @@ public class BitBasicListTests : BunitTestContext
         var component = RenderLoadMoreList(5, GetTestData(20));
 
         component.Find("button.bit-bsl-lmb").Click();
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -945,8 +949,8 @@ public class BitBasicListTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.RefreshDataAsync());
 
-        Assert.AreEqual(2, requests.Count);
-        Assert.AreEqual(7, component.FindAll(".row").Count);
+        Assert.HasCount(2, requests);
+        Assert.HasCount(7, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -980,7 +984,7 @@ public class BitBasicListTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.LoadMoreAsync());
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -995,18 +999,18 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        Assert.AreEqual(5, component.FindAll(".row").Count);
+        Assert.HasCount(5, component.FindAll(".row"));
 
         await component.InvokeAsync(() => component.Instance._OnIntersect());
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
 
         await component.InvokeAsync(() => component.Instance._OnIntersect());
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
 
         // Everything is loaded, so the sentinel is gone and a further callback is turned down.
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-snt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-snt"));
         await component.InvokeAsync(() => component.Instance._OnIntersect());
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -1022,7 +1026,7 @@ public class BitBasicListTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance._OnIntersect());
 
-        Assert.AreEqual(12, component.FindAll(".row").Count);
+        Assert.HasCount(12, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -1057,7 +1061,7 @@ public class BitBasicListTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        tcs.TrySetCanceled();
+        tcs.TrySetCanceled(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -1110,7 +1114,7 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("Load more", button.GetAttribute("aria-label"));
         Assert.AreEqual("status", component.Find(".bit-bsl-sts").GetAttribute("role"));
         Assert.AreEqual("Loading...", component.Find(".bit-bsl-sts").TextContent.Trim());
-        Assert.AreEqual(1, component.FindAll(".bit-bsl-sts .bit-bsl-stt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bsl-sts .bit-bsl-stt"));
         Assert.AreEqual("true", component.Find(".bit-bsl-itm").GetAttribute("aria-busy"));
 
         // A click while busy is ignored rather than queued.
@@ -1119,7 +1123,7 @@ public class BitBasicListTests : BunitTestContext
         gate.SetResult();
         await loading;
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
         Assert.AreEqual(string.Empty, component.Find(".bit-bsl-sts").TextContent.Trim());
         Assert.IsFalse(component.Find("button.bit-bsl-lmb").HasAttribute("aria-busy"));
         Assert.IsFalse(component.Find("button.bit-bsl-lmb").HasAttribute("aria-label"));
@@ -1163,7 +1167,7 @@ public class BitBasicListTests : BunitTestContext
         var loading = RenderList(p => p.Add(x => x.Loading, true));
 
         Assert.AreEqual(2, loading.RenderCount);
-        Assert.AreEqual(1, loading.FindAll(".bit-bsl-sts .bit-bsl-ldc").Count);
+        Assert.ContainsSingle(loading.FindAll(".bit-bsl-sts .bit-bsl-ldc"));
 
         var loaded = RenderList();
 
@@ -1240,7 +1244,7 @@ public class BitBasicListTests : BunitTestContext
 
         button.Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bsl-lmb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bsl-lmb"));
         Assert.AreEqual("-1", component.Find(".bit-bsl").GetAttribute("tabindex"));
         Context.JSInterop.VerifyFocusAsyncInvoke();
 
@@ -1274,7 +1278,7 @@ public class BitBasicListTests : BunitTestContext
         // goes away, so no focus event re-renders it and no page but the last asks the browser.
         component.Find("button.bit-bsl-lmb").Click();
 
-        Assert.AreEqual(10, component.FindAll(".row").Count);
+        Assert.HasCount(10, component.FindAll(".row"));
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.containsActiveElement"));
     }
 
@@ -1338,7 +1342,7 @@ public class BitBasicListTests : BunitTestContext
 
         var root = component.Find(".bit-bsl");
 
-        StringAssert.Contains(root.GetAttribute("style"), "color: blue;");
+        Assert.Contains("color: blue;", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("second"));
         Assert.IsFalse(root.ClassList.Contains("first"));
     }
@@ -1346,7 +1350,7 @@ public class BitBasicListTests : BunitTestContext
     [TestMethod]
     public void BitBasicListParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.BitBasicList", BitBasicListParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.BitBasicList", new BitBasicListParams().Name);
 
         var @params = new BitBasicListParams();
 
@@ -1382,14 +1386,14 @@ public class BitBasicListTests : BunitTestContext
 
         var lists = component.FindAll(".bit-bsl");
 
-        Assert.AreEqual(2, lists.Count);
+        Assert.HasCount(2, lists);
 
         foreach (var list in lists)
         {
             Assert.IsTrue(list.ClassList.Contains("bit-bsl-hrz"));
             Assert.IsTrue(list.ClassList.Contains("cascaded"));
             Assert.AreEqual("feed", list.QuerySelector(".bit-bsl-itm")!.GetAttribute("role"));
-            StringAssert.Contains(list.GetAttribute("style"), "width:100%");
+            Assert.Contains("width:100%", list.GetAttribute("style")!);
         }
     }
 
@@ -1445,11 +1449,11 @@ public class BitBasicListTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(4, component.FindAll(".row").Count);
+        Assert.HasCount(4, component.FindAll(".row"));
 
         component.Find("button.bit-bsl-lmb").Click();
 
-        Assert.AreEqual(8, component.FindAll(".row").Count);
+        Assert.HasCount(8, component.FindAll(".row"));
     }
 
     [TestMethod]
@@ -1554,7 +1558,7 @@ public class BitBasicListTests : BunitTestContext
             .Where(n => n != nameof(BitBasicListParams.Name))
             .ToList();
 
-        CollectionAssert.AreEquivalent(listParameters, paramsProperties);
+        Assert.AreSequenceEqual(listParameters, paramsProperties, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
 
@@ -1648,4 +1652,6 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("group", root.GetAttribute("role"));
         Assert.AreEqual("Results", root.GetAttribute("aria-label"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

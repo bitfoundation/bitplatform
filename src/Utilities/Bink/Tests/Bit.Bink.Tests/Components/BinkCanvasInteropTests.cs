@@ -81,8 +81,8 @@ public class BinkCanvasInteropTests : BunitContext
         int before = JSInterop.Invocations.Count(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document"));
         canvas.InvokeAsync(() => ((IBinkInteropClient)canvas.Instance).OnRedrawRequested());
 
-        canvas.WaitForAssertion(() => Assert.IsTrue(
-            JSInterop.Invocations.Count(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document")) > before,
+        canvas.WaitForAssertion(() => Assert.IsGreaterThan(
+            before, JSInterop.Invocations.Count(i => i.Identifier == "execute" && Equals(i.Arguments[1], "document")),
             "the document layer was not redrawn"));
     }
 
@@ -114,8 +114,8 @@ public class BinkCanvasInteropTests : BunitContext
         // The first document draw only happens once the surface is attached, which is when the browser path is taken.
         canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "execute", JSInterop.Invocations));
 
-        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Content }));
-        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Selection }));
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Content }, TestContext.CancellationToken));
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Selection }, TestContext.CancellationToken));
 
         JSRuntimeInvocation[] renders = JSInterop.Invocations.Where(i => i.Identifier == "renderToImage").ToArray();
         Assert.HasCount(2, renders);
@@ -148,10 +148,10 @@ public class BinkCanvasInteropTests : BunitContext
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
         canvas.Instance.CurrentDocument.AddElement(new BinkStroke(BinkStrokePoints.FromPositions([new Vector2(10, 10), new Vector2(90, 60)]), new BinkPenBrush()));
 
-        byte[] png = await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Content }));
+        byte[] png = await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Content }, TestContext.CancellationToken));
 
         Assert.IsNotNull(png);
-        Assert.IsTrue(png.Length > 8, "the export returned no image");
+        Assert.IsGreaterThan(8, png.Length, "the export returned no image");
         Assert.AreSequenceEqual(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, png[..4]);
     }
 
@@ -257,4 +257,6 @@ public class BinkCanvasInteropTests : BunitContext
 
         canvas.WaitForAssertion(() => Assert.IsEmpty(canvas.FindAll("textarea.bit-bink-text-editor")));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -107,7 +107,7 @@ public sealed class BaletteDiagnosticsTests : BunitContext
         var counted = Tags("balette.command.executions")
             .Select(t => $"{t["balette.command.kind"]}/{t["balette.trigger"]}/{t["balette.outcome"]}")
             .ToList();
-        CollectionAssert.AreEqual(new[] { "action/shortcut/succeeded", "action/palette/failed", "action/programmatic/cancelled", "setting/programmatic/refused" }, counted);
+        Assert.AreSequenceEqual(new[] { "action/shortcut/succeeded", "action/palette/failed", "action/programmatic/cancelled", "setting/programmatic/refused" }, counted);
 
         // Every run has a duration, a refusal - which ran nothing - has none.
         Assert.HasCount(3, Tags("balette.command.duration"));
@@ -143,8 +143,8 @@ public sealed class BaletteDiagnosticsTests : BunitContext
         // Neither the query nor a title is recorded.
         foreach (var activity in _stopped)
         {
-            Assert.IsFalse(activity.TagObjects.Any(t => t.Value is string s && s.Contains("probe ", StringComparison.OrdinalIgnoreCase)));
-            Assert.IsFalse(activity.TagObjects.Any(t => t.Value is string s && s.Contains("Probe", StringComparison.Ordinal)));
+            Assert.DoesNotContain(t => t.Value is string s && s.Contains("probe ", StringComparison.OrdinalIgnoreCase), activity.TagObjects);
+            Assert.DoesNotContain(t => t.Value is string s && s.Contains("Probe", StringComparison.Ordinal), activity.TagObjects);
         }
     }
 
@@ -168,7 +168,7 @@ public sealed class BaletteDiagnosticsTests : BunitContext
         _options.SourceTimeoutMs = 200;
         _service.RegisterSource(new BaletteDelegateSource("Probe people", (q, ct) => Task.FromResult<IReadOnlyList<BaletteCommand>>([BaletteCmd.New("Ada").Build()])));
         _service.RegisterSource(new BaletteDelegateSource("Probe broken", (q, ct) => throw new HttpRequestException("503")));
-        _service.RegisterSource(new BaletteDelegateSource("Probe slow", async (q, ct) => { await Task.Delay(Timeout.Infinite, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(30)); return []; }));
+        _service.RegisterSource(new BaletteDelegateSource("Probe slow", async (q, ct) => { await Task.Delay(Timeout.Infinite, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken); return []; }));
         var cut = await OpenAsync();
 
         await cut.InvokeAsync(() => cut.Instance.SetQueryAsync("ada"));
@@ -179,9 +179,11 @@ public sealed class BaletteDiagnosticsTests : BunitContext
                 .Select(t => $"{t["balette.source.name"]}/{t["balette.outcome"]}")
                 .Order()
                 .ToList();
-            CollectionAssert.AreEqual(new[] { "Probe broken/failed", "Probe people/succeeded", "Probe slow/timed_out" }, outcomes);
+            Assert.AreSequenceEqual(new[] { "Probe broken/failed", "Probe people/succeeded", "Probe slow/timed_out" }, outcomes);
         }, TimeSpan.FromSeconds(5));
-        Assert.IsTrue(_stopped.Any(a => a.OperationName == "balette.source" && (string?)a.GetTagItem("balette.source.name") == "Probe people"));
+        Assert.Contains(a => a.OperationName == "balette.source" && (string?)a.GetTagItem("balette.source.name") == "Probe people", _stopped);
         Assert.IsNotEmpty(Tags("balette.search.duration"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -53,7 +53,7 @@ public class BalettePolishTests : BunitContext
 
         var warnings = _log.Messages(LogLevel.Warning).ToList();
         Assert.ContainsSingle(warnings.Where(m => m.Contains("'mod+w'") && m.Contains("browsers")));
-        Assert.IsFalse(warnings.Any(m => m.Contains("'mod+s'")));
+        Assert.DoesNotContain(m => m.Contains("'mod+s'"), warnings);
     }
 
     [TestMethod]

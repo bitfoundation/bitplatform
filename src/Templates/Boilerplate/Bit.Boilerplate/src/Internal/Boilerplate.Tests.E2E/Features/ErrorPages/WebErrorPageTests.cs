@@ -80,7 +80,7 @@ public partial class WebErrorPageTests : AppTestBase
     /// </summary>
     // Every row grants the same shared store-user the same permission, so two of them running at once means one sees
     // the other's grant where it expects to be turned away. MethodLevel parallelization schedules data rows too.
-    [TestMethod, DoNotParallelize]
+    [TestMethod]
     [DataRow(App.Todo, DisplayName = "Todo (not multitenant)")]
     [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]

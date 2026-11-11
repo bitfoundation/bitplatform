@@ -24,8 +24,7 @@ public class BitSwipeTrapStylesheetTests
         var read = PublicVariableRead.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
         var documented = DocumentedVariable.Matches(stylesheet).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(documented.Order().ToArray(), read.Order().ToArray(),
-            "The --bit-SwipeTrap-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
+        Assert.AreSequenceEqual(documented.Order().ToArray(), read.Order().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The --bit-SwipeTrap-* variables the stylesheet reads and the ones its header comment documents have drifted apart.");
     }
 
     [TestMethod]
@@ -34,7 +33,7 @@ public class BitSwipeTrapStylesheetTests
         // Read with a fallback and never declared, so a value set on :root or on an ancestor reaches every trap below it.
         var declared = PublicVariableDeclaration.Matches(ReadStylesheet()).Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), declared);
+        Assert.AreSequenceEqual(Array.Empty<string>(), declared);
     }
 
     [TestMethod]
@@ -42,8 +41,8 @@ public class BitSwipeTrapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-SwipeTrap-focus-color))");
-        StringAssert.Contains(stylesheet, "cursor: var(--bit-SwipeTrap-swiping-cursor, grabbing);");
+        Assert.Contains("focus-ring-own(var(--bit-SwipeTrap-focus-color))", stylesheet);
+        Assert.Contains("cursor: var(--bit-SwipeTrap-swiping-cursor, grabbing);", stylesheet);
     }
 
     [TestMethod]
@@ -51,13 +50,13 @@ public class BitSwipeTrapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-hrz {"), "touch-action: pan-y pinch-zoom;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-vrt {"), "touch-action: pan-x pinch-zoom;");
+        Assert.Contains("touch-action: pan-y pinch-zoom;", SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-hrz {"));
+        Assert.Contains("touch-action: pan-x pinch-zoom;", SourceFiles.GetScssDeclarations(stylesheet, "&.bit-stp-vrt {"));
 
         // A disabled trap takes nothing, so the page scrolls over it - and the rule comes after the locks it overrides.
         var disabled = stylesheet.IndexOf("&.bit-dis {", StringComparison.Ordinal);
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-dis {"), "touch-action: auto;");
-        Assert.IsTrue(disabled > stylesheet.IndexOf("&.bit-stp-lck {", StringComparison.Ordinal));
+        Assert.Contains("touch-action: auto;", SourceFiles.GetScssDeclarations(stylesheet, "&.bit-dis {"));
+        Assert.IsGreaterThan(stylesheet.IndexOf("&.bit-stp-lck {", StringComparison.Ordinal), disabled);
     }
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.scss");

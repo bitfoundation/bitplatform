@@ -99,8 +99,8 @@ public class BitNavBarMobileE2ETests : E2ETestBase
 
         // Its four items share the width of the phone.
         var widths = await Page.Locator("#nbr-safearea .bit-nbr-lit").EvaluateAllAsync<double[]>("els => els.map(e => e.getBoundingClientRect().width)");
-        Assert.AreEqual(4, widths.Length);
-        Assert.IsTrue(widths.Sum() <= 390 + 1);
+        Assert.HasCount(4, widths);
+        Assert.IsLessThanOrEqualTo(390 + 1, widths.Sum());
 
         // And a finger on an item lands on that item, on top of the page.
         var item = Page.Locator("#nbr-safearea .bit-nbr-itm").Nth(2);

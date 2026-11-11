@@ -38,7 +38,8 @@ public sealed class DemoPagesTests : BaletteTest
         page.PageError += (_, error) => { lock (problems) problems.Add("unhandled: " + error); };
 
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} did not answer 200");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} did not answer 200");
         await WaitForReadyAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync(heading);
 
@@ -77,7 +78,7 @@ public sealed class DemoPagesTests : BaletteTest
         lock (problems) found = [.. problems];
         TestContext.WriteLine($"{path}: {count} buttons exercised, {found.Length} problems");
         foreach (string problem in found) TestContext.WriteLine("  " + problem);
-        Assert.AreEqual(0, found.Length, $"{path} logged errors:{Environment.NewLine}{string.Join(Environment.NewLine, found)}");
+        Assert.IsEmpty(found, $"{path} logged errors:{Environment.NewLine}{string.Join(Environment.NewLine, found)}");
     }
 
     [TestMethod]
@@ -86,8 +87,9 @@ public sealed class DemoPagesTests : BaletteTest
         var page = await NewPageAsync(await NewContextAsync());
 
         var response = await GotoAsync(page, "/no-such-page");
+        var actualValue = response?.Status;
 
-        Assert.AreEqual(404, response?.Status, "an unknown address did not answer 404");
+        Assert.AreEqual(404, actualValue, "an unknown address did not answer 404");
         await WaitForReadyAsync(page);
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("404");
 

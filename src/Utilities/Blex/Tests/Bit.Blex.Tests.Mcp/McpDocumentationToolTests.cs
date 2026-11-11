@@ -15,7 +15,7 @@ public class McpDocumentationToolTests
         // The pages render outside the app's layout and <BlexProvider>. A page that reaches for JS interop
         // or for a service the server does not register while initializing throws there and only there -
         // so this is the test that catches it.
-        Assert.IsTrue(DocsPageRenderer.Pages.Length >= 19, $"Only {DocsPageRenderer.Pages.Length} pages were found in the site map.");
+        Assert.IsGreaterThanOrEqualTo(19, DocsPageRenderer.Pages.Length, $"Only {DocsPageRenderer.Pages.Length} pages were found in the site map.");
 
         foreach (var page in DocsPageRenderer.Pages)
         {
@@ -23,9 +23,9 @@ public class McpDocumentationToolTests
 
             Assert.IsFalse(markdown.Contains("could not be rendered", StringComparison.Ordinal),
                 $"The '{page.Title}' page did not render: {markdown[..Math.Min(400, markdown.Length)]}");
-            Assert.IsTrue(markdown.Length > 500, $"The '{page.Title}' page came back as {markdown.Length} characters, which is not a page.");
+            Assert.IsGreaterThan(500, markdown.Length, $"The '{page.Title}' page came back as {markdown.Length} characters, which is not a page.");
             // Not the sidebar title: the introduction's heading is its tagline.
-            StringAssert.Contains(markdown, "\n# ", $"The '{page.Title}' page came back without its heading.");
+            Assert.Contains("\n# ", markdown, $"The '{page.Title}' page came back without its heading.");
         }
     }
 
@@ -34,8 +34,8 @@ public class McpDocumentationToolTests
     {
         var markdown = await McpCall.TextAsync("GetBlexDocsPage", new() { ["slug"] = "effects" });
 
-        StringAssert.Contains(markdown, "```");
-        StringAssert.Contains(markdown, "[BlexEffect]");
+        Assert.Contains("```", markdown);
+        Assert.Contains("[BlexEffect]", markdown);
         Assert.IsFalse(markdown.Contains("<span", StringComparison.Ordinal), "Syntax-highlighting markup leaked into the Markdown.");
     }
 
@@ -53,13 +53,13 @@ public class McpDocumentationToolTests
     [TestMethod]
     public async Task Every_guide_section_is_reachable_by_its_heading()
     {
-        Assert.IsTrue(BlexSourceCatalog.GuideSections.Length > 20, "The README was not embedded, or lost its headings.");
+        Assert.IsGreaterThan(20, BlexSourceCatalog.GuideSections.Length, "The README was not embedded, or lost its headings.");
 
         foreach (var section in BlexSourceCatalog.GuideSections)
         {
             var text = await McpCall.TextAsync("GetBlexGuideSection", new() { ["heading"] = section.Heading });
 
-            StringAssert.StartsWith(text, $"{new string('#', section.Level)} {section.Heading}");
+            Assert.StartsWith($"{new string('#', section.Level)} {section.Heading}", text);
         }
     }
 
@@ -70,7 +70,7 @@ public class McpDocumentationToolTests
         var loose = await McpCall.TextAsync("GetBlexGuideSection", new() { ["heading"] = "net maui" });
 
         Assert.AreEqual(exact, loose);
-        StringAssert.Contains(exact, "### Blazor Hybrid", "A section does not carry its sub-sections.");
+        Assert.Contains("### Blazor Hybrid", exact, "A section does not carry its sub-sections.");
     }
 
     [TestMethod]
@@ -80,10 +80,10 @@ public class McpDocumentationToolTests
         {
             var guide = await McpCall.TextAsync("GetBlexSetupGuide", new() { ["hostingModel"] = model });
 
-            StringAssert.StartsWith(guide, "# Setting Blex up");
-            StringAssert.Contains(guide, "## Checklist", $"The '{model}' guide has no checklist.");
-            StringAssert.Contains(guide, "`dotnet add package Bit.Blex` in every project that declares stores", $"The '{model}' guide never tells the reader to add the package that carries the generator.");
-            StringAssert.Contains(guide, "```", $"The '{model}' guide shows no code.");
+            Assert.StartsWith("# Setting Blex up", guide);
+            Assert.Contains("## Checklist", guide, $"The '{model}' guide has no checklist.");
+            Assert.Contains("`dotnet add package Bit.Blex` in every project that declares stores", guide, $"The '{model}' guide never tells the reader to add the package that carries the generator.");
+            Assert.Contains("```", guide, $"The '{model}' guide shows no code.");
         }
     }
 
@@ -92,10 +92,10 @@ public class McpDocumentationToolTests
     {
         var guide = await McpCall.TextAsync("GetBlexSetupGuide", new() { ["hostingModel"] = "wasm" });
 
-        StringAssert.Contains(guide, "### `Demo/Client/Extensions/IServiceCollectionExtensions.cs`");
-        StringAssert.Contains(guide, "AddBitBlexServices");
-        StringAssert.Contains(guide, "<BlexProvider>");
-        StringAssert.Contains(guide, "BOTH");
+        Assert.Contains("### `Demo/Client/Extensions/IServiceCollectionExtensions.cs`", guide);
+        Assert.Contains("AddBitBlexServices", guide);
+        Assert.Contains("<BlexProvider>", guide);
+        Assert.Contains("BOTH", guide);
     }
 
     [TestMethod]
@@ -103,14 +103,14 @@ public class McpDocumentationToolTests
     {
         var guide = await McpCall.TextAsync("GetBlexSetupGuide", new() { ["hostingModel"] = "maui" });
 
-        StringAssert.Contains(guide, "UseBitBlex");
-        StringAssert.Contains(guide, "AddBitBlexPreferencesPersistence");
+        Assert.Contains("UseBitBlex", guide);
+        Assert.Contains("AddBitBlexPreferencesPersistence", guide);
     }
 
     [TestMethod]
     public async Task Every_listed_source_file_is_handed_out_verbatim()
     {
-        Assert.IsTrue(BlexSourceCatalog.SourceFiles.Length > 15, "The demo and sample sources were not embedded.");
+        Assert.IsGreaterThan(15, BlexSourceCatalog.SourceFiles.Length, "The demo and sample sources were not embedded.");
 
         foreach (var file in BlexSourceCatalog.SourceFiles)
         {
@@ -125,22 +125,22 @@ public class McpDocumentationToolTests
     {
         var paths = BlexSourceCatalog.SourceFiles.Select(file => file.Path).ToArray();
 
-        CollectionAssert.Contains(paths, "Demo/Client/Stores/CartStore.cs");
-        CollectionAssert.Contains(paths, "Demo/Client/Extensions/IServiceCollectionExtensions.cs");
-        CollectionAssert.Contains(paths, "Sample/Standalone/Program.cs");
-        CollectionAssert.Contains(paths, "Sample/MAUI/MauiProgram.cs");
+        Assert.Contains("Demo/Client/Stores/CartStore.cs", paths);
+        Assert.Contains("Demo/Client/Extensions/IServiceCollectionExtensions.cs", paths);
+        Assert.Contains("Sample/Standalone/Program.cs", paths);
+        Assert.Contains("Sample/MAUI/MauiProgram.cs", paths);
 
         // A documentation page's source is its prose, which the docs tool already serves rendered.
-        Assert.IsFalse(paths.Any(path => path.EndsWith("/Effects.razor", StringComparison.OrdinalIgnoreCase)), "A docs page leaked into the source catalog.");
-        Assert.IsFalse(paths.Any(path => path.Contains("CodeHighlighter", StringComparison.Ordinal)), "Site chrome leaked into the source catalog.");
+        Assert.DoesNotContain(path => path.EndsWith("/Effects.razor", StringComparison.OrdinalIgnoreCase), paths, "A docs page leaked into the source catalog.");
+        Assert.DoesNotContain(path => path.Contains("CodeHighlighter", StringComparison.Ordinal), paths, "Site chrome leaked into the source catalog.");
     }
 
     [TestMethod]
     public async Task A_wrong_key_answers_with_the_way_forward()
     {
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexDocsPage", new() { ["slug"] = "nope" }), "Available slugs:");
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexGuideSection", new() { ["heading"] = "Persist" }), "Did you mean:");
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexSourceFile", new() { ["path"] = "CartStore" }), "Did you mean:");
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexSetupGuide", new() { ["hostingModel"] = "silverlight" }), "is not a known hosting model");
+        Assert.Contains("Available slugs:", await McpCall.TextAsync("GetBlexDocsPage", new() { ["slug"] = "nope" }));
+        Assert.Contains("Did you mean:", await McpCall.TextAsync("GetBlexGuideSection", new() { ["heading"] = "Persist" }));
+        Assert.Contains("Did you mean:", await McpCall.TextAsync("GetBlexSourceFile", new() { ["path"] = "CartStore" }));
+        Assert.Contains("is not a known hosting model", await McpCall.TextAsync("GetBlexSetupGuide", new() { ["hostingModel"] = "silverlight" }));
     }
 }

@@ -55,17 +55,17 @@ public class AppStorageTests : BunitContext
         panel.FindAll(".bev-body button").First(b => b.TextContent.Contains("Read storage", StringComparison.Ordinal)).Click();
 
         var text = panel.Find(".bev-body").TextContent;
-        StringAssert.Contains(text, "5 MB used of 100 MB (5 %)");
-        StringAssert.Contains(text, "caches 4 MB");
-        StringAssert.Contains(text, "best effort: the browser may clear it under storage pressure");
-        StringAssert.Contains(text, "Cookies (2)");
-        StringAssert.Contains(text, ".AspNetCore.Culture");
-        StringAssert.Contains(text, "values are never read");
-        StringAssert.Contains(text, "orders-cache");
-        StringAssert.Contains(text, "bit-bswup-v2");
-        StringAssert.Contains(text, "41 requests");
-        StringAssert.Contains(text, "update waiting: https://shop.test/service-worker.js?v=2");
-        StringAssert.Contains(text, "this page is controlled by https://shop.test/service-worker.js?v=1");
+        Assert.Contains("5 MB used of 100 MB (5 %)", text);
+        Assert.Contains("caches 4 MB", text);
+        Assert.Contains("best effort: the browser may clear it under storage pressure", text);
+        Assert.Contains("Cookies (2)", text);
+        Assert.Contains(".AspNetCore.Culture", text);
+        Assert.Contains("values are never read", text);
+        Assert.Contains("orders-cache", text);
+        Assert.Contains("bit-bswup-v2", text);
+        Assert.Contains("41 requests", text);
+        Assert.Contains("update waiting: https://shop.test/service-worker.js?v=2", text);
+        Assert.Contains("this page is controlled by https://shop.test/service-worker.js?v=1", text);
     }
 
     [TestMethod]

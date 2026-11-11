@@ -148,11 +148,11 @@ public class BitToggleButtonE2ETests : E2ETestBase
         await Expect(onOff.Locator(".bit-tgb-ico")).ToHaveClassAsync(HasClass("bit-icon--MicOff"));
 
         var start = Btn("ico-start");
-        Assert.IsTrue((await start.Locator(".bit-tgb-ico").BoxAsync()).X < (await start.Locator(".bit-tgb-btx").BoxAsync()).X);
+        Assert.IsLessThan((await start.Locator(".bit-tgb-btx").BoxAsync()).X, (await start.Locator(".bit-tgb-ico").BoxAsync()).X);
 
         var end = Btn("ico-end");
         await Expect(end).ToHaveClassAsync(HasClass("bit-tgb-eni"));
-        Assert.IsTrue((await end.Locator(".bit-tgb-ico").BoxAsync()).X > (await end.Locator(".bit-tgb-btx").BoxAsync()).X);
+        Assert.IsGreaterThan((await end.Locator(".bit-tgb-btx").BoxAsync()).X, (await end.Locator(".bit-tgb-ico").BoxAsync()).X);
 
         var ext = Btn("ico-ext");
         await Expect(ext.Locator(".bit-tgb-ico")).ToHaveClassAsync(HasClass("fa-house"));
@@ -174,7 +174,7 @@ public class BitToggleButtonE2ETests : E2ETestBase
         var withLabel = Btn("ico-only-aria");
         await Expect(withLabel).ToHaveAccessibleNameAsync("Mute");
         var box = await withLabel.BoxAsync();
-        Assert.IsTrue(box.Width >= box.Height - 0.5);
+        Assert.IsGreaterThanOrEqualTo(box.Height - 0.5, box.Width);
     }
 
     // ---------- binding ----------
@@ -301,8 +301,8 @@ public class BitToggleButtonE2ETests : E2ETestBase
         // IconPlacement moves the icon, never the check mark, which stays at the leading edge
         var end = Btn("chm-end");
         var text = await end.Locator(".bit-tgb-btx").BoxAsync();
-        Assert.IsTrue((await end.Locator(".bit-tgb-chm").BoxAsync()).X < text.X, "The check mark stays before the content.");
-        Assert.IsTrue((await end.Locator(".bit-tgb-ico").BoxAsync()).X > text.X, "The icon goes after the content.");
+        Assert.IsLessThan(text.X, (await end.Locator(".bit-tgb-chm").BoxAsync()).X, "The check mark stays before the content.");
+        Assert.IsGreaterThan(text.X, (await end.Locator(".bit-tgb-ico").BoxAsync()).X, "The icon goes after the content.");
     }
 
     [TestMethod]
@@ -479,8 +479,8 @@ public class BitToggleButtonE2ETests : E2ETestBase
         var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(busy <= spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
-        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
+        Assert.IsLessThanOrEqualTo(spinner, busy, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsGreaterThanOrEqualTo(450, spinner - click, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Page.Locator("#btn-release-delay").ClickAsync();
         await Expect(button.Locator(".bit-tgb-spn")).ToHaveCountAsync(0);
@@ -503,10 +503,10 @@ public class BitToggleButtonE2ETests : E2ETestBase
 
         switch (placement)
         {
-            case "End": Assert.IsTrue(label.X >= spinner.X + spinner.Width - 0.5); break;
-            case "Start": Assert.IsTrue(label.X + label.Width <= spinner.X + 0.5); break;
-            case "Top": Assert.IsTrue(label.Y + label.Height <= spinner.Y + 0.5); break;
-            default: Assert.IsTrue(label.Y >= spinner.Y + spinner.Height - 0.5); break;
+            case "End": Assert.IsGreaterThanOrEqualTo(spinner.X + spinner.Width - 0.5, label.X); break;
+            case "Start": Assert.IsLessThanOrEqualTo(spinner.X + 0.5, label.X + label.Width); break;
+            case "Top": Assert.IsLessThanOrEqualTo(spinner.Y + 0.5, label.Y + label.Height); break;
+            default: Assert.IsGreaterThanOrEqualTo(spinner.Y + spinner.Height - 0.5, label.Y); break;
         }
     }
 
@@ -541,7 +541,7 @@ public class BitToggleButtonE2ETests : E2ETestBase
         await Expect(noWrap.Locator(".bit-tgb-btx")).ToHaveCSSAsync("text-overflow", "ellipsis");
         await Expect(noWrap.Locator(".bit-tgb-btx")).ToHaveCSSAsync("white-space", "nowrap");
         Assert.IsTrue(await noWrap.Locator(".bit-tgb-btx").EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"));
-        Assert.IsTrue((await Btn("fw-wrap").BoxAsync()).Height > (await noWrap.BoxAsync()).Height);
+        Assert.IsGreaterThan((await noWrap.BoxAsync()).Height, (await Btn("fw-wrap").BoxAsync()).Height);
     }
 
     [TestMethod]
@@ -919,11 +919,11 @@ public class BitToggleButtonE2ETests : E2ETestBase
         await OpenAsync("/e2e/toggle-button");
 
         var full = ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration"));
-        Assert.IsTrue(full >= 0.05);
+        Assert.IsGreaterThanOrEqualTo(0.05, full);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        Assert.IsTrue(ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, ButtonsE2EHelpers.ParseSeconds(await Btn("motion-default").StyleAsync("transition-duration")));
         Assert.AreEqual(full, ButtonsE2EHelpers.ParseSeconds(await Btn("motion-forced").StyleAsync("transition-duration")), 0.0001);
     }
 
@@ -948,9 +948,9 @@ public class BitToggleButtonE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<button[^>]*id=""tgb-basic""[^>]*class=""[^""]*\bbit-tgb\b"));
-        StringAssert.Matches(html, new Regex(@"id=""bind-default"" class=""[^""]*\bbit-tgb-chk\b"));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<button[^>]*id=""tgb-basic""[^>]*class=""[^""]*\bbit-tgb\b"), html);
+        Assert.MatchesRegex(new Regex(@"id=""bind-default"" class=""[^""]*\bbit-tgb-chk\b"), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

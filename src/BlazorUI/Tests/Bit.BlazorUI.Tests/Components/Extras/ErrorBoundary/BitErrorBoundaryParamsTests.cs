@@ -56,7 +56,7 @@ public partial class BitErrorBoundaryTests
 
         var icon = component.Find(".bit-erb-ico");
 
-        StringAssert.Contains(icon.ClassName, "bit-icon--ErrorBadge");
+        Assert.Contains("bit-icon--ErrorBadge", icon.ClassName!);
         Assert.IsFalse(icon.ClassName!.Contains("cascaded-css-icon", StringComparison.Ordinal));
         Assert.Throws<ElementNotFoundException>(() => component.Find(".cascaded-icon"));
     }
@@ -64,7 +64,7 @@ public partial class BitErrorBoundaryTests
     [TestMethod]
     public void BitErrorBoundaryParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitErrorBoundary)}", BitErrorBoundaryParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitErrorBoundary)}", new BitErrorBoundaryParams().Name);
     }
 
     [TestMethod]
@@ -137,10 +137,10 @@ public partial class BitErrorBoundaryTests
 
         Assert.AreEqual("Cascaded title", title.TextContent.Trim());
         Assert.AreEqual("H2", title.TagName);
-        StringAssert.Contains(title.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", title.GetAttribute("style")!);
         Assert.AreEqual("Cascaded message", component.Find(".bit-erb-msg").TextContent.Trim());
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-svg"));
-        Assert.AreEqual(2, component.FindAll(".bit-erb-ftr .bit-btn").Count);
+        Assert.HasCount(2, component.FindAll(".bit-erb-ftr .bit-btn"));
         component.Find(".bit-erb-exp");
         Assert.AreEqual("rtl", errorRoot.GetAttribute("dir"));
         Assert.IsTrue(errorRoot.ClassList.Contains("cascaded-root"));
@@ -183,22 +183,22 @@ public partial class BitErrorBoundaryTests
         });
 
         Assert.AreEqual("Cascaded title", component.Find(".bit-erb-ttl").TextContent.Trim());
-        Assert.AreEqual(2, component.FindAll(".bit-erb-ftr .bit-btn").Count);
+        Assert.HasCount(2, component.FindAll(".bit-erb-ftr .bit-btn"));
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitErrorBoundaryParams { HideRefreshButton = true } });
         });
 
-        StringAssert.Contains(component.Find(".bit-erb-ttl").TextContent, "Oops, Something went wrong");
-        Assert.AreEqual(2, component.FindAll(".bit-erb-ftr .bit-btn").Count);
+        Assert.Contains("Oops, Something went wrong", component.Find(".bit-erb-ttl").TextContent);
+        Assert.HasCount(2, component.FindAll(".bit-erb-ftr .bit-btn"));
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Parameters, new List<IBitComponentParams>());
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-erb-ftr .bit-btn").Count);
+        Assert.HasCount(3, component.FindAll(".bit-erb-ftr .bit-btn"));
     }
 
     [TestMethod]

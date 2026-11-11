@@ -19,7 +19,12 @@ public class ModelBasedTests
 
         public Account ToAccount() => new()
         {
-            Id = Id, Username = Username, TenantId = TenantId, Email = Email, Slot = Slot, CreatedAt = CreatedAt,
+            Id = Id,
+            Username = Username,
+            TenantId = TenantId,
+            Email = Email,
+            Slot = Slot,
+            CreatedAt = CreatedAt,
         };
     }
 
@@ -133,33 +138,33 @@ public class ModelBasedTests
                     }, row => _accounts.Upsert(row));
                     break;
                 case 7:
-                {
-                    var id = RandomId();
-                    Assert.AreEqual(_model.Remove(id), _accounts.Delete(id), Context("Delete"));
-                    break;
-                }
+                    {
+                        var id = RandomId();
+                        Assert.AreEqual(_model.Remove(id), _accounts.Delete(id), Context("Delete"));
+                        break;
+                    }
                 case 8:
-                {
-                    // Optimistic update: the comparison is the row the table holds, or a stale copy of it.
-                    var row = RandomRow(existingBias: true);
-                    var held = _accounts.Get(row.Id);
-                    var comparison = held is not null && _random.Next(2) == 0 ? held : Values.Of(row).ToAccount();
-                    var expectSuccess = held is not null && ReferenceEquals(comparison, held) && CanWrite(row, _model, replacing: true);
-                    var conflicts = held is not null && ReferenceEquals(comparison, held) && !CanWrite(row, _model, replacing: true);
-                    if (conflicts)
                     {
-                        Assert.ThrowsExactly<BlazeDbUniqueConstraintViolationException>(() => _accounts.TryUpdate(row, comparison), Context("TryUpdate"));
-                    }
-                    else
-                    {
-                        Assert.AreEqual(expectSuccess, _accounts.TryUpdate(row, comparison), Context("TryUpdate"));
-                        if (expectSuccess)
+                        // Optimistic update: the comparison is the row the table holds, or a stale copy of it.
+                        var row = RandomRow(existingBias: true);
+                        var held = _accounts.Get(row.Id);
+                        var comparison = held is not null && _random.Next(2) == 0 ? held : Values.Of(row).ToAccount();
+                        var expectSuccess = held is not null && ReferenceEquals(comparison, held) && CanWrite(row, _model, replacing: true);
+                        var conflicts = held is not null && ReferenceEquals(comparison, held) && !CanWrite(row, _model, replacing: true);
+                        if (conflicts)
                         {
-                            _model[row.Id] = Values.Of(row);
+                            Assert.ThrowsExactly<BlazeDbUniqueConstraintViolationException>(() => _accounts.TryUpdate(row, comparison), Context("TryUpdate"));
                         }
+                        else
+                        {
+                            Assert.AreEqual(expectSuccess, _accounts.TryUpdate(row, comparison), Context("TryUpdate"));
+                            if (expectSuccess)
+                            {
+                                _model[row.Id] = Values.Of(row);
+                            }
+                        }
+                        break;
                     }
-                    break;
-                }
                 case 9:
                     InsertMany();
                     break;
@@ -170,16 +175,16 @@ public class ModelBasedTests
                     TransactionControl();
                     break;
                 case 13:
-                {
-                    var tenant = _random.Next(4);
-                    var expected = _model.Values.Count(v => v.TenantId == tenant);
-                    var deleted = _accounts.DeleteWhere(a => a.TenantId == tenant && a.Id % 3 == 0);
-                    var removed = _model.Values.Where(v => v.TenantId == tenant && v.Id % 3 == 0).Select(v => v.Id).ToList();
-                    removed.ForEach(id => _model.Remove(id));
-                    Assert.AreEqual(removed.Count, deleted, Context("DeleteWhere"));
-                    Assert.IsTrue(expected >= deleted);
-                    break;
-                }
+                    {
+                        var tenant = _random.Next(4);
+                        var expected = _model.Values.Count(v => v.TenantId == tenant);
+                        var deleted = _accounts.DeleteWhere(a => a.TenantId == tenant && a.Id % 3 == 0);
+                        var removed = _model.Values.Where(v => v.TenantId == tenant && v.Id % 3 == 0).Select(v => v.Id).ToList();
+                        removed.ForEach(id => _model.Remove(id));
+                        Assert.AreEqual(removed.Count, deleted, Context("DeleteWhere"));
+                        Assert.IsGreaterThanOrEqualTo(deleted, expected);
+                        break;
+                    }
                 case 14:
                     if (_transaction is null)
                     {
@@ -317,9 +322,12 @@ public class ModelBasedTests
             AssertSameOutcome(expected, actual, operation);
         }
 
-        private void AssertSameOutcome(Exception? expected, Exception? actual, string operation) =>
-            Assert.AreEqual(expected?.GetType(), actual?.GetType(), Context(operation) + $" ({actual?.Message})");
-
+        private void AssertSameOutcome(Exception? expected, Exception? actual, string operation)
+        {
+            var expectedValue = expected?.GetType();
+            var actualValue = actual?.GetType();
+            Assert.AreEqual(expectedValue, actualValue, Context(operation) + $" ({actual?.Message})");
+        }
         private static Exception? Try(Action action)
         {
             try
@@ -405,7 +413,7 @@ public class ModelBasedTests
                 _accounts.Lookup(Account.Indexes.TenantEmail, tenantEmail), $"TenantEmail={tenantEmail}");
 
             var byEmail = _accounts.OrderBy(Account.Indexes.Email).Select(a => a.Email).ToList();
-            CollectionAssert.AreEqual(_model.Values.Select(v => v.Email).Order(StringComparer.Ordinal).ToList(), byEmail, Context("OrderBy(Email)"));
+            Assert.AreSequenceEqual(_model.Values.Select(v => v.Email).Order(StringComparer.Ordinal).ToList(), byEmail, Context("OrderBy(Email)"));
 
             var (from, to) = (_random.Next(-1, 8), _random.Next(-1, 8));
             var (fromExclusive, toExclusive) = (_random.Next(2) == 0, _random.Next(2) == 0);
@@ -417,17 +425,17 @@ public class ModelBasedTests
                     toExclusive ? BlazeDbBound<int?>.Exclusive(to) : to),
                 $"Slot in {(fromExclusive ? '(' : '[')}{from}, {to}{(toExclusive ? ')' : ']')}");
             var slotsDescending = _accounts.OrderBy(Account.Indexes.Slot, descending: true).Select(a => a.Slot).ToList();
-            CollectionAssert.AreEqual(_model.Values.Select(v => v.Slot).OrderDescending().ToList(), slotsDescending, Context("OrderBy(Slot desc)"));
+            Assert.AreSequenceEqual(_model.Values.Select(v => v.Slot).OrderDescending().ToList(), slotsDescending, Context("OrderBy(Slot desc)"));
 
             var tenantFrom = _random.Next(4);
             var created = _accounts.Range(Account.Indexes.TenantCreated, (tenantFrom, DateTime.MinValue), (tenantFrom, DateTime.MaxValue)).ToList();
             AssertSameIds(_model.Values.Where(v => v.TenantId == tenantFrom), created, $"TenantCreated tenant {tenantFrom}");
-            CollectionAssert.AreEqual(created.Select(a => a.CreatedAt).Order().ToList(), created.Select(a => a.CreatedAt).ToList(), Context("TenantCreated order"));
+            Assert.AreSequenceEqual(created.Select(a => a.CreatedAt).Order().ToList(), created.Select(a => a.CreatedAt).ToList(), Context("TenantCreated order"));
 
             var issues = _db.VerifyIntegrity();
-            Assert.AreEqual(0, issues.Count, Context("VerifyIntegrity") + string.Join("; ", issues));
+            Assert.IsEmpty(issues, Context("VerifyIntegrity") + string.Join("; ", issues));
 
-            CollectionAssert.AreEquivalent((_transactionStart ?? _model).ToList(), _shadow.ToList(), Context("notifications"));
+            Assert.AreSequenceEqual((_transactionStart ?? _model).ToList(), _shadow.ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, Context("notifications"));
         }
 
         /// <summary>Reopens a copy of storage and checks it holds exactly the committed rows.</summary>
@@ -441,11 +449,11 @@ public class ModelBasedTests
             {
                 Assert.AreEqual(values, Values.Of(recovered.Get(id) ?? throw new AssertFailedException(Context($"Reopen missing {id}"))), Context($"Reopen {id}"));
             }
-            Assert.AreEqual(0, reopened.VerifyIntegrity().Count, Context("Reopen integrity"));
+            Assert.IsEmpty(reopened.VerifyIntegrity(), Context("Reopen integrity"));
         }
 
         private void AssertSameIds(IEnumerable<Values> expected, IEnumerable<Account> actual, string what) =>
-            CollectionAssert.AreEquivalent(expected.Select(v => v.Id).ToList(), actual.Select(a => a.Id).ToList(), Context(what));
+            Assert.AreSequenceEqual(expected.Select(v => v.Id).ToList(), actual.Select(a => a.Id).ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, Context(what));
 
         private string Context(string what) => $"seed {seed}, step {_step}: {what}";
 

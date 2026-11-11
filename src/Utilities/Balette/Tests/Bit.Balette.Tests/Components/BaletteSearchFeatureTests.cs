@@ -171,7 +171,7 @@ public class BaletteSearchFeatureTests : BunitContext
     public async Task A_pinned_command_is_listed_even_beyond_the_result_limit()
     {
         _service.Register(Enumerable.Range(0, 30).Select(i => BaletteCmd.New($"Command {i:00}").Build()));
-        await Services.GetRequiredService<BaletteHistory>().TogglePinAsync("command-29");
+        await Services.GetRequiredService<BaletteHistory>().TogglePinAsync("command-29", TestContext.CancellationToken);
         var cut = await OpenAsync(parameters: null);
 
         // Pinned first, although MaxResults leaves "Command 29" out of the ranking of an empty query.
@@ -207,4 +207,6 @@ public class BaletteSearchFeatureTests : BunitContext
         Assert.IsNotNull(cut.Find("[data-balette=empty]"));
         Assert.IsEmpty(cut.FindAll("[data-balette=notice]"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

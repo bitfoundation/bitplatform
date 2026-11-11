@@ -73,7 +73,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
         var view = RenderComponent<BitAiGenerativeUiView>(p => p.Add(c => c.Part, part));
 
         Assert.AreEqual("Oslo: 12", view.Find(".bit-aiguv-cnt .forecast").TextContent);
-        Assert.HasCount(1, view.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(view.FindComponents<BitAiRendererBoundary>());
     }
 
     [TestMethod]
@@ -86,11 +86,11 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
             .Add(c => c.ShowBindingErrors, true));
 
         var ignored = view.FindAll(".bit-aiguv-ign");
-        Assert.HasCount(1, ignored);
+        Assert.ContainsSingle(ignored);
         Assert.AreEqual("Ignored: mood", ignored[0].TextContent.Trim());
 
         var errors = view.FindAll(".bit-aiguv-err");
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
         Assert.IsFalse(errors[0].TextContent.Contains("mood", System.StringComparison.Ordinal));
     }
 
@@ -104,7 +104,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
             .Add(c => c.ShowBindingErrors, true));
 
         var ignored = view.FindAll(".bit-aiguv-ign");
-        Assert.HasCount(1, ignored);
+        Assert.ContainsSingle(ignored);
         Assert.AreEqual("Ignored: mood", ignored[0].TextContent.Trim());
         Assert.IsEmpty(view.FindAll(".bit-aiguv-err"));
     }
@@ -151,8 +151,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
             .Add(c => c.Part, CompletedPart("forecast_card", """{"degrees":"warm"}"""))
             .Add(c => c.ShowBindingErrors, true));
 
-        CollectionAssert.AreEqual(new[] { "degrees ist kein Int32", "City fehlt in forecast_card" },
-                                  view.FindAll(".bit-aiguv-err").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "degrees ist kein Int32", "City fehlt in forecast_card" }, view.FindAll(".bit-aiguv-err").Select(e => e.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -164,8 +163,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
             .Add(c => c.Part, CompletedPart("list_card", """{"count":"many","items":"one"}"""))
             .Add(c => c.ShowBindingErrors, true));
 
-        CollectionAssert.AreEquivalent(new[] { "'count' could not be read as Int32", "'items' could not be read as List" },
-                                       view.FindAll(".bit-aiguv-err").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "'count' could not be read as Int32", "'items' could not be read as List" }, view.FindAll(".bit-aiguv-err").Select(e => e.TextContent.Trim()).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -186,7 +184,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
             .Add(c => c.Part, CompletedPart("definitely_not_registered", "{}")));
 
         var placeholder = view.Find(".bit-aiguv-unr");
-        StringAssert.Contains(placeholder.TextContent, "definitely_not_registered");
+        Assert.Contains("definitely_not_registered", placeholder.TextContent);
         Assert.IsFalse(view.Markup.Contains("forecast", System.StringComparison.Ordinal));
     }
 
@@ -243,7 +241,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
 
         var markup = RenderComponent<BitAiGenerativeUiView>(p => p.Add(c => c.Part, part)).Markup;
 
-        StringAssert.Contains(markup, "Osl: 0");
+        Assert.Contains("Osl: 0", markup);
     }
 
     [TestMethod]
@@ -269,7 +267,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
 
         var view = RenderComponent<BitAiGenerativeUiView>(p => p.Add(c => c.Part, CompletedPart("throwing_card", "{}")));
 
-        Assert.HasCount(1, view.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(view.FindComponents<BitAiRendererBoundary>());
         Assert.IsNotNull(view.Find(".bit-aiguv"));
     }
 
@@ -294,7 +292,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.IsTrue(view.Find(".bit-aiguv-cnt").ClassList.Contains("c-content"));
         Assert.IsTrue(view.Find(".bit-aiguv-dgn").ClassList.Contains("c-dgn"));
         Assert.IsTrue(view.Find(".bit-aiguv-err").ClassList.Contains("c-error"));
@@ -314,7 +312,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
         var style = view.Find(".bit-aiguv").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -332,7 +330,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
         });
 
         Assert.IsTrue(component.Find(".bit-aiguv").ClassList.Contains("cascaded"));
-        Assert.HasCount(1, component.FindAll(".bit-aiguv-ign"));
+        Assert.ContainsSingle(component.FindAll(".bit-aiguv-ign"));
     }
 
     [TestMethod]
@@ -354,7 +352,7 @@ public class BitAiGenerativeUiViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiGenerativeUiViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiGenerativeUiView", BitAiGenerativeUiViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiGenerativeUiView", new BitAiGenerativeUiViewParams().Name);
         Assert.AreEqual(BitAiGenerativeUiViewParams.ParamName, new BitAiGenerativeUiViewParams().Name);
     }
 }

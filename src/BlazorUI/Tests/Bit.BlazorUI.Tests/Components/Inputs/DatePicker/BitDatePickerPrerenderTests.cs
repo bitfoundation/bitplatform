@@ -29,15 +29,15 @@ public class BitDatePickerPrerenderTests
             [nameof(BitDatePicker.ShowWeekNumbers)] = true,
         });
 
-        StringAssert.Contains(html, "bit-dtp");
-        StringAssert.Contains(html, "Birthday");
-        StringAssert.Contains(html, "role=\"combobox\"");
-        StringAssert.Contains(html, "value=\"2026-01-15\"");
-        StringAssert.Contains(html, "bit-dtp-cal");
-        StringAssert.Contains(html, "January 2026");
-        StringAssert.Contains(html, "bit-dtp-dbs");
-        StringAssert.Contains(html, "bit-dtp-wnm");
-        StringAssert.Contains(html, "bit-dtp-twp");
+        Assert.Contains("bit-dtp", html);
+        Assert.Contains("Birthday", html);
+        Assert.Contains("role=\"combobox\"", html);
+        Assert.Contains("value=\"2026-01-15\"", html);
+        Assert.Contains("bit-dtp-cal", html);
+        Assert.Contains("January 2026", html);
+        Assert.Contains("bit-dtp-dbs", html);
+        Assert.Contains("bit-dtp-wnm", html);
+        Assert.Contains("bit-dtp-twp", html);
     }
 
     [TestMethod,
@@ -58,7 +58,7 @@ public class BitDatePickerPrerenderTests
             [nameof(BitDatePicker.StartingValue)] = new DateTimeOffset(new DateTime(2026, 1, 15), TimeSpan.Zero),
         });
 
-        StringAssert.Contains(html, "bit-dtp-grd");
+        Assert.Contains("bit-dtp-grd", html);
         Assert.AreEqual(standalone, html.Contains("bit-input-hidden"));
         Assert.AreEqual(standalone, html.Contains("bit-dtp-sta"));
         Assert.AreEqual(standalone is false, html.Contains("bit-dtp-ovl"));

@@ -39,8 +39,8 @@ public class BitAiSourceListTests : BitAiTestBase
 
         Assert.AreEqual("DIV", root.TagName);
         Assert.AreEqual("Sources", component.Find(".bit-aisrl-hdr").TextContent);
-        CollectionAssert.AreEqual(new[] { "First", "Second", "Unnumbered" }, cards.Select(c => c.QuerySelector(".bit-aisrc-ttl")!.TextContent).ToArray());
-        CollectionAssert.AreEqual(new[] { "1", "2" }, component.FindAll(".bit-aisrc-idx").Select(i => i.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "First", "Second", "Unnumbered" }, cards.Select(c => c.QuerySelector(".bit-aisrc-ttl")!.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "1", "2" }, component.FindAll(".bit-aisrc-idx").Select(i => i.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class BitAiSourceListTests : BitAiTestBase
             .Add(c => c.ShowHeading, false));
 
         Assert.IsEmpty(component.FindAll(".bit-aisrl-hdr"));
-        Assert.HasCount(1, component.FindAll(".bit-aisrc"));
+        Assert.ContainsSingle(component.FindAll(".bit-aisrc"));
 
         // With no heading to point at, the list is named by the words the heading would say.
         var list = component.Find(".bit-aisrl-lst");
@@ -91,7 +91,8 @@ public class BitAiSourceListTests : BitAiTestBase
 
         Assert.IsEmpty(buttons.FindAll("a"));
         buttons.Find(".bit-crd").Click();
-        Assert.AreEqual("a", activated?.SourceId);
+        var actualValue = activated?.SourceId;
+        Assert.AreEqual("a", actualValue);
     }
 
     [TestMethod]
@@ -116,7 +117,7 @@ public class BitAiSourceListTests : BitAiTestBase
         var root = component.Find(".bit-aisrl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -137,7 +138,7 @@ public class BitAiSourceListTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -167,7 +168,7 @@ public class BitAiSourceListTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red", List = "color: blue" }));
 
         Assert.IsTrue(component.Find(".bit-aisrl").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aisrl").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-aisrl").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aisrl-hdr").ClassList.Contains("c-header"));
         Assert.IsTrue(component.Find(".bit-aisrl-lst").ClassList.Contains("c-list"));
         Assert.AreEqual("color: blue", component.Find(".bit-aisrl-lst").GetAttribute("style"));
@@ -201,13 +202,13 @@ public class BitAiSourceListTests : BitAiTestBase
                 .Add(x => x.ShowHeading, true));
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-aisrl-hdr"));
+        Assert.ContainsSingle(component.FindAll(".bit-aisrl-hdr"));
     }
 
     [TestMethod]
     public void BitAiSourceListParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiSourceList", BitAiSourceListParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiSourceList", new BitAiSourceListParams().Name);
         Assert.AreEqual(BitAiSourceListParams.ParamName, new BitAiSourceListParams().Name);
     }
 }

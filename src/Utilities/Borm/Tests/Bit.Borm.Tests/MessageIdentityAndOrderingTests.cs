@@ -29,7 +29,7 @@ public class MessageIdentityTests : ComponentTestBase
         state.SetServerError("name", "Second problem.");
         cut.Render();
 
-        Assert.AreEqual(2, cut.FindAll("#borm_name_error li").Count);
+        Assert.HasCount(2, cut.FindAll("#borm_name_error li"));
         Assert.Contains("Second problem.", cut.Find("#borm_name_error").TextContent, StringComparison.Ordinal);
     }
 
@@ -42,7 +42,7 @@ public class MessageIdentityTests : ComponentTestBase
         state.SetServerError("name", "Three.");
         cut.Render();
 
-        Assert.AreEqual(state.MessagesFor("name").Count, cut.FindAll("#borm_name_error li").Count);
+        Assert.HasCount(state.MessagesFor("name").Count, cut.FindAll("#borm_name_error li"));
     }
 
     [TestMethod]

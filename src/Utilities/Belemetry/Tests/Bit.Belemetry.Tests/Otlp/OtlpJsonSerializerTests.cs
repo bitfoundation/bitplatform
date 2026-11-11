@@ -104,8 +104,8 @@ public class OtlpJsonSerializerTests
         var hp = metrics["latency"].GetProperty("histogram").GetProperty("dataPoints")[0];
         Assert.AreEqual(delta ? "2" : "5", hp.GetProperty("count").GetString());
         Assert.AreEqual(delta ? 30.0 : 141.0, hp.GetProperty("sum").GetDouble());
-        CollectionAssert.AreEqual(delta ? new[] { "0", "2", "0" } : new[] { "1", "3", "1" }, hp.GetProperty("bucketCounts").EnumerateArray().Select(e => e.GetString()).ToArray());
-        CollectionAssert.AreEqual(new[] { 10.0, 100.0 }, hp.GetProperty("explicitBounds").EnumerateArray().Select(e => e.GetDouble()).ToArray());
+        Assert.AreSequenceEqual(delta ? new[] { "0", "2", "0" } : new[] { "1", "3", "1" }, hp.GetProperty("bucketCounts").EnumerateArray().Select(e => e.GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { 10.0, 100.0 }, hp.GetProperty("explicitBounds").EnumerateArray().Select(e => e.GetDouble()).ToArray());
         Assert.AreEqual(delta ? 10.0 : 1.0, hp.GetProperty("min").GetDouble());
         Assert.AreEqual(delta ? 20.0 : 100.0, hp.GetProperty("max").GetDouble());
 

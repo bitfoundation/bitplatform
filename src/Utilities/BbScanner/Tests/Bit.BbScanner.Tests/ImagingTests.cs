@@ -258,7 +258,7 @@ public class ImagingTests
         {
             var crop = view.Crop(region);
             Assert.IsTrue(crop.Width >= 1 && crop.Height >= 1);
-            Assert.IsTrue(crop.Offset + ((crop.Height - 1) * crop.Stride) + crop.Width <= data.Length);
+            Assert.IsLessThanOrEqualTo(data.Length, crop.Offset + ((crop.Height - 1) * crop.Stride) + crop.Width);
         }
     }
 
@@ -413,7 +413,7 @@ public class ImagingTests
 
         var regions = new BbDarkRegionFinder().Find(image, minCells: 4);
 
-        Assert.AreEqual(2, regions.Count);
+        Assert.HasCount(2, regions);
         Assert.Contains(r => r.Left <= 10 && r.Right >= 49, regions);
         Assert.Contains(r => r.Left <= 140 && r.Right >= 179, regions);
     }
@@ -462,7 +462,7 @@ public class ImagingTests
             }
         }
 
-        Assert.IsTrue(correct > (Width - 8) * 0.95, $"Only {correct} of {Width - 8} pixels were classified correctly.");
+        Assert.IsGreaterThan((Width - 8) * 0.95, correct, $"Only {correct} of {Width - 8} pixels were classified correctly.");
     }
 
     [TestMethod]

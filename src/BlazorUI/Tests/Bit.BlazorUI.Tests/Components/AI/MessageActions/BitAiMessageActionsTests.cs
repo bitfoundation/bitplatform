@@ -19,7 +19,7 @@ public class BitAiMessageActionsTests : BitAiTestBase
         var component = RenderComponent<BitAiMessageActions>(p => p.Add(c => c.Message, Assistant(new BitAiTextPart("answer"))));
 
         Assert.IsNotNull(component.Find(".bit-aimac > .bit-aimac-act"));
-        Assert.HasCount(1, component.FindComponents<BitAiCopyButton>());
+        Assert.ContainsSingle(component.FindComponents<BitAiCopyButton>());
         Assert.IsNotNull(component.Find("button[title='Good response']"));
         Assert.IsNotNull(component.Find("button[title='Bad response']"));
         Assert.IsEmpty(component.FindAll("button[title='Regenerate']"));
@@ -64,7 +64,7 @@ public class BitAiMessageActionsTests : BitAiTestBase
 
         Assert.AreEqual(BitAiFeedbackKind.None, message.Feedback);
         Assert.AreEqual("false", component.Find("button[title='Good response']").GetAttribute("aria-pressed"));
-        CollectionAssert.AreEqual(new[] { BitAiFeedbackKind.Positive, BitAiFeedbackKind.None }, recorded);
+        Assert.AreSequenceEqual(new[] { BitAiFeedbackKind.Positive, BitAiFeedbackKind.None }, recorded);
     }
 
     [TestMethod]
@@ -189,7 +189,7 @@ public class BitAiMessageActionsTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", Actions = "color: green;", Time = "color: blue;" }));
 
         Assert.IsTrue(component.Find(".bit-aimac").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aimac").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aimac").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aimac-act").ClassList.Contains("custom-actions"));
         Assert.AreEqual("color: green;", component.Find(".bit-aimac-act").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aimac-tim").ClassList.Contains("custom-time"));
@@ -215,7 +215,7 @@ public class BitAiMessageActionsTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 

@@ -23,9 +23,9 @@ public class BitForcedHiddenBorderStylesheetTests
 
         // Canvas is what the mode paints the part's background in, so the border vanishes and keeps its width. The
         // mixin is included inside a forced-colors block, where its caller orders it ahead of the edge that stays.
-        StringAssert.Contains(mixin, "border-color: Canvas;");
-        Assert.IsFalse(mixin.Contains("@media"), "The mixin carries a media query, which would nest in its caller's forced-colors block.");
-        Assert.IsFalse(mixin.Contains("width"), "The mixin changes the border's width, which would move the content when the border comes back.");
+        Assert.Contains("border-color: Canvas;", mixin);
+        Assert.DoesNotContain("@media", mixin, "The mixin carries a media query, which would nest in its caller's forced-colors block.");
+        Assert.DoesNotContain("width", mixin, "The mixin changes the border's width, which would move the content when the border comes back.");
     }
 
     [TestMethod,
@@ -44,7 +44,7 @@ public class BitForcedHiddenBorderStylesheetTests
             .Where(rule => rule.Declarations.Contains(Include.TrimEnd(';')))
             .ToArray();
 
-        Assert.AreEqual(1, hiding.Length, $"{path} has no single forced-colors rule for {part} that includes the mixin.");
+        Assert.ContainsSingle(hiding, $"{path} has no single forced-colors rule for {part} that includes the mixin.");
         Assert.AreEqual(Include.TrimEnd(';'), hiding[0].Declarations[0], $"{path} hides the border of {part} after another declaration.");
     }
 
@@ -59,7 +59,7 @@ public class BitForcedHiddenBorderStylesheetTests
             .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length, $"These stylesheets paint a border Canvas by hand instead of including forced-hidden-border: {string.Join(", ", offenders)}");
+        Assert.IsEmpty(offenders, $"These stylesheets paint a border Canvas by hand instead of including forced-hidden-border: {string.Join(", ", offenders)}");
     }
 
     private static string ReadFunctions() => SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss");

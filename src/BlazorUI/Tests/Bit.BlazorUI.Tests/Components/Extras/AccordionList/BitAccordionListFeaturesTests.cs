@@ -77,7 +77,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.CollapseAll());
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex")));
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         component.FindAll(".bit-acd-hdr")[0].Click();
 
         Assert.AreEqual(1, clicked);
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
         Assert.AreEqual("true", component.FindAll(".bit-acd-hdr")[0].GetAttribute("aria-disabled"));
     }
 
@@ -132,7 +132,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.FindAll(".bit-acd-hdr")[0].Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
         Assert.IsTrue(component.FindAll(".bit-acd")[0].ClassList.Contains("bit-dis"));
     }
 
@@ -150,7 +150,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ExpandAll());
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-acd-con.bit-acd-cex")));
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd.bit-acd-lg").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd.bit-acd-lg"));
     }
 
     [TestMethod]
@@ -174,7 +174,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ExpanderIconPlacement, BitPlacement.Start);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd.bit-acd-sei").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd.bit-acd-sei"));
     }
 
     [TestMethod]
@@ -189,7 +189,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.HideExpanderIcon, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acd-eiw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acd-eiw"));
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ExpandedExpanderIconName, "Remove");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acd-ico").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acd-ico"));
         Assert.IsTrue(component.FindAll(".bit-acd-eic")[0].ClassList.Contains("bit-icon--Remove"));
         Assert.IsFalse(component.FindAll(".bit-acd-eic")[1].ClassList.Contains("bit-icon--Remove"));
     }
@@ -221,7 +221,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acd-act").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acd-act"));
         Assert.AreEqual("action", component.Find(".bit-acd-act").TextContent.Trim());
     }
 
@@ -236,7 +236,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ActionsTemplate, actionsTemplate);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd-act").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd-act"));
     }
 
     [TestMethod]
@@ -295,9 +295,9 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         var first = component.FindAll(".bit-acd")[0];
         Assert.IsTrue(first.ClassList.Contains("bit-acd-mxh"));
         Assert.IsTrue(first.ClassList.Contains("bit-acd-eop"));
-        Assert.IsTrue(first.GetAttribute("style")!.Contains("--bit-acd-max-h:100px"));
-        Assert.IsTrue(first.GetAttribute("style")!.Contains("--bit-acd-dur-full:250ms"));
-        Assert.IsTrue(component.Find(".bit-acl").GetAttribute("style")!.Contains("gap:8px"));
+        Assert.Contains("--bit-acd-max-h:100px", first.GetAttribute("style")!);
+        Assert.Contains("--bit-acd-dur-full:250ms", first.GetAttribute("style")!);
+        Assert.Contains("gap:8px", component.Find(".bit-acl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -353,7 +353,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         Assert.AreEqual("a", received!.Key);
         Assert.IsTrue(received.IsExpanding);
         Assert.AreEqual(BitAccordionToggleReason.Click, received.Reason);
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -403,7 +403,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         // Single-expand mode collapses the previously expanded item along the way.
         await component.InvokeAsync(() => component.Instance.Expand("c"));
         Assert.IsFalse(component.Instance.IsExpanded("b"));
-        CollectionAssert.AreEqual(new[] { "c" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "c" }, component.Instance.GetExpandedKeys().ToArray());
 
         await component.InvokeAsync(() => component.Instance.Toggle("c"));
         Assert.IsFalse(component.Instance.IsExpanded("c"));
@@ -412,7 +412,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         Assert.IsTrue(component.Instance.IsExpanded("c"));
 
         await component.InvokeAsync(() => component.Instance.Collapse("c"));
-        Assert.AreEqual(0, component.Instance.GetExpandedKeys().Count);
+        Assert.IsEmpty(component.Instance.GetExpandedKeys());
     }
 
     [TestMethod]
@@ -425,7 +425,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Expand("nope"));
 
-        Assert.AreEqual(0, component.Instance.GetExpandedKeys().Count);
+        Assert.IsEmpty(component.Instance.GetExpandedKeys());
     }
 
     [TestMethod]
@@ -438,11 +438,11 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.DefaultExpandedKeys, ["a", "orphan"]);
         });
 
-        CollectionAssert.AreEqual(new[] { "a", "orphan" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "orphan" }, component.Instance.GetExpandedKeys().ToArray());
 
         await component.InvokeAsync(() => component.Instance.CollapseAll());
 
-        Assert.AreEqual(0, component.Instance.GetExpandedKeys().Count);
+        Assert.IsEmpty(component.Instance.GetExpandedKeys());
     }
 
     [TestMethod]
@@ -459,7 +459,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.Render();
 
-        Assert.AreEqual(4, component.FindAll(".bit-acd").Count);
+        Assert.HasCount(4, component.FindAll(".bit-acd"));
     }
 
     [TestMethod]
@@ -531,7 +531,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         });
 
         var wrappers = component.FindAll(".bit-acl-itm");
-        Assert.AreEqual(3, wrappers.Count);
+        Assert.HasCount(3, wrappers);
 
         // The focus itself is a JS call the loose interop swallows, so what is asserted here is that the
         // navigation runs over the headers without throwing and leaves the expanded state alone.
@@ -540,7 +540,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         wrappers[0].KeyDown(new KeyboardEventArgs { Key = "Home" });
         wrappers[0].KeyDown(new KeyboardEventArgs { Key = "End" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -554,7 +554,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.FindAll(".bit-acl-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -599,9 +599,9 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd-hwr.custom-hwr").Count);
-        Assert.AreEqual(3, component.FindAll(".bit-acd-hed.custom-hed").Count);
-        Assert.AreEqual(3, component.FindAll(".bit-acd-cwr.custom-cwr").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd-hwr.custom-hwr"));
+        Assert.HasCount(3, component.FindAll(".bit-acd-hed.custom-hed"));
+        Assert.HasCount(3, component.FindAll(".bit-acd-cwr.custom-cwr"));
         Assert.AreEqual("color: red;", component.FindAll(".bit-acd-ttl")[0].GetAttribute("style"));
     }
 
@@ -616,7 +616,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         {
             var listPart = part == nameof(BitAccordionClassStyles.Root) ? "Item" : $"Item{part}";
 
-            Assert.IsTrue(listParts.Contains(listPart), $"BitAccordionListClassStyles has no {listPart} for the accordion's {part}.");
+            Assert.Contains(listPart, listParts, $"BitAccordionListClassStyles has no {listPart} for the accordion's {part}.");
         }
     }
 
@@ -635,13 +635,13 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         var click = component.InvokeAsync(() => component.Find(".bit-acd-hdr").Click());
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-acd-spn.custom-spn").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-acd-spn.custom-spn")));
         Assert.AreEqual("color: red;", component.Find(".bit-acd-spn").GetAttribute("style"));
 
         gate.SetResult();
         await click;
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acd-spn").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-acd-spn")));
     }
 
     [TestMethod]
@@ -653,7 +653,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.AddChildContent<BitAccordionListOption>(p => p.Add(o => o.Title, "Option B"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-acd-hdr").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-acd-hdr")));
 
         component.FindAll(".bit-acd-hdr")[1].Click();
 
@@ -677,7 +677,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, component.FindAll(".bit-acd-ico").Count);
+            Assert.ContainsSingle(component.FindAll(".bit-acd-ico"));
             Assert.AreEqual("act", component.Find(".bit-acd-act").TextContent.Trim());
         });
     }
@@ -694,11 +694,11 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-acd-hdr").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-acd-hdr")));
 
         component.FindAll(".bit-acd-hdr")[0].Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
 
@@ -785,7 +785,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-acd").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".bit-acd")));
     }
 
     [TestMethod]
@@ -810,15 +810,15 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-acd-ico").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-acd-eiw").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acd-ico"));
+        Assert.ContainsSingle(component.FindAll(".bit-acd-eiw"));
 
         // The read-only item does not answer the click, the other one does.
         component.FindAll(".bit-acd-hdr")[0].Click();
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
 
         component.FindAll(".bit-acd-hdr")[1].Click();
-        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -832,12 +832,12 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Expand(string.Empty));
         await component.InvokeAsync(() => component.Instance.Toggle(string.Empty));
 
-        Assert.AreEqual(0, component.Instance.GetExpandedKeys().Count);
+        Assert.IsEmpty(component.Instance.GetExpandedKeys());
         Assert.IsFalse(component.Instance.IsExpanded(null));
     }
 
 
-    public class RichItem
+    internal class RichItem
     {
         public string? Id { get; set; }
 
@@ -861,12 +861,12 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.FindAll(".bit-acd-hdr")[0].Click();
         component.FindAll(".bit-acd-hdr")[2].Click();
-        Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.HasCount(2, component.FindAll(".bit-acd-con.bit-acd-cex"));
 
         component.Render(parameters => parameters.Add(p => p.Multiple, false));
 
-        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
-        CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.ContainsSingle(component.FindAll(".bit-acd-con.bit-acd-cex"));
+        Assert.AreSequenceEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray());
     }
 
     [TestMethod]
@@ -882,11 +882,11 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.DefaultExpandedKeys, ["a", "b"]);
         });
 
-        Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.HasCount(2, component.FindAll(".bit-acd-con.bit-acd-cex"));
 
         await component.InvokeAsync(() => component.Instance.CollapseAll());
 
-        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
+        component.WaitForAssertion(() => Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex")));
     }
 
     [TestMethod]
@@ -902,13 +902,13 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         component.FindAll(".bit-acd-hdr")[0].Click();
         component.FindAll(".bit-acd-hdr")[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
 
         // The third one is opened all the same - nothing is turned away - and the one that was opened first
         // is the one that closes for it.
         component.FindAll(".bit-acd-hdr")[2].Click();
 
-        CollectionAssert.AreEqual(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "b", "c" }, component.Instance.GetExpandedKeys().ToArray());
         Assert.IsFalse(component.FindAll(".bit-acd-con")[0].ClassList.Contains("bit-acd-cex"));
         Assert.IsTrue(component.FindAll(".bit-acd-con")[2].ClassList.Contains("bit-acd-cex"));
     }
@@ -924,7 +924,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
         });
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, component.Instance.GetExpandedKeys().ToArray());
     }
 
     [TestMethod]
@@ -948,8 +948,8 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
-        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
+        Assert.ContainsSingle(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -972,8 +972,8 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             });
         });
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
-        Assert.AreEqual(1, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a" }, component.Instance.GetExpandedKeys().ToArray()));
+        Assert.ContainsSingle(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -988,7 +988,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ExpandAll());
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count));
+        component.WaitForAssertion(() => Assert.HasCount(2, component.FindAll(".bit-acd-con.bit-acd-cex")));
     }
 
     [TestMethod]
@@ -1003,7 +1003,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         component.FindAll(".bit-acd-hdr")[0].Click();
         component.FindAll(".bit-acd-hdr")[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, component.Instance.GetExpandedKeys().ToArray());
     }
 
     [TestMethod]
@@ -1017,7 +1017,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -1030,11 +1030,11 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.DefaultExpandedKeys, ["a", "b", "c"]);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.HasCount(3, component.FindAll(".bit-acd-con.bit-acd-cex"));
 
         component.Render(parameters => parameters.Add(p => p.MaxExpanded, 1));
 
-        CollectionAssert.AreEqual(new[] { "c" }, component.Instance.GetExpandedKeys().ToArray());
+        Assert.AreSequenceEqual(new[] { "c" }, component.Instance.GetExpandedKeys().ToArray());
     }
 
     [TestMethod]
@@ -1051,8 +1051,8 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ExpandedKeysChanged, keys => bound = [.. keys ?? []]);
         });
 
-        component.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "a", "b" }, bound.ToArray()));
-        Assert.AreEqual(2, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        component.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "a", "b" }, bound.ToArray()));
+        Assert.HasCount(2, component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -1070,7 +1070,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         wrappers[0].KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
         wrappers[2].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-acd-con.bit-acd-cex").Count);
+        Assert.IsEmpty(component.FindAll(".bit-acd-con.bit-acd-cex"));
     }
 
     [TestMethod]
@@ -1082,13 +1082,13 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".no-items").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-acd").Count);
+        Assert.ContainsSingle(component.FindAll(".no-items"));
+        Assert.IsEmpty(component.FindAll(".bit-acd"));
 
         component.Render(parameters => parameters.Add(p => p.Items, GetItems()));
 
-        Assert.AreEqual(0, component.FindAll(".no-items").Count);
-        Assert.AreEqual(3, component.FindAll(".bit-acd").Count);
+        Assert.IsEmpty(component.FindAll(".no-items"));
+        Assert.HasCount(3, component.FindAll(".bit-acd"));
     }
 
     [TestMethod]
@@ -1102,7 +1102,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.EmptyContent, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"no-items\">Nothing here</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".no-items").Count);
+        Assert.ContainsSingle(component.FindAll(".no-items"));
     }
 
     [TestMethod]
@@ -1185,7 +1185,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         // cannot be decided per key - and only for a key pressed on one of this list's own headers.
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys");
 
-        CollectionAssert.AreEqual(new[] { "ArrowDown", "ArrowUp", "Home", "End" }, (string[])invocation.Arguments[1]!);
+        Assert.AreSequenceEqual(new[] { "ArrowDown", "ArrowUp", "Home", "End" }, (string[])invocation.Arguments[1]!);
         Assert.AreEqual(".bit-acl-itm > .bit-acd > .bit-acd-hwr > .bit-acd-hed > .bit-acd-hdr", invocation.Arguments[2]);
         Assert.AreEqual(".bit-acl", invocation.Arguments[3]);
     }
@@ -1199,7 +1199,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.Navigable, false);
         });
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1211,16 +1211,16 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ScrollIntoViewOnExpand, true);
         });
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations);
 
         component.FindAll(".bit-acd-hdr")[1].Click();
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations));
 
         // A collapse takes nothing off the screen that was not already there.
         component.FindAll(".bit-acd-hdr")[1].Click();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1233,7 +1233,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
 
         component.FindAll(".bit-acd-hdr")[1].Click();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1252,7 +1252,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         // to scroll to.
         component.Render(parameters => parameters.Add(p => p.ExpandedKeys, (IEnumerable<string>)["a", "b"]));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations));
     }
 
     [TestMethod]
@@ -1262,7 +1262,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         // it is still the state the list starts in, not a panel the reader has just opened.
         RenderComponent<BitAccordionListScrollOnExpandTest>(parameters => parameters.Add(p => p.ExpandedKey, "first"));
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1270,7 +1270,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
     {
         var component = RenderComponent<BitAccordionListScrollOnExpandTest>(parameters => parameters.Add(p => p.ShowSecond, false));
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations);
 
         // The panel this change opens belongs to the option the same change adds, so it registers itself -
         // and then its element - only in the renders that follow the one that asked for the scroll.
@@ -1280,7 +1280,7 @@ public class BitAccordionListFeaturesTests : BunitTestContext
             parameters.Add(p => p.ExpandedKey, "second");
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView", Context.JSInterop.Invocations));
     }
 
     [TestMethod]
@@ -1348,12 +1348,12 @@ public class BitAccordionListFeaturesTests : BunitTestContext
         int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
     }
 
-    public class KeylessItem
+    internal class KeylessItem
     {
         public string? Name { get; set; }
     }
 
-    public class ReadOnlyStateItem
+    internal class ReadOnlyStateItem
     {
         public string? Name { get; set; }
 

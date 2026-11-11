@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Models;
+﻿namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>Tests for the public Bm facade, keyframe unions, transitions and timeline helpers.</summary>
 [TestClass]
@@ -21,7 +21,7 @@ public class BmApiTests
         BmKeyframes k = [1, 1.4, 0.8, 1];
         Assert.AreEqual(4, k.Count);
         var engine = (double[])k.ToEngineValue();
-        CollectionAssert.AreEqual(new[] { 1.0, 1.4, 0.8, 1.0 }, engine);
+        Assert.AreSequenceEqual(new[] { 1.0, 1.4, 0.8, 1.0 }, engine);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class BmApiTests
         Assert.AreEqual(100.0, (double)d["x"]!);
         Assert.AreEqual(0.5, (double)d["opacity"]!);
         Assert.AreEqual("#ff0000", d["backgroundColor"]);
-        CollectionAssert.AreEqual(new[] { 1.0, 2.0 }, (double[])d["scale"]!);
+        Assert.AreSequenceEqual(new[] { 1.0, 2.0 }, (double[])d["scale"]!);
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class BmApiTests
         Assert.AreEqual(0.4, config.Duration);
         Assert.AreEqual(BmEase.InOut, config.Ease);
         Assert.AreEqual(0.1, config.Delay);
-        CollectionAssert.AreEqual(new[] { 0.0, 0.5, 1.0 }, config.Times);
+        Assert.AreSequenceEqual(new[] { 0.0, 0.5, 1.0 }, config.Times);
     }
 
     [TestMethod]
@@ -382,7 +382,7 @@ public class BmApiTests
 
         var config = ((BmTransition)tween).ToConfig();
 
-        CollectionAssert.AreEqual(new[] { BmEase.Linear, BmEase.CircOut }, config.Eases);
+        Assert.AreSequenceEqual(new[] { BmEase.Linear, BmEase.CircOut }, config.Eases);
     }
 
     [TestMethod]
@@ -435,6 +435,6 @@ public class BmApiTests
         var props = Bm.To(filter: "blur(4px)");
 
         Assert.AreEqual("blur(4px)", props.ToJsDictionary()["filter"]);
-        StringAssert.Contains(props.ToCssStyleString(), "filter:blur(4px);");
+        Assert.Contains("filter:blur(4px);", props.ToCssStyleString());
     }
 }

@@ -264,7 +264,7 @@ public class BitResourceTimelineWireFormatTests
     {
         var root = Serialize(new BitResourceTimelineResource { Id = "r1", Name = "Server-01" });
 
-        CollectionAssert.AreEqual(new[] { "id", "name", "collapsed" }, root.EnumerateObject().Select(p => p.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "id", "name", "collapsed" }, root.EnumerateObject().Select(p => p.Name).ToArray());
     }
 
 
@@ -646,7 +646,7 @@ public class BitResourceTimelineWireFormatTests
     {
         // A key the model writes that the engine does not declare is read by nobody, and one the engine declares that the
         // model does not write is never set: a renamed property on either side.
-        CollectionAssert.AreEquivalent(EngineInterfaceKeys(engineInterface), JsonNames(model), $"{model.Name} against {engineInterface}");
+        Assert.AreSequenceEqual(EngineInterfaceKeys(engineInterface), JsonNames(model), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{model.Name} against {engineInterface}");
     }
 
     [TestMethod]
@@ -675,7 +675,7 @@ public class BitResourceTimelineWireFormatTests
 
         // The engine warns about (and ignores) a color it does not know, and a color it knows but the model has no
         // property for cannot be set by an app.
-        CollectionAssert.AreEquivalent(colors, JsonNames(typeof(BitResourceTimelineColors)));
+        Assert.AreSequenceEqual(colors, JsonNames(typeof(BitResourceTimelineColors)), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -688,7 +688,7 @@ public class BitResourceTimelineWireFormatTests
 
         var keys = Regex.Matches(getLayout.Groups[1].Value, @"(\w+):").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(keys, JsonNames(LayoutType));
+        Assert.AreSequenceEqual(keys, JsonNames(LayoutType), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var layout = JsonSerializer.Deserialize("""{ "resourceAxisWidth": 220, "timeAxisHeight": 72, "resourceHeight": 36, "resourceIndent": 20 }""", LayoutType, Web)!;
 

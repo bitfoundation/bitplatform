@@ -60,7 +60,7 @@ public class BinkCanvasLifecycleTests : BunitContext
         for (int i = 0; i < 20; i++) canvases.Add(Render<BinkCanvas>());
 
         var ids = canvases.Select(c => c.Instance.ElementId).ToList();
-        Assert.AreEqual(ids.Count, ids.Distinct().Count());
+        Assert.HasCount(ids.Count, ids.Distinct());
 
         canvases[3].Instance.CurrentDocument.AddElement(new BinkStroke(Points(), new BinkPenBrush()));
         Assert.AreEqual(1, canvases[3].Instance.CurrentDocument.ElementCount);
@@ -89,7 +89,7 @@ public class BinkCanvasLifecycleTests : BunitContext
 
         var after = JSInterop.Invocations.Where(i => i.Identifier == "setWetInkStyle").ToList();
         foreach (var call in after) _output.WriteLine("  " + string.Join(", ", call.Arguments));
-        Assert.IsTrue(after.Count > before, "changing the brush did not update the wet-ink style");
+        Assert.IsGreaterThan(before, after.Count, "changing the brush did not update the wet-ink style");
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class BinkCanvasLifecycleTests : BunitContext
         string markup = canvas.Markup;
         _output.WriteLine($"description length: {markup.Length}");
         Assert.Contains("2000 elements", markup, StringComparison.Ordinal);
-        Assert.IsTrue(markup.Length < 20000, $"the accessible description grew to {markup.Length} characters");
+        Assert.IsLessThan(20000, markup.Length, $"the accessible description grew to {markup.Length} characters");
     }
 
     [TestMethod]

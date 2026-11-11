@@ -35,12 +35,11 @@ public sealed class BitFocusablesContractTests
                             .Select(m => m.Groups["name"].Value)
                             .ToList();
 
-        Assert.AreNotEqual(0, declared.Count, "BitBlazorUI.d.ts declares no member of Utils.");
+        Assert.IsNotEmpty(declared, "BitBlazorUI.d.ts declares no member of Utils.");
 
         var missing = declared.Where(name => Regex.IsMatch(core, $@"\bexport\s+(?:async\s+)?(?:function|const|let)\s+{name}\b") is false).ToList();
 
-        Assert.AreEqual(0, missing.Count,
-            $"BitBlazorUI.d.ts declares members the core Utils exports no function or value for: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"BitBlazorUI.d.ts declares members the core Utils exports no function or value for: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -58,8 +57,7 @@ public sealed class BitFocusablesContractTests
             .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
             .ToList();
 
-        Assert.AreEqual(0, copies.Count,
-            $"These scripts declare a focusable selector of their own; ask BitBlazorUI.Utils instead: {string.Join(", ", copies)}");
+        Assert.IsEmpty(copies, $"These scripts declare a focusable selector of their own; ask BitBlazorUI.Utils instead: {string.Join(", ", copies)}");
     }
 
     // Utils.isInteractive is the one answer to "is a click on this element the element's own" - a drag surface and the
@@ -79,7 +77,6 @@ public sealed class BitFocusablesContractTests
             .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
             .ToList();
 
-        Assert.AreEqual(0, copies.Count,
-            $"These scripts declare a selector of interactive elements of their own; ask BitBlazorUI.Utils.isInteractive instead: {string.Join(", ", copies)}");
+        Assert.IsEmpty(copies, $"These scripts declare a selector of interactive elements of their own; ask BitBlazorUI.Utils.isInteractive instead: {string.Join(", ", copies)}");
     }
 }

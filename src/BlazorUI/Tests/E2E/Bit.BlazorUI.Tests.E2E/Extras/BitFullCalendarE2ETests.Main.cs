@@ -649,6 +649,6 @@ public partial class BitFullCalendarE2ETests
 
         await Expect(Page.Locator("#state")).ToHaveTextAsync(new Regex(@"^Month\|Event\|2025-08-16\|2025-07-16\|"));
         var count = int.Parse((await Page.Locator("#state").InnerTextAsync()).Split('|')[4], CultureInfo.InvariantCulture);
-        Assert.IsTrue(count >= 0);
+        Assert.IsGreaterThanOrEqualTo(0, count);
     }
 }

@@ -36,8 +36,8 @@ public class BitAiToolResultViewTests : BitAiTestBase
 
         var component = RenderComponent<BitAiToolResultView>(p => p.Add(c => c.Part, part));
 
-        Assert.HasCount(1, component.FindComponents<BitAiJsonView>());
-        StringAssert.Contains(component.Markup, "temp");
+        Assert.ContainsSingle(component.FindComponents<BitAiJsonView>());
+        Assert.Contains("temp", component.Markup);
     }
 
     [TestMethod]
@@ -49,7 +49,7 @@ public class BitAiToolResultViewTests : BitAiTestBase
 
         var error = component.FindComponent<BitAiErrorView>();
         Assert.IsTrue(error.Instance.Compact);
-        StringAssert.Contains(component.Markup, "permission denied");
+        Assert.Contains("permission denied", component.Markup);
     }
 
     [TestMethod]
@@ -71,8 +71,8 @@ public class BitAiToolResultViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("result", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aitrv-bdy").ClassList.Contains("body-class"));
         Assert.AreEqual("color:red", component.Find(".bit-aitrv-txt").GetAttribute("style"));
     }
@@ -95,7 +95,7 @@ public class BitAiToolResultViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 }

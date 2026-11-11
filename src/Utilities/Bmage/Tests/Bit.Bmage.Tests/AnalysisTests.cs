@@ -75,9 +75,9 @@ public sealed class HistogramTests
         var full = ImageStatistics.Measure(image, maxSamples: 0);
         var sampled = ImageStatistics.Measure(image, maxSamples: 5000);
         // Sampling trades a little accuracy for speed; a fraction of a level is plenty for auto adjustments.
-        Assert.IsTrue(Math.Abs(full.Luminance.Mean - sampled.Luminance.Mean) < 1.5,
+        Assert.IsLessThan(1.5, Math.Abs(full.Luminance.Mean - sampled.Luminance.Mean),
             $"Sampled mean {sampled.Luminance.Mean:0.###} differed too much from {full.Luminance.Mean:0.###}");
-        Assert.IsTrue(Math.Abs(full.AverageColor.R - sampled.AverageColor.R) <= 3);
+        Assert.IsLessThanOrEqualTo(3, Math.Abs(full.AverageColor.R - sampled.AverageColor.R));
     }
 
     [TestMethod]
@@ -90,10 +90,10 @@ public sealed class HistogramTests
         image.Fill(new Rectangle(0, 90, 100, 10), new Rgba32(30, 180, 60));
 
         var colors = ImageStatistics.GetDominantColors(image, count: 3, maxSamples: 0);
-        Assert.AreEqual(3, colors.Count);
-        Assert.IsTrue(colors[0].Color.B > 150, $"Most common should be blue, got {colors[0].Color}");
+        Assert.HasCount(3, colors);
+        Assert.IsGreaterThan(150, colors[0].Color.B, $"Most common should be blue, got {colors[0].Color}");
         Assert.IsInRange(0.5, 0.7, colors[0].Fraction);
-        Assert.IsTrue(colors[1].Color.R > 150, $"Second should be red, got {colors[1].Color}");
+        Assert.IsGreaterThan(150, colors[1].Color.R, $"Second should be red, got {colors[1].Color}");
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public sealed class HistogramTests
         image.Fill(new Rectangle(40, 40, 20, 20), new Rgba32(10, 130, 130));
 
         var withWhite = ImageStatistics.GetDominantColors(image, 1, maxSamples: 0);
-        Assert.IsTrue(withWhite[0].Color.R > 240, "White should dominate when it is included");
+        Assert.IsGreaterThan(240, withWhite[0].Color.R, "White should dominate when it is included");
 
         var withoutWhite = ImageStatistics.GetDominantColors(image, 1, maxSamples: 0, ignoreNearWhiteAndBlack: true);
         Assert.IsTrue(withoutWhite[0].Color.G > 100 && withoutWhite[0].Color.R < 60, $"Expected the teal subject, got {withoutWhite[0].Color}");
@@ -140,8 +140,8 @@ public sealed class AutoAdjustmentTests
         using var result = new AutoLevelsOperation().Apply(source, OperationContext.Default);
         var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance;
 
-        Assert.IsTrue(after.Minimum < 12, $"Blacks were not deepened: {after.Minimum}");
-        Assert.IsTrue(after.Maximum > 243, $"Whites were not brightened: {after.Maximum}");
+        Assert.IsLessThan(12, after.Minimum, $"Blacks were not deepened: {after.Minimum}");
+        Assert.IsGreaterThan(243, after.Maximum, $"Whites were not brightened: {after.Maximum}");
     }
 
     [TestMethod]
@@ -167,7 +167,7 @@ public sealed class AutoAdjustmentTests
         using var source = TestImages.Gradient(128, 64);
         using var result = new AutoLevelsOperation().Apply(source, OperationContext.Default);
         // A gradient already spans the range, so the change should be small.
-        Assert.IsTrue(TestImages.MeanChannelDifference(source, result) < 6);
+        Assert.IsLessThan(6, TestImages.MeanChannelDifference(source, result));
     }
 
     [TestMethod]
@@ -198,8 +198,8 @@ public sealed class AutoAdjustmentTests
         using var result = new AutoLevelsOperation(perChannel: true).Apply(source, OperationContext.Default);
         var stats = ImageStatistics.Measure(result, maxSamples: 0);
         // After a per-channel stretch every channel should reach near white.
-        Assert.IsTrue(stats.Red.Maximum > 240, $"Red only reached {stats.Red.Maximum}");
-        Assert.IsTrue(stats.Green.Maximum > 240, $"Green only reached {stats.Green.Maximum}");
+        Assert.IsGreaterThan(240, stats.Red.Maximum, $"Red only reached {stats.Red.Maximum}");
+        Assert.IsGreaterThan(240, stats.Green.Maximum, $"Green only reached {stats.Green.Maximum}");
     }
 
     [TestMethod]
@@ -208,7 +208,7 @@ public sealed class AutoAdjustmentTests
         using var source = ImageBuffer.Create(64, 64, new Rgba32(50, 50, 50));
         using var result = new AutoContrastOperation(targetMean: 0.5f).Apply(source, OperationContext.Default);
         var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
-        Assert.IsTrue(after > 80, $"Mean only reached {after:0}, which is not brighter");
+        Assert.IsGreaterThan(80, after, $"Mean only reached {after:0}, which is not brighter");
     }
 
     [TestMethod]
@@ -217,7 +217,7 @@ public sealed class AutoAdjustmentTests
         using var source = ImageBuffer.Create(64, 64, new Rgba32(220, 220, 220));
         using var result = new AutoContrastOperation(targetMean: 0.5f).Apply(source, OperationContext.Default);
         var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
-        Assert.IsTrue(after < 200, $"Mean stayed at {after:0}, which is not darker");
+        Assert.IsLessThan(200, after, $"Mean stayed at {after:0}, which is not darker");
     }
 
     [TestMethod]
@@ -226,7 +226,7 @@ public sealed class AutoAdjustmentTests
         using var source = ImageBuffer.Create(64, 64, new Rgba32(50, 50, 50));
         using var result = new AutoContrastOperation(targetMean: 0.5f, strength: 1f).Apply(source, OperationContext.Default);
         var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean / 255.0;
-        Assert.IsTrue(Math.Abs(after - 0.5) < 0.05, $"Mean reached {after:0.###}, expected about 0.5");
+        Assert.IsLessThan(0.05, Math.Abs(after - 0.5), $"Mean reached {after:0.###}, expected about 0.5");
     }
 
     [TestMethod]
@@ -275,7 +275,7 @@ public sealed class SmartCropTests
         // The chosen crop must contain most of the subject.
         var overlap = Rectangle.Intersect(result.Rectangle, subject);
         var covered = (double)overlap.Width * overlap.Height / (subject.Width * subject.Height);
-        Assert.IsTrue(covered > 0.9, $"Only {covered:P0} of the subject was kept; crop was {result.Rectangle}");
+        Assert.IsGreaterThan(0.9, covered, $"Only {covered:P0} of the subject was kept; crop was {result.Rectangle}");
     }
 
     [TestMethod]
@@ -286,7 +286,7 @@ public sealed class SmartCropTests
         {
             var result = SmartCrop.FindCrop(image, ratio);
             var actual = result.Rectangle.Width / (double)result.Rectangle.Height;
-            Assert.IsTrue(Math.Abs(actual - ratio.Value) < 0.02, $"Wanted {ratio}, got {actual:0.###}");
+            Assert.IsLessThan(0.02, Math.Abs(actual - ratio.Value), $"Wanted {ratio}, got {actual:0.###}");
             Assert.IsTrue(image.Bounds.Contains(result.Rectangle), $"Crop {result.Rectangle} escaped the image");
         }
     }
@@ -300,7 +300,7 @@ public sealed class SmartCropTests
         var leftCrop = SmartCrop.FindCrop(left, AspectRatio.Square);
         var rightCrop = SmartCrop.FindCrop(right, AspectRatio.Square);
 
-        Assert.IsTrue(leftCrop.Rectangle.X < rightCrop.Rectangle.X,
+        Assert.IsLessThan(rightCrop.Rectangle.X, leftCrop.Rectangle.X,
             $"Crops did not follow the subject: left={leftCrop.Rectangle.X} right={rightCrop.Rectangle.X}");
     }
 
@@ -349,7 +349,7 @@ public sealed class SmartCropTests
         var result = SmartCrop.FindCrop(image, AspectRatio.Square);
         var overlap = Rectangle.Intersect(result.Rectangle, subject);
         var covered = (double)overlap.Width * overlap.Height / (subject.Width * subject.Height);
-        Assert.IsTrue(covered > 0.95, $"Only {covered:P0} of the subject survived; crop was {result.Rectangle}");
+        Assert.IsGreaterThan(0.95, covered, $"Only {covered:P0} of the subject survived; crop was {result.Rectangle}");
 
         // And confirm the centre crop really would have missed it, so the test is measuring something.
         var centre = new Rectangle((1200 - 600) / 2, 0, 600, 600);
@@ -377,9 +377,9 @@ public sealed class PlaceholderTests
         image.Fill(new Rectangle(0, 100, 200, 100), new Rgba32(30, 30, 200));
 
         var placeholder = ImagePlaceholder.Create(image, 2, 2);
-        Assert.AreEqual(4, placeholder.Colors.Count);
-        Assert.IsTrue(placeholder.Colors[0].R > 180, $"Top-left should be red, got {placeholder.Colors[0]}");
-        Assert.IsTrue(placeholder.Colors[3].B > 180, $"Bottom-right should be blue, got {placeholder.Colors[3]}");
+        Assert.HasCount(4, placeholder.Colors);
+        Assert.IsGreaterThan(180, placeholder.Colors[0].R, $"Top-left should be red, got {placeholder.Colors[0]}");
+        Assert.IsGreaterThan(180, placeholder.Colors[3].B, $"Bottom-right should be blue, got {placeholder.Colors[3]}");
         Assert.AreEqual(200, placeholder.SourceWidth);
         Assert.AreEqual(1.0, placeholder.AspectRatio, 0.5e-3);
     }
@@ -392,7 +392,7 @@ public sealed class PlaceholderTests
         var text = original.ToCompactString();
 
         // Small enough to inline anywhere.
-        Assert.IsTrue(text.Length < 80, $"Placeholder string was {text.Length} characters");
+        Assert.IsLessThan(80, text.Length, $"Placeholder string was {text.Length} characters");
 
         var restored = ImagePlaceholder.Parse(text, 160, 120);
         Assert.IsNotNull(restored);
@@ -422,8 +422,8 @@ public sealed class PlaceholderTests
         using var rendered = placeholder.Render(200, 200);
 
         Assert.AreEqual(200, rendered.Width);
-        Assert.IsTrue(rendered[100, 20].R > 150, $"Top should stay red: {rendered[100, 20]}");
-        Assert.IsTrue(rendered[100, 180].B > 150, $"Bottom should stay blue: {rendered[100, 180]}");
+        Assert.IsGreaterThan(150, rendered[100, 20].R, $"Top should stay red: {rendered[100, 20]}");
+        Assert.IsGreaterThan(150, rendered[100, 180].B, $"Bottom should stay blue: {rendered[100, 180]}");
         // The boundary must be blended rather than a hard edge.
         var middle = rendered[100, 100];
         Assert.IsTrue(middle.R is > 40 and < 220, $"Boundary was not blended: {middle}");

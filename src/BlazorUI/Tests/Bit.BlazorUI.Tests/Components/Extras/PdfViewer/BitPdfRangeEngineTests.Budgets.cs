@@ -35,8 +35,8 @@ public partial class BitPdfRangeEngineTests
         var error = Assert.ThrowsExactly<TargetInvocationException>(() => decode.Invoke(null, [stream, 1024, false]));
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
         Assert.IsInstanceOfType<BitPdfFormatException>(error.InnerException);
-        Assert.IsTrue(allocated < 1024 * 1024, $"Small hint budget allocated {allocated} bytes.");
-        Assert.AreEqual(expected, BitPdfStreamDecoder.Decode(stream).Length, "The public decoder keeps its existing limit.");
+        Assert.IsLessThan(1024 * 1024, allocated, $"Small hint budget allocated {allocated} bytes.");
+        Assert.HasCount(expected, BitPdfStreamDecoder.Decode(stream), "The public decoder keeps its existing limit.");
     }
 
     [TestMethod]

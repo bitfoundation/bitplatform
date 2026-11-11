@@ -103,7 +103,7 @@ public partial class BitFullCalendarE2ETests
 
         await Page.Locator("#btn-visibility-hidden").ClickAsync();
         await Expect(cal).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await cal.BoundingBoxAsync())!.Height > 100, "hidden keeps its room");
+        Assert.IsGreaterThan(100, (await cal.BoundingBoxAsync())!.Height, "hidden keeps its room");
 
         await Page.Locator("#btn-visibility-collapsed").ClickAsync();
         await Expect(cal).ToHaveCSSAsync("display", "none");

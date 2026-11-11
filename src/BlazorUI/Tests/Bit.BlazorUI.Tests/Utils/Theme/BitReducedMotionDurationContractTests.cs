@@ -83,8 +83,7 @@ public sealed class BitReducedMotionDurationContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A duration the page sets is read without mot-scaled-duration / mot-scaled-delay, so the reduced motion " +
+        Assert.IsEmpty(offenders, "A duration the page sets is read without mot-scaled-duration / mot-scaled-delay, so the reduced motion " +
             "preference never collapses it:\n" + string.Join("\n", offenders));
     }
 
@@ -98,11 +97,11 @@ public sealed class BitReducedMotionDurationContractTests
 
         var chart = InlineTimeTokens(SourceFiles.GetPath("Bit.BlazorUI.Extras", "Components", "Chart", "BitChart.scss")).ToArray();
         CollectionAssert.IsSubsetOf(new[] { "--bit-cht-dur-full", "--bit-cht-el-dur-full", "--bit-cht-el-del-full" }, chart);
-        CollectionAssert.DoesNotContain(chart, "--bit-cht-ease");
+        Assert.DoesNotContain("--bit-cht-ease", chart);
 
         var icon = InlineTimeTokens(SourceFiles.GetPath("Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.scss")).ToArray();
         CollectionAssert.IsSubsetOf(new[] { "--bit-ico-anm-dur", "--bit-ico-anm-dly" }, icon);
-        CollectionAssert.DoesNotContain(icon, "--bit-ico-anm-itr");
+        Assert.DoesNotContain("--bit-ico-anm-itr", icon);
     }
 
     [TestMethod]
@@ -130,8 +129,7 @@ public sealed class BitReducedMotionDurationContractTests
             offenders.Add($"{Path.GetFileName(file)}: {string.Join(" ", chain)}");
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A rule under prefers-reduced-motion applies inside a ForceAnimation subtree, or on the component that " +
+        Assert.IsEmpty(offenders, "A rule under prefers-reduced-motion applies inside a ForceAnimation subtree, or on the component that " +
             "sets it; guard every selector with :not(.bit-fam):not(.bit-fam *):\n" + string.Join("\n", offenders));
     }
 
@@ -144,8 +142,8 @@ public sealed class BitReducedMotionDurationContractTests
             var file = EnumerateComponentStylesheets().Single(f => Path.GetFileName(f) == name);
             var stylesheet = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file));
 
-            StringAssert.Contains(stylesheet, "@media (prefers-reduced-motion: reduce)", $"{name} no longer stops its loop.");
-            StringAssert.Contains(stylesheet, ":not(.bit-fam):not(.bit-fam *)", $"{name} stops its loop inside a ForceAnimation subtree as well.");
+            Assert.Contains("@media (prefers-reduced-motion: reduce)", stylesheet, $"{name} no longer stops its loop.");
+            Assert.Contains(":not(.bit-fam):not(.bit-fam *)", stylesheet, $"{name} stops its loop inside a ForceAnimation subtree as well.");
         }
     }
 
@@ -165,8 +163,7 @@ public sealed class BitReducedMotionDurationContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A component sets a custom property under prefers-reduced-motion; scale the duration with " +
+        Assert.IsEmpty(offenders, "A component sets a custom property under prefers-reduced-motion; scale the duration with " +
             "mot-scaled-duration instead:\n" + string.Join("\n", offenders));
     }
 
@@ -189,8 +186,7 @@ public sealed class BitReducedMotionDurationContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            "A component restores a custom property of its own for .bit-fam; the shared factor already comes back " +
+        Assert.IsEmpty(offenders, "A component restores a custom property of its own for .bit-fam; the shared factor already comes back " +
             "with it:\n" + string.Join("\n", offenders));
     }
 
@@ -199,17 +195,17 @@ public sealed class BitReducedMotionDurationContractTests
     {
         var motion = SourceFiles.StripScssComments(SourceFiles.ReadThemeStylesheet("Fluent", "motion.fluent.scss")).Replace("\r\n", "\n");
 
-        StringAssert.Contains(motion, "--bit-mot-duration-factor-full: 1;");
-        StringAssert.Contains(motion, "--bit-mot-duration-factor: var(--bit-mot-duration-factor-reduced, var(--bit-mot-duration-factor-full));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(motion, "@media (prefers-reduced-motion: reduce) {"), "--bit-mot-duration-factor-reduced: 0;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(motion, ".bit-fam {"), "--bit-mot-duration-factor-reduced: initial;");
+        Assert.Contains("--bit-mot-duration-factor-full: 1;", motion);
+        Assert.Contains("--bit-mot-duration-factor: var(--bit-mot-duration-factor-reduced, var(--bit-mot-duration-factor-full));", motion);
+        Assert.Contains("--bit-mot-duration-factor-reduced: 0;", SourceFiles.GetScssBlock(motion, "@media (prefers-reduced-motion: reduce) {"));
+        Assert.Contains("--bit-mot-duration-factor-reduced: initial;", SourceFiles.GetScssBlock(motion, ".bit-fam {"));
 
         var variables = SourceFiles.ReadThemeStylesheet("theme-variables.scss");
-        StringAssert.Contains(variables, "$mot-duration-factor: var(--bit-mot-duration-factor, 1);");
+        Assert.Contains("$mot-duration-factor: var(--bit-mot-duration-factor, 1);", variables);
 
         var functions = SourceFiles.ReadThemeStylesheet("functions.scss");
-        StringAssert.Contains(functions, "@return calc($duration * $mot-duration-factor + 0.01ms * (1 - $mot-duration-factor));");
-        StringAssert.Contains(functions, "@return calc($delay * $mot-duration-factor);");
+        Assert.Contains("@return calc($duration * $mot-duration-factor + 0.01ms * (1 - $mot-duration-factor));", functions);
+        Assert.Contains("@return calc($delay * $mot-duration-factor);", functions);
     }
 
     [TestMethod]
@@ -217,7 +213,7 @@ public sealed class BitReducedMotionDurationContractTests
     {
         var script = SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Swiper", "BitSwiper.ts");
 
-        StringAssert.Contains(script, "getPropertyValue('--bit-mot-duration-factor')");
+        Assert.Contains("getPropertyValue('--bit-mot-duration-factor')", script);
     }
 
     // Whether the read sits inside an open mot-scaled-*( call, however many lines and parentheses lie between them:

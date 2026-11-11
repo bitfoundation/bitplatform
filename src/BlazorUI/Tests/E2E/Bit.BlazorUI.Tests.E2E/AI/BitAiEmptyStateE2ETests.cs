@@ -102,13 +102,13 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
         var first = Suggestions("ems-suggestions").First;
         await Expect(first).ToHaveClassAsync(HasClass("bit-btn-dft-sbg"));
         var height = AiE2EHelpers.ParsePx(await first.EvaluateAsync<string>("e => getComputedStyle(e).height"));
-        Assert.IsTrue(AiE2EHelpers.ParsePx(await first.EvaluateAsync<string>("e => getComputedStyle(e).borderTopLeftRadius")) >= height / 2 - 0.5, "The suggestion is rounded.");
+        Assert.IsGreaterThanOrEqualTo(height / 2 - 0.5, AiE2EHelpers.ParsePx(await first.EvaluateAsync<string>("e => getComputedStyle(e).borderTopLeftRadius")), "The suggestion is rounded.");
 
         // In a wide box they are one centered row; in a narrow one they wrap onto more rows, still centered.
         var row = await Suggestions("ems-suggestions").EvaluateAllAsync<double[]>("els => els.map(e => e.getBoundingClientRect().top)");
-        Assert.AreEqual(1, row.Distinct().Count(), "One row in a wide box.");
+        Assert.ContainsSingle(row.Distinct(), "One row in a wide box.");
         var narrow = await Suggestions("ems-narrow").EvaluateAllAsync<double[]>("els => els.map(e => e.getBoundingClientRect().top)");
-        Assert.IsTrue(narrow.Distinct().Count() > 1, "The suggestions wrap in a narrow box.");
+        Assert.IsGreaterThan(1, narrow.Distinct().Count(), "The suggestions wrap in a narrow box.");
         var box = await Root("ems-narrow").Locator(".bit-aiems-sgs").RectAsync();
         var chip = await Suggestions("ems-narrow").Last.RectAsync();
         Assert.AreEqual((box.Left + box.Right) / 2, (chip.Left + chip.Right) / 2, 1.5, "A wrapped suggestion is centered.");
@@ -130,7 +130,7 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
         await Expect(icon).ToHaveClassAsync(HasClass("bit-icon--Robot"));
         await Expect(icon).Not.ToHaveClassAsync(HasClass("bit-icon-ai"));
         var (family, content) = await icon.GlyphAsync();
-        Assert.IsFalse(family.Contains(AiE2EHelpers.AiGlyphFontFamily), family);
+        Assert.DoesNotContain(AiE2EHelpers.AiGlyphFontFamily, family, family);
         Assert.AreNotEqual("none", content);
     }
 
@@ -215,6 +215,6 @@ public class BitAiEmptyStateE2ETests : E2ETestBase
         await Expect(Root("ems-rtl")).ToHaveCSSAsync("direction", "rtl");
         var first = await Suggestions("ems-rtl").Nth(0).RectAsync();
         var second = await Suggestions("ems-rtl").Nth(1).RectAsync();
-        Assert.IsTrue(first.Left > second.Left, "The first suggestion is the rightmost.");
+        Assert.IsGreaterThan(second.Left, first.Left, "The first suggestion is the rightmost.");
     }
 }

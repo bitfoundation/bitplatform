@@ -46,11 +46,11 @@ public class DomMapTests : BunitContext
 
         // <h1> markup is child 0 of the page, <main> child 1; inside <main>: the text, then three items from a region.
         var second = Locate(Record<DomMapItem>(i => i.Index == 1));
-        CollectionAssert.AreEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(2, "#c") }, second.Path.TakeLast(2).ToArray());
+        Assert.AreSequenceEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(2, "#c") }, second.Path.TakeLast(2).ToArray());
 
         // The footer follows the region's three items: child 4 of <main>, its leaf component its only child.
         var leaf = Locate(Record<DomMapLeaf>(l => l.Label == "footer"));
-        CollectionAssert.AreEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(4, "footer"), new BevDomStep(0, "#c") }, leaf.Path.TakeLast(3).ToArray());
+        Assert.AreSequenceEqual(new[] { new BevDomStep(1, "main"), new BevDomStep(4, "footer"), new BevDomStep(0, "#c") }, leaf.Path.TakeLast(3).ToArray());
         Assert.AreEqual("DomMapLeaf", leaf.Name);
     }
 
@@ -60,7 +60,7 @@ public class DomMapTests : BunitContext
         Render<DomMapPage>(ps => ps.Add(p => p.Items, 4));
         Session.Components.Refresh(force: true);
         var records = Session.Components.All.Where(r => !r.IsDisposed && !r.IsHidden && r.Type.Namespace == typeof(DomMapPage).Namespace).ToList();
-        Assert.IsTrue(records.Count >= 9, "the page, four items, four item leaves and the footer leaf");
+        Assert.IsGreaterThanOrEqualTo(9, records.Count, "the page, four items, four item leaves and the footer leaf");
 
         foreach (var record in records)
         {
@@ -113,7 +113,7 @@ public class DomMapTests : BunitContext
 
         // <main> is child 1, not 0, and it is not a <section>; and child 9 does not exist.
         Assert.IsNull(BevDomMap.Resolve(Session, [.. location.Path, new BevDomStep(0, "main")], false, location.RootSignature, 0, 1, false, out var error));
-        StringAssert.Contains(error, "does not match");
+        Assert.Contains("does not match", error!);
         Assert.IsNull(Resolve(location, [.. location.Path, new BevDomStep(1, "section")]));
         Assert.IsNull(Resolve(location, [.. location.Path, new BevDomStep(9, "div")]));
     }
@@ -143,7 +143,7 @@ public class DomMapTests : BunitContext
         var owner = Resolve(location, path);
         Assert.IsNotNull(owner);
         Assert.AreSame(page, owner.Record);
-        StringAssert.StartsWith(owner.RenderedBy, "CascadingValue");
+        Assert.StartsWith("CascadingValue", owner.RenderedBy);
         Assert.AreEqual(location.Path.Count, owner.Depth, "the outline is the page's, not the CascadingValue's");
 
         var hidden = Resolve(location, path, includeHidden: true);
@@ -178,7 +178,7 @@ public class DomMapTests : BunitContext
 
         Assert.IsTrue(item.IsDisposed);
         Assert.IsNull(BevDomMap.Locate(Session, item, out var error));
-        StringAssert.Contains(error, "disposed");
+        Assert.Contains("disposed", error!);
     }
 
     [TestMethod]
@@ -214,7 +214,7 @@ public class DomMapTests : BunitContext
         var location = Locate(leaf);
 
         // <form>: @formname and the element capture add nothing; <em> markup is child 0, the captured leaf child 1.
-        CollectionAssert.AreEqual(new[] { new BevDomStep(0, "form"), new BevDomStep(1, "#c") }, location.Path.TakeLast(2).ToArray());
+        Assert.AreSequenceEqual(new[] { new BevDomStep(0, "form"), new BevDomStep(1, "#c") }, location.Path.TakeLast(2).ToArray());
         Assert.AreSame(leaf, Resolve(location, location.Path)!.Record);
 
         var root = Locate(frames);
@@ -248,7 +248,7 @@ public class DomMapTests : BunitContext
 
         // A third identical root in the page belongs to another runtime: position means nothing, so no answer.
         Assert.IsNull(BevDomMap.Resolve(Session, second.Path, false, second.RootSignature, 1, sameCount: 3, false, out var error));
-        StringAssert.Contains(error, "cannot tell which one");
+        Assert.Contains("cannot tell which one", error!);
     }
 
     [TestMethod]
@@ -267,7 +267,7 @@ public class DomMapTests : BunitContext
         Render<WideTree>(ps => ps.Add(p => p.Count, 1000));
         Session.Components.Refresh(force: true);
         var rows = Session.Components.All.Where(r => r.Type == typeof(ChildComponent)).ToList();
-        Assert.AreEqual(1000, rows.Count);
+        Assert.HasCount(1000, rows);
 
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
         foreach (var row in rows)
@@ -276,7 +276,7 @@ public class DomMapTests : BunitContext
         }
 
         var wide = System.Diagnostics.Stopwatch.GetElapsedTime(start);
-        Assert.IsTrue(wide.TotalMilliseconds < 1000, $"locating 1000 siblings took {wide.TotalMilliseconds:0} ms");
+        Assert.IsLessThan(1000, wide.TotalMilliseconds, $"locating 1000 siblings took {wide.TotalMilliseconds:0} ms");
 
         Render<DeepTree>(ps => ps.Add(p => p.Depth, 500));
         Session.Components.Refresh(force: true);
@@ -286,8 +286,8 @@ public class DomMapTests : BunitContext
         var owner = Resolve(location, location.Path);
         var deep = System.Diagnostics.Stopwatch.GetElapsedTime(start);
         Assert.AreSame(deepest, owner!.Record);
-        Assert.IsTrue(location.Path.Count >= 500);
-        Assert.IsTrue(deep.TotalMilliseconds < 200, $"locating and resolving 500 levels deep took {deep.TotalMilliseconds:0} ms");
+        Assert.IsGreaterThanOrEqualTo(500, location.Path.Count);
+        Assert.IsLessThan(200, deep.TotalMilliseconds, $"locating and resolving 500 levels deep took {deep.TotalMilliseconds:0} ms");
     }
 
     [TestMethod]
@@ -303,11 +303,11 @@ public class DomMapTests : BunitContext
             var batched = BevDomMap.Locate(Session, record, out _, batch);
             Assert.IsNotNull(single);
             Assert.IsNotNull(batched);
-            CollectionAssert.AreEqual(single.Path.ToArray(), batched.Path.ToArray(), record.ToString());
+            Assert.AreSequenceEqual(single.Path.ToArray(), batched.Path.ToArray(), record.ToString());
             Assert.AreEqual(single with { Path = [] }, batched with { Path = [] });
         }
 
-        Assert.IsTrue(batch.Children.Count > 0);
+        Assert.IsNotEmpty(batch.Children);
     }
 
     [TestMethod]
@@ -320,11 +320,11 @@ public class DomMapTests : BunitContext
             Locate(Record<DomMapLeaf>(l => l.Label == "footer"));
         }
 
-        Assert.IsTrue(Session.Overhead.PageMappingMs > before);
+        Assert.IsGreaterThan(before, Session.Overhead.PageMappingMs);
     }
 }
 
-public class DomMapPage : ComponentBase
+internal class DomMapPage : ComponentBase
 {
     [Parameter] public int Items { get; set; } = 3;
 
@@ -356,7 +356,7 @@ public class DomMapPage : ComponentBase
     }
 }
 
-public class DomMapItem : ComponentBase
+internal class DomMapItem : ComponentBase
 {
     [Parameter] public int Index { get; set; }
 
@@ -372,7 +372,7 @@ public class DomMapItem : ComponentBase
     }
 }
 
-public class DomMapLeaf : ComponentBase
+internal class DomMapLeaf : ComponentBase
 {
     [Parameter] public string? Label { get; set; }
 
@@ -385,7 +385,7 @@ public class DomMapLeaf : ComponentBase
     }
 }
 
-public class DomMapCascading : ComponentBase
+internal class DomMapCascading : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -401,7 +401,7 @@ public class DomMapCascading : ComponentBase
     }
 }
 
-public class DomMapFrames : ComponentBase
+internal class DomMapFrames : ComponentBase
 {
     private ElementReference _form;
     private DomMapLeaf? _leaf;
@@ -435,7 +435,7 @@ public class DomMapFrames : ComponentBase
 }
 
 /// <summary>A render tree buffer reused the way the renderer reuses one: the frames of the previous tree stay past its end.</summary>
-public class DomMapStaleFrames
+internal class DomMapStaleFrames
 {
     public RenderTreeFrame[] Frames()
     {

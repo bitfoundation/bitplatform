@@ -117,7 +117,7 @@ public class ScannerExperienceTests : BbScannerTest
 
         // The same symbol stays in view the whole time; several seconds of decoding later it is still counted once.
         await session.Page.WaitForTimeoutAsync(6_000);
-        Assert.HasCount(1, await session.ResultValuesAsync());
+        Assert.ContainsSingle(await session.ResultValuesAsync());
         Assert.IsEmpty(session.PageErrors);
     }
 
@@ -184,7 +184,8 @@ public class ScannerExperienceTests : BbScannerTest
         await using var granted = await OpenAsync(BlankClip);
         await granted.GoToAsync("errors");
         await granted.Page.ClickAsync("#check-permission");
-        Assert.AreEqual("Granted", (await granted.Page.Locator("#camera-permission").TextContentAsync())?.Trim());
+        var actualValue = (await granted.Page.Locator("#camera-permission").TextContentAsync())?.Trim();
+        Assert.AreEqual("Granted", actualValue);
         Assert.AreEqual(0, await granted.TracksOpenedAsync(), "Asking about the permission opened the camera.");
 
         await using var refused = await OpenAsync(BlankClip, grantPermission: false);

@@ -86,10 +86,10 @@ public class BdndNativeDataTests : BdndComponentTestBase
             .SetResult(new FakeStreamReference(content));
         await DropFilesAsync(cut, "7", 2, new BdndNativeFile { Name = "a.txt", Size = 1 }, new BdndNativeFile { Name = "b.txt", Size = 5 });
 
-        await using var stream = await _drops[0].Files[1].OpenReadStreamAsync();
+        await using var stream = await _drops[0].Files[1].OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken);
         using var reader = new StreamReader(stream);
 
-        Assert.AreEqual("hello", await reader.ReadToEndAsync());
+        Assert.AreEqual("hello", await reader.ReadToEndAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -98,12 +98,12 @@ public class BdndNativeDataTests : BdndComponentTestBase
         var cut = RenderTarget();
         await DropFilesAsync(cut, "7", 1, new BdndNativeFile { Name = "big.bin", Size = 600_000 });
 
-        await Assert.ThrowsExactlyAsync<IOException>(() => _drops[0].Files[0].OpenReadStreamAsync());
+        await Assert.ThrowsExactlyAsync<IOException>(() => _drops[0].Files[0].OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken));
         Assert.IsEmpty(Module.Invocations["readNativeFile"]);
 
         // with a larger limit it is read
         Module.Setup<IJSStreamReference>("readNativeFile", _ => true).SetResult(new FakeStreamReference(new byte[3]));
-        await using var stream = await _drops[0].Files[0].OpenReadStreamAsync(maxAllowedSize: 1_000_000);
+        await using var stream = await _drops[0].Files[0].OpenReadStreamAsync(maxAllowedSize: 1_000_000, TestContext.CancellationToken);
         Assert.IsNotNull(stream);
     }
 
@@ -115,7 +115,7 @@ public class BdndNativeDataTests : BdndComponentTestBase
 
         var file = _drops[0].Files[0];
         Assert.IsFalse(file.CanRead);
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => file.OpenReadStreamAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => file.OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -125,8 +125,8 @@ public class BdndNativeDataTests : BdndComponentTestBase
         Module.Setup<IJSStreamReference>("readNativeFile", _ => true).SetException(new JSException("The file is no longer available"));
         await DropFilesAsync(cut, "7", 1, new BdndNativeFile { Name = "a.txt", Size = 1 });
 
-        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => _drops[0].Files[0].OpenReadStreamAsync());
-        StringAssert.Contains(error.Message, "last drop");
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => _drops[0].Files[0].OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken));
+        Assert.Contains("last drop", error.Message);
     }
 
     [TestMethod]
@@ -136,7 +136,7 @@ public class BdndNativeDataTests : BdndComponentTestBase
         await DropFilesAsync(cut, null, 1, new BdndNativeFile { Name = "a.txt", Size = 1 });
 
         Assert.IsFalse(_drops[0].Files[0].CanRead);
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => _drops[0].Files[0].OpenReadStreamAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => _drops[0].Files[0].OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- data for destinations outside the page ----
@@ -190,8 +190,8 @@ public class BdndNativeDataTests : BdndComponentTestBase
 
         Assert.IsFalse(first.CanRead);
         Assert.IsTrue(_drops[1].Files[0].CanRead);
-        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => first.OpenReadStreamAsync());
-        StringAssert.Contains(error.Message, "no longer available");
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => first.OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken));
+        Assert.Contains("no longer available", error.Message);
         Assert.IsEmpty(Module.Invocations["readNativeFile"], "nothing was asked of the module");
     }
 
@@ -287,7 +287,7 @@ public class BdndNativeDataTests : BdndComponentTestBase
         Module.Setup<IJSStreamReference>("readNativeFile", _ => true).SetResult(reference);
         await DropFilesAsync(cut, "7", 1, new BdndNativeFile { Name = "a.txt", Size = 1 });
 
-        await (await _drops[0].Files[0].OpenReadStreamAsync()).DisposeAsync();
+        await (await _drops[0].Files[0].OpenReadStreamAsync(cancellationToken: TestContext.CancellationToken)).DisposeAsync();
 
         Assert.IsTrue(reference.Disposed);
     }
@@ -318,4 +318,6 @@ public class BdndNativeDataTests : BdndComponentTestBase
             return ValueTask.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

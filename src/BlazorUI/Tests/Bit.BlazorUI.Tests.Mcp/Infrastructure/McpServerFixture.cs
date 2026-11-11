@@ -31,7 +31,7 @@ namespace Bit.BlazorUI.Tests.Mcp;
 /// </para>
 /// </summary>
 [TestClass]
-public class McpServerFixture
+public static class McpServerFixture
 {
     /// <summary>The origin the server answers on, without a trailing slash.</summary>
     public static string BaseUrl { get; private set; } = string.Empty;
@@ -123,8 +123,8 @@ public class McpServerFixture
         // Before any fixture connects, so it is genuinely the first search this process answers.
         // Asserted on in ResilienceTests rather than here: a failed assertion in
         // [AssemblyInitialize] reports as every test erroring, which says nothing about what broke.
-        using var firstSearch = await Http.GetAsync(Url("api/mcp/SearchBitBlazorUI?query=date%20picker"));
-        ColdSearch = firstSearch.IsSuccessStatusCode ? await firstSearch.Content.ReadAsStringAsync() : string.Empty;
+        using var firstSearch = await Http.GetAsync(Url("api/mcp/SearchBitBlazorUI?query=date%20picker"), context.CancellationToken);
+        ColdSearch = firstSearch.IsSuccessStatusCode ? await firstSearch.Content.ReadAsStringAsync(context.CancellationToken) : string.Empty;
     }
 
     [AssemblyCleanup]

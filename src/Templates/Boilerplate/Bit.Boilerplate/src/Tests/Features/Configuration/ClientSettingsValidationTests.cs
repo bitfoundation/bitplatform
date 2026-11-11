@@ -59,7 +59,7 @@ public class ClientSettingsValidationTests
         {
             foreach (var startupValidator in startupValidators)
             {
-                await startupValidator.ValidateAsync();
+                await startupValidator.ValidateAsync(TestContext.CancellationToken);
             }
         }, "Settings validation passed for a ClientCoreSettings whose [Required] ServerAddress is whitespace.");
 
@@ -106,4 +106,6 @@ public class ClientSettingsValidationTests
 
         return services.BuildServiceProvider();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

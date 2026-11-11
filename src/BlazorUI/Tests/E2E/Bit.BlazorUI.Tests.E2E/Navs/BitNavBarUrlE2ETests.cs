@@ -45,7 +45,7 @@ public class BitNavBarUrlE2ETests : E2ETestBase
     private static string BarHtml(string html, string barId)
     {
         var start = html.IndexOf($"id=\"{barId}\"", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, $"The prerendered HTML holds #{barId}.");
+        Assert.IsGreaterThanOrEqualTo(0, start, $"The prerendered HTML holds #{barId}.");
         var end = html.IndexOf("</nav>", start, StringComparison.Ordinal);
         return html[start..end];
     }
@@ -57,10 +57,10 @@ public class BitNavBarUrlE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         var selected = new Regex("href=\"/?e2e/nav-bar/url/search\"[^>]*class=\"bit-nbr-itm[^\"]*bit-nbr-sel[^\"]*\"[^>]*aria-current=\"page\"");
-        StringAssert.Matches(BarHtml(html, "nbr-exact"), selected);
-        StringAssert.Matches(BarHtml(html, "nbr-options-auto"), selected);
-        StringAssert.Matches(BarHtml(html, "nbr-custom-auto"), selected);
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(selected, BarHtml(html, "nbr-exact"));
+        Assert.MatchesRegex(selected, BarHtml(html, "nbr-options-auto"));
+        Assert.MatchesRegex(selected, BarHtml(html, "nbr-custom-auto"));
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
 
         await OpenAsync($"{PAGE}/search");
         await ExpectSelectedAsync("nbr-exact", "Search");

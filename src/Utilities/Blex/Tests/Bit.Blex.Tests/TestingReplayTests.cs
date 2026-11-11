@@ -24,7 +24,7 @@ public class TestingReplayTests
         Assert.AreEqual(2, harness.Log.CountOf(OrderBookStore.Actions.Place));
 
         var orders = harness.Log.PayloadsOf(OrderBookStore.Actions.Place);
-        CollectionAssert.AreEqual(new[] { ("pen", 2), ("ink", 5) }, orders.Select(o => (o.Name, o.Quantity)).ToArray());
+        Assert.AreSequenceEqual(new[] { ("pen", 2), ("ink", 5) }, orders.Select(o => (o.Name, o.Quantity)).ToArray());
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class TestingReplayTests
         await replica.Manager.ReplayAsync(original.Log.Actions);
 
         Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
-        CollectionAssert.AreEqual(original.Log.QualifiedNames.ToArray(), replica.Log.QualifiedNames.ToArray());
+        Assert.AreSequenceEqual(original.Log.QualifiedNames.ToArray(), replica.Log.QualifiedNames.ToArray());
     }
 
     [TestMethod]
@@ -82,10 +82,9 @@ public class TestingReplayTests
         shipments.ShipAndBill("mug");
         await shipments.ShipLaterAsync("pen");
 
-        CollectionAssert.AreEqual(
-            new[] { "orders/Place", "shipments/ShipAndBill", "orders/Place", "shipments/ShipLaterAsync" },
-            original.Log.QualifiedNames.ToArray());
-        CollectionAssert.AreEqual(new[] { true, false, true, false }, original.Log.Actions.Select(a => a.IsNested).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "orders/Place", "shipments/ShipAndBill", "orders/Place", "shipments/ShipLaterAsync" }, original.Log.QualifiedNames.ToArray());
+        Assert.AreSequenceEqual(new[] { true, false, true, false }, original.Log.Actions.Select(a => a.IsNested).ToArray());
 
         using var replica = BlexTestHarness.For<OrderBookStore>();
         var replicaShipments = replica.Register(new ShipmentStore(replica.Store));
@@ -119,11 +118,11 @@ public class TestingReplayTests
         original.TimeProvider = time;
         var search = original.Store.TypeAhead("blex");
         time.Advance(TimeSpan.FromMilliseconds(250));
-        await search.WaitAsync(TimeSpan.FromSeconds(5));
+        await search.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         using var replica = BlexTestHarness.For<EffectConcurrencyStore>();
         replica.TimeProvider = new FakeTimeProvider();
-        await replica.Manager.ReplayAsync(original.Log.Actions).WaitAsync(TimeSpan.FromSeconds(5));
+        await replica.Manager.ReplayAsync(original.Log.Actions).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual("blex", replica.Store.Last);
         Assert.AreEqual(original.Snapshot().ToJsonString(), replica.Snapshot().ToJsonString());
@@ -143,7 +142,7 @@ public class TestingReplayTests
         Assert.AreEqual(0, harness.Store.DebouncedBodyRuns);
 
         time.Advance(TimeSpan.FromMilliseconds(250));
-        await search.WaitAsync(TimeSpan.FromSeconds(5));
+        await search.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(1, harness.Store.DebouncedBodyRuns);
     }
 
@@ -156,6 +155,8 @@ public class TestingReplayTests
         using var replica = BlexTestHarness.For<OrderBookStore>();
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => replica.Manager.ReplayAsync(original.Log.Actions));
 
-        StringAssert.Contains(error.Message, "orders/Bulk edit");
+        Assert.Contains("orders/Bulk edit", error.Message);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

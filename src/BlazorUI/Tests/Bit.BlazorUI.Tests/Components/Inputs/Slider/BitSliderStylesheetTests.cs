@@ -18,20 +18,20 @@ public class BitSliderStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the default an
         // unset one stands for.
-        StringAssert.Contains(stylesheet, "--bit-sld-thumb: var(--bit-sld-sz-thumb, var(--bit-Slider-thumb-size, #{$siz-slider-thumb-md}));");
-        StringAssert.Contains(stylesheet, "--bit-sld-rail: var(--bit-sld-sz-rail, var(--bit-Slider-rail-size, #{$siz-track-md}));");
-        StringAssert.Contains(stylesheet, "--bit-sld-length: var(--bit-sld-sz-length, var(--bit-Slider-length, #{spacing(24)}));");
-        StringAssert.Contains(stylesheet, "--bit-sld-font-size: var(--bit-sld-sz-font-size, var(--bit-Slider-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-mark-label-font-size, #{$tg-fs-xs}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));");
+        Assert.Contains("--bit-sld-thumb: var(--bit-sld-sz-thumb, var(--bit-Slider-thumb-size, #{$siz-slider-thumb-md}));", stylesheet);
+        Assert.Contains("--bit-sld-rail: var(--bit-sld-sz-rail, var(--bit-Slider-rail-size, #{$siz-track-md}));", stylesheet);
+        Assert.Contains("--bit-sld-length: var(--bit-sld-sz-length, var(--bit-Slider-length, #{spacing(24)}));", stylesheet);
+        Assert.Contains("--bit-sld-font-size: var(--bit-sld-sz-font-size, var(--bit-Slider-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-mark-label-font-size, #{$tg-fs-xs}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));", stylesheet);
 
         // So does an explicit Color, for the accent in every state and for what is drawn on top of it.
-        StringAssert.Contains(stylesheet, "var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})))");
-        StringAssert.Contains(stylesheet, "var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})))");
-        StringAssert.Contains(stylesheet, "--bit-sld-clr-ring: var(--bit-sld-clr-focus, var(--bit-Slider-focus-color, var(--bit-Slider-color)));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-sld-clr-on, var(--bit-Slider-mark-active-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));");
+        Assert.Contains("var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})))", stylesheet);
+        Assert.Contains("var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})))", stylesheet);
+        Assert.Contains("--bit-sld-clr-ring: var(--bit-sld-clr-focus, var(--bit-Slider-focus-color, var(--bit-Slider-color)));", stylesheet);
+        Assert.Contains("background-color: var(--bit-sld-clr-on, var(--bit-Slider-mark-active-color, #{$clr-pri-text}));", stylesheet);
+        Assert.Contains("color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));", stylesheet);
 
         // A role class publishes the role's tokens alone, never a public variable ahead of them.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"--bit-sld-clr(-on|-hover|-active|-focus)?: var\(--bit-Slider-"), "A Color class reads a public variable ahead of the role.");
@@ -54,7 +54,7 @@ public class BitSliderStylesheetTests
                                          "--bit-sld-sz-thumb", "--bit-sld-sz-rail", "--bit-sld-sz-length", "--bit-sld-sz-font-size",
                                          "--bit-sld-sz-font-size-sub" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

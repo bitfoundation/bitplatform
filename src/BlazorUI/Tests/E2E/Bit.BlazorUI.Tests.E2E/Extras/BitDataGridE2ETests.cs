@@ -29,12 +29,12 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         Assert.IsTrue(response.Ok);
         // Every grid of the page is a table, so the role is read off grid-basic's own: the first table after its root.
         var root = html.IndexOf("id=\"grid-basic\"", StringComparison.Ordinal);
-        Assert.IsTrue(root > 0, "The grid is not in the prerendered HTML.");
+        Assert.IsGreaterThan(0, root, "The grid is not in the prerendered HTML.");
         var table = Regex.Match(html[root..], @"<div[^>]*\bclass=""bit-dtg-table""[^>]*>");
         Assert.IsTrue(table.Success, "The grid's table is not in the prerendered HTML.");
-        StringAssert.Matches(table.Value, new Regex(@"\brole=""table"""));
-        StringAssert.Contains(html, "Laptop");
-        StringAssert.Contains(html, ">Loading<", "The prerendered page carries the status of a page not yet interactive.");
+        Assert.MatchesRegex(new Regex(@"\brole=""table"""), table.Value);
+        Assert.Contains("Laptop", html);
+        Assert.Contains(">Loading<", html, "The prerendered page carries the status of a page not yet interactive.");
 
         await OpenAsync(Url);
         await Expect(DataRows("grid-basic")).ToHaveCountAsync(10);
@@ -50,9 +50,9 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         // Property and Field bind alike, Format applies to the value, and a Template renders its own markup.
         await Expect(DataRow("grid-basic", 0).Locator("> [role=cell]")).ToHaveCountAsync(10);
         var first = (await DataRow("grid-basic", 0).Locator("> [role=cell]").AllInnerTextsAsync()).Select(t => t.Trim()).ToArray();
-        CollectionAssert.AreEqual(new[] { "1", "Laptop", "Electronics", "Acme", "005", "2023-05-01" }, first[..6]);
-        StringAssert.Matches(first[6], new Regex(@"^4[.,]5$"));
-        CollectionAssert.AreEqual(new[] { "1200", "6000", "False" }, first[7..]);
+        Assert.AreSequenceEqual(new[] { "1", "Laptop", "Electronics", "Acme", "005", "2023-05-01" }, first[..6]);
+        Assert.MatchesRegex(new Regex(@"^4[.,]5$"), first[6]);
+        Assert.AreSequenceEqual(new[] { "1200", "6000", "False" }, first[7..]);
         await Expect(Cell("grid-basic", 0, 9).Locator(".value-cell")).ToHaveTextAsync("6000");
         await ExpectColumnAsync("grid-basic", 2, OriginalNames);
 
@@ -79,7 +79,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         // The ID cell's text sits at the cell's end edge, the Name's at its start.
         var idCell = await BoxAsync(Cell("grid-basic", 0, 1));
         var idText = await BoxAsync(Cell("grid-basic", 0, 1).Locator(".bit-dtg-cell-text"));
-        Assert.IsTrue(idText.X - idCell.X > idCell.Width / 2, "The end-aligned value is not at the end of its cell.");
+        Assert.IsGreaterThan(idCell.Width / 2, idText.X - idCell.X, "The end-aligned value is not at the end of its cell.");
     }
 
     [TestMethod]
@@ -305,10 +305,10 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(Page.Locator("#grid-basic .bit-dtg-body")).ToHaveAttributeAsync("role", "rowgroup");
 
         var colIndexes = await HeaderCells("grid-basic").EvaluateAllAsync<string[]>("cells => cells.map(c => c.getAttribute('aria-colindex'))");
-        CollectionAssert.AreEqual(Enumerable.Range(1, 10).Select(i => i.ToString()).ToArray(), colIndexes);
+        Assert.AreSequenceEqual(Enumerable.Range(1, 10).Select(i => i.ToString()).ToArray(), colIndexes);
 
         var rowIndexes = await DataRows("grid-basic").EvaluateAllAsync<string[]>("rows => rows.map(r => r.getAttribute('aria-rowindex'))");
-        CollectionAssert.AreEqual(Enumerable.Range(2, 10).Select(i => i.ToString()).ToArray(), rowIndexes);
+        Assert.AreSequenceEqual(Enumerable.Range(2, 10).Select(i => i.ToString()).ToArray(), rowIndexes);
 
         await Expect(Cell("grid-basic", 0, 2)).ToHaveAttributeAsync("role", "cell");
         // Without a SelectionMode the rows say nothing about a selection, and a click selects nothing.
@@ -377,7 +377,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         // The first rows went under the header: the row beneath it is far down the list.
         var firstRow = await BoxAsync(DataRow("grid-sticky", 0));
-        Assert.IsTrue(firstRow.Y + firstRow.Height < header.Y + 1, "The first row is still in view after scrolling.");
+        Assert.IsLessThan(header.Y + 1, firstRow.Y + firstRow.Height, "The first row is still in view after scrolling.");
         await Expect(FooterRow("grid-sticky").Locator("> [aria-colindex='1']")).ToHaveTextAsync("count 40");
     }
 
@@ -559,7 +559,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var row = DataRow("grid-wrap", 0);
         await Expect(Cell("grid-wrap", 0, 2)).ToHaveCSSAsync("white-space", "nowrap");
         var before = await BoxAsync(row);
-        Assert.IsTrue(before.Height < 46, $"An unwrapped row is {before.Height}px tall.");
+        Assert.IsLessThan(46, before.Height, $"An unwrapped row is {before.Height}px tall.");
 
         await Page.Locator("#btn-wrap").ClickAsync();
         await Expect(Text("wrap-state")).ToHaveTextAsync("on");
@@ -571,7 +571,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Expect(Cell("grid-wrap", 0, 3)).ToHaveCSSAsync("white-space", "nowrap");
 
         var after = await BoxAsync(row);
-        Assert.IsTrue(after.Height > before.Height + 10, $"The wrapped row did not grow ({before.Height}px -> {after.Height}px).");
+        Assert.IsGreaterThan(before.Height + 10, after.Height, $"The wrapped row did not grow ({before.Height}px -> {after.Height}px).");
     }
 
     // Where the text a header's label holds itself (its title, not the sort hint drawn after it) lies, and the label's
@@ -624,7 +624,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         Assert.IsFalse(await label.EvaluateAsync<bool>(OverflowsScript), "The label clips the sort hint of its end-aligned title.");
         var box = await BoxAsync(label);
         var unsorted = await BoxAsync(label.Locator(".bit-dtg-htitle"));
-        Assert.IsTrue(box.X + box.Width - (unsorted.X + unsorted.Width) > 4, "The end-aligned title leaves its sort hint no room in the label.");
+        Assert.IsGreaterThan(4, box.X + box.Width - (unsorted.X + unsorted.Width), "The end-aligned title leaves its sort hint no room in the label.");
 
         await label.ClickAsync();
         await Expect(header).ToHaveAttributeAsync("aria-sort", "ascending");
@@ -679,7 +679,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await ExpectTheTitleWholeAsync("where the title and the icon fit the column");
         var sortableLabel = await BoxAsync(sortable.Locator(".bit-dtg-htext"));
         var sortableTemplate = await BoxAsync(sortable.Locator(".wrap-header-tpl"));
-        Assert.IsTrue(sortableTemplate.X >= sortableLabel.X - 0.5, "The sortable column's template overflows its label where it fits the column.");
+        Assert.IsGreaterThanOrEqualTo(sortableLabel.X - 0.5, sortableTemplate.X, "The sortable column's template overflows its label where it fits the column.");
 
         await ResizeAsync(Math.Floor(fit) - 6);
         await ExpectTheTitleWholeAsync("where the title and the icon run a few pixels short");
@@ -688,17 +688,17 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         foreach (var (ariaColIndex, name) in new[] { (3, "title"), (4, "template's title") })
         {
             var text = await HeaderCell(id, ariaColIndex).Locator(".bit-dtg-htext").EvaluateAsync<double[]>(LabelTextScript);
-            Assert.IsTrue(text[2] > text[5] * 1.5, $"The {name} wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
+            Assert.IsGreaterThan(text[5] * 1.5, text[2], $"The {name} wider than its column did not wrap ({text[2]}px tall, lines of {text[5]}px).");
             Assert.IsTrue(text[0] >= text[3] - 0.5 && text[1] <= text[4] + 0.5, $"The {name} wider than its column overflows its label.");
         }
 
         // A title of several words wider than its column, every word of which fits it, wraps between its words only.
         var words = HeaderCell(id, 5).Locator(".bit-dtg-htext");
         var wordsText = await words.EvaluateAsync<double[]>(LabelTextScript);
-        Assert.IsTrue(wordsText[2] > wordsText[5] * 1.5, $"The title of several words wider than its column did not wrap ({wordsText[2]}px tall, lines of {wordsText[5]}px).");
+        Assert.IsGreaterThan(wordsText[5] * 1.5, wordsText[2], $"The title of several words wider than its column did not wrap ({wordsText[2]}px tall, lines of {wordsText[5]}px).");
         Assert.IsTrue(wordsText[0] >= wordsText[3] - 0.5 && wordsText[1] <= wordsText[4] + 0.5, "The title of several words wider than its column overflows its label.");
         var wordLines = await words.EvaluateAsync<int[]>(WordLinesScript);
-        Assert.AreEqual(4, wordLines.Length, "The title of several words does not hold the words it was given.");
+        Assert.HasCount(4, wordLines, "The title of several words does not hold the words it was given.");
         Assert.IsTrue(wordLines.All(lines => lines == 1), $"The title of several words breaks inside a word that fits its column (lines per word: {string.Join(", ", wordLines)}).");
     }
 
@@ -714,7 +714,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         var tall = await BoxAsync(DataRow("grid-row-height", 0));
         var short_ = await BoxAsync(DataRow("grid-row-height", 1));
-        Assert.IsTrue(tall.Height >= 80, $"The first row is {tall.Height}px tall.");
+        Assert.IsGreaterThanOrEqualTo(80, tall.Height, $"The first row is {tall.Height}px tall.");
         Assert.IsTrue(short_.Height >= 44 && short_.Height < 60, $"The second row is {short_.Height}px tall.");
     }
 
@@ -872,7 +872,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
             }
             """);
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "a:OnCellControlClick:true",
             "a:OnCellControlClick:true",
@@ -934,7 +934,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Page.Locator("#btn-vis-hidden").ClickAsync();
         await Expect(grid).ToHaveCSSAsync("visibility", "hidden");
         await Expect(grid).Not.ToBeVisibleAsync();
-        Assert.IsTrue((await BoxAsync(grid)).Height > 0, "A hidden grid still takes its room.");
+        Assert.IsGreaterThan(0, (await BoxAsync(grid)).Height, "A hidden grid still takes its room.");
 
         await Page.Locator("#btn-vis-collapsed").ClickAsync();
         await Expect(grid).ToHaveCSSAsync("display", "none");
@@ -1001,7 +1001,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
 
         var id = await BoxAsync(HeaderCell("grid-rtl", 1));
         var name = await BoxAsync(HeaderCell("grid-rtl", 2));
-        Assert.IsTrue(id.X > name.X, "The first column does not start at the right in a right-to-left grid.");
+        Assert.IsGreaterThan(name.X, id.X, "The first column does not start at the right in a right-to-left grid.");
 
         var view = await BoxAsync(Viewport("grid-rtl"));
         Assert.AreEqual(view.X + view.Width, id.X + id.Width, 2, "The first column is not against the right edge.");
@@ -1017,11 +1017,11 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var inherited = Grid("grid-rtl-inherited");
         await Expect(inherited).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         await Expect(inherited).Not.ToHaveAttributeAsync("dir", new Regex(".*"));
-        Assert.IsTrue((await BoxAsync(HeaderCell("grid-rtl-inherited", 1))).X > (await BoxAsync(HeaderCell("grid-rtl-inherited", 2))).X);
+        Assert.IsGreaterThan((await BoxAsync(HeaderCell("grid-rtl-inherited", 2))).X, (await BoxAsync(HeaderCell("grid-rtl-inherited", 1))).X);
 
         // And Ltr reads left to right.
         await Expect(Grid("grid-ltr")).ToHaveAttributeAsync("dir", "ltr");
-        Assert.IsTrue((await BoxAsync(HeaderCell("grid-ltr", 1))).X < (await BoxAsync(HeaderCell("grid-ltr", 2))).X);
+        Assert.IsLessThan((await BoxAsync(HeaderCell("grid-ltr", 2))).X, (await BoxAsync(HeaderCell("grid-ltr", 1))).X);
     }
 
     [TestMethod]
@@ -1061,7 +1061,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         // Every native control is disabled both ways.
         var controls = Page.Locator($"#{id} input, #{id} select, #{id} > .bit-dtg-pager button");
         var count = await controls.CountAsync();
-        Assert.IsTrue(count > 8, $"Only {count} controls found.");
+        Assert.IsGreaterThan(8, count, $"Only {count} controls found.");
         for (var i = 0; i < count; i++)
         {
             await Expect(controls.Nth(i)).ToBeDisabledAsync();
@@ -1267,7 +1267,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         var cascaded = Grid("grid-rtl-cascaded");
         await Expect(cascaded).ToHaveAttributeAsync("dir", "rtl");
         await Expect(cascaded).ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxAsync(HeaderCell("grid-rtl-cascaded", 1))).X > (await BoxAsync(HeaderCell("grid-rtl-cascaded", 2))).X);
+        Assert.IsGreaterThan((await BoxAsync(HeaderCell("grid-rtl-cascaded", 2))).X, (await BoxAsync(HeaderCell("grid-rtl-cascaded", 1))).X);
 
         await Expect(Grid("grid-dir-auto")).ToHaveAttributeAsync("dir", "auto");
         await Expect(Grid("grid-dir-auto")).Not.ToHaveClassAsync(HasClass("bit-rtl"));

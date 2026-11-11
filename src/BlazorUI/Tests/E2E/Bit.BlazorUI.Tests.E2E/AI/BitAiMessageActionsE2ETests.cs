@@ -167,7 +167,7 @@ public class BitAiMessageActionsE2ETests : E2ETestBase
         await Expect(actions).ToHaveCSSAsync("opacity", "0");
 
         // The reveal is a transition of the motion tokens.
-        StringAssert.Contains(await ComputedStyleAsync("#mac-hover .bit-aimac-act", "transition-property"), "opacity");
+        Assert.Contains("opacity", await ComputedStyleAsync("#mac-hover .bit-aimac-act", "transition-property"));
     }
 
     [TestMethod]
@@ -176,7 +176,7 @@ public class BitAiMessageActionsE2ETests : E2ETestBase
         await OpenAsync(Route);
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        Assert.IsTrue(AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#mac-hover .bit-aimac-act", "transition-duration")) <= 0.001, "The reveal is immediate.");
+        Assert.IsLessThanOrEqualTo(0.001, AiE2EHelpers.ParseSeconds(await ComputedStyleAsync("#mac-hover .bit-aimac-act", "transition-duration")), "The reveal is immediate.");
     }
 
     // ---------- metadata, options ----------
@@ -291,7 +291,7 @@ public class BitAiMessageActionsE2ETests : E2ETestBase
         await Expect(Row("mac-rtl")).ToHaveAttributeAsync("dir", "rtl");
         var copy = await Button("mac-rtl", "Copy").RectAsync();
         var bad = await Button("mac-rtl", "Bad response").RectAsync();
-        Assert.IsTrue(copy.Left > bad.Left, "Copy is the rightmost action in right-to-left text.");
+        Assert.IsGreaterThan(bad.Left, copy.Left, "Copy is the rightmost action in right-to-left text.");
     }
 
     [TestMethod]

@@ -168,7 +168,7 @@ public class BitHeaderTests : BunitTestContext
 
         var style = component.Find(".bit-hdr").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-hdr-gap"));
+        Assert.DoesNotContain("--bit-hdr-gap", style);
     }
 
     [TestMethod]
@@ -182,8 +182,8 @@ public class BitHeaderTests : BunitTestContext
 
         var style = component.Find(".bit-hdr").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "height:64px");
-        StringAssert.Contains(style, "--bit-hdr-gap:1rem");
+        Assert.Contains("height:64px", style);
+        Assert.Contains("--bit-hdr-gap:1rem", style);
     }
 
     [TestMethod]
@@ -194,11 +194,11 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.Gap, "1rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-gap:1rem");
+        Assert.Contains("--bit-hdr-gap:1rem", component.Find(".bit-hdr").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Gap, "2rem"));
 
-        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-gap:2rem");
+        Assert.Contains("--bit-hdr-gap:2rem", component.Find(".bit-hdr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -597,8 +597,8 @@ public class BitHeaderTests : BunitTestContext
         Assert.AreEqual(component.Instance.UniqueId.ToString(), invocation.Arguments[0]);
         // A negative offset is clamped, so it can never keep the header hidden at the top of the scroller.
         Assert.AreEqual(expectedOffset, invocation.Arguments[2]);
-        Assert.AreEqual(true, invocation.Arguments[4]);
-        Assert.AreEqual(false, invocation.Arguments[5]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[4]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[5]));
     }
 
     [TestMethod]
@@ -618,8 +618,8 @@ public class BitHeaderTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
 
         Assert.AreEqual(expectedOffset, invocation.Arguments[3]);
-        Assert.AreEqual(false, invocation.Arguments[4]);
-        Assert.AreEqual(true, invocation.Arguments[5]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[4]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[5]));
     }
 
     [TestMethod]
@@ -644,7 +644,7 @@ public class BitHeaderTests : BunitTestContext
                              .Select(i => i.Arguments[2])
                              .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { 50, 150 }, offsets);
+        Assert.AreSequenceEqual(new object[] { 50, 150 }, offsets);
     }
 
     [TestMethod]
@@ -665,7 +665,7 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.Bordered, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.setup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -692,14 +692,14 @@ public class BitHeaderTests : BunitTestContext
                             .Select(i => i.Arguments[0])
                             .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "header-one", "header-two" }, setups);
+        Assert.AreSequenceEqual(new object[] { "header-one", "header-two" }, setups);
 
         var disposes = Context.JSInterop.Invocations
                               .Where(i => i.Identifier == "BitBlazorUI.Headers.dispose")
                               .Select(i => i.Arguments[0])
                               .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "header-one" }, disposes);
+        Assert.AreSequenceEqual(new object[] { "header-one" }, disposes);
     }
 
     [TestMethod]
@@ -737,7 +737,7 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.Fixed, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -762,7 +762,7 @@ public class BitHeaderTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-hdn"));
         Assert.IsTrue(component.Instance.IsRevealed);
 
-        CollectionAssert.AreEqual(new[] { false, true }, revealStates);
+        Assert.AreSequenceEqual(new[] { false, true }, revealStates);
     }
 
     [TestMethod]
@@ -875,7 +875,7 @@ public class BitHeaderTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-elv"));
         Assert.IsFalse(component.Instance.IsScrolled);
 
-        CollectionAssert.AreEqual(new[] { true, false }, scrolledStates);
+        Assert.AreSequenceEqual(new[] { true, false }, scrolledStates);
     }
 
     [TestMethod]
@@ -915,7 +915,7 @@ public class BitHeaderTests : BunitTestContext
 
         // The shadow is settled, but the scroll state is still a documented output of its own, so the
         // listener stays attached and OnScrolledChanged/IsScrolled keep working.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.setup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -951,7 +951,7 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.Sticky, true);
         });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -977,9 +977,9 @@ public class BitHeaderTests : BunitTestContext
                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                             .ToArray();
 
-        Assert.AreEqual(2, setups.Length);
-        CollectionAssert.AreEqual(new object[] { true, false }, setups.Select(i => i.Arguments[4]).ToArray());
-        CollectionAssert.AreEqual(new object[] { true, true }, setups.Select(i => i.Arguments[5]).ToArray());
+        Assert.HasCount(2, setups);
+        Assert.AreSequenceEqual(new object[] { true, false }, setups.Select(i => i.Arguments[4]).ToArray());
+        Assert.AreSequenceEqual(new object[] { true, true }, setups.Select(i => i.Arguments[5]).ToArray());
     }
 
     [TestMethod]
@@ -1001,7 +1001,7 @@ public class BitHeaderTests : BunitTestContext
                               .Select(i => i.Arguments[0])
                               .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "header-disposed" }, disposes);
+        Assert.AreSequenceEqual(new object[] { "header-disposed" }, disposes);
     }
 
     [TestMethod]
@@ -1023,7 +1023,7 @@ public class BitHeaderTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, dispose.Invocations);
+        Assert.ContainsSingle(dispose.Invocations);
         Assert.AreSame(header, reference.Value);
 
         dispose.SetVoidResult();
@@ -1074,8 +1074,8 @@ public class BitHeaderTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
 
         // One listener drives both states, so the two behaviors never cost two scroll subscriptions.
-        Assert.AreEqual(true, invocation.Arguments[4]);
-        Assert.AreEqual(true, invocation.Arguments[5]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[4]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[5]));
     }
 
     [TestMethod]
@@ -1170,7 +1170,7 @@ public class BitHeaderTests : BunitTestContext
     {
         var component = RenderComponent<BitHeader>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-hdr-skp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-hdr-skp"));
     }
 
     [TestMethod]
@@ -1218,7 +1218,7 @@ public class BitHeaderTests : BunitTestContext
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.scrollElementIntoView");
         Assert.AreEqual("main", invocation.Arguments[0]);
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
     }
 
     [TestMethod]
@@ -1242,7 +1242,7 @@ public class BitHeaderTests : BunitTestContext
         });
 
         // The href is what the link is for, so a text without one renders nothing.
-        Assert.AreEqual(0, component.FindAll(".bit-hdr-skp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-hdr-skp"));
     }
 
     [TestMethod]
@@ -1305,17 +1305,17 @@ public class BitHeaderTests : BunitTestContext
         var header = component.Find(".bit-hdr");
 
         Assert.IsTrue(header.ClassList.Contains("root-class"));
-        Assert.IsTrue(header.GetAttribute("style")!.Contains("color:red"));
+        Assert.Contains("color:red", header.GetAttribute("style")!);
 
         var container = component.Find(".bit-hdr-gut");
 
         Assert.IsTrue(container.ClassList.Contains("container-class"));
-        Assert.IsTrue(container.GetAttribute("style")!.Contains("color:blue"));
+        Assert.Contains("color:blue", container.GetAttribute("style")!);
 
         var skipLink = component.Find(".bit-hdr-skp");
 
         Assert.IsTrue(skipLink.ClassList.Contains("skip-class"));
-        Assert.IsTrue(skipLink.GetAttribute("style")!.Contains("color:green"));
+        Assert.Contains("color:green", skipLink.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1382,7 +1382,7 @@ public class BitHeaderTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -1465,18 +1465,18 @@ public class BitHeaderTests : BunitTestContext
         Assert.IsTrue(headers[0].ClassList.Contains("bit-hdr-esc"));
         Assert.IsTrue(headers[0].ClassList.Contains("bit-hdr-wrp"));
         Assert.IsTrue(headers[0].ClassList.Contains("bit-hdr-ved"));
-        StringAssert.Contains(headers[0].GetAttribute("style")!, "--bit-hdr-gap:1rem");
+        Assert.Contains("--bit-hdr-gap:1rem", headers[0].GetAttribute("style")!);
 
         // The second one sets its own color and gap, which the cascading parameters must not overwrite.
         Assert.IsTrue(headers[1].ClassList.Contains("bit-hdr-err"));
         Assert.IsFalse(headers[1].ClassList.Contains("bit-hdr-suc"));
         Assert.IsTrue(headers[1].ClassList.Contains("bit-hdr-otl"));
-        StringAssert.Contains(headers[1].GetAttribute("style")!, "--bit-hdr-gap:2rem");
+        Assert.Contains("--bit-hdr-gap:2rem", headers[1].GetAttribute("style")!);
 
         // The cascaded skip link reaches both headers.
         var skipLinks = component.FindAll(".bit-hdr-skp");
 
-        Assert.AreEqual(2, skipLinks.Count);
+        Assert.HasCount(2, skipLinks);
         Assert.AreEqual($"{Services.GetRequiredService<NavigationManager>().Uri}#main", skipLinks[0].GetAttribute("href"));
         Assert.AreEqual("Jump to the content", skipLinks[0].TextContent);
 
@@ -1485,15 +1485,15 @@ public class BitHeaderTests : BunitTestContext
                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                             .ToArray();
 
-        Assert.AreEqual(2, setups.Length);
-        CollectionAssert.AreEqual(new object[] { 80, 80 }, setups.Select(i => i.Arguments[2]).ToArray());
-        CollectionAssert.AreEqual(new object[] { 30, 30 }, setups.Select(i => i.Arguments[3]).ToArray());
-        CollectionAssert.AreEqual(new object[] { "#pane", "#pane" }, setups.Select(i => i.Arguments[6]).ToArray());
-        CollectionAssert.AreEqual(new object[] { true, true }, setups.Select(i => i.Arguments[7]).ToArray());
+        Assert.HasCount(2, setups);
+        Assert.AreSequenceEqual(new object[] { 80, 80 }, setups.Select(i => i.Arguments[2]).ToArray());
+        Assert.AreSequenceEqual(new object[] { 30, 30 }, setups.Select(i => i.Arguments[3]).ToArray());
+        Assert.AreSequenceEqual(new object[] { "#pane", "#pane" }, setups.Select(i => i.Arguments[6]).ToArray());
+        Assert.AreSequenceEqual(new object[] { true, true }, setups.Select(i => i.Arguments[7]).ToArray());
 
         // The cascaded max width reaches both headers as the variable the container reads.
-        StringAssert.Contains(headers[0].GetAttribute("style")!, "--bit-hdr-max-width:60rem");
-        StringAssert.Contains(headers[1].GetAttribute("style")!, "--bit-hdr-max-width:60rem");
+        Assert.Contains("--bit-hdr-max-width:60rem", headers[0].GetAttribute("style")!);
+        Assert.Contains("--bit-hdr-max-width:60rem", headers[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1520,7 +1520,7 @@ public class BitHeaderTests : BunitTestContext
 
         var style = component.Find(".bit-hdr").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-hdr-max-width"));
+        Assert.DoesNotContain("--bit-hdr-max-width", style);
     }
 
     [TestMethod]
@@ -1531,11 +1531,11 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.MaxWidth, "40rem");
         });
 
-        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-max-width:40rem");
+        Assert.Contains("--bit-hdr-max-width:40rem", component.Find(".bit-hdr").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.MaxWidth, "60rem"));
 
-        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-max-width:60rem");
+        Assert.Contains("--bit-hdr-max-width:60rem", component.Find(".bit-hdr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1550,9 +1550,9 @@ public class BitHeaderTests : BunitTestContext
 
         var style = component.Find(".bit-hdr").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "height:64px");
-        StringAssert.Contains(style, "--bit-hdr-gap:1rem");
-        StringAssert.Contains(style, "--bit-hdr-max-width:75rem");
+        Assert.Contains("height:64px", style);
+        Assert.Contains("--bit-hdr-gap:1rem", style);
+        Assert.Contains("--bit-hdr-max-width:75rem", style);
     }
 
     [TestMethod]
@@ -1584,7 +1584,7 @@ public class BitHeaderTests : BunitTestContext
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
 
         Assert.AreEqual("#pane", invocation.Arguments[6]);
-        Assert.AreEqual(false, invocation.Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));
     }
 
     [TestMethod]
@@ -1625,8 +1625,8 @@ public class BitHeaderTests : BunitTestContext
                              .Select(i => i.Arguments[6])
                              .ToArray();
 
-        CollectionAssert.AreEqual(new object[] { "#first", "#second" }, targets);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreSequenceEqual(new object[] { "#first", "#second" }, targets);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1646,14 +1646,14 @@ public class BitHeaderTests : BunitTestContext
                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                             .ToArray();
 
-        Assert.AreEqual(positioned ? 1 : 0, setups.Length);
+        Assert.HasCount(positioned ? 1 : 0, setups);
 
         if (positioned)
         {
             // The two scroll behaviors stay off: the script is only there for the padding.
-            Assert.AreEqual(false, setups[0].Arguments[4]);
-            Assert.AreEqual(false, setups[0].Arguments[5]);
-            Assert.AreEqual(true, setups[0].Arguments[7]);
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(setups[0].Arguments[4]));
+            Assert.IsFalse(Assert.IsInstanceOfType<bool>(setups[0].Arguments[5]));
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(setups[0].Arguments[7]));
         }
     }
 
@@ -1689,8 +1689,8 @@ public class BitHeaderTests : BunitTestContext
         });
 
         // The script is what put the padding on the scroller, so it has to be taken down to give it back.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.dispose", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Headers.setup", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1706,9 +1706,9 @@ public class BitHeaderTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
 
-        Assert.AreEqual(true, invocation.Arguments[4]);
-        Assert.AreEqual(true, invocation.Arguments[5]);
-        Assert.AreEqual(true, invocation.Arguments[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[4]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[5]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[7]));
     }
 
     [TestMethod]
@@ -1733,7 +1733,7 @@ public class BitHeaderTests : BunitTestContext
     {
         var component = RenderComponent<BitHeader>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+        Assert.IsEmpty(component.FindAll(".bit-hdr-ext"));
     }
 
     [TestMethod]
@@ -1778,7 +1778,7 @@ public class BitHeaderTests : BunitTestContext
     {
         var component = RenderComponent<BitHeader>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+        Assert.IsEmpty(component.FindAll(".bit-hdr-ext"));
 
         component.Render(parameters => parameters.Add(p => p.ExtensionContent, "Tabs"));
 
@@ -1786,7 +1786,7 @@ public class BitHeaderTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ExtensionContent, (Microsoft.AspNetCore.Components.RenderFragment?)null));
 
-        Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+        Assert.IsEmpty(component.FindAll(".bit-hdr-ext"));
     }
 
     [TestMethod]

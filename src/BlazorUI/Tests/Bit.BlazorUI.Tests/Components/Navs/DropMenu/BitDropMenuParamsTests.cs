@@ -64,7 +64,7 @@ public class BitDropMenuParamsTests : BunitTestContext
                                             .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                             .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -102,7 +102,7 @@ public class BitDropMenuParamsTests : BunitTestContext
         var root = component.Find(".bit-drm");
 
         // A false the drop menu wrote for itself is a choice, not an absence the cascade may fill in.
-        Assert.AreEqual(1, component.FindAll(".bit-drm-chv").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drm-chv"));
         Assert.IsFalse(root.ClassList.Contains("bit-drm-flw"));
         // What it left unset still comes from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-drm-trn"));
@@ -125,7 +125,7 @@ public class BitDropMenuParamsTests : BunitTestContext
 
         Assert.AreEqual("cascaded-id", root.Id);
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
 
@@ -173,17 +173,17 @@ public class BitDropMenuParamsTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} does not carry {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} does not carry {style}.");
+            Assert.Contains(style, element.GetAttribute("style")!, $"{selector} does not carry {style}.");
         }
 
         // The sizing travels as the public custom properties the stylesheet reads off the callout.
         var callout = component.Find(".bit-drm-cal");
         var calloutStyle = callout.GetAttribute("style")!;
 
-        StringAssert.Contains(calloutStyle, "--bit-DropMenu-callout-width:20rem;");
-        StringAssert.Contains(calloutStyle, "--bit-DropMenu-callout-min-width:10rem;");
-        StringAssert.Contains(calloutStyle, "--bit-DropMenu-callout-max-width:30rem;");
-        StringAssert.Contains(calloutStyle, "--bit-DropMenu-callout-max-height:15rem;");
+        Assert.Contains("--bit-DropMenu-callout-width:20rem;", calloutStyle);
+        Assert.Contains("--bit-DropMenu-callout-min-width:10rem;", calloutStyle);
+        Assert.Contains("--bit-DropMenu-callout-max-width:30rem;", calloutStyle);
+        Assert.Contains("--bit-DropMenu-callout-max-height:15rem;", calloutStyle);
         Assert.IsTrue(callout.ClassList.Contains("bit-drm-mxh"));
         Assert.IsTrue(callout.ClassList.Contains("bit-drm-brd"));
         Assert.IsTrue(callout.ClassList.Contains("bit-drm-btr"));

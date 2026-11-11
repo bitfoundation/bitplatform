@@ -1,13 +1,13 @@
 ﻿namespace Bit.Borm.Tests;
 
-public class ContactRow
+internal class ContactRow
 {
     public string Kind { get; set; } = "";
     public string? Email { get; set; }
     public string? Phone { get; set; }
 }
 
-public class ContactBook
+internal class ContactBook
 {
     public string Kind { get; set; } = "";
     public List<ContactRow> Rows { get; set; } = [];

@@ -28,7 +28,7 @@ public class BitAiThreadSafetyTests
             () =>
             {
                 var text = part.Text;
-                Assert.IsTrue(text.Length % 6 == 0, "A reader saw a torn append.");
+                Assert.AreEqual(0, text.Length % 6, "A reader saw a torn append.");
                 _ = part.Length;
                 _ = part.IsEmpty;
             });
@@ -130,7 +130,7 @@ public class BitAiThreadSafetyTests
                 foreach (var version in artifact.Versions) _ = version.Content;
             });
 
-        Assert.AreEqual(50, artifact.Versions.Count);
+        Assert.HasCount(50, artifact.Versions);
     }
 
     [TestMethod]
@@ -157,8 +157,8 @@ public class BitAiThreadSafetyTests
                 _ = message.GetSources();
             });
 
-        Assert.AreEqual(2000, message.Parts.Count);
-        Assert.AreEqual(2000, message.Citations.Count);
+        Assert.HasCount(2000, message.Parts);
+        Assert.HasCount(2000, message.Citations);
     }
 
     [TestMethod]
@@ -187,7 +187,7 @@ public class BitAiThreadSafetyTests
                 _ = conversation.TotalUsage;
             });
 
-        Assert.AreEqual(1000, conversation.Messages.Count);
+        Assert.HasCount(1000, conversation.Messages);
     }
 
     [TestMethod]
@@ -211,7 +211,7 @@ public class BitAiThreadSafetyTests
                 _ = run.CurrentStep;
             });
 
-        Assert.AreEqual(3, run.Steps.Count);
+        Assert.HasCount(3, run.Steps);
     }
 
     [TestMethod]
@@ -235,8 +235,8 @@ public class BitAiThreadSafetyTests
                 foreach (var id in step.ToolCallIds) _ = id.Length;
             });
 
-        Assert.AreEqual(2000, step.ToolCallIds.Count);
-        Assert.AreEqual(2000, step.ToolCallIds.Distinct(StringComparer.Ordinal).Count());
+        Assert.HasCount(2000, step.ToolCallIds);
+        Assert.HasCount(2000, step.ToolCallIds.Distinct(StringComparer.Ordinal));
     }
 
     [TestMethod]

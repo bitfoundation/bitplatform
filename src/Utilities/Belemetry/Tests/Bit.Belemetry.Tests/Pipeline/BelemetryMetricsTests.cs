@@ -86,7 +86,7 @@ public class BelemetryMetricsTests
     {
         using var meter = NewMeter();
         var aggregator = Aggregator(meter.CreateHistogram<double>("latency"), o => o.HistogramBoundaries = [0, 5, 10]);
-        CollectionAssert.AreEqual(new[] { 0.0, 5, 10 }, aggregator.Bounds);
+        Assert.AreSequenceEqual(new[] { 0.0, 5, 10 }, aggregator.Bounds);
 
         foreach (var value in new[] { -1, 0, 5, 5.0001, 10, 11 }) aggregator.Record(value, (long)value, []);
         aggregator.Record(double.NaN, 0, []);
@@ -94,9 +94,9 @@ public class BelemetryMetricsTests
 
         var p = aggregator.Collect(200)!.Points.Single();
         // (-inf,0] (0,5] (5,10] (10,+inf)
-        CollectionAssert.AreEqual(new long[] { 2, 1, 2, 1 }, p.BucketCounts);
-        CollectionAssert.AreEqual(new long[] { 2, 1, 2, 1 }, p.DeltaBucketCounts);
-        CollectionAssert.AreEqual(new[] { 0.0, 5, 10 }, p.ExplicitBounds);
+        Assert.AreSequenceEqual(new long[] { 2, 1, 2, 1 }, p.BucketCounts);
+        Assert.AreSequenceEqual(new long[] { 2, 1, 2, 1 }, p.DeltaBucketCounts);
+        Assert.AreSequenceEqual(new[] { 0.0, 5, 10 }, p.ExplicitBounds);
         Assert.AreEqual(6L, p.Count);
         Assert.AreEqual(30.0001, p.Sum, 1e-9);
         Assert.AreEqual(-1.0, p.Min);
@@ -111,8 +111,8 @@ public class BelemetryMetricsTests
         Assert.AreEqual(7.0, next.DeltaMin);
         Assert.AreEqual(7.0, next.DeltaMax);
         Assert.AreEqual(-1.0, next.Min);
-        CollectionAssert.AreEqual(new long[] { 0, 0, 1, 0 }, next.DeltaBucketCounts);
-        CollectionAssert.AreEqual(new long[] { 2, 1, 3, 1 }, next.BucketCounts);
+        Assert.AreSequenceEqual(new long[] { 0, 0, 1, 0 }, next.DeltaBucketCounts);
+        Assert.AreSequenceEqual(new long[] { 2, 1, 3, 1 }, next.BucketCounts);
 
         var empty = aggregator.Collect(400)!.Points.Single();
         Assert.AreEqual(0L, empty.DeltaCount);
@@ -124,7 +124,7 @@ public class BelemetryMetricsTests
     {
         using var meter = NewMeter();
         var histogram = meter.CreateHistogram<double>("advised", unit: null, description: null, tags: null, advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = [1, 2] });
-        CollectionAssert.AreEqual(new[] { 1.0, 2.0 }, Aggregator(histogram).Bounds);
+        Assert.AreSequenceEqual(new[] { 1.0, 2.0 }, Aggregator(histogram).Bounds);
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class BelemetryMetricsTests
         Assert.HasCount(3, points);
         Assert.AreEqual(2.0, points.Single(p => "a".Equals(p.Attributes["k"])).Value);
         var overflow = points.Single(p => p.Attributes.Contains("otel.metric.overflow"));
-        Assert.AreEqual(true, overflow.Attributes["otel.metric.overflow"]);
+        Assert.IsTrue((bool?)overflow.Attributes["otel.metric.overflow"]);
         Assert.AreEqual(1, overflow.Attributes.Count);
         Assert.AreEqual(2.0, overflow.Value);
     }
@@ -248,7 +248,7 @@ public class BelemetryMetricsTests
         }
 
         var metrics = collector.Collect().Where(m => m.Scope.Name == included.Name || m.Scope.Name == excluded.Name).ToList();
-        Assert.HasCount(1, metrics);
+        Assert.ContainsSingle(metrics);
         Assert.AreEqual("in", metrics[0].Name);
         Assert.AreEqual(2L, metrics[0].Points[0].LongValue);
         Assert.IsTrue(metrics[0].Points[0].IsInteger);

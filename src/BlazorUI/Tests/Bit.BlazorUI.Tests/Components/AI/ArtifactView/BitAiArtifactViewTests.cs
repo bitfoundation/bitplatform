@@ -37,8 +37,8 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.AreEqual("Project README", panel.GetAttribute("aria-label"));
         Assert.AreEqual("a1", panel.GetAttribute("data-artifact-id"));
         Assert.AreEqual("Project README", view.Find(".bit-aiatv-ttl").TextContent);
-        Assert.HasCount(1, view.FindComponents<BitAiStreamingMarkdown>());
-        Assert.HasCount(1, view.FindComponents<BitAiCopyButton>());
+        Assert.ContainsSingle(view.FindComponents<BitAiStreamingMarkdown>());
+        Assert.ContainsSingle(view.FindComponents<BitAiCopyButton>());
         Assert.IsNotNull(view.Find("button[aria-label='Download']"));
         Assert.IsNotNull(view.Find("button[aria-label='Expand']"));
     }
@@ -65,7 +65,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var view = RenderArtifact(artifact);
 
         Assert.IsEmpty(view.FindAll("iframe"));
-        Assert.HasCount(1, view.FindComponents<BitAiCodeBlockView>());
+        Assert.ContainsSingle(view.FindComponents<BitAiCodeBlockView>());
     }
 
     [TestMethod]
@@ -84,9 +84,9 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "Prices", "name,price\n\"Widget, large\",3\nGadget,4\n"));
 
-        CollectionAssert.AreEqual(new[] { "name", "price" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "name", "price" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
         Assert.AreEqual("Widget, large", view.FindAll("td.bit-aiatv-tdc")[0].TextContent);
-        Assert.AreEqual(2, view.FindAll("tbody tr").Count);
+        Assert.HasCount(2, view.FindAll("tbody tr"));
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "People", """[{"name":"Ada"}]"""));
 
-        Assert.HasCount(1, view.FindComponents<BitAiDataTable>());
+        Assert.ContainsSingle(view.FindComponents<BitAiDataTable>());
     }
 
     // A panel rendered again - on every tick while the reply streams on - parses its content anew only once it has
@@ -123,7 +123,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Json, "Data", """{"a":1}"""));
 
-        Assert.HasCount(1, view.FindComponents<BitAiJsonView>());
+        Assert.ContainsSingle(view.FindComponents<BitAiJsonView>());
         Assert.IsNotNull(view.Find(".bit-aiatv-jsn .bit-aijsv"));
     }
 
@@ -141,7 +141,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var view = RenderArtifact(Completed(BitAiArtifactKind.Chart, "Sales", "{\"type\":\"bar\"}"));
 
         Assert.AreEqual("{\"type\":\"bar\"}", view.Find(".bit-aiatv-bdy .my-chart").TextContent);
-        Assert.HasCount(1, view.FindComponents<BitAiRendererBoundary>());
+        Assert.ContainsSingle(view.FindComponents<BitAiRendererBoundary>());
     }
 
     [TestMethod]
@@ -153,12 +153,12 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var view = RenderArtifact(artifact);
 
         Assert.AreEqual("true", view.Find(".bit-aiatv-bdy").GetAttribute("aria-busy"));
-        Assert.HasCount(1, view.FindComponents<BitEllipsisLoading>());
+        Assert.ContainsSingle(view.FindComponents<BitEllipsisLoading>());
 
         artifact.Append("var answer = 42;");
 
         view.WaitForAssertion(() =>
-            StringAssert.Contains(view.Find(".bit-aiatv-bdy code").TextContent, "answer"));
+            Assert.Contains("answer", view.Find(".bit-aiatv-bdy code").TextContent));
 
         artifact.Complete();
 
@@ -184,19 +184,19 @@ public class BitAiArtifactViewTests : BitAiTestBase
             .Add(c => c.InitialVersion, firstVersion));
         var latest = RenderArtifact(artifact);
 
-        StringAssert.Contains(older.Find(".bit-aiatv-bdy").TextContent, "first draft");
-        StringAssert.Contains(latest.Find(".bit-aiatv-bdy").TextContent, "second draft");
+        Assert.Contains("first draft", older.Find(".bit-aiatv-bdy").TextContent);
+        Assert.Contains("second draft", latest.Find(".bit-aiatv-bdy").TextContent);
 
         var dropdown = older.FindComponent<BitDropdown<BitDropdownItem<int>, int>>();
         Assert.AreEqual("Version", dropdown.Instance.AriaLabel);
         Assert.AreEqual(firstVersion, dropdown.Instance.Value);
 
         var options = older.FindAll(".bit-aiatv-hdr [role=option]");
-        Assert.AreEqual(2, options.Count);
+        Assert.HasCount(2, options);
 
         older.FindAll(".bit-aiatv-hdr [role=option]")[1].Click();
 
-        StringAssert.Contains(older.Find(".bit-aiatv-bdy").TextContent, "second draft");
+        Assert.Contains("second draft", older.Find(".bit-aiatv-bdy").TextContent);
     }
 
     [TestMethod]
@@ -351,7 +351,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         var collapse = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.collapse");
         Assert.AreEqual("v1-pnl", collapse.Arguments[0]);
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.AiArtifactView.expand"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.AiArtifactView.expand"]);
     }
 
     [TestMethod]
@@ -401,9 +401,9 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         // After the page, never ahead of its doctype, which would put it in quirks mode.
         var document = view.Find("iframe.bit-aiatv-frm").GetAttribute("srcdoc")!;
-        StringAssert.StartsWith(document, page);
-        StringAssert.Contains(document, "parent.postMessage({bitAiArtifactView:'escape'},'*')");
-        StringAssert.Contains(document, "!e.defaultPrevented&&!e.isComposing");
+        Assert.StartsWith(page, document);
+        Assert.Contains("parent.postMessage({bitAiArtifactView:'escape'},'*')", document);
+        Assert.Contains("!e.defaultPrevented&&!e.isComposing", document);
         Assert.IsEmpty(view.FindAll(".bit-aiatv-bdy script"));
 
         // Copy and download act on the page itself.
@@ -434,14 +434,14 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.AreEqual("-1", view.Find("img.bit-aiatv-img").GetAttribute("tabindex"));
 
         var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-        Assert.HasCount(1, focus);
+        Assert.ContainsSingle(focus);
         Assert.AreNotEqual(view.Instance.RootElement.Id, ((ElementReference)focus[0].Arguments[0]!).Id);
 
         // One the policy shows at once was never a button, and takes no focus.
         var shown = RenderImageArtifact(ImageAt("https://img.x.dev/chart.png", "Chart"), BitAiImagePolicy.Allow);
 
         Assert.IsFalse(shown.Find("img.bit-aiatv-img").HasAttribute("tabindex"));
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     // A click does not focus a button in WebKit, so without this the focus stays outside the full-screen panel and the
@@ -484,7 +484,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         view.Find("button[aria-label='Expand']").Click();
         view.Find(".bit-aiatv-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
         Assert.IsTrue(view.Find(".bit-aiatv").ClassList.Contains("bit-aiatv-exp"));
     }
 
@@ -568,7 +568,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         // Markup the model wrote is shown inline from data, which fetches nothing - unless images are blocked.
         var inline = Completed(BitAiArtifactKind.Svg, "Logo", "<svg></svg>");
-        StringAssert.StartsWith(RenderImageArtifact(inline, BitAiImagePolicy.ClickToLoad).Find("img.bit-aiatv-img").GetAttribute("src"), "data:image/svg+xml;base64,");
+        Assert.StartsWith("data:image/svg+xml;base64,", RenderImageArtifact(inline, BitAiImagePolicy.ClickToLoad).Find("img.bit-aiatv-img").GetAttribute("src"));
 
         var blocked = RenderImageArtifact(inline, BitAiImagePolicy.Block);
         Assert.IsEmpty(blocked.FindAll("img"));
@@ -591,7 +591,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderImageArtifact(ImageAt("javascript:alert(1)", "Chart"), BitAiImagePolicy.Allow);
 
-        StringAssert.StartsWith(view.Find("img.bit-aiatv-img").GetAttribute("src"), "data:image/gif;base64,");
+        Assert.StartsWith("data:image/gif;base64,", view.Find("img.bit-aiatv-img").GetAttribute("src"));
         Assert.IsFalse(view.Markup.Contains("javascript:", System.StringComparison.OrdinalIgnoreCase));
     }
 
@@ -615,7 +615,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
 
         var placeholder = asked.Find(".bit-aiatv-imh button.bit-acb");
         Assert.IsTrue(placeholder.ClassList.Contains("c-placeholder"));
-        StringAssert.Contains(placeholder.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", placeholder.GetAttribute("style")!);
         var icon = placeholder.QuerySelector(".bit-acb-ico")!;
         Assert.IsTrue(icon.ClassList.Contains("bit-icon-ai--Photo2"));
         Assert.IsTrue(icon.ClassList.Contains("c-icon"));
@@ -660,7 +660,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         view.Find("button[aria-label='Download']").Click();
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.downloadText");
-        CollectionAssert.AreEqual(new object?[] { "program.cs", "var x = 1;", "text/plain" }, invocation.Arguments.ToArray());
+        Assert.AreSequenceEqual(new object?[] { "program.cs", "var x = 1;", "text/plain" }, invocation.Arguments.ToArray());
     }
 
     private void AssertFocusedLast(IRenderedComponent<BitButton> toggle, int count)
@@ -679,7 +679,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         view.Find("button[aria-label='Download']").Click();
 
         var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.AiArtifactView.downloadText");
-        CollectionAssert.AreEqual(new object?[] { "program.cs", "var x = 1;", "text/plain" }, invocation.Arguments.ToArray());
+        Assert.AreSequenceEqual(new object?[] { "program.cs", "var x = 1;", "text/plain" }, invocation.Arguments.ToArray());
     }
 
     [TestMethod]
@@ -740,7 +740,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         first.SetContent("changed");
 
         Assert.AreEqual("Two", view.Find(".bit-aiatv-ttl").TextContent);
-        StringAssert.Contains(view.Find(".bit-aiatv-bdy").TextContent, "2");
+        Assert.Contains("2", view.Find(".bit-aiatv-bdy").TextContent);
     }
 
     [TestMethod,
@@ -784,8 +784,8 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "T", "a,b\r\n\"x, \"\"y\"\"\",2"));
 
-        CollectionAssert.AreEqual(new[] { "a", "b" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
-        CollectionAssert.AreEqual(new[] { "x, \"y\"", "2" }, view.FindAll("td.bit-aiatv-tdc").Select(td => td.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "x, \"y\"", "2" }, view.FindAll("td.bit-aiatv-tdc").Select(td => td.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -793,7 +793,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
     {
         var view = RenderArtifact(Completed(BitAiArtifactKind.Table, "T", "a\tb,c\n1\t2", "tsv"));
 
-        CollectionAssert.AreEqual(new[] { "a", "b,c" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "a", "b,c" }, view.FindAll("th.bit-aiatv-thc").Select(th => th.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -830,7 +830,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("c-root"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("Price list", view.Find(".bit-aiatv-pnl").GetAttribute("aria-label"));
         Assert.IsTrue(view.Find(".bit-aiatv-pnl").ClassList.Contains("c-panel"));
         Assert.IsTrue(view.Find(".bit-aiatv-hdr").ClassList.Contains("c-header"));
@@ -842,7 +842,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         Assert.IsTrue(view.Find(".bit-aiatv-thc").ClassList.Contains("c-th"));
         Assert.IsTrue(view.Find(".bit-aiatv-tdc").ClassList.Contains("c-td"));
         Assert.IsTrue(view.Find(".bit-aiatv-hdr .bit-aicpb").ClassList.Contains("c-copy"));
-        StringAssert.Contains(view.Find(".bit-aiatv-hdr .bit-aicpb").GetAttribute("style"), "margin:2px");
+        Assert.Contains("margin:2px", view.Find(".bit-aiatv-hdr .bit-aicpb").GetAttribute("style")!);
         Assert.IsTrue(view.Find(".bit-aiatv-dlb").ClassList.Contains("c-download"));
         Assert.IsTrue(view.Find(".bit-aiatv-exb").ClassList.Contains("c-expand"));
     }
@@ -893,7 +893,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
         var style = view.Find(".bit-aiatv").GetAttribute("style");
 
         if (expected is null) Assert.IsTrue(string.IsNullOrEmpty(style));
-        else StringAssert.Contains(style, expected);
+        else Assert.Contains(expected, style!);
     }
 
     [TestMethod]
@@ -915,7 +915,7 @@ public class BitAiArtifactViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiArtifactViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiArtifactView", BitAiArtifactViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiArtifactView", new BitAiArtifactViewParams().Name);
         Assert.AreEqual(BitAiArtifactViewParams.ParamName, new BitAiArtifactViewParams().Name);
     }
 }

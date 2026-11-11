@@ -34,7 +34,7 @@ public class BrouterXmlDocsTests
         var summary = BrouterXmlDocs.GetSummary("T:Bit.Brouter.Broute")!;
 
         // "Declares a single route inside a <see cref="T:Bit.Brouter.Brouter"/>."
-        StringAssert.Contains(summary, "Brouter");
+        Assert.Contains("Brouter", summary);
         Assert.IsFalse(summary.Contains("T:Bit.Brouter", StringComparison.Ordinal), $"A raw cref reached the reader: {summary}");
         Assert.IsFalse(summary.Contains("<see", StringComparison.Ordinal));
     }
@@ -46,8 +46,8 @@ public class BrouterXmlDocsTests
         // cref; cutting the text there would read "Brouter.BrouterAwait" - the namespace kept, the member lost.
         var summary = BrouterXmlDocs.GetSummary("T:Bit.Brouter.BrouterAwait`1")!;
 
-        StringAssert.Contains(summary, "BrouterAwait.Task");
-        StringAssert.Contains(summary, "BrouterAwait.Pending");
+        Assert.Contains("BrouterAwait.Task", summary);
+        Assert.Contains("BrouterAwait.Pending", summary);
         Assert.IsFalse(summary.Contains("Brouter.BrouterAwait", StringComparison.Ordinal), $"A member reference lost its member: {summary}");
         Assert.IsFalse(summary.Contains("`1", StringComparison.Ordinal), $"An arity marker reached the reader: {summary}");
     }
@@ -82,7 +82,7 @@ public class BrouterXmlDocsTests
         // reader needs is the element itself.
         var summary = BrouterXmlDocs.GetSummary("T:Bit.Brouter.BrouterView")!;
 
-        StringAssert.Contains(summary, "<BrouterOutlet Name=\"...\">");
+        Assert.Contains("<BrouterOutlet Name=\"...\">", summary);
         Assert.IsFalse(summary.Contains("&lt;", StringComparison.Ordinal), "XML entities reached the reader unescaped.");
     }
 
@@ -91,7 +91,7 @@ public class BrouterXmlDocsTests
     {
         var remarks = BrouterXmlDocs.GetRemarks("T:Bit.Brouter.BrouterConstraintRegistry")!;
 
-        StringAssert.Contains(remarks, "\n\n", "The <para> breaks were flattened away, so the remarks are one wall of text.");
+        Assert.Contains("\n\n", remarks, "The <para> breaks were flattened away, so the remarks are one wall of text.");
         Assert.IsFalse(remarks.Contains("  ", StringComparison.Ordinal), "The source's line wrapping left runs of spaces behind.");
     }
 
@@ -127,8 +127,8 @@ public class BrouterXmlDocsTests
         var members = Table("_members");
         var overloads = Table("_overloads");
 
-        Assert.IsTrue(members.Count > 0, "No documentation was loaded, so nothing here is being decided.");
-        Assert.IsTrue(overloads.Count > 0, "No method id has a stand-in, so an inexact id finds nothing.");
+        Assert.IsNotEmpty(members, "No documentation was loaded, so nothing here is being decided.");
+        Assert.IsNotEmpty(overloads, "No method id has a stand-in, so an inexact id finds nothing.");
 
         foreach (var (name, chosen) in overloads)
         {
@@ -139,7 +139,7 @@ public class BrouterXmlDocsTests
             // No documented method in Bit.Brouter has two overloads yet, so today every group has
             // one candidate and this cannot catch a dropped OrderBy on its own. It is the rule that
             // is written down here; it starts biting the day an overload is documented.
-            Assert.AreNotEqual(0, candidates.Length, $"'{name}' stands in for no member id at all.");
+            Assert.IsNotEmpty(candidates, $"'{name}' stands in for no member id at all.");
             Assert.AreSame(members[candidates[0]], chosen,
                            $"'{name}' answers with something other than the ordinally first of its {candidates.Length} candidates.");
         }

@@ -14,7 +14,7 @@ public class BitCascadingValueListLookupTests
         list.AddIf(true, "hello", "Greeting", false, false);
         list.AddIf(false, "skipped", "Skipped");
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.IsFalse(list[0].Enabled);
         Assert.AreEqual("Greeting", list[0].Name);
     }
@@ -114,11 +114,15 @@ public class BitCascadingValueListLookupTests
             { 5 },
             { "unnamed" }
         };
+        var actualValue = list.Find<string>("Greeting")?.Value;
 
-        Assert.AreEqual("second", list.Find<string>("Greeting")?.Value);
-        Assert.AreEqual("second", list.Find(typeof(string), "GREETING")?.Value);
-        Assert.AreEqual("unnamed", list.Find<string>()?.Value);
-        Assert.AreEqual(5, list.Find<int>()?.Value);
+        Assert.AreEqual("second", actualValue);
+        var actualValue1 = list.Find(typeof(string), "GREETING")?.Value;
+        Assert.AreEqual("second", actualValue1);
+        var actualValue2 = list.Find<string>()?.Value;
+        Assert.AreEqual("unnamed", actualValue2);
+        var actualValue3 = list.Find<int>()?.Value;
+        Assert.AreEqual(5, actualValue3);
         Assert.IsNull(list.Find<int>("Greeting"));
         Assert.IsNull(list.Find<bool>());
     }
@@ -167,7 +171,7 @@ public class BitCascadingValueListLookupTests
         };
 
         Assert.IsTrue(list.Remove<string>("Greeting"));
-        Assert.AreEqual(2, list.Count);
+        Assert.HasCount(2, list);
         Assert.IsFalse(list.Contains<string>("Greeting"));
         Assert.IsTrue(list.Contains<string>());
         Assert.IsTrue(list.Contains<int>());
@@ -187,7 +191,7 @@ public class BitCascadingValueListLookupTests
 
         list.Set("third", "Greeting", true);
 
-        Assert.AreEqual(2, list.Count);
+        Assert.HasCount(2, list);
         Assert.AreEqual("third", list[0].Value);
         Assert.IsTrue(list[0].IsFixed);
         Assert.AreEqual(5, list[1].Value);
@@ -200,7 +204,7 @@ public class BitCascadingValueListLookupTests
 
         list.Set<int?>(null, "Count");
 
-        Assert.AreEqual(1, list.Count);
+        Assert.ContainsSingle(list);
         Assert.AreEqual(typeof(int?), list[0].ValueType);
         Assert.AreEqual("Count", list[0].Name);
         Assert.IsNull(list[0].Value);

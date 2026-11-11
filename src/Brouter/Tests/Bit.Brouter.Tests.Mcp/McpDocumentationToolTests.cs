@@ -36,23 +36,23 @@ public partial class McpDocumentationToolTests
                            .Where(line => line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("  - ", StringComparison.Ordinal))
                            .ToArray();
 
-        Assert.IsTrue(entries.Length > 20, $"Only {entries.Length} guide sections are in the index; the README has far more.");
+        Assert.IsGreaterThan(20, entries.Length, $"Only {entries.Length} guide sections are in the index; the README has far more.");
 
-        StringAssert.StartsWith(entries[0], "- Install", "The guide no longer opens with its Install section.");
+        Assert.StartsWith("- Install", entries[0], "The guide no longer opens with its Install section.");
 
         foreach (var entry in entries)
         {
-            StringAssert.Matches(entry, LinesRegex(), $"'{entry}' does not say how long the section is.");
+            Assert.MatchesRegex(LinesRegex(), entry, $"'{entry}' does not say how long the section is.");
         }
 
         // Every heading in the index has to be one the tool answers to - that is the whole point of
         // handing it over. The sub-sections are indented under the section they sit inside.
         foreach (var heading in new[] { "Install", "Data loader", "Loader caching (stale-while-revalidate)" })
         {
-            StringAssert.Contains(index, heading, $"'{heading}' is missing from the guide index.");
+            Assert.Contains(heading, index, $"'{heading}' is missing from the guide index.");
         }
 
-        StringAssert.Contains(index, "GetBrouterGuideSection(heading:", "The index never says what to do with a heading.");
+        Assert.Contains("GetBrouterGuideSection(heading:", index, "The index never says what to do with a heading.");
     }
 
     [TestMethod]
@@ -60,8 +60,8 @@ public partial class McpDocumentationToolTests
     {
         var section = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Async guards" });
 
-        StringAssert.StartsWith(section, "## Async guards");
-        StringAssert.Contains(section, "```", "The section lost its code samples on the way out.");
+        Assert.StartsWith("## Async guards", section);
+        Assert.Contains("```", section, "The section lost its code samples on the way out.");
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public partial class McpDocumentationToolTests
         // README spells it "Loader caching (stale-while-revalidate)".
         var section = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "loader caching stale while revalidate" });
 
-        StringAssert.Contains(section, "Loader caching");
+        Assert.Contains("Loader caching", section);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public partial class McpDocumentationToolTests
     {
         var dataLoader = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Data loader" });
 
-        StringAssert.Contains(dataLoader, "### Loader caching (stale-while-revalidate)",
+        Assert.Contains("### Loader caching (stale-while-revalidate)", dataLoader,
             "The section was cut before its sub-sections, so half of what the reader asked for is missing.");
     }
 
@@ -88,8 +88,8 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "Teleportation" });
 
-        StringAssert.Contains(answer, "no section called 'Teleportation'");
-        StringAssert.Contains(answer, "GetBrouterGuideSection with no heading", "The apology does not say how to find out what the guide does have.");
+        Assert.Contains("no section called 'Teleportation'", answer);
+        Assert.Contains("GetBrouterGuideSection with no heading", answer, "The apology does not say how to find out what the guide does have.");
     }
 
     [TestMethod]
@@ -97,8 +97,8 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterGuideSection", new() { ["heading"] = "guards" });
 
-        StringAssert.Contains(answer, "Did you mean");
-        StringAssert.Contains(answer, "Async guards", "The apology does not name the section the caller was reaching for.");
+        Assert.Contains("Did you mean", answer);
+        Assert.Contains("Async guards", answer, "The apology does not name the section the caller was reaching for.");
     }
 
     [TestMethod]
@@ -110,16 +110,16 @@ public partial class McpDocumentationToolTests
         {
             var slug = page.Slug.Length == 0 ? "overview" : page.Slug;
 
-            StringAssert.Contains(index, $"- `{slug}` - **{page.Title}**: {page.Description}",
+            Assert.Contains($"- `{slug}` - **{page.Title}**: {page.Description}", index,
                 $"'{page.Title}' is not in the documentation index, or is not described there.");
         }
 
         foreach (var section in DocsCatalog.Sections)
         {
-            StringAssert.Contains(index, $"## {section.Title}", $"The index does not group its pages under '{section.Title}'.");
+            Assert.Contains($"## {section.Title}", index, $"The index does not group its pages under '{section.Title}'.");
         }
 
-        StringAssert.Contains(index, "GetBrouterDocsPage(slug:", "The index never says what to do with a slug.");
+        Assert.Contains("GetBrouterDocsPage(slug:", index, "The index never says what to do with a slug.");
     }
 
     [TestMethod]
@@ -127,9 +127,9 @@ public partial class McpDocumentationToolTests
     {
         var page = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = "guards" });
 
-        StringAssert.StartsWith(page, "Bit.Brouter documentation page: /docs/guards");
-        StringAssert.Contains(page, "# Guards", "The page's own heading is missing, so the render produced no content.");
-        StringAssert.Contains(page, "LeaveGuard");
+        Assert.StartsWith("Bit.Brouter documentation page: /docs/guards", page);
+        Assert.Contains("# Guards", page, "The page's own heading is missing, so the render produced no content.");
+        Assert.Contains("LeaveGuard", page);
         Assert.IsFalse(page.Contains("could not be rendered", StringComparison.Ordinal));
 
         // Flattened to Markdown rather than handed over as the HTML the browser gets.
@@ -144,7 +144,7 @@ public partial class McpDocumentationToolTests
         // called when it is asked for the index, so the words that stand in for it have to work.
         var byAlias = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = "overview" });
 
-        StringAssert.StartsWith(byAlias, "Bit.Brouter documentation page: /docs");
+        Assert.StartsWith("Bit.Brouter documentation page: /docs", byAlias);
 
         foreach (var alias in new[] { "index", "docs" })
         {
@@ -158,8 +158,8 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterDocsPage", new() { ["slug"] = "guardz" });
 
-        StringAssert.Contains(answer, "No documentation page has the slug 'guardz'");
-        StringAssert.Contains(answer, "guards", "The apology does not list the slugs that do exist.");
+        Assert.Contains("No documentation page has the slug 'guardz'", answer);
+        Assert.Contains("guards", answer, "The apology does not list the slugs that do exist.");
     }
 
     [TestMethod]
@@ -167,26 +167,26 @@ public partial class McpDocumentationToolTests
     {
         var index = await McpCall.TextAsync("GetBrouterSourceFile");
 
-        StringAssert.Contains(index, "`Demo/Client/AppRouter.razor`");
+        Assert.Contains("`Demo/Client/AppRouter.razor`", index);
 
         foreach (var prefix in new[] { "Sample/Server/", "Sample/Wasm/", "Sample/Auto/", "Sample/Maui/", "Sample/Core/Extensions/" })
         {
-            StringAssert.Contains(index, $"`{prefix}",
+            Assert.Contains($"`{prefix}", index,
                 $"No source file under '{prefix}' was embedded, so the setup guide that quotes it has nothing to show.");
         }
 
         foreach (var file in BrouterSourceCatalog.SourceFiles)
         {
             Assert.IsTrue(file.Kind is "Demo" or "Sample", $"'{file.Path}' is listed as '{file.Kind}'.");
-            Assert.IsTrue(file.Lines > 0, $"'{file.Path}' is listed as empty.");
+            Assert.IsGreaterThan(0, file.Lines, $"'{file.Path}' is listed as empty.");
             Assert.IsFalse(file.Path.StartsWith("BrouterSource", StringComparison.Ordinal),
                 $"'{file.Path}' still carries the resource prefix a caller is not supposed to know about.");
             Assert.IsFalse(file.Path.Contains('\\'), $"'{file.Path}' is spelled with a backslash, which no caller would type.");
 
-            StringAssert.Contains(index, $"`{file.Path}` ({file.Lines} lines)", $"'{file.Path}' is not in the source index.");
+            Assert.Contains($"`{file.Path}` ({file.Lines} lines)", index, $"'{file.Path}' is not in the source index.");
         }
 
-        StringAssert.Contains(index, "GetBrouterSourceFile(path:", "The index never says what to do with a path.");
+        Assert.Contains("GetBrouterSourceFile(path:", index, "The index never says what to do with a path.");
     }
 
     [TestMethod]
@@ -194,8 +194,8 @@ public partial class McpDocumentationToolTests
     {
         var file = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" });
 
-        StringAssert.Contains(file, "<Brouter", "The demo's route table is not in the file that is supposed to hold it.");
-        StringAssert.Contains(file, "<Broute");
+        Assert.Contains("<Brouter", file, "The demo's route table is not in the file that is supposed to hold it.");
+        Assert.Contains("<Broute", file);
         Assert.AreEqual(BrouterSourceCatalog.GetSourceFile("Demo/Client/AppRouter.razor"), file);
     }
 
@@ -204,7 +204,7 @@ public partial class McpDocumentationToolTests
     {
         var file = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "demo/client/approuter.razor" });
 
-        StringAssert.Contains(file, "<Brouter");
+        Assert.Contains("<Brouter", file);
     }
 
     [TestMethod]
@@ -212,8 +212,8 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "AppRouter" });
 
-        StringAssert.Contains(answer, "No source file at 'AppRouter'");
-        StringAssert.Contains(answer, "Demo/Client/AppRouter.razor");
+        Assert.Contains("No source file at 'AppRouter'", answer);
+        Assert.Contains("Demo/Client/AppRouter.razor", answer);
     }
 
     [TestMethod]
@@ -221,11 +221,11 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "../../../etc/passwd" });
 
-        StringAssert.Contains(answer, "GetBrouterSourceFile with no path");
+        Assert.Contains("GetBrouterSourceFile with no path", answer);
 
         // Pointing at the listing tool is only the polite half; the answer must also be about
         // nothing, rather than the contents of whatever the path climbed out to.
-        StringAssert.StartsWith(answer, "No source file at '../../../etc/passwd'");
+        Assert.StartsWith("No source file at '../../../etc/passwd'", answer);
         Assert.IsFalse(answer.Contains("root:", StringComparison.Ordinal), "The traversal path handed back the file it climbed out to.");
     }
 
@@ -236,10 +236,10 @@ public partial class McpDocumentationToolTests
         {
             var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = renderMode });
 
-            StringAssert.Contains(guide, "AddBitBrouterServices", $"The '{renderMode}' guide never says to register the services.");
-            StringAssert.Contains(guide, "## Checklist", $"The '{renderMode}' guide has no checklist.");
-            StringAssert.Contains(guide, "@using Bit.Brouter", $"The '{renderMode}' guide never mentions the _Imports entry.");
-            Assert.IsTrue(guide.Length > 1_500, $"The '{renderMode}' guide is only {guide.Length} characters - the sample files are missing.");
+            Assert.Contains("AddBitBrouterServices", guide, $"The '{renderMode}' guide never says to register the services.");
+            Assert.Contains("## Checklist", guide, $"The '{renderMode}' guide has no checklist.");
+            Assert.Contains("@using Bit.Brouter", guide, $"The '{renderMode}' guide never mentions the _Imports entry.");
+            Assert.IsGreaterThan(1_500, guide.Length, $"The '{renderMode}' guide is only {guide.Length} characters - the sample files are missing.");
         }
     }
 
@@ -253,9 +253,9 @@ public partial class McpDocumentationToolTests
             var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = renderMode });
 
             // MauiProgram.cs included: it is the Hybrid app's Program.cs.
-            StringAssert.Contains(guide, "Program.cs", $"The '{renderMode}' guide quotes no Program.cs.");
-            StringAssert.Contains(guide, "```csharp", $"The '{renderMode}' guide contains no C# code block.");
-            StringAssert.Contains(guide, "Sample/Core/Extensions/IServiceCollectionExtensions.cs",
+            Assert.Contains("Program.cs", guide, $"The '{renderMode}' guide quotes no Program.cs.");
+            Assert.Contains("```csharp", guide, $"The '{renderMode}' guide contains no C# code block.");
+            Assert.Contains("Sample/Core/Extensions/IServiceCollectionExtensions.cs", guide,
                 $"The '{renderMode}' guide leaves out the shared registration method both containers call.");
         }
     }
@@ -265,8 +265,8 @@ public partial class McpDocumentationToolTests
     {
         var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = "standalone-wasm" });
 
-        StringAssert.Contains(guide, "no server-rendered host page");
-        StringAssert.Contains(guide, "App.razor");
+        Assert.Contains("no server-rendered host page", guide);
+        Assert.Contains("App.razor", guide);
     }
 
     [TestMethod]
@@ -274,13 +274,13 @@ public partial class McpDocumentationToolTests
     {
         var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = "hybrid" });
 
-        StringAssert.Contains(guide, "no catch-all host page");
+        Assert.Contains("no catch-all host page", guide);
 
         // The WebView's root component and its host page are where a Hybrid setup differs from a
         // Web App's; a guide without them leaves the reader to guess at both.
-        StringAssert.Contains(guide, "### `Sample/Maui/MainPage.xaml`");
-        StringAssert.Contains(guide, "### `Sample/Maui/wwwroot/index.html`");
-        StringAssert.Contains(guide, "BlazorWebView");
+        Assert.Contains("### `Sample/Maui/MainPage.xaml`", guide);
+        Assert.Contains("### `Sample/Maui/wwwroot/index.html`", guide);
+        Assert.Contains("BlazorWebView", guide);
     }
 
     [TestMethod]
@@ -288,9 +288,9 @@ public partial class McpDocumentationToolTests
     {
         var answer = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = "blazor" });
 
-        StringAssert.Contains(answer, "not a known render mode");
+        Assert.Contains("not a known render mode", answer);
 
-        foreach (var renderMode in BrouterSetupGuide.RenderModes) StringAssert.Contains(answer, renderMode);
+        foreach (var renderMode in BrouterSetupGuide.RenderModes) Assert.Contains(renderMode, answer);
     }
 
     // Every entry of the guide index ends in the section's size: "- Data loader (36 lines)".

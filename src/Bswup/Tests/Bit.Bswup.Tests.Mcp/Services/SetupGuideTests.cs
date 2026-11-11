@@ -18,7 +18,7 @@ public class SetupGuideTests
     [TestMethod]
     public void HostingModels_AreTheTwoTheGuideAnswersFor()
     {
-        CollectionAssert.AreEqual(new[] { "standalone-wasm", "blazor-web-app" }, BswupSetupGuide.HostingModels);
+        Assert.AreSequenceEqual(new[] { "standalone-wasm", "blazor-web-app" }, BswupSetupGuide.HostingModels);
 
         foreach (var model in BswupSetupGuide.HostingModels)
         {
@@ -43,7 +43,7 @@ public class SetupGuideTests
         var guide = BswupSetupGuide.Get(input);
 
         Assert.IsNotNull(guide, input);
-        StringAssert.Contains(guide, expectedTitle, input);
+        Assert.Contains(expectedTitle, guide, input);
     }
 
     [TestMethod]
@@ -60,44 +60,44 @@ public class SetupGuideTests
     {
         foreach (var guide in new[] { Standalone, BlazorWebApp })
         {
-            StringAssert.Contains(guide, "## Checklist");
-            StringAssert.Contains(guide, "autostart=\"false\"");
-            StringAssert.Contains(guide, "service-worker.published.js");
-            StringAssert.Contains(guide, "ServiceWorkerAssetsManifest");
-            StringAssert.Contains(guide, "Cache-Control: no-cache");
+            Assert.Contains("## Checklist", guide);
+            Assert.Contains("autostart=\"false\"", guide);
+            Assert.Contains("service-worker.published.js", guide);
+            Assert.Contains("ServiceWorkerAssetsManifest", guide);
+            Assert.Contains("Cache-Control: no-cache", guide);
         }
     }
 
     [TestMethod]
     public void StandaloneGuide_ShipsTheHostDocumentAndBothWorkerFiles()
     {
-        StringAssert.Contains(Standalone, "### `Sample/BasicSample/wwwroot/index.html`");
-        StringAssert.Contains(Standalone, "### `Sample/BasicSample/wwwroot/service-worker.js`");
-        StringAssert.Contains(Standalone, "### `Sample/BasicSample/wwwroot/service-worker.published.js`");
-        StringAssert.Contains(Standalone, "### `Sample/BasicSample/Bit.Bswup.BasicSample.csproj`");
+        Assert.Contains("### `Sample/BasicSample/wwwroot/index.html`", Standalone);
+        Assert.Contains("### `Sample/BasicSample/wwwroot/service-worker.js`", Standalone);
+        Assert.Contains("### `Sample/BasicSample/wwwroot/service-worker.published.js`", Standalone);
+        Assert.Contains("### `Sample/BasicSample/Bit.Bswup.BasicSample.csproj`", Standalone);
     }
 
     [TestMethod]
     public void StandaloneGuide_SaysWhyTheSplashCannotBeTheComponent()
     {
-        StringAssert.Contains(Standalone, "BswupProgress` component cannot help here");
+        Assert.Contains("BswupProgress` component cannot help here", Standalone);
     }
 
     [TestMethod]
     public void BlazorWebAppGuide_ShipsTheServerHostDocumentAndTheClientWorkerFiles()
     {
-        StringAssert.Contains(BlazorWebApp, "App.razor");
-        StringAssert.Contains(BlazorWebApp, "### `Sample/FullSample/Client/wwwroot/service-worker.js`");
-        StringAssert.Contains(BlazorWebApp, "### `Sample/FullSample/Client/wwwroot/service-worker.published.js`");
+        Assert.Contains("App.razor", BlazorWebApp);
+        Assert.Contains("### `Sample/FullSample/Client/wwwroot/service-worker.js`", BlazorWebApp);
+        Assert.Contains("### `Sample/FullSample/Client/wwwroot/service-worker.published.js`", BlazorWebApp);
     }
 
     [TestMethod]
     public void BlazorWebAppGuide_CoversWhatTheClientManifestCannotSee()
     {
-        StringAssert.Contains(BlazorWebApp, "externalAssets");
-        StringAssert.Contains(BlazorWebApp, "blazor.web.js");
-        StringAssert.Contains(BlazorWebApp, "resource-collection");
-        StringAssert.Contains(BlazorWebApp, "noPrerenderQuery");
+        Assert.Contains("externalAssets", BlazorWebApp);
+        Assert.Contains("blazor.web.js", BlazorWebApp);
+        Assert.Contains("resource-collection", BlazorWebApp);
+        Assert.Contains("noPrerenderQuery", BlazorWebApp);
     }
 
     [TestMethod]
@@ -163,8 +163,8 @@ public class SetupGuideTests
     {
         foreach (var guide in new[] { Standalone, BlazorWebApp })
         {
-            StringAssert.Contains(guide, "InspectBswupServiceWorker");
-            StringAssert.Contains(guide, "GetBswupServiceWorkerSettings");
+            Assert.Contains("InspectBswupServiceWorker", guide);
+            Assert.Contains("GetBswupServiceWorkerSettings", guide);
         }
     }
 
@@ -173,6 +173,6 @@ public class SetupGuideTests
     {
         var worker = BswupSourceCatalog.GetSourceFile("Sample/BasicSample/wwwroot/service-worker.js")!.TrimEnd();
 
-        StringAssert.Contains(Standalone, worker, "the guide is the real file, not a retelling of it");
+        Assert.Contains(worker, Standalone, "the guide is the real file, not a retelling of it");
     }
 }

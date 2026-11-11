@@ -178,7 +178,7 @@ public sealed class ContainerTests
     public void JpegMetadataSurvivesAWriteReadRoundTrip()
     {
         using var image = TestImages.Gradient(32, 32);
-        var jpeg = JpegEncoder.Encode(image, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 }).Data;
+        var jpeg = JpegEncoder.Encode(image, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 }, TestContext.CancellationToken).Data;
         var metadata = new ImageMetadata(
             new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Artist, ExifValue.FromString("A Photographer"))),
             sourceFormat: ImageFormat.Jpeg);
@@ -186,10 +186,11 @@ public sealed class ContainerTests
         var withMetadata = JpegContainer.WriteMetadata(jpeg, metadata);
         Assert.AreEqual(ImageFormat.Jpeg, ImageFormats.Detect(withMetadata));
         var read = JpegContainer.ReadMetadata(withMetadata);
-        Assert.AreEqual("A Photographer", read.Exif?.Artist);
+        var actualValue = read.Exif?.Artist;
+        Assert.AreEqual("A Photographer", actualValue);
 
         // The image must still decode after metadata surgery.
-        using var decoded = JpegDecoder.Decode(withMetadata);
+        using var decoded = JpegDecoder.Decode(withMetadata, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(32, decoded.Width);
     }
 
@@ -197,20 +198,21 @@ public sealed class ContainerTests
     public void WritingJpegMetadataTwiceDoesNotAccumulateSegments()
     {
         using var image = TestImages.Gradient(16, 16);
-        var jpeg = JpegEncoder.Encode(image).Data;
+        var jpeg = JpegEncoder.Encode(image, cancellationToken: TestContext.CancellationToken).Data;
         var metadata = new ImageMetadata(new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("One"))));
         var once = JpegContainer.WriteMetadata(jpeg, metadata);
         var twice = JpegContainer.WriteMetadata(once, metadata);
         // The second write replaces the first rather than appending, so sizes match closely.
-        Assert.AreEqual(once.Length, twice.Length);
-        Assert.AreEqual("One", JpegContainer.ReadMetadata(twice).Exif?.Make);
+        Assert.HasCount(once.Length, twice);
+        var actualValue = JpegContainer.ReadMetadata(twice).Exif?.Make;
+        Assert.AreEqual("One", actualValue);
     }
 
     [TestMethod]
     public void PngMetadataSurvivesAWriteReadRoundTrip()
     {
         using var image = TestImages.Gradient(24, 24);
-        var png = PngEncoder.Encode(image).Data;
+        var png = PngEncoder.Encode(image, cancellationToken: TestContext.CancellationToken).Data;
         var icc = new byte[] { 10, 20, 30, 40, 50 };
         var metadata = new ImageMetadata(
             new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Software, ExifValue.FromString("Bmage"))),
@@ -220,11 +222,12 @@ public sealed class ContainerTests
 
         var withMetadata = PngContainer.WriteMetadata(png, metadata);
         var read = PngContainer.ReadMetadata(withMetadata);
-        Assert.AreEqual("Bmage", read.Exif?.Software);
+        var actualValue = read.Exif?.Software;
+        Assert.AreEqual("Bmage", actualValue);
         Assert.AreSequenceEqual(icc, read.IccProfile.ToArray());
         Assert.Contains("xmpmeta", System.Text.Encoding.UTF8.GetString(read.Xmp.Span), StringComparison.Ordinal);
 
-        using var decoded = PngDecoder.Decode(withMetadata);
+        using var decoded = PngDecoder.Decode(withMetadata, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(24, decoded.Width);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, decoded));
     }
@@ -252,6 +255,8 @@ public sealed class ContainerTests
         Assert.AreEqual(64, size!.Value.Width);
         Assert.AreEqual(48, size.Value.Height);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]
@@ -272,10 +277,10 @@ public sealed class OrientationDecodeTests
         using var stored = new Operations.Transforms.OrientationOperation(orientation.Inverse())
             .Apply(upright, Operations.OperationContext.Default);
 
-        var png = PngEncoder.Encode(stored).Data;
+        var png = PngEncoder.Encode(stored, cancellationToken: TestContext.CancellationToken).Data;
         var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(orientation)));
 
-        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = true });
+        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = true }, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(upright.Size, decoded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(upright, decoded));
         Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
@@ -285,11 +290,13 @@ public sealed class OrientationDecodeTests
     public void AutoOrientCanBeTurnedOff()
     {
         using var source = TestImages.Quadrants(8, 8);
-        var png = PngEncoder.Encode(source).Data;
+        var png = PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data;
         var tagged = PngContainer.WriteMetadata(png, new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90)));
-        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = false });
+        using var decoded = PngDecoder.Decode(tagged, new DecodeOptions { AutoOrient = false }, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
         // The orientation is reported rather than applied, so the caller can decide.
         Assert.AreEqual(Orientation.Rotate90, decoded.Metadata!.Orientation);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

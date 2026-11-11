@@ -41,10 +41,10 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
         var declared = GetRootDeclarations();
 
-        Assert.AreEqual(9, written.Length, string.Join(", ", written));
+        Assert.HasCount(9, written, string.Join(", ", written));
         foreach (var variable in written)
         {
-            CollectionAssert.Contains(declared, variable, $"{variable} is written by the component but has no default on .bit-tsh.");
+            Assert.Contains(variable, declared, $"{variable} is written by the component but has no default on .bit-tsh.");
         }
     }
 
@@ -57,10 +57,10 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
 
         var read = VariableReference.Matches(ReadStylesheet()).Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        Assert.IsTrue(read.Length > 0);
+        Assert.IsNotEmpty(read);
         foreach (var variable in read)
         {
-            CollectionAssert.Contains(declared, variable, $"{variable} is read by the stylesheet but has no default on .bit-tsh.");
+            Assert.Contains(variable, declared, $"{variable} is read by the stylesheet but has no default on .bit-tsh.");
         }
     }
 
@@ -77,7 +77,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), rule);
 
-        StringAssert.Contains(block, "@include bit-tsh-static");
+        Assert.Contains("@include bit-tsh-static", block);
     }
 
     // The resting place of the band is outside the text at both ends of a sweep whatever its spread, so a wide band
@@ -87,8 +87,8 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var keyframes = SourceFiles.GetScssBlock(ReadStylesheet(), "@keyframes bit-tsh-anim");
 
-        StringAssert.Contains(keyframes, "calc(150% - var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
-        StringAssert.Contains(keyframes, "calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle))");
+        Assert.Contains("calc(150% - var(--bit-tsh-spread) * var(--bit-tsh-cycle))", keyframes);
+        Assert.Contains("calc(-50% + var(--bit-tsh-spread) * var(--bit-tsh-cycle))", keyframes);
     }
 
     // The component writes the pause as a time and the cycle is derived here, from the sweep the element ends up with
@@ -100,13 +100,13 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         var stylesheet = ReadStylesheet();
         var block = SourceFiles.GetScssBlock(stylesheet, "@supports (animation-duration: calc(1s * tan(atan2(1s, 2s))))");
 
-        StringAssert.Contains(block, "--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-sweep)), 89.9deg)));");
+        Assert.Contains("--bit-tsh-cycle: calc(1 + tan(clamp(0deg, atan2(var(--bit-tsh-repeat-delay), var(--bit-tsh-sweep)), 89.9deg)));", block);
 
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh {");
 
-        StringAssert.Contains(root, "--bit-tsh-sweep: var(--bit-TextShimmer-duration, 2000ms);");
-        StringAssert.Contains(root, "--bit-tsh-duration: var(--bit-TextShimmer-duration, calc(2000ms * #{$mot-loop-factor}));");
-        StringAssert.Contains(root, "--bit-tsh-repeat-delay: var(--bit-TextShimmer-repeat-delay, 0ms);");
+        Assert.Contains("--bit-tsh-sweep: var(--bit-TextShimmer-duration, 2000ms);", root);
+        Assert.Contains("--bit-tsh-duration: var(--bit-TextShimmer-duration, calc(2000ms * #{$mot-loop-factor}));", root);
+        Assert.Contains("--bit-tsh-repeat-delay: var(--bit-TextShimmer-repeat-delay, 0ms);", root);
     }
 
 
@@ -128,8 +128,8 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         var variable = $"--bit-TextShimmer-{name}";
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared.");
-        StringAssert.Contains(stylesheet, $"//   {variable} ");
-        StringAssert.Matches(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh {"), new Regex($@"{privateVariable}: var\({variable}, "));
+        Assert.Contains($"//   {variable} ", stylesheet);
+        Assert.MatchesRegex(new Regex($@"{privateVariable}: var\({variable}, "), SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh {"));
     }
 
     // A Spread left at its default publishes the spread it computes under a name of its own, which only backs the
@@ -139,7 +139,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tsh {");
 
-        StringAssert.Contains(root, "--bit-tsh-spread: var(--bit-TextShimmer-spread, var(--bit-tsh-auto-spread));");
+        Assert.Contains("--bit-tsh-spread: var(--bit-TextShimmer-spread, var(--bit-tsh-auto-spread));", root);
     }
 
     // A Color is a choice the shimmer was given, so its class sets the private value again after the root reads the
@@ -150,8 +150,8 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
         var stylesheet = ReadStylesheet();
         var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-tsh-#{$role} {");
 
-        StringAssert.Contains(roles, "--bit-tsh-gradient-clr:");
-        Assert.IsTrue(stylesheet.IndexOf(".bit-tsh-#{$role}", StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-tsh {", StringComparison.Ordinal));
+        Assert.Contains("--bit-tsh-gradient-clr:", roles);
+        Assert.IsGreaterThan(stylesheet.IndexOf("\n.bit-tsh {", StringComparison.Ordinal), stylesheet.IndexOf(".bit-tsh-#{$role}", StringComparison.Ordinal));
     }
 
 
@@ -163,9 +163,9 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh.bit-dis {"), "opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});");
-        StringAssert.Contains(stylesheet, "//   --bit-TextShimmer-disabled-opacity ");
-        StringAssert.Contains(SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active)"), ".bit-tsh.bit-dis {"), "color: GrayText;");
+        Assert.Contains("opacity: var(--bit-TextShimmer-disabled-opacity, #{$opa-dis});", SourceFiles.GetScssBlock(stylesheet, "\n.bit-tsh.bit-dis {"));
+        Assert.Contains("//   --bit-TextShimmer-disabled-opacity ", stylesheet);
+        Assert.Contains("color: GrayText;", SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active)"), ".bit-tsh.bit-dis {"));
     }
 
     // Reduced motion is often on together with forced colors, so its rule must weigh no more than .bit-tsh: the
@@ -175,7 +175,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var reducedMotion = SourceFiles.GetScssBlock(ReadStylesheet(), "@media (prefers-reduced-motion: reduce)");
 
-        StringAssert.Contains(reducedMotion, ".bit-tsh:where(:not(.bit-fam):not(.bit-fam *)) {");
+        Assert.Contains(".bit-tsh:where(:not(.bit-fam):not(.bit-fam *)) {", reducedMotion);
     }
 
     // A shimmer a page made focusable is drawn with the focus ring of the library rather than the browser's own.
@@ -184,7 +184,7 @@ public class BitTextShimmerStylesheetTests : BunitTestContext
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tsh {");
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(root, "&:focus-visible:not([tabindex=\"-1\"]) {"), "@include focus-ring;");
+        Assert.Contains("@include focus-ring;", SourceFiles.GetScssBlock(root, "&:focus-visible:not([tabindex=\"-1\"]) {"));
     }
 
 

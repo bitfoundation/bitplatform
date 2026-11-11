@@ -33,7 +33,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
         var component = RenderSearchBox(editContext, model, new() { [nameof(BitSearchBox.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
         Assert.IsNull(component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -54,7 +54,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
         // A value the EditContext accepts takes the line, and the reference to it, away again.
         component.Find(".bit-srb-inp").Input("test@bit.com");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
         Assert.IsNull(component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-srb-inp").GetAttribute("aria-invalid"));
     }
@@ -103,7 +103,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
         Assert.IsNull(component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
@@ -124,7 +124,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-erm"));
         Assert.AreEqual("The search service is unavailable.", component.Find(".bit-srb-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -159,7 +159,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-srb-inp").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-srb-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-srb-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-srb-erm").TextContent);
         Assert.AreEqual("The search service is unavailable.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -220,12 +220,12 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-erm"));
 
         attributes[nameof(BitSearchBox.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
         Assert.IsNull(component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
@@ -241,8 +241,8 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the field has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
     }
 
     [TestMethod]
@@ -265,7 +265,7 @@ public class BitSearchBoxValidationMessageTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("test@bit.com");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
 
         component.Find("form").Submit();
 

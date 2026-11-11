@@ -32,8 +32,8 @@ public class BitSplitterParamsTests : BunitTestContext
     [TestMethod]
     public void BitSplitterParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSplitter)}", BitSplitterParams.ParamName);
-        Assert.AreEqual("BitParams.BitSplitter", BitSplitterParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSplitter)}", new BitSplitterParams().Name);
+        Assert.AreEqual("BitParams.BitSplitter", new BitSplitterParams().Name);
     }
 
     [TestMethod]
@@ -72,11 +72,11 @@ public class BitSplitterParamsTests : BunitTestContext
 
         var missing = parameters.Where(p => carried.Contains(p) is false).ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Missing from BitSplitterParams: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"Missing from BitSplitterParams: {string.Join(", ", missing)}");
 
         foreach (var name in perInstance)
         {
-            Assert.IsFalse(carried.Contains(name), $"{name} is per instance, yet BitSplitterParams carries it.");
+            Assert.DoesNotContain(name, carried, $"{name} is per instance, yet BitSplitterParams carries it.");
         }
     }
 
@@ -191,8 +191,8 @@ public class BitSplitterParamsTests : BunitTestContext
 
         var component = RenderWithParams(new BitSplitterParams { GutterTemplate = template });
 
-        Assert.AreEqual(1, component.FindAll(".bit-spl-gtr .cascaded-grip").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-spl-gti").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-gtr .cascaded-grip"));
+        Assert.IsEmpty(component.FindAll(".bit-spl-gti"));
     }
 
     [TestMethod]
@@ -398,8 +398,8 @@ public class BitSplitterParamsTests : BunitTestContext
         Assert.AreEqual("bit-spl", root.ClassName);
         Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
         Assert.AreEqual("0", component.Find(".bit-spl-gtr").GetAttribute("tabindex"));
-        Assert.AreEqual(1, component.FindAll(".bit-spl-gti").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-spl-gti"));
+        Assert.IsEmpty(component.FindAll(".bit-spl-cbt"));
     }
 
     [TestMethod]

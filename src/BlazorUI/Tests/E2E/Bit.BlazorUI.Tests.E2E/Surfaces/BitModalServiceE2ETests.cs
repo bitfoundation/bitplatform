@@ -129,7 +129,7 @@ public class BitModalServiceE2ETests : E2ETestBase
 
         await Expect(Modal("basic")).ToHaveCountAsync(0);
         var classes = await Page.EvaluateAsync<string[]>("() => window.__e2eClasses");
-        Assert.IsTrue(classes.Any(c => Regex.IsMatch(c, @"(^|\s)bit-mdl-lvg(\s|$)")), string.Join(" | ", classes));
+        Assert.Contains(c => Regex.IsMatch(c, @"(^|\s)bit-mdl-lvg(\s|$)"), classes, string.Join(" | ", classes));
     }
 
     [TestMethod]

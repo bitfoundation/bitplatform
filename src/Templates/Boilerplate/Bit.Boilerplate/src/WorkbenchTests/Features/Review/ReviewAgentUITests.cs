@@ -217,20 +217,20 @@ public class ReviewAgentUITests : ReviewPageTest
 
         var answer = Unique("Answered over HTTP");
 
-        (await client.PostAsJsonAsync($"api/review/{id}/status", new { status = "working", agent = "Http Agent" })).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync($"api/review/{id}/status", new { status = "working", agent = "Http Agent" }, cancellationToken: TestContext.CancellationToken)).EnsureSuccessStatusCode();
 
         await Expect(ThreadWith(text).Locator(".thread-status")).ToHaveTextAsync(WorkbenchStrings.ReviewStatusWorking);
         await Expect(AgentLine).ToContainTextAsync("Http Agent");
 
-        (await client.PutAsJsonAsync($"api/review/{id}/tasks", new { tasks = new[] { new { text = "Read it", done = true }, new { text = "Answer it", done = false } }, agent = "Http Agent" })).EnsureSuccessStatusCode();
+        (await client.PutAsJsonAsync($"api/review/{id}/tasks", new { tasks = new[] { new { text = "Read it", done = true }, new { text = "Answer it", done = false } }, agent = "Http Agent" }, cancellationToken: TestContext.CancellationToken)).EnsureSuccessStatusCode();
 
         await Expect(PlanOf(text).Locator("li.done")).ToHaveTextAsync(["Read it"]);
 
-        (await client.PostAsJsonAsync($"api/review/{id}/reply", new { text = answer, agent = "Http Agent" })).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync($"api/review/{id}/reply", new { text = answer, agent = "Http Agent" }, cancellationToken: TestContext.CancellationToken)).EnsureSuccessStatusCode();
 
         await Expect(ThreadWith(text).Locator(".message.from-agent")).ToContainTextAsync(answer);
 
-        (await client.PostAsJsonAsync("api/review/pages/shifts/status", new { status = "inreview", agent = "Http Agent" })).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync("api/review/pages/shifts/status", new { status = "inreview", agent = "Http Agent" }, cancellationToken: TestContext.CancellationToken)).EnsureSuccessStatusCode();
 
         await Expect(ToolsButton(WorkbenchStrings.PageStatusInReview)).ToHaveAttributeAsync("aria-pressed", "true");
         await ExpectNoReload();

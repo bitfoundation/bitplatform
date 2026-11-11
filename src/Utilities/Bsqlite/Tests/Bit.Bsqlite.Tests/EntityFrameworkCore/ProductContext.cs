@@ -3,7 +3,7 @@
 namespace Bit.Bsqlite.EntityFrameworkCore.Tests;
 
 /// <summary>Exercises decimal, navigations, and indexes - the mappings that depend on the UDF host.</summary>
-public sealed class ProductContext(DbContextOptions<ProductContext> options) : DbContext(options)
+internal sealed class ProductContext(DbContextOptions<ProductContext> options) : DbContext(options)
 {
     public DbSet<Category> Categories => Set<Category>();
 
@@ -31,7 +31,7 @@ public sealed class ProductContext(DbContextOptions<ProductContext> options) : D
     }
 }
 
-public sealed class Category
+internal sealed class Category
 {
     public int Id { get; set; }
 
@@ -40,7 +40,7 @@ public sealed class Category
     public List<Product> Products { get; } = [];
 }
 
-public sealed class Product
+internal sealed class Product
 {
     public int Id { get; set; }
 

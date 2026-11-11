@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace Boilerplate.LandingPage.Tests.Infrastructure;
 
-public sealed class FakeAppStore : HttpMessageHandler
+internal sealed class FakeAppStore : HttpMessageHandler
 {
     public ConcurrentQueue<Uri> Requests { get; } = new();
 

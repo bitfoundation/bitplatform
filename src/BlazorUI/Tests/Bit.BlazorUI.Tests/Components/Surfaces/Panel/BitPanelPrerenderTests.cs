@@ -24,14 +24,14 @@ public class BitPanelPrerenderTests
             [nameof(BitPanel.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Hello")),
         });
 
-        StringAssert.Contains(html, "bit-pnl-opn");
-        StringAssert.Contains(html, "bit-pnl-ovl-opn");
-        StringAssert.Contains(html, "Settings");
-        StringAssert.Contains(html, "Hello");
-        StringAssert.Contains(html, "bit-pnl-cls");
-        StringAssert.Contains(html, "role=\"dialog\"");
-        StringAssert.Contains(html, "aria-modal=\"true\"");
-        Assert.IsFalse(html.Contains("inert"), "An open panel is marked inert on the static page.");
+        Assert.Contains("bit-pnl-opn", html);
+        Assert.Contains("bit-pnl-ovl-opn", html);
+        Assert.Contains("Settings", html);
+        Assert.Contains("Hello", html);
+        Assert.Contains("bit-pnl-cls", html);
+        Assert.Contains("role=\"dialog\"", html);
+        Assert.Contains("aria-modal=\"true\"", html);
+        Assert.DoesNotContain("inert", html, "An open panel is marked inert on the static page.");
     }
 
     [TestMethod]
@@ -44,10 +44,10 @@ public class BitPanelPrerenderTests
 
         // The content goes into the page on the first opening, and a closed panel is kept out of the tab order and
         // the reading order of the static page the same way it is on the interactive one.
-        StringAssert.Contains(html, "inert");
-        StringAssert.Contains(html, "bit-pnl-ovl");
-        Assert.IsFalse(html.Contains("Hello"));
-        Assert.IsFalse(html.Contains("bit-pnl-opn"));
+        Assert.Contains("inert", html);
+        Assert.Contains("bit-pnl-ovl", html);
+        Assert.DoesNotContain("Hello", html);
+        Assert.DoesNotContain("bit-pnl-opn", html);
     }
 
     [TestMethod]
@@ -67,7 +67,7 @@ public class BitPanelPrerenderTests
             }),
         });
 
-        StringAssert.Contains(html, "bit-pnl-top");
-        StringAssert.Contains(html, "aria-label=\"Dismiss\"");
+        Assert.Contains("bit-pnl-top", html);
+        Assert.Contains("aria-label=\"Dismiss\"", html);
     }
 }

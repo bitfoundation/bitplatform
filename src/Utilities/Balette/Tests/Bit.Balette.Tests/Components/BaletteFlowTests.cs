@@ -204,7 +204,7 @@ public class BaletteFlowTests : BunitContext
         // Esc and Ctrl+K inside the toast's close delay: the close it scheduled belongs to the palette that was dismissed.
         await cut.InvokeAsync(() => _service.CloseAsync());
         await cut.InvokeAsync(() => _service.OpenAsync());
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsTrue(_service.IsOpen);
         Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
@@ -226,7 +226,7 @@ public class BaletteFlowTests : BunitContext
         cut.WaitForAssertion(() => Assert.Contains("Renamed", cut.Find("[data-balette=toast]").TextContent));
 
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsFalse(_service.IsOpen);
         Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
@@ -249,7 +249,7 @@ public class BaletteFlowTests : BunitContext
 
         // Its close would change nothing, so Esc does what it always does there: back to the page the prompt came from.
         await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsEmpty(cut.FindAll("[data-balette=prompt]"));
         Assert.ContainsSingle(cut.FindAll("[data-balette=item]"));
@@ -268,7 +268,7 @@ public class BaletteFlowTests : BunitContext
         cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
 
         await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("cop"));
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsTrue(_service.IsOpen);
         Assert.AreEqual("cop", cut.Find("[data-balette=input]").GetAttribute("value"));
@@ -290,7 +290,7 @@ public class BaletteFlowTests : BunitContext
 
         // A click runs no key handler: the command itself is what calls the close off.
         cut.FindAll("[data-balette=item]").Single(i => i.TextContent.Contains("Reset counter")).Click();
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsTrue(_service.IsOpen);
         Assert.ContainsSingle(cut.FindAll("[data-confirming=true]"));
@@ -298,6 +298,7 @@ public class BaletteFlowTests : BunitContext
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "Intentionally holds the renderer while its real delay expires to reproduce the event-ordering race.")]
     public async Task A_toast_does_not_close_the_palette_after_a_key_that_reached_the_renderer_as_its_delay_ran_out()
     {
         _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
@@ -316,7 +317,7 @@ public class BaletteFlowTests : BunitContext
             Thread.Sleep(200);
             return cut.Instance.OnKeyDown("ArrowDown", false, false, false, false);
         });
-        await run.WaitAsync(CalledOff);
+        await run.WaitAsync(CalledOff, TestContext.CancellationToken);
 
         Assert.IsTrue(_service.IsOpen);
         Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
@@ -335,7 +336,7 @@ public class BaletteFlowTests : BunitContext
 
         Assert.AreEqual(2, toggled);
         Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
-        Assert.IsFalse(_jsHandle.Invocations.Any(i => i.Identifier == "focusInput"), "The input only exists while the palette is open.");
+        Assert.DoesNotContain(i => i.Identifier == "focusInput", _jsHandle.Invocations, "The input only exists while the palette is open.");
     }
 
     [TestMethod]
@@ -349,4 +350,6 @@ public class BaletteFlowTests : BunitContext
         cut.WaitForAssertion(() => Assert.AreEqual(1, raised));
         Assert.IsFalse(_service.IsMac);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -45,7 +45,7 @@ public class McpDocumentLabTests
         Assert.AreEqual(1, Count(report.BrushKinds, BinkPenBrush.KindName));
         Assert.AreEqual(1, Count(report.BrushKinds, BinkHighlighterBrush.KindName));
         Assert.AreEqual(2, Count(report.PointEncodings, "json"));
-        Assert.HasCount(1, report.Layers!);
+        Assert.ContainsSingle(report.Layers!);
         Assert.IsTrue(report.RoundTripStable);
         Assert.IsLessThan(report.ReadableBytes!.Value, report.CompactBytes!.Value, "Binary points should be smaller than readable JSON points.");
     }
@@ -59,7 +59,7 @@ public class McpDocumentLabTests
         Assert.AreEqual(1, report.Png.SkippedTextElements);
         Assert.AreEqual(320, report.Png.Width);
         Assert.AreEqual(200, report.Png.Height);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("TextRasterizer", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("TextRasterizer", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class McpDocumentLabTests
 
         Assert.IsTrue(report.Valid);
         Assert.AreEqual(1, Count(report.BrushKinds, "crayon"));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'crayon' is not registered", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'crayon' is not registered", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class McpDocumentLabTests
         Assert.IsTrue(report.Valid);
         Assert.AreEqual(1, Count(report.Elements, "Unknown (sticker)"));
         Assert.IsTrue(report.RoundTripStable);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'sticker'", StringComparison.Ordinal) && note.Contains("BinkUnknownElement", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("'sticker'", StringComparison.Ordinal) && note.Contains("BinkUnknownElement", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -136,8 +136,8 @@ public class McpDocumentLabTests
 
         var report = await InspectAsync(BinkSerializer.Serialize(document));
 
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("outside the 200 x 100 page", StringComparison.Ordinal)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("'Notes'", StringComparison.Ordinal) && note.Contains("IncludeHiddenLayers", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("outside the 200 x 100 page", StringComparison.Ordinal), report.Notes);
+        Assert.Contains(note => note.Contains("'Notes'", StringComparison.Ordinal) && note.Contains("IncludeHiddenLayers", StringComparison.Ordinal), report.Notes);
         Assert.IsFalse(report.Layers!.Single(layer => layer.Name == "Notes").Visible);
     }
 
@@ -163,7 +163,7 @@ public class McpDocumentLabTests
         var report = await InspectAsync(huge);
 
         Assert.IsFalse(report.Valid);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("2097152 bytes", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("2097152 bytes", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -178,7 +178,7 @@ public class McpDocumentLabTests
 
         Assert.IsTrue(report.Valid);
         Assert.IsNull(report.Png);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("could not render", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("could not render", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -195,7 +195,7 @@ public class McpDocumentLabTests
         Assert.IsTrue(report.Valid);
         Assert.IsLessThanOrEqualTo(BinkDocumentLab.MaxSvgLength, report.Svg!.Length);
         Assert.StartsWith(report.Svg, BinkSvgExporter.Export(BinkSerializer.Deserialize(json)));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains($"longer than {BinkDocumentLab.MaxSvgLength} characters", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains($"longer than {BinkDocumentLab.MaxSvgLength} characters", StringComparison.Ordinal), report.Notes);
     }
 
     internal static Task<BinkDocumentReportDto> InspectAsync(string? json, bool includeSvg = false, string? region = null)

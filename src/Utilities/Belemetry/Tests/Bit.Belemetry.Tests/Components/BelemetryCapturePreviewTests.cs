@@ -50,10 +50,10 @@ public class BelemetryCapturePreviewTests
         var preview = context.Render<BelemetryCapturePreview>(p => p.Add(c => c.Capture, capture));
 
         // "in <the component the first application frame names>": here, this test class.
-        StringAssert.StartsWith(preview.Find(".bit-belemetry-preview-title").TextContent, "InvalidOperationException in BelemetryCapturePreviewTests");
+        Assert.StartsWith("InvalidOperationException in BelemetryCapturePreviewTests", preview.Find(".bit-belemetry-preview-title").TextContent);
         Assert.DoesNotContain("<script>", preview.Markup, "Every value is rendered as text.");
         Assert.HasCount(2, preview.FindAll(".bit-belemetry-preview-events tbody tr"));
-        Assert.IsTrue(preview.FindAll(".bit-belemetry-preview-section input").Any(i => i.HasAttribute("disabled")), "A section that was not requested cannot be ticked.");
+        Assert.Contains(i => i.HasAttribute("disabled"), preview.FindAll(".bit-belemetry-preview-section input"), "A section that was not requested cannot be ticked.");
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class BelemetryCapturePreviewTests
             .Add(c => c.OnCancelled, () => cancelled = true));
 
         preview.FindAll(".bit-belemetry-preview-remove")[0].Click();
-        Assert.HasCount(1, capture.Events);
+        Assert.ContainsSingle(capture.Events);
 
         var release = preview.FindAll(".bit-belemetry-preview-section input")[0];
         release.Change(false);
@@ -113,11 +113,13 @@ public class BelemetryCapturePreviewTests
     {
         await using var context = new BunitContext();
         context.Services.AddBitBelemetryServices(TestHost.ApplyTestDefaults);
-        var capture = await context.Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync();
+        var capture = await context.Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync(cancellationToken: TestContext.CancellationToken);
 
         var preview = context.Render<BelemetryCapturePreview>(p => p.Add(c => c.Capture, capture));
 
-        StringAssert.Contains(preview.Find("[role=alert]").TextContent, "not enabled");
+        Assert.Contains("not enabled", preview.Find("[role=alert]").TextContent);
         Assert.IsEmpty(preview.FindAll(".bit-belemetry-preview-confirm"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

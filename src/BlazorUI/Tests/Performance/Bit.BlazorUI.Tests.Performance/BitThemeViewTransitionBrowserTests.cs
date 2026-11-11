@@ -314,7 +314,7 @@ public class BitThemeViewTransitionBrowserTests : PerformanceTestBase
     private static void AssertSkipped(JsonElement settled, params int[] expected)
     {
         var skipped = settled.GetProperty("skipped").EnumerateArray().Select(i => i.GetInt32()).ToArray();
-        CollectionAssert.AreEqual(expected, skipped, "The library should skip exactly the transitions a direct write superseded.");
+        Assert.AreSequenceEqual(expected, skipped, "The library should skip exactly the transitions a direct write superseded.");
     }
 
     private async Task SetUp(string theme)

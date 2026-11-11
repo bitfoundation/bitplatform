@@ -95,7 +95,7 @@ public class BitAssetVersionTests : BunitTestContext
         state.TriggerOnPersisting();
 
         Assert.IsTrue(state.TryTake<Dictionary<string, string>>(StateKey, out var persisted));
-        Assert.AreEqual(2, persisted!.Count);
+        Assert.HasCount(2, persisted!);
         Assert.AreEqual(Href(link), persisted[CssPath]);
         Assert.AreEqual(Src(script), persisted[JsPath]);
     }

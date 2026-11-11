@@ -51,7 +51,7 @@ public class DataMatrixDecoderTests
         {
             var result = reader.Decode(binary, options);
 
-            Assert.IsTrue(result is not null, $"{version} at {scale} px/module did not decode (TryHarder: {options.TryHarder}).");
+            Assert.IsNotNull(result, $"{version} at {scale} px/module did not decode (TryHarder: {options.TryHarder}).");
             Assert.AreEqual(content, result.Payload.Text);
             Assert.AreEqual(version.ToString(), result.Payload.SymbolVersion);
         }
@@ -109,7 +109,7 @@ public class DataMatrixDecoderTests
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
         Assert.AreEqual(BbBarcodeFormat.DataMatrix, result.Format);
-        Assert.AreEqual(4, result.Points.Length);
+        Assert.HasCount(4, result.Points);
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class DataMatrixDecoderTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Text);
-        Assert.IsTrue(result.ErrorsCorrected > 0);
+        Assert.IsGreaterThan(0, result.ErrorsCorrected);
     }
 
     [TestMethod]

@@ -29,8 +29,8 @@ public class BitSwipeTrapParamsTests : BunitTestContext
     [TestMethod]
     public void BitSwipeTrapParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSwipeTrap)}", BitSwipeTrapParams.ParamName);
-        Assert.AreEqual("BitParams.BitSwipeTrap", BitSwipeTrapParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSwipeTrap)}", new BitSwipeTrapParams().Name);
+        Assert.AreEqual("BitParams.BitSwipeTrap", new BitSwipeTrapParams().Name);
     }
 
     [TestMethod]
@@ -79,9 +79,9 @@ public class BitSwipeTrapParamsTests : BunitTestContext
         Assert.AreEqual(0m, setup.Arguments[4]);
         Assert.AreEqual(0, setup.Arguments[5]);
         Assert.AreEqual(BitSwipeOrientation.None, setup.Arguments[6]);
-        Assert.AreEqual(false, setup.Arguments[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[7]));
         Assert.IsNull(setup.Arguments[8]);
-        Assert.AreEqual(false, setup.Arguments[9]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[9]));
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class BitSwipeTrapParamsTests : BunitTestContext
 
         var traps = component.FindAll(".bit-stp");
 
-        Assert.AreEqual(2, traps.Count);
+        Assert.HasCount(2, traps);
 
         // The first trap takes everything from the cascading parameters.
         var first = traps[0];
@@ -133,7 +133,7 @@ public class BitSwipeTrapParamsTests : BunitTestContext
         Assert.IsFalse(second.HasAttribute("tabindex"));
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SwipeTrap.setup").ToList();
-        Assert.AreEqual(2, setups.Count);
+        Assert.HasCount(2, setups);
 
         // trigger, triggerVelocity, threshold, throttle, orientationLock, touchOnly, skipSelector, keyboardTrigger
         var cascaded = setups[0].Arguments;
@@ -142,16 +142,16 @@ public class BitSwipeTrapParamsTests : BunitTestContext
         Assert.AreEqual(10m, cascaded[4]);
         Assert.AreEqual(20, cascaded[5]);
         Assert.AreEqual(BitSwipeOrientation.Horizontal, cascaded[6]);
-        Assert.AreEqual(true, cascaded[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(cascaded[7]));
         Assert.AreEqual(".no-swipe", cascaded[8]);
-        Assert.AreEqual(true, cascaded[9]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(cascaded[9]));
 
         var own = setups[1].Arguments;
         Assert.AreEqual(0.5m, own[2]);
         Assert.AreEqual(0.5m, own[3]);
         Assert.AreEqual(10m, own[4]);
         Assert.AreEqual(BitSwipeOrientation.Vertical, own[6]);
-        Assert.AreEqual(false, own[7]);
-        Assert.AreEqual(false, own[9]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(own[7]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(own[9]));
     }
 }

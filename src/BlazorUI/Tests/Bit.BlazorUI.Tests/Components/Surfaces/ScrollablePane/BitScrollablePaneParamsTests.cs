@@ -33,8 +33,8 @@ public class BitScrollablePaneParamsTests : BunitTestContext
     {
         var @params = new BitScrollablePaneParams();
 
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitScrollablePane)}", BitScrollablePaneParams.ParamName);
-        Assert.AreEqual("BitParams.BitScrollablePane", BitScrollablePaneParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitScrollablePane)}", new BitScrollablePaneParams().Name);
+        Assert.AreEqual("BitParams.BitScrollablePane", new BitScrollablePaneParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitScrollablePaneParams.ParamName, @params.Name);
     }
@@ -55,7 +55,7 @@ public class BitScrollablePaneParamsTests : BunitTestContext
                                                .Where(n => typeof(BitScrollablePaneParams).GetProperty(n) is null)
                                                .ToList();
 
-        CollectionAssert.AreEqual(new List<string>(), missing, string.Join(", ", missing));
+        Assert.AreSequenceEqual(new List<string>(), missing, string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -129,14 +129,14 @@ public class BitScrollablePaneParamsTests : BunitTestContext
         var root = component.Find(".bit-scp");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "height:10rem");
-        StringAssert.Contains(style, "max-width:30rem");
-        StringAssert.Contains(style, "overflow-x:auto");
-        StringAssert.Contains(style, "overscroll-behavior:contain");
-        StringAssert.Contains(style, "scrollbar-gutter:stable");
-        StringAssert.Contains(style, "scroll-padding:1rem");
-        StringAssert.Contains(style, "scroll-snap-type:both proximity");
-        StringAssert.Contains(style, "--bit-scp-fsz:3rem");
+        Assert.Contains("height:10rem", style);
+        Assert.Contains("max-width:30rem", style);
+        Assert.Contains("overflow-x:auto", style);
+        Assert.Contains("overscroll-behavior:contain", style);
+        Assert.Contains("scrollbar-gutter:stable", style);
+        Assert.Contains("scroll-padding:1rem", style);
+        Assert.Contains("scroll-snap-type:both proximity", style);
+        Assert.Contains("--bit-scp-fsz:3rem", style);
 
         foreach (var cls in new[] { "bit-scp-hor", "bit-scp-sna-cnt", "bit-scp-sns", "bit-scp-eop", "bit-scp-mod", "bit-scp-ahs", "bit-scp-smt", "cascaded" })
         {
@@ -194,8 +194,8 @@ public class BitScrollablePaneParamsTests : BunitTestContext
 
         var root = component.Find(".bit-scp");
 
-        StringAssert.Contains(root.GetAttribute("style"), "height:5rem");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("height:10rem"));
+        Assert.Contains("height:5rem", root.GetAttribute("style")!);
+        Assert.DoesNotContain("height:10rem", root.GetAttribute("style")!);
         Assert.IsFalse(root.ClassList.Contains("bit-scp-mod"));
         Assert.AreEqual("group", root.GetAttribute("role"));
     }
@@ -221,21 +221,21 @@ public class BitScrollablePaneParamsTests : BunitTestContext
 
         var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == SetupFn).ToArray();
 
-        Assert.AreEqual(1, setups.Length);
+        Assert.ContainsSingle(setups);
 
         var options = setups[0].Arguments[3]!;
 
-        Assert.AreEqual(true, Option(options, "Fade"));
-        Assert.AreEqual(true, Option(options, "Drag"));
-        Assert.AreEqual(true, Option(options, "Momentum"));
-        Assert.AreEqual(true, Option(options, "Wheel"));
-        Assert.AreEqual(true, Option(options, "Preserve"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "Fade")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "Drag")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "Momentum")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "Wheel")));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "Preserve")));
         Assert.AreEqual(120, Option(options, "Offset"));
         Assert.AreEqual(50, Option(options, "Throttle"));
         Assert.AreEqual(16, Option(options, "AutoScrollThreshold"));
-        Assert.AreEqual(true, Option(options, "AutoHide"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "AutoHide")));
         Assert.AreEqual(300, Option(options, "AutoHideDelay"));
-        Assert.AreEqual(true, Option(options, "NoScroll"));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(Option(options, "NoScroll")));
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public class BitScrollablePaneParamsTests : BunitTestContext
     {
         RenderInParams(new BitScrollablePaneParams { AutoScroll = true });
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.ScrollablePane.autoScroll", Context.JSInterop.Invocations);
     }
 
     [TestMethod]

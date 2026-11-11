@@ -2,7 +2,7 @@
 
 namespace Bit.Borm.Tests;
 
-public class UploadModel
+internal class UploadModel
 {
     public string Name { get; set; } = "";
     public IBrowserFile? Resume { get; set; }
@@ -97,7 +97,9 @@ public class BatchUpdateTests
     {
         var (state, notifications) = Count(s => s.SetValues(new Dictionary<string, object?>
         {
-            ["a"] = "1", ["b"] = "2", ["c"] = "3"
+            ["a"] = "1",
+            ["b"] = "2",
+            ["c"] = "3"
         }));
 
         Assert.AreEqual(1, notifications);

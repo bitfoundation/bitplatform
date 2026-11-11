@@ -23,15 +23,15 @@ public class BitNumberFieldPrerenderTests
             [nameof(BitNumberField<int>.Max)] = "99",
         });
 
-        StringAssert.Contains(html, "bit-nfl");
-        StringAssert.Contains(html, "role=\"spinbutton\"");
-        StringAssert.Contains(html, "value=\"42\"");
-        StringAssert.Contains(html, "aria-valuenow=\"42\"");
-        StringAssert.Contains(html, "aria-valuemin=\"1\"");
-        StringAssert.Contains(html, "aria-valuemax=\"99\"");
-        StringAssert.Contains(html, "Quantity");
-        StringAssert.Contains(html, "bit-nfl-aup");
-        StringAssert.Contains(html, "bit-nfl-adn");
+        Assert.Contains("bit-nfl", html);
+        Assert.Contains("role=\"spinbutton\"", html);
+        Assert.Contains("value=\"42\"", html);
+        Assert.Contains("aria-valuenow=\"42\"", html);
+        Assert.Contains("aria-valuemin=\"1\"", html);
+        Assert.Contains("aria-valuemax=\"99\"", html);
+        Assert.Contains("Quantity", html);
+        Assert.Contains("bit-nfl-aup", html);
+        Assert.Contains("bit-nfl-adn", html);
     }
 
     [TestMethod]
@@ -44,6 +44,6 @@ public class BitNumberFieldPrerenderTests
             [nameof(BitNumberField<double>.Culture)] = System.Globalization.CultureInfo.GetCultureInfo("de-DE"),
         });
 
-        StringAssert.Contains(html, "value=\"1.234,5\"");
+        Assert.Contains("value=\"1.234,5\"", html);
     }
 }

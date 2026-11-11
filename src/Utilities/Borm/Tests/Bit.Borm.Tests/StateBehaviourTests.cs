@@ -421,7 +421,7 @@ public class OptionsProviderTests
         var form = BormBuilder.Create().Select("size", f => f.Options(("s", "Small"), ("l", "Large"))).Build();
         var state = new BormState(form, new BormDictionaryDataAccessor());
 
-        Assert.AreEqual(2, state.OptionsFor(form.FindField("size")!, "size").Count);
+        Assert.HasCount(2, state.OptionsFor(form.FindField("size")!, "size"));
     }
 }
 
@@ -444,7 +444,7 @@ public class WizardTests
     {
         var state = new BormState(ThreeSteps(), new BormModelDataAccessor(new SignupModel()));
 
-        Assert.AreEqual(2, state.VisibleSteps.Count);
+        Assert.HasCount(2, state.VisibleSteps);
         Assert.AreEqual(1, state.CurrentStepNumber);
 
         state.GoToStep("done");

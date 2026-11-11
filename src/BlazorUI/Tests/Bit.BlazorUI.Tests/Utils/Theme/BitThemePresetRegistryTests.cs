@@ -58,7 +58,7 @@ public sealed class BitThemePresetRegistryTests
 
         Assert.IsTrue(map.ContainsKey("acme-live-view-light"));
         Assert.AreEqual("#FEFEFE", map["acme-live-view-light"]);
-        CollectionAssert.Contains(map.Keys.ToArray(), "acme-live-view-light");
+        Assert.Contains("acme-live-view-light", map.Keys.ToArray());
     }
 
     [TestMethod]
@@ -78,7 +78,7 @@ public sealed class BitThemePresetRegistryTests
         BitThemePresetRegistry.Register(new BitThemePreset { Name = "acme-replaced-dark", BackgroundPrimary = "#222222" });
 
         Assert.AreEqual("#222222", BitThemeSurfaces.BackgroundPrimary["acme-replaced-dark"]);
-        Assert.AreEqual(1, BitThemePresetRegistry.All.Count(preset => preset.Name == "acme-replaced-dark"));
+        Assert.ContainsSingle(preset => preset.Name == "acme-replaced-dark", BitThemePresetRegistry.All);
     }
 
     [TestMethod]
@@ -204,10 +204,9 @@ public sealed class BitThemePresetRegistryTests
         Assert.ThrowsExactly<ArgumentNullException>(() => map.ContainsKey(null!));
         Assert.ThrowsExactly<ArgumentNullException>(() => map[null!]);
 
-        Assert.AreEqual(map.Count, map.Keys.Count());
+        Assert.HasCount(map.Count, map.Keys);
         Assert.IsTrue(map.Keys.All(map.ContainsKey));
-        CollectionAssert.AreEqual(map.Keys.OrderBy(key => key, StringComparer.Ordinal).ToArray(), map.Keys.ToArray(),
-            "Enumerated in key order, which is what lets BitThemeHead emit the same script on every render without sorting.");
+        Assert.AreSequenceEqual(map.Keys.OrderBy(key => key, StringComparer.Ordinal).ToArray(), map.Keys.ToArray(), "Enumerated in key order, which is what lets BitThemeHead emit the same script on every render without sorting.");
 
         // The looser spelling is the registry's to answer.
         Assert.IsTrue(BitThemePresetRegistry.Contains(" Dark "));
@@ -254,14 +253,14 @@ public sealed class BitThemePresetRegistryTests
         // older LangVersion is handed CS9202 for one. BitExtraThemePresets / BitExtraThemeName / BitExtraThemeSurfaces are
         // what those consumers name, so they have to say exactly what the extension members say - and
         // BitExtraThemePresets has to stay const, which is the other thing a property cannot be.
-        Assert.AreEqual(BitThemePresets.MaterialDark, BitExtraThemePresets.MaterialDark);
+        Assert.AreEqual(BitExtraThemePresets.MaterialDark, BitThemePresets.MaterialDark);
         Assert.AreEqual(BitThemeName.MaterialDark, BitExtraThemeName.MaterialDark);
         Assert.AreEqual(BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark], BitExtraThemeSurfaces.BackgroundPrimary[BitExtraThemePresets.MaterialDark]);
         Assert.AreEqual(BitThemeSurfaces.BackgroundSecondary[BitThemePresets.MaterialDark], BitExtraThemeSurfaces.BackgroundSecondary[BitExtraThemePresets.MaterialDark]);
 
         // const, not static readonly: a case label is the use the extension members cannot serve.
         const string materialDark = BitExtraThemePresets.MaterialDark;
-        Assert.AreEqual("material-dark", materialDark);
+        Assert.AreEqual(materialDark, BitExtraThemeName.MaterialDark.Value);
     }
 
     [TestMethod]
@@ -272,7 +271,7 @@ public sealed class BitThemePresetRegistryTests
         BitExtraThemeRegistration.Register();
         BitExtraThemeRegistration.Register();
 
-        Assert.AreEqual(1, BitThemePresetRegistry.All.Count(preset => preset.Name == BitThemePresets.MaterialDark));
+        Assert.ContainsSingle(preset => preset.Name == BitThemePresets.MaterialDark, BitThemePresetRegistry.All);
         Assert.AreEqual("#0C131B", BitThemeSurfaces.BackgroundPrimary[BitThemePresets.MaterialDark]);
     }
 }

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -48,7 +48,7 @@ public class DxTests
         await cut.InvokeAsync(() =>
             cut.Instance.AnimateAsync(Bm.To(opacity: 0.5, backgroundColor: "#ff0000"), Bm.Tween(0.5), cts.Token).AsTask());
 
-        Assert.AreEqual(callsBefore, ctx.Interop.Calls.Count, "a pre-cancelled token must not reach the bridge at all");
+        Assert.HasCount(callsBefore, ctx.Interop.Calls, "a pre-cancelled token must not reach the bridge at all");
         var el = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box");
         Assert.IsFalse(el.HasActiveAnimations, "a pre-cancelled token must not start a driver");
         Assert.IsFalse(el.NumericValues.ContainsKey("opacity"));
@@ -64,19 +64,17 @@ public class DxTests
             .Add(p => p.ChildContent, Div));
 
         // Two independent animations on the same element, both played by the browser.
-        await cut.InvokeAsync(() => cut.Instance.AnimateAsync(Bm.To(color: "#00ff00"), Bm.Tween(1)).AsTask());
+        await cut.InvokeAsync(() => cut.Instance.AnimateAsync(Bm.To(color: "#00ff00"), Bm.Tween(1), TestContext.CancellationToken).AsTask());
         using var cts = new CancellationTokenSource();
         var cancellable = cut.InvokeAsync(() =>
             cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1), cts.Token).AsTask());
         await cancellable;
-        CollectionAssert.AreEquivalent(new[] { "color", "backgroundColor" },
-            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "color", "backgroundColor" }, ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         cts.Cancel();
 
         // The cancellation stops just the properties that call animated, not the whole element.
-        CollectionAssert.AreEquivalent(new[] { "color" },
-            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "color" }, ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -98,4 +96,6 @@ public class DxTests
         Assert.AreEqual("0.5", keyframes[^1]["opacity"]);
         Assert.AreEqual(500.0, (double)((Dictionary<string, object?>)play[3]!)["duration"]!, 1e-9);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

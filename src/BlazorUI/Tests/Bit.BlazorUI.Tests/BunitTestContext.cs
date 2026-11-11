@@ -4,6 +4,8 @@ using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.BlazorUI.Tests;
 
 public abstract class BunitTestContext : IDisposable

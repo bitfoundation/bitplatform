@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Bit.Butil.Tests.E2E.Infrastructure;
 
@@ -8,7 +8,7 @@ namespace Bit.Butil.Tests.E2E.Infrastructure;
 /// with <c>--remote-debugging-port</c>, and Playwright attaches to it like to any Chromium: the page it drives is
 /// the one inside the app window, running the real hybrid renderer and <c>WebViewJSRuntime</c>.
 /// </summary>
-public sealed class HybridHarnessHost : IAsyncDisposable
+internal sealed class HybridHarnessHost : IAsyncDisposable
 {
     /// <summary>The origin BlazorWebView serves the app from.</summary>
     public const string AppOrigin = "https://0.0.0.1";

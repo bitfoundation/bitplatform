@@ -1,10 +1,10 @@
-using Bit.Blex.Testing;
+﻿using Bit.Blex.Testing;
 
 namespace Bit.Blex.Tests;
 
 /// <summary>A store whose actions are transactions: a throw puts every field back.</summary>
 [BlexStoreAttribute(Name = "ledger", RollbackOnError = true)]
-public partial class LedgerStore
+internal partial class LedgerStore
 {
     [BlexStateAttribute] private int _balance = 100;
     [BlexStateAttribute] private string? _lastEntry;
@@ -53,7 +53,7 @@ public partial class LedgerStore
 
 /// <summary>The same shape without the opt-in: a throwing action keeps what it changed, like any C# method.</summary>
 [BlexStoreAttribute(Name = "loose")]
-public partial class LooseLedgerStore
+internal partial class LooseLedgerStore
 {
     [BlexStateAttribute] private int _balance = 100;
 

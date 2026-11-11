@@ -29,16 +29,16 @@ public class BitChartE2ETests : E2ETestBase
         // The first four are Sales (10, 20, 30, 40): left to right, each step the same height taller.
         for (var i = 1; i < 4; i++)
         {
-            Assert.IsTrue(boxes[i].X > boxes[i - 1].X);
+            Assert.IsGreaterThan(boxes[i - 1].X, boxes[i].X);
             Assert.AreEqual(boxes[1].H - boxes[0].H, boxes[i].H - boxes[i - 1].H, 0.5, $"step {i}");
         }
-        Assert.IsTrue(boxes[3].H > boxes[0].H * 3);
+        Assert.IsGreaterThan(boxes[0].H * 3, boxes[3].H);
         await Expect(rects.Nth(0)).ToHaveAttributeAsync("fill", "rgb(255, 0, 0)");
         await Expect(rects.Nth(4)).ToHaveAttributeAsync("fill", "rgb(0, 0, 255)");
 
         // Grouped: a Costs bar sits right of the Sales bar of its category, and is shorter.
         Assert.IsTrue(boxes[4].X > boxes[0].X && boxes[4].X < boxes[1].X);
-        Assert.IsTrue(boxes[5].H < boxes[1].H);
+        Assert.IsLessThan(boxes[1].H, boxes[5].H);
 
         // The category ticks are drawn as text.
         var texts = await Page.Locator("#cht-bar svg text").AllTextContentsAsync();
@@ -66,7 +66,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var boxes = await RectsAsync("cht-bar-stacked");
-        Assert.AreEqual(8, boxes.Length);
+        Assert.HasCount(8, boxes);
         for (var i = 0; i < 4; i++)
         {
             var sales = boxes[i];
@@ -85,7 +85,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var boxes = await RectsAsync("cht-bar-floating");
-        Assert.AreEqual(2, boxes.Length);
+        Assert.HasCount(2, boxes);
         Assert.AreEqual(2, boxes[1].H / boxes[0].H, 0.05, "5..25 is twice as tall as 10..20.");
         Assert.IsTrue(boxes[1].Y < boxes[0].Y && boxes[1].Y + boxes[1].H > boxes[0].Y + boxes[0].H);
     }
@@ -100,10 +100,10 @@ public class BitChartE2ETests : E2ETestBase
         await Expect(path).ToHaveAttributeAsync("stroke", "rgb(0, 128, 0)");
         await Expect(path).ToHaveAttributeAsync("fill", "none");
         var d = await path.GetAttributeAsync("d");
-        Assert.AreEqual(3, Regex.Matches(d!, "L").Count, d);
+        Assert.HasCount(3, Regex.Matches(d!, "L"), d);
 
         var points = await CirclesAsync("cht-line");
-        Assert.AreEqual(4, points.Length);
+        Assert.HasCount(4, points);
         // 10, 30, 20, 40: the highest value is drawn highest.
         Assert.IsTrue(points[3].Cy < points[1].Cy && points[1].Cy < points[2].Cy && points[2].Cy < points[0].Cy);
         Assert.IsTrue(points.Zip(points.Skip(1)).All(p => p.Second.Cx > p.First.Cx));
@@ -115,7 +115,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var fills = await Page.Locator("#cht-area g.bit-cht-series path").EvaluateAllAsync<string[]>("ps => ps.map(p => p.getAttribute('fill'))");
-        Assert.IsTrue(fills.Any(f => f == "rgba(0, 128, 0, 0.3)"), string.Join(", ", fills));
+        Assert.Contains(f => f == "rgba(0, 128, 0, 0.3)", fills, string.Join(", ", fills));
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var ds = await Elements("cht-doughnut", "path").EvaluateAllAsync<string[]>("ps => ps.map(p => p.getAttribute('d'))");
-        Assert.AreEqual(3, ds.Length);
+        Assert.HasCount(3, ds);
         Assert.IsTrue(ds.All(d => Regex.Matches(d, "A").Count == 2), "Every slice has an outer and an inner arc.");
 
         // The middle of the doughnut is no slice.
@@ -156,7 +156,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var sizes = await Elements("cht-polar", "path").EvaluateAllAsync<double[]>("ps => ps.map(p => { const b = p.getBBox(); return Math.max(b.width, b.height); })");
-        Assert.AreEqual(3, sizes.Length);
+        Assert.HasCount(3, sizes);
         Assert.IsTrue(sizes[0] < sizes[1] && sizes[1] < sizes[2], string.Join(", ", sizes));
     }
 
@@ -177,7 +177,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var points = await CirclesAsync("cht-scatter");
-        Assert.AreEqual(3, points.Length);
+        Assert.HasCount(3, points);
         Assert.IsTrue(points[0].Cx < points[1].Cx && points[1].Cx < points[2].Cx);
         Assert.IsTrue(points[0].Cy > points[1].Cy && points[1].Cy > points[2].Cy);
 
@@ -191,7 +191,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var points = await CirclesAsync("cht-bubble");
-        Assert.AreEqual(3, points.Length);
+        Assert.HasCount(3, points);
         Assert.AreEqual(2, points[1].R / points[0].R, 0.05);
         Assert.AreEqual(2, points[2].R / points[1].R, 0.05);
     }
@@ -213,7 +213,7 @@ public class BitChartE2ETests : E2ETestBase
 
         await Expect(Elements("cht-config", "rect")).ToHaveCountAsync(2);
         var boxes = await RectsAsync("cht-config");
-        Assert.IsTrue(boxes[1].H > boxes[0].H);
+        Assert.IsGreaterThan(boxes[0].H, boxes[1].H);
         await Expect(Page.Locator("#cht-config svg")).ToHaveAttributeAsync("aria-label", "Bar chart with 1 data series.");
     }
 
@@ -279,15 +279,15 @@ public class BitChartE2ETests : E2ETestBase
 
         var right = Page.Locator("#cht-legend-right .bit-cht-lgd");
         await Expect(right).ToHaveClassAsync(HasClass("bit-cht-lgd-v"));
-        Assert.IsTrue((await right.BoundingBoxAsync())!.X > (await Page.Locator("#cht-legend-right .bit-cht-plot").BoundingBoxAsync())!.X);
+        Assert.IsGreaterThan((await Page.Locator("#cht-legend-right .bit-cht-plot").BoundingBoxAsync())!.X, (await right.BoundingBoxAsync())!.X);
 
         var bottom = Page.Locator("#cht-legend-bottom .bit-cht-lgd");
         await Expect(bottom).ToHaveClassAsync(HasClass("bit-cht-lgd-h"));
         var plot = (await Page.Locator("#cht-legend-bottom .bit-cht-plot").BoundingBoxAsync())!;
-        Assert.IsTrue((await bottom.BoundingBoxAsync())!.Y >= plot.Y + plot.Height - 1);
+        Assert.IsGreaterThanOrEqualTo(plot.Y + plot.Height - 1, (await bottom.BoundingBoxAsync())!.Y);
 
         var top = (await Page.Locator("#cht-legend .bit-cht-lgd").BoundingBoxAsync())!;
-        Assert.IsTrue(top.Y < (await Page.Locator("#cht-legend .bit-cht-plot").BoundingBoxAsync())!.Y);
+        Assert.IsLessThan((await Page.Locator("#cht-legend .bit-cht-plot").BoundingBoxAsync())!.Y, top.Y);
     }
 
     [TestMethod]
@@ -491,11 +491,11 @@ public class BitChartE2ETests : E2ETestBase
         await Expect(table).ToHaveCountAsync(1);
         await Expect(table.Locator("caption")).ToHaveTextAsync("Bar chart with 2 data series.");
         var headers = await table.Locator("thead th").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Series", "A", "B", "C", "D" }, headers.ToArray());
+        Assert.AreSequenceEqual(new[] { "Series", "A", "B", "C", "D" }, headers.ToArray());
         var sales = await table.Locator("tbody tr").Nth(0).Locator("th, td").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Sales", "10", "20", "30", "40" }, sales.ToArray());
+        Assert.AreSequenceEqual(new[] { "Sales", "10", "20", "30", "40" }, sales.ToArray());
         var costs = await table.Locator("tbody tr").Nth(1).Locator("th, td").AllTextContentsAsync();
-        CollectionAssert.AreEqual(new[] { "Costs", "5", "15", "25", "35" }, costs.ToArray());
+        Assert.AreSequenceEqual(new[] { "Costs", "5", "15", "25", "35" }, costs.ToArray());
         await Expect(table.Locator("tbody th").First).ToHaveAttributeAsync("scope", "row");
 
         // Visually hidden, yet in the accessibility tree.
@@ -510,8 +510,8 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var bubble = Page.Locator("#cht-table-scatter table");
-        CollectionAssert.AreEqual(new[] { "Series", "X", "Y", "R" }, (await bubble.Locator("thead th").AllTextContentsAsync()).ToArray());
-        CollectionAssert.AreEqual(new[] { "Bubbles", "3", "3", "20" }, (await bubble.Locator("tbody tr").Nth(2).Locator("th, td").AllTextContentsAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Series", "X", "Y", "R" }, (await bubble.Locator("thead th").AllTextContentsAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "Bubbles", "3", "3", "20" }, (await bubble.Locator("tbody tr").Nth(2).Locator("th, td").AllTextContentsAsync()).ToArray());
 
         var truncated = Page.Locator("#cht-table-truncated table");
         await Expect(truncated.Locator("caption")).ToContainTextAsync("Showing the first 1 of 2 rows.");
@@ -538,7 +538,7 @@ public class BitChartE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("-");
         await Expect(Page.Locator("#zoom-count")).ToHaveTextAsync("2");
         var (min2, max2) = Range(await Page.Locator("#zoom-range").InnerTextAsync());
-        Assert.IsTrue(max2 - min2 > max - min);
+        Assert.IsGreaterThan(max - min, max2 - min2);
 
         await Page.Keyboard.PressAsync("+");
         await Page.Keyboard.PressAsync("0");
@@ -581,7 +581,7 @@ public class BitChartE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#zoom-range")).Not.ToHaveTextAsync("10|20");
         var (min, max) = Range(await Page.Locator("#zoom-range").InnerTextAsync());
-        Assert.IsTrue(min > 10, "Dragging to the left shows what is to the right.");
+        Assert.IsGreaterThan(10, min, "Dragging to the left shows what is to the right.");
         Assert.AreEqual(10, max - min, 0.01, "Panning keeps the span.");
 
         await Page.Locator("#btn-zoom-reset").ClickAsync();
@@ -649,7 +649,7 @@ public class BitChartE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var before = await RectsAsync("cht-methods");
-        Assert.IsTrue(before[0].H < before[3].H);
+        Assert.IsLessThan(before[3].H, before[0].H);
         await Page.Locator("#btn-refresh").ClickAsync();
         await Expect(Elements("cht-methods", "rect").First).Not.ToHaveAttributeAsync("height", before[0].H.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));
         var after = await RectsAsync("cht-methods");
@@ -664,8 +664,8 @@ public class BitChartE2ETests : E2ETestBase
         await Page.Locator("#btn-to-csv").ClickAsync();
         await Expect(Page.Locator("#csv")).ToContainTextAsync("Sales");
         var csv = await Page.Locator("#csv").InnerTextAsync();
-        StringAssert.Contains(csv, "Costs");
-        StringAssert.Contains(csv, "35");
+        Assert.Contains("Costs", csv);
+        Assert.Contains("35", csv);
 
         await Page.Locator("#btn-to-svg").ClickAsync();
         await Expect(Page.Locator("#svg-string")).ToHaveTextAsync(new Regex(@"^\d+\|<svg\|True$"));
@@ -748,12 +748,12 @@ public class BitChartE2ETests : E2ETestBase
         await Expect(title).ToHaveCSSAsync("font-weight", "700");
         await Expect(Page.Locator("#cht-title .bit-cht-sub")).ToHaveTextAsync("In thousands");
         var plot = (await Page.Locator("#cht-title .bit-cht-plot").BoundingBoxAsync())!;
-        Assert.IsTrue((await title.BoundingBoxAsync())!.Y < plot.Y);
+        Assert.IsLessThan(plot.Y, (await title.BoundingBoxAsync())!.Y);
 
         var bottom = Page.Locator("#cht-title-bottom .bit-cht-ttl");
         await Expect(bottom).ToHaveTextAsync("Bottom title");
         var bottomPlot = (await Page.Locator("#cht-title-bottom .bit-cht-plot").BoundingBoxAsync())!;
-        Assert.IsTrue((await bottom.BoundingBoxAsync())!.Y > bottomPlot.Y);
+        Assert.IsGreaterThan(bottomPlot.Y, (await bottom.BoundingBoxAsync())!.Y);
     }
 
     [TestMethod]
@@ -763,7 +763,7 @@ public class BitChartE2ETests : E2ETestBase
 
         var root = Page.Locator("#cht-disabled");
         await Expect(root).ToHaveClassAsync(HasClass("bit-dis"));
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#cht-disabled", "opacity"), System.Globalization.CultureInfo.InvariantCulture) < 1);
+        Assert.IsLessThan(1, double.Parse(await ComputedStyleAsync("#cht-disabled", "opacity"), System.Globalization.CultureInfo.InvariantCulture));
         var svg = root.Locator("svg.bit-cht-svg");
         await Expect(svg).ToHaveAttributeAsync("role", "img");
         await Expect(svg).ToHaveAttributeAsync("tabindex", "-1");
@@ -880,8 +880,8 @@ public class BitChartE2ETests : E2ETestBase
             var ltr = await LabelBoxesAsync($"cht-ltr-{kind}");
             var rtl = await LabelBoxesAsync($"cht-rtl-{kind}");
 
-            Assert.IsTrue(ltr.Count(b => b[3] != 0) > 3, $"{kind}: labels start or end at their place");
-            Assert.AreEqual(ltr.Length, rtl.Length, $"{kind}: both draw the same labels");
+            Assert.IsGreaterThan(3, ltr.Count(b => b[3] != 0), $"{kind}: labels start or end at their place");
+            Assert.HasCount(ltr.Length, rtl, $"{kind}: both draw the same labels");
             for (var i = 0; i < ltr.Length; i++)
             {
                 Assert.AreEqual(ltr[i][1], rtl[i][1], 0.5, $"{kind}: label {i} starts at {rtl[i][1]:0.#} rather than {ltr[i][1]:0.#}");
@@ -950,7 +950,7 @@ public class BitChartE2ETests : E2ETestBase
         Assert.AreEqual(0.6, Seconds(await ComputedStyleAsync("#cht-animated g.bit-cht-data", "animation-duration")), 0.001);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
-        Assert.IsTrue(Seconds(await ComputedStyleAsync("#cht-animated g.bit-cht-data", "animation-duration")) < 0.001);
+        Assert.IsLessThan(0.001, Seconds(await ComputedStyleAsync("#cht-animated g.bit-cht-data", "animation-duration")));
         await Expect(Page.Locator("#cht-animated-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         Assert.AreEqual(0.6, Seconds(await ComputedStyleAsync("#cht-animated-forced g.bit-cht-data", "animation-duration")), 0.001);
 
@@ -980,7 +980,7 @@ public class BitChartE2ETests : E2ETestBase
         await Page.Locator("#btn-runtime-data").ClickAsync();
         await Expect(Elements("cht-runtime", "rect")).ToHaveCountAsync(3);
         var boxes = await RectsAsync("cht-runtime");
-        Assert.IsTrue(boxes[0].H > boxes[2].H);
+        Assert.IsGreaterThan(boxes[2].H, boxes[0].H);
 
         await Page.Locator("#btn-runtime-type").ClickAsync();
         await Expect(Elements("cht-runtime", "rect")).ToHaveCountAsync(0);
@@ -995,11 +995,11 @@ public class BitChartE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         var start = html.IndexOf("id=\"cht-bar\"", StringComparison.Ordinal);
-        Assert.IsTrue(start > 0);
+        Assert.IsGreaterThan(0, start);
         var segment = html[start..html.IndexOf("id=\"cht-bar-h\"", StringComparison.Ordinal)];
-        StringAssert.Contains(segment, "<svg");
-        Assert.AreEqual(8, Regex.Matches(segment, "<g class=\"bit-cht-el\"").Count);
-        StringAssert.Contains(segment, "<table");
+        Assert.Contains("<svg", segment);
+        Assert.HasCount(8, Regex.Matches(segment, "<g class=\"bit-cht-el\""));
+        Assert.Contains("<table", segment);
     }
 
     [TestMethod]
@@ -1065,11 +1065,11 @@ public class BitChartE2ETests : E2ETestBase
 
         Assert.IsTrue(left.Length > 1 && right.Length > 1, $"{name}: the values of both axes are drawn");
         foreach (var value in left)
-            Assert.IsTrue(value[2] <= plotLeft + 0.5, $"{name}: a value of the left axis runs to {value[2]:0.#}, into the plot that starts at {plotLeft:0.#}");
+            Assert.IsLessThanOrEqualTo(plotLeft + 0.5, value[2], $"{name}: a value of the left axis runs to {value[2]:0.#}, into the plot that starts at {plotLeft:0.#}");
         foreach (var value in right)
-            Assert.IsTrue(value[1] >= plotRight - 0.5, $"{name}: a value of the right axis starts at {value[1]:0.#}, inside the plot that ends at {plotRight:0.#}");
+            Assert.IsGreaterThanOrEqualTo(plotRight - 0.5, value[1], $"{name}: a value of the right axis starts at {value[1]:0.#}, inside the plot that ends at {plotRight:0.#}");
         foreach (var value in left.Concat(right))
-            Assert.IsTrue(value[3] > value[4], $"{name}: a value reads left to right, its number on the left of its word");
+            Assert.IsGreaterThan(value[4], value[3], $"{name}: a value reads left to right, its number on the left of its word");
     }
 
     // A row per label of a chart, in the order it draws them: [the x it is anchored at, its left edge, its right edge] in

@@ -101,7 +101,7 @@ public sealed class BlazorHybridTests
 
         var names = app.GetServices<IBsqliteStorageProvider>().Select(provider => provider.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { "opfs", "indexeddb", "file-system" }, names);
+        Assert.AreSequenceEqual(new[] { "opfs", "indexeddb", "file-system" }, names, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     /// <summary>Each module of an app may register its own database, each with its own AddBitBsqliteServices call.</summary>
@@ -128,7 +128,7 @@ public sealed class BlazorHybridTests
 
         await using var app = services.BuildServiceProvider();
 
-        Assert.AreEqual(1, app.GetServices<IBsqliteStorageProvider>().Count(provider => provider.Name == "file-system"));
+        Assert.ContainsSingle(provider => provider.Name == "file-system", app.GetServices<IBsqliteStorageProvider>());
         foreach (var databaseName in new[] { "first.db", "second.db" })
         {
             var session = await app.GetRequiredKeyedService<BsqliteDatabase>(databaseName).OpenAsync(Ct);
@@ -200,7 +200,8 @@ public sealed class BlazorHybridTests
 
         Assert.AreEqual("browser-backend", resolution.Provider.Name);
         Assert.IsTrue(resolution.WasDecidedByExistingData);
-        Assert.AreEqual("file-system", resolution.BetterProviderAvailable?.Name);
+        var actualValue = resolution.BetterProviderAvailable?.Name;
+        Assert.AreEqual("file-system", actualValue);
     }
 
     [TestMethod]

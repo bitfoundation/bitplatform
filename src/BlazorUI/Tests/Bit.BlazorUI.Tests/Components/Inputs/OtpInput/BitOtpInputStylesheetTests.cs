@@ -18,18 +18,18 @@ public partial class BitOtpInputStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // box an unset one stands for.
-        StringAssert.Contains(stylesheet, "width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));");
-        StringAssert.Contains(stylesheet, "height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-otp-fontsize, var(--bit-OtpInput-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "font-size: var(--bit-otp-dsc-fontsize, var(--bit-OtpInput-description-font-size, #{$tg-fs-xs}));");
+        Assert.Contains("width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));", stylesheet);
+        Assert.Contains("height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));", stylesheet);
+        Assert.Contains("font-size: var(--bit-otp-fontsize, var(--bit-OtpInput-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("font-size: var(--bit-otp-dsc-fontsize, var(--bit-OtpInput-description-font-size, #{$tg-fs-xs}));", stylesheet);
 
         // So does an explicit Accent, for every color it paints - the focused rule through the variable the box is
         // painted from at rest, so an app's class on the box keeps its paint while it is focused.
-        StringAssert.Contains(stylesheet, "--bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-outline-focus-color, var(--bit-OtpInput-focus-color))))");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-fill-focus-color, var(--bit-OtpInput-focus-color))))");
-        StringAssert.Contains(stylesheet, "focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-text-focus-color, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))))");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));");
+        Assert.Contains("--bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-outline-focus-color, var(--bit-OtpInput-focus-color))))", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-fill-focus-color, var(--bit-OtpInput-focus-color))))", stylesheet);
+        Assert.Contains("focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-text-focus-color, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))))", stylesheet);
+        Assert.Contains("background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));", stylesheet);
 
         // The colors of the boxes are the Variant's recipe, which the public background and border variables re-skin
         // in every variant - only the values of the Accent and the Size are pinned here.
@@ -49,19 +49,18 @@ public partial class BitOtpInputStylesheetTests
         // can set one look apart from the other two on :root - and the box reads only what its variant resolved. It
         // resolves them on the box rather than on the root, so a public variable set on Styles.Input, Styles.Filled or
         // Styles.InputsWrapper still reaches it.
-        Assert.IsFalse(stylesheet.Contains($"\n{selector} {{"), $"{selector} resolves the box colors on the root, out of reach of a box's own style.");
+        Assert.DoesNotContain($"\n{selector} {{", stylesheet, $"{selector} resolves the box colors on the root, out of reach of a box's own style.");
         foreach (var name in new[] { "background", "hover-background", "filled-background", "border-color", "hover-border-color", "filled-border-color" })
         {
-            StringAssert.Contains(block, $"var(--bit-OtpInput-{variant}-{name}, var(--bit-OtpInput-{name}, ",
-                                  $"{selector} does not read --bit-OtpInput-{variant}-{name} ahead of --bit-OtpInput-{name}.");
+            Assert.Contains($"var(--bit-OtpInput-{variant}-{name}, var(--bit-OtpInput-{name}, ", block, $"{selector} does not read --bit-OtpInput-{variant}-{name} ahead of --bit-OtpInput-{name}.");
         }
 
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-OtpInput-(?!{variant}-)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
 
         // So do the focus rings, which the variants draw apart (a ring, or an underline for Text).
-        StringAssert.Contains(stylesheet, $"var(--bit-OtpInput-{variant}-focus-color, var(--bit-OtpInput-focus-color");
-        StringAssert.Contains(stylesheet, $"var(--bit-OtpInput-{variant}-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{{$clr-err-focus}})");
+        Assert.Contains($"var(--bit-OtpInput-{variant}-focus-color, var(--bit-OtpInput-focus-color", stylesheet);
+        Assert.Contains($"var(--bit-OtpInput-{variant}-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{{$clr-err-focus}})", stylesheet);
     }
 
     [TestMethod]
@@ -74,7 +73,7 @@ public partial class BitOtpInputStylesheetTests
         // carries them.
         foreach (var property in new[] { "--bit-otp-size", "--bit-otp-fontsize", "--bit-otp-dsc-fontsize", "--bit-otp-clr", "--bit-otp-clr-focus" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 

@@ -31,7 +31,7 @@ public class SourceLocatorTests : BunitContext
     {
         var path = BevSourceLocator.Of(typeof(LocatedComponent), null)[0].Path;
         var line = Array.FindIndex(File.ReadAllLines(path), l => l.Trim() == text);
-        Assert.IsTrue(line >= 0, text);
+        Assert.IsGreaterThanOrEqualTo(0, line, text);
         return line + 1;
     }
 
@@ -44,8 +44,8 @@ public class SourceLocatorTests : BunitContext
         Assert.IsTrue(Path.IsPathRooted(source.Path), source.Path);
         // The first line written in the type: its declaration (where an implicit constructor is mapped) at the earliest.
         Assert.IsTrue(source.Line >= LineOf("public class LocatedComponent : ComponentBase") && source.Line <= LineOf("builder.OpenElement(0, \"button\");"), source.Line.ToString());
-        StringAssert.StartsWith(source.Url, "vscode://file/");
-        StringAssert.EndsWith(source.Url, "SourceLocatorTests.cs:" + source.Line + ":" + source.Column);
+        Assert.StartsWith("vscode://file/", source.Url);
+        Assert.EndsWith("SourceLocatorTests.cs:" + source.Line + ":" + source.Column, source.Url);
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class SourceLocatorTests : BunitContext
 
             Assert.IsEmpty(BevSourceLocator.Of(fromMemory.GetType(typeof(LocatedComponent).FullName!)!, null));
             Assert.IsFalse(BevSourceLocator.NeedsDownload(fromMemory), "the app serves no PDB list outside WebAssembly");
-            StringAssert.Contains(BevSourceLocator.WhyUnavailable(fromMemory), "has no file on disk");
+            Assert.Contains("has no file on disk", BevSourceLocator.WhyUnavailable(fromMemory)!);
         }
         finally
         {
@@ -121,11 +121,11 @@ public class SourceLocatorTests : BunitContext
     {
         var empty = AssemblyBuilderFor("Bev.Missing");
         BevSourceLocator.Provide(empty, null);
-        StringAssert.Contains(BevSourceLocator.WhyUnavailable(empty), "serves no symbols");
+        Assert.Contains("serves no symbols", BevSourceLocator.WhyUnavailable(empty)!);
 
         var broken = AssemblyBuilderFor("Bev.Broken");
         BevSourceLocator.Provide(broken, [1, 2, 3, 4]);
-        StringAssert.Contains(BevSourceLocator.WhyUnavailable(broken), "could not be read");
+        Assert.Contains("could not be read", BevSourceLocator.WhyUnavailable(broken)!);
     }
 
     private static Assembly AssemblyBuilderFor(string name) =>
@@ -176,11 +176,12 @@ public class SourceLocatorTests : BunitContext
         using var inspected = JsonDocument.Parse(BevToolsProtocol.Handle(Session, "inspect", JsonSerializer.Serialize(new { instanceId = record.InstanceId })));
         var source = inspected.RootElement.GetProperty("sources")[0];
         Assert.AreEqual(first, source.GetProperty("line").GetInt32());
-        StringAssert.StartsWith(source.GetProperty("url").GetString(), "vscode://file/");
+        Assert.StartsWith("vscode://file/", source.GetProperty("url").GetString());
         Assert.AreEqual(save, inspected.RootElement.GetProperty("wiring").GetProperty("bindings")[0].GetProperty("handlerSource")[0].GetProperty("line").GetInt32());
     }
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The source-location test pins this public component declaration.")]
 public class LocatedComponent : ComponentBase
 {
     protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)

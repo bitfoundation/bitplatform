@@ -72,8 +72,8 @@ public class BitAiPromptInputTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("composer", root.Id);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding: 2px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
+        Assert.Contains("padding: 2px", root.GetAttribute("style")!);
 
         var input = component.Find("textarea");
 
@@ -100,10 +100,10 @@ public class BitAiPromptInputTests : BitAiTestBase
                 Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
                 break;
             case BitVisibility.Collapsed:
-                StringAssert.Contains(style, "display:none");
+                Assert.Contains("display:none", style);
                 break;
             case BitVisibility.Hidden:
-                StringAssert.Contains(style, "visibility:hidden");
+                Assert.Contains("visibility:hidden", style);
                 break;
         }
     }
@@ -176,7 +176,7 @@ public class BitAiPromptInputTests : BitAiTestBase
         Assert.IsEmpty(composer.Instance.Attachments);
 
         var notice = composer.Find(".bit-aipri-ntc [role=alert]");
-        StringAssert.Contains(notice.TextContent, "video.mp4 is too large. Files can be up to 1 KB.");
+        Assert.Contains("video.mp4 is too large. Files can be up to 1 KB.", notice.TextContent);
     }
 
     [TestMethod]
@@ -204,7 +204,7 @@ public class BitAiPromptInputTests : BitAiTestBase
 
         Assert.AreEqual(BitAiAttachmentRejectionReason.TypeNotAllowed, Assert.ContainsSingle(rejections).Reason);
         Assert.IsTrue(content.Disposed);
-        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "notes.txt is not a supported file type.");
+        Assert.Contains("notes.txt is not a supported file type.", composer.Find(".bit-aipri-ntc").TextContent);
     }
 
     [TestMethod,
@@ -217,7 +217,7 @@ public class BitAiPromptInputTests : BitAiTestBase
         await composer.InvokeAsync(() => composer.Instance._OnPastedFile(
             new BitAiComposerFile(name, contentType, 3) { Content = new FakeStreamReference([1, 2, 3]) }));
 
-        Assert.HasCount(1, composer.Instance.Attachments);
+        Assert.ContainsSingle(composer.Instance.Attachments);
     }
 
     [TestMethod]
@@ -230,12 +230,12 @@ public class BitAiPromptInputTests : BitAiTestBase
             new BitAiComposerFile("data.bin", "application/octet-stream", 4) { Content = content }));
 
         var attachment = Assert.ContainsSingle(composer.Instance.Attachments);
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, attachment.Data!.Value.ToArray());
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, attachment.Data!.Value.ToArray());
         Assert.AreEqual(4L, attachment.Size);
         Assert.AreEqual("data:application/octet-stream;base64,AQIDBA==", attachment.Url);
         Assert.IsTrue(content.Disposed);
         Assert.IsEmpty(composer.FindAll(".bit-aipri-ntc"));
-        Assert.HasCount(1, composer.FindAll(".bit-aipri-ats .bit-aiach"));
+        Assert.ContainsSingle(composer.FindAll(".bit-aipri-ats .bit-aiach"));
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public class BitAiPromptInputTests : BitAiTestBase
 
         Assert.AreEqual(BitAiAttachmentRejectionReason.ReadFailed, Assert.ContainsSingle(rejections).Reason);
         Assert.IsEmpty(composer.Instance.Attachments);
-        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "photo.jpg could not be read.");
+        Assert.Contains("photo.jpg could not be read.", composer.Find(".bit-aipri-ntc").TextContent);
     }
 
     [TestMethod]
@@ -257,7 +257,7 @@ public class BitAiPromptInputTests : BitAiTestBase
     {
         var attachment = new BitAiComposerFile("a.txt", "text/plain", 2, "aGk=").ToAttachment();
 
-        CollectionAssert.AreEqual("hi"u8.ToArray(), attachment.Data!.Value.ToArray());
+        Assert.AreSequenceEqual("hi"u8.ToArray(), attachment.Data!.Value.ToArray());
     }
 
     [TestMethod]
@@ -272,10 +272,10 @@ public class BitAiPromptInputTests : BitAiTestBase
             InputFileContent.CreateFromBinary([1, 2], "small.bin"),
             InputFileContent.CreateFromBinary([1, 2, 3, 4, 5, 6], "large.bin"));
 
-        composer.WaitForAssertion(() => Assert.HasCount(1, composer.Instance.Attachments));
+        composer.WaitForAssertion(() => Assert.ContainsSingle(composer.Instance.Attachments));
         Assert.AreEqual("small.bin", composer.Instance.Attachments[0].Name);
         Assert.AreEqual("large.bin", Assert.ContainsSingle(rejections).FileName);
-        StringAssert.Contains(composer.Find(".bit-aipri-ntc").TextContent, "large.bin is too large.");
+        Assert.Contains("large.bin is too large.", composer.Find(".bit-aipri-ntc").TextContent);
     }
 
     [TestMethod]
@@ -328,8 +328,8 @@ public class BitAiPromptInputTests : BitAiTestBase
 
         var option = composer.Find("[role=option]");
         Assert.IsNotNull(option.QuerySelector(".bit-aipri-mic"));
-        StringAssert.Contains(option.QuerySelector(".bit-aipri-mlb")!.TextContent, "/clear");
-        StringAssert.Contains(option.QuerySelector(".bit-aipri-mhn")!.TextContent, "Clear the conversation");
+        Assert.Contains("/clear", option.QuerySelector(".bit-aipri-mlb")!.TextContent);
+        Assert.Contains("Clear the conversation", option.QuerySelector(".bit-aipri-mhn")!.TextContent);
 
         option.Click();
 

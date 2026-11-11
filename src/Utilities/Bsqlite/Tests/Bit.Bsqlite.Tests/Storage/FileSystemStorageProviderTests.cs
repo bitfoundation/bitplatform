@@ -72,13 +72,9 @@ public sealed class FileSystemStorageProviderTests
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void DatabaseName_CannotNameADrive()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            Assert.Inconclusive("Only Windows has drives; elsewhere a leading slash is trimmed like any other.");
-        }
-
         Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath(@"C:\elsewhere.db"));
         Assert.ThrowsExactly<ArgumentException>(() => Provider().GetDatabasePath("data/C:/elsewhere.db"));
     }
@@ -137,9 +133,8 @@ public sealed class FileSystemStorageProviderTests
         await File.WriteAllTextAsync(provider.GetDatabasePath("app.db") + "-journal", "journal", Ct);
         await File.WriteAllTextAsync(Path.Combine(_root.Path, "settings.json"), "{}", Ct);
 
-        CollectionAssert.AreEqual(
-            new[] { "App_Data/AppOffline.db", "app.db" },
-            (await provider.Admin.ListAsync(Ct)).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "App_Data/AppOffline.db", "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
     }
 
     /// <summary>
@@ -155,10 +150,10 @@ public sealed class FileSystemStorageProviderTests
 
         var bindings = new BsqliteFileStorageBindingStore(Path.Combine(_root.Path, BsqliteFileStorageBindingStore.FileName));
         await bindings.SetProviderNameAsync("app.db", "file-system", Ct);
-        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+        Assert.AreSequenceEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
 
         await bindings.RemoveAsync("app.db", Ct);
-        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+        Assert.AreSequenceEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
     }
 
     [TestMethod]
@@ -194,7 +189,7 @@ public sealed class FileSystemStorageProviderTests
             await command.ExecuteNonQueryAsync(Ct);
         }
 
-        Assert.IsTrue(new FileInfo(path + "-wal").Length > 0, "The test needs the rows in the log.");
+        Assert.IsGreaterThan(0, new FileInfo(path + "-wal").Length, "The test needs the rows in the log.");
 
         var image = await provider.Admin.ExportAsync("app.db", Ct);
 
@@ -262,7 +257,7 @@ public sealed class FileSystemStorageProviderTests
         await Assert.ThrowsAsync<Exception>(async () => await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct));
 
         Assert.AreEqual("committed", await File.ReadAllTextAsync(path + "-wal", Ct));
-        Assert.HasCount(1, Directory.GetFiles(_root.Path), "Something was left beside the database.");
+        Assert.ContainsSingle(Directory.GetFiles(_root.Path), "Something was left beside the database.");
     }
 
     /// <summary>
@@ -270,13 +265,9 @@ public sealed class FileSystemStorageProviderTests
     /// into whatever file next takes the name.
     /// </summary>
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public async Task Delete_ThatCannotMoveTheJournal_LeavesTheFileInPlace()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            Assert.Inconclusive("Only Windows refuses to rename a file another handle holds without sharing it.");
-        }
-
         var provider = Provider();
         var path = provider.GetDatabasePath("app.db");
         await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
@@ -299,7 +290,7 @@ public sealed class FileSystemStorageProviderTests
         await provider.Admin.ImportAsync("app.db", SqliteImage(), Ct);
         await File.WriteAllBytesAsync(provider.GetDatabasePath($"app.db.{Guid.NewGuid():N}.aside"), SqliteImage(), Ct);
 
-        CollectionAssert.AreEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
+        Assert.AreSequenceEqual(new[] { "app.db" }, (await provider.Admin.ListAsync(Ct)).ToArray());
     }
 
     [TestMethod]
@@ -332,7 +323,7 @@ public sealed class FileSystemStorageProviderTests
             await command.ExecuteNonQueryAsync(Ct);
         }
 
-        CollectionAssert.AreEqual(await File.ReadAllBytesAsync(path, Ct), await provider.Admin.ExportAsync("app.db", Ct));
+        Assert.AreSequenceEqual(await File.ReadAllBytesAsync(path, Ct), await provider.Admin.ExportAsync("app.db", Ct));
         Assert.IsTrue(await provider.Admin.ExistsAsync("app.db", Ct));
     }
 

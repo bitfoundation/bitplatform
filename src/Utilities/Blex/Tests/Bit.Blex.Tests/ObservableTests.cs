@@ -34,7 +34,7 @@ public class ObservableTests
 
         store.Increment();   // after disposal
 
-        CollectionAssert.AreEqual(new[] { 0, 1, 3 }, recorder.Values);
+        Assert.AreSequenceEqual(new[] { 0, 1, 3 }, recorder.Values);
         Assert.IsNull(recorder.Error);
     }
 
@@ -61,8 +61,9 @@ public class ObservableTests
         store.Add(5);
         store.Add(-5);   // unsubscribed by the failure: never delivered
 
-        CollectionAssert.AreEqual(new[] { 0 }, recorder.Values);
-        Assert.AreEqual("too high", recorder.Error?.Message);
+        Assert.AreSequenceEqual(new[] { 0 }, recorder.Values);
+        var actualValue = recorder.Error?.Message;
+        Assert.AreEqual("too high", actualValue);
     }
 
     [TestMethod]
@@ -81,8 +82,9 @@ public class ObservableTests
         store.Add(1);
         store.Add(1);   // unsubscribed by the failure: never compared again
 
-        CollectionAssert.AreEqual(new[] { 0 }, recorder.Values);
-        Assert.AreEqual("compare boom", recorder.Error?.Message);
+        Assert.AreSequenceEqual(new[] { 0 }, recorder.Values);
+        var actualValue = recorder.Error?.Message;
+        Assert.AreEqual("compare boom", actualValue);
         Assert.AreEqual(1, compared);
     }
 
@@ -126,7 +128,8 @@ public class ObservableTests
         using var sub = store.Observe<int>(() => throw new InvalidOperationException("nope")).Subscribe(recorder);
 
         Assert.IsEmpty(recorder.Values);
-        Assert.AreEqual("nope", recorder.Error?.Message);
+        var actualValue = recorder.Error?.Message;
+        Assert.AreEqual("nope", actualValue);
     }
 
     [TestMethod]
@@ -145,7 +148,7 @@ public class ObservableTests
 
         orders.Clear();
 
-        CollectionAssert.AreEqual(new[] { "AddUnits", "Place" }, recorder.Values.Select(c => c.ActionName).ToArray());
+        Assert.AreSequenceEqual(new[] { "AddUnits", "Place" }, recorder.Values.Select(c => c.ActionName).ToArray());
         Assert.IsTrue(OrderBookStore.Actions.Place.Matches(recorder.Values[1]));
     }
 }

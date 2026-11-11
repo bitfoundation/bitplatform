@@ -90,8 +90,8 @@ public class HiddenNodeTests : BunitContext
 
         Render(nodes, edges);
 
-        Assert.AreEqual(3, nodes.Count);
-        Assert.AreEqual(2, edges.Count);
+        Assert.HasCount(3, nodes);
+        Assert.HasCount(2, edges);
     }
 
     [TestMethod]

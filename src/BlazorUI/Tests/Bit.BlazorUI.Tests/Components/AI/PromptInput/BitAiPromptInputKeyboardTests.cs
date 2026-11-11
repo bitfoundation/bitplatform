@@ -68,9 +68,9 @@ public class BitAiPromptInputKeyboardTests : BitAiTestBase
         var script = SourceFiles.Read("Bit.BlazorUI.AI", "Components", "PromptInput", "BitAiPromptInput.ts");
         var register = SourceFiles.GetScriptMember(script, "registerSubmitKey", "AiPromptInput");
 
-        StringAssert.Matches(register, new Regex(
-            @"const handler = \(e: KeyboardEvent\) => \{\s*if \(Utils\.isComposingKey\(e\)\) \{\s*e\.stopPropagation\(\);\s*return;\s*\}"));
-        StringAssert.Contains(register, "element.addEventListener('keydown', handler);");
+        Assert.MatchesRegex(new Regex(
+            @"const handler = \(e: KeyboardEvent\) => \{\s*if \(Utils\.isComposingKey\(e\)\) \{\s*e\.stopPropagation\(\);\s*return;\s*\}"), register);
+        Assert.Contains("element.addEventListener('keydown', handler);", register);
     }
 
     [TestMethod]
@@ -375,7 +375,7 @@ public class BitAiPromptInputSubmitKeyOptionTests : BitAiTestBase
         Assert.IsEmpty(submissions);
 
         composer.Find("textarea").KeyDown(new KeyboardEventArgs { Key = "Enter", CtrlKey = true });
-        Assert.HasCount(1, submissions);
+        Assert.ContainsSingle(submissions);
 
         composer.Render(p => p.Add(c => c.Value, "again"));
         composer.Find("textarea").KeyDown(new KeyboardEventArgs { Key = "Enter", MetaKey = true });

@@ -43,7 +43,7 @@ public sealed class BitAssetTrimmingContractTests
                                           .Distinct()
                                           .ToList();
 
-        Assert.AreEqual(0, unresolved.Count, $"These interop identifiers name no function a script exports: {string.Join(", ", unresolved)}");
+        Assert.IsEmpty(unresolved, $"These interop identifiers name no function a script exports: {string.Join(", ", unresolved)}");
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public sealed class BitAssetTrimmingContractTests
                             .Select(x => $"{x.Piece} (owner {x.Owner})")
                             .ToList();
 
-        Assert.AreEqual(0, missing.Count, $"These pieces are kept for types the packages do not have: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"These pieces are kept for types the packages do not have: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -73,8 +73,7 @@ public sealed class BitAssetTrimmingContractTests
             selection.KeepScript(module);
         }
 
-        Assert.AreEqual(0, selection.UnresolvedExternals.Count,
-            $"Scripts use members of another package's namespace that no package exports: {string.Join(", ", selection.UnresolvedExternals.Select(x => $"BitBlazorUI.{x.Path} (used by {x.User})"))}");
+        Assert.IsEmpty(selection.UnresolvedExternals, $"Scripts use members of another package's namespace that no package exports: {string.Join(", ", selection.UnresolvedExternals.Select(x => $"BitBlazorUI.{x.Path} (used by {x.User})"))}");
     }
 
     [TestMethod]
@@ -96,7 +95,7 @@ public sealed class BitAssetTrimmingContractTests
                           .Select(m => m.Id)
                           .ToList();
 
-        Assert.AreEqual(0, never.Count, $"No identifier, type or markup of the packages keeps these scripts, so no trimmed publish has them: {string.Join(", ", never)}");
+        Assert.IsEmpty(never, $"No identifier, type or markup of the packages keeps these scripts, so no trimmed publish has them: {string.Join(", ", never)}");
     }
 
     [TestMethod]
@@ -113,7 +112,7 @@ public sealed class BitAssetTrimmingContractTests
                            .Select(m => $"{m.Id} ({string.Join(", ", m.Markup)})")
                            .ToList();
 
-        Assert.AreEqual(0, unseen.Count, $"No component renders the markup these scripts are kept for: {string.Join(", ", unseen)}");
+        Assert.IsEmpty(unseen, $"No component renders the markup these scripts are kept for: {string.Join(", ", unseen)}");
     }
 
     [TestMethod]
@@ -143,7 +142,7 @@ public sealed class BitAssetTrimmingContractTests
                                  .Where(t => t.IsAbstract is false && typeof(IComponent).IsAssignableFrom(t))
                                  .ToList();
 
-        Assert.IsTrue(components.Count > 50, "Too few components were found to check.");
+        Assert.IsGreaterThan(50, components.Count, "Too few components were found to check.");
 
         var problems = new List<string>();
         foreach (var component in components)
@@ -164,7 +163,7 @@ public sealed class BitAssetTrimmingContractTests
             }
         }
 
-        Assert.AreEqual(0, problems.Count, $"These components render classes whose stylesheet they do not bring into a trimmed bundle: {string.Join("; ", problems)}");
+        Assert.IsEmpty(problems, $"These components render classes whose stylesheet they do not bring into a trimmed bundle: {string.Join("; ", problems)}");
     }
 
     [TestMethod]
@@ -182,7 +181,7 @@ public sealed class BitAssetTrimmingContractTests
         var names = new HashSet<string>(reached.Select(t => t.Name), StringComparer.Ordinal);
         var kept = Assets.Value.SelectMany(p => p.StyleChunks).Where(c => c.Always is false && c.Owners.Any(o => AssetSelection.IsPresent(o, names))).Select(c => c.Name).ToList();
 
-        CollectionAssert.AreEquivalent(new[] { stylesheet }, kept, $"{component} brings the stylesheets of: {string.Join(", ", kept)}");
+        Assert.AreSequenceEqual(new[] { stylesheet }, kept, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{component} brings the stylesheets of: {string.Join(", ", kept)}");
     }
 
     [TestMethod]
@@ -192,11 +191,9 @@ public sealed class BitAssetTrimmingContractTests
         selection.Select(new HashSet<string>(StringComparer.Ordinal), []);
 
         // The scripts every app pays for: what the version stamp and the keys every component relies on are in.
-        CollectionAssert.AreEquivalent(new[] { "Bit.BlazorUI:general", "Bit.BlazorUI:Utils.Keys", "Bit.BlazorUI.Extras:general" },
-                                       selection.Scripts.Select(m => m.Id).ToList(),
-                                       "The scripts kept for an app that renders nothing changed.");
+        Assert.AreSequenceEqual(new[] { "Bit.BlazorUI:general", "Bit.BlazorUI:Utils.Keys", "Bit.BlazorUI.Extras:general" }, selection.Scripts.Select(m => m.Id).ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The scripts kept for an app that renders nothing changed.");
 
-        Assert.AreEqual(0, selection.Styles.Count, $"Component stylesheets are kept for an app that renders nothing: {string.Join(", ", selection.Styles.Select(c => c.Id))}");
+        Assert.IsEmpty(selection.Styles, $"Component stylesheets are kept for an app that renders nothing: {string.Join(", ", selection.Styles.Select(c => c.Id))}");
     }
 
     [TestMethod]
@@ -211,7 +208,7 @@ public sealed class BitAssetTrimmingContractTests
     {
         // A function of a namespace several files add to is found by its own name; a member of a class by its class's.
         var selection = new AssetSelection(Assets.Value);
-        CollectionAssert.AreEqual(new[] { script }, selection.ResolveIdentifier(identifier).Select(m => m.Id).ToList(), identifier);
+        Assert.AreSequenceEqual(new[] { script }, selection.ResolveIdentifier(identifier).Select(m => m.Id).ToList(), identifier);
     }
 
     [TestMethod]
@@ -225,7 +222,7 @@ public sealed class BitAssetTrimmingContractTests
         // text stops there) can reach any member of it: a namespace is no export of its own, and resolving to nothing
         // would drop every script it calls.
         var selection = new AssetSelection(Assets.Value);
-        CollectionAssert.Contains(selection.ResolveIdentifier(identifier).Select(m => m.Id).ToList(), script, identifier);
+        Assert.Contains(script, selection.ResolveIdentifier(identifier).Select(m => m.Id).ToList(), identifier);
     }
 
     [TestMethod]
@@ -239,13 +236,13 @@ public sealed class BitAssetTrimmingContractTests
     {
         // The plain form an interop call of .NET code writes, whether the script reached the namespace through a global or
         // through optional chaining.
-        CollectionAssert.AreEqual(new[] { identifier }, AssetSelection.IdentifiersIn(text).ToList(), text);
+        Assert.AreSequenceEqual(new[] { identifier }, AssetSelection.IdentifiersIn(text).ToList(), text);
     }
 
     [TestMethod]
     public void ANameEndingInTheNamespaceShouldNotBeReadAsAnIdentifier()
     {
-        Assert.AreEqual(0, AssetSelection.IdentifiersIn("MyBitBlazorUI.Utils.isRtl(); $BitBlazorUI.x();").Count());
+        Assert.IsEmpty(AssetSelection.IdentifiersIn("MyBitBlazorUI.Utils.isRtl(); $BitBlazorUI.x();"));
     }
 
     [TestMethod]
@@ -286,7 +283,7 @@ public sealed class BitAssetTrimmingContractTests
 
         selection.SelectIcons([text, ""], ["Add", "Delete", "Edit"], ["bit-icon--"]);
 
-        CollectionAssert.AreEquivalent(new[] { "Add", "Delete" }, selection.Icons.ToList());
+        Assert.AreSequenceEqual(new[] { "Add", "Delete" }, selection.Icons.ToList(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     private static PackageAssets LoadAssets(string package)

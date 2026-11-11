@@ -96,7 +96,7 @@ public partial class McpOracleTests
 
         var indexed = BdndApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -168,10 +168,12 @@ public partial class McpOracleTests
                 Assert.AreEqual(IsOver(target) && chain.SkipWhile(other => other != target).Skip(1).Any(IsOver) is false, actual.IsOverShallow, $"{context} - {target.Id}.IsOverShallow");
             }
 
-            CollectionAssert.AreEqual(drops.Select(target => target.Id).ToArray(), report.DropOrder, context);
+            Assert.AreSequenceEqual(drops.Select(target => target.Id).ToArray(), report.DropOrder, context);
             Assert.AreEqual(drops.Length > 0, report.DropFired, context);
             Assert.AreEqual(drops.Length > 0, report.End!.DidDrop, context);
-            Assert.AreEqual(drops.LastOrDefault(target => target.Result is not null)?.Result, report.End.DropResult, context);
+            var expectedValue = drops.LastOrDefault(target => target.Result is not null)?.Result;
+            var actualValue = report.End.DropResult;
+            Assert.AreEqual(expectedValue, actualValue, context);
         }
     }
 
@@ -266,7 +268,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(WebUtility.HtmlDecode(match.Groups["text"].Value.Trim()));
         }
 
-        CollectionAssert.AreEqual(headings, BdndSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BdndSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BdndSourceCatalog.GuideSections.Length, BdndSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -281,7 +283,7 @@ public partial class McpOracleTests
         var linked = CatalogPageRegex().Matches(catalog).Select(match => match.Groups["href"].Value).Where(route => route != "/mcp-server").ToArray();
 
         Assert.IsGreaterThan(15, linked.Length, $"the catalog names only {linked.Length} pages");
-        foreach (var route in linked) Assert.IsTrue(pages.Any(page => page.Route == route && page.Title is not null), $"The navigation links {route}, and no embedded page with a title declares it.");
+        foreach (var route in linked) Assert.Contains(page => page.Route == route && page.Title is not null, pages, $"The navigation links {route}, and no embedded page with a title declares it.");
 
         foreach (var component in new[] { "BdndDraggable.cs", "BdndDropTarget.cs", "BdndProvider.razor", "BdndDragLayer.razor", "BdndDragHandle.razor" })
         {
@@ -308,16 +310,15 @@ public partial class McpOracleTests
             ("GetBdndSourceFile", "?path=Demo/Client/Pages/Sortable/SortableCard.razor", new() { ["path"] = "Demo/Client/Pages/Sortable/SortableCard.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBdnd" or "InspectBdndDrop")
             {
@@ -334,11 +335,11 @@ public partial class McpOracleTests
     {
         using var http = McpTestHost.CreateHttpClient();
 
-        using var response = await http.GetAsync($"/api/mcp/InspectBdndDrop?json={Uri.EscapeDataString(BdndDropLab.Sample)}");
+        using var response = await http.GetAsync($"/api/mcp/InspectBdndDrop?json={Uri.EscapeDataString(BdndDropLab.Sample)}", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
-        var report = JsonNode.Parse(await response.Content.ReadAsStringAsync())!;
+        var report = JsonNode.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken))!;
 
         Assert.IsTrue((bool)report["valid"]!);
         Assert.AreEqual("board", (string?)report["end"]!["dropResult"]);
@@ -355,4 +356,6 @@ public partial class McpOracleTests
     // header's links (new("/", "Home")) end after the label.
     [GeneratedRegex(@"\bnew\(""(?<href>/[^""]*)"",\s*""[^""]*"",")]
     private static partial Regex CatalogPageRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -72,7 +72,7 @@ public class BitPersonaParamsTests : BunitTestContext
 
         var personas = component.FindAll(".bit-prs");
 
-        Assert.AreEqual(2, personas.Count);
+        Assert.HasCount(2, personas);
 
         foreach (var persona in personas)
         {
@@ -159,9 +159,10 @@ public class BitPersonaParamsTests : BunitTestContext
             RenderPersona());
 
         var coins = component.FindAll(".bit-prs-imc");
+        var actualValue = coins[0].GetAttribute("style")?.Contains("width:64px") ?? false;
 
-        Assert.IsFalse(coins[0].GetAttribute("style")?.Contains("width:64px") ?? false);
-        StringAssert.Contains(coins[1].GetAttribute("style"), "width:64px");
+        Assert.IsFalse(actualValue);
+        Assert.Contains("width:64px", coins[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -247,7 +248,7 @@ public class BitPersonaParamsTests : BunitTestContext
         var component = RenderWithParams(new BitPersonaParams { Size = BitPersonaSize.Size72 },
             RenderPersona(builder => builder.AddAttribute(10, nameof(BitPersona.Href), "/profile")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-prs-imo").Count);
+        Assert.IsEmpty(component.FindAll(".bit-prs-imo"));
     }
 
     [TestMethod]
@@ -273,11 +274,11 @@ public class BitPersonaParamsTests : BunitTestContext
 
         var component = RenderWithParams(@params, RenderPersona());
 
-        StringAssert.Contains(component.Find(".bit-prs").GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", component.Find(".bit-prs").GetAttribute("style")!);
 
         var primary = component.Find(".bit-prs-ptx");
 
-        StringAssert.Contains(primary.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", primary.GetAttribute("style")!);
         Assert.IsTrue(primary.ClassList.Contains("cascaded-primary"));
     }
 

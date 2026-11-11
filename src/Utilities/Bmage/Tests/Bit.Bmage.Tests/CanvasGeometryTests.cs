@@ -119,7 +119,7 @@ public sealed class CanvasSizeTests
         using var source = TestImages.Gradient(6, 6);
         var before = source.ToArray();
         using var output = CanvasSizeOperation.Margins(2).Apply(source, OperationContext.Default.WithMutation(false));
-        CollectionAssert.AreEqual(before, source.ToArray());
+        Assert.AreSequenceEqual(before, source.ToArray());
         Assert.AreNotSame(source, output);
     }
 
@@ -288,14 +288,14 @@ public sealed class ContentBoundsTests
     public void TransparentBordersAreFoundExactly()
     {
         using var image = Framed(40, 30, new Rectangle(7, 4, 20, 11), Rgba32.Transparent, new Rgba32(10, 200, 30));
-        Assert.AreEqual(new Rectangle(7, 4, 20, 11), ContentBounds.Find(image));
+        Assert.AreEqual(new Rectangle(7, 4, 20, 11), ContentBounds.Find(image, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void PaddingKeepsSomeBorderButNeverReachesOutsideTheImage()
     {
         using var image = Framed(40, 30, new Rectangle(2, 4, 20, 11), Rgba32.Transparent, Rgba32.Black);
-        Assert.AreEqual(Rectangle.FromLTRB(0, 1, 25, 18), ContentBounds.Find(image, new TrimOptions { Padding = 3 }));
+        Assert.AreEqual(Rectangle.FromLTRB(0, 1, 25, 18), ContentBounds.Find(image, new TrimOptions { Padding = 3 }, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -305,17 +305,17 @@ public sealed class ContentBoundsTests
         // JPEG-like noise in the border: within 4% it is still border.
         image[0, 49] = new Rgba32(250, 252, 249);
         image[49, 0] = new Rgba32(247, 255, 251);
-        Assert.AreEqual(new Rectangle(10, 12, 25, 20), ContentBounds.Find(image));
-        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 50, 50), ContentBounds.Find(image, new TrimOptions { Tolerance = 0 }), "with no tolerance the noise is content");
+        Assert.AreEqual(new Rectangle(10, 12, 25, 20), ContentBounds.Find(image, cancellationToken: TestContext.CancellationToken));
+        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 50, 50), ContentBounds.Find(image, new TrimOptions { Tolerance = 0 }, TestContext.CancellationToken), "with no tolerance the noise is content");
     }
 
     [TestMethod]
     public void AnImageThatIsAllBackgroundHasNoContent()
     {
         using var image = ImageBuffer.Create(20, 10, Rgba32.White);
-        Assert.IsNull(ContentBounds.Find(image));
+        Assert.IsNull(ContentBounds.Find(image, cancellationToken: TestContext.CancellationToken));
         using var clear = ImageBuffer.Create(20, 10);
-        Assert.IsNull(ContentBounds.Find(clear, new TrimOptions { Mode = TrimMode.Transparent }));
+        Assert.IsNull(ContentBounds.Find(clear, new TrimOptions { Mode = TrimMode.Transparent }, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -323,11 +323,11 @@ public sealed class ContentBoundsTests
     {
         // An opaque white page with a translucent stamp in it: the page is the border, the stamp is content.
         using var page = Framed(30, 30, new Rectangle(5, 5, 10, 10), Rgba32.White, new Rgba32(0, 0, 0, 40));
-        Assert.AreEqual(new Rectangle(5, 5, 10, 10), ContentBounds.Find(page));
+        Assert.AreEqual(new Rectangle(5, 5, 10, 10), ContentBounds.Find(page, cancellationToken: TestContext.CancellationToken));
 
         // A cut-out on transparency with a white subject: transparency is the border, the white is content.
         using var cutout = Framed(30, 30, new Rectangle(8, 3, 4, 20), Rgba32.Transparent, Rgba32.White);
-        Assert.AreEqual(new Rectangle(8, 3, 4, 20), ContentBounds.Find(cutout));
+        Assert.AreEqual(new Rectangle(8, 3, 4, 20), ContentBounds.Find(cutout, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -337,14 +337,14 @@ public sealed class ContentBoundsTests
         using var image = Framed(30, 20, new Rectangle(0, 0, 30, 20), green, green);
         image.Fill(new Rectangle(0, 0, 3, 3), Rgba32.Black);
         image.Fill(new Rectangle(20, 10, 5, 5), Rgba32.Black);
-        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 25, 15), ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Color, Color = green }));
+        Assert.AreEqual(Rectangle.FromLTRB(0, 0, 25, 15), ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Color, Color = green }, TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void TheBoundsCropToTheContent()
     {
         using var image = Framed(64, 48, new Rectangle(13, 9, 30, 21), Rgba32.Transparent, new Rgba32(200, 100, 50));
-        var bounds = ContentBounds.Find(image)!.Value;
+        var bounds = ContentBounds.Find(image, cancellationToken: TestContext.CancellationToken)!.Value;
         using var trimmed = ImagePipeline.Create().Crop(bounds).Execute(image);
         Assert.AreEqual(new Size(30, 21), trimmed.Size);
         Assert.IsFalse(trimmed.HasTransparency());
@@ -357,4 +357,6 @@ public sealed class ContentBoundsTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new TrimOptions { Tolerance = float.NaN });
         Assert.AreEqual(1f, new TrimOptions { Tolerance = 3 }.Tolerance);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

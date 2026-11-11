@@ -98,7 +98,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation"), query);
+            Assert.DoesNotContain(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "Documentation", result.Hits, query);
         }
     }
 
@@ -112,7 +112,7 @@ public partial class McpSearchTests
         Assert.AreEqual("Demo page", page.Kind);
         Assert.AreEqual("/nesting/drop-targets", page.Context);
         Assert.AreEqual("GetBdndSourceFile(path: \"Demo/Client/Pages/Nesting/DropTargets.razor\")", page.Tool);
-        Assert.IsFalse(result.Hits.Any(hit => hit.Title.EndsWith("DropTargets.razor", StringComparison.Ordinal)), "The page should not be listed a second time under its path.");
+        Assert.DoesNotContain(hit => hit.Title.EndsWith("DropTargets.razor", StringComparison.Ordinal), result.Hits, "The page should not be listed a second time under its path.");
     }
 
     [TestMethod]
@@ -131,7 +131,7 @@ public partial class McpSearchTests
         // HandleDragEnd and the rest are public only for JS interop; a search must not hand them out as members to call.
         var result = await McpCall.StructuredAsync<BdndSearchResultDto>("SearchBdnd", new() { ["query"] = "HandleDragEnd HandleHoverChanged HandleNativeDrop", ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(hit => hit.Kind.StartsWith("API", StringComparison.Ordinal) && hit.Title.Contains(".Handle", StringComparison.Ordinal)),
+        Assert.DoesNotContain(hit => hit.Kind.StartsWith("API", StringComparison.Ordinal) && hit.Title.Contains(".Handle", StringComparison.Ordinal), result.Hits,
             string.Join(" | ", result.Hits.Select(hit => hit.Title)));
     }
 
@@ -163,7 +163,7 @@ public partial class McpSearchTests
 
         Assert.IsEmpty(result.Hits);
         Assert.IsNotNull(result.DidYouMean);
-        Assert.IsTrue(result.DidYouMean.Any(title => title.Contains("Handle", StringComparison.Ordinal)), string.Join(" | ", result.DidYouMean));
+        Assert.Contains(title => title.Contains("Handle", StringComparison.Ordinal), result.DidYouMean, string.Join(" | ", result.DidYouMean));
     }
 
     [TestMethod]
@@ -215,7 +215,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             var arguments = match.Groups["name"].Success
                 ? new Dictionary<string, object?> { [match.Groups["name"].Value] = match.Groups["value"].Value }

@@ -38,7 +38,7 @@ public class SelfLoopTests : BunitContext
             .Select(m => double.Parse(m.Value, System.Globalization.CultureInfo.InvariantCulture))
             .ToArray();
 
-        Assert.AreEqual(8, numbers.Length);
+        Assert.HasCount(8, numbers);
         return (new(numbers[0], numbers[1]), new(numbers[2], numbers[3]),
                 new(numbers[4], numbers[5]), new(numbers[6], numbers[7]));
     }
@@ -67,7 +67,7 @@ public class SelfLoopTests : BunitContext
         // bezier for this puts all four control points on one horizontal line.
         var loop = BlowEdgePath.Loop(150, 20, BlowPosition.Right, 0, 20, BlowPosition.Left, radius: 60);
 
-        Assert.IsTrue(MaxBulge(loop.Path) > 40, "the loop stayed flat against the node");
+        Assert.IsGreaterThan(40, MaxBulge(loop.Path), "the loop stayed flat against the node");
     }
 
     [TestMethod]
@@ -75,7 +75,7 @@ public class SelfLoopTests : BunitContext
     {
         var loop = BlowEdgePath.Loop(75, 40, BlowPosition.Bottom, 75, 0, BlowPosition.Top, radius: 60);
 
-        Assert.IsTrue(MaxBulge(loop.Path) > 40, "the loop stayed flat against the node");
+        Assert.IsGreaterThan(40, MaxBulge(loop.Path), "the loop stayed flat against the node");
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class SelfLoopTests : BunitContext
 
         var (_, c1, c2, _) = BlowControls(loop.Path);
         Assert.IsTrue(c1.X > 150 && c2.X > 150, "the loop did not stand off the node");
-        Assert.IsTrue(MaxBulge(loop.Path) > 20);
+        Assert.IsGreaterThan(20, MaxBulge(loop.Path));
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class SelfLoopTests : BunitContext
         // The degenerate-of-the-degenerate: nothing at all distinguishes the two ends.
         var loop = BlowEdgePath.Loop(100, 100, BlowPosition.Right, 100, 100, BlowPosition.Right, radius: 50);
 
-        Assert.IsTrue(MaxBulge(loop.Path) > 20, "a zero-length loop collapsed to a point");
+        Assert.IsGreaterThan(20, MaxBulge(loop.Path), "a zero-length loop collapsed to a point");
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class SelfLoopTests : BunitContext
         var small = MaxBulge(BlowEdgePath.Loop(150, 20, BlowPosition.Right, 0, 20, BlowPosition.Left, radius: 30).Path);
         var large = MaxBulge(BlowEdgePath.Loop(150, 20, BlowPosition.Right, 0, 20, BlowPosition.Left, radius: 90).Path);
 
-        Assert.IsTrue(large > small * 2);
+        Assert.IsGreaterThan(small * 2, large);
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public class SelfLoopTests : BunitContext
         var cut = Render(nodes, edges);
         var path = cut.Find(".bit-blow-edge-path").GetAttribute("d")!;
 
-        Assert.IsTrue(MaxBulge(path) > 30, $"the self-edge was drawn flat: {path}");
+        Assert.IsGreaterThan(30, MaxBulge(path), $"the self-edge was drawn flat: {path}");
     }
 
     [TestMethod]
@@ -184,7 +184,7 @@ public class SelfLoopTests : BunitContext
             var cut = Render(nodes, edges);
             var path = cut.Find(".bit-blow-edge-path").GetAttribute("d")!;
 
-            Assert.IsTrue(MaxBulge(path) > 30, $"{type} self-edge was drawn flat: {path}");
+            Assert.IsGreaterThan(30, MaxBulge(path), $"{type} self-edge was drawn flat: {path}");
         }
     }
 
@@ -218,7 +218,7 @@ public class SelfLoopTests : BunitContext
         var tightBulge = MaxBulge(tight.Find(".bit-blow-edge-path").GetAttribute("d")!);
         var wideBulge = MaxBulge(wide.Find(".bit-blow-edge-path").GetAttribute("d")!);
 
-        Assert.IsTrue(wideBulge > tightBulge * 2);
+        Assert.IsGreaterThan(tightBulge * 2, wideBulge);
     }
 
     [TestMethod]

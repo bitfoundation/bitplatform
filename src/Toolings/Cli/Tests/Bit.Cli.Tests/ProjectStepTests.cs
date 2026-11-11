@@ -26,12 +26,12 @@ public class ProjectStepTests
         using var other = X509Certificate2.CreateFromPemFile(Path.Combine(second, "AppCertificate.crt"), Path.Combine(second, "AppCertificate.key"));
 
         Assert.IsTrue(certificate.HasPrivateKey);
-        StringAssert.Contains(certificate.Subject, "OU=Development");
-        StringAssert.Contains(certificate.Subject, "CN=AppCertificate");
+        Assert.Contains("OU=Development", certificate.Subject);
+        Assert.Contains("CN=AppCertificate", certificate.Subject);
         Assert.AreEqual(3072, certificate.GetRSAPublicKey()!.KeySize);
         Assert.IsGreaterThan(DateTime.Now.AddYears(4), certificate.NotAfter);
         Assert.AreNotEqual(certificate.Thumbprint, other.Thumbprint);
-        StringAssert.StartsWith(File.ReadAllText(Path.Combine(first, "AppCertificate.key")), "-----BEGIN PRIVATE KEY-----\n");
+        Assert.StartsWith("-----BEGIN PRIVATE KEY-----\n", File.ReadAllText(Path.Combine(first, "AppCertificate.key")));
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public class ProjectStepTests
         }
 
         var serverApi = File.ReadAllText(Path.Combine(project, files[1]));
-        StringAssert.Contains(serverApi, Keys.VapidKeys.Sample.PrivateKey);
+        Assert.Contains(Keys.VapidKeys.Sample.PrivateKey, serverApi);
 
         var built = Path.Combine(project, "src", "Server", "Boilerplate.Server.Api", "bin", "appsettings.json");
         Directory.CreateDirectory(Path.GetDirectoryName(built)!);
@@ -71,7 +71,7 @@ public class ProjectStepTests
         // The private key is the public key's own: P-256 derives the same point from it.
         using var key = ECDsa.Create(new ECParameters { Curve = ECCurve.NamedCurves.nistP256, D = Base64Url.DecodeFromChars(privateKey) });
         var derived = key.ExportParameters(includePrivateParameters: false);
-        CollectionAssert.AreEqual(Base64Url.DecodeFromChars(publicKey), (byte[])[0x04, .. derived.Q.X!, .. derived.Q.Y!]);
+        Assert.AreSequenceEqual(Base64Url.DecodeFromChars(publicKey), (byte[])[0x04, .. derived.Q.X!, .. derived.Q.Y!]);
 
         Assert.AreEqual(serverApi, File.ReadAllText(built), "a build output was touched");
         Assert.IsFalse(ProjectSteps.ReplaceSampleVapidKeys(project), "nothing is left to replace");
@@ -90,7 +90,7 @@ public class ProjectStepTests
             Use `dotnet workload search` to find additional workloads to install.
             """;
 
-        CollectionAssert.AreEquivalent(new[] { "wasm-tools", "maui-android" }, ProjectSteps.ParseInstalledWorkloads(output).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools", "maui-android" }, ProjectSteps.ParseInstalledWorkloads(output).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(ProjectSteps.ParseInstalledWorkloads("No workloads are installed."));
     }
 
@@ -111,11 +111,11 @@ public class ProjectStepTests
         Assert.IsTrue(project.GitReady);
 
         var runner = new ProcessRunner(host.Environment, CliLog.None);
-        var branches = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["branch", "--format=%(refname:short)"], WorkingDirectory = project.Directory });
-        var head = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--abbrev-ref", "HEAD"], WorkingDirectory = project.Directory });
-        var log = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["log", "--format=%s"], WorkingDirectory = project.Directory });
+        var branches = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["branch", "--format=%(refname:short)"], WorkingDirectory = project.Directory }, TestContext.CancellationToken);
+        var head = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--abbrev-ref", "HEAD"], WorkingDirectory = project.Directory }, TestContext.CancellationToken);
+        var log = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["log", "--format=%s"], WorkingDirectory = project.Directory }, TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(new[] { "main" }, branches.OutputLines.ToArray());
+        Assert.AreSequenceEqual(new[] { "main" }, branches.OutputLines.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("main", head.Output.Trim());
         Assert.AreEqual("Create Contoso with bit new", log.Output.Trim());
     }
@@ -138,7 +138,7 @@ public class ProjectStepTests
         Assert.AreEqual("main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
         Assert.IsTrue(project.GitReady);
         var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config" && c.Arguments[1] is not "--global").Select(c => string.Join(' ', c.Arguments)).ToArray();
-        CollectionAssert.AreEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
+        Assert.AreSequenceEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
     }
 
     [TestMethod]
@@ -174,7 +174,7 @@ public class ProjectStepTests
         await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
 
         var gitCalls = host.Runner.Calls.Where(c => c.FileName is "git" && c.Arguments.FirstOrDefault() is not "--version").ToArray();
-        Assert.IsTrue(gitCalls.Any(c => c.Arguments.FirstOrDefault() is "commit"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
+        Assert.Contains(c => c.Arguments.FirstOrDefault() is "commit", gitCalls, string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
 
         foreach (var call in gitCalls)
         {
@@ -203,7 +203,7 @@ public class ProjectStepTests
         using var host = new TestHost(variables: RealPath());
         using var identity = new GitIdentity(host.Root);
         var runner = new ProcessRunner(host.Environment, CliLog.None);
-        await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["init"], WorkingDirectory = host.WorkingDirectory });
+        await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["init"], WorkingDirectory = host.WorkingDirectory }, TestContext.CancellationToken);
         var project = CreateFakeProject(host, "Contoso");
 
         var result = await new ProjectSteps(new CliServices(host.Environment, host.Console, runner: runner), project).GitAsync(_ => { }, CancellationToken.None);
@@ -242,7 +242,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
         var call = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "dnx");
-        CollectionAssert.AreEqual(new[] { "dnx", "dotnet-ef@10.0.12", "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations" }, call.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "dnx", "dotnet-ef@10.0.12", "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations" }, call.Arguments.ToArray());
         Assert.AreEqual(project.ServerApiDirectory, call.WorkingDirectory);
     }
 
@@ -260,8 +260,8 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
         Assert.AreEqual("on a second try, after restarting the C# compiler server", result.Detail);
-        CollectionAssert.AreEqual(new[] { "build", "build-server", "build" }, host.Runner.Calls.Select(c => c.Arguments[0]).ToArray());
-        CollectionAssert.AreEqual(new[] { "build-server", "shutdown", "--vbcscompiler" }, host.Runner.Calls[1].Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "build", "build-server", "build" }, host.Runner.Calls.Select(c => c.Arguments[0]).ToArray());
+        Assert.AreSequenceEqual(new[] { "build-server", "shutdown", "--vbcscompiler" }, host.Runner.Calls[1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -275,7 +275,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Failed, result.Status);
         Assert.AreEqual("CS0246", result.Detail);
-        Assert.AreEqual(1, host.Runner.Calls.Count);
+        Assert.ContainsSingle(host.Runner.Calls);
     }
 
     [TestMethod]
@@ -294,7 +294,7 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Failed, sdk.Status);
         Assert.AreEqual("global.json asks for exactly 11.0.100-rc.1.26425.128", sdk.Detail);
         Assert.AreEqual(project.Directory, host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() == "--version").WorkingDirectory);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build"));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "workload" or "restore" or "build", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -327,8 +327,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Aspire runs the containers on Podman", result.Title);
-        CollectionAssert.AreEqual(new[] { "user-secrets", "set", "DcpPublisher:ContainerRuntime", "podman", "--project", project.AppHostDirectory },
-            host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "user-secrets", "set", "DcpPublisher:ContainerRuntime", "podman", "--project", project.AppHostDirectory }, host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "user-secrets").Arguments.ToArray());
     }
 
     [TestMethod]
@@ -342,7 +341,7 @@ public class ProjectStepTests
         host.Runner.On("docker", "version", 1);
 
         Assert.AreEqual(StepStatus.Skipped, (await steps.ContainerRuntimeAsync(_ => { }, CancellationToken.None)).Status);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "user-secrets"));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "user-secrets", host.Runner.Calls);
 
         using var dockerHost = new TestHost(HostOs.Linux);
         var dockerProject = CreateFakeProject(dockerHost, "Contoso");
@@ -366,7 +365,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         var aspire = host.Runner.Calls.Where(c => c.FileName is "aspire").Select(c => string.Join(' ', c.Arguments.Take(2))).ToArray();
-        CollectionAssert.AreEqual(new[] { "doctor --format", "ps --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
+        Assert.AreSequenceEqual(new[] { "doctor --format", "ps --format", "start --apphost", "wait serverweb", "wait serverapi", "stop --apphost" }, aspire);
     }
 
     [TestMethod]
@@ -380,7 +379,8 @@ public class ProjectStepTests
         await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
 
         var start = host.Runner.Calls.Single(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
-        Assert.AreEqual("1200", start.Environment?["ASPIRE_CLI_START_TIMEOUT"]);
+        var actualValue = start.Environment?["ASPIRE_CLI_START_TIMEOUT"];
+        Assert.AreEqual("1200", actualValue);
     }
 
     [TestMethod]
@@ -412,7 +412,7 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Docker is running in Windows container mode", result.Detail);
         Assert.AreEqual("Switch Docker Desktop to Linux containers mode", result.Hint);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "docker" || c.Arguments.FirstOrDefault() is "start"));
+        Assert.DoesNotContain(c => c.FileName is "docker" || c.Arguments.FirstOrDefault() is "start", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -446,7 +446,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual("keycloak failed to start", result.Detail);
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "wait"));
+        Assert.ContainsSingle(c => c.Arguments.FirstOrDefault() is "wait", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -464,7 +464,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).AspireStartAsync(progress.Add, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
-        CollectionAssert.Contains(progress, "Waiting for serverweb: postgres Running (Unhealthy), serverweb Waiting");
+        Assert.Contains("Waiting for serverweb: postgres Running (Unhealthy), serverweb Waiting", progress);
     }
 
     [TestMethod]
@@ -481,7 +481,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Docker isn't running", result.Detail);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start"));
+        Assert.DoesNotContain(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -504,10 +504,10 @@ public class ProjectStepTests
         Assert.AreEqual("without its containers", result.Detail);
         Assert.AreEqual("https://localhost:2030/login?t=abc", steps.Running!.DashboardUrl);
         Assert.AreEqual("http://localhost:5030", steps.Running.AppUrl);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "stop"), "A project that keeps running isn't stopped.");
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "stop", host.Runner.Calls, "A project that keeps running isn't stopped.");
 
         await steps.Running.StopAsync(true);
-        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Detached.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Detached.Single().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -529,7 +529,7 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         Assert.AreEqual("http://localhost:5030", steps.Running!.AppUrl);
         Assert.AreEqual(new Uri("http://localhost:5030/alive"), probes.Single());
-        CollectionAssert.Contains(host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray(), "--no-build");
+        Assert.Contains("--no-build", host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
 
         await steps.Running.StopAsync(false);
         Assert.IsTrue(steps.Running.Exited!.IsCompleted, "Stopping it ends dotnet run.");
@@ -552,7 +552,7 @@ public class ProjectStepTests
         var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
-        CollectionAssert.DoesNotContain(host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "run").Arguments.ToArray(), "--no-build", "The build from before the migration has no Initial migration in it.");
+        Assert.DoesNotContain("--no-build", host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "run").Arguments.ToArray(), "The build from before the migration has no Initial migration in it.");
 
         await steps.Running!.StopAsync(false);
     }
@@ -597,7 +597,7 @@ public class ProjectStepTests
 
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, true, ProjectRunMode.UntilClosed, CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "build src/Workbench/Contoso.Workbench.csproj",
             $"run --project {project.WorkbenchDirectory} --no-build",
@@ -608,13 +608,15 @@ public class ProjectStepTests
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf"
         }, DotnetCommands(host).ToArray());
-        CollectionAssert.AreEqual(new[] { "http://localhost:6030", "http://localhost:7030" }, openedBeforeTheWebBuild, "Each one opens in the browser as soon as it answers, the Workbench first.");
-        CollectionAssert.AreEqual(new[] { new Uri("http://localhost:6030"), new Uri("http://localhost:7030") }, probes);
+        Assert.AreSequenceEqual(new[] { "http://localhost:6030", "http://localhost:7030" }, openedBeforeTheWebBuild, "Each one opens in the browser as soon as it answers, the Workbench first.");
+        Assert.AreSequenceEqual(new[] { new Uri("http://localhost:6030"), new Uri("http://localhost:7030") }, probes);
         Assert.AreEqual("Installed WebAssembly build support", steps.Reports.Single(r => r.Id == "workloads").Result.Title);
         Assert.AreEqual("http://localhost:6030", steps.Reports.Single(r => r.Id == "workbench-run").Result.Detail);
         Assert.AreEqual("http://localhost:7030", steps.Reports.Single(r => r.Id == "landingpage-run").Result.Detail);
-        Assert.AreEqual("http://localhost:6030", projectSteps.Workbench?.AppUrl);
-        Assert.AreEqual("http://localhost:7030", projectSteps.LandingPage?.AppUrl);
+        var actualValue = projectSteps.Workbench?.AppUrl;
+        Assert.AreEqual("http://localhost:6030", actualValue);
+        var actualValue1 = projectSteps.LandingPage?.AppUrl;
+        Assert.AreEqual("http://localhost:7030", actualValue1);
 
         await projectSteps.Workbench!.StopAsync(false);
         await projectSteps.LandingPage!.StopAsync(false);
@@ -648,8 +650,8 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Skipped, byId["landingpage-run"].Status);
         Assert.AreEqual("the project has no landing page", byId["landingpage-run"].Detail);
         Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"));
-        CollectionAssert.DoesNotContain(DotnetCommands(host).ToArray(), "build src/Workbench/Contoso.Workbench.csproj");
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "run", host.Runner.Calls);
+        Assert.DoesNotContain("build src/Workbench/Contoso.Workbench.csproj", DotnetCommands(host).ToArray());
     }
 
     [TestMethod]
@@ -671,18 +673,18 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Failed, byId["workbench-build"].Status);
         Assert.AreEqual("Couldn't build the Workbench", byId["workbench-build"].Title);
         Assert.AreEqual("CS0103", byId["workbench-build"].Detail);
-        StringAssert.EndsWith(byId["workbench-build"].FollowUp, "dotnet build src/Workbench/Contoso.Workbench.csproj");
+        Assert.EndsWith("dotnet build src/Workbench/Contoso.Workbench.csproj", byId["workbench-build"].FollowUp);
         Assert.AreEqual(StepStatus.Skipped, byId["workbench-run"].Status);
         Assert.AreEqual("its build failed", byId["workbench-run"].Detail);
         Assert.AreEqual(StepStatus.Failed, byId["landingpage-build"].Status);
         Assert.AreEqual("Couldn't build the landing page", byId["landingpage-build"].Title);
         Assert.AreEqual("CS0246", byId["landingpage-build"].Detail);
-        StringAssert.EndsWith(byId["landingpage-build"].FollowUp, "dotnet build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj");
+        Assert.EndsWith("dotnet build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", byId["landingpage-build"].FollowUp);
         Assert.AreEqual(StepStatus.Skipped, byId["landingpage-run"].Status);
         Assert.AreEqual("its build failed", byId["landingpage-run"].Detail);
         Assert.AreEqual(StepStatus.Succeeded, byId["restore"].Status);
         Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() is "run", host.Runner.Calls);
         Assert.IsNull(projectSteps.Workbench);
         Assert.IsNull(projectSteps.LandingPage);
         Assert.IsEmpty(host.Runner.Detached);
@@ -705,11 +707,11 @@ public class ProjectStepTests
         var started = steps.Reports.Single(r => r.Id == "workbench-run").Result;
         Assert.AreEqual(StepStatus.Warning, started.Status);
         Assert.AreEqual("Couldn't start the Workbench", started.Title);
-        StringAssert.EndsWith(started.FollowUp, $"dotnet run --project {Path.Combine("src", "Workbench")}");
+        Assert.EndsWith($"dotnet run --project {Path.Combine("src", "Workbench")}", started.FollowUp);
         var landingPage = steps.Reports.Single(r => r.Id == "landingpage-run").Result;
         Assert.AreEqual(StepStatus.Warning, landingPage.Status);
         Assert.AreEqual("Couldn't start the landing page", landingPage.Title);
-        StringAssert.EndsWith(landingPage.FollowUp, $"dotnet run --project {Path.Combine("src", "LandingPage", "Contoso.LandingPage.Server")}");
+        Assert.EndsWith($"dotnet run --project {Path.Combine("src", "LandingPage", "Contoso.LandingPage.Server")}", landingPage.FollowUp);
         Assert.IsFalse(steps.AnyFailed);
         Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "build").Result.Status);
         Assert.IsNull(projectSteps.Workbench);
@@ -731,8 +733,8 @@ public class ProjectStepTests
 
             await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, true, mode, CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
-            Assert.IsFalse(steps.Reports.Any(r => r.Id is "workbench-run" or "landingpage-run"), mode.ToString());
+            Assert.AreSequenceEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
+            Assert.DoesNotContain(r => r.Id is "workbench-run" or "landingpage-run", steps.Reports, mode.ToString());
             Assert.IsEmpty(host.Runner.Detached, mode.ToString());
         }
     }
@@ -752,7 +754,7 @@ public class ProjectStepTests
 
         await ProjectRun.RunProjectAsync(host.Services, new StepRunner(host.Services), project, projectSteps, ProjectRunMode.UntilClosed, aspire: false, CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "url.dll,FileProtocolHandler", "http://localhost:5030" }, host.Runner.Detached.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "url.dll,FileProtocolHandler", "http://localhost:5030" }, host.Runner.Detached.Single().Arguments.ToArray());
 
         await projectSteps.Running!.StopAsync(false);
     }
@@ -770,10 +772,10 @@ public class ProjectStepTests
 
         await ProjectRun.KeepRunningAsync(host.Services, project, workbench, landingPage, closed.Token);
 
-        StringAssert.Contains(host.FlatOutput, "Running http://localhost:6030 The Workbench http://localhost:7030 The landing page https://localhost:17030/login?t=abc Aspire dashboard http://localhost:5030 The app");
-        StringAssert.Contains(host.FlatOutput, "They keep running while this terminal is open. Close it, or press Ctrl+C, to stop the project, the Workbench and the landing page.");
-        StringAssert.Contains(host.FlatOutput, "Stopping the project, the Workbench and the landing page");
-        CollectionAssert.AreEquivalent(new[] { ("workbench", true), ("landing page", true), ("project", true) }, stopped);
+        Assert.Contains("Running http://localhost:6030 The Workbench http://localhost:7030 The landing page https://localhost:17030/login?t=abc Aspire dashboard http://localhost:5030 The app", host.FlatOutput);
+        Assert.Contains("They keep running while this terminal is open. Close it, or press Ctrl+C, to stop the project, the Workbench and the landing page.", host.FlatOutput);
+        Assert.Contains("Stopping the project, the Workbench and the landing page", host.FlatOutput);
+        Assert.AreSequenceEqual(new[] { ("workbench", true), ("landing page", true), ("project", true) }, stopped, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(host.Runner.Detached, "Each one opened in the browser as soon as it started.");
     }
 
@@ -788,8 +790,8 @@ public class ProjectStepTests
 
         await ProjectRun.KeepRunningAsync(host.Services, project, workbench, null, closed.Token);
 
-        StringAssert.Contains(host.FlatOutput, "The Workbench stopped. Stopping the project");
-        CollectionAssert.AreEqual(new[] { ("workbench", false), ("project", true) }, stopped);
+        Assert.Contains("The Workbench stopped. Stopping the project", host.FlatOutput);
+        Assert.AreSequenceEqual(new[] { ("workbench", false), ("project", true) }, stopped);
     }
 
     [TestMethod]
@@ -838,7 +840,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Aspire started, serverweb didn't get healthy", result.Title);
-        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -854,7 +856,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() == "stop"), string.Join("\n", host.Runner.Calls.Select(c => c.CommandLine)));
+        Assert.DoesNotContain(c => c.Arguments.FirstOrDefault() == "stop", host.Runner.Calls, string.Join("\n", host.Runner.Calls.Select(c => c.CommandLine)));
     }
 
     [TestMethod]
@@ -870,8 +872,8 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status, result.Detail);
         Assert.AreEqual("Started the project with Aspire, but couldn't stop it", result.Title);
-        StringAssert.Contains(result.FollowUp, "aspire stop");
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "stop"));
+        Assert.Contains("aspire stop", result.FollowUp!);
+        Assert.ContainsSingle(c => c.Arguments.FirstOrDefault() is "stop", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -886,7 +888,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
-        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Calls.Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -913,7 +915,7 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, false, ProjectRunMode.UntilClosed, CancellationToken.None);
         await NewWorkflow.RunNativeStepsAsync(host.Services, steps, project, projectSteps, false, false, false, CancellationToken.None);
 
-        Assert.IsTrue(steps.Reports.Any(r => r.Id is "native-build"), string.Join(Environment.NewLine, steps.Reports.Select(r => r.Id)));
+        Assert.Contains(r => r.Id is "native-build", steps.Reports, string.Join(Environment.NewLine, steps.Reports.Select(r => r.Id)));
         Assert.IsTrue(steps.Reports.All(r => r.Result.Status is StepStatus.Skipped));
         Assert.IsFalse(steps.AnyFailed);
         Assert.IsEmpty(host.Runner.Calls);
@@ -933,7 +935,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         Assert.AreEqual("sudo", host.Runner.Calls.Last().FileName);
-        CollectionAssert.AreEqual(new[] { "-n", "/opt/dotnet/dotnet", "workload", "install", "wasm-tools" }, host.Runner.Calls.Last().Arguments.ToArray(), "sudo's secure_path may not have the user's dotnet, or may have another one.");
+        Assert.AreSequenceEqual(new[] { "-n", "/opt/dotnet/dotnet", "workload", "install", "wasm-tools" }, host.Runner.Calls.Last().Arguments.ToArray(), "sudo's secure_path may not have the user's dotnet, or may have another one.");
     }
 
     [TestMethod]
@@ -952,12 +954,12 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, false, ProjectRunMode.None, CancellationToken.None);
 
         var webCommands = DotnetCommands(host);
-        CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench, the landing page and the web app's packages and build come before the native apps.");
+        Assert.AreSequenceEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "build src/LandingPage/Contoso.LandingPage.Server/Contoso.LandingPage.Server.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench, the landing page and the web app's packages and build come before the native apps.");
 
         await NewWorkflow.RunNativeStepsAsync(host.Services, steps, project, projectSteps, false, false, false, CancellationToken.None);
 
         var commands = DotnetCommands(host).Skip(webCommands.Count).ToList();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "workload list",
             "workload install maui",
@@ -967,7 +969,7 @@ public class ProjectStepTests
             "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
         }, commands.ToArray(), string.Join(Environment.NewLine, commands));
         Assert.AreEqual("Built the web app", steps.Reports.Single(r => r.Id == "build").Result.Title);
-        CollectionAssert.AreEqual(new[] { "Built Contoso.Client.Maui", "Built Contoso.Client.Windows" }, steps.Reports.Where(r => r.Id == "native-build").Select(r => r.Result.Title).ToArray());
+        Assert.AreSequenceEqual(new[] { "Built Contoso.Client.Maui", "Built Contoso.Client.Windows" }, steps.Reports.Where(r => r.Id == "native-build").Select(r => r.Result.Title).ToArray());
         Assert.AreEqual("Installed Windows build support", steps.Reports.Single(r => r.Id == "native-workloads").Result.Title);
     }
 
@@ -985,7 +987,7 @@ public class ProjectStepTests
 
         await new ProjectSteps(host.Services, project).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
 
-        CollectionAssert.Contains(DotnetCommands(host), $"build {maui} -t:InstallAndroidDependencies -f net99.0-android -p:AcceptAndroidSDKLicenses=True");
+        Assert.Contains($"build {maui} -t:InstallAndroidDependencies -f net99.0-android -p:AcceptAndroidSDKLicenses=True", DotnetCommands(host));
     }
 
     [TestMethod]
@@ -996,7 +998,7 @@ public class ProjectStepTests
         WriteSolution(project);
         WriteWorkbench(project, "http://localhost:6030");
 
-        CollectionAssert.AreEqual(new[] { "src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj", "src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj" }, project.ProjectsOutsideWebFilter.ToArray());
+        Assert.AreSequenceEqual(new[] { "src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj", "src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj" }, project.ProjectsOutsideWebFilter.ToArray());
 
         File.Delete(project.Solution);
         Assert.IsEmpty(project.ProjectsOutsideWebFilter);
@@ -1018,12 +1020,12 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).XcodeAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(expected, result.Status, result.Detail);
-        CollectionAssert.Contains(host.Runner.Calls.First().Arguments.ToList(), "-p:TargetFramework=net10.0-ios");
+        Assert.Contains("-p:TargetFramework=net10.0-ios", host.Runner.Calls.First().Arguments.ToList());
 
         if (expected is StepStatus.Warning)
         {
             Assert.AreEqual("26.2 here, 26.6 wanted", result.Detail);
-            StringAssert.Contains(result.Hint, "Xcode 26.6");
+            Assert.Contains("Xcode 26.6", result.Hint!);
         }
     }
 
@@ -1040,10 +1042,10 @@ public class ProjectStepTests
 
         var byId = steps.Reports.ToDictionary(r => r.Id, r => r.Result);
         Assert.AreEqual(StepStatus.Failed, byId["restore"].Status);
-        CollectionAssert.AreEqual(new[] { "NU1301" }, byId["restore"].Codes.ToArray());
-        StringAssert.StartsWith(byId["restore"].Hint, "error NU1301");
+        Assert.AreSequenceEqual(new[] { "NU1301" }, byId["restore"].Codes.ToArray());
+        Assert.StartsWith("error NU1301", byId["restore"].Hint);
         Assert.AreEqual(StepStatus.Succeeded, byId["build"].Status);
-        StringAssert.Contains(byId["restore"].FollowUp, "dotnet restore Contoso.Web.slnf");
+        Assert.Contains("dotnet restore Contoso.Web.slnf", byId["restore"].FollowUp!);
     }
 
     [TestMethod]
@@ -1059,7 +1061,7 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, false, ProjectRunMode.None, CancellationToken.None);
 
         Assert.AreEqual(error, steps.Reports.Single(r => r.Id == "restore").Result.Hint);
-        StringAssert.Contains(host.Output, "end-of-error");
+        Assert.Contains("end-of-error", host.Output);
     }
 
     [TestMethod]
@@ -1069,7 +1071,7 @@ public class ProjectStepTests
         var project = CreateFakeProject(host, "Contoso");
         WriteRecommendations(project, "ms-dotnettools.csharp", "Anthropic.claude-code", "ms-dotnettools.csharp");
 
-        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
+        Assert.AreSequenceEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" }, ProjectSteps.ReadRecommendedExtensions(project.Directory).ToArray());
     }
 
     [TestMethod]
@@ -1088,7 +1090,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Installed 1 VS Code extension", result.Title);
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+        Assert.ContainsSingle(c => c.Arguments.FirstOrDefault() is "--install-extension", host.Runner.Calls);
     }
 
     [TestMethod]
@@ -1111,7 +1113,7 @@ public class ProjectStepTests
         Assert.AreEqual("claude-code", result.Detail);
         Assert.AreEqual($"{ProcessSpec.Quote(vsCode.Path)} --install-extension Anthropic.claude-code", result.FollowUp);
         Assert.AreEqual(2, attempts);
-        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "--install-extension").Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "--install-extension").Last().Arguments.ToArray());
     }
 
     [TestMethod]
@@ -1131,12 +1133,12 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         Assert.AreEqual("Installed 1 VS Code extension", result.Title);
         var install = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "--install-extension");
-        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
 
         var done = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual("Extensions already installed", done.Title);
-        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+        Assert.ContainsSingle(c => c.Arguments.FirstOrDefault() is "--install-extension", host.Runner.Calls);
     }
 
     private sealed record FakeVsCodeInstall(string Path, string Name, HashSet<string> Installed);
@@ -1168,7 +1170,7 @@ public class ProjectStepTests
         Assert.AreEqual("Playwright 1.57.0", result.Detail);
         var call = host.Runner.Calls.Single();
         Assert.AreEqual(Path.Combine(nodeDirectory, "node.exe"), call.FileName);
-        CollectionAssert.AreEqual(new[] { Path.Combine(playwright, "package", "cli.js"), "install", "chromium" }, call.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { Path.Combine(playwright, "package", "cli.js"), "install", "chromium" }, call.Arguments.ToArray());
     }
 
     [TestMethod]
@@ -1179,7 +1181,7 @@ public class ProjectStepTests
 
         var notBuilt = await new ProjectSteps(host.Services, project).PlaywrightAsync(_ => { }, CancellationToken.None);
         Assert.AreEqual(StepStatus.Skipped, notBuilt.Status);
-        StringAssert.Contains(notBuilt.Detail, "weren't built");
+        Assert.Contains("weren't built", notBuilt.Detail!);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -1201,8 +1203,8 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Installed Playwright's browsers", result.Title);
-        CollectionAssert.AreEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
-        CollectionAssert.AreEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { cliScript, "install" }, ci.Runner.Calls.First().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "-n", Path.Combine(nodeDirectory, "node"), cliScript, "install-deps" }, ci.Runner.Calls.Last().Arguments.ToArray());
         Assert.IsNotNull(ci.Runner.Calls.First().Timeout);
         Assert.AreEqual("sudo", ci.Runner.Calls.Last().FileName);
         Assert.IsNull(ci.Runner.Calls.Last().Timeout);
@@ -1224,7 +1226,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.IsNull(result.FollowUp);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("install-deps")), "Playwright's install-deps runs only apt-get.");
+        Assert.DoesNotContain(c => c.Arguments.Contains("install-deps"), host.Runner.Calls, "Playwright's install-deps runs only apt-get.");
     }
 
     [TestMethod]
@@ -1235,7 +1237,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(ci.Services, CreateFakeProject(ci, "Contoso")).AndroidDependenciesAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        StringAssert.Contains(ci.Runner.Calls.Single().CommandLine, "-t:InstallAndroidDependencies");
+        Assert.Contains("-t:InstallAndroidDependencies", ci.Runner.Calls.Single().CommandLine);
     }
 
     [TestMethod]
@@ -1249,7 +1251,7 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("The Android SDK and Java need administrator rights", result.Title);
         Assert.AreEqual("run it in an elevated terminal", result.Detail);
-        StringAssert.Contains(result.FollowUp, "-t:InstallAndroidDependencies");
+        Assert.Contains("-t:InstallAndroidDependencies", result.FollowUp!);
     }
 
     [TestMethod]
@@ -1279,7 +1281,7 @@ public class ProjectStepTests
 
         await new ProjectSteps(host.Services, CreateFakeProject(host, "Contoso")).WorkloadsAsync(_ => { }, CancellationToken.None);
 
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "sudo"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
+        Assert.Contains(c => c.FileName is "sudo", host.Runner.Calls, string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
     }
 
     [TestMethod]
@@ -1293,9 +1295,9 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), true, false, false, true, ProjectRunMode.None, CancellationToken.None);
 
         var commands = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
-        CollectionAssert.Contains(commands, "restore Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
-        CollectionAssert.Contains(commands, "build Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging");
-        Assert.IsFalse(steps.Reports.Any(r => r.Id is "playwright"));
+        Assert.Contains("restore Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging", commands);
+        Assert.Contains("build Contoso.Web.slnf -p:EnforceCodeStyleInBuild=true -p:Environment=Staging", commands);
+        Assert.DoesNotContain(r => r.Id is "playwright", steps.Reports);
     }
 
     [TestMethod]
@@ -1322,7 +1324,7 @@ public class ProjectStepTests
         var remoteHead = calls.IndexOf("git remote set-head origin main");
 
         Assert.IsTrue(create >= 0 && create < lockDown && create < alerts && lockDown < pushMain && alerts < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
-        Assert.AreEqual(1, calls.Count(c => c.StartsWith("git push", StringComparison.Ordinal)), string.Join(Environment.NewLine, calls));
+        Assert.ContainsSingle(c => c.StartsWith("git push", StringComparison.Ordinal), calls, string.Join(Environment.NewLine, calls));
         Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
     }
 
@@ -1339,7 +1341,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreNotEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.Contains(host.Runner.Calls.Select(c => c.CommandLine).ToList(), "gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent");
+        Assert.Contains("gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent", host.Runner.Calls.Select(c => c.CommandLine).ToList());
     }
 
     [TestMethod]
@@ -1356,9 +1358,9 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Failed, result.Status);
-        StringAssert.Contains(result.Title, "lock down");
-        StringAssert.Contains(result.FollowUp, "git push -u origin main");
-        StringAssert.EndsWith(result.FollowUp, "&& bit pipeline");
+        Assert.Contains("lock down", result.Title);
+        Assert.Contains("git push -u origin main", result.FollowUp!);
+        Assert.EndsWith("&& bit pipeline", result.FollowUp);
     }
 
     [TestMethod]
@@ -1374,7 +1376,7 @@ public class ProjectStepTests
         await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         var api = host.Runner.Calls.Where(c => c.FileName is "gh" && c.Arguments is ["api", _, ..] && c.Arguments[1] is not "user").Select(c => string.Join(' ', c.Arguments)).ToList();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent",
             "api -X PUT repos/contoso-dev/Contoso/vulnerability-alerts --silent"
@@ -1395,7 +1397,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Warning, result.Status, result.Title);
-        StringAssert.Contains(result.FollowUp, "bit pipeline");
+        Assert.Contains("bit pipeline", result.FollowUp!);
     }
 
     [TestMethod]
@@ -1407,7 +1409,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).FormatAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.AreEqual(new[] { "format", "Contoso.slnx", "--no-restore", "--exclude-diagnostics", "BL0016" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "format", "Contoso.slnx", "--no-restore", "--exclude-diagnostics", "BL0016" }, host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray());
     }
 
     [TestMethod]
@@ -1422,7 +1424,7 @@ public class ProjectStepTests
         await new StepRunner(host.Services).RunAsync("github-repo", "Creating a private GitHub repo", new ProjectSteps(host.Services, project).GitHubRepositoryAsync, CancellationToken.None);
 
         var attempt = $"bit ran this in {project.Directory}: git push -u origin main";
-        StringAssert.Contains(host.Output, attempt);
+        Assert.Contains(attempt, host.Output);
         Assert.IsLessThan(host.Output.IndexOf("fatal: unable to access", StringComparison.Ordinal), host.Output.IndexOf(attempt, StringComparison.Ordinal), host.Output);
     }
 
@@ -1447,7 +1449,7 @@ public class ProjectStepTests
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("github.com/contoso-dev/Contoso", result.Detail);
-        StringAssert.EndsWith(result.FollowUp, "gh repo edit --default-branch main");
+        Assert.EndsWith("gh repo edit --default-branch main", result.FollowUp);
     }
 
     [TestMethod]
@@ -1463,8 +1465,8 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Failed, result.Status);
-        StringAssert.EndsWith(result.FollowUp, "git push -u origin main && gh repo edit --default-branch main");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "edit", ..]));
+        Assert.EndsWith("git push -u origin main && gh repo edit --default-branch main", result.FollowUp);
+        Assert.DoesNotContain(c => c.Arguments is ["repo", "edit", ..], host.Runner.Calls);
     }
 
     [TestMethod]
@@ -1483,9 +1485,9 @@ public class ProjectStepTests
 
         var signedOut = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
         Assert.AreEqual(StepStatus.Warning, signedOut.Status);
-        StringAssert.StartsWith(signedOut.FollowUp, "gh auth login --web && cd ");
-        StringAssert.Contains(signedOut.FollowUp, "gh repo create Contoso --private --source . --remote origin");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "create", ..]));
+        Assert.StartsWith("gh auth login --web && cd ", signedOut.FollowUp);
+        Assert.Contains("gh repo create Contoso --private --source . --remote origin", signedOut.FollowUp);
+        Assert.DoesNotContain(c => c.Arguments is ["repo", "create", ..], host.Runner.Calls);
 
         project.GitReady = false;
         Assert.AreEqual(StepStatus.Skipped, (await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None)).Status);
@@ -1501,8 +1503,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
-        CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --clipboard --git-protocol https --hostname github.com" },
-            host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
+        Assert.AreSequenceEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --clipboard --git-protocol https --hostname github.com" }, host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
     }
 
     [TestMethod]
@@ -1534,9 +1535,9 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Skipped signing in to GitHub", result.Title);
         Assert.IsTrue(stopped, "Skipping stops gh's sign-in.");
-        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 (copied to the clipboard)");
-        StringAssert.Contains(host.FlatOutput, "Press Esc to skip");
-        CollectionAssert.AreEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
+        Assert.Contains("Enter AB12-CD34 (copied to the clipboard)", host.FlatOutput);
+        Assert.Contains("Press Esc to skip", host.FlatOutput);
+        Assert.AreSequenceEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
     }
 
     [TestMethod]
@@ -1553,7 +1554,7 @@ public class ProjectStepTests
 
         await new ProjectSteps(host.Services, project).GitHubSignInAsync(_ => { }, CancellationToken.None);
 
-        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34 at https://github.com/login/device");
+        Assert.Contains("Enter AB12-CD34 at https://github.com/login/device", host.FlatOutput);
     }
 
     [TestMethod]
@@ -1721,4 +1722,6 @@ public class ProjectStepTests
         Assert.IsNotNull(directory);
         return Path.Combine(directory.FullName, "src", "Templates", "Boilerplate", "Bit.Boilerplate");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

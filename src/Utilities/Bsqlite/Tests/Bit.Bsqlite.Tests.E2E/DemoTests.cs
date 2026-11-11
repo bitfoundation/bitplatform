@@ -46,9 +46,9 @@ public sealed class DemoTests : DemoTest
         foreach (var route in routes.Append("/"))
         {
             var path = "/" + route.TrimStart('/');
-            using var response = await client.GetAsync(DemoUrl + path);
+            using var response = await client.GetAsync(DemoUrl + path, TestContext.CancellationToken);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"{path} answered {response.StatusCode}.");
-            Assert.MatchesRegex(new Regex("<title>[^<]*Bsqlite[^<]*</title>"), await response.Content.ReadAsStringAsync(), $"{path} is not prerendered with a title of its own.");
+            Assert.MatchesRegex(new Regex("<title>[^<]*Bsqlite[^<]*</title>"), await response.Content.ReadAsStringAsync(TestContext.CancellationToken), $"{path} is not prerendered with a title of its own.");
         }
 
         foreach (var route in routes)
@@ -72,7 +72,7 @@ public sealed class DemoTests : DemoTest
         await Assertions.Expect(page.Locator(".page[data-interactive='true'] main h1").First).ToBeVisibleAsync();
         await Assertions.Expect(page.Locator("[data-live='open'] .bq-hero-rows li").First).ToBeVisibleAsync(new() { Timeout = 60_000 });
 
-        Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+        Assert.IsEmpty(errors, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
     }
 
     /// <summary>
@@ -83,11 +83,11 @@ public sealed class DemoTests : DemoTest
     public async Task Pages_are_readable_before_WebAssembly_starts()
     {
         using var client = new HttpClient();
-        var html = await client.GetStringAsync(DemoUrl + "/catalog");
+        var html = await client.GetStringAsync(DemoUrl + "/catalog", TestContext.CancellationToken);
 
-        StringAssert.Contains(html, "Products and categories, read and written entirely on the client");
-        StringAssert.Contains(html, "data-interactive=\"false\"");
-        StringAssert.Contains(html, "data-session=\"closed\"");
+        Assert.Contains("Products and categories, read and written entirely on the client", html);
+        Assert.Contains("data-interactive=\"false\"", html);
+        Assert.Contains("data-session=\"closed\"", html);
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public sealed class DemoTests : DemoTest
         Assert.AreEqual(target, await WaitForSessionAsync(page, target), "The reload did not reopen the database where it was moved to.");
         await Assertions.Expect(products).ToHaveCountAsync(count);
 
-        Assert.AreEqual(0, errors.Count, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
+        Assert.IsEmpty(errors, "Console errors:" + Environment.NewLine + string.Join(Environment.NewLine, errors));
     }
 
     /// <summary>
@@ -277,7 +277,7 @@ public sealed class DemoTests : DemoTest
     public async Task The_browser_and_the_server_run_the_same_model_and_seed_the_same_catalog()
     {
         using var client = new HttpClient();
-        var server = JsonDocument.Parse(await client.GetStringAsync(DemoUrl + "/api/products")).RootElement;
+        var server = JsonDocument.Parse(await client.GetStringAsync(DemoUrl + "/api/products", TestContext.CancellationToken)).RootElement;
         var serverSkus = server.EnumerateArray().Select(p => p.GetProperty("sku").GetString()).Order().ToArray();
 
         var page = await NewDemoPageAsync([]);
@@ -289,6 +289,6 @@ public sealed class DemoTests : DemoTest
 
         // The SKU is the grid's first column.
         var browserSkus = (await products.Locator("td:first-child").AllTextContentsAsync()).Select(s => s.Trim()).Order().ToArray();
-        CollectionAssert.AreEqual(serverSkus, browserSkus);
+        Assert.AreSequenceEqual(serverSkus, browserSkus);
     }
 }

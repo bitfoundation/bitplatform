@@ -3,13 +3,13 @@ using Bunit;
 
 namespace Bit.Borm.Tests;
 
-public class OptionalRow
+internal class OptionalRow
 {
     public string Kind { get; set; } = "";
     public string? Email { get; set; }
 }
 
-public class OptionalRowSheet
+internal class OptionalRowSheet
 {
     /// <summary>A root field sharing a name with one inside every row. This is where the bug lived.</summary>
     public string? Email { get; set; }
@@ -106,7 +106,7 @@ public class ScopedReadExistenceTests
     }
 }
 
-public class CollectionAnnotationsModel
+internal class CollectionAnnotationsModel
 {
     [MinLength(1), MaxLength(3)]
     public List<string> Tags { get; set; } = [];

@@ -1,4 +1,4 @@
-using Bit.BlazeDb.Serialization;
+﻿using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Tests.@event;
 
 namespace Bit.BlazeDb.Tests;
@@ -37,15 +37,15 @@ public class GeneratorEdgeCaseTests
         // The explicit interface implementation is not a column.
         Assert.AreEqual("", ((IHasTenant)decoded).Tenant);
 
-        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(KeywordRow.Table));
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(KeywordRow.Table), TestContext.CancellationToken);
         var rows = db.GetTable(KeywordRow.Table);
         rows.Insert(row);
         rows.Insert(new KeywordRow { @int = 2, @class = "b", @event = 3, Item1 = "y", Item2 = 1, Rest = "r" });
 
         Assert.AreEqual(1, rows.Lookup(KeywordRow.Indexes.@class, "a").Single().@int);
         Assert.AreEqual(1, rows.Lookup(KeywordRow.Indexes.ByItems, (2, "x")).Single().@int);
-        CollectionAssert.AreEqual(new[] { 1, 2 }, rows.OrderBy(KeywordRow.Indexes.ByRest).Select(r => r.@int).ToArray());
-        CollectionAssert.AreEqual(new[] { 2, 1 }, rows.OrderBy(KeywordRow.Indexes.@event).Select(r => r.@int).ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, rows.OrderBy(KeywordRow.Indexes.ByRest).Select(r => r.@int).ToArray());
+        Assert.AreSequenceEqual(new[] { 2, 1 }, rows.OrderBy(KeywordRow.Indexes.@event).Select(r => r.@int).ToArray());
     }
 
     [TestMethod]
@@ -53,8 +53,8 @@ public class GeneratorEdgeCaseTests
     {
         var ex = Assert.ThrowsExactly<BlazeDbException>(() =>
             KeywordRow.Table.RowWriter(new BlazeDbBufferWriter(), new KeywordRow { @int = 1, @class = null! }));
-        StringAssert.Contains(ex.Message, "'class'");
-        StringAssert.Contains(ex.Message, "'keyword_rows'");
+        Assert.Contains("'class'", ex.Message);
+        Assert.Contains("'keyword_rows'", ex.Message);
 
         Assert.ThrowsExactly<BlazeDbException>(() =>
             KeywordRow.Table.RowWriter(new BlazeDbBufferWriter(), new KeywordRow { @int = 1, Blob = null! }));
@@ -71,7 +71,7 @@ public class GeneratorEdgeCaseTests
 
         Assert.ThrowsExactly<BlazeDbException>(() => rows.Insert(new KeywordRow { @int = 1, @class = null! }));
         Assert.AreEqual(0, rows.Count);
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
+        Assert.IsEmpty(db.VerifyIntegrity());
     }
 
     [TestMethod]
@@ -88,7 +88,7 @@ public class GeneratorEdgeCaseTests
     {
         var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table);
-        await using (var db = await BlazeDbDatabase.OpenAsync(options))
+        await using (var db = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken))
         {
             var row = new KeywordRow { @int = 1, @class = "a", Item1 = "x" };
             db.GetTable(KeywordRow.Table).Insert(row);
@@ -96,13 +96,13 @@ public class GeneratorEdgeCaseTests
             // What an EF Core entity whose save was refused leaves behind: the table's own row object, changed in place.
             row.Item1 = null!;
             row.Rest = "b" + (char)0xD800;
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             using var export = new MemoryStream();
-            await db.ExportAsync(export);
+            await db.ExportAsync(export, TestContext.CancellationToken);
         }
 
         await using var reopened = await BlazeDbDatabase.OpenAsync(
-            new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table));
+            new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table), TestContext.CancellationToken);
         // Checkpoints and exports are built from what the log committed, so the edits that were never written are
         // not in them: the row comes back as it was inserted.
         var stored = reopened.GetTable(KeywordRow.Table).Get(1)!;
@@ -131,8 +131,10 @@ public class GeneratorEdgeCaseTests
         var refused = Assert.ThrowsExactly<BlazeDbException>(() => rows.Insert(new KeywordRow { @int = 1, @class = highAlone }));
         Assert.AreEqual(0, rows.Count);
         // The message names the column, as a refused null does, and where in the value the broken character is.
-        StringAssert.Contains(refused.Message, "'class'");
-        StringAssert.Contains(refused.Message, "'keyword_rows'");
-        StringAssert.Contains(refused.Message, "index 1");
+        Assert.Contains("'class'", refused.Message);
+        Assert.Contains("'keyword_rows'", refused.Message);
+        Assert.Contains("index 1", refused.Message);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

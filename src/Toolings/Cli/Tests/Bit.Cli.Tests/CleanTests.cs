@@ -32,7 +32,7 @@ public class CleanTests
         host.Runner.On("bash", "Clean.sh", 1, "rm: cannot remove 'bin': Device or resource busy");
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("clean", folder));
-        StringAssert.Contains(host.FlatOutput, "Clean.sh failed");
+        Assert.Contains("Clean.sh failed", host.FlatOutput);
     }
 
     [TestMethod]
@@ -44,8 +44,8 @@ public class CleanTests
 
         await host.RunAsync("clean", folder);
 
-        StringAssert.Contains(host.FlatOutput, "Some build folders are still there");
-        StringAssert.Contains(host.FlatOutput, obj);
+        Assert.Contains("Some build folders are still there", host.FlatOutput);
+        Assert.Contains(obj, host.FlatOutput);
     }
 
     [TestMethod]
@@ -55,11 +55,11 @@ public class CleanTests
         var folder = CreateProject(host, "Clean.bat");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("clean", folder));
-        StringAssert.Contains(host.Output, "has no Clean.sh");
+        Assert.Contains("has no Clean.sh", host.Output);
         Assert.IsEmpty(host.Runner.Calls);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("clean", host.WorkingDirectory));
-        StringAssert.Contains(host.Output, "isn't a bit Boilerplate project folder");
+        Assert.Contains("isn't a bit Boilerplate project folder", host.Output);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -80,7 +80,7 @@ public class CleanTests
         {
             Assert.AreEqual(0, await host.RunAsync("clean", folder), host.Output);
             Assert.IsTrue(process.WaitForExit(TimeSpan.FromSeconds(10)));
-            StringAssert.Contains(host.FlatOutput, $"Stopped Contoso.Server.Api process {process.Id}");
+            Assert.Contains($"Stopped Contoso.Server.Api process {process.Id}", host.FlatOutput);
         }
         finally
         {

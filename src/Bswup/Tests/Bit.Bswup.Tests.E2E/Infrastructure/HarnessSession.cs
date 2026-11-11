@@ -9,7 +9,7 @@ namespace Bit.Bswup.Tests.E2E.Infrastructure;
 /// own (<c>http://&lt;id&gt;.localhost:&lt;port&gt;</c>) and the deployment behind it - service-worker settings, the
 /// live version, the network, faults and the request log.
 /// </summary>
-public sealed class HarnessSession
+internal sealed class HarnessSession
 {
     private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(30) };
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
@@ -88,7 +88,7 @@ public sealed class HarnessSession
         return request;
     }
 
-    public sealed class RequestRecord
+    internal sealed class RequestRecord
     {
         public string Method { get; set; } = string.Empty;
 
@@ -111,13 +111,13 @@ public sealed class HarnessSession
         public override string ToString() => $"{Method} {Path}{Query} [{Destination}] {Status}";
     }
 
-    public sealed class AssetsManifest
+    internal sealed class AssetsManifest
     {
         public string Version { get; set; } = string.Empty;
 
         public List<Asset> Assets { get; set; } = [];
 
-        public sealed class Asset
+        internal sealed class Asset
         {
             public string Url { get; set; } = string.Empty;
 

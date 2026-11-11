@@ -48,8 +48,8 @@ public class BitNavParamsTests : BunitTestContext
     [TestMethod]
     public void BitNavParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitNav<object>)}", BitNavParams.ParamName);
-        Assert.AreEqual("BitParams.BitNav", BitNavParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitNav<object>)}", new BitNavParams().Name);
+        Assert.AreEqual("BitParams.BitNav", new BitNavParams().Name);
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class BitNavParamsTests : BunitTestContext
         // The initial expansion state is decided while the nav initializes, so the cascade has to be in by then.
         var component = RenderWithParams(new BitNavParams { AllExpanded = true }, GetItems());
 
-        Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+        Assert.HasCount(3, component.FindAll(".bit-nav-ict"));
     }
 
     [TestMethod]
@@ -124,8 +124,8 @@ public class BitNavParamsTests : BunitTestContext
             RenderType = BitNavRenderType.Grouped,
         }, GetItems());
 
-        Assert.AreEqual(0, component.FindAll(".bit-nav-cbt").Count, "NoCollapse hides the chevrons");
-        Assert.AreEqual(2, component.FindAll(".bit-nav-gcb").Count, "every root item renders as a group header");
+        Assert.IsEmpty(component.FindAll(".bit-nav-cbt"), "NoCollapse hides the chevrons");
+        Assert.HasCount(2, component.FindAll(".bit-nav-gcb"), "every root item renders as a group header");
     }
 
     [TestMethod]
@@ -136,11 +136,11 @@ public class BitNavParamsTests : BunitTestContext
         var component = RenderWithParams(new BitNavParams { Mode = BitNavMode.Manual }, GetItems());
 
         // In the automatic mode the current URL would have selected the Contact item.
-        Assert.AreEqual(0, component.FindAll(".bit-nav-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nav-sel"));
 
         component.FindAll(".bit-nav-ict")[1].Click();
 
-        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nav-sel"));
     }
 
     [TestMethod]
@@ -150,7 +150,7 @@ public class BitNavParamsTests : BunitTestContext
 
         var component = RenderWithParams(new BitNavParams { Match = BitNavMatch.Prefix }, GetItems());
 
-        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nav-sel"));
         Assert.AreEqual("Contact", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
     }
 
@@ -186,9 +186,9 @@ public class BitNavParamsTests : BunitTestContext
         var root = component.Find(".bit-nav");
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-nav-ict").ClassList.Contains("cascaded-item"));
-        StringAssert.Contains(component.Find(".bit-nav-ict").GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", component.Find(".bit-nav-ict").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public class BitNavParamsTests : BunitTestContext
         }, GetItems());
 
         // The child of the first item is one level deep and has no children: 1 * 40 + 10.
-        StringAssert.Contains(component.FindAll(".bit-nav-ict")[1].GetAttribute("style"), "padding-inline-start:50px");
+        Assert.Contains("padding-inline-start:50px", component.FindAll(".bit-nav-ict")[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -323,7 +323,7 @@ public class BitNavParamsTests : BunitTestContext
                                                    .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
                                                    .ToList();
 
-        Assert.IsTrue(parameters.Count > 0);
+        Assert.IsNotEmpty(parameters);
 
         foreach (var name in parameters)
         {
@@ -358,10 +358,10 @@ public class BitNavParamsTests : BunitTestContext
 
         // A false the nav wrote for itself is a choice, not an absence the cascade may fill in: the branch keeps its
         // chevron, and the nav keeps its full width.
-        Assert.AreEqual(1, component.FindAll(".bit-nav-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nav-cbt"));
         Assert.IsFalse(root.ClassList.Contains("bit-nav-ftw"));
         // What it left unset still comes from the cascade.
-        StringAssert.Contains(component.Find(".bit-nav-mct").GetAttribute("style"), "row-reverse");
+        Assert.Contains("row-reverse", component.Find(".bit-nav-mct").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -378,7 +378,7 @@ public class BitNavParamsTests : BunitTestContext
         var root = component.Find(".bit-nav");
 
         Assert.AreEqual("cascaded-id", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
@@ -386,7 +386,7 @@ public class BitNavParamsTests : BunitTestContext
         // A disabled nav disables everything it renders: the links drop their href and say so.
         var items = component.FindAll(".bit-nav-ict");
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.IsTrue(items.All(i => i.HasAttribute("href") is false && i.GetAttribute("aria-disabled") == "true"));
     }
 

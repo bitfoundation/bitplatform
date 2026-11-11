@@ -169,10 +169,10 @@ public class BitDataGridPropertyAccessorTests
             new Model { Name = "c", MaybePrice = new Money { Amount = 2 } },
         }.AsQueryable();
 
-        CollectionAssert.AreEqual(new[] { "a", "c", "b" }, items.OrderBy(lambda).Select(x => x.Name).ToList(), "a null intermediate sorts as a null key, not throws");
+        Assert.AreSequenceEqual(new[] { "a", "c", "b" }, items.OrderBy(lambda).Select(x => x.Name).ToList(), "a null intermediate sorts as a null key, not throws");
 
         var getAmount = lambda.Compile();
-        CollectionAssert.AreEqual(new[] { "b" }, items.AsEnumerable().Where(x => getAmount(x) > 3).Select(x => x.Name).ToList());
+        Assert.AreSequenceEqual(new[] { "b" }, items.AsEnumerable().Where(x => getAmount(x) > 3).Select(x => x.Name).ToList());
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class BitDataGridPropertyAccessorTests
         }.AsQueryable();
 
         var sorted = items.OrderBy(lambda).Select(x => x.Name).ToList();
-        CollectionAssert.AreEqual(new[] { "a", "c", "b" }, sorted, "null intermediate must sort as a null key, not throw");
+        Assert.AreSequenceEqual(new[] { "a", "c", "b" }, sorted, "null intermediate must sort as a null key, not throw");
 
         var getCity = lambda.Compile();
         Assert.AreEqual(2, items.AsEnumerable().Count(x => getCity(x) is not null));

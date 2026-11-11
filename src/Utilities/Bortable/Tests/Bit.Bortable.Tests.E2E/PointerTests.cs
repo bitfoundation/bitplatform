@@ -73,7 +73,7 @@ public sealed class PointerTests : BortableTest
         var to = (await BoxAsync(Item(page, "touch-list", "Dates"))).At(0.5, 0.7);
 
         await TouchAsync(cdp, "touchStart", from);
-        await Task.Delay(400); // longer than TouchDelay
+        await Task.Delay(400, TestContext.CancellationToken); // longer than TouchDelay
         await GlideAsync(page, p => TouchAsync(cdp, "touchMove", p), from, to);
 
         // Mid-drag: the preview follows the finger and the item, dimmed, has moved in its list.
@@ -129,7 +129,7 @@ public sealed class PointerTests : BortableTest
         var to = (await BoxAsync(Item(page, "touch-handle-list", "Ice"))).At(0.8, 0.7);
 
         await TouchAsync(cdp, "touchStart", from);
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
         await GlideAsync(page, p => TouchAsync(cdp, "touchMove", p), from, to);
         await TouchAsync(cdp, "touchEnd", to);
         await WaitForQuietAsync(page);
@@ -217,7 +217,7 @@ public sealed class PointerTests : BortableTest
         var to = (await BoxAsync(Item(page, "shared-b", "B3"))).At(0.5, 0.3);
 
         await TouchAsync(cdp, "touchStart", from);
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
         await GlideAsync(page, p => TouchAsync(cdp, "touchMove", p), from, to);
         await AssertLabelsAsync(page, "shared-b", ["B1", "B2", "[placeholder: A1]", "B3", "B4", "B5"], withPlaceholder: true);
         await TouchAsync(cdp, "touchEnd", to);

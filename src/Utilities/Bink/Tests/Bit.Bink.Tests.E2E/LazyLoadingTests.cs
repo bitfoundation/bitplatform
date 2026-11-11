@@ -25,16 +25,20 @@ public sealed class LazyLoadingTests : BinkTest
     [TestInitialize]
     public async Task StartSampleAsync()
     {
+        string? unavailableReason = null;
         try
         {
             _sample = await LazyLoadingSample.GetAsync("Bit.Bink", "BINK", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
-            var reason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
-            // A build server must not report a suite that never ran as anything but a failure.
-            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + reason);
-            Assert.Inconclusive("The browser tests could not run: " + reason);
+            unavailableReason = $"the lazy loading sample could not be started in the {E2EEnvironment.Configuration} configuration: {ex.Message}";
+        }
+
+        if (unavailableReason is not null)
+        {            // A build server must not report a suite that never ran as anything but a failure.
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The browser tests could not run: " + unavailableReason);
+            Assert.Inconclusive("The browser tests could not run: " + unavailableReason);
         }
     }
 
@@ -80,7 +84,8 @@ public sealed class LazyLoadingTests : BinkTest
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the canvas, which stays inert
         // until the browser attaches it.
         var response = await GotoAsync(page, "/whiteboard");
-        Assert.AreEqual(200, response?.Status);
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue);
         var prerendered = await response!.TextAsync();
         Assert.Contains("data-bink-layer=\"document\"", prerendered);
         Assert.Contains("not attached yet", prerendered);
@@ -109,7 +114,7 @@ public sealed class LazyLoadingTests : BinkTest
 
         await Expect(strokes).ToHaveTextAsync("1");
         var ink = await CountInkAsync(page);
-        Assert.IsTrue(ink > 500, $"expected the stroke to cover a few hundred pixels but found {ink}");
+        Assert.IsGreaterThan(500, ink, $"expected the stroke to cover a few hundred pixels but found {ink}");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Clear", Exact = true }).ClickAsync();
         await Expect(strokes).ToHaveTextAsync("0");

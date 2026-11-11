@@ -22,7 +22,8 @@ public sealed class DemoPagesTests : BlowTest
         var problems = TrackProblems(page, BaseUrl);
 
         var response = await GotoAsync(page, path);
-        Assert.AreEqual(200, response?.Status, $"{path} answered {response?.Status}");
+        var actualValue = response?.Status;
+        Assert.AreEqual(200, actualValue, $"{path} answered {response?.Status}");
         await WaitForFlowAsync(page);
 
         // A page with a flow on it has loaded the library's browser layer, without which nothing is measured.
@@ -56,7 +57,7 @@ public sealed class DemoPagesTests : BlowTest
             var code = page.Locator(".demo-code__pre > code");
             await Expect(code).ToBeVisibleAsync();
             var source = await code.TextContentAsync() ?? "";
-            Assert.IsTrue(source.Length > 100, $"{path} shows a source of only {source.Length} characters");
+            Assert.IsGreaterThan(100, source.Length, $"{path} shows a source of only {source.Length} characters");
             Assert.IsGreaterThan(0, await code.Locator("[class^='tok-']").CountAsync(), $"{path}: the source is not coloured");
             Assert.DoesNotContain("@page", source, $"{path}: the snippet still carries the routing directive");
             await toggle.ClickAsync();
@@ -95,14 +96,14 @@ public sealed class DemoPagesTests : BlowTest
         var page = await OpenAsync("/examples");
 
         var expected = RepoLayout.DemoRoutes().Where(r => r.StartsWith("/examples/", StringComparison.Ordinal)).ToArray();
-        Assert.IsTrue(expected.Length > 50, $"only {expected.Length} example pages were found in the sources");
+        Assert.IsGreaterThan(50, expected.Length, $"only {expected.Length} example pages were found in the sources");
 
         // The cards on the index and the example links in the docs navigation both have to reach every page.
         foreach (var selector in new[] { "a.example-card", ".bb-docs-sidebar .bb-docs-section a" })
         {
             var links = await page.EvaluateAsync<string[]>(
                 "(s) => [...document.querySelectorAll(s)].map(a => new URL(a.href).pathname).filter(p => p.startsWith('/examples/'))", selector);
-            CollectionAssert.AreEquivalent(expected, links, $"the {selector} links do not match the example pages");
+            Assert.AreSequenceEqual(expected, links, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"the {selector} links do not match the example pages");
         }
     }
 
@@ -117,7 +118,7 @@ public sealed class DemoPagesTests : BlowTest
         // set up, all in the same WebAssembly instance.
         var links = page.Locator(".bb-docs-sidebar :is(ul[aria-label='Introduction'], ul[aria-label='Feature Tours']) a");
         int count = await links.CountAsync();
-        Assert.IsTrue(count > 5, $"the sidebar offers only {count} demos");
+        Assert.IsGreaterThan(5, count, $"the sidebar offers only {count} demos");
         for (int i = 0; i < count; i++)
         {
             var href = await links.Nth(i).GetAttributeAsync("href");
@@ -154,7 +155,7 @@ public sealed class DemoPagesTests : BlowTest
         var code = page.Locator(".demo-code__pre > code");
         await Expect(code).ToBeVisibleAsync();
         var source = await code.TextContentAsync() ?? "";
-        StringAssert.Contains(source, "<BlowCanvas", "the snippet is not the page's markup");
+        Assert.Contains("<BlowCanvas", source, "the snippet is not the page's markup");
         Assert.DoesNotContain("@page", source, "the snippet still carries the routing directive");
         // coloured: the component tag, the keywords and the strings are tokens of their own
         Assert.IsGreaterThan(0, await code.Locator(".tok-type", new() { HasText = "BlowCanvas" }).CountAsync(), "the component tag is not coloured");

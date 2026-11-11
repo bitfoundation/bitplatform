@@ -118,7 +118,7 @@ public sealed class BitNewTabUtilsTests
     [TestMethod]
     public void DefaultHintShouldBeTheEnglishSentence()
     {
-        Assert.AreEqual("(opens in a new tab)", BitNewTabUtils.DefaultHint);
+        Assert.AreEqual("(opens in a new tab)", BitNewTabUtils.GetHint("_blank", null, false));
     }
 
     [TestMethod]

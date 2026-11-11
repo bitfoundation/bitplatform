@@ -1,4 +1,4 @@
-using Bit.Bcrdt.Blazor;
+﻿using Bit.Bcrdt.Blazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,17 +29,17 @@ public class BrowserBridgeTests
 
         using (var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 }))
         {
-            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "notes");
+            await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(doc, store, "notes", cancellationToken: TestContext.CancellationToken);
             doc.GetText("body").Insert(0, "kept ");
             doc.GetText("body").Insert(5, "offline");
             await persistence.FlushAsync();
         }
 
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
-        await using BcrdtDocumentPersistence again = await BcrdtDocumentPersistence.AttachAsync(reloaded, store, "notes");
+        await using BcrdtDocumentPersistence again = await BcrdtDocumentPersistence.AttachAsync(reloaded, store, "notes", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual("kept offline", reloaded.GetText("body").ToString());
-        CollectionAssert.AreEquivalent(new[] { "notes" }, (await store.ListAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "notes" }, (await store.ListAsync(TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -48,16 +48,16 @@ public class BrowserBridgeTests
         var browser = new FakeIndexedDb();
         await using var store = new BcrdtIndexedDbDocumentStore(browser);
 
-        await store.AppendUpdateAsync("doc", Update(1, "a"));
-        await store.AppendUpdateAsync("doc", Update(2, "b"));
+        await store.AppendUpdateAsync("doc", Update(1, "a"), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("doc", Update(2, "b"), TestContext.CancellationToken);
 
         // Another tab appends while this one is merging: its record must survive the replacement.
         browser.BeforeReplace = () => browser.Append("doc", Update(3, "c"));
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
 
         Assert.AreEqual(2, browser.Count("doc"), "the merged record and the one appended meanwhile");
         using var reloaded = new BcrdtDocument();
-        reloaded.ApplyUpdate((await store.LoadAsync("doc")).Update!);
+        reloaded.ApplyUpdate((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!);
         Assert.AreEqual(3, reloaded.GetText("body").ToString().Length);
     }
 
@@ -69,15 +69,15 @@ public class BrowserBridgeTests
         var skipped = new List<string>();
         store.UnreadableRecordSkipped += skipped.Add;
 
-        await store.AppendUpdateAsync("doc", Update(1, "fine"));
+        await store.AppendUpdateAsync("doc", Update(1, "fine"), TestContext.CancellationToken);
         browser.Append("doc", [0xFF, 0xFF, 0xFF]);
 
         using var reloaded = new BcrdtDocument();
-        reloaded.ApplyUpdate((await store.LoadAsync("doc")).Update!);
+        reloaded.ApplyUpdate((await store.LoadAsync("doc", TestContext.CancellationToken)).Update!);
         Assert.AreEqual("fine", reloaded.GetText("body").ToString());
-        Assert.HasCount(1, skipped);
+        Assert.ContainsSingle(skipped);
 
-        await store.CompactAsync("doc");
+        await store.CompactAsync("doc", TestContext.CancellationToken);
         Assert.AreEqual(2, browser.Count("doc"), "compaction does not destroy a record it cannot read");
     }
 
@@ -89,17 +89,17 @@ public class BrowserBridgeTests
 
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         await using BcrdtDocumentPersistence persistence = await BcrdtDocumentPersistence.AttachAsync(
-            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(10) });
+            doc, store, "doc", new BcrdtDocumentPersistenceOptions { RetryDelay = TimeSpan.FromMilliseconds(10) }, TestContext.CancellationToken);
         var failures = new List<Exception>();
         persistence.WriteFailed += failure => { lock (failures) failures.Add(failure); };
 
         doc.GetText("body").Insert(0, "waiting for room");
         Task flushed = persistence.FlushAsync();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.CancellationToken);
         Assert.IsFalse(flushed.IsCompleted, "the write is still being retried, not given up");
 
         browser.RefuseAppends = false;
-        await flushed.WaitAsync(TimeSpan.FromSeconds(10));
+        await flushed.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         lock (failures)
         {
@@ -118,7 +118,7 @@ public class BrowserBridgeTests
 
         Assert.HasCount(2, records);
         Assert.AreEqual(1d, records[0].Id);
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, records[0].Data);
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3 }, records[0].Data);
         Assert.AreEqual(7d, records[1].Id);
         Assert.IsEmpty(records[1].Data);
 
@@ -254,7 +254,7 @@ public class BrowserBridgeTests
         Assert.AreEqual("abc", text.ToString(), "nothing is applied before the value it builds on");
 
         browser.ReadGate.SetResult();
-        await reading.WaitAsync(TimeSpan.FromSeconds(10));
+        await reading.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreEqual("12abc" + new string('x', 5000), text.ToString());
         host.AssertNoErrors();
@@ -309,16 +309,16 @@ public class BrowserBridgeTests
 
         // Reporting the failure renders the control, and rendering must not try again.
         await host.RenderAsync(doc.GetText("first"));
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
         Assert.AreEqual(1, browser.Count("import"));
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
         Assert.IsTrue(host.IsDisabled());
 
         // Bound to another field, it tries again - and is usable once that works.
         browser.ImportFailure = null;
         await host.RenderAsync(doc.GetText("second"));
         await WaitUntilAsync(() => browser.Count("attach") == 1 && !host.IsDisabled());
-        Assert.HasCount(1, errors);
+        Assert.ContainsSingle(errors);
         host.AssertNoErrors();
     }
 
@@ -339,13 +339,13 @@ public class BrowserBridgeTests
     public async Task A_bounded_in_memory_store_never_drops_a_document_still_in_use()
     {
         var store = new BcrdtInMemoryDocumentStore(maxDocuments: 1);
-        await store.AppendUpdateAsync("first", Update(1, "a"));
-        await store.AppendUpdateAsync("second", Update(2, "b"));
+        await store.AppendUpdateAsync("first", Update(1, "a"), TestContext.CancellationToken);
+        await store.AppendUpdateAsync("second", Update(2, "b"), TestContext.CancellationToken);
 
         // Both were used a moment ago - one might still be open with its writer appending - so the store
         // holds more than its bound rather than cut a live document's log.
         Assert.AreEqual(2, store.Count);
-        Assert.IsFalse((await store.LoadAsync("first")).IsEmpty);
+        Assert.IsFalse((await store.LoadAsync("first", TestContext.CancellationToken)).IsEmpty);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -712,4 +712,6 @@ public class BrowserBridgeTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

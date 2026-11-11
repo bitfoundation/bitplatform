@@ -47,9 +47,9 @@ public class ForceInstantInertiaTests
         await ReleaseAt30(engine, Bm.Inertia());
 
         var frames = CoastTransforms(interop);
-        Assert.IsTrue(frames.Length > 2, "a coast, not a jump");
+        Assert.IsGreaterThan(2, frames.Length, "a coast, not a jump");
         var xs = frames.Select(TranslateX).ToArray();
-        for (int i = 1; i < xs.Length; i++) Assert.IsTrue(xs[i] >= xs[i - 1] - 1e-9, "decelerating forwards, never back");
+        for (int i = 1; i < xs.Length; i++) Assert.IsGreaterThanOrEqualTo(xs[i - 1] - 1e-9, xs[i], "decelerating forwards, never back");
         Assert.AreEqual(110, xs[^1], 1e-6, "the decay's resting place, not the release point");
 
         interop.FinishWaapi();
@@ -88,7 +88,7 @@ public class ForceInstantInertiaTests
 
         Assert.AreEqual(100, X(engine), 1e-9);
         var written = interop.ArgsOf("applyStyles").Select(a => (Dictionary<string, string>)a[1]!).Last(s => s.ContainsKey("transform"));
-        StringAssert.Contains(written["transform"], "100px");
+        Assert.Contains("100px", written["transform"]);
         Assert.IsFalse(engine.GetDiagnostics().Single(d => d.Id == "el").HasActiveAnimations);
     }
 

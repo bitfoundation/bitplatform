@@ -24,7 +24,7 @@ public sealed class PresenceTests : BmotionPageTest
         await ClickAsync("sync-toggle");
         var exiting = await SampleAsync("#sync", 200);
         Assert.IsTrue(exiting.Count > 0 && exiting.Any(s => s.Opacity is > 0.05 and < 0.95), "The element left without playing its exit.");
-        Assert.IsTrue(exiting.Last().X > exiting.First().X, "The exit's x never moved.");
+        Assert.IsGreaterThan(exiting.First().X, exiting.Last().X, "The exit's x never moved.");
 
         await Assertions.Expect(Page.Locator("#sync")).ToHaveCountAsync(0);
         await ExpectEventAsync("sync:exited");
@@ -44,7 +44,7 @@ public sealed class PresenceTests : BmotionPageTest
         var box = await BoxAsync("#dialog-ok");
         await Page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
         await ExpectEventAsync("dialog:exited");
-        CollectionAssert.DoesNotContain(await LoggedAsync(), "dialog:ok", "a button in an exiting dialog was pressed");
+        Assert.DoesNotContain("dialog:ok", await LoggedAsync(), "a button in an exiting dialog was pressed");
 
         // Shown, hidden and shown again before the exit is over: interactive again, and nothing of the inert left.
         await ClickAsync("dialog-toggle");
@@ -144,7 +144,7 @@ public sealed class PresenceTests : BmotionPageTest
 
         await ClickAsync("group-remove-first");
         var exiting = await SampleAsync("#g-1", 200);
-        Assert.IsTrue(exiting.Any(s => s.Opacity is > 0.05 and < 0.95), "The removed item left without its exit.");
+        Assert.Contains(s => s.Opacity is > 0.05 and < 0.95, exiting, "The removed item left without its exit.");
         await Assertions.Expect(Page.Locator("#g-1")).ToHaveCountAsync(0);
         await Assertions.Expect(Page.Locator("#group .item")).ToHaveCountAsync(3);
     }

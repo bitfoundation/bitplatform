@@ -889,7 +889,7 @@ public class BitPersonaTests : BunitTestContext
         var classList = component.Find(".bit-prs").ClassList;
 
         Assert.IsTrue(classList.Contains(expectedClass), $"Expected {expectedClass} on: {string.Join(' ', classList)}");
-        Assert.AreEqual(1, _autoCoinColorClasses.Count(classList.Contains));
+        Assert.ContainsSingle<string>(classList.Contains, _autoCoinColorClasses);
     }
 
     [TestMethod]
@@ -1472,9 +1472,9 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-imc").GetAttribute("style");
 
-        Assert.IsTrue(style!.Contains("width:64px"));
-        Assert.IsTrue(style.Contains("height:64px"));
-        Assert.IsTrue(style.Contains("font-size:25.6px"));
+        Assert.Contains("width:64px", style!);
+        Assert.Contains("height:64px", style!);
+        Assert.Contains("font-size:25.6px", style);
     }
 
     [TestMethod]
@@ -1488,8 +1488,8 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
-        Assert.IsTrue(style!.Contains("width:16px"));
-        Assert.IsTrue(style.Contains("height:16px"));
+        Assert.Contains("width:16px", style!);
+        Assert.Contains("height:16px", style!);
     }
 
     [TestMethod]
@@ -1517,12 +1517,14 @@ public class BitPersonaTests : BunitTestContext
         });
 
         var img = component.Find(".bit-prs-img");
+        var actualValue = img.GetAttribute("style")?.Contains("opacity:0") ?? false;
 
-        Assert.IsFalse(img.GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.IsFalse(actualValue);
 
         img.TriggerEvent("onload", new ProgressEventArgs());
+        var actualValue1 = component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false;
 
-        Assert.IsFalse(component.Find(".bit-prs-img").GetAttribute("style")?.Contains("opacity:0") ?? false);
+        Assert.IsFalse(actualValue1);
     }
 
     [TestMethod]
@@ -2071,8 +2073,8 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
-        Assert.IsTrue(style!.Contains("width:16px"));
-        Assert.IsTrue(style.Contains("outline: 1px solid red"));
+        Assert.Contains("width:16px", style!);
+        Assert.Contains("outline: 1px solid red", style!);
     }
 
     [TestMethod]
@@ -2089,8 +2091,8 @@ public class BitPersonaTests : BunitTestContext
 
         // Retuned as the knob the stylesheet reads rather than as a side of its own, so the nudge follows the
         // dot to whichever of the four corners the writing direction and Reversed between them put it in.
-        Assert.IsTrue(style!.Contains("--bit-prs-presence-inset:-5px"));
-        Assert.IsFalse(style.Contains("inset-inline-end:"));
+        Assert.Contains("--bit-prs-presence-inset:-5px", style!);
+        Assert.DoesNotContain("inset-inline-end:", style!);
     }
 
     [TestMethod]
@@ -2108,7 +2110,7 @@ public class BitPersonaTests : BunitTestContext
 
         // Reversed moves the dot to the other corner in the stylesheet; a nudge written as one named side
         // would have stayed behind on the corner the dot no longer sits in.
-        Assert.IsTrue(style!.Contains("--bit-prs-presence-inset:-5px"));
+        Assert.Contains("--bit-prs-presence-inset:-5px", style!);
         Assert.IsTrue(component.Find(".bit-prs").ClassList.Contains("bit-prs-rvs"));
     }
 
@@ -2204,8 +2206,8 @@ public class BitPersonaTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-prs-det").ClassList.Contains("custom-details"));
         Assert.IsTrue(component.Find(".bit-prs-ptx").ClassList.Contains("custom-primary"));
 
-        Assert.IsTrue(component.Find(".bit-prs").GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(component.Find(".bit-prs-ptx").GetAttribute("style")!.Contains("font-weight: bold"));
+        Assert.Contains("color: red", component.Find(".bit-prs").GetAttribute("style")!);
+        Assert.Contains("font-weight: bold", component.Find(".bit-prs-ptx").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2226,8 +2228,8 @@ public class BitPersonaTests : BunitTestContext
 
         var style = dot.GetAttribute("style");
 
-        Assert.IsTrue(style!.Contains("opacity: 0.5"));
-        Assert.IsTrue(style.Contains("outline: 1px solid red"));
+        Assert.Contains("opacity: 0.5", style!);
+        Assert.Contains("outline: 1px solid red", style!);
     }
 
     [TestMethod]
@@ -2340,7 +2342,7 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
-        Assert.Contains("--bit-prs-presence-inset:-10px;", style);
+        Assert.Contains("--bit-prs-presence-inset:-10px;", style!);
     }
 
     [TestMethod,
@@ -2360,7 +2362,7 @@ public class BitPersonaTests : BunitTestContext
 
         var style = component.Find(".bit-prs-pre").GetAttribute("style");
 
-        Assert.DoesNotContain("--bit-prs-presence-inset", style);
+        Assert.DoesNotContain("--bit-prs-presence-inset", style!);
     }
 
     [TestMethod,
@@ -2418,7 +2420,7 @@ public class BitPersonaTests : BunitTestContext
         var classList = component.Find(".bit-prs").ClassList;
 
         Assert.IsTrue(classList.Contains("bit-prs-swr"));
-        Assert.IsFalse(_autoCoinColorClasses.Any(classList.Contains));
+        Assert.DoesNotContain<string>(classList.Contains, _autoCoinColorClasses);
     }
 
     [TestMethod]
@@ -2454,7 +2456,7 @@ public class BitPersonaTests : BunitTestContext
 
         var classList = component.Find(".bit-prs").ClassList;
 
-        Assert.IsTrue(_autoCoinColorClasses.Any(classList.Contains));
+        Assert.Contains<string>(classList.Contains, _autoCoinColorClasses);
     }
 
     [TestMethod]
@@ -2590,7 +2592,7 @@ public class BitPersonaTests : BunitTestContext
 
         component.Find("img").TriggerEvent("onload", new ProgressEventArgs());
 
-        CollectionAssert.AreEquivalent(before, component.Find(".bit-prs-img").ClassList.ToArray());
+        Assert.AreSequenceEqual(before, component.Find(".bit-prs-img").ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -3108,7 +3110,7 @@ public class BitPersonaTests : BunitTestContext
 
         // Sized off the dot rather than off the type ramp, the same proportion the size classes keep between
         // the two: a 16px dot in a 64px coin, and a glyph well inside it.
-        Assert.IsTrue(component.Find(".bit-prs-pre").GetAttribute("style")!.Contains("font-size:9.6px"));
+        Assert.Contains("font-size:9.6px", component.Find(".bit-prs-pre").GetAttribute("style")!);
     }
 
     [TestMethod]

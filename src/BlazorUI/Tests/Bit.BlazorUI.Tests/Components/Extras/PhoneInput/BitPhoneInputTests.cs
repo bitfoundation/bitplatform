@@ -104,9 +104,11 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("input.bit-phi-inp").Change(typed);
 
         Assert.AreEqual(expected, value);
+        var expectedValue = iso2;
+        var actualValue = component.Instance.Country?.Iso2;
 
         // The prefix is the country's own, so dropping it never moves the selection.
-        Assert.AreEqual(iso2, component.Instance.Country?.Iso2);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -246,8 +248,8 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-nod"));
-        Assert.AreEqual(0, component.FindAll("button.bit-phi-drp").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-phi-cal").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-phi-drp"));
+        Assert.IsEmpty(component.FindAll(".bit-phi-cal"));
         Assert.AreEqual("+49", component.Find(".bit-phi-cod").TextContent.Trim());
     }
 
@@ -261,8 +263,8 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.NoDialCode, true);
         });
 
-        Assert.AreEqual(0, component.FindAll("img.bit-phi-flg").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-phi-cod").Count);
+        Assert.IsEmpty(component.FindAll("img.bit-phi-flg"));
+        Assert.IsEmpty(component.FindAll(".bit-phi-cod"));
     }
 
     [TestMethod]
@@ -273,7 +275,7 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.NoSearchBox, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-srch").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-srch"));
     }
 
     [TestMethod]
@@ -307,8 +309,10 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.CountryChanged, c => country = c);
             parameters.Add(p => p.NumberChanged, n => number = n);
         });
+        var expectedValue = BitCountries.Germany.Iso2;
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual(BitCountries.Germany.Iso2, country?.Iso2);
+        Assert.AreEqual(expectedValue, actualValue);
         Assert.AreEqual("30123456", number);
         Assert.AreEqual("30123456", component.Find("input.bit-phi-inp").GetAttribute("value"));
     }
@@ -324,9 +328,10 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, _ => { });
             parameters.Add(p => p.CountryChanged, c => country = c);
         });
+        var actualValue = country?.Iso2;
 
         // Canada comes first alphabetically, but the United States carries the higher priority for +1.
-        Assert.AreEqual("US", country?.Iso2);
+        Assert.AreEqual("US", actualValue);
     }
 
     [TestMethod]
@@ -341,8 +346,9 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, _ => { });
             parameters.Add(p => p.CountryChanged, c => country = c);
         });
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("CA", country?.Iso2);
+        Assert.AreEqual("CA", actualValue);
     }
 
     [TestMethod]
@@ -357,8 +363,9 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.Value, "+15551234567");
             parameters.Add(p => p.ValueChanged, _ => { });
         });
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("CA", country?.Iso2);
+        Assert.AreEqual("CA", actualValue);
     }
 
     [TestMethod]
@@ -374,8 +381,9 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.CountryChanged, c => country = c);
             parameters.Add(p => p.NumberChanged, n => number = n);
         });
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("DE", country?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.AreEqual("30123456", number);
     }
 
@@ -427,8 +435,9 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         component.Find("input.bit-phi-inp").Change("+49 30 123456");
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("DE", country?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.AreEqual("30123456", number);
         Assert.AreEqual("+4930123456", value);
     }
@@ -510,8 +519,8 @@ public class BitPhoneInputTests : BunitTestContext
         // The change event the browser raises as the field loses focus carries the text the input event committed.
         component.Find("input.bit-phi-inp").Change("4155550123");
 
-        CollectionAssert.AreEqual(new List<string?> { "+14155550123" }, changedValues);
-        CollectionAssert.AreEqual(new List<string?> { "+14155550123" }, changes);
+        Assert.AreSequenceEqual(new List<string?> { "+14155550123" }, changedValues);
+        Assert.AreSequenceEqual(new List<string?> { "+14155550123" }, changes);
     }
 
     [TestMethod]
@@ -530,7 +539,7 @@ public class BitPhoneInputTests : BunitTestContext
         // Without Immediate the change event is the only word of an edit there is, so it is reported whatever it carries.
         component.Find("input.bit-phi-inp").Change("4155550123");
 
-        CollectionAssert.AreEqual(new List<string?> { "+14155550123", "+14155550123" }, changes);
+        Assert.AreSequenceEqual(new List<string?> { "+14155550123", "+14155550123" }, changes);
     }
 
     [TestMethod]
@@ -554,9 +563,9 @@ public class BitPhoneInputTests : BunitTestContext
         await component.Instance.ClearAsync();
 
         // Only a dropped keystroke ends before its minute is up, and a kept one would put the number back once it is.
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new List<string?> { "+14155550123", null }, values);
+        Assert.AreSequenceEqual(new List<string?> { "+14155550123", null }, values);
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -579,9 +588,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         await component.Instance.ClearAsync();
 
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new List<string?> { "+1415", null }, values);
+        Assert.AreSequenceEqual(new List<string?> { "+1415", null }, values);
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -599,7 +608,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         await component.Instance.SetNumberAsync("2025550123");
 
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreEqual("+12025550123", component.Instance.Value);
     }
@@ -628,7 +637,7 @@ public class BitPhoneInputTests : BunitTestContext
         // The change event commits the text and drops the keystroke still waiting, and the input shows the Number again.
         component.Find("input.bit-phi-inp").Change("20");
 
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         Assert.AreEqual("20", component.Instance.Number);
         Assert.AreEqual("20", component.Find("input.bit-phi-inp").GetAttribute("value"));
@@ -675,8 +684,9 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         component.Find("input.bit-phi-inp").Input("+33155551234");
+        var actualValue = component.Instance.Country?.Iso2;
 
-        Assert.AreEqual("FR", component.Instance.Country?.Iso2);
+        Assert.AreEqual("FR", actualValue);
         Assert.AreEqual("155551234", component.Instance.Number);
         Assert.AreEqual("+33155551234", component.Find("input.bit-phi-inp").GetAttribute("value"));
 
@@ -703,7 +713,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
         // re-render the app between the press and the click.
-        Assert.IsTrue(component.Find(".bit-phi-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase), component.Find(".bit-phi-cbt").Attributes);
     }
 
     [TestMethod,
@@ -781,10 +791,11 @@ public class BitPhoneInputTests : BunitTestContext
         // the '0' the pattern writes must not be read back as a digit the number came with.
         input.Input("041 555 5012");
         Assert.AreEqual("041 555 5012", number);
+        var actualValue = component.Instance.Country?.Iso2;
 
         // A number that grew a '0' per keystroke would read "00..." soon enough, which is the
         // international call prefix of most of the world and would take the selection with it.
-        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.AreEqual("US", actualValue);
     }
 
     [TestMethod]
@@ -801,8 +812,9 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         component.Render(parameters => parameters.Add(p => p.Value, "+33155551234"));
+        var actualValue = component.Instance.Country?.Iso2;
 
-        Assert.AreEqual("FR", component.Instance.Country?.Iso2);
+        Assert.AreEqual("FR", actualValue);
 
         // The pattern is the one the newly adopted country brings with it, not the one of the country
         // the value replaced.
@@ -846,8 +858,9 @@ public class BitPhoneInputTests : BunitTestContext
         var germany = component.FindAll("button.bit-phi-itm")
                                .First(i => i.GetAttribute("title") == BitCountries.Germany.Name);
         germany.Click();
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual("DE", changed?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.AreEqual("+495550123", value);
     }
 
@@ -865,7 +878,7 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.OnClear, () => cleared = true);
         });
 
-        Assert.AreEqual(0, component.FindAll("button.bit-phi-cbt").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-phi-cbt"));
 
         component.Find("input.bit-phi-inp").Change("5550123");
 
@@ -883,11 +896,11 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var component = RenderComponent<BitPhoneInput>();
 
-        Assert.AreEqual(0, component.FindAll("button.bit-phi-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-phi-itm"));
 
         component.Find("button.bit-phi-drp").Click();
 
-        Assert.AreEqual(BitCountries.All.Length, component.FindAll("button.bit-phi-itm").Count);
+        Assert.HasCount(BitCountries.All.Length, component.FindAll("button.bit-phi-itm"));
     }
 
     [TestMethod]
@@ -938,7 +951,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var selected = component.FindAll("button.bit-phi-itm").Where(i => i.ClassList.Contains("bit-phi-sel")).ToList();
 
-        Assert.AreEqual(1, selected.Count);
+        Assert.ContainsSingle(selected);
         Assert.AreEqual(BitCountries.Germany.Name, selected[0].GetAttribute("title"));
         Assert.AreEqual("true", selected[0].GetAttribute("aria-selected"));
     }
@@ -957,7 +970,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.AreEqual(BitCountries.Germany.Name, items[0].GetAttribute("title"));
         Assert.AreEqual(BitCountries.France.Name, items[1].GetAttribute("title"));
-        Assert.AreEqual(BitCountries.All.Length, items.Count);
+        Assert.HasCount(BitCountries.All.Length, items);
     }
 
     [TestMethod]
@@ -970,7 +983,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Find("button.bit-phi-drp").Click();
 
-        Assert.AreEqual(FiveCountries.Count, component.FindAll("button.bit-phi-itm").Count);
+        Assert.HasCount(FiveCountries.Count, component.FindAll("button.bit-phi-itm"));
     }
 
     [TestMethod,
@@ -991,7 +1004,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var items = component.FindAll("button.bit-phi-itm");
 
-        Assert.IsTrue(items.Count > 0, $"No result for '{term}'.");
+        Assert.IsNotEmpty(items, $"No result for '{term}'.");
         Assert.AreEqual(expected, items[0].GetAttribute("title"));
     }
 
@@ -1020,7 +1033,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").Click();
         component.Find(".bit-phi-srch").Input("zzzzzzz");
 
-        Assert.AreEqual(0, component.FindAll("button.bit-phi-itm").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-phi-itm"));
         Assert.AreEqual("nothing here", component.Find(".bit-phi-nor").TextContent.Trim());
     }
 
@@ -1053,8 +1066,9 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").Click();
         component.Find(".bit-phi-srch").Input("germany");
         component.Find(".bit-phi-srch").KeyDown("Enter");
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual("DE", changed?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
@@ -1116,9 +1130,9 @@ public class BitPhoneInputTests : BunitTestContext
         // The tab order rides on the toggle that shows the list, so it costs no round trip of its own, and the list
         // is dismissed once the focus moves on from both the field and itself.
         var open = LastToggle();
-        Assert.AreEqual(true, open.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(open.Arguments[6]));
         Assert.AreEqual(component.Find("button.bit-phi-drp").Id, open.Arguments[^3]);
-        Assert.AreEqual(true, open.Arguments[^4]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(open.Arguments[^4]));
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
 
         // A Shift+Tab from the search box goes back to the button with the list left open, and a Tab on the button
@@ -1132,7 +1146,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         // The toggle that hides the list takes the tab order back with it.
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
 
         // Every open registers it again.
@@ -1215,7 +1229,7 @@ public class BitPhoneInputTests : BunitTestContext
         // A focus that scrolled the button into view would scroll a sticky header's container back to where the
         // header sits in the flow.
         Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
-        Assert.AreEqual(true, focused.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(focused.Arguments[1]));
     }
 
     [TestMethod]
@@ -1248,15 +1262,15 @@ public class BitPhoneInputTests : BunitTestContext
         // Opened from anywhere on the page, so the button may well be out of view: the focus brings it there - and
         // does so before the list is placed against it, rather than moving it out from under a list already open.
         Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
-        Assert.AreEqual(false, focused.Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(focused.Arguments[1]));
 
         // bUnit records the invocations grouped by identifier, each group where its identifier was first called, so the
         // positions of the two groups give the order of the two calls only while each of them was made once.
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"]);
 
         var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
 
-        Assert.IsTrue(identifiers.IndexOf("Blazor._internal.domWrapper.focus") < identifiers.IndexOf("BitBlazorUI.Callouts.toggle"));
+        Assert.IsLessThan(identifiers.IndexOf("BitBlazorUI.Callouts.toggle"), identifiers.IndexOf("Blazor._internal.domWrapper.focus"));
     }
 
     [TestMethod]
@@ -1330,12 +1344,12 @@ public class BitPhoneInputTests : BunitTestContext
         // the box and reports what it holds through its own input event.
         component.Find("button.bit-phi-drp").KeyDown("c");
 
-        CollectionAssert.AreEqual(new[] { "c" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
+        Assert.AreSequenceEqual(new[] { "c" }, Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Extras.typeInto").Select(i => (string)i.Arguments[1]!).ToArray());
 
         component.Find(".bit-phi-srch").Input("c");
 
         Assert.AreEqual("c", component.Find(".bit-phi-srch").GetAttribute("value"));
-        Assert.IsTrue(component.FindAll("button.bit-phi-itm").Count < FiveCountries.Count);
+        Assert.IsLessThan(FiveCountries.Count, component.FindAll("button.bit-phi-itm").Count);
 
         // Enter presses the button, which closes the list as a click on it does, and selects nothing.
         var country = component.Instance.Country;
@@ -1403,8 +1417,8 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The JS side is told to take the relocated list off the screen, not left holding it.
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-phi-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1415,7 +1429,7 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
         });
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
 
         // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
         component.Render(parameters =>
@@ -1425,8 +1439,8 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual(false, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:none", component.Find(".bit-phi-ovl").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1434,8 +1448,8 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.Disabled, false);
         });
 
-        Assert.AreEqual(true, LastToggle().Arguments[6]);
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:block");
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(LastToggle().Arguments[6]));
+        Assert.Contains("display:block", component.Find(".bit-phi-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1457,8 +1471,8 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.IsFalse(isOpen);
         Assert.IsFalse(component.Instance.IsOpen);
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+        Assert.Contains("display:none", component.Find(".bit-phi-ovl").GetAttribute("style")!);
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true), Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1469,16 +1483,16 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.NoSearchBox, true);
         });
 
-        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastButtonKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, true));
 
-        CollectionAssert.Contains(LastButtonKeys(), "Enter");
-        CollectionAssert.Contains(LastButtonKeys(), "PageDown");
+        Assert.Contains("Enter", LastButtonKeys());
+        Assert.Contains("PageDown", LastButtonKeys());
 
         component.Render(parameters => parameters.Add(p => p.IsOpen, false));
 
-        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+        Assert.DoesNotContain("Enter", LastButtonKeys());
     }
 
     [TestMethod]
@@ -1492,7 +1506,7 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.Country, neverland);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-drp img").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-drp img"));
         Assert.AreEqual("SPAN", component.Find(".bit-phi-drp .bit-phi-flg").TagName);
 
         component.Find("button.bit-phi-drp").Click();
@@ -1597,7 +1611,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Find("button.bit-phi-drp").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        Assert.Contains("Enter", LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
     }
@@ -1610,12 +1624,12 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var component = RenderComponent<BitPhoneInput>();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
 
         component.Find("button.bit-phi-drp").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
-        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
+        Assert.DoesNotContain("Character", LastPreventKeys(field: false));
     }
 
     // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
@@ -1766,7 +1780,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         // A select-only list takes the option the arrows are on.
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(FiveCountries[1].Iso2, changed?.Iso2);
+        var expectedValue = FiveCountries[1].Iso2;
+        var actualValue = changed?.Iso2;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -1784,8 +1800,10 @@ public class BitPhoneInputTests : BunitTestContext
         var dropdown = component.Find("button.bit-phi-drp");
         dropdown.Click();
         dropdown.KeyDown(" ");
+        var expectedValue = FiveCountries[0].Iso2;
+        var actualValue = changed?.Iso2;
 
-        Assert.AreEqual(FiveCountries[0].Iso2, changed?.Iso2);
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -1852,8 +1870,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Find("input.bit-phi-inp").Change("5550123");
         component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.France)).GetAwaiter().GetResult();
+        var actualValue = component.Instance.Country?.Iso2;
 
-        Assert.AreEqual("FR", component.Instance.Country?.Iso2);
+        Assert.AreEqual("FR", actualValue);
         Assert.AreEqual("+335550123", value);
     }
 
@@ -1887,7 +1906,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").Click();
 
         var items = component.FindAll(".custom-item");
-        Assert.AreEqual(FiveCountries.Count, items.Count);
+        Assert.HasCount(FiveCountries.Count, items);
         Assert.AreEqual(BitCountries.UnitedStates.Iso3, items[0].TextContent.Trim());
     }
 
@@ -2064,7 +2083,7 @@ public class BitPhoneInputTests : BunitTestContext
         // each option, so the flags beside them are decorative.
         var flags = component.FindAll("img.bit-phi-flg");
 
-        Assert.AreEqual(FiveCountries.Count + 1, flags.Count);
+        Assert.HasCount(FiveCountries.Count + 1, flags);
         Assert.IsTrue(flags.All(f => f.GetAttribute("alt") == string.Empty));
         Assert.IsTrue(flags.All(f => f.GetAttribute("aria-hidden") == "true"));
     }
@@ -2181,7 +2200,8 @@ public class BitPhoneInputTests : BunitTestContext
         // Country is controlled without a CountryChanged callback, so the selection cannot move, and
         // reporting a change that never happened would desynchronize the consumer.
         Assert.AreEqual(0, changed);
-        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        var actualValue = component.Instance.Country?.Iso2;
+        Assert.AreEqual("US", actualValue);
     }
 
     [TestMethod]
@@ -2239,8 +2259,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         // A number of another country is kept whole rather than moving a country nothing on screen can move back.
         input.Change("+44 7911 123456");
+        var actualValue = component.Instance.Country?.Iso2;
 
-        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.AreEqual("US", actualValue);
         Assert.AreEqual("+447911123456", value);
 
         // The code of the fixed country itself is still read off the number.
@@ -2260,8 +2281,8 @@ public class BitPhoneInputTests : BunitTestContext
             parameters.Add(p => p.IsOpenChanged, (bool _) => { });
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-cal").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-phi-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-cal"));
+        Assert.IsEmpty(component.FindAll(".bit-phi-ovl"));
     }
 
     [TestMethod]
@@ -2269,11 +2290,11 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var component = RenderComponent<BitPhoneInput>();
 
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-phi-ovl").GetAttribute("style")!);
 
         component.Find("button.bit-phi-drp").Click();
 
-        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:block");
+        Assert.Contains("display:block", component.Find(".bit-phi-ovl").GetAttribute("style")!);
 
         component.Find(".bit-phi-ovl").Click();
 
@@ -2281,7 +2302,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         // The focus the hidden callout held is given back to the selector rather than dropped on the body.
         Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2410,8 +2431,8 @@ public class BitPhoneInputTests : BunitTestContext
 
         var items = component.FindAll("button.bit-phi-itm");
 
-        Assert.AreEqual(3, items.Count);
-        Assert.IsFalse(items.Any(i => i.GetAttribute("title") == BitCountries.Germany.Name));
+        Assert.HasCount(3, items);
+        Assert.DoesNotContain(i => i.GetAttribute("title") == BitCountries.Germany.Name, items);
     }
 
     [TestMethod]
@@ -2449,7 +2470,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var items = component.FindAll("button.bit-phi-itm");
 
-        Assert.AreEqual(4, items.Count);
+        Assert.HasCount(4, items);
         Assert.AreEqual(BitCountries.France.Name, items[0].GetAttribute("title"));
     }
 
@@ -2530,7 +2551,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         var hidden = component.FindAll("input[type=hidden]");
 
-        Assert.AreEqual(2, hidden.Count);
+        Assert.HasCount(2, hidden);
         Assert.AreEqual("phone", hidden[0].GetAttribute("name"));
         Assert.AreEqual("+16135550123", hidden[0].GetAttribute("value"));
         Assert.AreEqual("phoneCountry", hidden[1].GetAttribute("name"));
@@ -2701,8 +2722,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         // A number carrying an international prefix moves the selection, exactly as typing it does.
         component.InvokeAsync(() => component.Instance.SetNumberAsync("+81 3 1234 5678")).GetAwaiter().GetResult();
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("JP", country?.Iso2);
+        Assert.AreEqual("JP", actualValue);
         Assert.AreEqual("312345678", number);
         Assert.AreEqual("+81312345678", value);
     }
@@ -2724,11 +2746,11 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Find("input.bit-phi-srch").Input("united");
 
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("2 countries found"));
+        Assert.StartsWith("2 countries found", component.Find(".bit-phi-lvr").TextContent);
 
         component.Find("input.bit-phi-srch").Input("zzz");
 
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("No results found"));
+        Assert.StartsWith("No results found", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -2744,7 +2766,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.Germany.Name).Click();
 
         // The callout carrying the choice is gone by the time it is made, so it is said out loud.
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("Germany, +49"));
+        Assert.StartsWith("Germany, +49", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -2762,8 +2784,9 @@ public class BitPhoneInputTests : BunitTestContext
         var focusCalls = Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus"));
 
         component.FindAll("button.bit-phi-itm").First(i => i.GetAttribute("title") == BitCountries.Germany.Name).Click();
+        var actualValue = component.Instance.Country?.Iso2;
 
-        Assert.AreEqual("DE", component.Instance.Country?.Iso2);
+        Assert.AreEqual("DE", actualValue);
         Assert.AreEqual(focusCalls, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus")));
     }
 
@@ -2805,7 +2828,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, "That number is already registered"));
 
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("That number is already registered"));
+        Assert.StartsWith("That number is already registered", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -2849,7 +2872,7 @@ public class BitPhoneInputTests : BunitTestContext
         // results" would say the country being typed does not exist.
         component.Find(".bit-phi-srch").Input("+");
 
-        Assert.AreEqual(FiveCountries.Count, component.FindAll("button.bit-phi-itm").Count);
+        Assert.HasCount(FiveCountries.Count, component.FindAll("button.bit-phi-itm"));
 
         component.Find(".bit-phi-srch").Input("+44");
 
@@ -2911,7 +2934,7 @@ public class BitPhoneInputTests : BunitTestContext
     {
         var component = RenderComponent<BitPhoneInput>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-erm"));
         Assert.IsFalse(component.Find(".bit-phi").ClassList.Contains("bit-inv"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessage, "That number is already registered"));
@@ -2988,8 +3011,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         // +1-829 is the Dominican Republic, not the +1 of the United States it starts with.
         component.Find("input.bit-phi-inp").Change("+18295551234");
+        var actualValue = country?.Iso2;
 
-        Assert.AreEqual("DO", country?.Iso2);
+        Assert.AreEqual("DO", actualValue);
         Assert.AreEqual("5551234", number);
     }
 
@@ -3087,12 +3111,12 @@ public class BitPhoneInputTests : BunitTestContext
 
         component.Find("input.bit-phi-srch").Input("united");
 
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("2 Länder gefunden"));
+        Assert.StartsWith("2 Länder gefunden", component.Find(".bit-phi-lvr").TextContent);
 
         // An empty result is what the no-results message is for, so it keeps being the one announced.
         component.Find("input.bit-phi-srch").Input("zzz");
 
-        Assert.IsTrue(component.Find(".bit-phi-lvr").TextContent.StartsWith("Kein Land gefunden"));
+        Assert.StartsWith("Kein Land gefunden", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -3115,9 +3139,9 @@ public class BitPhoneInputTests : BunitTestContext
 
         // The root keeps its whole style, and Callouts.ts is what carries it into the callout and the overlay
         // while they are relocated to the body, so nothing of it is written onto them here.
-        StringAssert.Contains(root, "width: 300px");
-        StringAssert.Contains(root, "--bit-PhoneInput-radius: 2rem");
-        StringAssert.Contains(root, "--bit-PhoneInput-item-height: 40px");
+        Assert.Contains("width: 300px", root);
+        Assert.Contains("--bit-PhoneInput-radius: 2rem", root);
+        Assert.Contains("--bit-PhoneInput-item-height: 40px", root);
 
         Assert.AreEqual("--bit-PhoneInput-radius: 1rem;", callout);
         Assert.AreEqual("display:none;opacity: 0.5;", overlay);
@@ -3132,7 +3156,7 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find(".bit-phi-cal").GetAttribute("style"));
-        Assert.IsFalse(component.Find(".bit-phi-ovl").GetAttribute("style")!.Contains("--bit-PhoneInput-"));
+        Assert.DoesNotContain("--bit-PhoneInput-", component.Find(".bit-phi-ovl").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -3186,7 +3210,7 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual("Country: Japan", selector.QuerySelector(".bit-phi-vhd")!.TextContent);
         Assert.AreEqual("true", selector.QuerySelector(".bit-phi-tcn")!.GetAttribute("aria-hidden"));
         Assert.AreEqual(selector.Id, input.GetAttribute("aria-describedby")!.Split(' ')[0]);
-        StringAssert.Contains(input.GetAttribute("aria-describedby"), component.Find(".bit-phi-des").Id);
+        Assert.Contains(component.Find(".bit-phi-des").Id!, input.GetAttribute("aria-describedby")!);
     }
 
     [TestMethod]
@@ -3219,13 +3243,13 @@ public class BitPhoneInputTests : BunitTestContext
 
         var items = component.FindAll("button.bit-phi-itm");
 
-        Assert.AreEqual(1, component.FindAll(".bit-phi-ilp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-phi-ilp"));
         Assert.IsTrue(items[1].ClassList.Contains("bit-phi-ilp"));
 
         // A search orders its matches by how close they are, so there is no boundary left to draw.
         component.Find("input.bit-phi-srch").Input("an");
 
-        Assert.AreEqual(0, component.FindAll(".bit-phi-ilp").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-ilp"));
     }
 
     [TestMethod,
@@ -3333,7 +3357,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.AreEqual(1, cleared);
         Assert.IsTrue(string.IsNullOrEmpty(component.Find("input.bit-phi-inp").GetAttribute("value")));
-        StringAssert.StartsWith(component.Find(".bit-phi-lvr").TextContent, "Cleared");
+        Assert.StartsWith("Cleared", component.Find(".bit-phi-lvr").TextContent);
     }
 
     [TestMethod]
@@ -3362,9 +3386,10 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         component.Instance.SetNumberAsync("+49 170 1234567").GetAwaiter().GetResult();
+        var actualValue = component.Instance.Country?.Iso2;
 
         // The country cannot move, so the local part parsed for Germany must not end up under the United States.
-        Assert.AreEqual("US", component.Instance.Country?.Iso2);
+        Assert.AreEqual("US", actualValue);
         Assert.IsNull(number);
         Assert.IsNull(component.Instance.Value);
     }
@@ -3399,11 +3424,11 @@ public class BitPhoneInputTests : BunitTestContext
     [TestMethod]
     public void BitCountryShouldExposeEveryDialCodeItAnswersTo()
     {
-        CollectionAssert.AreEqual(new[] { "1809", "1829", "1849" }, BitCountries.DominicanRepublic.DigitsCodes);
-        CollectionAssert.AreEqual(new[] { "1787", "1939" }, BitCountries.PuertoRico.DigitsCodes);
+        Assert.AreSequenceEqual(new[] { "1809", "1829", "1849" }, BitCountries.DominicanRepublic.DigitsCodes);
+        Assert.AreSequenceEqual(new[] { "1787", "1939" }, BitCountries.PuertoRico.DigitsCodes);
 
         // A country with a single code answers with that one alone.
-        CollectionAssert.AreEqual(new[] { "49" }, BitCountries.Germany.DigitsCodes);
+        Assert.AreSequenceEqual(new[] { "49" }, BitCountries.Germany.DigitsCodes);
     }
 
 
@@ -3458,11 +3483,11 @@ public class BitPhoneInputTests : BunitTestContext
         // and the group - and heads the responsive panel as well.
         var label = component.Find("label.bit-phi-lbl");
         Assert.IsNotNull(label.QuerySelector(".custom-label"));
-        Assert.IsFalse(label.TextContent.Contains("ignored"));
+        Assert.DoesNotContain("ignored", label.TextContent);
         Assert.AreEqual(label.Id, component.Find("input.bit-phi-inp").GetAttribute("aria-labelledby"));
         Assert.AreEqual(label.Id, component.Find(".bit-phi-fgp").GetAttribute("aria-labelledby"));
         Assert.IsNotNull(component.Find(".bit-phi-rlc .custom-label"));
-        Assert.AreEqual(0, component.FindAll(".bit-phi-rlb").Count);
+        Assert.IsEmpty(component.FindAll(".bit-phi-rlb"));
     }
 
     [TestMethod]
@@ -3546,7 +3571,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").Click();
 
         toggle = LastToggle();
-        Assert.AreEqual(true, toggle.Arguments[6]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[6]));
         Assert.AreEqual(BitDropDirection.TopAndBottom, toggle.Arguments[8]);
         Assert.AreEqual(240, toggle.Arguments[17]);
 
@@ -3573,7 +3598,7 @@ public class BitPhoneInputTests : BunitTestContext
 
         Assert.AreEqual("phone-1", root.Id);
         Assert.IsTrue(root.ClassList.Contains("host-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("yes", root.GetAttribute("data-host"));
         // The id names the root alone: the parts keep ids of their own for the aria relations between them.
         Assert.AreNotEqual("phone-1", component.Find("input.bit-phi-inp").Id);
@@ -3598,7 +3623,7 @@ public class BitPhoneInputTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -3757,4 +3782,6 @@ public class BitPhoneInputTests : BunitTestContext
                                 .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home") == field)
                                 .Arguments[1]!;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

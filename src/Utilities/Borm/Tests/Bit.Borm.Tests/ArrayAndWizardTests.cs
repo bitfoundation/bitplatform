@@ -1,13 +1,13 @@
 ﻿namespace Bit.Borm.Tests;
 
-public class CartLine
+internal class CartLine
 {
     public string Product { get; set; } = "";
     public int Quantity { get; set; }
     public List<string> Tags { get; set; } = [];
 }
 
-public class Cart
+internal class Cart
 {
     public List<CartLine> Lines { get; set; } = [];
 }
@@ -109,7 +109,7 @@ public class ArrayItemTests
         var index = state.DuplicateArrayItem(state.Definition.FindField("Lines")!, "Lines", 0);
 
         Assert.AreEqual(1, index);
-        Assert.AreEqual(2, model.Lines.Count);
+        Assert.HasCount(2, model.Lines);
         Assert.AreEqual("Widget", model.Lines[1].Product);
         Assert.AreEqual(7, model.Lines[1].Quantity);
         Assert.AreNotSame(model.Lines[0], model.Lines[1]);
@@ -136,11 +136,11 @@ public class ArrayItemTests
         Assert.AreNotSame(model.Lines[0].Tags, model.Lines[1].Tags);
 
         model.Lines[1].Tags.Add("new");
-        Assert.AreEqual(2, model.Lines[0].Tags.Count);
+        Assert.HasCount(2, model.Lines[0].Tags);
     }
 }
 
-public class WizardModel
+internal class WizardModel
 {
     public bool IsBusiness { get; set; }
     public string? CompanyName { get; set; }

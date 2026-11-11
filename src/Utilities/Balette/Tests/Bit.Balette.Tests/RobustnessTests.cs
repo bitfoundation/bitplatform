@@ -23,14 +23,14 @@ public class HistoryRobustnessTests
             ["ok"] = new(3, DateTimeOffset.UtcNow, false),
         }), out _);
 
-        await history.EnsureLoadedAsync();
-        await history.RecordAsync("null");
+        await history.EnsureLoadedAsync(TestContext.CancellationToken);
+        await history.RecordAsync("null", TestContext.CancellationToken);
 
         Assert.AreEqual(1, history.Get("null")!.Count);
         Assert.AreEqual(0, history.Get("negative")!.Count);
         Assert.IsNull(history.Get(""));
         AssertSequence.AreEqual(["negative"], history.Pinned());
-        CollectionAssert.AreEquivalent(new[] { "null", "ok" }, history.Recents(10).ToArray());
+        Assert.AreSequenceEqual(new[] { "null", "ok" }, history.Recents(10).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -38,8 +38,8 @@ public class HistoryRobustnessTests
     {
         var history = Create(new FailingStore(failLoad: true, failSave: false), out var log);
 
-        await history.EnsureLoadedAsync();
-        await history.RecordAsync("a");
+        await history.EnsureLoadedAsync(TestContext.CancellationToken);
+        await history.RecordAsync("a", TestContext.CancellationToken);
 
         Assert.IsTrue(history.IsLoaded);
         Assert.AreEqual(1, history.Get("a")!.Count);
@@ -51,8 +51,8 @@ public class HistoryRobustnessTests
     {
         var history = Create(new FailingStore(failLoad: false, failSave: true), out var log);
 
-        await history.RecordAsync("a");
-        await history.TogglePinAsync("b");
+        await history.RecordAsync("a", TestContext.CancellationToken);
+        await history.TogglePinAsync("b", TestContext.CancellationToken);
 
         Assert.AreEqual(1, history.Get("a")!.Count);
         Assert.IsTrue(history.IsPinned("b"));
@@ -64,8 +64,8 @@ public class HistoryRobustnessTests
     {
         var history = Create(new BaletteInMemoryHistoryStore(), out _);
 
-        await history.TogglePinAsync("never-used");
-        await history.TogglePinAsync("never-used");
+        await history.TogglePinAsync("never-used", TestContext.CancellationToken);
+        await history.TogglePinAsync("never-used", TestContext.CancellationToken);
 
         Assert.IsEmpty(history.Recents(5));
     }
@@ -74,16 +74,16 @@ public class HistoryRobustnessTests
     public async Task Readers_never_see_a_snapshot_being_changed()
     {
         var history = Create(new BaletteInMemoryHistoryStore(), out _, new FakeTimeProvider());
-        await history.EnsureLoadedAsync();
+        await history.EnsureLoadedAsync(TestContext.CancellationToken);
 
         // Writers on the thread pool, a reader enumerating as the palette does while it ranks.
         var writers = Enumerable.Range(0, 4).Select(w => Task.Run(async () =>
         {
             for (var i = 0; i < 200; i++)
             {
-                await history.RecordAsync($"c{w}-{i % 20}");
+                await history.RecordAsync($"c{w}-{i % 20}", TestContext.CancellationToken);
             }
-        })).ToArray();
+        }, TestContext.CancellationToken)).ToArray();
 
         while (!writers.All(t => t.IsCompleted))
         {
@@ -93,7 +93,7 @@ public class HistoryRobustnessTests
         }
 
         await Task.WhenAll(writers);
-        Assert.AreEqual(80, history.Recents(1000).Count);
+        Assert.HasCount(80, history.Recents(1000));
     }
 
     private sealed class FixedStore(Dictionary<string, BaletteCommandUsage> data) : IBaletteHistoryStore
@@ -117,6 +117,8 @@ public class HistoryRobustnessTests
             }
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 [TestClass]

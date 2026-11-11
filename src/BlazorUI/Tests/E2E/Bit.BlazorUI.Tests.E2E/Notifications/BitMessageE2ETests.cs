@@ -20,20 +20,44 @@ public class BitMessageE2ETests : E2ETestBase
 
     private static readonly Dictionary<string, string> OnTokens = new()
     {
-        ["pri"] = "--bit-clr-pri-text", ["sec"] = "--bit-clr-sec-text", ["ter"] = "--bit-clr-ter-text", ["inf"] = "--bit-clr-inf-text",
-        ["suc"] = "--bit-clr-suc-text", ["wrn"] = "--bit-clr-wrn-text", ["swr"] = "--bit-clr-swr-text", ["err"] = "--bit-clr-err-text",
-        ["pbg"] = "--bit-clr-fg-pri", ["sbg"] = "--bit-clr-fg-pri", ["tbg"] = "--bit-clr-fg-pri",
-        ["pfg"] = "--bit-clr-bg-pri", ["sfg"] = "--bit-clr-bg-pri", ["tfg"] = "--bit-clr-bg-pri",
-        ["pbr"] = "--bit-clr-fg-pri", ["sbr"] = "--bit-clr-fg-pri", ["tbr"] = "--bit-clr-fg-pri",
+        ["pri"] = "--bit-clr-pri-text",
+        ["sec"] = "--bit-clr-sec-text",
+        ["ter"] = "--bit-clr-ter-text",
+        ["inf"] = "--bit-clr-inf-text",
+        ["suc"] = "--bit-clr-suc-text",
+        ["wrn"] = "--bit-clr-wrn-text",
+        ["swr"] = "--bit-clr-swr-text",
+        ["err"] = "--bit-clr-err-text",
+        ["pbg"] = "--bit-clr-fg-pri",
+        ["sbg"] = "--bit-clr-fg-pri",
+        ["tbg"] = "--bit-clr-fg-pri",
+        ["pfg"] = "--bit-clr-bg-pri",
+        ["sfg"] = "--bit-clr-bg-pri",
+        ["tfg"] = "--bit-clr-bg-pri",
+        ["pbr"] = "--bit-clr-fg-pri",
+        ["sbr"] = "--bit-clr-fg-pri",
+        ["tbr"] = "--bit-clr-fg-pri",
     };
 
     private static readonly Dictionary<string, string> FgTokens = new()
     {
-        ["pri"] = "--bit-clr-pri-fg", ["sec"] = "--bit-clr-sec-fg", ["ter"] = "--bit-clr-ter-fg", ["inf"] = "--bit-clr-inf-fg",
-        ["suc"] = "--bit-clr-suc-fg", ["wrn"] = "--bit-clr-wrn-fg", ["swr"] = "--bit-clr-swr-fg", ["err"] = "--bit-clr-err-fg",
-        ["pbg"] = "--bit-clr-fg-pri", ["sbg"] = "--bit-clr-fg-pri", ["tbg"] = "--bit-clr-fg-pri",
-        ["pfg"] = "--bit-clr-fg-pri", ["sfg"] = "--bit-clr-fg-sec", ["tfg"] = "--bit-clr-fg-ter",
-        ["pbr"] = "--bit-clr-fg-pri", ["sbr"] = "--bit-clr-fg-pri", ["tbr"] = "--bit-clr-fg-pri",
+        ["pri"] = "--bit-clr-pri-fg",
+        ["sec"] = "--bit-clr-sec-fg",
+        ["ter"] = "--bit-clr-ter-fg",
+        ["inf"] = "--bit-clr-inf-fg",
+        ["suc"] = "--bit-clr-suc-fg",
+        ["wrn"] = "--bit-clr-wrn-fg",
+        ["swr"] = "--bit-clr-swr-fg",
+        ["err"] = "--bit-clr-err-fg",
+        ["pbg"] = "--bit-clr-fg-pri",
+        ["sbg"] = "--bit-clr-fg-pri",
+        ["tbg"] = "--bit-clr-fg-pri",
+        ["pfg"] = "--bit-clr-fg-pri",
+        ["sfg"] = "--bit-clr-fg-sec",
+        ["tfg"] = "--bit-clr-fg-ter",
+        ["pbr"] = "--bit-clr-fg-pri",
+        ["sbr"] = "--bit-clr-fg-pri",
+        ["tbr"] = "--bit-clr-fg-pri",
     };
 
     private static readonly HashSet<string> SemanticSuffixes = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err"];
@@ -61,9 +85,9 @@ public class BitMessageE2ETests : E2ETestBase
     {
         var html = await Page.PrerenderedHtmlAsync($"{BaseUrl}/e2e/message");
 
-        StringAssert.Contains(html, "id=\"basic-msg\"");
-        StringAssert.Contains(html, "This is a Message.");
-        StringAssert.Contains(html, "bit-msg-fil");
+        Assert.Contains("id=\"basic-msg\"", html);
+        Assert.Contains("This is a Message.", html);
+        Assert.Contains("bit-msg-fil", html);
 
         await OpenAsync("/e2e/message");
         await Expect(Part("basic-msg", "bit-msg-cnt")).ToHaveTextAsync("This is a Message.");
@@ -140,12 +164,12 @@ public class BitMessageE2ETests : E2ETestBase
 
         await Expect(Part("ml-multi", "bit-msg-cnt")).ToHaveClassAsync(HasClass("bit-msg-mcn"));
         var multiHeight = (await Page.BoxAsync("#ml-multi .bit-msg-cnt")).Height;
-        Assert.IsTrue(multiHeight > lineHeight * 2.5, $"Multiline wraps onto several lines ({multiHeight} vs {lineHeight}).");
+        Assert.IsGreaterThan(lineHeight * 2.5, multiHeight, $"Multiline wraps onto several lines ({multiHeight} vs {lineHeight}).");
 
         await Expect(Part("ml-max", "bit-msg-cnt")).ToHaveClassAsync(HasClass("bit-msg-clp"));
         await Expect(Root("ml-max")).ToHaveAttributeAsync("style", new Regex("--bit-msg-maxlines:2"));
         var cappedHeight = (await Page.BoxAsync("#ml-max .bit-msg-cnt")).Height;
-        Assert.IsTrue(cappedHeight < multiHeight, $"MaxLines=2 caps the wrap ({cappedHeight} vs {multiHeight}).");
+        Assert.IsLessThan(multiHeight, cappedHeight, $"MaxLines=2 caps the wrap ({cappedHeight} vs {multiHeight}).");
         Assert.AreEqual(room + lineHeight * 2, cappedHeight, 1, $"MaxLines=2 caps the wrap at two lines of {lineHeight}px.");
         Assert.IsTrue(await Part("ml-max", "bit-msg-cnt").EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight + 1"), "What is past the cap is clipped.");
     }
@@ -195,7 +219,7 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Page.Locator("#tr-expanded")).ToHaveTextAsync("True");
         await Expect(Page.Locator("#tr-bound .bit-msg-cnc")).ToHaveClassAsync(HasClass("bit-msg-cnx"));
         await Expect(Page.Locator("#tr-bound .bit-msg-exi")).Not.ToHaveClassAsync(HasClass("bit-ico-r180"));
-        Assert.IsTrue((await Page.BoxAsync("#tr-bound")).Height > folded + 10, "Unfolded, the content takes its lines.");
+        Assert.IsGreaterThan(folded + 10, (await Page.BoxAsync("#tr-bound")).Height, "Unfolded, the content takes its lines.");
 
         // The page sets the binding back.
         await Page.ClickAsync("#btn-tr-set-expanded");
@@ -250,7 +274,7 @@ public class BitMessageE2ETests : E2ETestBase
 
         await Page.ClickAsync("#tr-max .bit-msg-exb");
         await Expect(Part("tr-max", "bit-msg-cnt")).Not.ToHaveClassAsync(HasClass("bit-msg-clp"));
-        Assert.IsTrue((await Page.BoxAsync("#tr-max .bit-msg-cnt")).Height > capped + 10);
+        Assert.IsGreaterThan(capped + 10, (await Page.BoxAsync("#tr-max .bit-msg-cnt")).Height);
     }
 
     [TestMethod]
@@ -266,7 +290,7 @@ public class BitMessageE2ETests : E2ETestBase
 
         var title = await Page.BoxAsync("#ttl-inline .bit-msg-ttl");
         var content = await Page.BoxAsync("#ttl-inline .bit-msg-cnt");
-        Assert.IsTrue(title.Right <= content.Left + 1, "The title leads the content on its line.");
+        Assert.IsLessThanOrEqualTo(content.Left + 1, title.Right, "The title leads the content on its line.");
         Assert.AreEqual(title.CenterY, content.CenterY, 3);
         Assert.AreEqual("600", await ComputedStyleAsync("#ttl-inline .bit-msg-ttl", "font-weight"));
 
@@ -314,8 +338,8 @@ public class BitMessageE2ETests : E2ETestBase
         var baselineText = await Page.BoxAsync("#al-icon-Baseline .bit-msg-cnc");
         var stretchRow = await Page.BoxAsync("#al-icon-Stretch .bit-msg-con");
         var stretchText = await Page.BoxAsync("#al-icon-Stretch .bit-msg-cnc");
-        Assert.IsTrue(topText.Height < iconRow.Height - 10, "The default keeps the text its own height.");
-        Assert.IsTrue(baselineText.Top - baselineRow.Top > topText.Top - iconRow.Top + 10, "Baseline lines the text up with the glyph.");
+        Assert.IsLessThan(iconRow.Height - 10, topText.Height, "The default keeps the text its own height.");
+        Assert.IsGreaterThan(topText.Top - iconRow.Top + 10, baselineText.Top - baselineRow.Top, "Baseline lines the text up with the glyph.");
         Assert.AreEqual(stretchRow.Height, stretchText.Height, 1, "Stretch draws the text the full height of the row.");
 
         var container = await Page.BoxAsync("#al-Center .bit-msg-con");
@@ -333,7 +357,7 @@ public class BitMessageE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/message");
 
-        Assert.IsTrue(await NumberAsync("#sq-default", "border-top-left-radius") > 0, "A message is rounded by default.");
+        Assert.IsGreaterThan(0, await NumberAsync("#sq-default", "border-top-left-radius"), "A message is rounded by default.");
         await Expect(Root("sq-square")).ToHaveClassAsync(HasClass("bit-msg-sqr"));
         await Expect(Root("sq-square")).ToHaveCSSAsync("border-top-left-radius", "0px");
 
@@ -477,7 +501,7 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Page.Locator("#ad-basic-dismissed")).ToHaveTextAsync("True", new() { Timeout = 10000 });
 
         var elapsed = long.Parse(await Page.Locator("#ad-basic-elapsed").TextContentAsync() ?? "-1", CultureInfo.InvariantCulture);
-        Assert.IsTrue(elapsed >= 2800, $"The time under the pointer was not spent ({elapsed}ms).");
+        Assert.IsGreaterThanOrEqualTo(2800, elapsed, $"The time under the pointer was not spent ({elapsed}ms).");
     }
 
     [TestMethod]
@@ -497,7 +521,7 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Page.Locator("#ad-progress-dismissed")).ToHaveTextAsync("True", new() { Timeout = 10000 });
 
         var elapsed = long.Parse(await Page.Locator("#ad-progress-elapsed").TextContentAsync() ?? "-1", CultureInfo.InvariantCulture);
-        Assert.IsTrue(elapsed >= 3000, $"The time with the focus inside was not spent ({elapsed}ms).");
+        Assert.IsGreaterThanOrEqualTo(3000, elapsed, $"The time with the focus inside was not spent ({elapsed}ms).");
     }
 
     [TestMethod]
@@ -522,7 +546,7 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(bar).ToHaveClassAsync(HasClass("bit-msg-pau"));
         await Expect(bar).ToHaveCSSAsync("animation-play-state", "paused");
         var heldAt = await ScaleXAsync("#ad-progress .bit-msg-prb");
-        Assert.IsTrue(heldAt < 1, $"The bar has run down some way ({heldAt}).");
+        Assert.IsLessThan(1, heldAt, $"The bar has run down some way ({heldAt}).");
 
         await Page.DwellAsync(1800);
         await Expect(Page.Locator("#ad-progress-dismissed")).ToHaveTextAsync("False");
@@ -602,13 +626,13 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Page.Locator("#act-single > .bit-msg-rct > .bit-msg-act")).ToHaveCountAsync(1);
         var single = await Page.BoxAsync("#act-single .bit-msg-cnc");
         var singleAction = await Page.BoxAsync("#act-restore");
-        Assert.IsTrue(singleAction.Left >= single.Right - 1, "The action follows the content on its line.");
+        Assert.IsGreaterThanOrEqualTo(single.Right - 1, singleAction.Left, "The action follows the content on its line.");
         Assert.IsTrue(singleAction.Top < single.Bottom && singleAction.Bottom > single.Top, "On the same line.");
 
         await Expect(Page.Locator("#act-multi > .bit-msg-act.bit-msg-mac")).ToHaveCountAsync(1);
         var multi = await Page.BoxAsync("#act-multi .bit-msg-cnc");
         var multiAction = await Page.BoxAsync("#act-retry");
-        Assert.IsTrue(multiAction.Top >= multi.Bottom - 1, "On a multiline message the actions sit below the content.");
+        Assert.IsGreaterThanOrEqualTo(multi.Bottom - 1, multiAction.Top, "On a multiline message the actions sit below the content.");
 
         await Page.ClickAsync("#act-restore");
         await Page.ClickAsync("#act-retry");
@@ -714,7 +738,7 @@ public class BitMessageE2ETests : E2ETestBase
         var label = Page.Locator("#a11y-icon-label .bit-msg-cnw > .bit-msg-ilb");
         await Expect(label).ToHaveTextAsync("Error");
         Assert.IsTrue(await label.EvaluateAsync<bool>("el => el.parentElement.firstElementChild === el"), "The label comes first.");
-        Assert.IsTrue((await label.BoxAsync()).Width <= 1, "The label is visually hidden.");
+        Assert.IsLessThanOrEqualTo(1, (await label.BoxAsync()).Width, "The label is visually hidden.");
         await Expect(Part("a11y-icon-label", "bit-msg-cnc")).ToHaveAttributeAsync("role", "alert");
     }
 
@@ -746,9 +770,9 @@ public class BitMessageE2ETests : E2ETestBase
         await Expect(Part("a11y-delayed", "bit-msg-cnt")).ToHaveTextAsync("Announced one render later.");
 
         var seen = await Page.EvaluateAsync<string[]>("() => window.__delayed");
-        Assert.IsTrue(seen.Length >= 2, $"The region was seen {seen.Length} time(s).");
+        Assert.IsGreaterThanOrEqualTo(2, seen.Length, $"The region was seen {seen.Length} time(s).");
         Assert.AreEqual("", seen[0], "The region reached the page empty.");
-        StringAssert.Contains(seen[^1], "Announced one render later.");
+        Assert.Contains("Announced one render later.", seen[^1]);
     }
 
     [TestMethod]
@@ -807,7 +831,7 @@ public class BitMessageE2ETests : E2ETestBase
             await Expect(button).ToHaveCSSAsync("pointer-events", "none");
         }
 
-        Assert.IsTrue(await NumberAsync("#dis-msg .bit-msg-dmb", "opacity") < 1, "The disabled buttons are dimmed.");
+        Assert.IsLessThan(1, await NumberAsync("#dis-msg .bit-msg-dmb", "opacity"), "The disabled buttons are dimmed.");
         await Expect(root).Not.ToHaveAttributeAsync("data-bit-esc", Any);
 
         await dismiss.ClickAsync(new() { Force = true });
@@ -956,8 +980,8 @@ public class BitMessageE2ETests : E2ETestBase
             var icon = await Page.BoxAsync($"#{id} .bit-msg-ict");
             var content = await Page.BoxAsync($"#{id} .bit-msg-cnc");
             var dismiss = await Page.BoxAsync($"#{id} .bit-msg-dmb");
-            Assert.IsTrue(icon.Left >= content.Right - 1, $"{id}: the icon is on the right.");
-            Assert.IsTrue(dismiss.Right <= content.Left + 1, $"{id}: the button is on the left.");
+            Assert.IsGreaterThanOrEqualTo(content.Right - 1, icon.Left, $"{id}: the icon is on the right.");
+            Assert.IsLessThanOrEqualTo(content.Left + 1, dismiss.Right, $"{id}: the button is on the left.");
 
             var origin = await ComputedStyleAsync($"#{id} .bit-msg-prb", "transform-origin");
             var width = (await Page.BoxAsync($"#{id} .bit-msg-prb")).Width;
@@ -966,7 +990,7 @@ public class BitMessageE2ETests : E2ETestBase
 
         var ltrIcon = await Page.BoxAsync("#ltr-msg .bit-msg-ict");
         var ltrContent = await Page.BoxAsync("#ltr-msg .bit-msg-cnc");
-        Assert.IsTrue(ltrIcon.Right <= ltrContent.Left + 1, "Left to right the icon leads from the left.");
+        Assert.IsLessThanOrEqualTo(ltrContent.Left + 1, ltrIcon.Right, "Left to right the icon leads from the left.");
     }
 
     [TestMethod]
@@ -994,12 +1018,12 @@ public class BitMessageE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#cv-msg .bit-msg-dmb")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#cv-msg .bit-msg-dmb", "box-shadow"), "rgb(255, 0, 255)");
+        Assert.Contains("rgb(255, 0, 255)", await ComputedStyleAsync("#cv-msg .bit-msg-dmb", "box-shadow"));
 
         var explicitRoot = Root("cv-explicit");
         await Expect(explicitRoot).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-err"));
         await Expect(explicitRoot).ToHaveCSSAsync("border-top-left-radius", "0px");
-        Assert.IsTrue(await NumberAsync("#cv-explicit", "font-size") < 19, "An explicit Size wins over the font-size variable.");
+        Assert.IsLessThan(19, await NumberAsync("#cv-explicit", "font-size"), "An explicit Size wins over the font-size variable.");
         Assert.AreNotEqual("rgb(0, 0, 0) 0px 0px 5px 0px", await ComputedStyleAsync("#cv-explicit", "box-shadow"), "Elevation wins over the shadow variable.");
 
         await Expect(Root("cv-twin-outline")).ToHaveCSSAsync("border-top-color", "rgb(255, 0, 0)");

@@ -63,7 +63,7 @@ public sealed class GestureTests : BlowTest
         AssertNear(endBefore.Offset(-70, 45), endAfter, 1, "end of e1-2");
         AssertNear(await HandleCentreAsync(page, "2", "source"), (await EdgeEndsAsync(page, "e2-4")).Start, 1, "start of e2-4");
 
-        CollectionAssert.AreEqual(new[] { "2" }, await SelectedNodesAsync(page), "dragging a node selects it");
+        Assert.AreSequenceEqual(new[] { "2" }, await SelectedNodesAsync(page), "dragging a node selects it");
         Assert.DoesNotContain("dragging", await page.Locator(".bit-blow-node[data-id=\"2\"]").GetAttributeAsync("class") ?? "", "the drag never ended");
     }
 
@@ -81,7 +81,7 @@ public sealed class GestureTests : BlowTest
         // Out over the sidebar and back. The pane captures the pointer, so leaving it neither ends the drag (the
         // pane treats pointerleave as a release) nor loses the moves made outside it.
         await DragAsync(page, grab, new Point(pane.X - 120, grab.Y), release: false);
-        StringAssert.Contains(await page.Locator(".bit-blow-node[data-id=\"2\"]").GetAttributeAsync("class"), "dragging",
+        Assert.Contains("dragging", (await page.Locator(".bit-blow-node[data-id=\"2\"]").GetAttributeAsync("class"))!,
             "the drag ended when the pointer left the canvas");
 
         var drop = new Point(pane.X + 320, pane.Y + 220).Snapped();
@@ -144,7 +144,7 @@ public sealed class GestureTests : BlowTest
         await DragAsync(page, await HandleCentreAsync(page, "3", "source"), new Point(pane.Right - 60, pane.Bottom - 230));
 
         await Expect(page.Locator(".bit-blow-connectionline")).ToHaveCountAsync(0);
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "e1-3", "e2-4" }, await IdsAsync(page, "edge"));
+        Assert.AreSequenceEqual(new[] { "e1-2", "e1-3", "e2-4" }, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public sealed class GestureTests : BlowTest
         await WheelAsync(page, cursor, -150);
 
         var after = await ViewportAsync(page);
-        Assert.IsTrue(after.Zoom > before.Zoom * 1.1, $"a wheel up did not zoom in: {before} -> {after}");
+        Assert.IsGreaterThan(before.Zoom * 1.1, after.Zoom, $"a wheel up did not zoom in: {before} -> {after}");
 
         // The flow point under the cursor is the one that stays put.
         double FlowX(Viewport v) => (cursor.X - pane.X - v.X) / v.Zoom;
@@ -168,7 +168,7 @@ public sealed class GestureTests : BlowTest
         AssertNear(FlowY(before), FlowY(after), 0.05, "flow y under the cursor");
 
         await WheelAsync(page, cursor, 300);
-        Assert.IsTrue((await ViewportAsync(page)).Zoom < after.Zoom, "a wheel down did not zoom out");
+        Assert.IsLessThan(after.Zoom, (await ViewportAsync(page)).Zoom, "a wheel down did not zoom out");
     }
 
     [TestMethod]
@@ -224,13 +224,13 @@ public sealed class GestureTests : BlowTest
         await WaitForQuietAsync(page);
 
         await Expect(page.Locator(".bit-blow-selection")).ToHaveCountAsync(0);
-        CollectionAssert.AreEquivalent(new[] { "2", "3" }, await SelectedNodesAsync(page));
+        Assert.AreSequenceEqual(new[] { "2", "3" }, await SelectedNodesAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         // The press focused the pane, so its keyboard shortcuts work right away.
         await page.Keyboard.PressAsync("Delete");
         await EventuallyAsync(async () => (await IdsAsync(page)).Length == 2, "the selected nodes were deleted");
 
-        CollectionAssert.AreEquivalent(new[] { "1", "4" }, await IdsAsync(page));
+        Assert.AreSequenceEqual(new[] { "1", "4" }, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         // Every edge touched one of them, so none is left hanging.
         Assert.IsEmpty(await IdsAsync(page, "edge"));
     }
@@ -258,8 +258,8 @@ public sealed class GestureTests : BlowTest
         await page.Keyboard.PressAsync("Delete");
         await EventuallyAsync(async () => (await IdsAsync(page, "edge")).Length == 2, "the edge was deleted");
 
-        CollectionAssert.AreEquivalent(new[] { "e1-2", "e2-4" }, await IdsAsync(page, "edge"));
-        CollectionAssert.AreEquivalent(new[] { "1", "2", "3", "4" }, await IdsAsync(page), "deleting an edge deleted a node");
+        Assert.AreSequenceEqual(new[] { "e1-2", "e2-4" }, await IdsAsync(page, "edge"), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, await IdsAsync(page), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "deleting an edge deleted a node");
     }
 
     [TestMethod]
@@ -397,7 +397,7 @@ public sealed class GestureTests : BlowTest
             new Point(grip.X + grip.Width / 2 + 60, grip.Y + grip.Height / 2 + 10));
 
         var after = await NodeBoxAsync(page, "2");
-        Assert.IsTrue(after.Width > before.Width + 40, $"the node did not grow: {before} -> {after}");
+        Assert.IsGreaterThan(before.Width + 40, after.Width, $"the node did not grow: {before} -> {after}");
         AssertNear(after.Width, after.Height, 1, "height of the resized node");
     }
 

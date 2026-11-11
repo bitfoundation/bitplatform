@@ -14,9 +14,8 @@ public class BitAiIncrementalRegressionTests
         for (var length = 1; length <= source.Length; length++)
         {
             var prefix = source[..length];
-            Assert.IsTrue(
-                BitAiMarkdownTreeDump.Of(BitAiMarkdownParser.Parse(prefix, options, isComplete: false)) == BitAiMarkdownTreeDump.Of(parser.Parse(prefix, isComplete: false)),
-                $"Mismatch at prefix {length}: {prefix}");
+            Assert.AreEqual(
+BitAiMarkdownTreeDump.Of(parser.Parse(prefix, isComplete: false)), BitAiMarkdownTreeDump.Of(BitAiMarkdownParser.Parse(prefix, options, isComplete: false)), $"Mismatch at prefix {length}: {prefix}");
         }
 
         Assert.AreEqual(BitAiMarkdownTreeDump.Of(BitAiMarkdownParser.Parse(source, options)), BitAiMarkdownTreeDump.Of(parser.Parse(source, isComplete: true)));
@@ -93,6 +92,6 @@ public class BitAiIncrementalRegressionTests
 
         for (var length = 1; length <= source.Length; length++) parser.Parse(source[..length]);
 
-        Assert.IsTrue(parser.StableBlockCount >= 49, $"Only {parser.StableBlockCount} blocks became stable.");
+        Assert.IsGreaterThanOrEqualTo(49, parser.StableBlockCount, $"Only {parser.StableBlockCount} blocks became stable.");
     }
 }

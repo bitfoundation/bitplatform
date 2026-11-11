@@ -23,13 +23,13 @@ public class BitGridStylesheetTests : BunitTestContext
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-grd {");
 
         // Clamped the way the Columns parameter is, since every width is divided by the column count.
-        StringAssert.Contains(root, "--bit-grd-cols: max(1, var(--bit-Grid-columns, 12));");
-        StringAssert.Contains(root, "--bit-grd-cgap: var(--bit-Grid-horizontal-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));");
-        StringAssert.Contains(root, "--bit-grd-rgap: var(--bit-Grid-vertical-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));");
+        Assert.Contains("--bit-grd-cols: max(1, var(--bit-Grid-columns, 12));", root);
+        Assert.Contains("--bit-grd-cgap: var(--bit-Grid-horizontal-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));", root);
+        Assert.Contains("--bit-grd-rgap: var(--bit-Grid-vertical-spacing, var(--bit-Grid-spacing, #{spacing(0.5)}));", root);
 
         // What the component writes into an inline style starts out unset on every root, so a grid nested in another
         // one never takes the outer one's minimum item width for its own.
-        StringAssert.Contains(root, "--bit-grd-mnw: initial;");
+        Assert.Contains("--bit-grd-mnw: initial;", root);
     }
 
     [TestMethod]
@@ -39,14 +39,14 @@ public class BitGridStylesheetTests : BunitTestContext
         // given a count writes it under the same private name, which wins on its element over the root rule.
         var defaulted = RenderComponent<BitGrid>();
 
-        Assert.IsFalse(defaulted.Find(".bit-grd").GetAttribute("style")!.Contains("--bit-grd-cols"));
+        Assert.DoesNotContain("--bit-grd-cols", defaulted.Find(".bit-grd").GetAttribute("style")!);
 
         var counted = RenderComponent<BitGrid>(parameters =>
         {
             parameters.Add(p => p.Columns, 6);
         });
 
-        StringAssert.Contains(counted.Find(".bit-grd").GetAttribute("style")!, "--bit-grd-cols:6");
+        Assert.Contains("--bit-grd-cols:6", counted.Find(".bit-grd").GetAttribute("style")!);
 
         // Both sides clamp a count below one the same way, since every width is divided by it.
         var clamped = RenderComponent<BitGrid>(parameters =>
@@ -54,7 +54,7 @@ public class BitGridStylesheetTests : BunitTestContext
             parameters.Add(p => p.Columns, 0);
         });
 
-        StringAssert.Contains(clamped.Find(".bit-grd").GetAttribute("style")!, "--bit-grd-cols:1");
+        Assert.Contains("--bit-grd-cols:1", clamped.Find(".bit-grd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -64,8 +64,8 @@ public class BitGridStylesheetTests : BunitTestContext
 
         var style = defaulted.Find(".bit-grd").GetAttribute("style")!;
 
-        Assert.IsFalse(style.Contains("--bit-grd-cgap"));
-        Assert.IsFalse(style.Contains("--bit-grd-rgap"));
+        Assert.DoesNotContain("--bit-grd-cgap", style);
+        Assert.DoesNotContain("--bit-grd-rgap", style);
 
         var spaced = RenderComponent<BitGrid>(parameters =>
         {
@@ -76,8 +76,8 @@ public class BitGridStylesheetTests : BunitTestContext
         style = spaced.Find(".bit-grd").GetAttribute("style")!;
 
         // The spacing of one axis outranks the spacing of both, exactly as the public variables do on the root rule.
-        StringAssert.Contains(style, "--bit-grd-cgap:1rem");
-        StringAssert.Contains(style, "--bit-grd-rgap:2rem");
+        Assert.Contains("--bit-grd-cgap:1rem", style);
+        Assert.Contains("--bit-grd-rgap:2rem", style);
     }
 
     [TestMethod,
@@ -90,11 +90,11 @@ public class BitGridStylesheetTests : BunitTestContext
 
         // Mobile first: a value set for one breakpoint keeps applying to every wider one until one of those replaces
         // it, and the component only declares the breakpoints it was given.
-        StringAssert.Contains(root, $"{property}-xs: var({property});");
+        Assert.Contains($"{property}-xs: var({property});", root);
 
         for (var i = 1; i < Breakpoints.Length; i++)
         {
-            StringAssert.Contains(root, $"{property}-{Breakpoints[i]}: var({property}-{Breakpoints[i - 1]});");
+            Assert.Contains($"{property}-{Breakpoints[i]}: var({property}-{Breakpoints[i - 1]});", root);
         }
     }
 
@@ -106,24 +106,24 @@ public class BitGridStylesheetTests : BunitTestContext
 
         // The width of every item is worked out from the room the gaps of its row take up, so the container and its
         // items read the one property the media queries point at whichever breakpoint currently applies.
-        StringAssert.Contains(root, "--bit-grd-cgap-now: var(--bit-grd-cgap-xs);");
-        StringAssert.Contains(root, "--bit-grd-rgap-now: var(--bit-grd-rgap-xs);");
-        StringAssert.Contains(root, "row-gap: var(--bit-grd-rgap-now);");
-        StringAssert.Contains(root, "column-gap: var(--bit-grd-cgap-now);");
+        Assert.Contains("--bit-grd-cgap-now: var(--bit-grd-cgap-xs);", root);
+        Assert.Contains("--bit-grd-rgap-now: var(--bit-grd-rgap-xs);", root);
+        Assert.Contains("row-gap: var(--bit-grd-rgap-now);", root);
+        Assert.Contains("column-gap: var(--bit-grd-cgap-now);", root);
 
-        StringAssert.Contains(stylesheet, "--bit-grd-cgap-now: var(--bit-grd-cgap-#{$name});");
-        StringAssert.Contains(stylesheet, "--bit-grd-rgap-now: var(--bit-grd-rgap-#{$name});");
+        Assert.Contains("--bit-grd-cgap-now: var(--bit-grd-cgap-#{$name});", stylesheet);
+        Assert.Contains("--bit-grd-rgap-now: var(--bit-grd-rgap-#{$name});", stylesheet);
 
         var item = SourceFiles.GetScssBlock(stylesheet, "\n.bit-grd-itm {");
 
         // The base of the span chain is inherited from the grid, so an item that sets no span of its own follows the
         // Span of its container, and one rendered outside a grid stays at a single column.
-        StringAssert.Contains(item, "--bit-grd-xs: var(--bit-grd-span, 1);");
+        Assert.Contains("--bit-grd-xs: var(--bit-grd-span, 1);", item);
 
         // The offset and the order are per item, so their bases are declared rather than defaulted through a var()
         // fallback, which keeps an enclosing item's from reaching a nested grid.
-        StringAssert.Contains(item, "--bit-grd-off: 0;");
-        StringAssert.Contains(item, "--bit-grd-ord: 0;");
+        Assert.Contains("--bit-grd-off: 0;", item);
+        Assert.Contains("--bit-grd-ord: 0;", item);
     }
 
     [TestMethod]
@@ -132,14 +132,14 @@ public class BitGridStylesheetTests : BunitTestContext
         // The default span is always written, so a grid nested in another one never inherits the outer one's Span.
         var defaulted = RenderComponent<BitGrid>();
 
-        StringAssert.Contains(defaulted.Find(".bit-grd").GetAttribute("style")!, "--bit-grd-span:1");
+        Assert.Contains("--bit-grd-span:1", defaulted.Find(".bit-grd").GetAttribute("style")!);
 
         var spanned = RenderComponent<BitGrid>(parameters =>
         {
             parameters.Add(p => p.Span, 3);
         });
 
-        StringAssert.Contains(spanned.Find(".bit-grd").GetAttribute("style")!, "--bit-grd-span:3");
+        Assert.Contains("--bit-grd-span:3", spanned.Find(".bit-grd").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -162,11 +162,11 @@ public class BitGridStylesheetTests : BunitTestContext
                               .ToArray();
 
         // Guards the guard: a header that documents nothing would let every variable through in silence.
-        Assert.AreEqual(4, documented.Length, $"The header documents {string.Join(", ", documented)}.");
+        Assert.HasCount(4, documented, $"The header documents {string.Join(", ", documented)}.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(code, $"var({name}", $"{name} is documented but never read.");
+            Assert.Contains($"var({name}", code, $"{name} is documented but never read.");
         }
     }
 

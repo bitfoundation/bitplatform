@@ -42,7 +42,7 @@ public class BitAiScrollToLatestParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiScrollToLatestParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiScrollToLatest", BitAiScrollToLatestParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiScrollToLatest", new BitAiScrollToLatestParams().Name);
         Assert.AreEqual(BitAiScrollToLatestParams.ParamName, new BitAiScrollToLatestParams().Name);
     }
 

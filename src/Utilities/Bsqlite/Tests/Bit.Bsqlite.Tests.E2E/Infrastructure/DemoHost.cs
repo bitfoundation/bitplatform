@@ -5,7 +5,7 @@
 /// port, once for the whole run. Every database the demo opens lives in the browser, and every test opens
 /// its own browser context, so sharing the process shares nothing but the server-side copy of the catalog.
 /// </summary>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

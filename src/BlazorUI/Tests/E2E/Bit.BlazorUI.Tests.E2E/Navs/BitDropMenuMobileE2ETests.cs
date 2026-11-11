@@ -41,7 +41,7 @@ public class BitDropMenuMobileE2ETests : E2ETestBase
         var edges = await callout.EvaluateAsync<double[]>("el => { const r = el.getBoundingClientRect(); return [r.right, window.innerWidth, r.top, r.height]; }");
         Assert.AreEqual(edges[1], edges[0], 2, "Pinned to the right edge.");
         Assert.AreEqual(0, edges[2], 2, "From the top of the screen.");
-        Assert.IsTrue(edges[3] > 300, $"Down the screen ({edges[3]}px).");
+        Assert.IsGreaterThan(300, edges[3], $"Down the screen ({edges[3]}px).");
 
         var box = await callout.BoundingBoxAsync();
         Assert.IsNotNull(box);

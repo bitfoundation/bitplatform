@@ -37,7 +37,7 @@ public class BitAiSmallCorrectionTests
     [DataRow("see [1][2][3].", 3)]
     [DataRow("(see [4])", 1)]
     public void CitationMarkersAreRecognisedAfterSpacesPunctuationAndOtherMarkers(string source, int count) =>
-        Assert.AreEqual(count, BitAiInlineParser.Parse(source).OfType<BitAiCitationMarkerInline>().Count());
+        Assert.HasCount(count, BitAiInlineParser.Parse(source).OfType<BitAiCitationMarkerInline>());
 
     [TestMethod]
     [DataRow("see https://en.wikipedia.org/wiki/Foo_(bar) now", "https://en.wikipedia.org/wiki/Foo_(bar)")]

@@ -21,21 +21,21 @@ public class BitDatePickerStylesheetTests
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // size an unset one stands for.
         var resolution = SourceFiles.GetScssBlock(stylesheet, "@mixin dtp-size-resolution");
-        StringAssert.Contains(resolution, "--bit-dtp-inp-h: var(--bit-dtp-inp-h-sz, var(--bit-DatePicker-input-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(resolution, "--bit-dtp-inp-fs: var(--bit-dtp-inp-fs-sz, var(--bit-DatePicker-input-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(resolution, "--bit-dtp-ico-fs: var(--bit-dtp-ico-fs-sz, var(--bit-DatePicker-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(resolution, "--bit-dtp-cell-size: var(--bit-dtp-cell-size-sz, var(--bit-DatePicker-day-size, #{spacing(3.5)}));");
-        StringAssert.Contains(resolution, "--bit-dtp-cell-fs: var(--bit-dtp-cell-fs-sz, var(--bit-DatePicker-day-font-size, #{$tg-fs-xs}));");
-        StringAssert.Contains(resolution, "--bit-dtp-lbl-fs: var(--bit-dtp-lbl-fs-sz, var(--bit-DatePicker-label-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(resolution, "--bit-dtp-hdr-fs: var(--bit-dtp-hdr-fs-sz, var(--bit-DatePicker-header-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(resolution, "--bit-dtp-time-fs: var(--bit-dtp-time-fs-sz, var(--bit-DatePicker-time-font-size, #{$tg-fs-lg}));");
+        Assert.Contains("--bit-dtp-inp-h: var(--bit-dtp-inp-h-sz, var(--bit-DatePicker-input-height, #{$siz-ctrl-md}));", resolution);
+        Assert.Contains("--bit-dtp-inp-fs: var(--bit-dtp-inp-fs-sz, var(--bit-DatePicker-input-font-size, #{$tg-fs-sm}));", resolution);
+        Assert.Contains("--bit-dtp-ico-fs: var(--bit-dtp-ico-fs-sz, var(--bit-DatePicker-icon-size, #{$siz-icon-md}));", resolution);
+        Assert.Contains("--bit-dtp-cell-size: var(--bit-dtp-cell-size-sz, var(--bit-DatePicker-day-size, #{spacing(3.5)}));", resolution);
+        Assert.Contains("--bit-dtp-cell-fs: var(--bit-dtp-cell-fs-sz, var(--bit-DatePicker-day-font-size, #{$tg-fs-xs}));", resolution);
+        Assert.Contains("--bit-dtp-lbl-fs: var(--bit-dtp-lbl-fs-sz, var(--bit-DatePicker-label-font-size, #{$tg-fs-sm}));", resolution);
+        Assert.Contains("--bit-dtp-hdr-fs: var(--bit-dtp-hdr-fs-sz, var(--bit-DatePicker-header-font-size, #{$tg-fs-sm}));", resolution);
+        Assert.Contains("--bit-dtp-time-fs: var(--bit-dtp-time-fs-sz, var(--bit-DatePicker-time-font-size, #{$tg-fs-lg}));", resolution);
 
         // So does an explicit Color, for every color it paints.
-        StringAssert.Contains(stylesheet, "var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}))");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color)))");
+        Assert.Contains("var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}))", stylesheet);
+        Assert.Contains("var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}))", stylesheet);
+        Assert.Contains("var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}))", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color)))", stylesheet);
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DatePicker-[a-z-]+, var\(--bit-dtp-"), "A public variable is read before the parameter it restyles the default of.");
 
@@ -56,14 +56,14 @@ public class BitDatePickerStylesheetTests
                                          "--bit-dtp-inp-h-sz", "--bit-dtp-inp-fs-sz", "--bit-dtp-ico-fs-sz", "--bit-dtp-cell-size-sz",
                                          "--bit-dtp-cell-fs-sz", "--bit-dtp-lbl-fs-sz", "--bit-dtp-hdr-fs-sz", "--bit-dtp-time-fs-sz" })
         {
-            StringAssert.Contains(resets, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", resets);
         }
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtp {"), "@include dtp-parameter-resets;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtp-cal {"), "@include dtp-parameter-resets;");
+        Assert.Contains("@include dtp-parameter-resets;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtp {"));
+        Assert.Contains("@include dtp-parameter-resets;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtp-cal {"));
 
         var calloutIndex = stylesheet.IndexOf("\n.bit-dtp-cal {", System.StringComparison.Ordinal);
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n    .bit-dtp-#{$role} {", System.StringComparison.Ordinal), "The role classes come before the callout that resets what they publish.");
-        Assert.IsTrue(calloutIndex < stylesheet.IndexOf("\n.bit-dtp-sm {", System.StringComparison.Ordinal), "The size classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-dtp-#{$role} {", System.StringComparison.Ordinal), calloutIndex, "The role classes come before the callout that resets what they publish.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-dtp-sm {", System.StringComparison.Ordinal), calloutIndex, "The size classes come before the callout that resets what they publish.");
     }
 }

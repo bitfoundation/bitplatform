@@ -54,7 +54,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     {
         var @params = new BitPullToRefreshParams();
 
-        Assert.AreEqual("BitParams.BitPullToRefresh", BitPullToRefreshParams.ParamName);
+        Assert.AreEqual("BitParams.BitPullToRefresh", new BitPullToRefreshParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitPullToRefreshParams.ParamName, @params.Name);
     }
@@ -89,11 +89,11 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         var root = component.Find(".bit-ptr");
         Assert.IsTrue(root.ClassList.Contains("bit-ptr-flw"));
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-ptr-color:var(--bit-clr-err)");
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("--bit-ptr-color:var(--bit-clr-err)", root.GetAttribute("style")!);
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-ptr-lod").ClassList.Contains("cascaded-loading"));
-        StringAssert.Contains(component.Find(".bit-ptr-spw").GetAttribute("style"), "padding: 2px");
+        Assert.Contains("padding: 2px", component.Find(".bit-ptr-spw").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitPullToRefreshParams { CustomColor = "#b400ff" });
 
-        StringAssert.Contains(component.Find(".bit-ptr").GetAttribute("style"), "--bit-ptr-color:#b400ff");
+        Assert.Contains("--bit-ptr-color:#b400ff", component.Find(".bit-ptr").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         Assert.AreEqual(10, setup.Arguments[7]);
         Assert.AreEqual(5, setup.Arguments[8]);
         Assert.AreEqual(160, setup.Arguments[9]);
-        Assert.AreEqual(true, setup.Arguments[11]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[11]));
         Assert.AreEqual(BitPullToRefreshDirection.Up, setup.Arguments[12]);
 
         // The cascaded direction also turns the strip, which the stylesheet reads off the root's class.
@@ -217,7 +217,7 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         });
 
         var root = component.Find(".bit-ptr");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-ptr-color:var(--bit-clr-suc)");
+        Assert.Contains("--bit-ptr-color:var(--bit-clr-suc)", root.GetAttribute("style")!);
         Assert.IsFalse(root.ClassList.Contains("bit-ptr-flw"));
         Assert.IsFalse(root.ClassList.Contains("bit-ptr-up"));
 
@@ -242,6 +242,6 @@ public class BitPullToRefreshParamsTests : BunitTestContext
         var setup = Context.JSInterop.VerifyInvoke("BitBlazorUI.PullToRefresh.setup");
         Assert.AreEqual(80, setup.Arguments[5]);
         Assert.AreEqual(1.5m, setup.Arguments[6]);
-        Assert.AreEqual(false, setup.Arguments[11]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(setup.Arguments[11]));
     }
 }

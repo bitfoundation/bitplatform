@@ -118,7 +118,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaLabel) is false)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("aria-label")?.Equals(ariaLabel));
+            var actualValue = chbInput?.GetAttribute("aria-label")?.Equals(ariaLabel);
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -171,7 +172,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(ariaLabelledby) is false)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("aria-labelledby")?.Equals(ariaLabelledby));
+            var actualValue = chbInput?.GetAttribute("aria-labelledby")?.Equals(ariaLabelledby);
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -194,7 +196,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (string.IsNullOrEmpty(title) is false)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("title")?.Equals(title));
+            var actualValue = chbInput?.GetAttribute("title")?.Equals(title);
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -217,7 +220,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (name is not null)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("name")?.Equals(name));
+            var actualValue = chbInput?.GetAttribute("name")?.Equals(name);
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -240,7 +244,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (ariaPosInSet is not null)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("aria-posinset")?.Equals(ariaPosInSet.ToString()));
+            var actualValue = chbInput?.GetAttribute("aria-posinset")?.Equals(ariaPosInSet.ToString());
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -263,7 +268,8 @@ public class BitCheckboxTests : BunitTestContext
 
         if (ariaSetSize is not null)
         {
-            Assert.IsTrue(chbInput?.GetAttribute("aria-setsize")?.Equals(ariaSetSize.ToString()));
+            var actualValue = chbInput?.GetAttribute("aria-setsize")?.Equals(ariaSetSize.ToString());
+            Assert.IsTrue(actualValue);
         }
         else
         {
@@ -698,7 +704,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         Assert.IsTrue(templated.Find(".bit-chb").ClassList.Contains("bit-chb-req"));
-        Assert.IsTrue(templated.Find(".bit-chb-tpl").TextContent.Contains("Terms"));
+        Assert.Contains("Terms", templated.Find(".bit-chb-tpl").TextContent);
     }
 
     [TestMethod]
@@ -793,7 +799,7 @@ public class BitCheckboxTests : BunitTestContext
         var describedBy = component.Find("input").GetAttribute("aria-describedby");
 
         Assert.IsNotNull(describedBy);
-        CollectionAssert.Contains(describedBy.Split(' '), description.Id);
+        Assert.Contains(description.Id, describedBy.Split(' '));
     }
 
     [TestMethod]
@@ -831,7 +837,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var ids = component.Find("input").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(3, ids.Length);
+        Assert.HasCount(3, ids);
         Assert.AreEqual(component.Find(".bit-chb-des").Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-chb-dsc").Id, ids[1]);
         Assert.AreEqual("external-hint", ids[2]);
@@ -1394,13 +1400,13 @@ public class BitCheckboxTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("the-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("visibility:hidden"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
 
         component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
 
-        Assert.IsTrue(component.Find(".bit-chb").GetAttribute("style")!.Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-chb").GetAttribute("style")!);
     }
 
     /// <summary>
@@ -1421,14 +1427,14 @@ public class BitCheckboxTests : BunitTestContext
 
         Assert.IsFalse(root.ClassList.Contains("is-checked"));
         Assert.IsFalse(root.ClassList.Contains("is-mixed"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("color"));
+        Assert.DoesNotContain("color", (root.GetAttribute("style") ?? string.Empty));
 
         component.Find("input").Click();
 
         root = component.Find(".bit-chb");
 
         Assert.IsTrue(root.ClassList.Contains("is-checked"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1439,7 +1445,7 @@ public class BitCheckboxTests : BunitTestContext
         root = component.Find(".bit-chb");
 
         Assert.IsTrue(root.ClassList.Contains("is-mixed"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: blue;");
+        Assert.Contains("color: blue;", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-chb-spn").ClassList.Contains("the-spinner"));
         Assert.AreEqual("opacity: 0.5;", component.Find(".bit-chb-spn").GetAttribute("style"));
     }
@@ -1478,7 +1484,7 @@ public class BitCheckboxTests : BunitTestContext
         component.Find("input").Click(new MouseEventArgs { ClientX = 7 });
         component.Find("input").Click();
 
-        CollectionAssert.AreEqual(new[] { true, false }, changes);
+        Assert.AreSequenceEqual(new[] { true, false }, changes);
         Assert.IsNotNull(clickArgs);
         Assert.AreEqual(7, clickArgs!.ClientX);
     }
@@ -1502,7 +1508,7 @@ public class BitCheckboxTests : BunitTestContext
 
         var restored = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setProperty" && Equals(i.Arguments[1], "checked"));
 
-        Assert.AreEqual(false, restored.Arguments[2]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(restored.Arguments[2]));
     }
 
     /// <summary>
@@ -1523,12 +1529,12 @@ public class BitCheckboxTests : BunitTestContext
 
         var pushes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Utils.setProperty").ToList();
 
-        Assert.AreEqual(indeterminate ? 1 : 0, pushes.Count);
+        Assert.HasCount(indeterminate ? 1 : 0, pushes);
 
         if (indeterminate)
         {
             Assert.AreEqual("indeterminate", pushes[0].Arguments[1]);
-            Assert.AreEqual(true, pushes[0].Arguments[2]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(pushes[0].Arguments[2]));
         }
     }
 
@@ -1561,8 +1567,8 @@ public class BitCheckboxTests : BunitTestContext
     {
         var unlabeled = RenderComponent<BitCheckbox>();
 
-        Assert.AreEqual(0, unlabeled.FindAll(".bit-chb-txt").Count);
-        Assert.AreEqual(0, unlabeled.FindAll(".bit-chb-tpl").Count);
+        Assert.IsEmpty(unlabeled.FindAll(".bit-chb-txt"));
+        Assert.IsEmpty(unlabeled.FindAll(".bit-chb-tpl"));
 
         var labeled = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Label, "Remember me"));
 
@@ -1582,7 +1588,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         Assert.AreEqual("Templated", templated.Find(".bit-chb-tpl b").TextContent);
-        Assert.AreEqual(0, templated.FindAll(".bit-chb-txt").Count);
+        Assert.IsEmpty(templated.FindAll(".bit-chb-txt"));
     }
 
     /// <summary>
@@ -1660,10 +1666,10 @@ public class BitCheckboxTests : BunitTestContext
             [nameof(BitCheckbox.AutoFocus)] = true,
         });
 
-        StringAssert.Contains(html, "bit-chb-ind");
-        StringAssert.Contains(html, "aria-checked=\"mixed\"");
-        StringAssert.Contains(html, "autofocus");
-        StringAssert.Contains(html, "Prerendered");
+        Assert.Contains("bit-chb-ind", html);
+        Assert.Contains("aria-checked=\"mixed\"", html);
+        Assert.Contains("autofocus", html);
+        Assert.Contains("Prerendered", html);
     }
 
     [TestMethod]
@@ -1697,7 +1703,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
 
         // the line sits outside the label, so it is no part of the accessible name or the click target
-        Assert.AreEqual(0, component.FindAll(".bit-chb-lbl .bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-lbl .bit-chb-erm"));
     }
 
     [TestMethod]
@@ -1707,14 +1713,14 @@ public class BitCheckboxTests : BunitTestContext
 
         var root = component.Find(".bit-chb");
 
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-chb-her"));
         Assert.IsFalse(root.ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
         Assert.IsFalse(component.Find("input").HasAttribute("aria-describedby"));
 
         // a list of plain checkboxes does not carry an empty live region per row
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -1732,7 +1738,7 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
 
         // the flag says the state was rejected; it does not invent a line saying why
-        Assert.AreEqual(0, component.FindAll(".bit-chb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chb-erm"));
         Assert.IsFalse(root.ClassList.Contains("bit-chb-her"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
@@ -1757,7 +1763,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         Assert.AreEqual("Templated message", component.Find(".bit-chb-erm .custom-error").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-chb-erm").TextContent.Contains("Plain message"));
+        Assert.DoesNotContain("Plain message", component.Find(".bit-chb-erm").TextContent);
 
         // the plain text is not on screen, so it is not what the live region announces either
         Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
@@ -1817,7 +1823,7 @@ public class BitCheckboxTests : BunitTestContext
         });
 
         // the flag on its own has nothing to say, and so no live region to say it in
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
         Assert.IsFalse(component.Find("input").HasAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
@@ -1921,11 +1927,11 @@ public class BitCheckboxTests : BunitTestContext
 
         // what is wrong with the state is read before what checking the box means, which is the order the two
         // lines are rendered in as well
-        CollectionAssert.AreEqual(new[] { errorId, descriptionId, ariaDescriptionId, "billing-hint" }, describedBy);
+        Assert.AreSequenceEqual(new[] { errorId, descriptionId, ariaDescriptionId, "billing-hint" }, describedBy);
 
         var lines = component.FindAll(".bit-chb-erm, .bit-chb-des").Select(e => e.ClassList.Contains("bit-chb-erm") ? "error" : "description").ToArray();
 
-        CollectionAssert.AreEqual(new[] { "error", "description" }, lines);
+        Assert.AreSequenceEqual(new[] { "error", "description" }, lines);
     }
 
     [TestMethod]
@@ -1975,7 +1981,7 @@ public class BitCheckboxTests : BunitTestContext
 
         // the base class already registers the class for a state the EditContext rejected, so the checkbox only
         // adds it for a rejection of its own - two identical classes say nothing the one does not
-        Assert.AreEqual(1, component.Find(".bit-chb").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-chb").ClassList);
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
 
         // and once the app drops its own rejection, the form's still stands

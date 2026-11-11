@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Tests for the individual CSS transform-property emit mode (plan item 2.1 core:
@@ -12,7 +12,10 @@ public class IndividualTransformTests
     {
         var d = BmotionTransformComposer.BuildIndividual(new()
         {
-            ["x"] = 10, ["y"] = 20, ["scale"] = 2, ["rotate"] = 45,
+            ["x"] = 10,
+            ["y"] = 20,
+            ["scale"] = 2,
+            ["rotate"] = 45,
         });
         Assert.AreEqual("10px 20px", d["translate"]);
         Assert.AreEqual("2", d["scale"]);
@@ -39,7 +42,10 @@ public class IndividualTransformTests
     {
         var d = BmotionTransformComposer.BuildIndividual(new()
         {
-            ["x"] = 10, ["skewX"] = 15, ["rotateY"] = 30, ["perspective"] = 500,
+            ["x"] = 10,
+            ["skewX"] = 15,
+            ["rotateY"] = 30,
+            ["perspective"] = 500,
         });
         Assert.AreEqual("10px 0px", d["translate"]);
         // rotateY/skewX/perspective have no individual property → composed, perspective first.
@@ -50,7 +56,7 @@ public class IndividualTransformTests
     public void IdentityComponents_AreOmitted()
     {
         var d = BmotionTransformComposer.BuildIndividual(new() { ["x"] = 0, ["scale"] = 1, ["rotate"] = 0 });
-        Assert.AreEqual(0, d.Count);
+        Assert.IsEmpty(d);
     }
 
     [TestMethod]

@@ -176,7 +176,7 @@ public class DefinitionCloneTests
 
         Assert.AreEqual("Shared", copy.Title);
         Assert.AreEqual(2, copy.Columns);
-        Assert.AreEqual(3, copy.Fields.Count);
+        Assert.HasCount(3, copy.Fields);
         Assert.ContainsSingle(copy.Steps);
         Assert.IsNotNull(copy.FindByPath("address.city"));
         Assert.IsNotNull(copy.FindField("lines")!.ItemTemplate);
@@ -193,7 +193,7 @@ public class DefinitionCloneTests
         copy.FindField("country")!.Options.Add(new BormSelectOption("gb", "United Kingdom"));
 
         Assert.ContainsSingle(original.FindField("country")!.Options);
-        Assert.AreEqual(2, copy.FindField("country")!.Options.Count);
+        Assert.HasCount(2, copy.FindField("country")!.Options);
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class DefinitionCloneTests
 
     [TestMethod]
     public void A_cloned_schema_still_passes_its_own_diagnostics()
-        => Assert.AreEqual(Schema().Validate().Count, Schema().Clone().Validate().Count);
+        => Assert.HasCount(Schema().Validate().Count, Schema().Clone().Validate());
 }
 
 /// <summary>
@@ -311,7 +311,7 @@ public class DictionaryKeyCasingTests
 
         data.SetValue("Email", "changed");
 
-        Assert.AreEqual(2, seed.Count);
+        Assert.HasCount(2, seed);
         Assert.AreEqual("changed", seed["Email"]);
     }
 

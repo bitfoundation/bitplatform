@@ -119,7 +119,7 @@ public class ProcessingTests : DemoTest
     {
         var page = await OpenAsync("avatar");
         var file = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}.png");
-        await File.WriteAllTextAsync(file, "this is definitely not a png");
+        await File.WriteAllTextAsync(file, "this is definitely not a png", TestContext.CancellationToken);
         try
         {
             await page.SetInputFilesAsync("input[type=file]", file);
@@ -289,7 +289,7 @@ public class EditorTests : DemoTest
                 return [d[0], d[1], d[2], d[3]];
             }
             """);
-        CollectionAssert.AreEqual(new[] { 0, 0, 0, 255 }, redacted);
+        Assert.AreSequenceEqual(new[] { 0, 0, 0, 255 }, redacted);
     }
 
     [TestMethod]
@@ -427,10 +427,10 @@ public class LayersAndMasksTests : DemoTest
         await page.WaitForSelectorAsync(".working", new PageWaitForSelectorOptions { State = WaitForSelectorState.Detached, Timeout = 60_000 });
 
         var json = await page.Locator(".layers-json").InnerTextAsync();
-        StringAssert.Contains(json, "\"type\": \"masked\"");
-        StringAssert.Contains(json, "\"type\": \"linearGradient\"");
-        StringAssert.Contains(json, "\"type\": \"fill\"");
-        StringAssert.Contains(json, "\"blendMode\": \"Multiply\"");
+        Assert.Contains("\"type\": \"masked\"", json);
+        Assert.Contains("\"type\": \"linearGradient\"", json);
+        Assert.Contains("\"type\": \"fill\"", json);
+        Assert.Contains("\"blendMode\": \"Multiply\"", json);
         Assert.IsEmpty(errors, string.Join(" | ", errors));
         Assert.IsEmpty(await page.Locator(".demo-error").AllInnerTextsAsync());
     }

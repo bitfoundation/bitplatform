@@ -26,7 +26,7 @@ public sealed class BitExternalThemeLoaderTests : BunitTestContext
         await loader.AttachStylesheetAsync("theme-link", href);
 
         var invocation = Context.JSInterop.Invocations.Single();
-        CollectionAssert.AreEqual(new object[] { "theme-link", href }, invocation.Arguments.ToArray());
+        Assert.AreSequenceEqual(new object[] { "theme-link", href }, invocation.Arguments.ToArray());
     }
 
     [TestMethod,

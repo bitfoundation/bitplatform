@@ -71,7 +71,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         Assert.AreEqual("It's a body.\nOn two lines.", await body.InnerTextAsync());
         await Expect(body).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-fg-sec)"));
         var lineHeight = ParsePx(await body.EvaluateAsync<string>("e => getComputedStyle(e).lineHeight"));
-        Assert.IsTrue((await body.BoundingBoxAsync())!.Height >= lineHeight * 2 - 1, "The two lines are laid out on two lines.");
+        Assert.IsGreaterThanOrEqualTo(lineHeight * 2 - 1, (await body.BoundingBoxAsync())!.Height, "The two lines are laid out on two lines.");
 
         await Expect(Actions("msb-basic")).ToHaveCountAsync(1);
         await Expect(Actions("msb-basic")).ToHaveTextAsync(["Ok"]);
@@ -86,7 +86,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         // The close button sits at the end of the header, beyond the title.
         var titleBox = await title.BoundingBoxAsync();
         var closeBox = await close.BoundingBoxAsync();
-        Assert.IsTrue(closeBox!.X >= titleBox!.X + titleBox.Width - 1);
+        Assert.IsGreaterThanOrEqualTo(titleBox!.X + titleBox.Width - 1, closeBox!.X);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         var body = Box("msb-long").Locator(".bit-msb-bdy");
         var overflow = await body.EvaluateAsync<bool>("e => e.scrollWidth > e.clientWidth");
         Assert.IsFalse(overflow, "A long word wraps instead of running off the side.");
-        Assert.IsTrue((await Box("msb-long").BoundingBoxAsync())!.Width <= 241);
+        Assert.IsLessThanOrEqualTo(241, (await Box("msb-long").BoundingBoxAsync())!.Width);
     }
 
     [TestMethod]
@@ -209,7 +209,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
 
         var first = await Actions("msb-reversed").First.BoundingBoxAsync();
         var last = await Actions("msb-reversed").Last.BoundingBoxAsync();
-        Assert.IsTrue(first!.X < last!.X);
+        Assert.IsLessThan(last!.X, first!.X);
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         // Without a Color the glyph takes the text color, and it sits before the title.
         var iconBox = await icon.BoundingBoxAsync();
         var titleBox = await Box("msb-icon-name").Locator(".bit-msb-ttl").BoundingBoxAsync();
-        Assert.IsTrue(iconBox!.X < titleBox!.X);
+        Assert.IsLessThan(titleBox!.X, iconBox!.X);
     }
 
     [TestMethod]
@@ -699,7 +699,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         // A question is an alertdialog, named by its title and described by its body.
         await Expect(Dialog).ToHaveAttributeAsync("role", "alertdialog");
         var id = await DialogBox.GetAttributeAsync("id");
-        StringAssert.StartsWith(id, "bit-msb-");
+        Assert.StartsWith("bit-msb-", id);
         await Expect(Dialog).ToHaveAttributeAsync("aria-labelledby", $"{id}-ttl");
         await Expect(Dialog).ToHaveAttributeAsync("aria-describedby", $"{id}-bdy");
         await Expect(Page.GetByRole(AriaRole.Alertdialog, new() { Name = "TITLE" })).ToBeVisibleAsync();
@@ -930,7 +930,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Page.Locator(".bit-mdl")).ToHaveAttributeAsync("dir", "rtl");
         var title = await box.Locator(".bit-msb-ttl").BoundingBoxAsync();
         var close = await CloseButton("svc-rtl").BoundingBoxAsync();
-        Assert.IsTrue(close!.X < title!.X, "The close button is on the left in right-to-left.");
+        Assert.IsLessThan(title!.X, close!.X, "The close button is on the left in right-to-left.");
     }
 
     // ---------- Confirm ----------
@@ -1241,7 +1241,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
             minWidths.Add(await ComputedStyleAsync($"#msb-size-{size}", "min-width"));
         }
 
-        Assert.AreEqual(3, minWidths.Distinct().Count(), string.Join(" | ", minWidths));
+        Assert.HasCount(3, minWidths.Distinct(), string.Join(" | ", minWidths));
         Assert.AreEqual(minWidths[1], await ComputedStyleAsync("#msb-size-unset", "min-width"));
 
         // The buttons follow the size too.
@@ -1327,11 +1327,11 @@ public class BitMessageBoxE2ETests : E2ETestBase
         await Expect(Page.Locator($"{id} .bit-msb-ftr")).ToHaveCSSAsync("justify-content", "center");
 
         // The box stops at its max height and the body scrolls inside it, the header and footer staying put.
-        Assert.IsTrue((await Box("msb-vars").BoundingBoxAsync())!.Height <= 222.5);
+        Assert.IsLessThanOrEqualTo(222.5, (await Box("msb-vars").BoundingBoxAsync())!.Height);
         Assert.IsTrue(await Page.Locator($"{id} .bit-msb-bdy").EvaluateAsync<bool>("e => e.scrollHeight > e.clientHeight"));
         var footer = await Page.Locator($"{id} .bit-msb-ftr").BoundingBoxAsync();
         var root = await Box("msb-vars").BoundingBoxAsync();
-        Assert.IsTrue(footer!.Y + footer.Height <= root!.Y + root.Height + 0.5, "The footer stays inside the box.");
+        Assert.IsLessThanOrEqualTo(root!.Y + root.Height + 0.5, footer!.Y + footer.Height, "The footer stays inside the box.");
     }
 
     [TestMethod]
@@ -1384,12 +1384,12 @@ public class BitMessageBoxE2ETests : E2ETestBase
         var icon = await Box(id).Locator(".bit-msb-ict").BoundingBoxAsync();
         var title = await Box(id).Locator(".bit-msb-ttl").BoundingBoxAsync();
         var close = await CloseButton(id).BoundingBoxAsync();
-        Assert.IsTrue(icon!.X > title!.X, "The glyph leads on the right.");
-        Assert.IsTrue(close!.X < title.X, "The close button ends on the left.");
+        Assert.IsGreaterThan(title!.X, icon!.X, "The glyph leads on the right.");
+        Assert.IsLessThan(title.X, close!.X, "The close button ends on the left.");
 
         var yes = await Actions(id).First.BoundingBoxAsync();
         var no = await Actions(id).Last.BoundingBoxAsync();
-        Assert.IsTrue(yes!.X > no!.X, "The first button is the rightmost.");
+        Assert.IsGreaterThan(no!.X, yes!.X, "The first button is the rightmost.");
     }
 
     [TestMethod]
@@ -1432,7 +1432,7 @@ public class BitMessageBoxE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        StringAssert.StartsWith(await ComputedStyleAsync("#msb-basic", "min-width"), "min(");
+        Assert.StartsWith("min(", await ComputedStyleAsync("#msb-basic", "min-width"));
         await Page.SetViewportSizeAsync(400, 800);
         await Expect(Box("msb-basic")).ToHaveCSSAsync("min-width", "0px");
     }
@@ -1446,9 +1446,9 @@ public class BitMessageBoxE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "<div id=\"msb-basic\" class=\"bit-msb\">");
-        StringAssert.Contains(html, "<h5 id=\"msb-basic-ttl\" class=\"bit-msb-ttl\">It&#x27;s a title</h5>");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"msb-basic\" class=\"bit-msb\">", html);
+        Assert.Contains("<h5 id=\"msb-basic-ttl\" class=\"bit-msb-ttl\">It&#x27;s a title</h5>", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

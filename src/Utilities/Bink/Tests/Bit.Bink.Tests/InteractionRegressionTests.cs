@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bit.Bink.Tests.Components;
 using Bunit;
 using Microsoft.JSInterop;
@@ -49,7 +49,9 @@ public sealed class InteractionRegressionTests
 
         Assert.AreEqual("hello", ((BinkTextElement)context.Document.GetElement(first)).Text);
         Assert.AreEqual("keep me", ((BinkTextElement)context.Document.GetElement(existing.Id)).Text);
-        Assert.AreEqual(existing.Id, tool.Editing?.Id, "The editor open now stays open.");
+        var expectedValue = existing.Id;
+        var actualValue = tool.Editing?.Id;
+        Assert.AreEqual(expectedValue, actualValue, "The editor open now stays open.");
         Assert.AreEqual(finishedBefore, finished, "Only the edit in progress closes the editor.");
         Assert.AreEqual(1, context.History.UndoCount, "Placing and typing the first box is one step.");
 
@@ -312,7 +314,7 @@ public sealed class BrowserContractRegressionTests : BunitContext
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
         canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "execute", module.Invocations));
 
-        byte[] png = await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync());
+        byte[] png = await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(cancellationToken: TestContext.CancellationToken));
 
         Assert.HasCount(large.Length, png);
         Assert.IsTrue(stream.Disposed, "The browser stream is released once read.");
@@ -337,7 +339,7 @@ public sealed class BrowserContractRegressionTests : BunitContext
             canvas.Instance.CurrentDocument.AddElement(new BinkImageElement(honest, new BinkRect(200, 0, 100, 100)));
         });
 
-        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { MaxPixels = 1_000_000 }));
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { MaxPixels = 1_000_000 }, TestContext.CancellationToken));
 
         IReadOnlyList<JSRuntimeInvocation> loads = [.. module.Invocations.Where(i => i.Identifier == "loadImage")];
         Assert.AreEqual(1_000_000L, loads.Single(i => Equals(i.Arguments[1], claimed.Uri)).Arguments[2], "The browser is told how many pixels are left.");
@@ -416,7 +418,7 @@ public sealed class BrowserContractRegressionTests : BunitContext
     {
         // The runtime refuses it with an ArgumentOutOfRangeException; every caller handles "too large" as an IOException.
         var stream = new TestStreamReference(new byte[100]);
-        await Assert.ThrowsExactlyAsync<IOException>(() => BinkInterop.ReadBytesAsync(stream, 99));
+        await Assert.ThrowsExactlyAsync<IOException>(() => BinkInterop.ReadBytesAsync(stream, 99, TestContext.CancellationToken));
         Assert.IsTrue(stream.Disposed);
     }
 
@@ -631,4 +633,6 @@ public sealed class BrowserContractRegressionTests : BunitContext
         await canvas.InvokeAsync(() => { });
         return canvas;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -55,15 +55,15 @@ public class BitPdfXRefTests
         file.Obj(11, "[1 2 3]");
         file.XRefTable("/Size 12 /Root 1 0 R /Info 6 0 R", [0, 1, 2, 3, 4, 5, 6, 10, 11]);
         byte[] bytes = file.ToArray();
-        StringAssert.Contains(Encoding.Latin1.GetString(bytes), "xref\n0 7\n");
-        StringAssert.Contains(Encoding.Latin1.GetString(bytes), "\n10 2\n");
+        Assert.Contains("xref\n0 7\n", Encoding.Latin1.GetString(bytes));
+        Assert.Contains("\n10 2\n", Encoding.Latin1.GetString(bytes));
 
         var document = BitPdfDocument.Load(bytes);
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("Classic", PageText(document));
         Assert.AreEqual("ten", ((BitPdfString)document.XRef.Fetch(new BitPdfRef(10, 0))!).AsText());
-        Assert.AreEqual(3, ((List<object?>)document.XRef.Fetch(new BitPdfRef(11, 0))!).Count);
+        Assert.HasCount(3, ((List<object?>)document.XRef.Fetch(new BitPdfRef(11, 0))!));
         Assert.AreEqual("Original title", document.Metadata.Title);
         Assert.AreEqual("1.7", document.Version);
     }
@@ -78,7 +78,7 @@ public class BitPdfXRefTests
         var document = BitPdfDocument.Load(file.ToArray());
 
         Assert.IsNull(document.XRef.Fetch(new BitPdfRef(7, 0)));
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("Line endings", PageText(document));
     }
 
@@ -141,7 +141,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("1.5", document.Version);
         Assert.AreEqual(1, document.PageCount);
         Assert.AreEqual("From an object stream", PageText(document));
@@ -259,11 +259,11 @@ public class BitPdfXRefTests
         file.Obj(21, "(twenty-one)");
         file.XRefStream(30, "/Root 1 0 R",
             new[] { 1, 2, 3, 4, 5, 20, 21 }.Select(n => (n, 1, file.Offsets[n], 0)).Prepend((0, 0, 0, 65535)), compress: true);
-        StringAssert.Contains(Encoding.Latin1.GetString(file.ToArray()), "/Index [0 6 20 2 30 1]");
+        Assert.Contains("/Index [0 6 20 2 30 1]", Encoding.Latin1.GetString(file.ToArray()));
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("Sparse index", PageText(document));
         Assert.AreEqual("twenty-one", ((BitPdfString)document.XRef.Fetch(new BitPdfRef(21, 0))!).AsText());
     }
@@ -284,7 +284,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual(1, document.PageCount);
         Assert.AreEqual("Updated", PageText(document));
         Assert.AreEqual("Updated title", document.Metadata.Title);
@@ -318,7 +318,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("v2", PageText(document));
         Assert.AreEqual("Title from v3", document.Metadata.Title);
     }
@@ -333,7 +333,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("Stream update", PageText(document));
         Assert.AreEqual("Original title", document.Metadata.Title);
     }
@@ -392,7 +392,7 @@ public class BitPdfXRefTests
         var document = BitPdfDocument.Load(Encoding.Latin1.GetBytes(text));
 
         Assert.AreEqual("Loop update", PageText(document));
-        Assert.AreEqual(0, document.Warnings.Count, string.Join("; ", document.Warnings));
+        Assert.IsEmpty(document.Warnings, string.Join("; ", document.Warnings));
     }
 
     // ----- Recovery -----
@@ -408,7 +408,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(broken);
 
-        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.IsNotEmpty(document.Warnings);
         Assert.AreEqual("Recovered", PageText(document));
         Assert.AreEqual("Original title", document.Metadata.Title);
     }
@@ -427,7 +427,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(broken);
 
-        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.IsNotEmpty(document.Warnings);
         Assert.AreEqual("Recovered", PageText(document));
         Assert.AreEqual("Original title", document.Metadata.Title);
     }
@@ -445,7 +445,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(broken);
 
-        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.IsNotEmpty(document.Warnings);
         Assert.AreEqual("Recovered", PageText(document));
         Assert.AreEqual("Original title", document.Metadata.Title);
     }
@@ -464,7 +464,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(shifted);
 
-        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.IsNotEmpty(document.Warnings);
         Assert.AreEqual(1, document.PageCount);
         Assert.AreEqual("Shifted", PageText(document));
     }
@@ -476,7 +476,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.IsTrue(document.Warnings.Any(w => w.Contains("catalog", StringComparison.OrdinalIgnoreCase)), string.Join("; ", document.Warnings));
+        Assert.Contains(w => w.Contains("catalog", StringComparison.OrdinalIgnoreCase), document.Warnings, string.Join("; ", document.Warnings));
         Assert.AreEqual("No trailer", PageText(document));
     }
 
@@ -512,7 +512,7 @@ public class BitPdfXRefTests
 
         var document = BitPdfDocument.Load(file.ToArray());
 
-        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.IsNotEmpty(document.Warnings);
         Assert.AreEqual("Scanned object stream", PageText(document));
     }
 
@@ -554,7 +554,7 @@ public class BitPdfXRefTests
 
         Assert.AreEqual("Compressed after all", document.Metadata.Title);
         Assert.AreEqual("Compressed after all", ((BitPdfString)((BitPdfDict)document.XRef.Fetch(new BitPdfRef(6, 0))!).Get("Title")!).AsText());
-        Assert.IsTrue(document.Warnings.Count > 0, "The stale offset was answered without a rebuild.");
+        Assert.IsNotEmpty(document.Warnings, "The stale offset was answered without a rebuild.");
         Assert.AreEqual("Stale", PageText(document));
     }
 

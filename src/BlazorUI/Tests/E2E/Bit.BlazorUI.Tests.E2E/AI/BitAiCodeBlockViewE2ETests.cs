@@ -247,18 +247,18 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
 
             var before = await lines.First.EvaluateAsync<string[]>(
                 "e => { const s = getComputedStyle(e, '::before'); return [s.content, s.counterIncrement, s.userSelect || s.webkitUserSelect, s.width, s.display, s.color]; }");
-            StringAssert.Contains(before[0], "counter(bit-aicbv-line", $"{id}: the number is the line's counter.");
-            StringAssert.Contains(before[1], "bit-aicbv-line", $"{id}: each line counts one more.");
+            Assert.Contains("counter(bit-aicbv-line", before[0], $"{id}: the number is the line's counter.");
+            Assert.Contains("bit-aicbv-line", before[1], $"{id}: each line counts one more.");
             Assert.AreEqual("none", before[2], $"{id}: a number cannot be selected.");
             Assert.AreEqual("inline-block", before[4]);
             Assert.AreEqual(await Page.ResolveColorAsync("var(--bit-clr-fg-ter)"), before[5], $"{id}: the numbers are the tertiary text color.");
-            StringAssert.Contains(await Page.Locator($"#{id} .bit-aicbv-pre").EvaluateAsync<string>("e => getComputedStyle(e).counterReset"), "bit-aicbv-line");
+            Assert.Contains("bit-aicbv-line", await Page.Locator($"#{id} .bit-aicbv-pre").EvaluateAsync<string>("e => getComputedStyle(e).counterReset"));
 
             // The gutter is at the left of the code - its start in the left-to-right lines - even in a right-to-left page.
             var line = await lines.First.RectAsync();
             var firstCharacter = await lines.First.CharacterRectAsync(0);
             var gutter = AiE2EHelpers.ParsePx(before[3]);
-            Assert.IsTrue(firstCharacter.Left - line.Left >= gutter, $"{id}: the code starts after the gutter ({firstCharacter.Left - line.Left} >= {gutter}).");
+            Assert.IsGreaterThanOrEqualTo(gutter, firstCharacter.Left - line.Left, $"{id}: the code starts after the gutter ({firstCharacter.Left - line.Left} >= {gutter}).");
         }
     }
 
@@ -283,18 +283,18 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
             var box = await pre.RectAsync();
             var padding = AiE2EHelpers.ParsePx(await pre.EvaluateAsync<string>("e => getComputedStyle(e).paddingLeft"));
             Assert.AreEqual(box.Left + padding, first.Left, 2, "The code starts at the left edge of the block.");
-            Assert.IsTrue(b.Left < semicolon.Left, "The semicolon ends the line at its right.");
+            Assert.IsLessThan(semicolon.Left, b.Left, "The semicolon ends the line at its right.");
 
             // The header keeps the direction of the page: the language at the right, the copy button at the left.
             await Expect(block.Locator(".bit-aicbv-hdr")).ToHaveCSSAsync("direction", "rtl");
             var label = await block.Locator(".bit-aicbv-lng").RectAsync();
             var copy = await block.Locator(".bit-aicpb").RectAsync();
-            Assert.IsTrue(label.Left > copy.Left, "The language is at the start of a right-to-left header.");
+            Assert.IsGreaterThan(copy.Left, label.Left, "The language is at the start of a right-to-left header.");
         }
 
         var ltrLabel = await Page.Locator("#cbv-ltr .bit-aicbv-lng").RectAsync();
         var ltrCopy = await Page.Locator("#cbv-ltr .bit-aicpb").RectAsync();
-        Assert.IsTrue(ltrLabel.Left < ltrCopy.Left);
+        Assert.IsLessThan(ltrCopy.Left, ltrLabel.Left);
     }
 
     // ---------- streaming ----------
@@ -328,12 +328,12 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
         var block = Page.Locator("#cbv-long");
         var body = block.Locator(".bit-aicbv-bdy");
 
-        Assert.IsTrue((await block.BoundingBoxAsync())!.Width <= 300.5, "The block is no wider than its container.");
+        Assert.IsLessThanOrEqualTo(300.5, (await block.BoundingBoxAsync())!.Width, "The block is no wider than its container.");
         await Expect(body).ToHaveCSSAsync("overflow-x", "auto");
         await Expect(block.Locator(".bit-aicbv-pre")).ToHaveCSSAsync("white-space", "pre");
 
         var sizes = await body.EvaluateAsync<double[]>("e => [e.scrollWidth, e.clientWidth]");
-        Assert.IsTrue(sizes[0] > sizes[1], "The long line overflows the body, which scrolls it.");
+        Assert.IsGreaterThan(sizes[1], sizes[0], "The long line overflows the body, which scrolls it.");
 
         // A body with something to scroll is a stop of the keyboard, which is what lets WebKit scroll it with one; a body
         // its code fits in is not.
@@ -341,8 +341,8 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
         await Expect(Page.Locator("#cbv-plain .bit-aicbv-bdy")).Not.ToHaveAttributeAsync("tabindex", new Regex(".*"));
 
         await body.EvaluateAsync("e => e.scrollLeft = e.scrollWidth");
-        Assert.IsTrue(await body.EvaluateAsync<double>("e => e.scrollLeft") > 0);
-        Assert.IsTrue((await block.BoundingBoxAsync())!.Width <= 300.5);
+        Assert.IsGreaterThan(0, await body.EvaluateAsync<double>("e => e.scrollLeft"));
+        Assert.IsLessThanOrEqualTo(300.5, (await block.BoundingBoxAsync())!.Width);
     }
 
     // ---------- public variables, Classes and Styles ----------
@@ -415,7 +415,7 @@ public class BitAiCodeBlockViewE2ETests : E2ETestBase
         await Expect(block).ToHaveCSSAsync("break-inside", "avoid");
 
         var sizes = await block.Locator(".bit-aicbv-bdy").EvaluateAsync<double[]>("e => [e.scrollWidth, e.clientWidth]");
-        Assert.IsTrue(sizes[0] <= sizes[1] + 1, "Nothing of the line is left beyond the edge.");
+        Assert.IsLessThanOrEqualTo(sizes[1] + 1, sizes[0], "Nothing of the line is left beyond the edge.");
     }
 
     // ---------- helpers ----------

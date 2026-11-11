@@ -65,7 +65,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         Assert.AreEqual("DIV", root.TagName);
         Assert.IsNotNull(root.GetAttribute("id"));
         Assert.AreEqual("Researcher", component.Find(".bit-aiarv-ttl").TextContent);
-        Assert.AreEqual(2, component.FindAll(".bit-aiarv-stl > .bit-aiarv-sti > .bit-aiasv").Count);
+        Assert.HasCount(2, component.FindAll(".bit-aiarv-stl > .bit-aiarv-sti > .bit-aiasv"));
         Assert.IsNotNull(component.Find(".bit-aiarv-hdr .bit-aiasb"));
 
         // The sparkle is no glyph of the core font, so the icon also carries the class of the package's own font.
@@ -170,7 +170,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         input.Input("eu-west");
         component.Find(".bit-aiarv-ans input").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
-        CollectionAssert.AreEqual(new[] { "eu-west" }, answers);
+        Assert.AreSequenceEqual(new[] { "eu-west" }, answers);
         // The field is emptied for the next question.
         Assert.AreEqual(string.Empty, component.Find(".bit-aiarv-ans input").GetAttribute("value") ?? string.Empty);
     }
@@ -201,7 +201,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         {
             Assert.IsEmpty(component.FindAll(".bit-aiarv-prm"));
             var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-            Assert.HasCount(1, focus);
+            Assert.ContainsSingle(focus);
             Assert.AreEqual(reference, ((ElementReference)focus[0].Arguments[0]!).Id);
         }, TimeSpan.FromSeconds(2));
     }
@@ -218,7 +218,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         component.Find(".bit-aiarv-prm > .bit-btn").Click();
         component.Render();
 
-        Assert.HasCount(1, component.FindAll(".bit-aiarv-prm"));
+        Assert.ContainsSingle(component.FindAll(".bit-aiarv-prm"));
         Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
 
         // Nor does the run moving on later, after the answer was turned away, take the focus away from the page.
@@ -292,7 +292,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         var suggestions = component.FindAll(".bit-aiarv-prm > .bit-btn");
 
         Assert.HasCount(2, suggestions);
-        CollectionAssert.AreEqual(new[] { "eu-west", "us-east" }, suggestions.Select(s => s.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "eu-west", "us-east" }, suggestions.Select(s => s.TextContent.Trim()).ToArray());
         Assert.IsTrue(suggestions.All(s => s.ClassList.Contains("bit-btn-dft-ter") && s.ClassList.Contains("bit-btn-otl")));
 
         var send = component.Find(".bit-aiarv-ans .bit-btn");
@@ -316,7 +316,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
         await component.Find(".bit-aiarv-prm > .bit-btn").ClickAsync(new MouseEventArgs());
 
-        CollectionAssert.AreEqual(new[] { "Yes" }, answers);
+        Assert.AreSequenceEqual(new[] { "Yes" }, answers);
         Assert.AreEqual(BitAiAgentRunStatus.WaitingForInput, run.Status);
         Assert.IsEmpty(session.Conversation.Messages);
     }
@@ -332,12 +332,12 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         var component = RenderComponent<BitAiAgentRunView>(p => p.Add(c => c.Run, run).Add(c => c.Session, session));
         await component.Find(".bit-aiarv-prm > .bit-btn").ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.IsTrue(session.Conversation.Messages.Any(m => m.GetText() == "Yes")));
-        Assert.AreEqual(1, session.Conversation.Messages.Count(m => m.Role == BitAiRole.User));
+        component.WaitForAssertion(() => Assert.Contains(m => m.GetText() == "Yes", session.Conversation.Messages));
+        Assert.ContainsSingle(m => m.Role == BitAiRole.User, session.Conversation.Messages);
     }
 
     [TestMethod]
-    public void TheElapsedTimeTicksWhileTheRunIsActiveAndStopsWhenItEnds()
+    public async global::System.Threading.Tasks.Task TheElapsedTimeTicksWhileTheRunIsActiveAndStopsWhenItEnds()
     {
         var run = RunningRun();
         var component = RenderComponent<BitAiAgentRunView>(p => p
@@ -348,9 +348,9 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         component.WaitForAssertion(() => Assert.AreNotEqual(first, component.Find(".bit-aiarv-elp").TextContent), TimeSpan.FromSeconds(3));
 
         run.SetStatus(BitAiAgentRunStatus.Completed);
-        component.WaitForAssertion(() => StringAssert.Contains(component.Markup, "Done"));
+        component.WaitForAssertion(() => Assert.Contains("Done", component.Markup));
         var frozen = component.Find(".bit-aiarv-elp").TextContent;
-        Thread.Sleep(80);
+        await global::System.Threading.Tasks.Task.Delay(80, TestContext.CancellationToken);
         component.Render();
         Assert.AreEqual(frozen, component.Find(".bit-aiarv-elp").TextContent);
     }
@@ -368,7 +368,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         run.AddUsage(new BitAiTokenUsage { InputTokens = 1200, OutputTokens = 300 });
 
         component.WaitForAssertion(() =>
-            StringAssert.Contains(component.Find(".bit-aiarv-hdr .bit-aituv").TextContent, "1.5k"));
+            Assert.Contains("1.5k", component.Find(".bit-aiarv-hdr .bit-aituv").TextContent));
     }
 
     [TestMethod]
@@ -403,7 +403,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
         var component = RenderComponent<BitAiAgentRunView>(p => p.Add(c => c.Run, run));
 
-        StringAssert.Contains(component.Find(".bit-aiarv-err").TextContent, "The tool timed out.");
+        Assert.Contains("The tool timed out.", component.Find(".bit-aiarv-err").TextContent);
     }
 
     [TestMethod]
@@ -437,7 +437,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         var root = component.Find(".bit-aiarv");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -458,7 +458,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -502,7 +502,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
         var root = component.Find(".bit-aiarv");
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.AreEqual("color: blue", component.Find(".bit-aiarv-hdr").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aiarv-hdr").ClassList.Contains("c-header"));
         Assert.IsTrue(component.Find(".bit-aiarv-bdy").ClassList.Contains("c-body"));
@@ -534,7 +534,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
     [TestMethod]
     public void BitAiAgentRunViewParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiAgentRunView", BitAiAgentRunViewParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiAgentRunView", new BitAiAgentRunViewParams().Name);
         Assert.AreEqual(BitAiAgentRunViewParams.ParamName, new BitAiAgentRunViewParams().Name);
     }
 
@@ -550,7 +550,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
         run.RequestInput("Which region?");
 
         // The turn that asked is still streaming: the session refuses an answer until it ends.
-        var turn = session.SubmitAsync("migrate it");
+        var turn = session.SubmitAsync("migrate it", cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(session.IsGenerating);
 
         var component = RenderComponent<BitAiAgentRunView>(p => p.Add(c => c.Run, run).Add(c => c.Session, session));
@@ -560,7 +560,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
         Assert.AreEqual("eu-west", component.Find(".bit-aiarv-ans input").GetAttribute("value"));
         Assert.AreEqual(BitAiAgentRunStatus.WaitingForInput, run.Status);
-        Assert.IsFalse(session.Conversation.Messages.Any(m => m.GetText() == "eu-west"));
+        Assert.DoesNotContain(m => m.GetText() == "eu-west", session.Conversation.Messages);
 
         // Once the turn has ended, the same answer goes in, and the field is emptied for the next question.
         transport.Release();
@@ -568,7 +568,7 @@ public class BitAiAgentRunViewTests : BitAiTestBase
 
         await component.Find(".bit-aiarv-ans .bit-btn").ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, session.Conversation.Messages.Count(m => m.Role == BitAiRole.User && m.GetText() == "eu-west")));
+        component.WaitForAssertion(() => Assert.ContainsSingle(m => m.Role == BitAiRole.User && m.GetText() == "eu-west", session.Conversation.Messages));
         Assert.AreNotEqual(BitAiAgentRunStatus.WaitingForInput, run.Status);
 
         // The accepted answer was cleared: the field of the run's next question starts empty.
@@ -608,4 +608,6 @@ public class BitAiAgentRunViewTests : BitAiTestBase
             yield return new BitAiMessageCompletedEvent();
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

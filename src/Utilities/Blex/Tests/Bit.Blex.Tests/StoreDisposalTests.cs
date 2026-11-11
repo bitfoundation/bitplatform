@@ -23,7 +23,7 @@ public class StoreDisposalTests
         Assert.IsTrue(store.WatchIsLoading);
 
         store.Dispose();
-        await watch.WaitAsync(TimeSpan.FromSeconds(5));
+        await watch.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.IsFalse(store.WatchIsLoading);
         Assert.AreEqual(0, store.Value);      // the body never got past the gate
@@ -41,7 +41,7 @@ public class StoreDisposalTests
         store.Dispose();
 
         // Without cancelling the debounce source this would sit out the full interval.
-        await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        await pending.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(0, store.Value);
     }
 
@@ -76,4 +76,6 @@ public class StoreDisposalTests
         store.Increment();
         Assert.AreEqual(1, store.Count);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

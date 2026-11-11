@@ -33,7 +33,7 @@ public class TranslationTests
         var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
         var files = ResxCatalog.FindBaseFiles(settings).Select(Path.GetFileName).ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { "Strings.resx", "Some.Api.resx" }, files);
+        Assert.AreSequenceEqual(new[] { "Strings.resx", "Some.Api.resx" }, files, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -52,15 +52,14 @@ public class TranslationTests
         var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
         var files = ResxCatalog.FindBaseFiles(settings).Select(Path.GetFileName).ToArray();
 
-        CollectionAssert.AreEquivalent(expected.Split(','), files, string.Join(", ", files));
+        Assert.AreSequenceEqual(expected.Split(','), files, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, string.Join(", ", files));
     }
 
     [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
     public void AFolderBitCantRead_Should_NotHideTheOtherResxFiles()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
         using var host = CreateProject(new() { ["Hello"] = "Hello" });
         var locked = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Locked")).FullName;
         File.SetUnixFileMode(locked, UnixFileMode.None);
@@ -86,8 +85,8 @@ public class TranslationTests
         var settings = ResxTranslatorSettings.Load(Path.Combine(host.WorkingDirectory, ResxTranslatorSettings.FileName), new Dictionary<string, string>());
         var work = ResxCatalog.Pairs(settings, ResxCatalog.FindBaseFiles(settings)).Select(ResxCatalog.Plan).ToDictionary(w => w.Pair.Target.Name);
 
-        CollectionAssert.AreEquivalent(new[] { "Bye" }, work["fa"].Missing.Keys.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Hello", "Bye" }, work["de"].Missing.Keys.ToArray());
+        Assert.AreSequenceEqual(new[] { "Bye" }, work["fa"].Missing.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "Hello", "Bye" }, work["de"].Missing.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -123,13 +122,13 @@ public class TranslationTests
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
         Assert.HasCount(2, client.Batches);
         Assert.IsTrue(client.Batches[1].Reminder);
-        CollectionAssert.AreEqual(new[] { "Bye {0}" }, client.Batches[1].Values.ToArray());
+        Assert.AreSequenceEqual(new[] { "Bye {0}" }, client.Batches[1].Values.ToArray());
 
         var values = ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx"));
         Assert.AreEqual("fa:Hello", values["Hello"]);
         Assert.IsFalse(values.ContainsKey("Bye"));
-        StringAssert.Contains(host.Output, "kept out");
-        StringAssert.Contains(host.Output, "still missing");
+        Assert.Contains("kept out", host.Output);
+        Assert.Contains("still missing", host.Output);
     }
 
     [TestMethod]
@@ -154,7 +153,7 @@ public class TranslationTests
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
         Assert.HasCount(2, client.Batches);
         Assert.HasCount(TranslationRun.BatchSize, ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx")));
-        StringAssert.Contains(host.FlatOutput, $"Translated {TranslationRun.BatchSize} keys in 2 requests");
+        Assert.Contains($"Translated {TranslationRun.BatchSize} keys in 2 requests", host.FlatOutput);
     }
 
     [TestMethod]
@@ -180,7 +179,7 @@ public class TranslationTests
         var exitCode = await new TranslationRun(host.Services, _ => new FakeTranslationClient()).RunAsync(new TranslateRequest(null, [], true, false), CancellationToken.None);
 
         Assert.AreEqual(CliApp.ExitOk, exitCode);
-        StringAssert.Contains(host.Output, "up to date");
+        Assert.Contains("up to date", host.Output);
     }
 
     [TestMethod]
@@ -206,8 +205,8 @@ public class TranslationTests
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode);
         Assert.IsEmpty(client.Batches);
-        StringAssert.Contains(host.Output, "OpenAI__ApiKey");
-        StringAssert.Contains(host.Output, "AI agent");
+        Assert.Contains("OpenAI__ApiKey", host.Output);
+        Assert.Contains("AI agent", host.Output);
     }
 
     [TestMethod]
@@ -229,7 +228,7 @@ public class TranslationTests
 
         using var host = CreateProject(new() { ["Hello"] = "Hello" });
         Assert.AreEqual(CliApp.ExitUsage, await new TranslationRun(host.Services, _ => new FakeTranslationClient()).RunAsync(new TranslateRequest(null, ["it"], false, false), CancellationToken.None));
-        StringAssert.Contains(host.Output, "--language it");
+        Assert.Contains("--language it", host.Output);
     }
 
     [TestMethod]
@@ -265,9 +264,9 @@ public class TranslationTests
 
         var output = await client.TranslateAsync(new TranslationBatch(CultureInfo.GetCultureInfo("en"), CultureInfo.GetCultureInfo("fa"), ["Hello", "Bye {0}"], false), CancellationToken.None);
 
-        CollectionAssert.AreEqual(new[] { "[Hello]", "[Bye {0}]" }, output.Translations.ToArray());
+        Assert.AreSequenceEqual(new[] { "[Hello]", "[Bye {0}]" }, output.Translations.ToArray());
         Assert.AreEqual(12, output.InputTokens);
-        StringAssert.Contains(chat.LastSystemPrompt, "فارسی");
+        Assert.Contains("فارسی", chat.LastSystemPrompt!);
         Assert.AreEqual(0F, chat.LastOptions!.Temperature);
         Assert.IsNotNull(chat.LastOptions.ResponseFormat);
     }
@@ -285,8 +284,8 @@ public class TranslationTests
         var exitCode = await new TranslationRun(host.Services).RunAsync(new TranslateRequest(null, ["fa"], false, false), CancellationToken.None);
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
-        StringAssert.Contains(host.FlatOutput, "Couldn't translate Strings.fa.resx the model endpoint couldn't be reached");
-        StringAssert.Contains(host.FlatOutput, $"at http://127.0.0.1:{port}/v1 (OpenAI's chat completions API) to translate the 1 missing string of {Path.Combine("src", "Strings.resx")} from en to fa");
+        Assert.Contains("Couldn't translate Strings.fa.resx the model endpoint couldn't be reached", host.FlatOutput);
+        Assert.Contains($"at http://127.0.0.1:{port}/v1 (OpenAI's chat completions API) to translate the 1 missing string of {Path.Combine("src", "Strings.resx")} from en to fa", host.FlatOutput);
     }
 
     [TestMethod]
@@ -317,7 +316,7 @@ public class TranslationTests
         Assert.AreEqual(CliApp.ExitOk, exitCode, host.Output);
         Assert.AreEqual("[Hello]", ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.fa.resx"))["Hello"]);
         Assert.AreEqual("[Hello]", ResxCatalog.Read(Path.Combine(host.WorkingDirectory, "src", "Strings.de.resx"))["Hello"]);
-        CollectionAssert.AreEqual(new[] { true, false, false }, requests, "Once rejected, the temperature isn't sent again.");
+        Assert.AreSequenceEqual(new[] { true, false, false }, requests, "Once rejected, the temperature isn't sent again.");
     }
 
     [TestMethod]

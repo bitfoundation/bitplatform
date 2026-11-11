@@ -39,15 +39,14 @@ public sealed class SourceFilesBomTests
     {
         var files = EnumerateSourceFiles(SourceFiles.Root).ToArray();
 
-        Assert.IsTrue(files.Length > 1000, $"Only {files.Length} source files were found under {SourceFiles.Root}.");
+        Assert.IsGreaterThan(1000, files.Length, $"Only {files.Length} source files were found under {SourceFiles.Root}.");
 
         var offenders = files.Where(file => StartsWithBom(file) is false)
                              .Select(file => Path.GetRelativePath(SourceFiles.Root, file).Replace('\\', '/'))
                              .Order(StringComparer.Ordinal)
                              .ToArray();
 
-        Assert.AreEqual(0, offenders.Length,
-                        $"These files have no UTF-8 BOM, which src/.editorconfig requires (charset = utf-8-bom); an empty one is " +
+        Assert.IsEmpty(offenders, $"These files have no UTF-8 BOM, which src/.editorconfig requires (charset = utf-8-bom); an empty one is " +
                         $"a dead file to delete:\n{string.Join("\n", offenders)}");
     }
 

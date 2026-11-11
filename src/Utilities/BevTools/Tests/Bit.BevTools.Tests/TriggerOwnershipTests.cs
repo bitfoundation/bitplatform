@@ -53,7 +53,7 @@ public class TriggerOwnershipTests : BunitContext
         Assert.AreEqual(navigation.Id, record.LastRender.TriggerEventId);
 
         cut.Instance.Gate.SetResult();
-        await cut.Instance.Done.Task.WaitAsync(Patience);
+        await cut.Instance.Done.Task.WaitAsync(Patience, TestContext.CancellationToken);
 
         Assert.AreEqual(BevRenderCause.StateHasChanged, record.LastRender!.Cause);
         Assert.IsNull(record.LastRender.TriggerEventId);
@@ -72,7 +72,7 @@ public class TriggerOwnershipTests : BunitContext
         Assert.AreEqual(BevRenderCause.UiEvent, record.LastRender!.Cause);
         Assert.AreEqual(click.Id, record.LastRender.TriggerEventId);
 
-        await cut.Instance.Ticked.Task.WaitAsync(Patience);
+        await cut.Instance.Ticked.Task.WaitAsync(Patience, TestContext.CancellationToken);
 
         var tick = record.LastRender!;
         Assert.AreEqual(BevRenderCause.StateHasChanged, tick.Cause);
@@ -94,7 +94,7 @@ public class TriggerOwnershipTests : BunitContext
         Assert.AreEqual(click.Id, record.LastRender!.TriggerEventId);
 
         cut.Instance.Gate.SetResult();
-        await cut.Instance.Done.Task.WaitAsync(Patience);
+        await cut.Instance.Done.Task.WaitAsync(Patience, TestContext.CancellationToken);
 
         // Nothing the continuation does points at the click: its render, the component it shows, the error it raises.
         Assert.AreEqual(BevRenderCause.StateHasChanged, record.LastRender!.Cause);
@@ -131,7 +131,7 @@ public class TriggerOwnershipTests : BunitContext
 
         cut.Find("button").Click();
         cut.Instance.Gate.SetResult();
-        await cut.Instance.Completed.Task.WaitAsync(Patience);
+        await cut.Instance.Completed.Task.WaitAsync(Patience, TestContext.CancellationToken);
 
         var click = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
         Assert.AreEqual(BevRenderCause.UiEvent, record.LastRender!.Cause);
@@ -164,7 +164,7 @@ public class TriggerOwnershipTests : BunitContext
         var page = RecordOf<ClockPage>();
         Assert.Contains(page.Renders[0].TriggerEventId!.Value, navigations);
 
-        await router.FindComponent<ClockPage>().Instance.Ticked.Task.WaitAsync(Patience);
+        await router.FindComponent<ClockPage>().Instance.Ticked.Task.WaitAsync(Patience, TestContext.CancellationToken);
 
         var tick = page.LastRender!;
         Assert.AreEqual(BevRenderCause.StateHasChanged, tick.Cause);
@@ -173,7 +173,7 @@ public class TriggerOwnershipTests : BunitContext
     }
 
     /// <summary>A live clock started by a button: the timer captures the execution context, and with it the click.</summary>
-    public sealed class TimerOnClick : ComponentBase, IDisposable
+    internal sealed class TimerOnClick : ComponentBase, IDisposable
     {
         private Timer? _timer;
         private int _ticks;
@@ -199,7 +199,7 @@ public class TriggerOwnershipTests : BunitContext
     }
 
     /// <summary>Starts work it does not await, which refreshes the component once <see cref="Gate"/> opens.</summary>
-    public sealed class FireAndForget : ComponentBase
+    internal sealed class FireAndForget : ComponentBase
     {
         private bool _showChild;
         private int _refreshes;
@@ -250,7 +250,7 @@ public class TriggerOwnershipTests : BunitContext
     }
 
     /// <summary>An awaited handler: the framework renders again when it completes, still inside the event.</summary>
-    public sealed class AsyncClick : ComponentBase
+    internal sealed class AsyncClick : ComponentBase
     {
         private int _count;
 
@@ -281,7 +281,7 @@ public class TriggerOwnershipTests : BunitContext
         }
     }
 
-    public sealed class NavigationLayout : LayoutComponentBase
+    internal sealed class NavigationLayout : LayoutComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -292,6 +292,7 @@ public class TriggerOwnershipTests : BunitContext
     }
 
     [Route("/bev-tests/start")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The router discovers this fixture through its public type.")]
     public sealed class StartPage : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "start");
@@ -299,6 +300,7 @@ public class TriggerOwnershipTests : BunitContext
 
     /// <summary>The demo's LiveClock, reduced to one tick.</summary>
     [Route("/bev-tests/clock")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The router discovers this fixture through its public type.")]
     public sealed class ClockPage : ComponentBase, IDisposable
     {
         private Timer? _timer;
@@ -323,4 +325,6 @@ public class TriggerOwnershipTests : BunitContext
 
         public void Dispose() => _timer?.Dispose();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -101,14 +101,14 @@ public sealed class FastPathEquivalenceTests
             System.Numerics.Matrix3x2.CreateScale(5f) * System.Numerics.Matrix3x2.CreateRotation(0.2f),
         };
         foreach (var matrix in transforms)
-        foreach (var sampling in new[] { Bit.Bmage.Operations.Transforms.WarpSampling.Bilinear, Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic })
-        {
-            var operation = new Bit.Bmage.Operations.Transforms.AffineTransformOperation(matrix, background: background, sampling: sampling);
-            using var actual = operation.Apply(source, OperationContext.Default);
-            System.Numerics.Matrix3x2.Invert(operation.GetTransform(source.Size)!.Value, out var inverse);
-            using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic, background);
-            AssertSamePixels(expected, actual, $"{matrix}, {sampling}");
-        }
+            foreach (var sampling in new[] { Bit.Bmage.Operations.Transforms.WarpSampling.Bilinear, Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic })
+            {
+                var operation = new Bit.Bmage.Operations.Transforms.AffineTransformOperation(matrix, background: background, sampling: sampling);
+                using var actual = operation.Apply(source, OperationContext.Default);
+                System.Numerics.Matrix3x2.Invert(operation.GetTransform(source.Size)!.Value, out var inverse);
+                using var expected = ReferenceWarp(source, actual.Size, inverse, sampling == Bit.Bmage.Operations.Transforms.WarpSampling.Bicubic, background);
+                AssertSamePixels(expected, actual, $"{matrix}, {sampling}");
+            }
     }
 
     /// <summary>The affine warp sampling every tap straight from the source, as it did before tiles.</summary>
@@ -187,12 +187,12 @@ public sealed class FastPathEquivalenceTests
             using var expected = source.Clone();
             var t = (int)(threshold * 255);
             for (var y = 0; y < region.Height; y++)
-            for (var x = 0; x < region.Width; x++)
-            {
-                var p = source[region.X + x, region.Y + y];
-                var b = blurred[x, y];
-                expected[region.X + x, region.Y + y] = new Rgba32(Sharpen(p.R, b.R), Sharpen(p.G, b.G), Sharpen(p.B, b.B), p.A);
-            }
+                for (var x = 0; x < region.Width; x++)
+                {
+                    var p = source[region.X + x, region.Y + y];
+                    var b = blurred[x, y];
+                    expected[region.X + x, region.Y + y] = new Rgba32(Sharpen(p.R, b.R), Sharpen(p.G, b.G), Sharpen(p.B, b.B), p.A);
+                }
             AssertSamePixels(expected, actual, $"{width}x{height}");
 
             byte Sharpen(byte v, byte blur)
@@ -211,8 +211,8 @@ public sealed class FastPathEquivalenceTests
         {
             using var blurred = new BlurFilter(sigma).Apply(flat, OperationContext.Default);
             for (var y = 0; y < flat.Height; y++)
-            for (var x = 0; x < flat.Width; x++)
-                Assert.AreEqual(flat[x, y], blurred[x, y], $"a flat colour survives sigma {sigma}");
+                for (var x = 0; x < flat.Width; x++)
+                    Assert.AreEqual(flat[x, y], blurred[x, y], $"a flat colour survives sigma {sigma}");
         }
 
         // A single bright pixel spreads to its neighbours symmetrically, even at a radius three box passes round to nothing.
@@ -251,7 +251,7 @@ public sealed class FastPathEquivalenceTests
             worst = Math.Max(worst, Math.Abs(spread - sigma) / sigma);
             report.Append($"{sigma:0.00}:{spread:0.000} ");
         }
-        Assert.IsTrue(worst < 0.12, report.ToString());
+        Assert.IsLessThan(0.12, worst, report.ToString());
     }
 
     /// <summary>The three-pass box blur as it was: premultiplied, each pass over the whole region in turn.</summary>
@@ -262,12 +262,12 @@ public sealed class FastPathEquivalenceTests
         var b = new System.Numerics.Vector4[w * h];
         const float inv = 1f / 255f;
         for (var y = 0; y < h; y++)
-        for (var x = 0; x < w; x++)
-        {
-            var p = buffer[region.X + x, region.Y + y];
-            var al = p.A * inv;
-            a[y * w + x] = new System.Numerics.Vector4(p.R * inv * al, p.G * inv * al, p.B * inv * al, al);
-        }
+            for (var x = 0; x < w; x++)
+            {
+                var p = buffer[region.X + x, region.Y + y];
+                var al = p.A * inv;
+                a[y * w + x] = new System.Numerics.Vector4(p.R * inv * al, p.G * inv * al, p.B * inv * al, al);
+            }
         var wIdeal = Math.Sqrt(12 * sigma * sigma / 3 + 1);
         var wl = (int)Math.Floor(wIdeal);
         if (wl % 2 == 0) wl--;
@@ -300,22 +300,22 @@ public sealed class FastPathEquivalenceTests
                 sums[x] = v;
             }
             for (var y = 0; y < h; y++)
-            for (var x = 0; x < w; x++)
-            {
-                var v = sums[x] + b[Math.Min(y + r, h - 1) * w + x] - b[Math.Max(y - r - 1, 0) * w + x];
-                sums[x] = v;
-                a[y * w + x] = v * iarr;
-            }
+                for (var x = 0; x < w; x++)
+                {
+                    var v = sums[x] + b[Math.Min(y + r, h - 1) * w + x] - b[Math.Max(y - r - 1, 0) * w + x];
+                    sums[x] = v;
+                    a[y * w + x] = v * iarr;
+                }
         }
         for (var y = 0; y < h; y++)
-        for (var x = 0; x < w; x++)
-        {
-            var p = a[y * w + x];
-            if (p.W > 1e-5f) p = new System.Numerics.Vector4(p.X * (1f / p.W), p.Y * (1f / p.W), p.Z * (1f / p.W), p.W);
-            else p = System.Numerics.Vector4.Zero;
-            var v = System.Numerics.Vector4.Clamp(p, System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
-            buffer[region.X + x, region.Y + y] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
-        }
+            for (var x = 0; x < w; x++)
+            {
+                var p = a[y * w + x];
+                if (p.W > 1e-5f) p = new System.Numerics.Vector4(p.X * (1f / p.W), p.Y * (1f / p.W), p.Z * (1f / p.W), p.W);
+                else p = System.Numerics.Vector4.Zero;
+                var v = System.Numerics.Vector4.Clamp(p, System.Numerics.Vector4.Zero, System.Numerics.Vector4.One) * 255f + new System.Numerics.Vector4(0.5f);
+                buffer[region.X + x, region.Y + y] = new Rgba32((byte)v.X, (byte)v.Y, (byte)v.Z, (byte)v.W);
+            }
     }
 
     [TestMethod]
@@ -436,18 +436,18 @@ public sealed class FastPathEquivalenceTests
         int w = input.Width, h = input.Height, window = (2 * r + 1) * (2 * r + 1);
         var rs = new byte[window]; var gs = new byte[window]; var bs = new byte[window];
         for (var y = 0; y < h; y++)
-        for (var x = 0; x < w; x++)
-        {
-            var n = 0;
-            for (var dy = -r; dy <= r; dy++)
-            for (var dx = -r; dx <= r; dx++)
+            for (var x = 0; x < w; x++)
             {
-                var p = input[Math.Clamp(x + dx, 0, w - 1), Math.Clamp(y + dy, 0, h - 1)];
-                rs[n] = p.R; gs[n] = p.G; bs[n] = p.B; n++;
+                var n = 0;
+                for (var dy = -r; dy <= r; dy++)
+                    for (var dx = -r; dx <= r; dx++)
+                    {
+                        var p = input[Math.Clamp(x + dx, 0, w - 1), Math.Clamp(y + dy, 0, h - 1)];
+                        rs[n] = p.R; gs[n] = p.G; bs[n] = p.B; n++;
+                    }
+                Array.Sort(rs); Array.Sort(gs); Array.Sort(bs);
+                output[area.X + x, area.Y + y] = new Rgba32(rs[window / 2], gs[window / 2], bs[window / 2], input[x, y].A);
             }
-            Array.Sort(rs); Array.Sort(gs); Array.Sort(bs);
-            output[area.X + x, area.Y + y] = new Rgba32(rs[window / 2], gs[window / 2], bs[window / 2], input[x, y].A);
-        }
         return output;
     }
 
@@ -456,12 +456,12 @@ public sealed class FastPathEquivalenceTests
         var random = new Random(seed);
         var image = ImageBuffer.Create(width, height, clear: false);
         for (var y = 0; y < height; y++)
-        for (var x = 0; x < width; x++)
-        {
-            // Mostly full range noise, with runs of repeated values so the histograms see ties.
-            var v = random.Next(4) == 0 ? (byte)(x * 7) : (byte)random.Next(256);
-            image[x, y] = new Rgba32(v, (byte)random.Next(256), (byte)(255 - v), (byte)random.Next(256));
-        }
+            for (var x = 0; x < width; x++)
+            {
+                // Mostly full range noise, with runs of repeated values so the histograms see ties.
+                var v = random.Next(4) == 0 ? (byte)(x * 7) : (byte)random.Next(256);
+                image[x, y] = new Rgba32(v, (byte)random.Next(256), (byte)(255 - v), (byte)random.Next(256));
+            }
         return image;
     }
 
@@ -469,8 +469,8 @@ public sealed class FastPathEquivalenceTests
     {
         Assert.AreEqual(expected.Size, actual.Size, because);
         for (var y = 0; y < expected.Height; y++)
-        for (var x = 0; x < expected.Width; x++)
-            if (expected[x, y] != actual[x, y])
-                Assert.Fail($"{because}: pixel ({x},{y}) is {actual[x, y]}, expected {expected[x, y]}.");
+            for (var x = 0; x < expected.Width; x++)
+                if (expected[x, y] != actual[x, y])
+                    Assert.Fail($"{because}: pixel ({x},{y}) is {actual[x, y]}, expected {expected[x, y]}.");
     }
 }

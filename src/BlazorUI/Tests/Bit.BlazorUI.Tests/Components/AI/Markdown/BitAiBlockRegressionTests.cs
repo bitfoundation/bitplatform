@@ -60,7 +60,7 @@ public class BitAiBlockRegressionTests
     {
         var document = Parse("```\ncode\n```   \n\nafter");
 
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.AreEqual("code", Assert.IsExactInstanceOfType<BitAiCodeBlock>(document.Blocks[0]).Code);
         Assert.IsExactInstanceOfType<BitAiParagraphBlock>(document.Blocks[1]);
     }
@@ -108,7 +108,7 @@ public class BitAiBlockRegressionTests
     public void AThematicBreakEndsAList(string source)
     {
         var document = Parse(source);
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.ContainsSingle(Assert.IsExactInstanceOfType<BitAiListBlock>(document.Blocks[0]).Items);
         Assert.IsExactInstanceOfType<BitAiThematicBreakBlock>(document.Blocks[1]);
     }
@@ -127,7 +127,7 @@ public class BitAiBlockRegressionTests
     public void ABlockStartIsNotALazyQuoteContinuation(string source)
     {
         var document = Parse(source);
-        Assert.AreEqual(2, document.Blocks.Count);
+        Assert.HasCount(2, document.Blocks);
         Assert.ContainsSingle(Assert.IsExactInstanceOfType<BitAiQuoteBlock>(document.Blocks[0]).Blocks);
     }
 
@@ -169,7 +169,7 @@ public class BitAiBlockRegressionTests
     {
         var document = Parse(source);
 
-        Assert.AreEqual(lists, document.Blocks.Count);
+        Assert.HasCount(lists, document.Blocks);
         foreach (var b in document.Blocks)
         {
             Assert.IsFalse(Assert.IsExactInstanceOfType<BitAiListBlock>(b).IsLoose);
@@ -179,7 +179,7 @@ public class BitAiBlockRegressionTests
     [TestMethod]
     public void AListKeepsItsItemsWhenTheBulletStaysTheSame()
     {
-        Assert.AreEqual(3, Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(Parse("* a\n* b\n\n* c").Blocks)).Items.Count);
-        Assert.AreEqual(2, Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(Parse("1) a\n2) b").Blocks)).Items.Count);
+        Assert.HasCount(3, Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(Parse("* a\n* b\n\n* c").Blocks)).Items);
+        Assert.HasCount(2, Assert.IsExactInstanceOfType<BitAiListBlock>(Assert.ContainsSingle(Parse("1) a\n2) b").Blocks)).Items);
     }
 }

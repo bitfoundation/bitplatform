@@ -37,7 +37,7 @@ public sealed class BitResourceTimelineScriptTests
 
         var files = Directory.GetFiles(scripts, "*.test.mjs").OrderBy(f => f, StringComparer.Ordinal).ToArray();
 
-        Assert.IsTrue(files.Length > 0, $"No *.test.mjs file in {scripts}.");
+        Assert.IsNotEmpty(files, $"No *.test.mjs file in {scripts}.");
 
         var info = new ProcessStartInfo("node")
         {
@@ -60,15 +60,18 @@ public sealed class BitResourceTimelineScriptTests
         process.OutputDataReceived += (_, e) => { if (e.Data is not null) lock (output) output.AppendLine(e.Data); };
         process.ErrorDataReceived += (_, e) => { if (e.Data is not null) lock (output) output.AppendLine(e.Data); };
 
+        string? startFailure = null;
         try
         {
             process.Start();
         }
         catch (Win32Exception e)
         {
-            Assert.Inconclusive($"node could not be started ({e.Message}); the engine's script tests need Node.js on the PATH.");
-            return;
+            startFailure = e.Message;
         }
+
+        if (startFailure is not null)
+            throw new AssertInconclusiveException($"node could not be started ({startFailure}); the engine's script tests need Node.js on the PATH.");
 
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();

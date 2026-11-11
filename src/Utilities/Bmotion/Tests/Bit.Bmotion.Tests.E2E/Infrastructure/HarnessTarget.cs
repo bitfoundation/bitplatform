@@ -8,7 +8,7 @@ namespace Bit.Bmotion.Tests.E2E.Infrastructure;
 /// (<see cref="E2EEnvironment.Host"/>); a page can still ask for another one with <c>?mode=</c>, which is how the
 /// prerendering fixtures get static SSR from the same host.
 /// </summary>
-public static class HarnessTarget
+internal static class HarnessTarget
 {
     private static readonly ConcurrentDictionary<HarnessProfile, Lazy<Task<WebHarnessHost>>> _hosts = new();
 

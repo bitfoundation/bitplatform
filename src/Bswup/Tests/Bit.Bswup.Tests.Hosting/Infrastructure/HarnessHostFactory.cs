@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 namespace Bit.Bswup.Tests.Hosting.Infrastructure;
 
 /// <summary>The harness host in one render mode, in memory.</summary>
-public sealed class HarnessHostFactory(string mode) : WebApplicationFactory<Bit.Bswup.Tests.Harness.Web.Components.App>
+internal sealed class HarnessHostFactory(string mode) : WebApplicationFactory<Bit.Bswup.Tests.Harness.Web.Components.App>
 {
     private static readonly ConcurrentDictionary<string, Lazy<HarnessHostFactory>> _shared = new();
 

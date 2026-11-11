@@ -373,7 +373,9 @@ public class PublicApiTests
         var result = decoder.Decode(image.View, suppressDuplicates: false);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(symbol.Extension, result.Metadata?.Extension);
+        var expectedValue = symbol.Extension;
+        var actualValue = result.Metadata?.Extension;
+        Assert.AreEqual(expectedValue, actualValue);
 
         var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
         Assert.IsTrue(filter.ShouldReport(result, 0));
@@ -441,8 +443,8 @@ public class PublicApiTests
         var result = decoder.Decode(frame.View, suppressDuplicates: false);
 
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.BoundingBox.X >= 380, $"Expected the box near x=400, got {result.BoundingBox}.");
-        Assert.IsTrue(result.BoundingBox.Y >= 280, $"Expected the box near y=300, got {result.BoundingBox}.");
+        Assert.IsGreaterThanOrEqualTo(380, result.BoundingBox.X, $"Expected the box near x=400, got {result.BoundingBox}.");
+        Assert.IsGreaterThanOrEqualTo(280, result.BoundingBox.Y, $"Expected the box near y=300, got {result.BoundingBox}.");
     }
 
     [TestMethod]
@@ -501,8 +503,8 @@ public class PublicApiTests
         // Half the shorter edge, square: 240 by 240 of a 640 by 480 frame.
         Assert.AreEqual(240, diagnostics.DecodedWidth);
         Assert.AreEqual(240, diagnostics.DecodedHeight);
-        Assert.IsTrue(diagnostics.Total > TimeSpan.Zero);
-        Assert.IsTrue(diagnostics.EquivalentFramesPerSecond > 0);
+        Assert.IsGreaterThan(TimeSpan.Zero, diagnostics.Total);
+        Assert.IsGreaterThan(0, diagnostics.EquivalentFramesPerSecond);
         Assert.AreEqual(1, decoder.FramesDecoded);
     }
 
@@ -532,7 +534,7 @@ public class PublicApiTests
         }
 
         var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.IsTrue(allocated == 0, $"Fifty empty frames allocated {allocated} bytes on the linear path.");
+        Assert.AreEqual(0, allocated, $"Fifty empty frames allocated {allocated} bytes on the linear path.");
     }
 
     [TestMethod]
@@ -561,7 +563,7 @@ public class PublicApiTests
 
         // The matrix path still allocates the bit plane wrapper for the frame, but nothing that
         // scales with the work done: detectors, finders and their callbacks are all reused.
-        Assert.IsTrue(allocated <= 128, $"Each empty frame allocated {allocated} bytes with every format enabled.");
+        Assert.IsLessThanOrEqualTo(128, allocated, $"Each empty frame allocated {allocated} bytes with every format enabled.");
     }
 
     [TestMethod]
@@ -586,7 +588,8 @@ public class PublicApiTests
             results[i] = decoder.Decode(pixels, width, height, BbPixelFormat.Gray8, false)?.Text;
         });
 
-        foreach (var r in results) { Assert.AreEqual("PARALLEL", r); };
+        foreach (var r in results) { Assert.AreEqual("PARALLEL", r); }
+        ;
     }
 
     [TestMethod]
@@ -611,7 +614,7 @@ public class PublicApiTests
             .Where(f => f is not (BbBarcodeFormat.None or BbBarcodeFormat.All or BbBarcodeFormat.AllLinear or BbBarcodeFormat.AllMatrix or BbBarcodeFormat.Common))
             .ToArray();
 
-        Assert.AreEqual(all.Length, all.Distinct().Count());
+        Assert.HasCount(all.Length, all.Distinct());
 
         // Every symbology belongs to exactly one of the two groups.
         var linear = all.Where(f => BbBarcodeFormat.AllLinear.HasFlag(f)).ToArray();
@@ -634,7 +637,7 @@ public class PublicApiTests
         // Each symbology costs every frame time of its own; the rarer ones, and Codabar with no check character, are
         // asked for by name.
         Assert.AreEqual(BbBarcodeFormat.Common, new BbScannerOptions().Formats);
-        Assert.AreEqual(BbBarcodeFormat.Common, BbBarcodeFormat.Common & BbBarcodeFormat.All);
+        Assert.AreEqual(BbBarcodeFormat.Common, new BbScannerOptions().Formats & BbBarcodeFormat.All);
         foreach (var rare in new[] { BbBarcodeFormat.Pdf417, BbBarcodeFormat.Aztec, BbBarcodeFormat.MaxiCode, BbBarcodeFormat.MicroQrCode,
                      BbBarcodeFormat.Codabar, BbBarcodeFormat.Code93, BbBarcodeFormat.DataBar, BbBarcodeFormat.DataBarLimited, BbBarcodeFormat.DataBarExpanded })
         {

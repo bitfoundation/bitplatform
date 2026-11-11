@@ -21,10 +21,10 @@ public class LeaveGuardTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Instance.Fired.Contains("a"));
+            Assert.Contains("a", cut.Instance.Fired);
             // Preventive: the navigation never committed - content and URL both still /a.
             Assert.IsNotNull(cut.Find("[data-testid=a]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=b]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=b]"));
             Assert.IsTrue(nav.Uri.EndsWith("/a", StringComparison.Ordinal));
         });
     }
@@ -41,7 +41,7 @@ public class LeaveGuardTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=b]"));
-            CollectionAssert.AreEqual(new[] { "a" }, cut.Instance.Fired);
+            Assert.AreSequenceEqual(new[] { "a" }, cut.Instance.Fired);
         });
     }
 
@@ -75,7 +75,7 @@ public class LeaveGuardTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=b]"));
-            CollectionAssert.AreEqual(new[] { "child1", "parent" }, cut.Instance.Fired);
+            Assert.AreSequenceEqual(new[] { "child1", "parent" }, cut.Instance.Fired);
         });
     }
 
@@ -92,7 +92,7 @@ public class LeaveGuardTests : BunitTestContext
         {
             Assert.IsNotNull(cut.Find("[data-testid=child2]"));
             // The parent stays matched under the new URL, so only child1 was "left".
-            CollectionAssert.AreEqual(new[] { "child1" }, cut.Instance.Fired);
+            Assert.AreSequenceEqual(new[] { "child1" }, cut.Instance.Fired);
         });
     }
 
@@ -107,8 +107,8 @@ public class LeaveGuardTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(cut.Find("[data-testid=user]").TextContent.Contains("2"));
-            Assert.AreEqual(0, cut.Instance.Fired.Count);
+            Assert.Contains("2", cut.Find("[data-testid=user]").TextContent);
+            Assert.IsEmpty(cut.Instance.Fired);
         });
     }
 }

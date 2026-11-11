@@ -126,7 +126,7 @@ public class BitDropdownParamsTests : BunitTestContext
 
         foreach (var name in paramsProperties)
         {
-            Assert.IsTrue(dropdownParameters.Contains(name), $"BitDropdownParams.{name} is no parameter of the dropdown.");
+            Assert.Contains(name, dropdownParameters, $"BitDropdownParams.{name} is no parameter of the dropdown.");
         }
     }
 
@@ -303,7 +303,7 @@ public class BitDropdownParamsTests : BunitTestContext
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -378,7 +378,7 @@ public class BitDropdownParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-drp-inf"));
         Assert.IsTrue(root.ClassList.Contains("bit-drp-lg"));
         Assert.AreEqual("Cascaded placeholder", component.Find(".bit-drp-tdp").TextContent.Trim());
-        Assert.AreEqual(1, component.FindAll("[role=option]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=option]"));
     }
 
     [TestMethod]
@@ -426,8 +426,8 @@ public class BitDropdownParamsTests : BunitTestContext
             Assert.IsFalse(root.ClassList.Contains(cssClass), $"An empty params object published {cssClass}.");
         }
 
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sin").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-lbl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-sin"));
+        Assert.IsEmpty(component.FindAll(".bit-drp-lbl"));
     }
 
     [TestMethod]
@@ -454,7 +454,7 @@ public class BitDropdownParamsTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains("bit-drp-und"));
         Assert.AreEqual("Cascaded label", component.Find(".bit-drp-lbl").TextContent.Trim());
-        Assert.AreEqual(1, component.FindAll(".bit-drp-sin").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-drp-sin"));
 
         component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitDropdownParams<BitDropdownItem<string>, string> { Size = BitSize.Large } }));
 
@@ -462,7 +462,7 @@ public class BitDropdownParamsTests : BunitTestContext
 
         Assert.IsFalse(root.ClassList.Contains("bit-drp-und"));
         Assert.IsTrue(root.ClassList.Contains("bit-drp-lg"));
-        Assert.AreEqual(0, component.FindAll(".bit-drp-lbl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-drp-sin").Count);
+        Assert.IsEmpty(component.FindAll(".bit-drp-lbl"));
+        Assert.IsEmpty(component.FindAll(".bit-drp-sin"));
     }
 }

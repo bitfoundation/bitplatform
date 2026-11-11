@@ -18,7 +18,7 @@ public class CompletionsTests
     {
         var completion = BmageCompletions.Complete(argument, typed);
 
-        CollectionAssert.Contains(completion.Values.ToArray(), expected);
+        Assert.Contains(expected, completion.Values.ToArray());
     }
 
     [TestMethod]
@@ -28,8 +28,8 @@ public class CompletionsTests
         var values = BmageCompletions.Complete("typeName", "Crop").Values;
 
         Assert.IsGreaterThan(1, values.Count);
-        StringAssert.StartsWith(values[0], "Crop", "A substring match outranked a prefix match.");
-        Assert.IsTrue(values.Any(value => value.StartsWith("Crop", StringComparison.Ordinal) is false), "Substring matches were left out.");
+        Assert.StartsWith("Crop", values[0], "A substring match outranked a prefix match.");
+        Assert.Contains(value => value.StartsWith("Crop", StringComparison.Ordinal) is false, values, "Substring matches were left out.");
     }
 
     [TestMethod]

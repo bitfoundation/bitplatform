@@ -34,21 +34,21 @@ public class McpServerTests
     [TestMethod]
     public async Task ListTools_ExposesTheFourTools_EachWithADescriptionAndAnInputSchema()
     {
-        var tools = await Server.Client.ListToolsAsync();
+        var tools = await Server.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             new[]
             {
                 nameof(McpController.SearchBheadless),
                 nameof(McpController.GetBheadlessComponent),
                 nameof(McpController.GetBheadlessExamples),
                 nameof(McpController.GetBheadlessSetupGuide),
-            },
-            tools.Select(tool => tool.Name).ToArray());
+            }, tools.Select(tool => tool.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var tool in tools)
         {
-            Assert.IsTrue(tool.Description?.Length > 60, $"'{tool.Name}' has too short a description to be chosen by.");
+            var actualValue = tool.Description?.Length > 60;
+            Assert.IsTrue(actualValue, $"'{tool.Name}' has too short a description to be chosen by.");
             Assert.AreEqual(JsonValueKind.Object, tool.ProtocolTool.InputSchema.ValueKind, $"'{tool.Name}' has no input schema.");
 
             // Markdown answers, never a structured payload sent twice.
@@ -69,8 +69,8 @@ public class McpServerTests
         {
             foreach (var entry in DemoCatalog.Components)
             {
-                StringAssert.Contains(catalog, $"(`{entry.Slug}`)", $"The catalog leaves out '{entry.Slug}'.");
-                StringAssert.Contains(catalog, $"## {DemoCatalog.AreaLabel(entry.Area)}");
+                Assert.Contains($"(`{entry.Slug}`)", catalog, $"The catalog leaves out '{entry.Slug}'.");
+                Assert.Contains($"## {DemoCatalog.AreaLabel(entry.Area)}", catalog);
             }
         }
     }
@@ -82,21 +82,21 @@ public class McpServerTests
 
         foreach (var part in new[] { "## BitBhMenu", "## BitBhMenuButton", "## BitBhMenuItems", "## BitBhMenuItem", "## BitBhMenuSubTrigger" })
         {
-            StringAssert.Contains(menu, part);
+            Assert.Contains(part, menu);
         }
 
-        StringAssert.Contains(menu, "| `Open` | `bool` | `false` |");
-        StringAssert.Contains(menu, "`@bind-Open`");
-        StringAssert.Contains(menu, "data-highlighted");
+        Assert.Contains("| `Open` | `bool` | `false` |", menu);
+        Assert.Contains("`@bind-Open`", menu);
+        Assert.Contains("data-highlighted", menu);
         // The common parameters are named once, not per part.
         Assert.AreEqual(1, menu.Split("| `As` |").Length - 1, "BitBhComponentBase's As is repeated.");
-        StringAssert.Contains(menu, "```razor");
+        Assert.Contains("```razor", menu);
 
         // A part answers with its whole family, the same over the GET mirror.
         var item = await Server.GetAsync(nameof(McpController.GetBheadlessComponent), "names=BitBhMenuItem");
 
-        StringAssert.Contains(item, "# Menu (`menu`");
-        StringAssert.Contains(item, "_`BitBhMenuItem` is one of this family's parts");
+        Assert.Contains("# Menu (`menu`", item);
+        Assert.Contains("_`BitBhMenuItem` is one of this family's parts", item);
     }
 
     [TestMethod]
@@ -104,12 +104,12 @@ public class McpServerTests
     {
         var answer = await Server.CallAsync(nameof(McpController.GetBheadlessComponent), new() { ["names"] = "BitBhMenuItm" });
 
-        StringAssert.Contains(answer, "Did you mean");
-        StringAssert.Contains(answer, "BitBhMenuItem");
+        Assert.Contains("Did you mean", answer);
+        Assert.Contains("BitBhMenuItem", answer);
 
         var overGet = await Server.GetAsync(nameof(McpController.GetBheadlessComponent), "names=Accordian");
 
-        StringAssert.Contains(overGet, "accordion");
+        Assert.Contains("accordion", overGet);
     }
 
     [TestMethod]
@@ -118,12 +118,12 @@ public class McpServerTests
         // HiddenUntilFound is a parameter of three content parts and the name of none of them.
         var answer = await Server.CallAsync(nameof(McpController.SearchBheadless), new() { ["query"] = "HiddenUntilFound" });
 
-        StringAssert.Contains(answer, "BitBhAccordionContent.HiddenUntilFound");
-        StringAssert.Contains(answer, "GetBheadlessComponent(names: \"BitBhAccordionContent\")");
+        Assert.Contains("BitBhAccordionContent.HiddenUntilFound", answer);
+        Assert.Contains("GetBheadlessComponent(names: \"BitBhAccordionContent\")", answer);
 
         var overGet = await Server.GetAsync(nameof(McpController.SearchBheadless), "query=DismissOnEscape&limit=3");
 
-        StringAssert.Contains(overGet, "GetBheadlessComponent(names: \"BitBhDialog\")");
+        Assert.Contains("GetBheadlessComponent(names: \"BitBhDialog\")", overGet);
     }
 
     [TestMethod]
@@ -131,14 +131,14 @@ public class McpServerTests
     {
         var css = await Server.CallAsync(nameof(McpController.GetBheadlessExamples), new() { ["name"] = "accordion", ["example"] = "Multiple" });
 
-        StringAssert.Contains(css, "## Multiple Open Items");
-        StringAssert.Contains(css, "<BitBhAccordion Type=\"BitBhAccordionType.Multiple\"");
-        StringAssert.Contains(css, "```css");
+        Assert.Contains("## Multiple Open Items", css);
+        Assert.Contains("<BitBhAccordion Type=\"BitBhAccordionType.Multiple\"", css);
+        Assert.Contains("```css", css);
 
         var tailwind = await Server.GetAsync(nameof(McpController.GetBheadlessExamples), "name=BitBhAccordionTrigger&example=Multiple&styling=tailwind");
 
-        StringAssert.Contains(tailwind, "data-state-open:");
-        StringAssert.Contains(tailwind, "@custom-variant data-state-open");
+        Assert.Contains("data-state-open:", tailwind);
+        Assert.Contains("@custom-variant data-state-open", tailwind);
     }
 
     [TestMethod]
@@ -155,9 +155,11 @@ public class McpServerTests
             await Server.GetAsync(nameof(McpController.GetBheadlessSetupGuide)),
         })
         {
-            StringAssert.Contains(guide, "## Sections of the guide");
-            StringAssert.Contains(guide, "## Installation");
-            StringAssert.Contains(guide, "AddBitBheadlessServices()");
+            Assert.Contains("## Sections of the guide", guide);
+            Assert.Contains("## Installation", guide);
+            Assert.Contains("AddBitBheadlessServices()", guide);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -1,10 +1,10 @@
-using Bit.Blex.Query;
+﻿using Bit.Blex.Query;
 
 namespace Bit.Blex.Tests.Query;
 
 public enum Filter { All, Done }
 
-public sealed record Page(int Number, int Size);
+internal sealed record Page(int Number, int Size);
 
 [TestClass]
 public class BlexQueryKeyTests

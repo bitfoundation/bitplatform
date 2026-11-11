@@ -120,11 +120,11 @@ public class KeyboardTests
 
             Assert.IsTrue(tool.OnKeyDown(context, Key("ArrowRight", ctrl: true)));
             BinkRect wider = context.Document.GetElement(id).Bounds;
-            Assert.IsTrue(wider.Width > before.Width, $"width did not grow: {before.Width} -> {wider.Width}");
+            Assert.IsGreaterThan(before.Width, wider.Width, $"width did not grow: {before.Width} -> {wider.Width}");
 
             Assert.IsTrue(tool.OnKeyDown(context, Key("ArrowLeft", ctrl: true)));
             BinkRect back = context.Document.GetElement(id).Bounds;
-            Assert.IsTrue(back.Width < wider.Width, $"width did not shrink again: {wider.Width} -> {back.Width}");
+            Assert.IsLessThan(wider.Width, back.Width, $"width did not shrink again: {wider.Width} -> {back.Width}");
         }
     }
 

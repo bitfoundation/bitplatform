@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -94,7 +94,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse(spec);
 
         Assert.IsNull(result.Error);
-        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+        Assert.DoesNotContain(warning => warning.Contains("is not a number", StringComparison.Ordinal), result.Warnings,
                        $"'{spec}' lost its value. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -121,7 +121,7 @@ public class TransitionSpecTests
         Assert.AreEqual(0.4, tween.Duration);
         Assert.AreEqual(BmEase.BackOut, tween.Ease);
         // The assumption is the kind of thing that produces a confidently wrong answer if unstated.
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("read as a tween", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("read as a tween", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"No warning named the assumption. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -138,7 +138,7 @@ public class TransitionSpecTests
 
         foreach (var kind in BmotionTransitionSpec.Kinds)
         {
-            StringAssert.Contains(result.Error, kind, $"The error does not name '{kind}': {result.Error}");
+            Assert.Contains(kind, result.Error, $"The error does not name '{kind}': {result.Error}");
         }
     }
 
@@ -148,7 +148,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse("spring(stifness: 260, damping: 12)");
 
         Assert.IsNotNull(result.Transition);
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("stifness", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains("stifness", StringComparison.Ordinal), result.Warnings,
                       $"The misspelling was dropped silently. Warnings: {string.Join(" | ", result.Warnings)}");
 
         // The rest of the spec still applied: a typo costs one argument, not the whole call.
@@ -162,7 +162,7 @@ public class TransitionSpecTests
 
         var spring = (BmSpring)result.Transition!;
 
-        Assert.AreNotEqual(0, result.Warnings.Length);
+        Assert.IsNotEmpty(result.Warnings);
         Assert.AreEqual(12, spring.Damping);
     }
 
@@ -171,7 +171,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(bounce: 0.4, duration: 0.6, stiffness: 260, damping: 12)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Nothing said the physics arguments are ignored. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -185,7 +185,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(duration: 0.6, stiffness: 260)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Nothing said the stiffness is ignored. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -199,7 +199,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(visualDuration: 0.6, stiffness: 260)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Nothing said the stiffness is ignored. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -208,7 +208,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(bounce: 0.4)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("duration", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("duration", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -234,7 +234,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse(spec);
 
         Assert.AreEqual(expected, ((BmTween)result.Transition!).Ease);
-        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+        Assert.DoesNotContain(warning => warning.Contains("is not a number", StringComparison.Ordinal), result.Warnings,
                        $"The easing was reported as a bad duration. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -244,7 +244,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("tween(swoosh)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains("is not a number", StringComparison.Ordinal), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -262,7 +262,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse(spec);
 
         Assert.AreEqual(expected, ((BmTween)result.Transition!).Duration, 1e-9);
-        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+        Assert.DoesNotContain(warning => warning.Contains("is not a number", StringComparison.Ordinal), result.Warnings,
                        $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -272,7 +272,7 @@ public class TransitionSpecTests
         var tween = (BmTween)BmotionTransitionSpec.Parse("tween(duration: 0.5, bezier: [0.42, 0, 0.58, 1])").Transition!;
 
         Assert.AreEqual(0.5, tween.Duration);
-        CollectionAssert.AreEqual(new[] { 0.42, 0, 0.58, 1.0 }, tween.Bezier);
+        Assert.AreSequenceEqual(new[] { 0.42, 0, 0.58, 1.0 }, tween.Bezier);
     }
 
     [TestMethod]
@@ -281,7 +281,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse("tween(duration: 0.5, bezier: [0.42, 0])");
 
         Assert.IsNull(((BmTween)result.Transition!).Bezier);
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("four numbers", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("four numbers", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -290,7 +290,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("tween(0.4, InOut, 99)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("99", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains("99", StringComparison.Ordinal), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -321,7 +321,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("tween(0.4, swoosh)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("GetBmotionEasings", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains("GetBmotionEasings", StringComparison.Ordinal), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -338,7 +338,7 @@ public class TransitionSpecTests
         {
             var first = BmotionTransitionSpec.Parse(spec);
 
-            StringAssert.StartsWith(first.Canonical, "Bm.", $"'{spec}' produced '{first.Canonical}', which is not a C# call.");
+            Assert.StartsWith("Bm.", first.Canonical, $"'{spec}' produced '{first.Canonical}', which is not a C# call.");
 
             // Round-tripping is the property that makes the canonical form safe to paste into code:
             // what it says was understood has to mean the same thing when read back.
@@ -367,7 +367,7 @@ public class TransitionSpecTests
             Assert.AreEqual(0.4, tween.Duration);
 
             // And the canonical call it writes back has to be C#, not localized.
-            StringAssert.Contains(BmotionTransitionSpec.Parse("spring(mass: 1.5)").Canonical, "1.5");
+            Assert.Contains("1.5", BmotionTransitionSpec.Parse("spring(mass: 1.5)").Canonical);
         }
         finally
         {
@@ -390,10 +390,10 @@ public class TransitionSpecTests
 
         Assert.IsNull(result.Error);
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains("is not a number", StringComparison.Ordinal), result.Warnings,
                       $"Nothing said the value could not be read. Warnings: {string.Join(" | ", result.Warnings)}");
 
-        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal)),
+        Assert.DoesNotContain(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal), result.Warnings,
                        $"A correct argument name was reported as unknown. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -405,7 +405,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse(spec);
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal)),
+        Assert.Contains(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal), result.Warnings,
                       $"A misspelled argument passed unremarked. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
@@ -420,7 +420,7 @@ public class TransitionSpecTests
         var result = BmotionTransitionSpec.Parse(spec);
 
         Assert.IsNull(result.Transition);
-        StringAssert.Contains(result.Error, "delay");
+        Assert.Contains("delay", result.Error!);
     }
 
     [TestMethod]

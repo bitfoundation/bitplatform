@@ -126,7 +126,7 @@ public class BitNavPanelE2ETests : E2ETestBase
         await Expect(panel.Locator(".bit-nav-itx").First).ToBeHiddenAsync();
         await Expect(panel).ToHaveCSSAsync("max-width", "96px");
         await Page.WaitForFunctionAsync("([e, full]) => e.getBoundingClientRect().width < full - 50", new object[] { await panel.ElementHandleAsync(), full });
-        Assert.IsTrue(full > 200);
+        Assert.IsGreaterThan(200, full);
 
         // The rail's search button opens the panel back out with the search box focused.
         await panel.Locator(".bit-npn-tsb").ClickAsync();
@@ -208,7 +208,7 @@ public class BitNavPanelE2ETests : E2ETestBase
         Assert.AreEqual(200 + padding, await WidthAsync("npn-width"), 1);
         await Expect(Panel("npn-fit")).ToHaveClassAsync(HasClass("bit-npn-fiw"));
         var fit = await WidthAsync("npn-fit");
-        Assert.IsTrue(fit < 300, $"FitWidth takes its widest item's width, was {fit}.");
+        Assert.IsLessThan(300, fit, $"FitWidth takes its widest item's width, was {fit}.");
         Assert.IsFalse(await Panel("npn-fit").EvaluateAsync<bool>("e => e.scrollWidth > e.clientWidth"), "Nothing of it is cut off.");
         await Expect(Panel("npn-full")).ToHaveClassAsync(HasClass("bit-npn-fuw"));
         // FullWidth fills its container, its padding included, and ignores Width.
@@ -619,7 +619,7 @@ public class BitNavPanelE2ETests : E2ETestBase
         await Expect(footer).ToBeVisibleAsync();
         var panelBox = await panel.BoundingBoxAsync();
         var footerBox = await footer.BoundingBoxAsync();
-        Assert.IsTrue(footerBox!.Y + footerBox.Height <= panelBox!.Y + panelBox.Height + 1, "The footer is pinned inside the panel.");
+        Assert.IsLessThanOrEqualTo(panelBox!.Y + panelBox.Height + 1, footerBox!.Y + footerBox.Height, "The footer is pinned inside the panel.");
 
         var nav = panel.Locator("nav.bit-nav");
         Assert.IsTrue(await nav.EvaluateAsync<bool>("n => n.scrollHeight > n.clientHeight"), "The items scroll between the ends.");
@@ -807,7 +807,7 @@ public class BitNavPanelE2ETests : E2ETestBase
         await Expect(Panel("npn-rtl")).ToHaveAttributeAsync("dir", "rtl");
         var icon = await Item("npn-rtl", "Home").Locator(".bit-nav-iic").BoundingBoxAsync();
         var text = await Item("npn-rtl", "Home").Locator(".bit-nav-itx").BoundingBoxAsync();
-        Assert.IsTrue(icon!.X > text!.X, "The icon leads on the right.");
+        Assert.IsGreaterThan(text!.X, icon!.X, "The icon leads on the right.");
 
         await Page.Locator("#btn-open-rtl-drawer").ClickAsync();
         var drawer = Panel("npn-rtl-drawer");
@@ -843,9 +843,9 @@ public class BitNavPanelE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<div id=""npn-basic""[^>]*class=""[^""]*\bbit-npn\b"));
-        StringAssert.Matches(html, new Regex(@"href=""/e2e/nav-panel/page/settings""[^>]*aria-current=""page""|aria-current=""page""[^>]*href=""/e2e/nav-panel/page/settings"""));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<div id=""npn-basic""[^>]*class=""[^""]*\bbit-npn\b"), html);
+        Assert.MatchesRegex(new Regex(@"href=""/e2e/nav-panel/page/settings""[^>]*aria-current=""page""|aria-current=""page""[^>]*href=""/e2e/nav-panel/page/settings"""), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]

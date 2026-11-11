@@ -43,7 +43,7 @@ public class BitAiEmptyStateParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiEmptyStateParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiEmptyState", BitAiEmptyStateParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiEmptyState", new BitAiEmptyStateParams().Name);
         Assert.AreEqual(BitAiEmptyStateParams.ParamName, new BitAiEmptyStateParams().Name);
     }
 

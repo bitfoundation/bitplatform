@@ -32,12 +32,12 @@ public class NavigationDiagnosticsTests : BunitContext
         var guards = BevNavigationGuards.Read(Session);
         var navigationLock = Assert.ContainsSingle(g => g.Kind == "NavigationLock", guards);
         Assert.AreEqual("UnsavedChangesEditor", navigationLock.OwnerName);
-        StringAssert.Contains(navigationLock.Description, "confirm leaving the site");
-        StringAssert.Contains(navigationLock.Description, "UnsavedChangesEditor.OnBeforeNavigation");
+        Assert.Contains("confirm leaving the site", navigationLock.Description);
+        Assert.Contains("UnsavedChangesEditor.OnBeforeNavigation", navigationLock.Description);
 
         var handler = Assert.ContainsSingle(g => g.Kind == "LocationChanging handler", guards);
         Assert.AreEqual("UnsavedChangesEditor", handler.OwnerName);
-        StringAssert.Contains(handler.Description, "UnsavedChangesEditor.Guard");
+        Assert.Contains("UnsavedChangesEditor.Guard", handler.Description);
     }
 
     private void Navigation(string title, double secondsAgo, string detail = "programmatic", long? fromEvent = null) => Session.Timeline.Record(new BevToolsEvent
@@ -61,10 +61,10 @@ public class NavigationDiagnosticsTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
         var loop = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "navigation.loop", Session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual(BevDiagnosticSeverity.Error, loop.Severity);
-        StringAssert.Contains(loop.Title, "Navigate to /login");
-        StringAssert.Contains(loop.Title, "Navigate to /account");
-        StringAssert.StartsWith(loop.Evidence, "6 navigations");
-        StringAssert.Contains(loop.Evidence, "every one made by code");
+        Assert.Contains("Navigate to /login", loop.Title);
+        Assert.Contains("Navigate to /account", loop.Title);
+        Assert.StartsWith("6 navigations", loop.Evidence);
+        Assert.Contains("every one made by code", loop.Evidence);
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class NavigationDiagnosticsTests : BunitContext
     }
 
     [TestMethod]
-    public void With_live_updates_off_the_trailing_evaluation_leaves_the_open_tab_as_it_was()
+    public async global::System.Threading.Tasks.Task With_live_updates_off_the_trailing_evaluation_leaves_the_open_tab_as_it_was()
     {
         Session.Ui.IsOpen = true;
         var panel = Render<BevToolsPanel>();
@@ -102,13 +102,13 @@ public class NavigationDiagnosticsTests : BunitContext
             Navigation(i % 2 == 0 ? "Navigate to /login" : "Navigate to /account", 0);
         }
 
-        Thread.Sleep(1600);
+        await global::System.Threading.Tasks.Task.Delay(1600, TestContext.CancellationToken);
 
         Assert.DoesNotContain("Navigation loop: Navigate to", panel.Markup, StringComparison.Ordinal);
     }
 
     [TestMethod]
-    public void Rules_run_with_the_panel_closed_only_when_asked_to()
+    public async global::System.Threading.Tasks.Task Rules_run_with_the_panel_closed_only_when_asked_to()
     {
         // The panel is on the page, closed: by default the rules wait for it to open (or an export, or a frontend).
         Services.GetRequiredService<BitBevToolsOptions>().Diagnostics.EvaluateWhileClosed = true;
@@ -123,7 +123,7 @@ public class NavigationDiagnosticsTests : BunitContext
         var deadline = DateTime.UtcNow.AddSeconds(5);
         while (!Session.Diagnostics.Findings.Any(f => f.Diagnostic.RuleId == "navigation.loop") && DateTime.UtcNow < deadline)
         {
-            Thread.Sleep(50);
+            await global::System.Threading.Tasks.Task.Delay(50, TestContext.CancellationToken);
         }
 
         Assert.Contains(f => f.Diagnostic.RuleId == "navigation.loop", Session.Diagnostics.Findings);
@@ -218,15 +218,16 @@ public class NavigationDiagnosticsTests : BunitContext
         panel.WaitForAssertion(() =>
         {
             var text = panel.Find(".bev-body").TextContent;
-            StringAssert.Contains(text, "NavigationLock");
-            StringAssert.Contains(text, "UnsavedChangesEditor.Guard");
+            Assert.Contains("NavigationLock", text);
+            Assert.Contains("UnsavedChangesEditor.Guard", text);
             var row = panel.FindAll(".bev-body tr").First(r => r.TextContent.Contains("Navigate to /somewhere", StringComparison.Ordinal));
             Assert.AreEqual("2", row.Children[3].TextContent.Trim(), "the parent and its child rendered after it");
         });
     }
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }
 
-public class UnsavedChangesEditor : ComponentBase, IDisposable
+internal class UnsavedChangesEditor : ComponentBase, IDisposable
 {
     private IDisposable? _registration;
 

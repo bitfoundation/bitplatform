@@ -26,7 +26,7 @@ public class ProcessRunnerTests
     {
         var runner = new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None);
 
-        var result = await runner.RunAsync(new ProcessSpec { FileName = "bit-cli-no-such-command-4f1d" });
+        var result = await runner.RunAsync(new ProcessSpec { FileName = "bit-cli-no-such-command-4f1d" }, TestContext.CancellationToken);
 
         Assert.IsTrue(result.NotFound);
         Assert.IsFalse(result.Succeeded);
@@ -38,7 +38,7 @@ public class ProcessRunnerTests
         var runner = new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None);
         var lines = new List<string>();
 
-        var result = await runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["--version"], OnOutputLine = lines.Add });
+        var result = await runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["--version"], OnOutputLine = lines.Add }, TestContext.CancellationToken);
 
         Assert.IsTrue(result.Succeeded, result.Output);
         Assert.IsNotNull(Bit.Cli.Tools.ToolCatalog.ParseVersion(result.Output));
@@ -61,7 +61,7 @@ public class ProcessRunnerTests
             : new ProcessSpec { FileName = "sleep", Arguments = ["30"], Timeout = TimeSpan.FromSeconds(1) };
 
         var started = DateTime.UtcNow;
-        var result = await runner.RunAsync(spec);
+        var result = await runner.RunAsync(spec, TestContext.CancellationToken);
 
         Assert.IsTrue(result.TimedOut);
         Assert.IsLessThan(TimeSpan.FromSeconds(20), DateTime.UtcNow - started);
@@ -88,10 +88,10 @@ public class ProcessRunnerTests
         string[] arguments = [@"C:\R&D\Shop", "a b", "x^y", "100%", "%PATH%", "(paren)", "semi;colon", "A&B (1)"];
         var runner = new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None);
 
-        var result = await runner.RunAsync(new ProcessSpec { FileName = Path.Combine(directory, "shim.cmd"), Arguments = arguments });
+        var result = await runner.RunAsync(new ProcessSpec { FileName = Path.Combine(directory, "shim.cmd"), Arguments = arguments }, TestContext.CancellationToken);
 
         Assert.IsTrue(result.Succeeded, result.Output);
-        CollectionAssert.AreEqual(arguments, result.OutputLines.ToArray(), result.Output);
+        Assert.AreSequenceEqual(arguments, result.OutputLines.ToArray(), result.Output);
         Directory.Delete(directory, recursive: true);
     }
 
@@ -125,9 +125,9 @@ public class ProcessRunnerTests
             ? new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "[System.Management.Automation.Language.Parser]::ParseInput($env:LINE, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].CommandElements | Select-Object -Skip 1 | ForEach-Object { if ($_ -is [System.Management.Automation.Language.StringConstantExpressionAst]) { $_.Value } else { 'expanded ' + $_.Extent.Text } }"] }
             : new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "eval \"set -- $LINE\"; shift; for word in \"$@\"; do printf '%s\\n' \"$word\"; done"] };
 
-        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["LINE"] = line } });
+        var words = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(shell with { Environment = new Dictionary<string, string?> { ["LINE"] = line } }, TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(values, words.OutputLines.ToArray(), line);
+        Assert.AreSequenceEqual(values, words.OutputLines.ToArray(), line);
     }
 
     [TestMethod]
@@ -140,8 +140,10 @@ public class ProcessRunnerTests
         var line = spec.ShellCommandLine(HostOs.Windows);
         var parse = new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-NonInteractive", "-Command", "$errors = $null; $ast = [System.Management.Automation.Language.Parser]::ParseInput($env:LINE, [ref]$null, [ref]$errors); $errors.Count; $ast.EndBlock.Statements[0].PipelineElements[0].CommandElements[0].Value"], Environment = new Dictionary<string, string?> { ["LINE"] = line } };
 
-        var result = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(parse);
+        var result = await new ProcessRunner(CliEnvironment.FromProcess(), CliLog.None).RunAsync(parse, TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { "0", spec.FileName }, result.OutputLines.ToArray(), line);
+        Assert.AreSequenceEqual(new[] { "0", spec.FileName }, result.OutputLines.ToArray(), line);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

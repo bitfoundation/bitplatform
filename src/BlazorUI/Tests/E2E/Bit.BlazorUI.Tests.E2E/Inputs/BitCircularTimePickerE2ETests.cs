@@ -126,10 +126,10 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.AreEqual(200, response.Status);
-        StringAssert.Contains(html, "id=\"ctp-basic\"");
-        StringAssert.Contains(html, "class=\"bit-ctp-inp");
-        StringAssert.Contains(html, "role=\"listbox\"");
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"ctp-basic\"", html);
+        Assert.Contains("class=\"bit-ctp-inp", html);
+        Assert.Contains("role=\"listbox\"", html);
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await SettleAsync(callout);
         var fieldBox = (await BoxAsync(Page.Locator("#basic .bit-ctp-icn")))!;
         var calloutBox = (await BoxAsync(callout))!;
-        Assert.IsTrue(calloutBox.Y >= fieldBox.Y + fieldBox.Height - 2, "The callout opens below the field.");
+        Assert.IsGreaterThanOrEqualTo(fieldBox.Y + fieldBox.Height - 2, calloutBox.Y, "The callout opens below the field.");
         Assert.AreEqual(fieldBox.X, calloutBox.X, 2, "The callout is aligned with the start of the field.");
     }
 
@@ -278,7 +278,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await SettleAsync(callout);
         var fieldBox = (await BoxAsync(Page.Locator("#underlined .bit-ctp-icn")))!;
         var calloutBox = (await BoxAsync(callout))!;
-        Assert.IsTrue(calloutBox.Y + calloutBox.Height <= fieldBox.Y + 2, "With no room below, the callout drops above the field.");
+        Assert.IsLessThanOrEqualTo(fieldBox.Y + 2, calloutBox.Y + calloutBox.Height, "With no room below, the callout drops above the field.");
     }
 
     [TestMethod]
@@ -530,7 +530,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(callout.Locator(".bit-ctp-tlb .bit-ctp-apc")).ToHaveCountAsync(0);
         await Expect(callout.Locator(".bit-ctp-bdy .bit-ctp-apc")).ToHaveCountAsync(1);
 
-        Assert.IsTrue((await BoxAsync(pair))!.Y > (await BoxAsync(callout.Locator(".bit-ctp-clk")))!.Y, "The pair sits under the clock.");
+        Assert.IsGreaterThan((await BoxAsync(callout.Locator(".bit-ctp-clk")))!.Y, (await BoxAsync(pair))!.Y, "The pair sits under the clock.");
 
         await Am(callout).ClickAsync();
         await Expect(Out("format-12-clock-value")).ToHaveTextAsync("09:45:00");
@@ -1192,8 +1192,8 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         Assert.AreEqual("solid", await StyleOfAsync(Page.Locator("#basic .bit-ctp-icn"), "border-bottom-style"));
 
         await Expect(Root("icon-start")).ToHaveClassAsync(HasClass("bit-ctp-lic"));
-        Assert.IsTrue((await BoxAsync(Page.Locator("#icon-start .bit-ctp-ico")))!.X < (await BoxAsync(Field("icon-start")))!.X);
-        Assert.IsTrue((await BoxAsync(Page.Locator("#basic .bit-ctp-ico")))!.X > (await BoxAsync(Field("basic")))!.X);
+        Assert.IsLessThan((await BoxAsync(Field("icon-start")))!.X, (await BoxAsync(Page.Locator("#icon-start .bit-ctp-ico")))!.X);
+        Assert.IsGreaterThan((await BoxAsync(Field("basic")))!.X, (await BoxAsync(Page.Locator("#basic .bit-ctp-ico")))!.X);
     }
 
     // ------------------------------------------------------------------ templates
@@ -1259,24 +1259,24 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(landscape).ToHaveClassAsync(HasClass("bit-ctp-lnd"));
         var toolbar = (await BoxAsync(landscape.Locator(".bit-ctp-tlb")))!;
         var clock = (await BoxAsync(landscape.Locator(".bit-ctp-clk")))!;
-        Assert.IsTrue(toolbar.X + toolbar.Width <= clock.X + 1, "In landscape the toolbar is beside the clock.");
+        Assert.IsLessThanOrEqualTo(clock.X + 1, toolbar.X + toolbar.Width, "In landscape the toolbar is beside the clock.");
         await Expect(landscape.Locator(".bit-ctp-sep").First).ToBeHiddenAsync();
         // The parts stack down the column of the toolbar.
-        Assert.IsTrue((await BoxAsync(MinuteButton(landscape)))!.Y > (await BoxAsync(HourButton(landscape)))!.Y);
+        Assert.IsGreaterThan((await BoxAsync(HourButton(landscape)))!.Y, (await BoxAsync(MinuteButton(landscape)))!.Y);
 
         var portrait = StandaloneCallout("portrait");
         var portraitToolbar = (await BoxAsync(portrait.Locator(".bit-ctp-tlb")))!;
         var portraitClock = (await BoxAsync(portrait.Locator(".bit-ctp-clk")))!;
-        Assert.IsTrue(portraitToolbar.Y + portraitToolbar.Height <= portraitClock.Y + 1, "In portrait the toolbar is above the clock.");
+        Assert.IsLessThanOrEqualTo(portraitClock.Y + 1, portraitToolbar.Y + portraitToolbar.Height, "In portrait the toolbar is above the clock.");
 
         var twelve = StandaloneCallout("landscape-12");
-        Assert.IsTrue((await BoxAsync(SecondButton(twelve)))!.Y > (await BoxAsync(MinuteButton(twelve)))!.Y);
-        Assert.IsTrue((await BoxAsync(twelve.Locator(".bit-ctp-tlb .bit-ctp-apc")))!.Y > (await BoxAsync(SecondButton(twelve)))!.Y);
+        Assert.IsGreaterThan((await BoxAsync(MinuteButton(twelve)))!.Y, (await BoxAsync(SecondButton(twelve)))!.Y);
+        Assert.IsGreaterThan((await BoxAsync(SecondButton(twelve)))!.Y, (await BoxAsync(twelve.Locator(".bit-ctp-tlb .bit-ctp-apc")))!.Y);
 
         var callout = await OpenCalloutAsync("landscape-callout");
         await Expect(callout).ToHaveClassAsync(HasClass("bit-ctp-lnd"));
         await SettleAsync(callout);
-        Assert.IsTrue((await BoxAsync(callout.Locator(".bit-ctp-tlb")))!.X < (await BoxAsync(callout.Locator(".bit-ctp-clk")))!.X);
+        Assert.IsLessThan((await BoxAsync(callout.Locator(".bit-ctp-clk")))!.X, (await BoxAsync(callout.Locator(".bit-ctp-tlb")))!.X);
     }
 
     [TestMethod]
@@ -1292,7 +1292,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         var field = (await BoxAsync(Page.Locator("#responsive .bit-ctp-icn")))!;
         var box = (await BoxAsync(callout))!;
         Assert.IsTrue(box.Y >= field.Y + field.Height - 2 || box.Y + box.Height <= field.Y + 2, "Above the phone breakpoint the callout opens against its field.");
-        Assert.IsTrue(box.Width < Page.ViewportSize!.Width / 2f, "Above the phone breakpoint the callout is not a sheet.");
+        Assert.IsLessThan(Page.ViewportSize!.Width / 2f, box.Width, "Above the phone breakpoint the callout is not a sheet.");
     }
 
     // ------------------------------------------------------------------ keyboard & accessibility
@@ -1416,9 +1416,9 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         }
 
         Assert.IsTrue(stops.All(s => s.Contains("bit-ctp", StringComparison.Ordinal)), $"The focus stays inside the callout: {string.Join(" / ", stops)}");
-        Assert.IsTrue(stops.Any(s => s.Contains("bit-ctp-clf", StringComparison.Ordinal)), "Tabbing comes round to the dial again.");
-        Assert.IsTrue(stops.Any(s => s.Contains("Meeting hour", StringComparison.Ordinal)));
-        Assert.IsTrue(stops.Any(s => s.Contains("bit-ctp-abn", StringComparison.Ordinal)));
+        Assert.Contains(s => s.Contains("bit-ctp-clf", StringComparison.Ordinal), stops, "Tabbing comes round to the dial again.");
+        Assert.Contains(s => s.Contains("Meeting hour", StringComparison.Ordinal), stops);
+        Assert.Contains(s => s.Contains("bit-ctp-abn", StringComparison.Ordinal), stops);
     }
 
     [TestMethod]
@@ -1737,7 +1737,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         Assert.AreEqual("7px", await StyleOfAsync(Root("sc-style"), "margin-top"));
-        StringAssert.Contains(await StyleOfAsync(Root("sc-style"), "box-shadow"), "rgb(30, 144, 255)");
+        Assert.Contains("rgb(30, 144, 255)", await StyleOfAsync(Root("sc-style"), "box-shadow"));
         await Expect(Root("sc-class")).ToHaveClassAsync(HasClass("custom-class"));
     }
 
@@ -1754,7 +1754,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         Assert.AreEqual("rgb(3, 3, 3)", await ComputedStyleAsync("#sc-styles .bit-ctp-ico", "color"));
 
         var callout = await OpenCalloutAsync("sc-styles");
-        StringAssert.Contains(await StyleOfAsync(Root("sc-styles"), "outline"), "rgb(255, 0, 0)");
+        Assert.Contains("rgb(255, 0, 0)", await StyleOfAsync(Root("sc-styles"), "outline"));
 
         var expected = new (string Selector, string Property, string Value)[]
         {
@@ -1919,26 +1919,26 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
 
         await Expect(Root("rtl-field")).ToHaveClassAsync(HasClass("bit-rtl"));
         await Expect(Root("rtl-field")).ToHaveAttributeAsync("dir", "rtl");
-        Assert.IsTrue((await BoxAsync(Page.Locator("#rtl-field .bit-ctp-ico")))!.X < (await BoxAsync(Field("rtl-field")))!.X);
+        Assert.IsLessThan((await BoxAsync(Field("rtl-field")))!.X, (await BoxAsync(Page.Locator("#rtl-field .bit-ctp-ico")))!.X);
 
         var callout = await OpenCalloutAsync("rtl-field");
         await Expect(callout).ToHaveAttributeAsync("dir", "rtl");
         await SettleAsync(callout);
         var box = (await BoxAsync(callout))!;
         var close = (await BoxAsync(callout.Locator(".bit-ctp-cbn")))!;
-        Assert.IsTrue(close.X - box.X < box.Width / 2f, "In RTL the close button sits at the left corner.");
+        Assert.IsLessThan(box.Width / 2f, close.X - box.X, "In RTL the close button sits at the left corner.");
         await Page.Keyboard.PressAsync("Escape");
 
         var rtl = StandaloneCallout("rtl-standalone");
         var ltr = StandaloneCallout("ltr-standalone");
         // The parts of the time stay in reading order.
-        Assert.IsTrue((await BoxAsync(HourButton(rtl)))!.X < (await BoxAsync(MinuteButton(rtl)))!.X);
+        Assert.IsLessThan((await BoxAsync(MinuteButton(rtl)))!.X, (await BoxAsync(HourButton(rtl)))!.X);
         // The meridiem pair moves to the other side of the read-out.
-        Assert.IsTrue((await BoxAsync(rtl.Locator(".bit-ctp-apc")))!.X < (await BoxAsync(HourButton(rtl)))!.X);
-        Assert.IsTrue((await BoxAsync(ltr.Locator(".bit-ctp-apc")))!.X > (await BoxAsync(HourButton(ltr)))!.X);
+        Assert.IsLessThan((await BoxAsync(HourButton(rtl)))!.X, (await BoxAsync(rtl.Locator(".bit-ctp-apc")))!.X);
+        Assert.IsGreaterThan((await BoxAsync(HourButton(ltr)))!.X, (await BoxAsync(ltr.Locator(".bit-ctp-apc")))!.X);
         // The dial keeps running clockwise: 3 o'clock is on the right of the center in both.
         var dial = (await BoxAsync(Dial(rtl)))!;
-        Assert.IsTrue((await BoxAsync(Number(rtl, "3")))!.X > dial.X + dial.Width / 2);
+        Assert.IsGreaterThan(dial.X + dial.Width / 2, (await BoxAsync(Number(rtl, "3")))!.X);
     }
 
     [TestMethod]
@@ -1947,7 +1947,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(Root("rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
-        Assert.IsTrue((await BoxAsync(Page.Locator("#rtl-inherited .bit-ctp-ico")))!.X < (await BoxAsync(Field("rtl-inherited")))!.X);
+        Assert.IsLessThan((await BoxAsync(Field("rtl-inherited")))!.X, (await BoxAsync(Page.Locator("#rtl-inherited .bit-ctp-ico")))!.X);
 
         var callout = await OpenCalloutAsync("rtl-inherited");
         Assert.AreEqual("rtl", await StyleOfAsync(callout.Locator(".bit-ctp-cac"), "direction"));
@@ -1974,7 +1974,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-collapsed");
         await Expect(root).ToHaveCSSAsync("display", "none");
         await Expect(standalone).ToHaveCSSAsync("display", "none");
-        Assert.IsTrue(await TopAsync() < visibleY - 10);
+        Assert.IsLessThan(visibleY - 10, await TopAsync());
 
         await Page.ClickAsync("#btn-visible");
         await Expect(standalone).ToBeVisibleAsync();
@@ -2043,8 +2043,8 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await Expect(forced).ToHaveClassAsync(HasClass("bit-fam"));
         var restored = await StyleOfAsync(forced, "animation-duration");
 
-        Assert.IsTrue(Seconds(full) > 0.05, $"The callout animates by default ({full}).");
-        Assert.IsTrue(Seconds(collapsed) < 0.01, $"Reduced motion collapses the animation ({collapsed}).");
+        Assert.IsGreaterThan(0.05, Seconds(full), $"The callout animates by default ({full}).");
+        Assert.IsLessThan(0.01, Seconds(collapsed), $"Reduced motion collapses the animation ({collapsed}).");
         Assert.IsTrue(hand.Split(',').All(d => Seconds(d.Trim()) < 0.01), $"Reduced motion collapses the hand's transition ({hand}).");
         Assert.AreEqual(full, restored, "ForceAnimation restores the full duration under reduced motion.");
 

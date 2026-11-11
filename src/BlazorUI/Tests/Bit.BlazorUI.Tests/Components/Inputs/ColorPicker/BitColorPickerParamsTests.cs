@@ -49,8 +49,8 @@ public class BitColorPickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitColorPickerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitColorPicker)}", BitColorPickerParams.ParamName);
-        Assert.AreEqual("BitParams.BitColorPicker", BitColorPickerParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitColorPicker)}", new BitColorPickerParams().Name);
+        Assert.AreEqual("BitParams.BitColorPicker", new BitColorPickerParams().Name);
     }
 
     [TestMethod]
@@ -190,18 +190,18 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("Cascaded aria label", root.GetAttribute("aria-label"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "z-index: 1;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("z-index: 1;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("hsla(0,0%,100%,1)", instance.Value);
         Assert.AreEqual(BitColorInputsMode.Hsl, instance.InputsMode);
         Assert.AreEqual("Cascaded label template", component.Find(".bit-clp-lbc").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-clp-rec").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-clp-hsd").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-clp-asd").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-clp-pre").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-clp-cnr").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-clp-prt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-rec"));
+        Assert.IsEmpty(component.FindAll(".bit-clp-hsd"));
+        Assert.ContainsSingle(component.FindAll(".bit-clp-asd"));
+        Assert.ContainsSingle(component.FindAll(".bit-clp-pre"));
+        Assert.ContainsSingle(component.FindAll(".bit-clp-cnr"));
+        Assert.HasCount(2, component.FindAll(".bit-clp-prt"));
         Assert.IsTrue(component.Find(".bit-clp-prs").ClassList.Contains("bit-clp-prg"));
         Assert.AreEqual("Farbton", component.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
         Assert.IsTrue(component.Find(".bit-clp-swi").ClassList.Contains("fa-sort"));
@@ -320,11 +320,11 @@ public class BitColorPickerParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-clp-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-clp-lg"));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-pre").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-pre"));
         Assert.AreEqual("#FFFFFF", instance.Value);
 
         // What the picker left unset is still filled in from the cascade.
-        Assert.AreEqual(4, component.FindAll(".bit-clp-fin").Count);
+        Assert.HasCount(4, component.FindAll(".bit-clp-fin"));
         Assert.AreEqual("Cascaded label", component.Find(".bit-clp-lbl").TextContent);
     }
 
@@ -339,11 +339,11 @@ public class BitColorPickerParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-clp").ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(component.Find(".bit-clp").GetAttribute("style"), "z-index: 1;");
+        Assert.Contains("z-index: 1;", component.Find(".bit-clp").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-clp-rec").ClassList.Contains("cascaded-area"));
-        StringAssert.Contains(component.Find(".bit-clp-rec").GetAttribute("style"), "border-radius: 1rem;");
+        Assert.Contains("border-radius: 1rem;", component.Find(".bit-clp-rec").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-clp-pre").ClassList.Contains("cascaded-preview"));
-        StringAssert.Contains(component.Find(".bit-clp-pre").GetAttribute("style"), "border-radius: 50%;");
+        Assert.Contains("border-radius: 50%;", component.Find(".bit-clp-pre").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -381,9 +381,9 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowHueSlider);
         Assert.IsTrue(instance.ShowSaturationArea);
         Assert.IsFalse(instance.ShowInputs);
-        Assert.AreEqual(1, component.FindAll(".bit-clp-rec").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-clp-hsd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-clp-fin").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clp-rec"));
+        Assert.ContainsSingle(component.FindAll(".bit-clp-hsd"));
+        Assert.IsEmpty(component.FindAll(".bit-clp-fin"));
         Assert.IsFalse(root.ClassList.Contains("bit-clp-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-clp-lg"));
     }

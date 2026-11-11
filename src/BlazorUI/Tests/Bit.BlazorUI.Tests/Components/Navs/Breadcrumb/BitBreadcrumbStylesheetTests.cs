@@ -18,21 +18,21 @@ public class BitBreadcrumbStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // breadcrumb an unset one stands for.
-        StringAssert.Contains(stylesheet, "--bit-brc-fs: var(--bit-brc-sz-fs, var(--bit-Breadcrumb-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-h: var(--bit-brc-sz-h, var(--bit-Breadcrumb-item-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-div-sz: var(--bit-brc-sz-div, var(--bit-Breadcrumb-divider-size, #{$tg-fs-md}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-ofi-h: var(--bit-brc-sz-ofi-h, var(--bit-Breadcrumb-overflow-item-height, #{$siz-item-md}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-ofi-fs: var(--bit-brc-sz-ofi-fs, var(--bit-Breadcrumb-overflow-font-size, #{$tg-fs-sm}));");
+        Assert.Contains("--bit-brc-fs: var(--bit-brc-sz-fs, var(--bit-Breadcrumb-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-brc-h: var(--bit-brc-sz-h, var(--bit-Breadcrumb-item-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("--bit-brc-div-sz: var(--bit-brc-sz-div, var(--bit-Breadcrumb-divider-size, #{$tg-fs-md}));", stylesheet);
+        Assert.Contains("--bit-brc-ofi-h: var(--bit-brc-sz-ofi-h, var(--bit-Breadcrumb-overflow-item-height, #{$siz-item-md}));", stylesheet);
+        Assert.Contains("--bit-brc-ofi-fs: var(--bit-brc-sz-ofi-fs, var(--bit-Breadcrumb-overflow-font-size, #{$tg-fs-sm}));", stylesheet);
 
         // So does an explicit Color, for every color of the trail it paints; an unset one is the neutral trail.
-        StringAssert.Contains(stylesheet, "--bit-brc-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-sel-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-selected-color, ");
-        StringAssert.Contains(stylesheet, "--bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color));");
+        Assert.Contains("--bit-brc-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));", stylesheet);
+        Assert.Contains("--bit-brc-sel-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-selected-color, ", stylesheet);
+        Assert.Contains("--bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));", stylesheet);
+        Assert.Contains("--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color));", stylesheet);
         // (The hover sets the state color the rule at rest reads, rather than painting the color itself.)
-        StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, ");
-        StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ");
-        StringAssert.Contains(stylesheet, "color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));");
+        Assert.Contains("--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, ", stylesheet);
+        Assert.Contains("--bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ", stylesheet);
+        Assert.Contains("color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));", stylesheet);
 
         // The hover color still falls back to the color the item has at rest (--bit-brc-itm-clr, --bit-brc-div-clr),
         // which is no parameter's own value, so only the size and role values are banned behind a public variable.
@@ -47,12 +47,12 @@ public class BitBreadcrumbStylesheetTests
         // The items are text read on the page, so a Color draws them in the role's text color - a secondary or a warning
         // main is picked to fill a surface and is under 3:1 as text on white - at rest, current and hovered alike, in the
         // trail and in the overflow menu.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-brc-#{$role} {"), "--bit-brc-role-fg: #{role-text($role, $tokens)};");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-itm {"), "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-ofi {"), "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));");
+        Assert.Contains("--bit-brc-role-fg: #{role-text($role, $tokens)};", SourceFiles.GetScssBlock(stylesheet, "\n    .bit-brc-#{$role} {"));
+        Assert.Contains("--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-itm {"));
+        Assert.Contains("--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));", SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-ofi {"));
 
         // A forced-colors palette maps a background role to Canvas, so its text color is taken back there with its main.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {\n    @each $role in $bit-background-color-roles {"), "--bit-brc-role-fg: initial;");
+        Assert.Contains("--bit-brc-role-fg: initial;", SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {\n    @each $role in $bit-background-color-roles {"));
     }
 
     [TestMethod]
@@ -68,15 +68,15 @@ public class BitBreadcrumbStylesheetTests
                                          "--bit-brc-sz-ofi-fs", "--bit-brc-sz-ofi-lh", "--bit-brc-role-main", "--bit-brc-role-fg", "--bit-brc-role-focus",
                                          "--bit-brc-itm-max-width" })
         {
-            StringAssert.Contains(vars, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", vars);
         }
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc {"), "@include brc-vars;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-cal {"), "@include brc-vars;");
+        Assert.Contains("@include brc-vars;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc {"));
+        Assert.Contains("@include brc-vars;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-cal {"));
 
         var callout = stylesheet.IndexOf("\n.bit-brc-cal {", System.StringComparison.Ordinal);
-        Assert.IsTrue(callout < stylesheet.IndexOf("\n    .bit-brc-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the rules that reset them.");
-        Assert.IsTrue(callout < stylesheet.IndexOf("\n.bit-brc-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the rules that reset them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n    .bit-brc-#{$role} {", System.StringComparison.Ordinal), callout, "The color classes are declared ahead of the rules that reset them.");
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-brc-md {", System.StringComparison.Ordinal), callout, "The size classes are declared ahead of the rules that reset them.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Breadcrumb", "BitBreadcrumb.scss");

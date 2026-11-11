@@ -64,7 +64,7 @@ public class BaletteGuardTests : BunitContext
         Assert.AreEqual("delete-workspace", refused.Command.Id);
         Assert.AreEqual(BaletteExecutionTrigger.Palette, refused.Trigger);
         Assert.IsNull(refused.Message);
-        Assert.IsTrue(_log.Messages(LogLevel.Information).Any(m => m.Contains("delete-workspace") && m.Contains("refused")));
+        Assert.Contains(m => m.Contains("delete-workspace") && m.Contains("refused"), _log.Messages(LogLevel.Information));
     }
 
     [TestMethod]
@@ -100,7 +100,7 @@ public class BaletteGuardTests : BunitContext
         await cut.InvokeAsync(() => _service.ExecuteAsync("sync"));
 
         cut.WaitForAssertion(() => Assert.AreEqual(3, ran));
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             ("sync", BaletteExecutionTrigger.Palette),
             ("sync", BaletteExecutionTrigger.Shortcut),
@@ -120,7 +120,7 @@ public class BaletteGuardTests : BunitContext
 
         Assert.IsFalse(ran);
         cut.WaitForAssertion(() => Assert.AreEqual("You can’t run “Pay”.", Toast(cut)));
-        Assert.IsTrue(_log.Entries.Any(e => e.Level == LogLevel.Error && e.Exception is HttpRequestException));
+        Assert.Contains(e => e.Level == LogLevel.Error && e.Exception is HttpRequestException, _log.Entries);
         Assert.ContainsSingle(_refused);
     }
 
@@ -148,7 +148,7 @@ public class BaletteGuardTests : BunitContext
 
         Assert.AreEqual(0, ran);
         Assert.IsFalse(_service.IsOpen);
-        CollectionAssert.AreEqual(new[] { BaletteExecutionTrigger.Shortcut, BaletteExecutionTrigger.Programmatic }, _refused.Select(r => r.Trigger).ToList());
+        Assert.AreSequenceEqual(new[] { BaletteExecutionTrigger.Shortcut, BaletteExecutionTrigger.Programmatic }, _refused.Select(r => r.Trigger).ToList());
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class BaletteGuardTests : BunitContext
         await cut.InvokeAsync(() => _service.OpenAsync("purge"));
         await Press(cut, "Enter");
 
-        CollectionAssert.AreEqual(new[] { "audit" }, ran);
+        Assert.AreSequenceEqual(new[] { "audit" }, ran);
         Assert.HasCount(3, _refused);
         Assert.IsTrue(_refused.All(r => r.Command.Id == "admin.purge-cache" && r.Message == "Admins only."));
     }
@@ -382,7 +382,7 @@ public class BaletteRegisteredGuardTests : BunitContext
         roles.Add("admin");
         await cut.InvokeAsync(() => _service.ExecuteAsync("invite-people"));
 
-        CollectionAssert.AreEqual(new[] { "docs", "invite" }, ran);
+        Assert.AreSequenceEqual(new[] { "docs", "invite" }, ran);
         Assert.AreEqual("Ask an admin to invite people.", Assert.ContainsSingle(_refused).Message);
         Assert.AreEqual(3, roles.Asked); // registered twice, asked once per run
     }

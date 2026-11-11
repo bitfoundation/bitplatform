@@ -25,7 +25,7 @@ public class PromptTests : McpTestBase
 
         using (Assert.Scope())
         {
-            CollectionAssert.AreEquivalent(ButilMcp.Prompts.Keys.ToArray(), prompts.Select(prompt => prompt.Name).ToArray());
+            Assert.AreSequenceEqual(ButilMcp.Prompts.Keys.ToArray(), prompts.Select(prompt => prompt.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
             foreach (var prompt in prompts)
             {
@@ -34,7 +34,7 @@ public class PromptTests : McpTestBase
 
                 string[] arguments = [.. (prompt.ProtocolPrompt.Arguments ?? []).Select(argument => argument.Name)];
 
-                CollectionAssert.AreEquivalent(ButilMcp.Prompts[prompt.Name], arguments, $"{prompt.Name} declares unexpected arguments.");
+                Assert.AreSequenceEqual(ButilMcp.Prompts[prompt.Name], arguments, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, $"{prompt.Name} declares unexpected arguments.");
 
                 foreach (var argument in prompt.ProtocolPrompt.Arguments ?? [])
                 {

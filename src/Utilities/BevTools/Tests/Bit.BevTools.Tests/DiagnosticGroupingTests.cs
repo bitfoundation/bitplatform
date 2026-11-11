@@ -55,7 +55,7 @@ public class DiagnosticGroupingTests : BunitContext
         Assert.HasCount(6, finding.Diagnostic.RelatedEventIds!);
     }
 
-    public sealed class RowList : ComponentBase
+    internal sealed class RowList : ComponentBase
     {
         private int _version;
 
@@ -78,7 +78,7 @@ public class DiagnosticGroupingTests : BunitContext
         }
     }
 
-    public sealed class Row : ComponentBase
+    internal sealed class Row : ComponentBase
     {
         [Parameter] public object? Item { get; set; }
 

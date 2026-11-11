@@ -87,9 +87,9 @@ public class BbScannerTextsTests : BunitContext
 
         // Not running: one button offers to start, and nothing offers to stop or pause.
         var buttons = scanner.FindAll(".bit-bbscanner__controls > button").Select(b => b.TextContent.Trim()).ToList();
-        CollectionAssert.Contains(buttons, "Start");
-        CollectionAssert.DoesNotContain(buttons, "Stop");
-        CollectionAssert.DoesNotContain(buttons, "Pause");
+        Assert.Contains("Start", buttons);
+        Assert.DoesNotContain("Stop", buttons);
+        Assert.DoesNotContain("Pause", buttons);
     }
 
     [TestMethod]

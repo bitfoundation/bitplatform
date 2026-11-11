@@ -23,8 +23,8 @@ public class BitIconPrerenderTests
             [nameof(BitIcon.IconName)] = "Add",
         });
 
-        StringAssert.Contains(html, "bit-icon--Add");
-        StringAssert.Contains(html, @"aria-hidden=""true""");
+        Assert.Contains("bit-icon--Add", html);
+        Assert.Contains(@"aria-hidden=""true""", html);
         Assert.DoesNotContain("role=", html);
     }
 
@@ -37,8 +37,8 @@ public class BitIconPrerenderTests
             [nameof(BitIcon.AriaLabel)] = "Add a row",
         });
 
-        StringAssert.Contains(html, @"role=""img""");
-        StringAssert.Contains(html, @"aria-label=""Add a row""");
+        Assert.Contains(@"role=""img""", html);
+        Assert.Contains(@"aria-label=""Add a row""", html);
         Assert.DoesNotContain("aria-hidden", html);
     }
 
@@ -52,10 +52,10 @@ public class BitIconPrerenderTests
         });
 
         // The tab stop, the role and the fallback name are all in the markup; the key suppression waits for the browser.
-        StringAssert.Contains(html, @"role=""button""");
-        StringAssert.Contains(html, @"tabindex=""0""");
-        StringAssert.Contains(html, @"aria-label=""Delete""");
-        StringAssert.Contains(html, "bit-ico-int");
+        Assert.Contains(@"role=""button""", html);
+        Assert.Contains(@"tabindex=""0""", html);
+        Assert.Contains(@"aria-label=""Delete""", html);
+        Assert.Contains("bit-ico-int", html);
     }
 
     [TestMethod]
@@ -66,7 +66,7 @@ public class BitIconPrerenderTests
             [nameof(BitIcon.Icon)] = BitIconInfo.Ms("home"),
         });
 
-        StringAssert.Contains(html, @"translate=""no""");
-        StringAssert.Contains(html, ">home</i>");
+        Assert.Contains(@"translate=""no""", html);
+        Assert.Contains(">home</i>", html);
     }
 }

@@ -59,7 +59,7 @@ public class BitTimeZonePickerPrerenderTests : BunitTestContext
 
         // The list stays out of the document until the first opening, and the overlay off the page.
         Assert.AreEqual(0, document.QuerySelectorAll("button.bit-tzp-itm").Length);
-        StringAssert.Contains(document.QuerySelector(".bit-tzp-ovl")!.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", document.QuerySelector(".bit-tzp-ovl")!.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class BitTimeZonePickerPrerenderTests : BunitTestContext
         Assert.AreEqual("true", field.GetAttribute("aria-invalid"));
         Assert.AreEqual("true", field.GetAttribute("aria-required"));
         // The message is announced from the live region as well as shown.
-        StringAssert.StartsWith(document.QuerySelector(".bit-tzp-lvr")!.TextContent, "No office there.");
+        Assert.StartsWith("No office there.", document.QuerySelector(".bit-tzp-lvr")!.TextContent);
     }
 
     [TestMethod]

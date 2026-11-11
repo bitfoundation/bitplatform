@@ -47,7 +47,7 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
         var box = await BoxAsync(callout);
 
         Assert.AreEqual(120, field.Width, 1);
-        Assert.IsTrue(box.Width > field.Width + 50, $"The callout ({box.Width}px) takes the width its items need.");
+        Assert.IsGreaterThan(field.Width + 50, box.Width, $"The callout ({box.Width}px) takes the width its items need.");
         Assert.AreEqual(field.X, box.X, 1);
     }
 
@@ -61,9 +61,9 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
         var box = await BoxAsync(callout);
 
         Assert.AreEqual(400, field.Width, 1);
-        Assert.IsTrue(box.Width < field.Width - 100, $"The callout ({box.Width}px) is not stretched to the field ({field.Width}px).");
+        Assert.IsLessThan(field.Width - 100, box.Width, $"The callout ({box.Width}px) is not stretched to the field ({field.Width}px).");
         Assert.AreEqual(field.X, box.X, 1);
-        Assert.IsFalse((await callout.GetAttributeAsync("style") ?? string.Empty).Contains("width:"), "No width is written onto the callout.");
+        Assert.DoesNotContain("width:", await callout.GetAttributeAsync("style") ?? string.Empty, "No width is written onto the callout.");
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
 
         await Expect(callout).ToHaveAttributeAsync("data-bit-cal-pos", "below");
         Assert.AreEqual(field.Y + field.Height + 1, box.Y, 2);
-        Assert.IsTrue(box.Y + box.Height <= viewport.Height, $"The callout ends ({box.Y + box.Height}px) within the viewport ({viewport.Height}px).");
+        Assert.IsLessThanOrEqualTo(viewport.Height, box.Y + box.Height, $"The callout ends ({box.Y + box.Height}px) within the viewport ({viewport.Height}px).");
         Assert.AreEqual(field.X, box.X, 1);
 
         // The list scrolls inside the room it was given.
@@ -123,7 +123,7 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
         var callout = await OpenSettledAsync("dd-cal-maxh");
         var scroller = ListBox(callout);
 
-        Assert.IsTrue(await PxAsync(scroller, "height") <= 150.5, "The list is no taller than MaxHeight.");
+        Assert.IsLessThanOrEqualTo(150.5, await PxAsync(scroller, "height"), "The list is no taller than MaxHeight.");
         Assert.IsTrue(await scroller.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight + 1"), "The rest of the list scrolls.");
 
         // The wheel scrolls the list under the pointer (by an amount each engine decides), never the page.
@@ -152,9 +152,9 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
         var listBox = await BoxAsync(list);
         var footerBox = await BoxAsync(footer);
 
-        Assert.IsTrue(headerBox.Y + headerBox.Height <= listBox.Y + 1, "The header sits above the list.");
-        Assert.IsTrue(footerBox.Y >= listBox.Y + listBox.Height - 1, "The footer sits below the list.");
-        Assert.IsTrue(footerBox.Y + footerBox.Height <= Page.ViewportSize!.Height, "The footer stays on the screen under a long list.");
+        Assert.IsLessThanOrEqualTo(listBox.Y + 1, headerBox.Y + headerBox.Height, "The header sits above the list.");
+        Assert.IsGreaterThanOrEqualTo(listBox.Y + listBox.Height - 1, footerBox.Y, "The footer sits below the list.");
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Height, footerBox.Y + footerBox.Height, "The footer stays on the screen under a long list.");
         await Expect(header).Not.ToHaveAttributeAsync("role", "option");
 
         await footer.ClickAsync();
@@ -220,7 +220,7 @@ public class BitDropdownCalloutE2ETests : BitDropdownE2ETestBase
 
         callout = await OpenDropdownAsync("dd-cal-below");
         var reduced = double.Parse((await StyleAsync(callout, "animation-duration")).TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture);
-        Assert.IsTrue(reduced < 0.001, $"The entry animation collapses under reduced motion, lasted {reduced}s.");
+        Assert.IsLessThan(0.001, reduced, $"The entry animation collapses under reduced motion, lasted {reduced}s.");
         await Page.Keyboard.PressAsync("Escape");
         await Expect(callout).ToBeHiddenAsync();
 

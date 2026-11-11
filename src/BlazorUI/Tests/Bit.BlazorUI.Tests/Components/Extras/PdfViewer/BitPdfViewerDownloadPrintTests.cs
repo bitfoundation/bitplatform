@@ -70,7 +70,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.AreEqual(0, Context.InvocationsOf(DownloadCall).Count);
+        Assert.IsEmpty(Context.InvocationsOf(DownloadCall));
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await first;
 
         Assert.AreEqual(1, raised);
-        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
+        Assert.ContainsSingle(Context.InvocationsOf(DownloadCall));
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await first;
 
         Assert.AreEqual(1, raised);
-        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
+        Assert.ContainsSingle(Context.InvocationsOf(PrintCall));
     }
 
     [TestMethod]
@@ -147,9 +147,9 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         Assert.IsNotNull(received);
         Assert.AreEqual(2, received.FromPage);
         Assert.AreEqual(4, received.ToPage);
-        Assert.AreEqual(0, Context.InvocationsOf(PrintCall).Count);
+        Assert.IsEmpty(Context.InvocationsOf(PrintCall));
         // A cancelled print renders nothing for it and leaves no loading bar behind.
-        Assert.AreEqual(0, component.FindAll(".bit-pdv-progress").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pdv-progress"));
     }
 
     [TestMethod]
@@ -186,15 +186,15 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
 
-        Assert.AreEqual(0, Context.InvocationsOf(PrintCall).Count);
-        Assert.AreEqual(0, Context.InvocationsOf(DownloadCall).Count);
+        Assert.IsEmpty(Context.InvocationsOf(PrintCall));
+        Assert.IsEmpty(Context.InvocationsOf(DownloadCall));
 
         // The public API is the host's own call, and stays available.
         await component.InvokeAsync(() => component.Instance.Print());
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
-        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
+        Assert.ContainsSingle(Context.InvocationsOf(PrintCall));
+        Assert.ContainsSingle(Context.InvocationsOf(DownloadCall));
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
 
-        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
-        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
+        Assert.ContainsSingle(Context.InvocationsOf(PrintCall));
+        Assert.ContainsSingle(Context.InvocationsOf(DownloadCall));
     }
 }

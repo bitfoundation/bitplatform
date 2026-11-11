@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.Bmotion.Tests.Engine;
 
 [TestClass]
@@ -46,8 +46,8 @@ public class TransformComposerTests
         };
         var result = BmotionTransformComposer.Build(t);
 
-        StringAssert.Contains(result, "translate(10px,0px)");
-        StringAssert.Contains(result, "scale(2)");
+        Assert.Contains("translate(10px,0px)", result);
+        Assert.Contains("scale(2)", result);
     }
 
     // ── Build - empty/identity ────────────────────────────────────────────────
@@ -172,8 +172,8 @@ public class TransformComposerTests
     {
         var t = new Dictionary<string, double> { ["perspective"] = 500, ["x"] = 10 };
         var result = BmotionTransformComposer.Build(t);
-        StringAssert.StartsWith(result, "perspective(500px)");
-        StringAssert.Contains(result, "translate(10px,0px)");
+        Assert.StartsWith("perspective(500px)", result);
+        Assert.Contains("translate(10px,0px)", result);
     }
 
     // ── Combined / ordering ───────────────────────────────────────────────────
@@ -190,11 +190,11 @@ public class TransformComposerTests
         };
         var result = BmotionTransformComposer.Build(t);
 
-        StringAssert.Contains(result, "translate(100px,50px)");
-        StringAssert.Contains(result, "scale(1.5)");
-        StringAssert.Contains(result, "rotate(45deg)");
+        Assert.Contains("translate(100px,50px)", result);
+        Assert.Contains("scale(1.5)", result);
+        Assert.Contains("rotate(45deg)", result);
         // Order: translate → scale → rotate
-        Assert.IsTrue(result.IndexOf("translate") < result.IndexOf("scale"));
-        Assert.IsTrue(result.IndexOf("scale") < result.IndexOf("rotate"));
+        Assert.IsLessThan(result.IndexOf("scale"), result.IndexOf("translate"));
+        Assert.IsLessThan(result.IndexOf("rotate"), result.IndexOf("scale"));
     }
 }

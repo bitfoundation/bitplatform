@@ -91,9 +91,9 @@ public class BitCalendarE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"cal-basic\"");
-        StringAssert.Contains(html, "March 2024");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"cal-basic\"", html);
+        Assert.Contains("March 2024", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"cal-basic-day-2024-03-15\"[^>]*aria-current=\"date\""), "Today is prerendered as the current date.");
 
         await OpenAsync(Url);
@@ -838,7 +838,7 @@ public class BitCalendarE2ETests : E2ETestBase
         // Saturday, the first day of the Persian week, is laid out on the right.
         var first = await BoxOfAsync(headers.Nth(0));
         var last = await BoxOfAsync(headers.Nth(6));
-        Assert.IsTrue(first.X > last.X, "The week reads from the right.");
+        Assert.IsGreaterThan(last.X, first.X, "The week reads from the right.");
 
         await Day(id, "2024-03-15").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1038,7 +1038,7 @@ public class BitCalendarE2ETests : E2ETestBase
 
         var first = await BoxOfAsync(panes.Nth(0));
         var second = await BoxOfAsync(panes.Nth(1));
-        Assert.IsTrue(second.X > first.X, "The months sit side by side.");
+        Assert.IsGreaterThan(first.X, second.X, "The months sit side by side.");
 
         await Day(id, "2024-04-10").ClickAsync();
         await Expect(Span("multi-value")).ToHaveTextAsync("2024-04-10 00:00 +00:00");
@@ -1055,7 +1055,7 @@ public class BitCalendarE2ETests : E2ETestBase
         var narrow = Page.Locator("#cal-multi-narrow .bit-cal-dwp");
         var n1 = await BoxOfAsync(narrow.Nth(0));
         var n2 = await BoxOfAsync(narrow.Nth(1));
-        Assert.IsTrue(n2.Y >= n1.Y + n1.Height - 1, "Given too little width the second month wraps under the first.");
+        Assert.IsGreaterThanOrEqualTo(n1.Y + n1.Height - 1, n2.Y, "Given too little width the second month wraps under the first.");
     }
 
     [TestMethod]
@@ -1183,7 +1183,7 @@ public class BitCalendarE2ETests : E2ETestBase
 
         var smFont = Px(await StyleOfAsync(Day("cal-size-sm", "2024-03-20"), "font-size"));
         var lgFont = Px(await StyleOfAsync(Day("cal-size-lg", "2024-03-20"), "font-size"));
-        Assert.IsTrue(smFont < lgFont);
+        Assert.IsLessThan(lgFont, smFont);
 
         var wins = await BoxOfAsync(Day("cal-size-wins", "2024-03-20"));
         Assert.AreEqual(lg.Width, wins.Width, 0.5, "An explicit Size wins over --bit-Calendar-day-size.");
@@ -1346,7 +1346,7 @@ public class BitCalendarE2ETests : E2ETestBase
         {
             var sunday = await BoxOfAsync(Day(id, "2024-03-10"));
             var saturday = await BoxOfAsync(Day(id, "2024-03-16"));
-            Assert.IsTrue(sunday.X > saturday.X, $"{id}: the week reads from the right.");
+            Assert.IsGreaterThan(saturday.X, sunday.X, $"{id}: the week reads from the right.");
 
             await Day(id, "2024-03-15").FocusAsync();
             await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1475,7 +1475,7 @@ public class BitCalendarE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Day("cal-motion", "2024-03-12").ClickAsync();
-        StringAssert.StartsWith(await StyleOfAsync(Page.Locator("#cal-motion .bit-cal-eov"), "animation-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await StyleOfAsync(Page.Locator("#cal-motion .bit-cal-eov"), "animation-duration"));
         await Page.Keyboard.PressAsync("Escape");
         await Expect(Page.Locator("#cal-motion .bit-cal-eov")).ToHaveCountAsync(0);
 
@@ -1483,11 +1483,11 @@ public class BitCalendarE2ETests : E2ETestBase
 
         await Day("cal-motion", "2024-03-12").ClickAsync();
         var reduced = await StyleOfAsync(Page.Locator("#cal-motion .bit-cal-eov"), "animation-duration");
-        Assert.IsFalse(reduced.StartsWith("0.1s"), $"Reduced motion collapses the overlay animation ({reduced}).");
+        Assert.DoesNotStartWith("0.1s", reduced, $"Reduced motion collapses the overlay animation ({reduced}).");
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Root("cal-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         await Day("cal-motion-forced", "2024-03-12").ClickAsync();
-        StringAssert.StartsWith(await StyleOfAsync(Page.Locator("#cal-motion-forced .bit-cal-eov"), "animation-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await StyleOfAsync(Page.Locator("#cal-motion-forced .bit-cal-eov"), "animation-duration"));
     }
 }

@@ -110,7 +110,7 @@ public sealed class GesturesTests : BmotionPageTest
         // keyboard focus (motion.dev).
         await Page.Locator("#focus").ClickAsync();
         await Page.WaitForTimeoutAsync(300);
-        CollectionAssert.DoesNotContain(await LoggedAsync(), "focus-start", "a mouse click raised the focus gesture");
+        Assert.DoesNotContain("focus-start", await LoggedAsync(), "a mouse click raised the focus gesture");
         Assert.AreEqual(1, (await ProbeAsync("#focus")).ScaleX, 0.01, "a mouse click played the focus overlay");
 
         // Tab away and back: keyboard focus.
@@ -130,7 +130,7 @@ public sealed class GesturesTests : BmotionPageTest
         await ExpectEventAsync("pan-start");
         await ExpectEventAsync("pan-end");
         await ExpectReadoutAsync("pan-offset", "60,0");
-        Assert.IsTrue(await Event("pan").CountAsync() > 1, "Pan should report every move past the threshold.");
+        Assert.IsGreaterThan(1, await Event("pan").CountAsync(), "Pan should report every move past the threshold.");
         var state = await ProbeAsync("#pan");
         Assert.AreEqual(0, state.X, 0.5, "Pan must not move the element.");
     }

@@ -8,7 +8,7 @@ namespace Bit.Bmotion.Tests.E2E.Infrastructure;
 /// from its matrix (translation in px, scale, rotation in degrees), which is what lets a test say "x is 120"
 /// whatever transform string produced it.
 /// </summary>
-public sealed record MotionState(
+internal sealed record MotionState(
     double X, double Y, double ScaleX, double ScaleY, double Rotate, double Opacity,
     double Left, double Top, double Width, double Height,
     string Transform, string BackgroundColor, string InlineStyle)

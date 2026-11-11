@@ -158,8 +158,8 @@ public class BitPivotTests : BunitTestContext
 
         var style = component.Find(".bit-pvt").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains($"--bit-pvt-hal:{expectedValue}"));
-        Assert.IsFalse(style.Contains("--bit-pvt-hai"));
+        Assert.Contains($"--bit-pvt-hal:{expectedValue}", style);
+        Assert.DoesNotContain("--bit-pvt-hai", style);
     }
 
     [TestMethod,
@@ -177,8 +177,8 @@ public class BitPivotTests : BunitTestContext
 
         var style = component.Find(".bit-pvt").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-pvt-hal:flex-start"));
-        Assert.IsTrue(style.Contains($"--bit-pvt-hai:{expectedValue}"));
+        Assert.Contains("--bit-pvt-hal:flex-start", style);
+        Assert.Contains($"--bit-pvt-hai:{expectedValue}", style);
     }
 
 
@@ -196,7 +196,7 @@ public class BitPivotTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-pvt").GetAttribute("role"));
 
         var tabs = component.FindAll("[role=tab]");
-        Assert.AreEqual(3, tabs.Count);
+        Assert.HasCount(3, tabs);
         Assert.AreEqual("true", tabs[0].GetAttribute("aria-selected"));
         Assert.AreEqual("false", tabs[1].GetAttribute("aria-selected"));
 
@@ -387,8 +387,10 @@ public class BitPivotTests : BunitTestContext
         component.FindAll("[role=tab]")[1].Click();
 
         Assert.AreEqual("true", component.FindAll("[role=tab]")[1].GetAttribute("aria-selected"));
-        Assert.AreEqual("B", changed?.HeaderText);
-        Assert.AreEqual("B", clicked?.HeaderText);
+        var actualValue = changed?.HeaderText;
+        Assert.AreEqual("B", actualValue);
+        var actualValue1 = clicked?.HeaderText;
+        Assert.AreEqual("B", actualValue1);
     }
 
     [TestMethod]
@@ -568,7 +570,7 @@ public class BitPivotTests : BunitTestContext
         component.Find(".bit-pvt-hct").KeyDown("ArrowRight");
 
         Assert.AreEqual("0", component.FindAll("[role=tab]")[1].GetAttribute("tabindex"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -756,7 +758,7 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B").Add(i => i.Dismissible, false));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-pvti-dbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pvti-dbt"));
         Assert.AreEqual("Remove A", component.Find(".bit-pvti-dbt").GetAttribute("aria-label"));
         Assert.AreEqual("-1", component.Find(".bit-pvti-dbt").GetAttribute("tabindex"));
     }
@@ -777,13 +779,13 @@ public class BitPivotTests : BunitTestContext
         component.FindAll(".bit-pvti-dbt")[1].Click();
 
         // The dismiss button never changes the selection along the way.
-        Assert.AreEqual(1, dismissed.Count);
+        Assert.ContainsSingle(dismissed);
         Assert.AreEqual("B", dismissed[0]);
         Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
 
         component.Find(".bit-pvt-hct").KeyDown("Delete");
 
-        Assert.AreEqual(2, dismissed.Count);
+        Assert.HasCount(2, dismissed);
         Assert.AreEqual("A", dismissed[1]);
     }
 
@@ -801,7 +803,7 @@ public class BitPivotTests : BunitTestContext
         component.Find(".bit-pvt-hct").KeyDown("Delete");
 
         Assert.AreEqual(0, count);
-        Assert.AreEqual(0, component.FindAll(".bit-pvti-dbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pvti-dbt"));
     }
 
     [TestMethod]
@@ -828,7 +830,7 @@ public class BitPivotTests : BunitTestContext
 
         // The selected tab left, so the selection moved to the one that took its place.
         var remaining = component.FindAll("[role=tab]");
-        Assert.AreEqual(2, remaining.Count);
+        Assert.HasCount(2, remaining);
         Assert.AreEqual("true", remaining[1].GetAttribute("aria-selected"));
     }
 
@@ -843,7 +845,7 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 
-        Assert.AreEqual(0, component.FindAll("[role=tabpanel]").Count);
+        Assert.IsEmpty(component.FindAll("[role=tabpanel]"));
         Assert.IsNull(component.Find("[role=tab]").GetAttribute("aria-controls"));
     }
 
@@ -859,7 +861,7 @@ public class BitPivotTests : BunitTestContext
 
         var panels = component.FindAll("[role=tabpanel]");
 
-        Assert.AreEqual(2, panels.Count);
+        Assert.HasCount(2, panels);
         Assert.IsFalse(panels[0].HasAttribute("hidden"));
         Assert.IsNull(panels[0].GetAttribute("aria-hidden"));
         Assert.IsTrue(panels[1].HasAttribute("hidden"));
@@ -876,8 +878,8 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-pvt-hst #hs").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-pvt-hnd #he").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pvt-hst #hs"));
+        Assert.ContainsSingle(component.FindAll(".bit-pvt-hnd #he"));
     }
 
     [TestMethod]
@@ -896,7 +898,7 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("The first tab", tab.GetAttribute("title"));
         Assert.AreEqual("(12)", component.Find(".bit-pvti-cnr").TextContent);
-        Assert.AreEqual(1, component.FindAll(".bit-icon--Info").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-icon--Info"));
 
         // The invisible bold copy that keeps the tab from changing width when it becomes selected.
         Assert.AreEqual("A", component.Find(".bit-pvti-txt").GetAttribute("data-content"));
@@ -973,18 +975,18 @@ public class BitPivotTests : BunitTestContext
         });
 
         // Only the tab that has been shown so far has a panel of its own.
-        Assert.AreEqual(1, component.FindAll("[role=tabpanel]").Count);
+        Assert.ContainsSingle(component.FindAll("[role=tabpanel]"));
 
         component.FindAll("[role=tab]")[1].Click();
 
         var panels = component.FindAll("[role=tabpanel]");
 
-        Assert.AreEqual(2, panels.Count);
+        Assert.HasCount(2, panels);
         Assert.IsTrue(panels[0].HasAttribute("hidden"));
         Assert.AreEqual("true", panels[0].GetAttribute("aria-hidden"));
         Assert.IsFalse(panels[1].HasAttribute("hidden"));
-        Assert.IsTrue(panels[0].TextContent.Contains("first"));
-        Assert.IsTrue(panels[1].TextContent.Contains("second"));
+        Assert.Contains("first", panels[0].TextContent);
+        Assert.Contains("second", panels[1].TextContent);
     }
 
     [TestMethod]
@@ -998,11 +1000,11 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-pvt-sbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pvt-sbt"));
 
         component.InvokeAsync(() => component.Instance.OnSetSlideState(true, true, false));
 
-        Assert.AreEqual(2, component.FindAll(".bit-pvt-sbt").Count);
+        Assert.HasCount(2, component.FindAll(".bit-pvt-sbt"));
     }
 
     [TestMethod]
@@ -1146,7 +1148,7 @@ public class BitPivotTests : BunitTestContext
 
         tablist.KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
 
-        Assert.AreEqual(1, moves.Count);
+        Assert.ContainsSingle(moves);
         Assert.AreEqual((0, 1), moves[0]);
 
         // The focus stays on the item that is being moved rather than following the arrow.
@@ -1155,7 +1157,7 @@ public class BitPivotTests : BunitTestContext
         // There is nothing before the first item to move it to.
         tablist.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft", CtrlKey = true });
 
-        Assert.AreEqual(1, moves.Count);
+        Assert.ContainsSingle(moves);
     }
 
     [TestMethod]
@@ -1183,7 +1185,7 @@ public class BitPivotTests : BunitTestContext
         // A is the second tab now, so moving it back reports it from there rather than from where it started.
         component.Find(".bit-pvt-hct").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft", CtrlKey = true });
 
-        Assert.AreEqual(2, moves.Count);
+        Assert.HasCount(2, moves);
         Assert.AreEqual((1, 0), moves[1]);
     }
 
@@ -1219,7 +1221,7 @@ public class BitPivotTests : BunitTestContext
     {
         var component = RenderOverflowPivot();
 
-        Assert.AreEqual(2, component.FindAll(".bit-pvt-mni").Count);
+        Assert.HasCount(2, component.FindAll(".bit-pvt-mni"));
 
         var items = component.FindAll(".bit-pvt-mni");
 
@@ -1231,7 +1233,8 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("-1", component.FindAll("[role=tab]")[2].GetAttribute("tabindex"));
 
         Assert.AreEqual("menu", component.Find(".bit-pvt-mnc").GetAttribute("role"));
-        Assert.AreEqual("A", component.Instance.SelectedItem?.HeaderText);
+        var actualValue = component.Instance.SelectedItem?.HeaderText;
+        Assert.AreEqual("A", actualValue);
     }
 
     [TestMethod]
@@ -1275,7 +1278,7 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("true", component.FindAll("[role=tab]")[3].GetAttribute("aria-selected"));
 
         // Selecting from the menu closes it.
-        Assert.IsTrue(component.Find(".bit-pvt-mnc").GetAttribute("style")!.Contains("display:none"));
+        Assert.Contains("display:none", component.Find(".bit-pvt-mnc").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1354,7 +1357,7 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("Add", button.GetAttribute("title"));
 
         // The add button asks for a tab rather than being one, so it stays out of the tablist.
-        Assert.AreEqual(0, component.FindAll(".bit-pvt-hct .bit-pvt-abt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-pvt-hct .bit-pvt-abt"));
 
         button.Click();
 
@@ -1364,7 +1367,7 @@ public class BitPivotTests : BunitTestContext
     [TestMethod]
     public void BitPivotShouldNotRenderAnAddButtonWithoutAddable()
     {
-        Assert.AreEqual(0, RenderPivot(2).FindAll(".bit-pvt-abt").Count);
+        Assert.IsEmpty(RenderPivot(2).FindAll(".bit-pvt-abt"));
     }
 
     [TestMethod]
@@ -1383,7 +1386,7 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("Open a new tab", button.GetAttribute("aria-label"));
         Assert.AreEqual("New tab", button.GetAttribute("title"));
-        Assert.AreEqual(1, component.FindAll(".bit-pvt-abt .bit-icon--CircleAddition").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pvt-abt .bit-icon--CircleAddition"));
     }
 
     [TestMethod]
@@ -1395,7 +1398,7 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
         });
 
-        Assert.IsTrue(component.Find(".bit-pvt").GetAttribute("style")!.Contains("--bit-pvt-gap:2rem"));
+        Assert.Contains("--bit-pvt-gap:2rem", component.Find(".bit-pvt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1416,12 +1419,12 @@ public class BitPivotTests : BunitTestContext
 
         // A change that is called off never happens, so it never reaches OnChange either.
         Assert.AreEqual("true", component.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
-        Assert.AreEqual(0, changed.Count);
+        Assert.IsEmpty(changed);
 
         component.FindAll("[role=tab]")[2].Click();
 
         Assert.AreEqual("true", component.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
-        Assert.AreEqual(1, changed.Count);
+        Assert.ContainsSingle(changed);
         Assert.AreEqual("C", changed[0]);
     }
 
@@ -1469,7 +1472,7 @@ public class BitPivotTests : BunitTestContext
 
         // The key is left alone rather than being sent back to the tab that was selected before it.
         Assert.AreEqual("c", key);
-        Assert.AreEqual(3, component.FindAll("[role=tab]").Count);
+        Assert.HasCount(3, component.FindAll("[role=tab]"));
         Assert.AreEqual("true", component.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
     }
 
@@ -1521,16 +1524,20 @@ public class BitPivotTests : BunitTestContext
         });
 
         await component.InvokeAsync(() => component.Instance.SelectItemByKey("b"));
-        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+        var actualValue = component.Instance.SelectedItem?.Key;
+        Assert.AreEqual("b", actualValue);
 
         await component.InvokeAsync(() => component.Instance.SelectItemByKey("c"));
-        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+        var actualValue1 = component.Instance.SelectedItem?.Key;
+        Assert.AreEqual("b", actualValue1);
 
         await component.InvokeAsync(() => component.Instance.SelectItemByKey("d"));
-        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+        var actualValue2 = component.Instance.SelectedItem?.Key;
+        Assert.AreEqual("b", actualValue2);
 
         await component.InvokeAsync(() => component.Instance.SelectItemByKey("nothing"));
-        Assert.AreEqual("b", component.Instance.SelectedItem?.Key);
+        var actualValue3 = component.Instance.SelectedItem?.Key;
+        Assert.AreEqual("b", actualValue3);
     }
 
     [TestMethod]
@@ -1625,7 +1632,7 @@ public class BitPivotTests : BunitTestContext
         component.Find(".bit-pvt-hct").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
 
         // The hidden tab is not a place in the header, so the move lands on the one after it.
-        Assert.AreEqual(1, moves.Count);
+        Assert.ContainsSingle(moves);
         Assert.AreEqual((0, 2), moves[0]);
     }
 
@@ -1640,10 +1647,11 @@ public class BitPivotTests : BunitTestContext
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "b"));
             parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.Key, "c"));
         });
+        var actualValue = component.Instance.SelectedItem?.Key;
 
         // The tab the pivot starts on can be one that is scrolled out of sight, so it is asked for.
-        Assert.AreEqual("c", component.Instance.SelectedItem?.Key);
-        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.Pivot.scrollToItem"].Count > 0);
+        Assert.AreEqual("c", actualValue);
+        Assert.IsNotEmpty(Context.JSInterop.Invocations["BitBlazorUI.Pivot.scrollToItem"]);
     }
 
 
@@ -1656,7 +1664,7 @@ public class BitPivotTests : BunitTestContext
         // only the keys the header actually takes are handed to it.
         RenderPivot(2);
 
-        CollectionAssert.AreEqual(new[] { " ", "Home", "End" }, LastPreventedKeys());
+        Assert.AreSequenceEqual(new[] { " ", "Home", "End" }, LastPreventedKeys());
 
         RenderComponent<BitPivot>(parameters =>
         {
@@ -1665,7 +1673,7 @@ public class BitPivotTests : BunitTestContext
         });
 
         // The vertical arrows are the ones a vertical header navigates with.
-        CollectionAssert.AreEqual(new[] { " ", "Home", "End", "ArrowUp", "ArrowDown" }, LastPreventedKeys());
+        Assert.AreSequenceEqual(new[] { " ", "Home", "End", "ArrowUp", "ArrowDown" }, LastPreventedKeys());
 
         RenderComponent<BitPivot>(parameters =>
         {
@@ -1675,7 +1683,7 @@ public class BitPivotTests : BunitTestContext
 
         // Nothing navigates a header that is not navigable, so only the key that activates the focused
         // tab is left to suppress.
-        CollectionAssert.AreEqual(new[] { " " }, LastPreventedKeys());
+        Assert.AreSequenceEqual(new[] { " " }, LastPreventedKeys());
     }
 
     [TestMethod]
@@ -1718,7 +1726,7 @@ public class BitPivotTests : BunitTestContext
 
         var tabs = component.FindAll("[role=tab]");
 
-        Assert.AreEqual(3, tabs.Count);
+        Assert.HasCount(3, tabs);
         Assert.AreEqual("0", tabs[0].GetAttribute("tabindex"));
         Assert.AreEqual("-1", tabs[1].GetAttribute("tabindex"));
         Assert.AreEqual("-1", tabs[2].GetAttribute("tabindex"));
@@ -1754,10 +1762,11 @@ public class BitPivotTests : BunitTestContext
         component.Render();
 
         component.FindAll(".bit-pvt-mni")[0].Click();
+        var actualValue = component.Instance.SelectedItem?.Key;
 
         // A tab that is not shown cannot take the selection from the menu any more than it can from the
         // bound key, which would otherwise leave the pivot showing the panel of a hidden tab.
-        Assert.AreEqual("a", component.Instance.SelectedItem?.Key);
+        Assert.AreEqual("a", actualValue);
     }
 
     [TestMethod]
@@ -1767,7 +1776,7 @@ public class BitPivotTests : BunitTestContext
 
         component.Find(".bit-pvt-mor").Click();
 
-        Assert.AreEqual(2, component.FindAll(".bit-pvt-mni").Count);
+        Assert.HasCount(2, component.FindAll(".bit-pvt-mni"));
 
         // Selecting a folded tab can leave the header with room for all of its tabs again, and the
         // refresh reports that on the call itself rather than a turn later on its callback: it is what
@@ -1776,8 +1785,9 @@ public class BitPivotTests : BunitTestContext
 
         component.FindAll(".bit-pvt-mni")[0].Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-pvt-mni").Count);
-        Assert.AreEqual("C", component.Instance.SelectedItem?.HeaderText);
+        Assert.IsEmpty(component.FindAll(".bit-pvt-mni"));
+        var actualValue = component.Instance.SelectedItem?.HeaderText;
+        Assert.AreEqual("C", actualValue);
     }
 
     [TestMethod]
@@ -1820,7 +1830,7 @@ public class BitPivotTests : BunitTestContext
         // The menu the last folded tab left is one item shorter, and an aria-activedescendant naming a
         // button that was never rendered points a screen reader at nothing at all.
         Assert.IsFalse(string.IsNullOrEmpty(active));
-        Assert.IsTrue(component.FindAll(".bit-pvt-mni").Any(b => b.Id == active));
+        Assert.Contains(b => b.Id == active, component.FindAll(".bit-pvt-mni"));
     }
 
     [TestMethod]
@@ -1913,7 +1923,7 @@ public class BitPivotTests : BunitTestContext
     [TestMethod]
     public void BitPivotParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPivot)}", BitPivotParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitPivot)}", new BitPivotParams().Name);
 
         var @params = new BitPivotParams();
 
@@ -1957,8 +1967,8 @@ public class BitPivotTests : BunitTestContext
             Assert.IsTrue(root.ClassList.Contains(expected), $"{expected} is missing.");
         }
 
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-pvt-gap:3px");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-pvt-hal:center");
+        Assert.Contains("--bit-pvt-gap:3px", root.GetAttribute("style")!);
+        Assert.Contains("--bit-pvt-hal:center", root.GetAttribute("style")!);
         Assert.AreEqual("vertical", component.Find("[role=tablist]").GetAttribute("aria-orientation"));
         Assert.IsNotNull(component.Find(".bit-pvti-dbt"));
     }
@@ -2138,7 +2148,7 @@ public class BitPivotTests : BunitTestContext
             .Where(n => n != nameof(BitPivotParams.Name))
             .ToList();
 
-        CollectionAssert.AreEquivalent(pivotParameters, paramsProperties);
+        Assert.AreSequenceEqual(pivotParameters, paramsProperties, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
 
@@ -2326,7 +2336,7 @@ public class BitPivotTests : BunitTestContext
         var flipped = RenderComponent<BitIcon>(p => p.Add(i => i.IconName, "ChevronRight").Add(i => i.FlipRtl, true)).Find("i").ClassList;
         var mirrorClasses = flipped.Except(plain).ToList();
 
-        Assert.IsTrue(mirrorClasses.Count > 0);
+        Assert.IsNotEmpty(mirrorClasses);
 
         // A horizontal header runs the other way in RTL, a vertical one does not.
         foreach (var icon in component.FindAll(".bit-pvt-sbt i"))
@@ -2440,12 +2450,12 @@ public class BitPivotTests : BunitTestContext
 
         var component = RenderComponent<BitPivotTeardownTest>();
 
-        Assert.AreEqual(0, component.Instance.SelectedKeyChanges.Count);
+        Assert.IsEmpty(component.Instance.SelectedKeyChanges);
 
         component.Render(parameters => parameters.Add(p => p.Show, false));
 
         Assert.AreEqual(1, dispose.Invocations.Count);
-        Assert.AreEqual(0, component.Instance.SelectedKeyChanges.Count);
+        Assert.IsEmpty(component.Instance.SelectedKeyChanges);
         Assert.AreEqual(0, component.Instance.OnChangeCount);
         Assert.AreEqual("one", component.Instance.SelectedKey);
 
@@ -2459,7 +2469,7 @@ public class BitPivotTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
 
-        CollectionAssert.AreEqual(new[] { "two" }, component.Instance.SelectedKeyChanges);
+        Assert.AreSequenceEqual(new[] { "two" }, component.Instance.SelectedKeyChanges);
         Assert.IsTrue(component.Find(".bit-pvti").ClassList.Contains("bit-pvti-sel"));
     }
 
@@ -2485,8 +2495,8 @@ public class BitPivotTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("custom"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "display:none");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("display:none", root.GetAttribute("style")!);
         Assert.AreEqual("pivot", root.GetAttribute("data-test"));
     }
 
@@ -2562,11 +2572,11 @@ public class BitPivotTests : BunitTestContext
 
         var slides = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Pivot.slide").ToList();
 
-        Assert.AreEqual(2, slides.Count);
+        Assert.HasCount(2, slides);
         Assert.AreEqual("pv", slides[0].Arguments[0]);
-        Assert.AreEqual(true, slides[0].Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(slides[0].Arguments[1]));
         Assert.AreEqual("pv", slides[1].Arguments[0]);
-        Assert.AreEqual(false, slides[1].Arguments[1]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(slides[1].Arguments[1]));
     }
 
     [TestMethod]
@@ -2642,8 +2652,9 @@ public class BitPivotTests : BunitTestContext
 
         component.Find(".bit-pvt-mnc").KeyDown("ArrowDown");
         component.Find(".bit-pvt-mnc").KeyDown("Enter");
+        var actualValue = component.Instance.SelectedItem?.HeaderText;
 
-        Assert.AreEqual("D", component.Instance.SelectedItem?.HeaderText);
+        Assert.AreEqual("D", actualValue);
 
         // Opened again, it starts where the user left it: on the folded tab that holds the selection.
         component.Find(".bit-pvt-mor").Click();
@@ -2670,10 +2681,10 @@ public class BitPivotTests : BunitTestContext
 
         // Body is the alias that wins when both are given.
         Assert.AreEqual(1, panel.QuerySelectorAll("#body").Length);
-        Assert.IsFalse(panel.TextContent.Contains("child"));
+        Assert.DoesNotContain("child", panel.TextContent);
         Assert.IsTrue(panel.ClassList.Contains("own-body"));
-        StringAssert.Contains(panel.GetAttribute("style"), "padding:1px");
-        StringAssert.Contains(panel.GetAttribute("style"), "color:red");
+        Assert.Contains("padding:1px", panel.GetAttribute("style")!);
+        Assert.Contains("color:red", panel.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2761,23 +2772,23 @@ public class BitPivotTests : BunitTestContext
             var element = menu.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} does not carry {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} does not carry {style}.");
+            Assert.Contains(style, element.GetAttribute("style")!, $"{selector} does not carry {style}.");
         }
 
         // Every tab carries the item class and style, the selected one the selected pair on top of it.
         Assert.IsTrue(tabs.All(t => t.ClassList.Contains("c-item")));
         Assert.IsTrue(tabs.All(t => t.GetAttribute("style")!.Contains("--s-item:1")));
         Assert.IsTrue(tabs[0].ClassList.Contains("c-selected"));
-        StringAssert.Contains(tabs[0].GetAttribute("style"), "--s-selected:1");
+        Assert.Contains("--s-selected:1", tabs[0].GetAttribute("style")!);
         Assert.IsFalse(tabs[1].ClassList.Contains("c-selected"));
-        Assert.IsFalse(tabs[1].GetAttribute("style")!.Contains("--s-selected:1"));
+        Assert.DoesNotContain("--s-selected:1", tabs[1].GetAttribute("style")!);
 
         var slide = RenderDressedPivot(BitPivotOverflowBehavior.Slide, classes, styles);
 
         foreach (var button in slide.FindAll(".bit-pvt-sbt"))
         {
             Assert.IsTrue(button.ClassList.Contains("c-slide"));
-            StringAssert.Contains(button.GetAttribute("style"), "--s-slide:1");
+            Assert.Contains("--s-slide:1", button.GetAttribute("style")!);
         }
     }
 
@@ -2809,11 +2820,11 @@ public class BitPivotTests : BunitTestContext
             var glyph = menu.Find(selector);
 
             Assert.IsTrue(glyph.ClassList.Contains("ext-glyph"), $"{selector} does not draw the icon info.");
-            Assert.IsFalse(glyph.ClassList.Any(c => c.StartsWith("bit-icon--")), $"{selector} still draws the icon name.");
+            Assert.DoesNotContain(c => c.StartsWith("bit-icon--"), glyph.ClassList, $"{selector} still draws the icon name.");
         }
 
         // A name on its own draws the built-in glyph.
-        Assert.AreEqual(1, menu.FindAll(".bit-pvti-icn > i.bit-icon--Home").Count);
+        Assert.ContainsSingle(menu.FindAll(".bit-pvti-icn > i.bit-icon--Home"));
 
         var slide = RenderComponent<BitPivot>(parameters =>
         {
@@ -2866,7 +2877,7 @@ public class BitPivotTests : BunitTestContext
         });
 
         // An item that opts in on its own gets its button without the pivot's Dismissible, and announces the key.
-        Assert.AreEqual(1, component.FindAll(".bit-pvti-dbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pvti-dbt"));
         Assert.AreEqual("Delete", component.FindAll("[role=tab]")[0].GetAttribute("aria-keyshortcuts"));
 
         component.Find(".bit-pvt-hct").KeyDown("Delete");
@@ -2956,7 +2967,7 @@ public class BitPivotTests : BunitTestContext
         keepMounted.FindAll("[role=tab]")[0].Click();
 
         // Shown once, the second tab keeps its panel and keeps pointing at it.
-        Assert.AreEqual(2, keepMounted.FindAll("[role=tabpanel]").Count);
+        Assert.HasCount(2, keepMounted.FindAll("[role=tabpanel]"));
         Assert.AreEqual(keepMounted.FindAll("[role=tabpanel]")[1].Id, keepMounted.FindAll("[role=tab]")[1].GetAttribute("aria-controls"));
     }
 
@@ -2981,11 +2992,11 @@ public class BitPivotTests : BunitTestContext
                                                      .Select(i => (string)i.Arguments[0]!)
                                                      .ToList();
 
-        Assert.AreEqual(needsJs ? 1 : 0, setups.Count);
+        Assert.HasCount(needsJs ? 1 : 0, setups);
 
         if (needsJs is false)
         {
-            Assert.AreEqual(0, prevented.Count);
+            Assert.IsEmpty(prevented);
             return;
         }
 
@@ -2994,17 +3005,17 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("pv", args[0]);
         Assert.AreEqual(behavior is BitPivotOverflowBehavior.Menu, args[3]);
         Assert.AreEqual(behavior is BitPivotOverflowBehavior.Slide, args[4]);
-        Assert.AreEqual(false, args[5]);
-        Assert.AreEqual(false, args[7]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(args[5]));
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(args[7]));
 
         // The keys the menu and the button that opens it navigate with are kept from scrolling the page by the browser.
         if (behavior is BitPivotOverflowBehavior.Menu)
         {
-            CollectionAssert.AreEquivalent(new[] { "pv-mnu", "pv-mor" }, prevented);
+            Assert.AreSequenceEqual(new[] { "pv-mnu", "pv-mor" }, prevented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         }
         else
         {
-            Assert.AreEqual(0, prevented.Count);
+            Assert.IsEmpty(prevented);
         }
     }
 
@@ -3021,8 +3032,8 @@ public class BitPivotTests : BunitTestContext
         // One item opting in is enough: a drag that carries nothing on its data transfer never starts in some browsers.
         var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Pivot.setup");
 
-        Assert.AreEqual(true, setup.Arguments[5]);
-        Assert.AreEqual(true, setup.Arguments[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[5]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(setup.Arguments[7]));
     }
 
     [TestMethod]
@@ -3044,7 +3055,7 @@ public class BitPivotTests : BunitTestContext
                                                     .Select(i => (string)i.Arguments[0]!)
                                                     .ToList();
 
-        CollectionAssert.AreEquivalent(new[] { "pv-mnu", "pv-mor" }, released);
+        Assert.AreSequenceEqual(new[] { "pv-mnu", "pv-mor" }, released, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -3079,9 +3090,9 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual(plain.Find(".bit-pvt").ClassName, cascaded.Find(".bit-pvt").ClassName);
         Assert.AreEqual(plain.Find(".bit-pvt").GetAttribute("style"), cascaded.Find(".bit-pvt").GetAttribute("style"));
-        Assert.AreEqual(2, cascaded.FindAll("[role=tab]").Count);
-        Assert.AreEqual(0, cascaded.FindAll(".bit-pvti-dbt").Count);
-        Assert.AreEqual(0, cascaded.FindAll(".bit-pvt-abt").Count);
+        Assert.HasCount(2, cascaded.FindAll("[role=tab]"));
+        Assert.IsEmpty(cascaded.FindAll(".bit-pvti-dbt"));
+        Assert.IsEmpty(cascaded.FindAll(".bit-pvt-abt"));
     }
 
     [TestMethod]
@@ -3132,8 +3143,8 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("New", add.GetAttribute("title"));
         Assert.AreEqual(1, add.QuerySelectorAll("i.bit-icon--CircleAddition").Length);
         Assert.IsTrue(add.ClassList.Contains("cascaded-add"));
-        StringAssert.Contains(add.GetAttribute("style"), "--cascaded-add:1");
-        StringAssert.Contains(component.Find(".bit-pvt").GetAttribute("style"), "--cascaded:1");
+        Assert.Contains("--cascaded-add:1", add.GetAttribute("style")!);
+        Assert.Contains("--cascaded:1", component.Find(".bit-pvt").GetAttribute("style")!);
 
         var dismiss = component.Find(".bit-pvti-dbt");
 
@@ -3143,8 +3154,8 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("Earlier", component.Find(".bit-pvt-spv").GetAttribute("aria-label"));
         Assert.AreEqual("Later", component.Find(".bit-pvt-snx").GetAttribute("aria-label"));
-        Assert.AreEqual(1, component.FindAll(".bit-pvt-spv i.bit-icon--Back").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-pvt-snx i.bit-icon--Forward").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-pvt-spv i.bit-icon--Back"));
+        Assert.ContainsSingle(component.FindAll(".bit-pvt-snx i.bit-icon--Forward"));
 
         // Navigable false gives every tab its own tab stop, which is the one thing the header shows of it.
         Assert.IsTrue(component.FindAll("[role=tab]").All(t => t.GetAttribute("tabindex") == "0"));
@@ -3153,7 +3164,7 @@ public class BitPivotTests : BunitTestContext
         component.FindAll("[role=tab]")[1].Click();
         component.FindAll("[role=tab]")[0].Click();
 
-        Assert.AreEqual(2, component.FindAll("[role=tabpanel]").Count);
+        Assert.HasCount(2, component.FindAll("[role=tabpanel]"));
     }
 
 

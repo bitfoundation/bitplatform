@@ -105,11 +105,13 @@ public sealed class AccessibilityTreeTests : BaletteTest
         var active = options.Single(n => n.Is("selected"));
         Assert.IsTrue(active.Name.StartsWith("Settings", StringComparison.Ordinal), active.Name);
         Assert.Contains("G then S", active.Name);
+        var actualValue = Ancestor(tree, active, "group", "listbox")?.Name;
 
         // In its group, which the reader hears by name.
         // Compared ignoring case: the heading is upper-cased by the stylesheet, which a browser may carry into the name.
-        Assert.AreEqual("Navigation", Ancestor(tree, active, "group", "listbox")?.Name, StringComparer.OrdinalIgnoreCase, Describe(options));
-        Assert.AreEqual("listbox", Ancestor(tree, active, "listbox")?.Role);
+        Assert.AreEqual("Navigation", actualValue, StringComparer.OrdinalIgnoreCase, Describe(options));
+        var actualValue1 = Ancestor(tree, active, "listbox")?.Role;
+        Assert.AreEqual("listbox", actualValue1);
     }
 
     [TestMethod]
@@ -145,7 +147,7 @@ public sealed class AccessibilityTreeTests : BaletteTest
         var options = tree.Values.Where(n => n.Role == "option").ToList();
         var bug = options.Single(n => n.Name.StartsWith("bug", StringComparison.Ordinal));
         Assert.IsTrue(bug.Is("checked"), Describe(options));
-        Assert.IsFalse(options.Any(n => n.Is("selected")), "an option of a multi-select page is reported selected");
+        Assert.DoesNotContain(n => n.Is("selected"), options, "an option of a multi-select page is reported selected");
     }
 
     [TestMethod]
@@ -160,7 +162,7 @@ public sealed class AccessibilityTreeTests : BaletteTest
         var focused = tree.Values.Single(n => n.Is("focused") && n.Role is not ("RootWebArea" or "WebArea"));
         Assert.AreEqual("textbox", focused.Role);
         Assert.AreEqual("New project name", focused.Name);
-        Assert.IsFalse(tree.Values.Any(n => n.Role is "combobox" or "listbox"), "a prompt still exposes a combobox or a listbox");
+        Assert.DoesNotContain(n => n.Role is "combobox" or "listbox", tree.Values, "a prompt still exposes a combobox or a listbox");
     }
 
     [TestMethod]

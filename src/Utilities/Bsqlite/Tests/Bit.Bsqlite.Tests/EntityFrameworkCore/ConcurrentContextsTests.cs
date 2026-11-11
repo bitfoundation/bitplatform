@@ -64,7 +64,7 @@ public sealed class ConcurrentContextsTests
         }
 
         await using var check = Create(connection);
-        CollectionAssert.AreEqual(new[] { "kept" }, await check.Categories.Select(c => c.Name).ToArrayAsync(Ct));
+        Assert.AreSequenceEqual(new[] { "kept" }, await check.Categories.Select(c => c.Name).ToArrayAsync(Ct));
     }
 
     [TestMethod]
@@ -107,7 +107,7 @@ public sealed class ConcurrentContextsTests
         // SQLite's busy timeout ends that with "database is locked", and so does this.
         var error = await Assert.ThrowsExactlyAsync<BsqliteConcurrencyException>(
             () => second.Categories.CountAsync(Ct));
-        StringAssert.Contains(error.Message, "is locked");
+        Assert.Contains("is locked", error.Message);
 
         // The holder itself is unaffected.
         first.Categories.Add(new Category { Name = "kept" });

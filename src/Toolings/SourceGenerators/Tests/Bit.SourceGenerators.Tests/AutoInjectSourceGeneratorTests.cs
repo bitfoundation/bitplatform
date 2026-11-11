@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.SourceGenerators.Tests;
 
 [TestClass]
@@ -327,7 +329,7 @@ public class AutoInjectSourceGeneratorTests
             }
             """).AssertSucceeded();
 
-        Assert.HasCount(1, run.Result.GeneratedSources);
+        Assert.ContainsSingle(run.Result.GeneratedSources);
     }
 
     [TestMethod]
@@ -535,7 +537,7 @@ public class AutoInjectSourceGeneratorTests
             """);
 
         Assert.IsNull(run.Result.Exception, run.Result.Exception?.ToString());
-        StringAssert.Contains(run.Source("TestApp.Done"), "autoInjectedClock");
+        Assert.Contains("autoInjectedClock", run.Source("TestApp.Done"));
     }
 
     [TestMethod]

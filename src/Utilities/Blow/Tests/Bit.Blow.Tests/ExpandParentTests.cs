@@ -220,6 +220,6 @@ public class ExpandParentTests : BunitContext
         Assert.AreEqual(new BlowXYPosition(150 - 375, 150), Absolute(nodes, "child"));
 
         var group = nodes.Single(n => n.Id == "group");
-        Assert.IsTrue(group.Position.X <= 150 - 375, $"the parent did not grow to keep the child: left edge at {group.Position.X}");
+        Assert.IsLessThanOrEqualTo(150 - 375, group.Position.X, $"the parent did not grow to keep the child: left edge at {group.Position.X}");
     }
 }

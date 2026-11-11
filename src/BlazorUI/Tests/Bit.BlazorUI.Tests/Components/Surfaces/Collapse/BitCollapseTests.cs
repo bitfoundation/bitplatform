@@ -39,7 +39,7 @@ public class BitCollapseTests : BunitTestContext
         var collapse = component.Find(".bit-col");
 
         Assert.IsNotNull(collapse);
-        Assert.IsTrue(collapse.OuterHtml.Contains("Hello Collapse"));
+        Assert.Contains("Hello Collapse", collapse.OuterHtml);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class BitCollapseTests : BunitTestContext
 
         var wrapper = component.Find(".bit-col-con > .bit-col-wrp");
 
-        Assert.IsTrue(wrapper.InnerHtml.Contains("Hello Collapse"));
+        Assert.Contains("Hello Collapse", wrapper.InnerHtml);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Body, "<div>from body</div>");
         });
 
-        Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("from body"));
+        Assert.Contains("from body", component.Find(".bit-col-wrp").InnerHtml);
     }
 
     [TestMethod]
@@ -77,8 +77,8 @@ public class BitCollapseTests : BunitTestContext
 
         var wrapper = component.Find(".bit-col-wrp");
 
-        Assert.IsTrue(wrapper.InnerHtml.Contains("from child content"));
-        Assert.IsFalse(wrapper.InnerHtml.Contains("from body"));
+        Assert.Contains("from child content", wrapper.InnerHtml);
+        Assert.DoesNotContain("from body", wrapper.InnerHtml);
     }
 
     [TestMethod]
@@ -252,10 +252,10 @@ public class BitCollapseTests : BunitTestContext
         Assert.IsTrue(content.ClassList.Contains("content-class"));
         Assert.IsTrue(wrapper.ClassList.Contains("wrapper-class"));
 
-        Assert.IsTrue(root.GetAttribute("style").Contains("width:1px"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("width:3px"));
-        Assert.IsTrue(content.GetAttribute("style").Contains("width:2px"));
-        Assert.IsTrue(wrapper.GetAttribute("style").Contains("width:4px"));
+        Assert.Contains("width:1px", root.GetAttribute("style")!);
+        Assert.Contains("width:3px", root.GetAttribute("style")!);
+        Assert.Contains("width:2px", content.GetAttribute("style")!);
+        Assert.Contains("width:4px", wrapper.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -272,8 +272,8 @@ public class BitCollapseTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("collapsed-class"));
         Assert.IsFalse(root.ClassList.Contains("expanded-class"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("width:5px"));
-        Assert.IsFalse(root.GetAttribute("style").Contains("width:6px"));
+        Assert.Contains("width:5px", root.GetAttribute("style")!);
+        Assert.DoesNotContain("width:6px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -324,7 +324,7 @@ public class BitCollapseTests : BunitTestContext
         var root = component.Find(".bit-col");
 
         Assert.IsTrue(root.ClassList.Contains("bit-col-pek"));
-        Assert.IsTrue(root.GetAttribute("style").Contains("--bit-col-csz:3rem"));
+        Assert.Contains("--bit-col-csz:3rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -343,7 +343,7 @@ public class BitCollapseTests : BunitTestContext
         var root = component.Find(".bit-col");
 
         Assert.IsFalse(root.ClassList.Contains("bit-col-pek"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-col-csz"));
+        Assert.DoesNotContain("--bit-col-csz", (root.GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -358,9 +358,9 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-col-dur-full:750ms"));
-        Assert.IsTrue(style.Contains("--bit-col-del-full:120ms"));
-        Assert.IsTrue(style.Contains("--bit-col-eas:linear"));
+        Assert.Contains("--bit-col-dur-full:750ms", style!);
+        Assert.Contains("--bit-col-del-full:120ms", style);
+        Assert.Contains("--bit-col-eas:linear", style);
     }
 
     [TestMethod]
@@ -374,8 +374,8 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style");
 
-        Assert.IsTrue(style.Contains("--bit-col-dur-full:0ms"));
-        Assert.IsTrue(style.Contains("--bit-col-del-full:0ms"));
+        Assert.Contains("--bit-col-dur-full:0ms", style!);
+        Assert.Contains("--bit-col-del-full:0ms", style);
     }
 
     [TestMethod]
@@ -385,9 +385,9 @@ public class BitCollapseTests : BunitTestContext
 
         var style = component.Find(".bit-col").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-col-dur-full"));
-        Assert.IsFalse(style.Contains("--bit-col-del-full"));
-        Assert.IsFalse(style.Contains("--bit-col-eas"));
+        Assert.DoesNotContain("--bit-col-dur-full", style);
+        Assert.DoesNotContain("--bit-col-del-full", style);
+        Assert.DoesNotContain("--bit-col-eas", style);
     }
 
     [TestMethod]
@@ -637,7 +637,7 @@ public class BitCollapseTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ToggleAsync());
         await component.InvokeAsync(() => component.Instance.ToggleAsync());
 
-        Assert.AreEqual(2, changes.Count);
+        Assert.HasCount(2, changes);
         Assert.IsTrue(changes[0]);
         Assert.IsFalse(changes[1]);
     }
@@ -701,11 +701,11 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>lazy content</div>");
         });
 
-        Assert.IsFalse(component.Markup.Contains("lazy content"));
+        Assert.DoesNotContain("lazy content", component.Markup);
 
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.IsTrue(component.Markup.Contains("lazy content"));
+        Assert.Contains("lazy content", component.Markup);
     }
 
     [TestMethod]
@@ -718,11 +718,11 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>lazy content</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("lazy content"));
+        Assert.Contains("lazy content", component.Markup);
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Assert.IsTrue(component.Markup.Contains("lazy content"));
+        Assert.Contains("lazy content", component.Markup);
     }
 
     [TestMethod]
@@ -734,7 +734,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>eager content</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("eager content"));
+        Assert.Contains("eager content", component.Markup);
     }
 
     [TestMethod]
@@ -748,11 +748,11 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>unmounted content</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("unmounted content"));
+        Assert.Contains("unmounted content", component.Markup);
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        component.WaitForAssertion(() => Assert.IsFalse(component.Markup.Contains("unmounted content")),
+        component.WaitForAssertion(() => Assert.DoesNotContain("unmounted content", component.Markup),
                                    TimeSpan.FromSeconds(2));
     }
 
@@ -769,12 +769,12 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        component.WaitForAssertion(() => Assert.IsFalse(component.Markup.Contains("unmounted content")),
+        component.WaitForAssertion(() => Assert.DoesNotContain("unmounted content", component.Markup),
                                    TimeSpan.FromSeconds(2));
 
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.IsTrue(component.Markup.Contains("unmounted content"));
+        Assert.Contains("unmounted content", component.Markup);
     }
 
     [TestMethod]
@@ -788,7 +788,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>never expanded</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("never expanded"));
+        Assert.Contains("never expanded", component.Markup);
     }
 
     [TestMethod]
@@ -814,7 +814,7 @@ public class BitCollapseTests : BunitTestContext
         // NoAnimation ends the close within the render that started it, so what the end does has been done.
         component.Render();
 
-        Assert.IsTrue(component.Markup.Contains("peeked content"));
+        Assert.Contains("peeked content", component.Markup);
     }
 
     [TestMethod]
@@ -828,7 +828,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>peeked content</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("peeked content"));
+        Assert.Contains("peeked content", component.Markup);
     }
 
     [TestMethod]
@@ -1051,7 +1051,7 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render();
 
-        Assert.IsTrue(component.Markup.Contains("unmounted content"));
+        Assert.Contains("unmounted content", component.Markup);
         Assert.AreEqual(0, collapsedCount);
     }
 
@@ -1090,12 +1090,12 @@ public class BitCollapseTests : BunitTestContext
 
         if (string.IsNullOrEmpty(expectedStyle) is false)
         {
-            Assert.IsTrue(style.Contains(expectedStyle));
+            Assert.Contains(expectedStyle, style);
         }
         else
         {
-            Assert.IsFalse(style.Contains("visibility:hidden"));
-            Assert.IsFalse(style.Contains("display:none"));
+            Assert.DoesNotContain("visibility:hidden", style);
+            Assert.DoesNotContain("display:none", style);
         }
     }
 
@@ -1110,7 +1110,7 @@ public class BitCollapseTests : BunitTestContext
 
         var root = component.Find(".bit-col");
 
-        Assert.IsTrue(root.GetAttribute("style").Contains("color:red"));
+        Assert.Contains("color:red", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
 
@@ -1125,7 +1125,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:900ms"));
+        Assert.Contains("--bit-col-dur-full:900ms", component.Find(".bit-col").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1139,7 +1139,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:200ms"));
+        Assert.Contains("--bit-col-dur-full:200ms", component.Find(".bit-col").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1152,11 +1152,11 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:200ms"));
+        Assert.Contains("--bit-col-dur-full:200ms", component.Find(".bit-col").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:900ms"));
+        Assert.Contains("--bit-col-dur-full:900ms", component.Find(".bit-col").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1172,7 +1172,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, expanded);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:500ms"));
+        Assert.Contains("--bit-col-dur-full:500ms", component.Find(".bit-col").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1184,7 +1184,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, true);
         });
 
-        Assert.IsTrue(component.Find(".bit-col").GetAttribute("style").Contains("--bit-col-dur-full:0ms"));
+        Assert.Contains("--bit-col-dur-full:0ms", component.Find(".bit-col").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1298,7 +1298,7 @@ public class BitCollapseTests : BunitTestContext
 
         WaitUntil(() => log.Count == 2);
 
-        CollectionAssert.AreEqual(new[] { "expanding", "expanded" }, log);
+        Assert.AreSequenceEqual(new[] { "expanding", "expanded" }, log);
     }
 
     [TestMethod]
@@ -1486,7 +1486,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>searchable content</div>");
         });
 
-        Assert.IsTrue(component.Markup.Contains("searchable content"));
+        Assert.Contains("searchable content", component.Markup);
     }
 
     [TestMethod]
@@ -1506,7 +1506,7 @@ public class BitCollapseTests : BunitTestContext
         // NoAnimation ends the close at once; the content it would have taken out stays, to be found.
         component.WaitForAssertion(() => Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden")));
 
-        Assert.IsTrue(component.Markup.Contains("searchable content"));
+        Assert.Contains("searchable content", component.Markup);
     }
 
     [TestMethod]
@@ -1534,11 +1534,11 @@ public class BitCollapseTests : BunitTestContext
     {
         var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, false));
 
-        Assert.IsFalse(component.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("onbeforematch", component.Markup);
 
         component.Render(parameters => parameters.Add(p => p.HiddenUntilFound, true));
 
-        Assert.IsTrue(component.Markup.Contains("onbeforematch"));
+        Assert.Contains("onbeforematch", component.Markup);
     }
 
     [TestMethod]
@@ -1552,7 +1552,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Assert.IsFalse(component.Markup.Contains("onbeforematch"));
+        Assert.DoesNotContain("onbeforematch", component.Markup);
 
         Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
 
@@ -1631,7 +1631,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.AddChildContent("<div>printable</div>");
         });
 
-        Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("printable"));
+        Assert.Contains("printable", component.Find(".bit-col-wrp").InnerHtml);
     }
 
     [TestMethod]
@@ -1651,7 +1651,7 @@ public class BitCollapseTests : BunitTestContext
         // NoAnimation ends the close within the render that started it, so what the end does has been done.
         component.Render();
 
-        Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("printable"));
+        Assert.Contains("printable", component.Find(".bit-col-wrp").InnerHtml);
     }
 
     [TestMethod]
@@ -1697,11 +1697,11 @@ public class BitCollapseTests : BunitTestContext
 
         // The estimate is over, and the content is still there: the browser has not said the close is.
         Assert.AreEqual(1, invocation.Invocations.Count);
-        Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("content"));
+        Assert.Contains("content", component.Find(".bit-col-wrp").InnerHtml);
 
         invocation.SetResult(0);
 
-        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-col-wrp").InnerHtml.Contains("content")),
+        component.WaitForAssertion(() => Assert.DoesNotContain("content", component.Find(".bit-col-wrp").InnerHtml),
                                    TimeSpan.FromSeconds(3));
     }
 
@@ -1878,7 +1878,7 @@ public class BitCollapseTests : BunitTestContext
 
         await component.InvokeAsync(async () => await component.Instance.FocusAsync());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]

@@ -167,14 +167,14 @@ public sealed class DependencyInjectionTests
         await factory.Database.CloseAsync(Ct);
         await factory.Database.OpenAsync(Ct);
 
-        CollectionAssert.AreEqual(new[] { "first", "second" }, runs);
+        Assert.AreSequenceEqual(new[] { "first", "second" }, runs);
         Assert.IsFalse(openWhileRunning);
 
         // Another scope - another circuit, on a server - has services of its own, and runs them again.
         await using var scope = provider.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<BsqliteDatabase>().OpenAsync(Ct);
 
-        CollectionAssert.AreEqual(new[] { "first", "second", "first", "second" }, runs);
+        Assert.AreSequenceEqual(new[] { "first", "second", "first", "second" }, runs);
     }
 
     [TestMethod]

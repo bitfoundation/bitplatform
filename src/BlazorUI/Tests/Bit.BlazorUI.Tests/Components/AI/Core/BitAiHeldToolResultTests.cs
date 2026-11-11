@@ -181,7 +181,7 @@ public class BitAiHeldToolResultTests
         // Dropped once: nothing is held any more, and no timer is left behind.
         Assert.AreEqual(0, clock.ActiveTimers);
         clock.Advance(TimeSpan.FromMinutes(1));
-        Assert.HasCount(1, dropped);
+        Assert.ContainsSingle(dropped);
         Assert.ContainsSingle(message.PartsOf<BitAiErrorPart>());
     }
 
@@ -225,7 +225,7 @@ public class BitAiHeldToolResultTests
         // The timer that was due finds nothing left to drop.
         Assert.AreEqual(0, clock.ActiveTimers);
         clock.Advance(TimeSpan.FromMinutes(1));
-        Assert.HasCount(1, dropped);
+        Assert.ContainsSingle(dropped);
     }
 
     [TestMethod]
@@ -415,7 +415,7 @@ public class BitAiHeldToolResultTests
 
         // The one held before the change keeps the time it was held with.
         clock.Advance(TimeSpan.FromSeconds(8) - OneTick);
-        Assert.HasCount(1, dropped);
+        Assert.ContainsSingle(dropped);
 
         clock.Advance(OneTick);
         Assert.HasCount(2, dropped);

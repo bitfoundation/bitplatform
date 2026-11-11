@@ -24,16 +24,16 @@ public class ScaleTests : BunitContext
         Render<WideTree>(ps => ps.Add(p => p.Count, 1000));
         Session.Components.Refresh(force: true);
 
-        Assert.IsTrue(Session.Components.LiveCount >= 1000, $"tracked only {Session.Components.LiveCount}");
+        Assert.IsGreaterThanOrEqualTo(1000, Session.Components.LiveCount, $"tracked only {Session.Components.LiveCount}");
 
         var start = Stopwatch.GetTimestamp();
         var tree = Session.Components.BuildTree(includeHidden: false);
         var elapsed = Stopwatch.GetElapsedTime(start);
 
         var root = Assert.ContainsSingle(tree);
-        Assert.AreEqual(1000, root.Children.Count);
+        Assert.HasCount(1000, root.Children);
         Assert.AreEqual(1001, root.SubtreeRenders);
-        Assert.IsTrue(elapsed.TotalMilliseconds < 500, $"building a 1000-node tree took {elapsed.TotalMilliseconds:0} ms");
+        Assert.IsLessThan(500, elapsed.TotalMilliseconds, $"building a 1000-node tree took {elapsed.TotalMilliseconds:0} ms");
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class ScaleTests : BunitContext
             Assert.AreEqual(5_000 * session.Options.MaxRendersPerComponent, type.Renders);
             Assert.AreEqual(5_000 * session.Options.MaxRendersPerComponent, type.RetainedSamples);
             Assert.AreEqual(12, type.P95RenderMs);
-            Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"profiling 500k retained samples took {elapsed.TotalMilliseconds:0} ms");
+            Assert.IsLessThan(1000, elapsed.TotalMilliseconds, $"profiling 500k retained samples took {elapsed.TotalMilliseconds:0} ms");
             Console.WriteLine($"profile of 5,000 components x 100 samples: {elapsed.TotalMilliseconds:0.0} ms");
             GC.KeepAlive(alive);
         }
@@ -165,8 +165,8 @@ public class ScaleTests : BunitContext
 
         var parent = Session.Components.All.Single(r => r.Type == typeof(ParentComponent));
         Assert.AreEqual(3001, parent.RenderCount);
-        Assert.IsTrue(parent.Renders.Length <= Session.Options.MaxRendersPerComponent);
-        Assert.IsTrue(Session.Timeline.Count <= Session.Options.MaxEvents);
+        Assert.IsLessThanOrEqualTo(Session.Options.MaxRendersPerComponent, parent.Renders.Length);
+        Assert.IsLessThanOrEqualTo(Session.Options.MaxEvents, Session.Timeline.Count);
         Assert.Contains(f => f.Diagnostic.RuleId == "render.storm", Session.Diagnostics.Findings);
     }
 
@@ -192,7 +192,7 @@ public class ScaleTests : BunitContext
             }
 
             var elapsed = Stopwatch.GetElapsedTime(start);
-            Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"20k lookups over a full buffer took {elapsed.TotalMilliseconds:0} ms");
+            Assert.IsLessThan(1000, elapsed.TotalMilliseconds, $"20k lookups over a full buffer took {elapsed.TotalMilliseconds:0} ms");
         }
     }
 
@@ -209,7 +209,7 @@ public class ScaleTests : BunitContext
         Session.Components.Refresh(force: true);
 
         // 40 rounds x 50 children would be 2000 records if nothing were ever released.
-        Assert.IsTrue(Session.Components.LiveCount <= 51, $"{Session.Components.LiveCount} components still counted as live");
+        Assert.IsLessThanOrEqualTo(51, Session.Components.LiveCount, $"{Session.Components.LiveCount} components still counted as live");
         foreach (var r in Session.Components.All.Where(r => r.IsDisposed))
         {
             Assert.IsNull(r.Component);
@@ -233,7 +233,7 @@ public class ScaleTests : BunitContext
     }
 }
 
-public class WideTree : ComponentBase
+internal class WideTree : ComponentBase
 {
     [Parameter] public int Count { get; set; }
 
@@ -248,7 +248,7 @@ public class WideTree : ComponentBase
     }
 }
 
-public class DeepTree : ComponentBase
+internal class DeepTree : ComponentBase
 {
     [Parameter] public int Depth { get; set; }
 
@@ -266,7 +266,7 @@ public class DeepTree : ComponentBase
     }
 }
 
-public class Churn : ComponentBase
+internal class Churn : ComponentBase
 {
     [Parameter] public int Count { get; set; }
 

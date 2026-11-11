@@ -83,7 +83,7 @@ public sealed class WorkerTests : BsqliteTest
 
         var selected = await QueryAsync(Page, "SELECT id, name, price FROM product");
 
-        CollectionAssert.AreEqual(new[] { "id", "name", "price" }, selected.ColumnNames);
+        Assert.AreSequenceEqual(new[] { "id", "name", "price" }, selected.ColumnNames);
         AssertJson.AreEqual("""[[1, "Widget", 9.5]]""", selected.Rows);
     }
 
@@ -146,7 +146,7 @@ public sealed class WorkerTests : BsqliteTest
 
         // 'price' is declared REAL but was given an integer, and this reports what SQLite stored rather than
         // what the column was declared as - the engine is built without declared types at all.
-        CollectionAssert.AreEqual(new[] { "INTEGER", "TEXT", "REAL", null }, selected.ColumnTypes);
+        Assert.AreSequenceEqual(new[] { "INTEGER", "TEXT", "REAL", null }, selected.ColumnTypes);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ public sealed class WorkerTests : BsqliteTest
             """,
             new WireParameter("@n", "Identity"));
 
-        CollectionAssert.AreEqual(new[] { "id" }, result.ColumnNames);
+        Assert.AreSequenceEqual(new[] { "id" }, result.ColumnNames);
         AssertJson.AreEqual("[[1]]", result.Rows);
 
         // Exactly one: sqlite3_changes still says 1 after the SELECT, and a count that asked it after every
@@ -331,7 +331,7 @@ public sealed class WorkerTests : BsqliteTest
         var result = await QueryAsync(Page, "SELECT b, length(b) AS size FROM blobs");
 
         Assert.AreEqual(70_000, result.Rows[0][1].GetInt32());
-        CollectionAssert.AreEqual(bytes, result.Rows[0][0].GetProperty("blob").EnumerateArray().Select(b => b.GetByte()).ToArray());
+        Assert.AreSequenceEqual(bytes, result.Rows[0][0].GetProperty("blob").EnumerateArray().Select(b => b.GetByte()).ToArray());
     }
 
     /// <summary>

@@ -24,7 +24,7 @@ public class SessionExporterTests : BunitContext
         var handler = new BevToolsHttpMessageHandler(Session) { InnerHandler = new StubHandler() };
         using var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "super-secret-token");
-        await client.GetAsync("https://example.test/api/orders?apikey=hunter2&page=2");
+        await client.GetAsync("https://example.test/api/orders?apikey=hunter2&page=2", TestContext.CancellationToken);
         Session.Errors.Record(new InvalidOperationException("exported failure"), "test");
         Session.Timeline.Record(new BevToolsEvent
         {
@@ -43,8 +43,8 @@ public class SessionExporterTests : BunitContext
         Assert.AreEqual(BevSessionExporter.Format, root.GetProperty("format").GetString());
         Assert.AreEqual(Session.Id, root.GetProperty("session").GetProperty("id").GetInt64());
         Assert.IsTrue(root.GetProperty("session").GetProperty("capturing").GetBoolean());
-        Assert.IsTrue(root.GetProperty("capabilities").GetArrayLength() > 10);
-        Assert.IsTrue(root.GetProperty("overhead").GetProperty("appRenderCount").GetInt64() >= 2);
+        Assert.IsGreaterThan(10, root.GetProperty("capabilities").GetArrayLength());
+        Assert.IsGreaterThanOrEqualTo(2, root.GetProperty("overhead").GetProperty("appRenderCount").GetInt64());
 
         var components = root.GetProperty("components");
         Assert.AreNotEqual(JsonValueKind.Undefined, components.GetProperty("baselineAt").ValueKind);
@@ -79,7 +79,7 @@ public class SessionExporterTests : BunitContext
         var handler = new BevToolsHttpMessageHandler(Session) { InnerHandler = new StubHandler() };
         using var client = new HttpClient(handler);
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "super-secret-token");
-        await client.GetAsync("https://user:pa55@example.test/api?apikey=hunter2");
+        await client.GetAsync("https://user:pa55@example.test/api?apikey=hunter2", TestContext.CancellationToken);
         var state = new StateStoreTests.CounterState { Password = "p@ss-plain" };
         Session.State.Attach(state, "test");
         state.Increment();
@@ -158,7 +158,7 @@ public class SessionExporterTests : BunitContext
         Assert.AreEqual("ada", data.GetProperty("user").GetString());
     }
 
-    public sealed record LoginAttempt(string User, string Password);
+    internal sealed record LoginAttempt(string User, string Password);
 
     private sealed class ThrowingToString
     {
@@ -170,4 +170,6 @@ public class SessionExporterTests : BunitContext
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("ok") });
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

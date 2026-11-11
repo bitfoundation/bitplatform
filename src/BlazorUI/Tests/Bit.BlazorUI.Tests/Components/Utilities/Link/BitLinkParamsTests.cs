@@ -22,8 +22,8 @@ public class BitLinkParamsTests : BunitTestContext
     [TestMethod]
     public void BitLinkParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLink)}", BitLinkParams.ParamName);
-        Assert.AreEqual("BitParams.BitLink", BitLinkParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLink)}", new BitLinkParams().Name);
+        Assert.AreEqual("BitParams.BitLink", new BitLinkParams().Name);
     }
 
     [TestMethod]
@@ -63,7 +63,7 @@ public class BitLinkParamsTests : BunitTestContext
         Assert.IsTrue(anchor.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", anchor.GetAttribute("dir"));
         Assert.AreEqual("Home", anchor.GetAttribute("aria-label"));
-        StringAssert.Contains(anchor.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", anchor.GetAttribute("style")!);
 
         // A cascaded Disabled disables the link the way the parameter does: the href goes, the role and the state stay.
         Assert.IsTrue(anchor.ClassList.Contains("bit-dis"));
@@ -113,7 +113,7 @@ public class BitLinkParamsTests : BunitTestContext
 
         foreach (var name in linkParameters)
         {
-            Assert.IsTrue(paramsProperties.Contains(name), $"BitLinkParams has no {name}.");
+            Assert.Contains(name, paramsProperties, $"BitLinkParams has no {name}.");
         }
     }
 
@@ -154,7 +154,7 @@ public class BitLinkParamsTests : BunitTestContext
         Assert.AreEqual("The home page", component.Find(".bit-lnk-dsc").TextContent);
         Assert.AreEqual(component.Find(".bit-lnk-dsc").Id, anchor.GetAttribute("aria-describedby"));
 
-        Assert.AreEqual(1, component.FindAll(".bit-lnk-icn.bit-lnk-eic").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-lnk-icn.bit-lnk-eic"));
 
         Assert.IsTrue(link.PreventDefault);
         Assert.IsTrue(link.StopPropagation);

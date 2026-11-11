@@ -23,11 +23,11 @@ public sealed class BitEscapeClaimContractTests
 
         // On the window in the capture phase, as the script loads: the surfaces listen on their own element, on the
         // document and on the window, and the claim has to be on the event before the first of them reads it.
-        StringAssert.Matches(escape, new Regex(@"\nwindow\.addEventListener\('keydown', \(e: KeyboardEvent\) => \{\n    BitBlazorUI\.Utils\.claimEscape\(e\);\n[^}]*\n\}, true\);"));
+        Assert.MatchesRegex(new Regex(@"\nwindow\.addEventListener\('keydown', \(e: KeyboardEvent\) => \{\n    BitBlazorUI\.Utils\.claimEscape\(e\);\n[^}]*\n\}, true\);"), escape);
 
         // Kept by the publish-time trimming for every component that claims a key in its markup - the claim is read off
         // the DOM, so no interop call of theirs names this script.
-        StringAssert.Contains(escape, "// bit-trim: markup data-bit-esc");
+        Assert.Contains("// bit-trim: markup data-bit-esc", escape);
     }
 
     [TestMethod]
@@ -54,9 +54,9 @@ public sealed class BitEscapeClaimContractTests
     {
         var script = GetMethod(SourceFiles.ReadUtilsScripts(), "claimEscape");
 
-        StringAssert.Contains(script, "e.preventDefault()");
-        StringAssert.Contains(script, "claim === 'claim'");
-        StringAssert.Contains(script, "claim === 'text'");
+        Assert.Contains("e.preventDefault()", script);
+        Assert.Contains("claim === 'claim'", script);
+        Assert.Contains("claim === 'text'", script);
 
         // The core components and the Extras ones alike: both packages' components sit in the surfaces of either.
         string[] components = [SourceFiles.GetDirectory("Bit.BlazorUI", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.AI", "Components")];
@@ -69,7 +69,7 @@ public sealed class BitEscapeClaimContractTests
                                                              .Select(line => (file, line)))
                               .ToList();
 
-        Assert.IsTrue(markup.Count > 0, "No data-bit-esc claim was found in the components.");
+        Assert.IsNotEmpty(markup, "No data-bit-esc claim was found in the components.");
 
         var written = markup.SelectMany(m => Branches(Regex.Match(m.line, @"data-bit-esc=""(?<value>.*)""").Groups["value"].Value)
                                                  .Select(value => (m.file, value)));
@@ -113,11 +113,11 @@ public sealed class BitEscapeClaimContractTests
                                .Select(call => Regex.Split(call, @"\r?\n        \}")[0])
                                .Where(call => Regex.IsMatch(call, @"^[^;]*=>\s*Utils\.claimSurfaceEscape\(e, element\)\);") is false));
 
-        Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
+        Assert.IsNotEmpty(listeners, $"Utils.{method} has no keydown listener that answers the key.");
 
         foreach (var listener in listeners)
         {
-            StringAssert.Contains(listener, "e.defaultPrevented", $"A keydown listener of Utils.{method} answers an Escape a component inside it has claimed.");
+            Assert.Contains("e.defaultPrevented", listener, $"A keydown listener of Utils.{method} answers an Escape a component inside it has claimed.");
         }
     }
 
@@ -128,8 +128,8 @@ public sealed class BitEscapeClaimContractTests
 
         // The engines that report the real key during a composition set isComposing, and the ones that predate it
         // report the legacy 229 key code instead - so a check of one of them alone leaves a dialog closing in the other.
-        StringAssert.Contains(check, "e.isComposing");
-        StringAssert.Contains(check, "keyCode === 229");
+        Assert.Contains("e.isComposing", check);
+        Assert.Contains("keyCode === 229", check);
 
         // Every script of both packages: the components' own (a text field holding back the keys of a composition, a
         // search box, a chart's tooltip) as well as the library's surfaces. The Extras ones call the core helper
@@ -142,7 +142,7 @@ public sealed class BitEscapeClaimContractTests
                                                  .Any(part => part is "node_modules" or "wwwroot" or "bin" or "obj") is false)
                               .ToList();
 
-        Assert.IsTrue(scripts.Count > 1, "No script of the packages was found.");
+        Assert.IsGreaterThan(1, scripts.Count, "No script of the packages was found.");
 
         var copies = scripts.SelectMany(file => SourceFiles.ReadFullPath(file).Split('\n')
                                                            .Where(line => line.TrimStart().StartsWith("//") is false)
@@ -151,7 +151,7 @@ public sealed class BitEscapeClaimContractTests
                                                            .Select(line => $"{Path.GetFileName(file)}: {line.Trim()}"))
                             .ToList();
 
-        Assert.AreEqual(0, copies.Count, $"A script reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies)}");
+        Assert.IsEmpty(copies, $"A script reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies)}");
     }
 
     [TestMethod,
@@ -171,7 +171,7 @@ public sealed class BitEscapeClaimContractTests
 
         // Escape cancels the candidate an input method editor is composing, so the press is nobody's: a surface that
         // closed on it would take away the text the user was typing along with it.
-        StringAssert.Contains(body, "Utils.isComposingKey(e)", $"Utils.{method} does not leave the Escape of an IME composition alone.");
+        Assert.Contains("Utils.isComposingKey(e)", body, $"Utils.{method} does not leave the Escape of an IME composition alone.");
     }
 
     [TestMethod,
@@ -190,11 +190,11 @@ public sealed class BitEscapeClaimContractTests
                             .Where(listener => listener.Contains("invokeMethodAsync"))
                             .ToList();
 
-        Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
+        Assert.IsNotEmpty(listeners, $"Utils.{method} has no keydown listener that answers the key.");
 
         foreach (var listener in listeners)
         {
-            StringAssert.Contains(listener, "Utils.isComposingKey(e)", $"A keydown listener of Utils.{method} answers the Escape of an IME composition.");
+            Assert.Contains("Utils.isComposingKey(e)", listener, $"A keydown listener of Utils.{method} answers the Escape of an IME composition.");
         }
     }
 
@@ -206,16 +206,16 @@ public sealed class BitEscapeClaimContractTests
         // and ahead of Blazor's delegation, which listens on the document.
         var keys = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Keys.ts");
 
-        StringAssert.Contains(keys, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));");
+        Assert.Contains("document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));", keys);
 
         // Every .NET handler acting on Escape relies on it, through markup no interop call names: every bundle keeps it.
-        StringAssert.Contains(keys, "// bit-trim: always");
+        Assert.Contains("// bit-trim: always", keys);
 
         var stop = GetMethod(SourceFiles.ReadUtilsScripts(), "stopComposingEscape");
 
-        StringAssert.Contains(stop, "e.key !== 'Escape'");
-        StringAssert.Contains(stop, "e.stopPropagation()");
-        Assert.IsFalse(stop.Contains("preventDefault"), "Utils.stopComposingEscape takes the key away from the IME it belongs to.");
+        Assert.Contains("e.key !== 'Escape'", stop);
+        Assert.Contains("e.stopPropagation()", stop);
+        Assert.DoesNotContain("preventDefault", stop, "Utils.stopComposingEscape takes the key away from the IME it belongs to.");
     }
 
     [TestMethod]
@@ -226,8 +226,8 @@ public sealed class BitEscapeClaimContractTests
         // is told which callout is asking: that one is the innermost open callout the key closes, never another.
         var utils = SourceFiles.ReadUtilsScripts();
 
-        StringAssert.Contains(GetMethod(utils, "watchNestedEscape"), "Utils.isEscapeOfOpenCallout(e.target, id)");
-        StringAssert.Contains(GetMethod(utils, "isEscapeOfOpenCallout"), "current.calloutId === ownCalloutId");
+        Assert.Contains("Utils.isEscapeOfOpenCallout(e.target, id)", GetMethod(utils, "watchNestedEscape"));
+        Assert.Contains("current.calloutId === ownCalloutId", GetMethod(utils, "isEscapeOfOpenCallout"));
     }
 
     [TestMethod,
@@ -241,8 +241,8 @@ public sealed class BitEscapeClaimContractTests
 
         // A claim is only looked for up to the nearest surface the key was pressed in, so a message or a field around
         // a dialog never takes the key away from the dialog itself.
-        StringAssert.Contains(GetMethod(script, "claimEscape"), "Utils.isEscapeSurface(element)");
-        StringAssert.Contains(GetMethod(script, method), "Utils._escapeSurfaces.add(element)", $"Utils.{method} does not mark its element as a surface for Utils.claimEscape.");
+        Assert.Contains("Utils.isEscapeSurface(element)", GetMethod(script, "claimEscape"));
+        Assert.Contains("Utils._escapeSurfaces.add(element)", GetMethod(script, method), $"Utils.{method} does not mark its element as a surface for Utils.claimEscape.");
     }
 
     [TestMethod]
@@ -253,13 +253,12 @@ public sealed class BitEscapeClaimContractTests
         // A component whose popup is open closes it on the key, and a shown tooltip is dismissed by it, without either
         // claiming it: a root claiming every Escape pressed inside it (a navigation drawer, a dialog of the Extras)
         // would otherwise take the key away from them and close itself instead.
-        StringAssert.Contains(claim, "Callouts.componentContains(target, element)");
-        StringAssert.Contains(claim, "Utils._escapeBoundaries.some(isBoundary => isBoundary(element))");
+        Assert.Contains("Callouts.componentContains(target, element)", claim);
+        Assert.Contains("Utils._escapeBoundaries.some(isBoundary => isBoundary(element))", claim);
 
         // The tooltips' script adds its anchors to the boundaries as it loads, so the claim stops at a shown one in every
         // bundle that has tooltips, and costs nothing in one that has none.
-        StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Tooltips.ts"),
-                              "BitBlazorUI.Utils.addEscapeBoundary(element => BitBlazorUI.Utils.showsDismissibleTooltip(element));");
+        Assert.Contains("BitBlazorUI.Utils.addEscapeBoundary(element => BitBlazorUI.Utils.showsDismissibleTooltip(element));", SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Tooltips.ts"));
     }
 
     [TestMethod]
@@ -273,7 +272,7 @@ public sealed class BitEscapeClaimContractTests
             .Select(Path.GetFileName)
             .ToList();
 
-        Assert.AreEqual(0, copies.Count, $"These scripts answer OnEscapeVerdict on their own: {string.Join(", ", copies)}.");
+        Assert.IsEmpty(copies, $"These scripts answer OnEscapeVerdict on their own: {string.Join(", ", copies)}.");
     }
 
     [TestMethod]
@@ -284,10 +283,10 @@ public sealed class BitEscapeClaimContractTests
 
         // A press inside the anchor goes on to a component there only when the component said it acts on it - a claim,
         // or a popup of its own that is open - never because the target looks like something that might.
-        StringAssert.Contains(tooltip, "Utils.escapeClaimer(e)");
-        StringAssert.Contains(tooltip, "Callouts.componentContains(");
-        Assert.IsFalse(tooltip.Contains(".closest("), "Utils.setupTooltip decides who owns the key from a selector.");
-        Assert.IsFalse(script.Contains("_escapeOwners"), "Utils.ts still keeps a selector of elements guessed to own Escape.");
+        Assert.Contains("Utils.escapeClaimer(e)", tooltip);
+        Assert.Contains("Callouts.componentContains(", tooltip);
+        Assert.DoesNotContain(".closest(", tooltip, "Utils.setupTooltip decides who owns the key from a selector.");
+        Assert.DoesNotContain("_escapeOwners", script, "Utils.ts still keeps a selector of elements guessed to own Escape.");
     }
 
     [TestMethod]
@@ -303,9 +302,9 @@ public sealed class BitEscapeClaimContractTests
 
         var keydowns = Regex.Matches(escape + tooltips, @"(window|document)\.addEventListener\('keydown'.*").Select(m => m.Value.Trim()).ToList();
 
-        Assert.HasCount(1, keydowns, "The claim's script was expected to add the one page-level keydown listener of the two, and the tooltips' script none.");
-        StringAssert.Contains(escape, "for (const listener of BitBlazorUI.Utils._afterEscapeClaim) listener(e);");
-        StringAssert.Contains(tooltips, "BitBlazorUI.Utils.afterEscapeClaim(e => BitBlazorUI.Utils.dismissTooltipsOnEscape(e));");
+        Assert.ContainsSingle(keydowns, "The claim's script was expected to add the one page-level keydown listener of the two, and the tooltips' script none.");
+        Assert.Contains("for (const listener of BitBlazorUI.Utils._afterEscapeClaim) listener(e);", escape);
+        Assert.Contains("BitBlazorUI.Utils.afterEscapeClaim(e => BitBlazorUI.Utils.dismissTooltipsOnEscape(e));", tooltips);
 
         // No tooltip adds a page-level keydown listener of its own, whose place among the others would be left to chance.
         var utils = SourceFiles.ReadUtilsScripts();
@@ -323,15 +322,14 @@ public sealed class BitEscapeClaimContractTests
 
         // A press a component claimed, or that a gesture in progress puts back (a swipe, whose own listener is added on
         // the window after this one), is not the tooltip's.
-        StringAssert.Contains(body, "e.defaultPrevented");
-        StringAssert.Contains(body, "Utils._escapeGestures");
-        StringAssert.Contains(GetMethod(SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.ts"), "setup", "SwipeTrap"),
-                              "Utils.addEscapeGesture(");
+        Assert.Contains("e.defaultPrevented", body);
+        Assert.Contains("Utils._escapeGestures", body);
+        Assert.Contains("Utils.addEscapeGesture(", GetMethod(SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.ts"), "setup", "SwipeTrap"));
 
         // A press it does take goes no further than the window, where every other listener still hears it - as taken.
-        StringAssert.Contains(body, "e.preventDefault()");
-        StringAssert.Contains(body, "e.stopPropagation()");
-        Assert.IsFalse(body.Contains("stopImmediatePropagation"), "The tooltip's Escape keeps the press from the other listeners on the window as well.");
+        Assert.Contains("e.preventDefault()", body);
+        Assert.Contains("e.stopPropagation()", body);
+        Assert.DoesNotContain("stopImmediatePropagation", body, "The tooltip's Escape keeps the press from the other listeners on the window as well.");
     }
 
     // The strings an attribute value or a property can come out as: the whole of a plain literal, or each branch of a

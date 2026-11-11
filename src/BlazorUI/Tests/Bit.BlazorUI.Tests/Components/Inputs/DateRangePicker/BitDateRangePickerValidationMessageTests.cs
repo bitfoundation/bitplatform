@@ -32,7 +32,7 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
         var component = RenderPicker(editContext, model, new() { [nameof(BitDateRangePicker.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
 
         component.InvokeAsync(() => editContext.Validate());
@@ -50,7 +50,7 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
         component.Find(".bit-dtrp-dtd").Click();
 
         Assert.IsNotNull(model.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
     }
@@ -79,17 +79,17 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
         // Each refused text shows its own reason; the range stays empty meanwhile, so "required" stands beside it.
         component.Find(".bit-dtrp-inp").Change("nonsense");
 
-        StringAssert.Contains(component.Find(".bit-dtrp-erm").TextContent, "Not a range.");
-        StringAssert.Contains(component.Find(".bit-dtrp-erm").TextContent, RequiredMessage);
+        Assert.Contains("Not a range.", component.Find(".bit-dtrp-erm").TextContent);
+        Assert.Contains(RequiredMessage, component.Find(".bit-dtrp-erm").TextContent);
 
         component.Find(".bit-dtrp-inp").Change("2026-01-01 - 2026-01-05");
 
-        StringAssert.Contains(component.Find(".bit-dtrp-erm").TextContent, "Outside the bookable dates.");
-        Assert.IsFalse(component.Find(".bit-dtrp-erm").TextContent.Contains("Not a range."));
+        Assert.Contains("Outside the bookable dates.", component.Find(".bit-dtrp-erm").TextContent);
+        Assert.DoesNotContain("Not a range.", component.Find(".bit-dtrp-erm").TextContent);
 
         component.Find(".bit-dtrp-inp").Change("2026-01-12 - 2026-01-15");
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
 
         component.Find("form").Submit();
 
@@ -140,7 +140,7 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
 
         // The field is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-dtrp-inp").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
     }
 
@@ -161,7 +161,7 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-erm"));
         Assert.AreEqual("Those nights are booked.", component.Find(".bit-dtrp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -196,7 +196,7 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Unavailable", component.Find(".bit-dtrp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-dtrp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-dtrp-erm").TextContent);
         Assert.AreEqual("The booking service is unavailable.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -316,12 +316,12 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-dtrp-erm"));
 
         attributes[nameof(BitDateRangePicker.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
         Assert.IsNull(component.Find(".bit-dtrp-inp").GetAttribute("aria-describedby"));
     }
 
@@ -337,8 +337,8 @@ public class BitDateRangePickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the DateRangePicker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-dtrp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-dtrp-erm"));
     }
 
     [TestMethod]

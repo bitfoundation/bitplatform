@@ -23,7 +23,7 @@ public sealed class BitThemeContrastPreferenceTests
 
         Assert.AreNotEqual(defaultWidth, contrastWidth,
             $"prefers-contrast: more sets --bit-shp-brd-width to the same length as the default ({defaultWidth}px) - the override is a no-op.");
-        Assert.IsTrue(contrastWidth > defaultWidth, "prefers-contrast: more should thicken borders, not thin them.");
+        Assert.IsGreaterThan(defaultWidth, contrastWidth, "prefers-contrast: more should thicken borders, not thin them.");
     }
 
     // The focus indicator is strengthened for the elevated-contrast cohort. This must stay a real
@@ -42,8 +42,7 @@ public sealed class BitThemeContrastPreferenceTests
         Assert.AreNotEqual(string.Empty, contrastBlock, "prefers-contrast: more block not found.");
         var contrastWidth = ExtractTokenPx(contrastBlock, "--bit-shp-focus-ring-width");
 
-        Assert.IsTrue(contrastWidth > defaultWidth,
-            $"prefers-contrast: more should thicken the focus ring (default {defaultWidth}px, got {contrastWidth}px).");
+        Assert.IsGreaterThan(defaultWidth, contrastWidth, $"prefers-contrast: more should thicken the focus ring (default {defaultWidth}px, got {contrastWidth}px).");
 
         // The composite focus-ring shadow must actually consume the width token, otherwise the
         // override above is inert.

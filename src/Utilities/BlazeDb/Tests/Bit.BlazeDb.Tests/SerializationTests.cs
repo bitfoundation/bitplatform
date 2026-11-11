@@ -169,20 +169,8 @@ public class SerializationTests
         writer.WriteBytes(new byte[7]);
         var bytes = writer.ToArray();
 
-        Assert.ThrowsExactly<InvalidDataException>(() =>
-        {
-            var reader = new BlazeDbBufferReader(bytes);
-            reader.ReadGuid();
-        });
-        Assert.ThrowsExactly<InvalidDataException>(() =>
-        {
-            var reader = new BlazeDbBufferReader(bytes);
-            reader.ReadDecimal();
-        });
-        Assert.ThrowsExactly<InvalidDataException>(() =>
-        {
-            var reader = new BlazeDbBufferReader(bytes);
-            reader.ReadDateTimeOffset();
-        });
+        Assert.ThrowsExactly<InvalidDataException>(() => new BlazeDbBufferReader(bytes).ReadGuid());
+        Assert.ThrowsExactly<InvalidDataException>(() => new BlazeDbBufferReader(bytes).ReadDecimal());
+        Assert.ThrowsExactly<InvalidDataException>(() => new BlazeDbBufferReader(bytes).ReadDateTimeOffset());
     }
 }

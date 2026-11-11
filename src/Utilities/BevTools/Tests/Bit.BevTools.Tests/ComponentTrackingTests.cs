@@ -48,7 +48,7 @@ public class ComponentTrackingTests : BunitContext
         Assert.IsNotNull(parent.ComponentId);
         Assert.AreEqual(BevRenderCause.Initial, child.LastRender!.Cause);
         Assert.IsNotNull(Session.Dispatcher);
-        Assert.IsTrue(parent.LastRender!.DurationMs >= 0);
+        Assert.IsGreaterThanOrEqualTo(0, parent.LastRender!.DurationMs);
 
         var tree = Session.Components.BuildTree(includeHidden: false);
         var root = Assert.ContainsSingle(tree);
@@ -88,7 +88,7 @@ public class ComponentTrackingTests : BunitContext
         Session.RenderTracker.CloseBatch();
 
         var batches = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.RenderBatch).ToList();
-        Assert.AreEqual(3, batches.Count);
+        Assert.HasCount(3, batches);
         Assert.Contains("2 components rendered", batches[0].Detail!); // initial: parent + child
         Assert.Contains("1 component rendered", batches[1].Detail!); // refresh: child parameters unchanged, only the parent renders
         foreach (var b in batches)
@@ -151,7 +151,7 @@ public class ComponentTrackingTests : BunitContext
     {
         Render<ParentComponent>();
         Assert.DoesNotContain(n => n.Record.IsBevTools, Session.Components.BuildTree(false));
-        Assert.IsTrue(Session.Overhead.AppRenderCount >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, Session.Overhead.AppRenderCount);
         Assert.AreEqual(0, Session.Overhead.BevToolsRenderCount);
     }
 
@@ -254,7 +254,7 @@ public class PrerenderJsRuntimeTests : BunitContext
 
         Assert.IsExactInstanceOfType<BevTrackingJSRuntime>(cut.FindComponent<ChildComponent>().Instance.JS);
         var capability = Services.GetRequiredService<BevToolsSession>().Capabilities.Single(c => c.Name == ".NET → JS calls from components");
-        StringAssert.Contains(capability.Explanation, "WebViewJSRuntime");
+        Assert.Contains("WebViewJSRuntime", capability.Explanation);
     }
 
     /// <summary>Named after Blazor Hybrid's runtime, without the field its readiness is read from: a framework that changed it.</summary>

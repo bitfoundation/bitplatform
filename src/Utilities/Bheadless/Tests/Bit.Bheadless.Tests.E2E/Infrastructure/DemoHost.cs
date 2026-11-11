@@ -9,7 +9,7 @@
 /// A publish, not a build output: only a publish trims the WebAssembly client, and an interop payload the trimmer
 /// breaks works in every build and fails only there (src/CLAUDE.md).
 /// </remarks>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

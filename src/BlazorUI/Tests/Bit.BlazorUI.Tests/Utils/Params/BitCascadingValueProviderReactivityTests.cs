@@ -82,7 +82,7 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
         greeting.Enabled = true;
 
         component.WaitForAssertion(() => Assert.AreEqual($"0-render-{calls}", component.Markup));
-        Assert.IsTrue(calls >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, calls);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
 
         var initial = component.Markup;
 
-        Assert.IsTrue(count >= 1);
+        Assert.IsGreaterThanOrEqualTo(1, count);
         Assert.AreEqual($"0-render-{count}", initial);
 
         greeting.NotifyChanged();
@@ -245,7 +245,7 @@ public partial class BitCascadingValueProviderReactivityTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(1, component.FindComponents<CascadingValue<string>>().Count);
+        Assert.ContainsSingle(component.FindComponents<CascadingValue<string>>());
         Assert.AreEqual("hello", component.FindComponent<CascadingConsumer>().Instance.Greeting);
 
         greeting.Value = "changed";

@@ -396,8 +396,8 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         Assert.AreEqual("begin:crate", _log[^1]);
 
         gate.SetResult();
-        await drop.WaitAsync(WaitLimit);
-        await end.WaitAsync(WaitLimit);
+        await drop.WaitAsync(WaitLimit, TestContext.CancellationToken);
+        await end.WaitAsync(WaitLimit, TestContext.CancellationToken);
 
         Assert.AreEqual("end:crate:True:late", _log[^1]);
         Assert.IsFalse(Manager.IsDragging());
@@ -424,8 +424,8 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
 
         Assert.AreSequenceEqual(new[] { "begin:crate-1", "end:crate-1:True:", "begin:crate-2" }, _log);
         gate.SetResult();
-        await drop.WaitAsync(WaitLimit);
-        await end.WaitAsync(WaitLimit);
+        await drop.WaitAsync(WaitLimit, TestContext.CancellationToken);
+        await end.WaitAsync(WaitLimit, TestContext.CancellationToken);
         await EndDragAsync(Source(cut));
         Assert.AreEqual("end:crate-2:False:", _log[^1]);
     }
@@ -490,8 +490,8 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         var drop = DropAsync(cut.Find("#inner"));
         var ended = EndDragAsync(Source(cut));
         gate.SetResult();
-        await drop.WaitAsync(WaitLimit);
-        await ended.WaitAsync(WaitLimit);
+        await drop.WaitAsync(WaitLimit, TestContext.CancellationToken);
+        await ended.WaitAsync(WaitLimit, TestContext.CancellationToken);
 
         Assert.AreSequenceEqual(new[] { "outer:True" }, _log);
         Assert.IsNotNull(end);
@@ -514,13 +514,13 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         gate.SetResult();
         try
         {
-            await drop.WaitAsync(WaitLimit);
+            await drop.WaitAsync(WaitLimit, TestContext.CancellationToken);
         }
         catch (InvalidOperationException)
         {
             // the handler's own failure, reported by the drop event
         }
-        await end.WaitAsync(WaitLimit);
+        await end.WaitAsync(WaitLimit, TestContext.CancellationToken);
 
         Assert.AreEqual("end:crate:True:", _log[^1]);
         Assert.IsFalse(Manager.IsDragging());
@@ -566,7 +566,7 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         Assert.IsFalse(_binStates.Last.IsOver, "an async OnEnd must not keep targets highlighted");
         // the end report completes once the drag is over: the module starts the next drag after it, which an
         // OnEnd still saving something must not hold up
-        await end.WaitAsync(WaitLimit);
+        await end.WaitAsync(WaitLimit, TestContext.CancellationToken);
         gate.SetResult();
         cut.WaitForAssertion(() => Assert.AreSequenceEqual(new[] { "begin:crate", "end:True", "after:False" }, _log));
     }
@@ -736,7 +736,7 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         var rendersAtStart = renders;
         await source.InvokeAsync(() => source.Instance.HandleDragMove(150, 90));
 
-        Assert.IsFalse(SourceUpdates.Concat(SourceRegistrations).Any(o => o.TrackPointer), "the only layer draws cards: the box's moves stay in the browser");
+        Assert.DoesNotContain(o => o.TrackPointer, SourceUpdates.Concat(SourceRegistrations), "the only layer draws cards: the box's moves stay in the browser");
         Assert.IsTrue(Manager.IsDragging());
         Assert.IsFalse(states[^1].IsDragging, "a box drag is no drag to a layer of cards");
         Assert.IsNull(states[^1].Item);
@@ -845,4 +845,6 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         Assert.IsTrue(aStates.Last.IsOver);
         Assert.IsFalse(aStates.Last.IsOverShallow);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

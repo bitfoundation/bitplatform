@@ -17,8 +17,8 @@ public class McpDiagnosticsToolTests
         var generator = BlexDiagnosticsReference.Descriptors.Select(descriptor => descriptor.Id).ToArray();
         var documented = DiagnosticsCatalog.All.Select(doc => doc.Code).ToArray();
 
-        Assert.IsTrue(generator.Length >= 19, $"Only {generator.Length} descriptors were read off the generator.");
-        CollectionAssert.AreEquivalent(generator, documented, "The diagnostics page and the generator disagree about which diagnostics exist.");
+        Assert.IsGreaterThanOrEqualTo(19, generator.Length, $"Only {generator.Length} descriptors were read off the generator.");
+        Assert.AreSequenceEqual(generator, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The diagnostics page and the generator disagree about which diagnostics exist.");
     }
 
     [TestMethod]
@@ -37,11 +37,11 @@ public class McpDiagnosticsToolTests
     {
         var index = await McpCall.TextAsync("GetBlexDiagnostics");
 
-        StringAssert.Contains(index, "| Id | Severity | Title |");
+        Assert.Contains("| Id | Severity | Title |", index);
 
         foreach (var entry in BlexDiagnosticsReference.Entries)
         {
-            StringAssert.Contains(index, $"| {entry.Id} | {entry.Severity} |");
+            Assert.Contains($"| {entry.Id} | {entry.Severity} |", index);
         }
     }
 
@@ -50,10 +50,10 @@ public class McpDiagnosticsToolTests
     {
         var text = await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX001" });
 
-        StringAssert.StartsWith(text, "# BLEX001 - Store class must be partial");
-        StringAssert.Contains(text, "## Rejected");
-        StringAssert.Contains(text, "## Fix");
-        StringAssert.Contains(text, "public partial class CounterStore");
+        Assert.StartsWith("# BLEX001 - Store class must be partial", text);
+        Assert.Contains("## Rejected", text);
+        Assert.Contains("## Fix", text);
+        Assert.Contains("public partial class CounterStore", text);
         Assert.IsFalse(text.Contains("<code>", StringComparison.Ordinal), "The cause was handed out as HTML.");
     }
 
@@ -64,18 +64,18 @@ public class McpDiagnosticsToolTests
     [DataRow("BLEX0009")]
     public async Task A_code_is_found_however_it_is_spelled(string code)
     {
-        StringAssert.StartsWith(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = code }), "# BLEX009");
+        Assert.StartsWith("# BLEX009", await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = code }));
     }
 
     [TestMethod]
     public async Task A_warning_says_how_to_suppress_it()
     {
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX011" }), "<NoWarn>$(NoWarn);BLEX011</NoWarn>");
+        Assert.Contains("<NoWarn>$(NoWarn);BLEX011</NoWarn>", await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX011" }));
     }
 
     [TestMethod]
     public async Task An_unknown_code_lists_the_real_ones()
     {
-        StringAssert.Contains(await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX999" }), "BLEX001");
+        Assert.Contains("BLEX001", await McpCall.TextAsync("GetBlexDiagnostics", new() { ["code"] = "BLEX999" }));
     }
 }

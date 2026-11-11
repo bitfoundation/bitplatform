@@ -51,7 +51,7 @@ public class OtlpReceiverTests
         var response = await PostAsync("logs", Logs(session));
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("{}", await response.Content.ReadAsStringAsync());
+        Assert.AreEqual("{}", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         var feed = await FeedAsync(session);
         var record = feed.Records.Single();
@@ -76,8 +76,8 @@ public class OtlpReceiverTests
         await PostAsync("logs", Logs(theirs));
         await PostAsync("logs", Logs(theirs));
 
-        Assert.AreEqual(1, (await FeedAsync(mine)).Records.Length);
-        Assert.AreEqual(2, (await FeedAsync(theirs)).Records.Length);
+        Assert.ContainsSingle((await FeedAsync(mine)).Records);
+        Assert.HasCount(2, (await FeedAsync(theirs)).Records);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class OtlpReceiverTests
         var first = await FeedAsync(session);
 
         await PostAsync("logs", Logs(session, "demo.clicked"));
-        var next = (await _server.Http.GetFromJsonAsync<TelemetryFeed>($"/api/telemetry?sessionId={session}&after={first.LastId}", new JsonSerializerOptions(JsonSerializerDefaults.Web)))!;
+        var next = (await _server.Http.GetFromJsonAsync<TelemetryFeed>($"/api/telemetry?sessionId={session}&after={first.LastId}", new JsonSerializerOptions(JsonSerializerDefaults.Web), TestContext.CancellationToken))!;
 
         Assert.AreEqual("demo.clicked", next.Records.Single().Name);
     }
@@ -134,7 +134,7 @@ public class OtlpReceiverTests
 
         Assert.AreEqual(HttpStatusCode.OK, (await PostAsync("metrics", Json)).StatusCode);
 
-        Assert.IsFalse((await FeedAsync(session)).Records.Any(r => r.Name == "demo.button.presses.test"));
+        Assert.DoesNotContain(r => r.Name == "demo.button.presses.test", (await FeedAsync(session)).Records);
 
         var metric = (await FeedAsync(session, shared: true)).Records.Last(r => r.Name == "demo.button.presses.test");
 
@@ -178,15 +178,15 @@ public class OtlpReceiverTests
         store.Add([new TelemetryRecord { Signal = "span", Kind = "Span", Source = "server", Name = "GET /api/demo/echo", TraceId = trace }]);
 
         var first = store.Get(session, 0, includeShared: false);
-        Assert.AreEqual(0, first.Records.Length);
+        Assert.IsEmpty(first.Records);
 
         store.Add([new TelemetryRecord { Signal = "span", Kind = "Span", Source = "browser", Name = "GET", TraceId = trace, SessionId = session }]);
 
         var second = store.Get(session, first.LastId, includeShared: false);
-        Assert.AreEqual(2, second.Records.Length);
+        Assert.HasCount(2, second.Records);
         Assert.IsTrue(second.Records.Single(r => r.Source == "server").Correlated);
 
-        Assert.AreEqual(0, store.Get(session, second.LastId, includeShared: false).Records.Length, "Each record is handed out once.");
+        Assert.IsEmpty(store.Get(session, second.LastId, includeShared: false).Records, "Each record is handed out once.");
     }
 
     [TestMethod]
@@ -197,15 +197,15 @@ public class OtlpReceiverTests
         using var buffer = new MemoryStream();
         await using (var gzip = new System.IO.Compression.GZipStream(buffer, System.IO.Compression.CompressionLevel.Fastest, leaveOpen: true))
         {
-            await gzip.WriteAsync(Encoding.UTF8.GetBytes(Logs(session)));
+            await gzip.WriteAsync(Encoding.UTF8.GetBytes(Logs(session)), TestContext.CancellationToken);
         }
 
         var content = new ByteArrayContent(buffer.ToArray());
         content.Headers.ContentType = new("application/json");
         content.Headers.ContentEncoding.Add("gzip");
 
-        Assert.AreEqual(HttpStatusCode.OK, (await _server.Http.PostAsync("/otlp/v1/logs", content)).StatusCode);
-        Assert.AreEqual(1, (await FeedAsync(session)).Records.Length);
+        Assert.AreEqual(HttpStatusCode.OK, (await _server.Http.PostAsync("/otlp/v1/logs", content, TestContext.CancellationToken)).StatusCode);
+        Assert.ContainsSingle((await FeedAsync(session)).Records);
     }
 
     [TestMethod]
@@ -219,8 +219,8 @@ public class OtlpReceiverTests
     [TestMethod]
     public async Task TheFeed_RequiresAWellFormedSessionId()
     {
-        Assert.AreEqual(HttpStatusCode.BadRequest, (await _server.Http.GetAsync("/api/telemetry")).StatusCode);
-        Assert.AreEqual(HttpStatusCode.BadRequest, (await _server.Http.GetAsync("/api/telemetry?sessionId=../../etc")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await _server.Http.GetAsync("/api/telemetry", TestContext.CancellationToken)).StatusCode);
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await _server.Http.GetAsync("/api/telemetry?sessionId=../../etc", TestContext.CancellationToken)).StatusCode);
     }
 
     [TestMethod]
@@ -240,7 +240,7 @@ public class OtlpReceiverTests
 
         var records = store.Get(session, 0, includeShared: false).Records;
 
-        Assert.AreEqual(TelemetryStore.PerSessionLimit, records.Length);
+        Assert.HasCount(TelemetryStore.PerSessionLimit, records);
         Assert.AreEqual($"record {TelemetryStore.PerSessionLimit + 49}", records[^1].Name, "The oldest records are the ones dropped.");
     }
 
@@ -257,8 +257,8 @@ public class OtlpReceiverTests
         var record = OtlpJsonDecoder.DecodeLogs(JsonDocument.Parse(json).RootElement).Single();
 
         var budget = 8 * 1024 + 2 * OtlpJsonDecoder.MaxValueLength;
-        Assert.IsTrue(record.Resource.Sum(a => a.Key.Length + a.Value.Length) <= budget, "Every record of a batch carries its resource into the feed.");
-        Assert.IsTrue(record.Attributes.Sum(a => a.Key.Length + a.Value.Length) <= budget + 64);
+        Assert.IsLessThanOrEqualTo(budget, record.Resource.Sum(a => a.Key.Length + a.Value.Length), "Every record of a batch carries its resource into the feed.");
+        Assert.IsLessThanOrEqualTo(budget + 64, record.Attributes.Sum(a => a.Key.Length + a.Value.Length));
         Assert.IsTrue(record.Attributes.ContainsKey("k0"), "What fits in the budget is kept.");
         Assert.AreEqual(OtlpJsonDecoder.MaxValueLength + 3, record.Body!.Length);
         Assert.AreEqual("0123456789abcdef", record.SessionId, "A record past the budget still belongs to its session, not to the shared bucket.");
@@ -282,7 +282,7 @@ public class OtlpReceiverTests
     {
         // Program.cs turns on Server.CollectDotnetTelemetry and points the OTLP exporter at this process; the fixture
         // routes that traffic into the in-memory host. The demo echo endpoint logs under the demo's category.
-        await _server.Http.GetAsync("/api/demo/echo");
+        await _server.Http.GetAsync("/api/demo/echo", TestContext.CancellationToken);
 
         var store = _server.Services.GetRequiredService<TelemetryStore>();
         var deadline = DateTime.UtcNow.AddSeconds(20);
@@ -293,9 +293,11 @@ public class OtlpReceiverTests
 
             if (shared.Any(r => r.Source == "server" && r.Name.Contains("/api/demo/echo", StringComparison.Ordinal))) return;
 
-            await Task.Delay(250);
+            await Task.Delay(250, TestContext.CancellationToken);
         }
 
         Assert.Fail("The server's request span for /api/demo/echo never reached the receiver.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

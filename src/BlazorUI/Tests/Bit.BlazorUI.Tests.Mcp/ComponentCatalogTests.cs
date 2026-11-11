@@ -40,22 +40,22 @@ public class ComponentCatalogTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.IsGreaterThan(90, names.Length, "The catalog lost components.");
-        Assert.AreEqual(names.Length, names.Distinct(StringComparer.Ordinal).Count(), "The catalog lists a component twice.");
+        Assert.HasCount(names.Length, names.Distinct(StringComparer.Ordinal), "The catalog lists a component twice.");
 
         foreach (var category in new[] { "Buttons", "Inputs", "Layouts", "Lists", "Navs", "Notifications", "Progress", "Surfaces", "Utilities", "Extras", "AI", "Legacy" })
         {
-            StringAssert.Contains(catalog, $"## {category}", $"The catalog has no {category} section.");
+            Assert.Contains($"## {category}", catalog, $"The catalog has no {category} section.");
         }
 
         // The package is the fact about a component that its own signature does not carry, and the
         // one whose absence produces a build error nobody can explain.
-        StringAssert.Contains(catalog, "Bit.BlazorUI.Extras");
-        StringAssert.Contains(catalog, "Bit.BlazorUI.AI");
-        StringAssert.Contains(catalog, "Bit.BlazorUI.Legacy");
+        Assert.Contains("Bit.BlazorUI.Extras", catalog);
+        Assert.Contains("Bit.BlazorUI.AI", catalog);
+        Assert.Contains("Bit.BlazorUI.Legacy", catalog);
 
         // The shared parameters are documented once and pointed at, rather than repeated on each of
         // the hundred-odd rows above.
-        StringAssert.Contains(catalog, "BitComponentBase");
+        Assert.Contains("BitComponentBase", catalog);
     }
 
     /// <summary>The full answer for every component the catalog names, fetched once for the fixture.</summary>
@@ -82,7 +82,7 @@ public class ComponentCatalogTests : McpTestBase
 
         foreach (var (name, answer) in answers)
         {
-            StringAssert.StartsWith(answer, $"# {name}", $"{name} did not resolve to its own answer.");
+            Assert.StartsWith($"# {name}", answer, $"{name} did not resolve to its own answer.");
 
             // A component with no table at all means its demo page could not be read AND its type
             // could not be reflected - the two independent sources both failing, which is the
@@ -117,7 +117,7 @@ public class ComponentCatalogTests : McpTestBase
         {
             var answer = await CallAsync("GetBitBlazorUIComponent", new { name = alias });
 
-            StringAssert.StartsWith(answer, "# Bit", $"The alias '{alias}' does not resolve to a component.");
+            Assert.StartsWith("# Bit", answer, $"The alias '{alias}' does not resolve to a component.");
         }
     }
 
@@ -173,7 +173,7 @@ public class ComponentCatalogTests : McpTestBase
 
         foreach (var expected in new[] { "Class", "Style", "Id", "Disabled", "Dir", "Visibility", "HtmlAttributes", "AriaLabel" })
         {
-            CollectionAssert.Contains(parameters, expected, $"BitComponentBase no longer documents {expected}.");
+            Assert.Contains(expected, parameters, $"BitComponentBase no longer documents {expected}.");
         }
 
         // It is the one component whose answer must not point at itself.
@@ -195,13 +195,13 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## Inherited parameters");
-        StringAssert.Contains(answer, inputBase, $"{component} no longer says which BitInputBase it closes.");
-        StringAssert.Contains(answer, "`Value`", $"{component} names no Value parameter.");
-        StringAssert.Contains(answer, "`@bind-Value`", $"{component} does not say its value is two-way bindable.");
-        StringAssert.Contains(answer, "GetBitBlazorUIComponent(name: \"BitInputBase\")");
+        Assert.Contains("## Inherited parameters", answer);
+        Assert.Contains(inputBase, answer, $"{component} no longer says which BitInputBase it closes.");
+        Assert.Contains("`Value`", answer, $"{component} names no Value parameter.");
+        Assert.Contains("`@bind-Value`", answer, $"{component} does not say its value is two-way bindable.");
+        Assert.Contains("GetBitBlazorUIComponent(name: \"BitInputBase\")", answer);
 
-        if (textInputBase is not null) StringAssert.Contains(answer, textInputBase);
+        if (textInputBase is not null) Assert.Contains(textInputBase, answer);
     }
 
     /// <summary>
@@ -221,7 +221,7 @@ public class ComponentCatalogTests : McpTestBase
 
         foreach (var parameter in expected)
         {
-            CollectionAssert.Contains(parameters, parameter, $"{name} no longer documents {parameter}.");
+            Assert.Contains(parameter, parameters, $"{name} no longer documents {parameter}.");
         }
     }
 
@@ -240,7 +240,7 @@ public class ComponentCatalogTests : McpTestBase
 
         var parameters = TableRows(answer, "## Parameters").Select(row => row[0]).ToArray();
 
-        CollectionAssert.Contains(parameters, parameter, $"{component}.{parameter} exists on the type but is not answered.");
+        Assert.Contains(parameter, parameters, $"{component}.{parameter} exists on the type but is not answered.");
     }
 
     /// <summary>
@@ -255,8 +255,8 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.StartsWith(answer, "# BitDropdown<TItem, TValue>");
-        StringAssert.Contains(answer, "where TItem : class, new()");
+        Assert.StartsWith("# BitDropdown<TItem, TValue>", answer);
+        Assert.Contains("where TItem : class, new()", answer);
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public class ComponentCatalogTests : McpTestBase
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = component });
 
-        StringAssert.Contains(answer, heading);
+        Assert.Contains(heading, answer);
     }
 
     [TestMethod]
@@ -283,10 +283,10 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, package);
-        StringAssert.Contains(answer, registration);
-        StringAssert.Contains(answer, stylesheet);
-        StringAssert.Contains(answer, script);
+        Assert.Contains(package, answer);
+        Assert.Contains(registration, answer);
+        Assert.Contains(stylesheet, answer);
+        Assert.Contains(script, answer);
 
         // The core package needs no such line: every app that uses the library at all has it.
         var core = await CallAsync("GetBitBlazorUIComponent", new { name = "BitButton" });
@@ -302,18 +302,17 @@ public class ComponentCatalogTests : McpTestBase
         using var scope = Assert.Scope();
 
         // The component's own type is documented in full, because nothing else documents it.
-        StringAssert.Contains(answer, "## BitButtonClassStyles (class)");
-        StringAssert.Contains(answer, "## BitButtonType (enum)");
+        Assert.Contains("## BitButtonClassStyles (class)", answer);
+        Assert.Contains("## BitButtonType (enum)", answer);
 
         // The library-wide ones are named with their members and left to GetBitBlazorUIType, because
         // the same handful appears on nearly every component.
-        StringAssert.Contains(answer, "## Library types used here");
-        StringAssert.Contains(answer, "`BitColor` (enum): Primary, Secondary");
+        Assert.Contains("## Library types used here", answer);
+        Assert.Contains("`BitColor` (enum): Primary, Secondary", answer);
 
         // Including the shared classes: a class is as much a type a caller has to resolve as an
         // enum is, and BitIconInfo is what BitButton's own Icon parameter takes.
-        StringAssert.Contains(answer, "`BitIconInfo` (class)",
-            "A shared class the demo page documents was dropped from the answer instead of being named.");
+        Assert.Contains("`BitIconInfo` (class)", answer, "A shared class the demo page documents was dropped from the answer instead of being named.");
 
         Assert.DoesNotContain("Primary general color", answer,
             "BitColor's per-value prose is repeated on the component, which is the redundancy the split exists to avoid.");
@@ -330,7 +329,7 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "BitIconInfo");
+        Assert.Contains("BitIconInfo", answer);
         Assert.DoesNotContain("has no public type called", icon, "BitIconInfo does not resolve by name.");
     }
 
@@ -352,7 +351,7 @@ public class ComponentCatalogTests : McpTestBase
 
         foreach (var type in expected)
         {
-            StringAssert.Contains(answer, $"`{type}`", $"{component} names {type} in a signature but nowhere else in its answer.");
+            Assert.Contains($"`{type}`", answer, $"{component} names {type} in a signature but nowhere else in its answer.");
 
             var reference = await CallAsync("GetBitBlazorUIType", new { typeName = type });
 
@@ -444,10 +443,10 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## Cascading parameters", $"{component} no longer says it takes a params object.");
-        StringAssert.Contains(answer, $"`{paramsType}`", $"{component} does not name the type its cascade carries.");
-        StringAssert.Contains(answer, "BitParams", $"{component} names no way to provide {paramsType}.");
-        StringAssert.Contains(answer, $"GetBitBlazorUIType(typeName: \"{paramsType}\")", $"{component} does not say where {paramsType}'s members are listed.");
+        Assert.Contains("## Cascading parameters", answer, $"{component} no longer says it takes a params object.");
+        Assert.Contains($"`{paramsType}`", answer, $"{component} does not name the type its cascade carries.");
+        Assert.Contains("BitParams", answer, $"{component} names no way to provide {paramsType}.");
+        Assert.Contains($"GetBitBlazorUIType(typeName: \"{paramsType}\")", answer, $"{component} does not say where {paramsType}'s members are listed.");
 
         var reference = await CallAsync("GetBitBlazorUIType", new { typeName = paramsType });
 
@@ -474,10 +473,10 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## Cascading parameters", "BitModalService no longer says the modals it shows take a params object.");
-        StringAssert.Contains(answer, "`BitModalParams`", "BitModalService does not name the type the cascade carries.");
-        StringAssert.Contains(answer, "Every `BitModal` this service shows", "BitModalService does not say which component takes the cascade.");
-        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitModalParams\")", "BitModalService does not say where BitModalParams's members are listed.");
+        Assert.Contains("## Cascading parameters", answer, "BitModalService no longer says the modals it shows take a params object.");
+        Assert.Contains("`BitModalParams`", answer, "BitModalService does not name the type the cascade carries.");
+        Assert.Contains("Every `BitModal` this service shows", answer, "BitModalService does not say which component takes the cascade.");
+        Assert.Contains("GetBitBlazorUIType(typeName: \"BitModalParams\")", answer, "BitModalService does not say where BitModalParams's members are listed.");
     }
 
     /// <summary>
@@ -492,9 +491,9 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## CSS variables", "BitModalService does not say the modals it shows read CSS variables.");
-        StringAssert.Contains(answer, "GetBitBlazorUIComponent(name: \"BitModal\")", "BitModalService does not say where the variables are listed.");
-        StringAssert.Contains(answer, "`--bit-Modal-", "BitModalService does not name a variable of the modals it shows.");
+        Assert.Contains("## CSS variables", answer, "BitModalService does not say the modals it shows read CSS variables.");
+        Assert.Contains("GetBitBlazorUIComponent(name: \"BitModal\")", answer, "BitModalService does not say where the variables are listed.");
+        Assert.Contains("`--bit-Modal-", answer, "BitModalService does not name a variable of the modals it shows.");
     }
 
     /// <summary>
@@ -510,17 +509,17 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "## BitModalReference (class)", "BitModalService does not document its reference in full.");
-        StringAssert.Contains(answer, "## BitModalParameters (class)", "BitModalService does not document its parameters in full.");
-        StringAssert.Contains(answer, "Every parameter of BitModal", "BitModalService does not say its parameters carry every parameter of BitModal.");
-        StringAssert.Contains(answer, "## BitModalContentParameters<TComponent> (class)", "BitModalService does not document its typed content parameters.");
+        Assert.Contains("## BitModalReference (class)", answer, "BitModalService does not document its reference in full.");
+        Assert.Contains("## BitModalParameters (class)", answer, "BitModalService does not document its parameters in full.");
+        Assert.Contains("Every parameter of BitModal", answer, "BitModalService does not say its parameters carry every parameter of BitModal.");
+        Assert.Contains("## BitModalContentParameters<TComponent> (class)", answer, "BitModalService does not document its typed content parameters.");
         Assert.DoesNotContain("- `BitModalParameters` (class)", answer, "BitModalService still lists its parameters as a one-liner.");
-        StringAssert.Contains(answer, "Action<BitModalParameters>", "BitModalService does not document the Update that changes some of the parameters.");
-        StringAssert.Contains(answer, "## BitModalContainer (component)", "BitModalService does not document its container.");
-        StringAssert.Contains(answer, "BitModalService?", "BitModalService does not document the Service a container can be handed.");
-        StringAssert.Contains(answer, "## BitModalContainerBase<TReference, TParameters>", "BitModalService does not document the base a container of an app's own derives from.");
-        StringAssert.Contains(answer, "RenderModals", "BitModalService does not say how a container of an app's own renders a modal that can play its exit animation.");
-        StringAssert.Contains(answer, "BitModalContainerItem<TReference>", "BitModalService does not document what the template of a container of an app's own is rendered with.");
+        Assert.Contains("Action<BitModalParameters>", answer, "BitModalService does not document the Update that changes some of the parameters.");
+        Assert.Contains("## BitModalContainer (component)", answer, "BitModalService does not document its container.");
+        Assert.Contains("BitModalService?", answer, "BitModalService does not document the Service a container can be handed.");
+        Assert.Contains("## BitModalContainerBase<TReference, TParameters>", answer, "BitModalService does not document the base a container of an app's own derives from.");
+        Assert.Contains("RenderModals", answer, "BitModalService does not say how a container of an app's own renders a modal that can play its exit animation.");
+        Assert.Contains("BitModalContainerItem<TReference>", answer, "BitModalService does not document what the template of a container of an app's own is rendered with.");
     }
 
     /// <summary>
@@ -545,13 +544,13 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "Not on it", $"{component}'s answer does not say what its params object leaves out.");
-        StringAssert.Contains(answer, $"`{parameter}`", $"{component}'s answer does not name {parameter} at all.");
+        Assert.Contains("Not on it", answer, $"{component}'s answer does not say what its params object leaves out.");
+        Assert.Contains($"`{parameter}`", answer, $"{component}'s answer does not name {parameter} at all.");
 
         var missing = answer[answer.IndexOf("Not on it", StringComparison.Ordinal)..]
                             .Split('\n', 2, StringSplitOptions.None)[0];
 
-        StringAssert.Contains(missing, $"`{parameter}`", $"{component}'s params object is not said to leave {parameter} out.");
+        Assert.Contains($"`{parameter}`", missing, $"{component}'s params object is not said to leave {parameter} out.");
     }
 
     /// <summary>
@@ -569,9 +568,9 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "Inherited from `BitComponentBaseParams`", $"{paramsType} does not name the base it takes members from.");
-        StringAssert.Contains(answer, "`Disabled`", $"{paramsType} answers without the inherited members.");
-        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitComponentBaseParams\")", $"{paramsType} does not say where the inherited members are documented.");
+        Assert.Contains("Inherited from `BitComponentBaseParams`", answer, $"{paramsType} does not name the base it takes members from.");
+        Assert.Contains("`Disabled`", answer, $"{paramsType} answers without the inherited members.");
+        Assert.Contains("GetBitBlazorUIType(typeName: \"BitComponentBaseParams\")", answer, $"{paramsType} does not say where the inherited members are documented.");
     }
 
     /// <summary>
@@ -603,7 +602,7 @@ public class ComponentCatalogTests : McpTestBase
 
             foreach (var row in rows)
             {
-                StringAssert.StartsWith(row[0], "--bit-", $"{name} lists '{row[0]}' as a CSS variable.");
+                Assert.StartsWith("--bit-", row[0], $"{name} lists '{row[0]}' as a CSS variable.");
 
                 // A custom property with no default and no prose is a name an agent cannot use: it
                 // says neither what it currently is nor what setting it would change.
@@ -626,9 +625,9 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        CollectionAssert.Contains(names, "--bit-ActionButton-color");
-        StringAssert.Contains(answer, ":root", "The answer does not say a variable can be set app-wide.");
-        StringAssert.Contains(answer, "`Style`", "The answer does not say a variable can be set on one instance.");
+        Assert.Contains("--bit-ActionButton-color", names);
+        Assert.Contains(":root", answer, "The answer does not say a variable can be set app-wide.");
+        Assert.Contains("`Style`", answer, "The answer does not say a variable can be set on one instance.");
     }
 
     /// <summary>
@@ -645,15 +644,15 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        CollectionAssert.Contains(parameters, "Label");
-        CollectionAssert.Contains(parameters, "Delay");
-        CollectionAssert.DoesNotContain(parameters, "This", "The answer documents the internal shell rather than the family.");
-        CollectionAssert.DoesNotContain(parameters, "ChildContent", "The answer documents the internal shell rather than the family.");
+        Assert.Contains("Label", parameters);
+        Assert.Contains("Delay", parameters);
+        Assert.DoesNotContain("This", parameters, "The answer documents the internal shell rather than the family.");
+        Assert.DoesNotContain("ChildContent", parameters, "The answer documents the internal shell rather than the family.");
 
-        StringAssert.Contains(answer, "`BitComponentBase`", "The family's inherited parameters are not named.");
-        StringAssert.Contains(answer, "BitLoadingParams", "The family's BitParams cascade is not named.");
-        StringAssert.Contains(answer, "`BitRingLoading`", "The answer does not name the tags the family is written with.");
-        StringAssert.Contains(answer, "`BitXboxLoading`", "The answer does not name the tags the family is written with.");
+        Assert.Contains("`BitComponentBase`", answer, "The family's inherited parameters are not named.");
+        Assert.Contains("BitLoadingParams", answer, "The family's BitParams cascade is not named.");
+        Assert.Contains("`BitRingLoading`", answer, "The answer does not name the tags the family is written with.");
+        Assert.Contains("`BitXboxLoading`", answer, "The answer does not name the tags the family is written with.");
     }
 
     /// <summary>
@@ -675,23 +674,23 @@ public class ComponentCatalogTests : McpTestBase
             "PanTo is not answered with its parameter names and defaults.");
         Assert.AreEqual("ValueTask", type, "PanTo is not answered with what it returns.");
 
-        CollectionAssert.Contains(members.Keys, "SetZoom(double zoom, bool animate = true, bool essential = false)");
+        Assert.Contains("SetZoom(double zoom, bool animate = true, bool essential = false)", members.Keys);
         Assert.DoesNotContain("Func<BitMapLatLng, bool, bool, ValueTask>", answer, "A method is still answered as a delegate type.");
 
         // A reference type the method declares nullable is written with its ?, and a default the way C# writes it.
         var snackBar = await CallAsync("GetBitBlazorUIComponent", new { name = "BitSnackBar", section = "Info" });
 
-        StringAssert.Contains(snackBar, "Info(string title, string? body = \"\", bool persistent = false, TimeSpan? autoDismissTime = null)");
+        Assert.Contains("Info(string title, string? body = \"\", bool persistent = false, TimeSpan? autoDismissTime = null)", snackBar);
 
         // A string default is written as its literal, escapes included: a raw line break is not what the
         // method declares, and it would end the table row the signature is in.
         var pdfViewer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitPdfViewer", section = "ExtractText" });
 
-        StringAssert.Contains(pdfViewer, "| `ExtractText(string pageSeparator = \"\\n\\n\")` |");
+        Assert.Contains("| `ExtractText(string pageSeparator = \"\\n\\n\")` |", pdfViewer);
 
         // The types a method takes are named back as well as the one it returns.
-        CollectionAssert.Contains(TableRows(answer, "## Public members").Select(row => row[0]).ToArray(), "Locate(BitMapGeolocationOptions? options = null)");
-        StringAssert.Contains(answer, "- `BitMapGeolocationOptions` (class)", "A library type only a method's parameter names is not named back.");
+        Assert.Contains("Locate(BitMapGeolocationOptions? options = null)", TableRows(answer, "## Public members").Select(row => row[0]).ToArray());
+        Assert.Contains("- `BitMapGeolocationOptions` (class)", answer, "A library type only a method's parameter names is not named back.");
     }
 
     /// <summary>
@@ -711,17 +710,17 @@ public class ComponentCatalogTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.HasCount(2, close, "The two Close overloads are not two rows.");
-        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef)") ?? string.Empty, "with a null result");
-        StringAssert.Contains(close.GetValueOrDefault("Close(BitModalReference modalRef, object? result)") ?? string.Empty, "with the result its Result task completes with");
+        Assert.Contains("with a null result", close.GetValueOrDefault("Close(BitModalReference modalRef)") ?? string.Empty);
+        Assert.Contains("with the result its Result task completes with", close.GetValueOrDefault("Close(BitModalReference modalRef, object? result)") ?? string.Empty);
 
-        CollectionAssert.AllItemsAreUnique(show, "An overload is answered twice.");
+        Assert.AreAllDistinct(show, "An overload is answered twice.");
         Assert.DoesNotContain("Show", show, "A row is still answered without a signature.");
-        CollectionAssert.Contains(show, "Show(RenderFragment content, BitModalParameters? modalParameters = null, bool persistent = false)");
-        CollectionAssert.Contains(show, "Show<T>(bool persistent = false)", "An overload no row describes is left out.");
+        Assert.Contains("Show(RenderFragment content, BitModalParameters? modalParameters = null, bool persistent = false)", show);
+        Assert.Contains("Show<T>(bool persistent = false)", show, "An overload no row describes is left out.");
 
         var markup = rows.First(row => row[0].StartsWith("Show(RenderFragment content", StringComparison.Ordinal));
 
-        StringAssert.Contains(markup[^1], "the given markup as its content", "An overload is answered with another one's prose.");
+        Assert.Contains("the given markup as its content", markup[^1], "An overload is answered with another one's prose.");
     }
 
     /// <summary>
@@ -736,7 +735,7 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.StartsWith(parameters, "# BitDataGrid");
+        Assert.StartsWith("# BitDataGrid", parameters);
         Assert.IsGreaterThan(10, TableRows(parameters, "## Parameters").Length, "The parameters section came back without its table.");
         Assert.DoesNotContain("## Public members", parameters, "The section brought its neighbours with it.");
         Assert.DoesNotContain("## Worked examples", parameters, "The section brought its neighbours with it.");
@@ -745,7 +744,7 @@ public class ComponentCatalogTests : McpTestBase
         // A heading is matched by part of its name, without case.
         var css = await CallAsync("GetBitBlazorUIComponent", new { name = "BitActionButton", section = "css" });
 
-        StringAssert.Contains(css, "## CSS variables", "A section is not found by part of its heading.");
+        Assert.Contains("## CSS variables", css, "A section is not found by part of its heading.");
     }
 
     [TestMethod]
@@ -757,14 +756,14 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        Assert.AreEqual(2, rows.Length, "Two names did not answer with exactly their two rows.");
+        Assert.HasCount(2, rows, "Two names did not answer with exactly their two rows.");
         Assert.AreEqual(1, answer.Split("## Public members").Length - 1, "Two rows of one table were answered as two tables.");
         Assert.DoesNotContain("## Parameters", answer);
 
         // The rows keep the columns of the table they are picked from.
         var whole = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "Public members" });
 
-        Assert.AreEqual(TableRows(whole, "## Public members")[0].Length, TableRows(answer, "## Public members")[0].Length, "The picked rows are written with other columns than the whole table.");
+        Assert.HasCount(TableRows(whole, "## Public members")[0].Length, TableRows(answer, "## Public members")[0], "The picked rows are written with other columns than the whole table.");
 
         // A signature copied from an answer names one member, its own commas notwithstanding.
         var signature = await CallAsync("GetBitBlazorUIComponent", new { name = "BitMap", section = "PanTo(BitMapLatLng center, bool animate = true, bool essential = false)" });
@@ -786,8 +785,8 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(marker, "## BitMapMarker (class)");
-        CollectionAssert.Contains(TableRows(marker, "## Public members").Select(row => row[0]).ToArray(), "AddMarker(BitMapMarker marker)", "The rows a part of a name is in are not answered.");
+        Assert.Contains("## BitMapMarker (class)", marker);
+        Assert.Contains("AddMarker(BitMapMarker marker)", TableRows(marker, "## Public members").Select(row => row[0]).ToArray(), "The rows a part of a name is in are not answered.");
         Assert.DoesNotContain("## BitDatePickerClassStyles", date, "A part of the component's own name matched every one of its types.");
     }
 
@@ -800,7 +799,7 @@ public class ComponentCatalogTests : McpTestBase
     {
         var answer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitDataGrid", section = "Sortable" });
 
-        StringAssert.Contains(answer, "Ships in `Bit.BlazorUI.Extras`", "A narrowed answer does not say which package the component needs.");
+        Assert.Contains("Ships in `Bit.BlazorUI.Extras`", answer, "A narrowed answer does not say which package the component needs.");
     }
 
     /// <summary>
@@ -818,11 +817,11 @@ public class ComponentCatalogTests : McpTestBase
 
         var call = $"GetBitBlazorUIComponent(name: \"{@base}\", section: \"{section}\")";
 
-        StringAssert.Contains(answer, call, $"{component}'s {section} does not point at {@base}.");
+        Assert.Contains(call, answer, $"{component}'s {section} does not point at {@base}.");
 
         var documented = await CallAsync("GetBitBlazorUIComponent", new { name = @base, section });
 
-        StringAssert.Contains(documented, $"| `{section}", $"{call} does not answer with the row it points at.");
+        Assert.Contains($"| `{section}", documented, $"{call} does not answer with the row it points at.");
     }
 
     [TestMethod]
@@ -835,8 +834,8 @@ public class ComponentCatalogTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.AreNotEqual(true, result.IsError, "A section that names nothing failed the call instead of answering.");
-        StringAssert.Contains(text, "`Sortable`", "The nearest member name is not offered.");
-        StringAssert.Contains(text, "`Public members`", "The sections that do exist are not named.");
+        Assert.Contains("`Sortable`", text, "The nearest member name is not offered.");
+        Assert.Contains("`Public members`", text, "The sections that do exist are not named.");
     }
 
     /// <summary>
@@ -852,8 +851,8 @@ public class ComponentCatalogTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(opening, "GetBitBlazorUIComponent(name: \"BitDataGrid\", section: ", "A long reference does not open by naming the section argument.");
-        StringAssert.Contains(opening, "`Public members`", "A long reference does not open by naming its sections.");
+        Assert.Contains("GetBitBlazorUIComponent(name: \"BitDataGrid\", section: ", opening, "A long reference does not open by naming the section argument.");
+        Assert.Contains("`Public members`", opening, "A long reference does not open by naming its sections.");
 
         // A short one has no need of the line.
         var spacer = await CallAsync("GetBitBlazorUIComponent", new { name = "BitSpacer" });

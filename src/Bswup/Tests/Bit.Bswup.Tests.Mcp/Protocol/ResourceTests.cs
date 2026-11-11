@@ -33,12 +33,12 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://settings");
 
-        StringAssert.Contains(text, "**self.assetsInclude**");
-        StringAssert.Contains(text, "**self.errorTolerance**");
-        StringAssert.Contains(text, "`lax`");
-        StringAssert.Contains(text, "## Built-in asset include patterns");
-        StringAssert.Contains(text, "## Built-in asset exclude patterns");
-        StringAssert.Contains(text, "BEFORE");
+        Assert.Contains("**self.assetsInclude**", text);
+        Assert.Contains("**self.errorTolerance**", text);
+        Assert.Contains("`lax`", text);
+        Assert.Contains("## Built-in asset include patterns", text);
+        Assert.Contains("## Built-in asset exclude patterns", text);
+        Assert.Contains("BEFORE", text);
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class ResourceTests
 
         foreach (var setting in BswupScriptCatalog.WorkerSettings)
         {
-            StringAssert.Contains(text, $"**self.{setting.Name}**", "the resource and the tool must not drift apart");
+            Assert.Contains($"**self.{setting.Name}**", text, "the resource and the tool must not drift apart");
         }
     }
 
@@ -59,7 +59,7 @@ public class ResourceTests
 
         foreach (var option in BswupScriptCatalog.ScriptOptions)
         {
-            StringAssert.Contains(text, $"**{option.Name}**");
+            Assert.Contains($"**{option.Name}**", text);
         }
     }
 
@@ -70,10 +70,10 @@ public class ResourceTests
 
         foreach (var message in BswupScriptCatalog.Events)
         {
-            StringAssert.Contains(text, $"**BswupMessage.{message.Name}**");
+            Assert.Contains($"**BswupMessage.{message.Name}**", text);
         }
 
-        StringAssert.Contains(text, "'DOWNLOAD_PROGRESS'");
+        Assert.Contains("'DOWNLOAD_PROGRESS'", text);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://guide/JavaScript%20API");
 
-        StringAssert.StartsWith(text, "## JavaScript API");
+        Assert.StartsWith("## JavaScript API", text);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://guide/Nope");
 
-        StringAssert.Contains(text, "has no section called 'Nope'");
+        Assert.Contains("has no section called 'Nope'", text);
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://source/Library%2FScripts%2Fbit-bswup.sw.ts");
 
-        StringAssert.Contains(text, "DEFAULT_ASSETS_INCLUDE");
+        Assert.Contains("DEFAULT_ASSETS_INCLUDE", text);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://source/nope.ts");
 
-        StringAssert.Contains(text, "No source file at 'nope.ts'");
+        Assert.Contains("No source file at 'nope.ts'", text);
     }
 
     [TestMethod]
@@ -116,7 +116,7 @@ public class ResourceTests
         var text = await _server.ReadResourceTextAsync("bswup://docs/service-worker");
 
         Assert.IsFalse(text.Contains("could not be rendered", StringComparison.Ordinal), text);
-        StringAssert.Contains(text, "assetsInclude");
+        Assert.Contains("assetsInclude", text);
     }
 
     [TestMethod]
@@ -124,17 +124,19 @@ public class ResourceTests
     {
         var text = await _server.ReadResourceTextAsync("bswup://docs/nope");
 
-        StringAssert.Contains(text, "No documentation page has the slug 'nope'");
+        Assert.Contains("No documentation page has the slug 'nope'", text);
     }
 
     [TestMethod]
     public async Task EveryListedResource_CanBeRead()
     {
-        foreach (var resource in await _server.Mcp.ListResourcesAsync())
+        foreach (var resource in await _server.Mcp.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await _server.ReadResourceTextAsync(resource.Uri);
 
-            Assert.IsTrue(text.Length > 100, $"{resource.Uri} came back with {text.Length} characters");
+            Assert.IsGreaterThan(100, text.Length, $"{resource.Uri} came back with {text.Length} characters");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

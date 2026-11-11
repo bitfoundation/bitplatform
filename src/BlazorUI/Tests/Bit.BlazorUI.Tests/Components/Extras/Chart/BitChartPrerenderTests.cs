@@ -48,8 +48,8 @@ public class BitChartPrerenderTests
 
         var table = root.QuerySelector("table")!;
         Assert.AreEqual(2, table.QuerySelectorAll("tbody tr").Length);
-        StringAssert.Contains(table.TextContent, "Alpha");
-        StringAssert.Contains(table.TextContent, "Feb");
+        Assert.Contains("Alpha", table.TextContent);
+        Assert.Contains("Feb", table.TextContent);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitChartPrerenderTests
             [nameof(BitChart.NoDataText)] = "Nothing yet",
         });
 
-        StringAssert.Contains(empty.QuerySelector(".bit-cht-nodata")!.TextContent, "Nothing yet");
+        Assert.Contains("Nothing yet", empty.QuerySelector(".bit-cht-nodata")!.TextContent);
 
         var loading = await PrerenderAsync(new Dictionary<string, object?>
         {
@@ -69,7 +69,7 @@ public class BitChartPrerenderTests
             [nameof(BitChart.LoadingLabel)] = "Fetching",
         });
 
-        StringAssert.Contains(loading.QuerySelector(".bit-cht-ldg")!.TextContent, "Fetching");
+        Assert.Contains("Fetching", loading.QuerySelector(".bit-cht-ldg")!.TextContent);
         Assert.IsNull(loading.QuerySelector(".bit-cht-nodata"), "Loading holds the empty state back.");
     }
 
@@ -90,8 +90,8 @@ public class BitChartPrerenderTests
 
         // The summary first, then how to walk the data - both visually hidden, both in the first response.
         var ids = svg.GetAttribute("aria-describedby")!.Split(' ');
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual("Sales by month", document.GetElementById(ids[0])!.TextContent);
-        StringAssert.Contains(document.GetElementById(ids[1])!.TextContent, "Arrow keys walk the bars.");
+        Assert.Contains("Arrow keys walk the bars.", document.GetElementById(ids[1])!.TextContent);
     }
 }

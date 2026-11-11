@@ -19,26 +19,26 @@ public partial class BitSearchBoxStylesheetTests
 
         // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
         // search box an unset one stands for.
-        StringAssert.Contains(stylesheet, "--bit-srb-height: var(--bit-srb-siz-height, var(--bit-SearchBox-height, #{$siz-ctrl-md}));");
-        StringAssert.Contains(stylesheet, "--bit-srb-fontsize: var(--bit-srb-siz-fontsize, var(--bit-SearchBox-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-srb-iconsize: var(--bit-srb-siz-iconsize, var(--bit-SearchBox-icon-size, #{$siz-icon-md}));");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-siz-cbt-iconsize, var(--bit-SearchBox-clear-button-icon-size, ");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-siz-btnpad, var(--bit-SearchBox-search-button-padding, #{$siz-ctrl-pad-x-md}))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-siz-height, var(--bit-SearchBox-search-button-width, ");
-        StringAssert.Contains(stylesheet, "--bit-srb-item-height: var(--bit-srb-siz-item-height, var(--bit-SearchBox-item-min-height, #{$siz-item-md}));");
-        StringAssert.Contains(stylesheet, "--bit-srb-item-fontsize: var(--bit-srb-siz-item-fontsize, var(--bit-SearchBox-item-font-size, #{$tg-fs-sm}));");
-        StringAssert.Contains(stylesheet, "--bit-srb-spn-size: var(--bit-srb-siz-spn-size, var(--bit-SearchBox-spinner-size, #{$siz-icon-md}));");
+        Assert.Contains("--bit-srb-height: var(--bit-srb-siz-height, var(--bit-SearchBox-height, #{$siz-ctrl-md}));", stylesheet);
+        Assert.Contains("--bit-srb-fontsize: var(--bit-srb-siz-fontsize, var(--bit-SearchBox-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-srb-iconsize: var(--bit-srb-siz-iconsize, var(--bit-SearchBox-icon-size, #{$siz-icon-md}));", stylesheet);
+        Assert.Contains("var(--bit-srb-siz-cbt-iconsize, var(--bit-SearchBox-clear-button-icon-size, ", stylesheet);
+        Assert.Contains("var(--bit-srb-siz-btnpad, var(--bit-SearchBox-search-button-padding, #{$siz-ctrl-pad-x-md}))", stylesheet);
+        Assert.Contains("var(--bit-srb-siz-height, var(--bit-SearchBox-search-button-width, ", stylesheet);
+        Assert.Contains("--bit-srb-item-height: var(--bit-srb-siz-item-height, var(--bit-SearchBox-item-min-height, #{$siz-item-md}));", stylesheet);
+        Assert.Contains("--bit-srb-item-fontsize: var(--bit-srb-siz-item-fontsize, var(--bit-SearchBox-item-font-size, #{$tg-fs-sm}));", stylesheet);
+        Assert.Contains("--bit-srb-spn-size: var(--bit-srb-siz-spn-size, var(--bit-SearchBox-spinner-size, #{$siz-icon-md}));", stylesheet);
 
         // So do an explicit Color and Background, for every color they paint.
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr-bg, var(--bit-SearchBox-background, #{$clr-bg-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}))");
-        StringAssert.Contains(stylesheet, "--bit-srb-dis-clr: var(--bit-srb-clr-dis-text, var(--bit-SearchBox-disabled-color, #{$clr-pri-dis-text}));");
-        StringAssert.Contains(stylesheet, "--bit-srb-dis-bg: var(--bit-srb-clr-dis, var(--bit-SearchBox-disabled-background, #{$clr-pri-dis}));");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr, var(--bit-SearchBox-spinner-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr-focus, var(--bit-SearchBox-item-selected-border-color, #{$clr-pri-focus}))");
+        Assert.Contains("var(--bit-srb-clr-bg, var(--bit-SearchBox-background, #{$clr-bg-pri}))", stylesheet);
+        Assert.Contains("var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)))", stylesheet);
+        Assert.Contains("var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}))", stylesheet);
+        Assert.Contains("--bit-srb-dis-clr: var(--bit-srb-clr-dis-text, var(--bit-SearchBox-disabled-color, #{$clr-pri-dis-text}));", stylesheet);
+        Assert.Contains("--bit-srb-dis-bg: var(--bit-srb-clr-dis, var(--bit-SearchBox-disabled-background, #{$clr-pri-dis}));", stylesheet);
+        Assert.Contains("var(--bit-srb-clr, var(--bit-SearchBox-spinner-color, #{$clr-pri}))", stylesheet);
+        Assert.Contains("var(--bit-srb-clr-focus, var(--bit-SearchBox-item-selected-border-color, #{$clr-pri-focus}))", stylesheet);
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -57,13 +57,13 @@ public partial class BitSearchBoxStylesheetTests
                                          "--bit-srb-siz-btnpad", "--bit-srb-clr", "--bit-srb-clr-txt", "--bit-srb-clr-hover", "--bit-srb-clr-active",
                                          "--bit-srb-clr-focus", "--bit-srb-clr-dis", "--bit-srb-clr-dis-text", "--bit-srb-clr-bg" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
 
         // The callout is given the same classes, and starts out the same way wherever it happens to be rendered.
         foreach (var property in new[] { "--bit-srb-siz-item-height", "--bit-srb-siz-item-fontsize", "--bit-srb-siz-spn-size", "--bit-srb-clr", "--bit-srb-clr-focus" })
         {
-            StringAssert.Contains(callout, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", callout);
         }
     }
 

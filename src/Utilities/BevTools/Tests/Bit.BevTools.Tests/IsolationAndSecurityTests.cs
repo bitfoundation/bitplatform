@@ -43,7 +43,7 @@ public class IsolationAndSecurityTests
 
             using var handler = new BevToolsHttpMessageHandler(new BitBevToolsOptions()) { InnerHandler = new StubHandler() };
             using var client = new HttpClient(handler);
-            await Task.Run(() => client.GetAsync("https://example.com/background"));
+            await Task.Run(() => client.GetAsync("https://example.com/background", TestContext.CancellationToken));
 
             Assert.AreEqual(0, session.Http.Count);
         }
@@ -60,7 +60,7 @@ public class IsolationAndSecurityTests
             client.DefaultRequestHeaders.Add("Authorization", "Bearer super-secret");
             client.DefaultRequestHeaders.Add("X-Trace", "keep-me");
 
-            await client.GetAsync("https://api.example.com/orders?apiKey=leak&page=2");
+            await client.GetAsync("https://api.example.com/orders?apiKey=leak&page=2", TestContext.CancellationToken);
 
             var record = Assert.ContainsSingle(session.Http.Snapshot());
             Assert.DoesNotContain("leak", record.Url, StringComparison.Ordinal);
@@ -165,4 +165,6 @@ public class IsolationAndSecurityTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

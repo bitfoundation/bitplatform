@@ -123,7 +123,7 @@ public class SequenceOracleTests
             }
 
             Assert.AreEqual(expected, array.Count);
-            Assert.AreEqual(expected, array.ToArray().Count);
+            Assert.HasCount(expected, array.ToArray());
         }
     }
 

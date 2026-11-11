@@ -34,8 +34,8 @@ public abstract class PrerenderedWebModeTests : WebModeTests
         var response = await GotoAsync("/items/42");
 
         var html = await response!.TextAsync();
-        StringAssert.Contains(html, "id=\"page-item\"");
-        StringAssert.Contains(html, "data-item-id=\"42\"");
+        Assert.Contains("id=\"page-item\"", html);
+        Assert.Contains("data-item-id=\"42\"", html);
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public class AutoModeTests : PrerenderedWebModeTests
 
             await later.CloseAsync();
             if (DateTime.UtcNow > deadline) Assert.Fail("Auto never switched a later visit to WebAssembly.");
-            await Task.Delay(2000);
+            await Task.Delay(2000, TestContext.CancellationToken);
         }
 
         await Expect(later.Locator("#page-item")).ToHaveAttributeAsync("data-item-id", "5");

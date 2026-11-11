@@ -32,7 +32,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
         var component = RenderToggle(editContext, model, new() { [nameof(BitToggle.ShowValidationMessage)] = true });
 
         // Nothing is shown before the EditContext has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
         Assert.IsNull(component.Find(".bit-tgl-btn").GetAttribute("aria-describedby"));
 
         // A validation of the whole form re-renders the toggle without a parameter or its value changing, which is
@@ -51,7 +51,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
         component.Find(".bit-tgl-btn").Click();
 
         Assert.IsFalse(model.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
         Assert.IsNull(component.Find(".bit-tgl-btn").GetAttribute("aria-describedby"));
         Assert.IsNull(component.Find(".bit-tgl-btn").GetAttribute("aria-invalid"));
     }
@@ -100,7 +100,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
 
         // The toggle is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-tgl-btn").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
         Assert.IsNull(component.Find(".bit-tgl-btn").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-tgl").ClassList.Contains("bit-tgl-her"));
     }
@@ -122,7 +122,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tgl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgl-erm"));
         Assert.AreEqual("Offline mode is not available on the free plan.", component.Find(".bit-tgl-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -146,7 +146,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
         // A submit validates every field at once; the switch that takes the focus says what is wrong with it
         // instead. The messages do not even wire a live region of their own.
         Assert.AreEqual(RangeMessage, component.Find(".bit-tgl-erm").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -257,13 +257,13 @@ public class BitToggleValidationMessageTests : BunitTestContext
         attributes[nameof(BitToggle.ShowValidationMessage)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(1, component.FindAll(".bit-tgl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgl-erm"));
         Assert.IsTrue(component.Find(".bit-tgl").ClassList.Contains("bit-tgl-her"));
 
         // And both go once the state is accepted.
         component.Find(".bit-tgl-btn").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
         Assert.IsFalse(component.Find(".bit-tgl").ClassList.Contains("bit-tgl-her"));
     }
 
@@ -284,12 +284,12 @@ public class BitToggleValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-tgl-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgl-erm"));
 
         attributes[nameof(BitToggle.NoValidate)] = true;
         Rerender(component, editContext, model, attributes);
 
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
         Assert.IsNull(component.Find(".bit-tgl-btn").GetAttribute("aria-describedby"));
         Assert.IsFalse(component.Find(".bit-tgl").ClassList.Contains("bit-tgl-her"));
     }
@@ -306,8 +306,8 @@ public class BitToggleValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the toggle has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
     }
 
     [TestMethod]
@@ -327,7 +327,7 @@ public class BitToggleValidationMessageTests : BunitTestContext
 
         component.Find(".bit-tgl-btn").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tgl-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgl-erm"));
 
         component.Find("form").Submit();
 

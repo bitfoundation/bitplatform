@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Utils.Params;
 
-public sealed class CascadingConsumer : ComponentBase
+internal sealed class CascadingConsumer : ComponentBase
 {
     [CascadingParameter] public int Number { get; set; }
 

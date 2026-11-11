@@ -27,18 +27,18 @@ public partial class BitVisuallyHiddenContractTests
         // A box sized to nothing is dropped from the accessibility tree by some screen readers, so it keeps a pixel
         // and is clipped away from it; display:none and visibility:hidden would hide it from them as well. clip stays
         // beside clip-path for the engines that predate the unprefixed clip-path.
-        StringAssert.Contains(mixin, "border: 0;");
-        StringAssert.Contains(mixin, "padding: 0;");
-        StringAssert.Contains(mixin, "width: 1px;");
-        StringAssert.Contains(mixin, "height: 1px;");
-        StringAssert.Contains(mixin, "margin: -1px;");
-        StringAssert.Contains(mixin, "overflow: hidden;");
-        StringAssert.Contains(mixin, "position: absolute;");
-        StringAssert.Contains(mixin, "white-space: nowrap;");
-        StringAssert.Contains(mixin, "clip: rect(0 0 0 0);");
-        StringAssert.Contains(mixin, "clip-path: inset(50%);");
-        Assert.IsFalse(mixin.Contains("display: none"));
-        Assert.IsFalse(mixin.Contains("visibility: hidden"));
+        Assert.Contains("border: 0;", mixin);
+        Assert.Contains("padding: 0;", mixin);
+        Assert.Contains("width: 1px;", mixin);
+        Assert.Contains("height: 1px;", mixin);
+        Assert.Contains("margin: -1px;", mixin);
+        Assert.Contains("overflow: hidden;", mixin);
+        Assert.Contains("position: absolute;", mixin);
+        Assert.Contains("white-space: nowrap;", mixin);
+        Assert.Contains("clip: rect(0 0 0 0);", mixin);
+        Assert.Contains("clip-path: inset(50%);", mixin);
+        Assert.DoesNotContain("display: none", mixin);
+        Assert.DoesNotContain("visibility: hidden", mixin);
 
         // Parked where it would have been laid out, never pushed off-screen: an offset of -10000px scrolls an RTL page
         // (or any container scrolling to the left) by that much.
@@ -50,13 +50,13 @@ public partial class BitVisuallyHiddenContractTests
     {
         var mixin = SourceFiles.GetScssDeclarations(ReadFunctions(), "@mixin visually-hidden-control {");
 
-        StringAssert.Contains(mixin, "@include visually-hidden;");
-        StringAssert.Contains(mixin, "opacity: 0;");
-        StringAssert.Contains(mixin, "pointer-events: none;");
+        Assert.Contains("@include visually-hidden;", mixin);
+        Assert.Contains("opacity: 0;", mixin);
+        Assert.Contains("pointer-events: none;", mixin);
 
         // The control stays on the part drawn for it rather than a pixel past its edge, so its zeroed margin has to
         // come after the include that sets the negative one.
-        Assert.IsTrue(mixin.IndexOf("margin: 0;") > mixin.IndexOf("@include visually-hidden;"), mixin);
+        Assert.IsGreaterThan(mixin.IndexOf("@include visually-hidden;"), mixin.IndexOf("margin: 0;"), mixin);
     }
 
     [TestMethod,
@@ -66,8 +66,8 @@ public partial class BitVisuallyHiddenContractTests
     {
         var declarations = SourceFiles.GetScssDeclarations(SourceFiles.Read(["Bit.BlazorUI", "Components", .. path.Split('/')]), rule);
 
-        StringAssert.Contains(declarations, "@include visually-hidden-control;");
-        Assert.IsFalse(declarations.Contains("margin"), $"The control's margin is the mixin's: {declarations}");
+        Assert.Contains("@include visually-hidden-control;", declarations);
+        Assert.DoesNotContain("margin", declarations, $"The control's margin is the mixin's: {declarations}");
     }
 
     [TestMethod]
@@ -81,8 +81,8 @@ public partial class BitVisuallyHiddenContractTests
         var atRest = SourceFiles.GetScssDeclarations(link, "&:where(:not(:focus)) {");
         var focus = SourceFiles.GetScssDeclarations(link, "&:focus {");
 
-        StringAssert.Contains(atRest, "@include visually-hidden;");
-        Assert.AreEqual(1, Regex.Matches(link, "@include visually-hidden;").Count, link);
+        Assert.Contains("@include visually-hidden;", atRest);
+        Assert.ContainsSingle(Regex.Matches(link, "@include visually-hidden;"), link);
         Assert.IsFalse(Regex.IsMatch(focus, @"(?<![\w-])(clip|clip-path|width|height|overflow|margin|white-space)\s*:"), focus);
     }
 
@@ -95,7 +95,7 @@ public partial class BitVisuallyHiddenContractTests
             .ToArray();
 
         // An empty scan would pass whatever the stylesheets say.
-        Assert.IsTrue(stylesheets.Length > 100, $"Only {stylesheets.Length} component stylesheets were found under {SourceFiles.Root}.");
+        Assert.IsGreaterThan(100, stylesheets.Length, $"Only {stylesheets.Length} component stylesheets were found under {SourceFiles.Root}.");
 
         var offenders = stylesheets
             .SelectMany(file => SourceFiles.GetScssRules(SourceFiles.ReadFullPath(file))
@@ -105,7 +105,7 @@ public partial class BitVisuallyHiddenContractTests
                 .Select(rule => $"{Path.GetRelativePath(SourceFiles.Root, file)}: {rule.Header}"))
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length, $"These rules hide an element out of sight themselves instead of including visually-hidden: {string.Join(", ", offenders)}");
+        Assert.IsEmpty(offenders, $"These rules hide an element out of sight themselves instead of including visually-hidden: {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public partial class BitVisuallyHiddenContractTests
             .Select(file => Path.GetRelativePath(SourceFiles.Root, file))
             .ToArray();
 
-        Assert.AreEqual(0, offenders.Length, $"These files hide an element with an inline style of their own instead of a class including visually-hidden: {string.Join(", ", offenders)}");
+        Assert.IsEmpty(offenders, $"These files hide an element with an inline style of their own instead of a class including visually-hidden: {string.Join(", ", offenders)}");
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public partial class BitVisuallyHiddenContractTests
 
         var actual = ((string)field.GetRawConstantValue()!).Split(';', StringSplitOptions.RemoveEmptyEntries).Select(Normalize).ToArray();
 
-        CollectionAssert.AreEqual(expected, actual, $"Expected \"{string.Join(';', expected)}\" but was \"{string.Join(';', actual)}\".");
+        Assert.AreSequenceEqual(expected, actual, $"Expected \"{string.Join(';', expected)}\" but was \"{string.Join(';', actual)}\".");
 
         static string Normalize(string declaration)
         {

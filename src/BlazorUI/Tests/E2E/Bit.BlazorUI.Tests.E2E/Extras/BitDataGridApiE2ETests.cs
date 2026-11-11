@@ -207,9 +207,9 @@ public class BitDataGridApiE2ETests : BitDataGridE2ETestBase
 
         await Expect(Text("state-json")).ToContainTextAsync("\"CurrentPage\":2");
         var json = await Text("state-json").InnerTextAsync();
-        StringAssert.Contains(json, "\"ColumnId\":\"Name\"");
-        StringAssert.Contains(json, "\"Width\":170");
-        StringAssert.Contains(json, "\"Visible\":false");
+        Assert.Contains("\"ColumnId\":\"Name\"", json);
+        Assert.Contains("\"Width\":170", json);
+        Assert.Contains("\"Visible\":false", json);
 
         await Page.Locator("#btn-recreate-restore").ClickAsync();
         await Expect(Text("state-status")).ToHaveTextAsync("restored");

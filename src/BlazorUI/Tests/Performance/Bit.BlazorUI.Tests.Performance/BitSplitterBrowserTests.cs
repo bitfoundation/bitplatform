@@ -130,7 +130,7 @@ public class BitSplitterBrowserTests : PerformanceTestBase
         var layout = await Probe(probe).EvaluateAsync<double[]>(@"el => [
             el.querySelector('.bit-spl-fpn').getBoundingClientRect().left,
             el.querySelector('.bit-spl-gtr').getBoundingClientRect().left]");
-        Assert.IsTrue(layout[0] > layout[1], "the first panel sits on the right of the gutter");
+        Assert.IsGreaterThan(layout[1], layout[0], "the first panel sits on the right of the gutter");
 
         // Dragging the gutter to the left widens the first panel, which is on the right.
         await Drag(probe, -100);

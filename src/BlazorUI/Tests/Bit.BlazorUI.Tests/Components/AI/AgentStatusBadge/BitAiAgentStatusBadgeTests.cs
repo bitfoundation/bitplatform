@@ -48,10 +48,8 @@ public class BitAiAgentStatusBadgeTests : BitAiTestBase
 
         // A working run keeps the default look of a tag, and an idle or cancelled one is drawn neutral through the
         // host-default class: no Color is passed for either, so the app's --bit-Tag-* variables reach them.
-        CollectionAssert.AreEqual(colorClass is null ? new string[0] : new[] { colorClass },
-                                  colors.Where(tag.ClassList.Contains).ToArray());
-        CollectionAssert.AreEqual(defaultClass is null ? new string[0] : new[] { defaultClass },
-                                  tag.ClassList.Where(c => c.StartsWith("bit-tag-dft-", StringComparison.Ordinal)).ToArray());
+        Assert.AreSequenceEqual(colorClass is null ? new string[0] : new[] { colorClass }, colors.Where(tag.ClassList.Contains).ToArray());
+        Assert.AreSequenceEqual(defaultClass is null ? new string[0] : new[] { defaultClass }, tag.ClassList.Where(c => c.StartsWith("bit-tag-dft-", StringComparison.Ordinal)).ToArray());
     }
 
     [TestMethod]
@@ -111,7 +109,7 @@ public class BitAiAgentStatusBadgeTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(component.Find(".bit-tag").ClassList.Contains("bit-dis"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -132,7 +130,7 @@ public class BitAiAgentStatusBadgeTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -164,9 +162,9 @@ public class BitAiAgentStatusBadgeTests : BitAiTestBase
         var root = component.Find(".bit-aiasb");
 
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-tag").ClassList.Contains("c-tag"));
-        StringAssert.Contains(component.Find(".bit-tag").GetAttribute("style"), "color: blue");
+        Assert.Contains("color: blue", component.Find(".bit-tag").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -188,7 +186,7 @@ public class BitAiAgentStatusBadgeTests : BitAiTestBase
     [TestMethod]
     public void BitAiAgentStatusBadgeParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiAgentStatusBadge", BitAiAgentStatusBadgeParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiAgentStatusBadge", new BitAiAgentStatusBadgeParams().Name);
         Assert.AreEqual(BitAiAgentStatusBadgeParams.ParamName, new BitAiAgentStatusBadgeParams().Name);
     }
 }

@@ -47,11 +47,9 @@ public class ResilienceTests : McpTestBase
 
         using (Assert.Scope())
         {
-            Assert.AreEqual(1, answers.Select(answer => answer.Overview).Distinct().Count(),
-                "Six concurrent sessions got different overviews.");
+            Assert.ContainsSingle(answers.Select(answer => answer.Overview).Distinct(), "Six concurrent sessions got different overviews.");
 
-            Assert.AreEqual(1, answers.Select(answer => answer.Page).Distinct().Count(),
-                "Six concurrent sessions got different renderings of the same page - the render cache is not answering consistently.");
+            Assert.ContainsSingle(answers.Select(answer => answer.Page).Distinct(), "Six concurrent sessions got different renderings of the same page - the render cache is not answering consistently.");
 
             foreach (var answer in answers)
             {

@@ -35,10 +35,10 @@ public class BitCarouselE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/carousel");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"basic\"");
-        StringAssert.Contains(html, "bit-crsi-fst");
-        StringAssert.Contains(html, "aria-roledescription=\"carousel\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"basic\"", html);
+        Assert.Contains("bit-crsi-fst", html);
+        Assert.Contains("aria-roledescription=\"carousel\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class BitCarouselE2ETests : E2ETestBase
 
         var current = await BoxAsync("#basic .bit-csl-dot >> nth=0");
         var other = await BoxAsync("#basic .bit-csl-dot >> nth=1");
-        Assert.IsTrue(current.W > other.W + 2, "the current dot is drawn longer");
+        Assert.IsGreaterThan(other.W + 2, current.W, "the current dot is drawn longer");
 
         await dots.Nth(2).ClickAsync();
         await ExpectCurrentAsync("basic", "S3");
@@ -264,22 +264,22 @@ public class BitCarouselE2ETests : E2ETestBase
         await OpenAsync("/e2e/carousel");
 
         var top = await BoxAsync("#dots-top .bit-csl-dcn");
-        Assert.IsTrue(top.Bottom <= (await BoxAsync("#dots-top .bit-csl-cnt")).Y + Tolerance, "Top: above the slides");
+        Assert.IsLessThanOrEqualTo((await BoxAsync("#dots-top .bit-csl-cnt")).Y + Tolerance, top.Bottom, "Top: above the slides");
         await Expect(Page.Locator("#dots-top")).ToHaveClassAsync(HasClass("bit-csl-dtop"));
 
         var bottom = await BoxAsync("#dots-bottom .bit-csl-dcn");
-        Assert.IsTrue(bottom.Y >= (await BoxAsync("#dots-bottom .bit-csl-cnt")).Bottom - Tolerance, "Bottom: below the slides");
+        Assert.IsGreaterThanOrEqualTo((await BoxAsync("#dots-bottom .bit-csl-cnt")).Bottom - Tolerance, bottom.Y, "Bottom: below the slides");
 
         var start = await BoxAsync("#dots-start .bit-csl-dcn");
-        Assert.IsTrue(start.Right <= (await BoxAsync("#dots-start .bit-csl-cnt")).X + Tolerance, "Start: before the slides");
+        Assert.IsLessThanOrEqualTo((await BoxAsync("#dots-start .bit-csl-cnt")).X + Tolerance, start.Right, "Start: before the slides");
         await Expect(Page.Locator("#dots-start .bit-csl-dts")).ToHaveCSSAsync("flex-direction", "column");
         var d0 = await BoxAsync("#dots-start .bit-csl-dot >> nth=0");
         var d1 = await BoxAsync("#dots-start .bit-csl-dot >> nth=1");
-        Assert.IsTrue(d1.Y > d0.Bottom - Tolerance, "Start: the dots stacked");
-        Assert.IsTrue(d0.H > d1.H + 2, "Start: the current dot drawn taller");
+        Assert.IsGreaterThan(d0.Bottom - Tolerance, d1.Y, "Start: the dots stacked");
+        Assert.IsGreaterThan(d1.H + 2, d0.H, "Start: the current dot drawn taller");
 
         var end = await BoxAsync("#dots-end .bit-csl-dcn");
-        Assert.IsTrue(end.X >= (await BoxAsync("#dots-end .bit-csl-cnt")).Right - Tolerance, "End: after the slides");
+        Assert.IsGreaterThanOrEqualTo((await BoxAsync("#dots-end .bit-csl-cnt")).Right - Tolerance, end.X, "End: after the slides");
     }
 
     [TestMethod]
@@ -415,7 +415,7 @@ public class BitCarouselE2ETests : E2ETestBase
         await Page.Locator("#duration .bit-csl-nbt").ClickAsync();
         await ExpectCurrentAsync("duration", "S2");
         var duration = await ComputedStyleAsync("#duration .bit-crsi-cur", "transition-duration");
-        Assert.IsTrue(double.Parse(duration.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture) < 0.001, $"the transition collapsed ({duration})");
+        Assert.IsLessThan(0.001, double.Parse(duration.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture), $"the transition collapsed ({duration})");
     }
 
     [TestMethod]
@@ -807,7 +807,7 @@ public class BitCarouselE2ETests : E2ETestBase
         {
             await Page.Keyboard.PressAsync("Shift+Tab");
         }
-        StringAssert.Contains(await ComputedStyleAsync("#vars", "box-shadow"), "rgb(9, 9, 9)");
+        Assert.Contains("rgb(9, 9, 9)", await ComputedStyleAsync("#vars", "box-shadow"));
 
         // An explicit Color wins over the dot variable.
         await Expect(Page.Locator("#vars-color .bit-csl-cud")).ToHaveCSSAsync("background-color", await ResolveAsync("var(--bit-clr-err)"));
@@ -977,7 +977,7 @@ public class BitCarouselE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

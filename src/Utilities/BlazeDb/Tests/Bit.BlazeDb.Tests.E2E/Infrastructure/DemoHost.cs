@@ -6,7 +6,7 @@
 /// browser tab - and every test opens its own browser context, with an Origin Private File System, an
 /// IndexedDB and Web Locks of its own, so sharing the process shares nothing.
 /// </summary>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

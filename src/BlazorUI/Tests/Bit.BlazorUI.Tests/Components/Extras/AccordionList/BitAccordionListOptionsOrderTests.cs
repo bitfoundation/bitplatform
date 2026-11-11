@@ -12,15 +12,15 @@ public class BitAccordionListOptionsOrderTests : BunitTestContext
     {
         var component = RenderComponent<BitAccordionListOptionsOrderTest>(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTitles(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTitles(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "First", "Middle", "Last" }, GetItemTitles(component));
+        Assert.AreSequenceEqual(new[] { "First", "Middle", "Last" }, GetItemTitles(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTitles(component));
+        Assert.AreSequenceEqual(new[] { "First", "Last" }, GetItemTitles(component));
     }
 
     [TestMethod]

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests;
 /// Answers the page visibility init call the way the browser would, or fails it the way a missing script does.
 /// Every other call (the dispose one, for one) is answered with nothing, the way a void call is.
 /// </summary>
-public sealed class PageStateJsRuntime : IJSRuntime
+internal sealed class PageStateJsRuntime : IJSRuntime
 {
     private const string InitIdentifier = "BitBlazorUI.PageVisibility.init";
 

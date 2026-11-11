@@ -77,7 +77,7 @@ public class BitTooltipTouchE2ETests : E2ETestBase
         await Expect(Page.Locator("#touch-anchor-clicks")).ToHaveTextAsync("1");
 
         await Expect(Tip("ttp-touch")).ToBeHiddenAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 700, $"Hidden {watch.ElapsedMilliseconds}ms after the tap that showed it.");
+        Assert.IsGreaterThanOrEqualTo(700, watch.ElapsedMilliseconds, $"Hidden {watch.ElapsedMilliseconds}ms after the tap that showed it.");
         await Expect(Page.Locator("#touch-shows")).ToHaveTextAsync("1");
     }
 

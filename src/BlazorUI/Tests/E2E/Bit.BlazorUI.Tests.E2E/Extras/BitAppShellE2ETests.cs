@@ -27,10 +27,10 @@ public class BitAppShellE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Route}")).TextAsync();
 
-        StringAssert.Contains(html, "id=\"ash-basic\"");
-        StringAssert.Contains(html, "id=\"ash-basic-container\"");
-        StringAssert.Contains(html, "data-bit-ash-main");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"ash-basic\"", html);
+        Assert.Contains("id=\"ash-basic-container\"", html);
+        Assert.Contains("data-bit-ash-main", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Route);
         await Expect(Page.Locator("#ash-basic")).ToHaveClassAsync(HasClass("bit-ash"));
@@ -49,7 +49,7 @@ public class BitAppShellE2ETests : E2ETestBase
 
         var size = await main.EvaluateAsync<double[]>("el => [el.scrollHeight, el.clientHeight]");
         Assert.AreEqual(200, size[1]);
-        Assert.IsTrue(size[0] > size[1]);
+        Assert.IsGreaterThan(size[1], size[0]);
 
         var windowScroll = await Page.EvaluateAsync<double>("() => window.scrollY");
         await main.EvaluateAsync("el => el.scrollTop = 300");
@@ -136,7 +136,7 @@ public class BitAppShellE2ETests : E2ETestBase
         // The start bar (10px) is the physically right one in a right-to-left shell.
         var start = await Bar("ash-insets", "left").BoundingBoxAsync();
         var end = await Bar("ash-insets", "right").BoundingBoxAsync();
-        Assert.IsTrue(start!.X > end!.X, $"start bar at {start.X}, end bar at {end.X}");
+        Assert.IsGreaterThan(end!.X, start!.X, $"start bar at {start.X}, end bar at {end.X}");
         Assert.AreEqual(10, start.Width, 0.5);
         Assert.AreEqual(15, end.Width, 0.5);
     }
@@ -166,7 +166,7 @@ public class BitAppShellE2ETests : E2ETestBase
         await Expect(Main("ash-keyboard")).Not.ToHaveJSPropertyAsync("scrollTop", 0);
         var input = await Page.Locator("#keyboard-input").BoundingBoxAsync();
         var main = await Main("ash-keyboard").BoundingBoxAsync();
-        Assert.IsTrue(input!.Y + input.Height <= main!.Y + main.Height + 1, "The focused field stayed below the container.");
+        Assert.IsLessThanOrEqualTo(main!.Y + main.Height + 1, input!.Y + input.Height, "The focused field stayed below the container.");
 
         await SimulateKeyboardAsync(0);
 
@@ -337,12 +337,12 @@ public class BitAppShellE2ETests : E2ETestBase
         })");
 
         var count = int.Parse((await Page.Locator("#throttle-count").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(count <= 2, $"{count} reports were made inside one throttle interval.");
+        Assert.IsLessThanOrEqualTo(2, count, $"{count} reports were made inside one throttle interval.");
 
         // The last position always follows once the interval is up.
         await Expect(Page.Locator("#throttle-top")).ToHaveTextAsync("400");
         var final = int.Parse((await Page.Locator("#throttle-count").TextContentAsync())!, CultureInfo.InvariantCulture);
-        Assert.IsTrue(final <= 3, $"{final} reports for one burst of scrolling.");
+        Assert.IsLessThanOrEqualTo(3, final, $"{final} reports for one burst of scrolling.");
     }
 
     [TestMethod]
@@ -668,7 +668,7 @@ public class BitAppShellE2ETests : E2ETestBase
 
         var start = await Bar("ash-rtl-inherited", "left").BoundingBoxAsync();
         var end = await Bar("ash-rtl-inherited", "right").BoundingBoxAsync();
-        Assert.IsTrue(start!.X > end!.X, $"start bar at {start.X}, end bar at {end.X}");
+        Assert.IsGreaterThan(end!.X, start!.X, $"start bar at {start.X}, end bar at {end.X}");
         Assert.AreEqual(10, start.Width, 0.5);
     }
 

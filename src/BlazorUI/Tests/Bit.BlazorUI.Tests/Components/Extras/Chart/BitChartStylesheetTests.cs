@@ -36,8 +36,7 @@ public class BitChartStylesheetTests
                           .ToHashSet(StringComparer.Ordinal);
         var documented = DocumentedVariable.Matches(stylesheet).Select(m => Normalize(m.Groups[1].Value)).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(documented.Order().ToArray(), read.Order().ToArray(),
-            "The --bit-Chart-* variables the chart reads and the ones the stylesheet's header comment documents have drifted apart.");
+        Assert.AreSequenceEqual(documented.Order().ToArray(), read.Order().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The --bit-Chart-* variables the chart reads and the ones the stylesheet's header comment documents have drifted apart.");
     }
 
     [TestMethod]
@@ -46,7 +45,7 @@ public class BitChartStylesheetTests
         // Read with a fallback and never declared, so a value set on :root or on an ancestor reaches every chart below it.
         var declared = PublicVariableDeclaration.Matches(ReadStylesheet()).Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), declared);
+        Assert.AreSequenceEqual(Array.Empty<string>(), declared);
     }
 
     [TestMethod]
@@ -54,13 +53,13 @@ public class BitChartStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "--bit-cht-clr-focus: var(--bit-Chart-focus-color);");
+        Assert.Contains("--bit-cht-clr-focus: var(--bit-Chart-focus-color);", stylesheet);
         // The keyboard position is a stroke, so it cannot be the global ring: it reads the rings' own chain, with the
         // primary focus color as its default.
-        StringAssert.Contains(stylesheet, ".bit-cht-focus-ring {\n    stroke: var(--bit-cht-clr-focus, #{$clr-pri-focus});");
-        StringAssert.Contains(stylesheet, "border-radius: var(--bit-Chart-tooltip-radius, #{$shp-radius-popup});");
-        StringAssert.Contains(stylesheet, "box-shadow: var(--bit-Chart-tooltip-shadow, #{$box-shadow-tooltip});");
-        StringAssert.Contains(stylesheet, "font-family: var(--bit-Chart-font-family, #{$tg-font-family});");
+        Assert.Contains(".bit-cht-focus-ring {\n    stroke: var(--bit-cht-clr-focus, #{$clr-pri-focus});", stylesheet);
+        Assert.Contains("border-radius: var(--bit-Chart-tooltip-radius, #{$shp-radius-popup});", stylesheet);
+        Assert.Contains("box-shadow: var(--bit-Chart-tooltip-shadow, #{$box-shadow-tooltip});", stylesheet);
+        Assert.Contains("font-family: var(--bit-Chart-font-family, #{$tg-font-family});", stylesheet);
     }
 
     [TestMethod]
@@ -69,7 +68,7 @@ public class BitChartStylesheetTests
         var stylesheet = ReadStylesheet();
 
         Assert.DoesNotContain("ease-out", stylesheet);
-        StringAssert.Contains(stylesheet, "var(--bit-cht-ease, #{$mot-easing-decelerate})");
+        Assert.Contains("var(--bit-cht-ease, #{$mot-easing-decelerate})", stylesheet);
     }
 
     [TestMethod]
@@ -78,8 +77,8 @@ public class BitChartStylesheetTests
         var stylesheet = ReadStylesheet();
         var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, "forced-color-adjust: none;");
-        StringAssert.Contains(forced, "border: 1px solid CanvasText;");
+        Assert.Contains("forced-color-adjust: none;", forced);
+        Assert.Contains("border: 1px solid CanvasText;", forced);
     }
 
     [TestMethod]
@@ -90,21 +89,21 @@ public class BitChartStylesheetTests
         // The row around the plot follows the reading direction, so Start and End need no right-to-left rule of their
         // own; only Left and Right, which keep their side, are moved back in one (#13714).
         Assert.DoesNotContain("row-reverse", stylesheet);
-        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-lft, .bit-cht-sta) {\n        order: -$step;");
-        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-rgt, .bit-cht-end) {\n        order: $step;");
-        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-lft):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: $step;");
-        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-rgt):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: -$step;");
+        Assert.Contains(".bit-cht-#{$part}:where(.bit-cht-lft, .bit-cht-sta) {\n        order: -$step;", stylesheet);
+        Assert.Contains(".bit-cht-#{$part}:where(.bit-cht-rgt, .bit-cht-end) {\n        order: $step;", stylesheet);
+        Assert.Contains(".bit-cht-#{$part}:where(.bit-cht-lft):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: $step;", stylesheet);
+        Assert.Contains(".bit-cht-#{$part}:where(.bit-cht-rgt):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: -$step;", stylesheet);
 
         // A title or subtitle on the left is turned over: Left always, Start reading left to right, End reading right
         // to left.
-        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-lft, .bit-cht-sta) {\n    rotate: 180deg;");
-        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-sta):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: none;");
-        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-end):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: 180deg;");
+        Assert.Contains(".bit-cht-ttl-v:where(.bit-cht-lft, .bit-cht-sta) {\n    rotate: 180deg;", stylesheet);
+        Assert.Contains(".bit-cht-ttl-v:where(.bit-cht-sta):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: none;", stylesheet);
+        Assert.Contains(".bit-cht-ttl-v:where(.bit-cht-end):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: 180deg;", stylesheet);
 
         // The side is read through :where() alone, so these rules weigh what the part's own class weighs and a single
         // class an app hands the part through Classes still moves or turns it.
         var sideCompound = new Regex(@"\.bit-cht-[a-z#{}$]+\.bit-cht-(lft|rgt|sta|end)\b");
-        CollectionAssert.AreEqual(Array.Empty<string>(), sideCompound.Matches(stylesheet).Select(m => m.Value).ToArray());
+        Assert.AreSequenceEqual(Array.Empty<string>(), sideCompound.Matches(stylesheet).Select(m => m.Value).ToArray());
     }
 
     [TestMethod]
@@ -113,7 +112,7 @@ public class BitChartStylesheetTests
         // A label reads in the direction of its chart, as the legend, the tooltip and the titles do (#14044): the
         // stylesheet turns none of them around, and the ones placed on a side of the screen keep their place through
         // their own markup, which an exported file carries too (see BitChartSvgPrimitive).
-        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"^\s*(direction|unicode-bidi)\s*:", RegexOptions.Multiline));
+        Assert.DoesNotMatchRegex(new Regex(@"^\s*(direction|unicode-bidi)\s*:", RegexOptions.Multiline), ReadStylesheet());
     }
 
     private static string Normalize(string name)

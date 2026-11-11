@@ -126,13 +126,12 @@ public sealed class BitFieldLabelFontWeightContractTests
                                 .Select(c => $"{c.Value}: {c.Key}")
                                 .ToList();
 
-        Assert.AreEqual(0, unclassified.Count,
-            "These classes are named like a caption but are in neither list of this test - a field's caption goes in " +
+        Assert.IsEmpty(unclassified, "These classes are named like a caption but are in neither list of this test - a field's caption goes in " +
             "FieldCaptions, any other label in OtherLabels:\n" + string.Join("\n", unclassified));
 
         var stale = fieldCaptions.Concat(OtherLabels).Where(c => found.ContainsKey(c) is false).ToList();
 
-        Assert.AreEqual(0, stale.Count, "No component stylesheet styles these listed classes any more:\n" + string.Join("\n", stale));
+        Assert.IsEmpty(stale, "No component stylesheet styles these listed classes any more:\n" + string.Join("\n", stale));
     }
 
     [TestMethod]
@@ -170,8 +169,7 @@ public sealed class BitFieldLabelFontWeightContractTests
             }
         }
 
-        Assert.AreEqual(0, offenders.Count,
-            $"Every font-weight of a field caption reads {FieldLabelToken} and nothing else:\n" + string.Join("\n", offenders));
+        Assert.IsEmpty(offenders, $"Every font-weight of a field caption reads {FieldLabelToken} and nothing else:\n" + string.Join("\n", offenders));
     }
 
     // Whether the selector's subject - its last compound, less any :not() - carries the caption class. A rule whose

@@ -128,7 +128,7 @@ public class TypedConnectionTests : BunitContext
 
         await Connect(cut, "a", "out", "b", "in");
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.AreEqual(BlowConnectionRejection.None, ends.Single().Rejection);
         Assert.AreEqual("Connected a to b", cut.Find(".bit-blow-a11y-live").TextContent);
     }
@@ -142,7 +142,7 @@ public class TypedConnectionTests : BunitContext
 
         await Connect(cut, "a", "out", "b", "in");
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public class TypedConnectionTests : BunitContext
         await Connect(cut, "a", null, "c", null);
         await Connect(cut, "b", null, "c", null);
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.AreEqual(BlowConnectionRejection.TargetFull, ends[^1].Rejection);
     }
 
@@ -273,7 +273,7 @@ public class TypedConnectionTests : BunitContext
 
         answer = true;
         await Connect(cut, "a", null, "c", null);
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.IsTrue(ends[^1].IsValid);
     }
 
@@ -295,7 +295,7 @@ public class TypedConnectionTests : BunitContext
         edges.Add(new BlowEdge { Id = "made-elsewhere", Source = "a", Target = "b" });
         await cut.InvokeAsync(() => confirmation.SetResult(true));
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.AreEqual(BlowConnectionRejection.Duplicate, ends.Single().Rejection);
     }
 
@@ -317,7 +317,7 @@ public class TypedConnectionTests : BunitContext
         // ...and drops it on a handle that refuses it.
         await cut.InvokeAsync(() => cut.Instance.CompleteConnection("c", null, BlowHandleType.Target));
 
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.HasCount(2, ends);
         Assert.IsTrue(ends[0].IsValid, "the confirmed connection");
         Assert.IsFalse(ends[1].IsValid, "the second gesture was reported as connected");
@@ -338,7 +338,7 @@ public class TypedConnectionTests : BunitContext
 
         // The canvas could not await it - the pointer release that started it has long returned - so it hands the
         // exception to the renderer, where an error boundary or the app's error UI sees it, rather than losing it.
-        var thrown = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        var thrown = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.IsInstanceOfType<InvalidOperationException>(thrown);
         Assert.AreEqual("server said no", thrown.Message);
     }
@@ -372,4 +372,6 @@ public class TypedConnectionTests : BunitContext
 
         Assert.AreEqual(BlowErrorCode.ParentCycle, errors.Single().Code);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

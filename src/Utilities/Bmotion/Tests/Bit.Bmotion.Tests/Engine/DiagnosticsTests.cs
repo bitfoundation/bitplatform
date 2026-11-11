@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
 
@@ -16,7 +16,7 @@ public class DiagnosticsTests
         engine.RegisterElement("el", new Dictionary<string, object?> { ["x"] = 10.0, ["opacity"] = 0.5 });
 
         var diag = engine.GetDiagnostics();
-        Assert.AreEqual(1, diag.Count);
+        Assert.ContainsSingle(diag);
         var el = diag[0];
         Assert.AreEqual("el", el.Id);
         Assert.AreEqual(10.0, el.Transforms["x"]);
@@ -38,8 +38,8 @@ public class DiagnosticsTests
 
         var el = engine.GetDiagnostics().Single(d => d.Id == "el");
         Assert.IsTrue(el.HasActiveAnimations);
-        Assert.IsTrue(el.ActiveProperties.Contains("backgroundColor"));
-        Assert.IsTrue(el.ActiveDriverCount >= 1);
+        Assert.Contains("backgroundColor", el.ActiveProperties);
+        Assert.IsGreaterThanOrEqualTo(1, el.ActiveDriverCount);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class DiagnosticsTests
         var el = engine.GetDiagnostics().Single(d => d.Id == "el");
         Assert.IsTrue(el.HasActiveAnimations);
         Assert.AreEqual(0, el.ActiveDriverCount, "nothing runs on the frame loop");
-        CollectionAssert.AreEquivalent(new[] { "backgroundColor", "x" }, el.BrowserProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "backgroundColor", "x" }, el.BrowserProperties.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -101,6 +101,6 @@ public class DiagnosticsTests
     public async Task GetDiagnostics_Empty_WhenNothingRegistered()
     {
         await using var engine = NewEngine();
-        Assert.AreEqual(0, engine.GetDiagnostics().Count);
+        Assert.IsEmpty(engine.GetDiagnostics());
     }
 }

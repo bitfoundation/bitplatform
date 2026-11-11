@@ -24,7 +24,7 @@ public class BitImagePrerenderTests : BunitTestContext
             [nameof(BitImage.Alt)] = "A lighthouse",
         });
 
-        StringAssert.Contains(html, @"src=""image.png""");
+        Assert.Contains(@"src=""image.png""", html);
         Assert.DoesNotContain("bit-img-hid", html);
 
         // The img is on screen with its own alt, so there is no stand-in to announce in its place.
@@ -40,7 +40,7 @@ public class BitImagePrerenderTests : BunitTestContext
             [nameof(BitImage.Loading)] = BitImageLoading.Lazy,
         });
 
-        StringAssert.Contains(html, @"loading=""lazy""");
+        Assert.Contains(@"loading=""lazy""", html);
         Assert.DoesNotContain("bit-img-hid", html);
         Assert.DoesNotContain("bit-img-lzy", html);
     }
@@ -67,8 +67,8 @@ public class BitImagePrerenderTests : BunitTestContext
             [nameof(BitImage.PlaceholderSrc)] = "tiny.png",
         });
 
-        StringAssert.Contains(html, @"src=""tiny.png""");
-        StringAssert.Contains(html, "bit-img-nat");
+        Assert.Contains(@"src=""tiny.png""", html);
+        Assert.Contains("bit-img-nat", html);
         Assert.DoesNotContain("bit-img-hid", html);
     }
 
@@ -94,8 +94,8 @@ public class BitImagePrerenderTests : BunitTestContext
             [nameof(BitImage.LoadingTemplate)] = (RenderFragment)(b => b.AddContent(0, "loading...")),
         });
 
-        StringAssert.Contains(html, "bit-img-hid");
-        StringAssert.Contains(html, "loading...");
+        Assert.Contains("bit-img-hid", html);
+        Assert.Contains("loading...", html);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class BitImagePrerenderTests : BunitTestContext
 
         // It was on screen all along, so there is no arrival to fade in and no placeholder left to fade out.
         Assert.IsFalse(image.ClassList.Contains("bit-img-fde"));
-        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-plc"));
     }
 
     [TestMethod]
@@ -140,7 +140,7 @@ public class BitImagePrerenderTests : BunitTestContext
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
         Assert.AreEqual(1, loaded);
-        CollectionAssert.AreEqual(new[] { BitImageState.Loaded }, states);
+        Assert.AreSequenceEqual(new[] { BitImageState.Loaded }, states);
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public class BitImagePrerenderTests : BunitTestContext
 
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
         Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
-        Assert.AreEqual(1, component.FindAll(".bit-img-tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-tpl"));
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
@@ -178,7 +178,7 @@ public class BitImagePrerenderTests : BunitTestContext
         // Part of it is on screen already, so it is not taken away for the loading template only to come back.
         Assert.AreEqual(BitImageState.Loading, component.Instance.LoadingState);
         Assert.IsFalse(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
-        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-img-tpl"));
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 
@@ -262,9 +262,9 @@ public class BitImagePrerenderTests : BunitTestContext
 
         // Nothing was on screen before this render, so the image is the component's from the start: hidden behind
         // its loading template, and faded in when it arrives.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.getImageProgress"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.getImageProgress"]);
         Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
-        Assert.AreEqual(1, component.FindAll(".bit-img-tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-img-tpl"));
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
 

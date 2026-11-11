@@ -52,7 +52,7 @@ public class CopyAndHandleStateTests : BunitContext
         var cut = Render(nodes, ChainEdges());
         var fragment = cut.Instance.Copy();
 
-        Assert.AreEqual(2, fragment.Nodes.Count);
+        Assert.HasCount(2, fragment.Nodes);
         Assert.ContainsSingle(fragment.Edges);
         Assert.AreEqual("a-b", fragment.Edges[0].Id);
     }
@@ -83,7 +83,7 @@ public class CopyAndHandleStateTests : BunitContext
         cut.Instance.Copy();
         var pasted = await cut.InvokeAsync(() => cut.Instance.PasteAsync());
 
-        Assert.AreEqual(2, pasted.Nodes.Count);
+        Assert.HasCount(2, pasted.Nodes);
         var edge = Assert.ContainsSingle(pasted.Edges);
 
         // The copy is wired to the copies, not back to the originals.
@@ -102,12 +102,12 @@ public class CopyAndHandleStateTests : BunitContext
         var cut = Render(nodes, edges);
         var duplicate = await cut.InvokeAsync(() => cut.Instance.DuplicateSelectionAsync());
 
-        Assert.AreEqual(3, duplicate.Nodes.Count);
-        Assert.AreEqual(2, duplicate.Edges.Count);
+        Assert.HasCount(3, duplicate.Nodes);
+        Assert.HasCount(2, duplicate.Edges);
 
         // The two originals plus the two copies, all still wired up.
-        Assert.AreEqual(4, edges.Count);
-        Assert.AreEqual(6, nodes.Count);
+        Assert.HasCount(4, edges);
+        Assert.HasCount(6, nodes);
     }
 
     [TestMethod]
@@ -123,7 +123,7 @@ public class CopyAndHandleStateTests : BunitContext
         foreach (var n in nodes) n.Selected = false;
         var second = cut.Instance.Copy();
 
-        Assert.AreEqual(2, second.Nodes.Count);
+        Assert.HasCount(2, second.Nodes);
         Assert.IsTrue(cut.Instance.CanPaste);
     }
 

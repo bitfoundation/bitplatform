@@ -24,7 +24,7 @@ public class BitElementStylesheetTests
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            Assert.Contains($"var({variable}, ", stylesheet, $"{variable} is never read with a fallback.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -41,7 +41,7 @@ public class BitElementStylesheetTests
 
         var documented = Regex.Matches(demo, @"Name = ""(--bit-Element-[A-Za-z0-9_-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, documented);
+        Assert.AreSequenceEqual(PublicVariables, documented, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -50,8 +50,8 @@ public class BitElementStylesheetTests
         var stylesheet = ReadStylesheet();
 
         // The fallback is the global disabled opacity, so every preset re-skins the element with no variable set.
-        StringAssert.Contains(stylesheet, "opacity: var(--bit-Element-disabled-opacity, #{$opa-dis});");
-        StringAssert.Contains(stylesheet, "pointer-events: none;");
+        Assert.Contains("opacity: var(--bit-Element-disabled-opacity, #{$opa-dis});", stylesheet);
+        Assert.Contains("pointer-events: none;", stylesheet);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitElementStylesheetTests
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // Forced colors paint only the form elements the browser disables itself in GrayText.
-        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-elm\.bit-dis \{\s*color: GrayText;"));
+        Assert.MatchesRegex(new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-elm\.bit-dis \{\s*color: GrayText;"), stylesheet);
     }
 
     private static string ReadStylesheet()

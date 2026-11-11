@@ -35,8 +35,8 @@ public class BitBadgeTests : BunitTestContext
 
         // A badge with no content, no icon, no template, no description and no dot has nothing to report, so
         // it is not rendered as an empty mark on top of its child - which keeps rendering either way.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
+        Assert.ContainsSingle(component.FindAll(".child"));
         Assert.IsNotNull(component.Find(".bit-bdg"));
     }
 
@@ -48,7 +48,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, string.Empty);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -59,21 +59,21 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Dot, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
 
         component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.IconName, "Emoji");
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
 
         component = RenderComponent<BitBadge>(parameters =>
         {
             parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
 
         component = RenderComponent<BitBadge>(parameters =>
         {
@@ -82,7 +82,7 @@ public class BitBadgeTests : BunitTestContext
 
         // A description is content of its own for assistive technologies, so dropping the badge would drop
         // the only thing it had to say.
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class BitBadgeTests : BunitTestContext
 
         var badgeContainers = component.FindAll(".bit-bdg-ctn");
 
-        Assert.AreEqual(hidden ? 0 : 1, badgeContainers.Count);
+        Assert.HasCount(hidden ? 0 : 1, badgeContainers);
     }
 
     [TestMethod]
@@ -109,15 +109,15 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, 5);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Hidden, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Hidden, false));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -191,7 +191,7 @@ public class BitBadgeTests : BunitTestContext
         }
         else
         {
-            Assert.IsTrue(badgeCtn.TextContent.Trim().Length > 0);
+            Assert.IsGreaterThan(0, badgeCtn.TextContent.Trim().Length);
         }
     }
 
@@ -208,7 +208,7 @@ public class BitBadgeTests : BunitTestContext
         var description = component.Find(".bit-bdg-vhd");
 
         Assert.AreEqual("3 unread messages", description.TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-con"));
     }
 
     [TestMethod]
@@ -266,7 +266,7 @@ public class BitBadgeTests : BunitTestContext
         });
 
         var badgeCtn = component.Find(".bit-bdg-ctn");
-        Assert.IsTrue(badgeCtn.TextContent.Contains(content));
+        Assert.Contains(content, badgeCtn.TextContent);
 
         var contentElement = component.Find(".bit-bdg-con");
         Assert.AreEqual(content, contentElement.TextContent);
@@ -283,7 +283,7 @@ public class BitBadgeTests : BunitTestContext
         });
 
         var badgeCtn = component.Find(".bit-bdg-ctn");
-        Assert.IsTrue(badgeCtn.TextContent.Contains("99+"));
+        Assert.Contains("99+", badgeCtn.TextContent);
     }
 
     [TestMethod]
@@ -372,7 +372,7 @@ public class BitBadgeTests : BunitTestContext
     {
         var component = RenderComponent<BitBadge>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-con"));
     }
 
     [TestMethod]
@@ -387,7 +387,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ShowZero, showZero);
         });
 
-        Assert.AreEqual(expectedCount, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.HasCount(expectedCount, component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -399,7 +399,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ShowZero, false);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -412,7 +412,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ShowZero, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -424,7 +424,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ShowZero, false);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -436,11 +436,11 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ShowZero, false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Content, 1));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
         Assert.AreEqual("1", component.Find(".bit-bdg-con").TextContent);
     }
 
@@ -472,7 +472,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddContent(0, "template")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-con"));
     }
 
     [TestMethod]
@@ -684,8 +684,8 @@ public class BitBadgeTests : BunitTestContext
 
         var style = component.Find(".bit-bdg").GetAttribute("style");
 
-        Assert.IsTrue(style!.Contains("--bit-bdg-ofs-x:-0.5rem"));
-        Assert.IsTrue(style.Contains("--bit-bdg-ofs-y:4px"));
+        Assert.Contains("--bit-bdg-ofs-x:-0.5rem", style!);
+        Assert.Contains("--bit-bdg-ofs-y:4px", style!);
     }
 
     [TestMethod]
@@ -696,13 +696,13 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.OffsetX, "1px");
         });
 
-        Assert.IsTrue(component.Find(".bit-bdg").GetAttribute("style")!.Contains("--bit-bdg-ofs-x:1px"));
+        Assert.Contains("--bit-bdg-ofs-x:1px", component.Find(".bit-bdg").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.OffsetX, "2px"));
 
         var style = component.Find(".bit-bdg").GetAttribute("style");
-        Assert.IsTrue(style!.Contains("--bit-bdg-ofs-x:2px"));
-        Assert.IsFalse(style.Contains("--bit-bdg-ofs-x:1px"));
+        Assert.Contains("--bit-bdg-ofs-x:2px", style!);
+        Assert.DoesNotContain("--bit-bdg-ofs-x:1px", style!);
     }
 
     [TestMethod]
@@ -861,7 +861,7 @@ public class BitBadgeTests : BunitTestContext
 
         // A static label read in place of the count would keep the figure from ever reaching a screen reader.
         Assert.IsNull(component.Find(".bit-bdg").GetAttribute("aria-label"));
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-vhd"));
         Assert.IsNull(component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
     }
 
@@ -876,7 +876,7 @@ public class BitBadgeTests : BunitTestContext
         });
 
         // The label names what the badge shows; with nothing to show there is no badge, rather than an empty pill.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         var withRole = Context.Render(builder =>
         {
@@ -886,7 +886,7 @@ public class BitBadgeTests : BunitTestContext
             builder.CloseComponent();
         });
 
-        Assert.AreEqual(0, withRole.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(withRole.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -917,7 +917,7 @@ public class BitBadgeTests : BunitTestContext
         });
 
         Assert.AreEqual("Inbox", component.Find(".bit-bdg").GetAttribute("aria-label"));
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-vhd"));
     }
     [TestMethod]
     public void BitBadgeLiveRegionShouldReadTheAriaLabelOfAPlainBadge()
@@ -1025,7 +1025,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, 5);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-vhd"));
         Assert.IsNull(component.Find(".bit-bdg-con").GetAttribute("aria-hidden"));
     }
 
@@ -1040,7 +1040,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Live, live);
         });
 
-        Assert.AreEqual(live ? 1 : 0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.HasCount(live ? 1 : 0, component.FindAll(".bit-bdg-lvr"));
 
         // The visual badge is hidden from assistive technologies while the live region carries its text,
         // so the count is never announced twice.
@@ -1151,12 +1151,12 @@ public class BitBadgeTests : BunitTestContext
 
         // The badge is gone, but the region a screen reader listens to has to already be on the page when
         // the count comes back - otherwise the change it is meant to announce is what creates it.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
         Assert.AreEqual(string.Empty, component.Find(".bit-bdg-lvr").TextContent);
 
         component.Render(parameters => parameters.Add(p => p.Content, 3));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
         Assert.AreEqual("3", component.Find(".bit-bdg-lvr").TextContent);
     }
 
@@ -1189,7 +1189,7 @@ public class BitBadgeTests : BunitTestContext
 
         // A focusable element cannot be hidden from a screen reader, so a clickable badge announces itself
         // rather than being spoken for by a region next to it.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-lvr"));
         Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
         Assert.AreEqual("polite", component.Find(".bit-bdg-ctn").GetAttribute("aria-live"));
     }
@@ -1202,7 +1202,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, 5);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-lvr"));
         Assert.IsNull(component.Find(".bit-bdg-wrp").GetAttribute("aria-hidden"));
     }
 
@@ -1277,7 +1277,7 @@ public class BitBadgeTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-bdg").ClassList.Contains("custom-root"));
-        Assert.IsTrue(component.Find(".bit-bdg").GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", component.Find(".bit-bdg").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-bdg-wrp").ClassList.Contains("custom-wrapper"));
         Assert.AreEqual("color: green;", component.Find(".bit-bdg-wrp").GetAttribute("style"));
@@ -1307,7 +1307,7 @@ public class BitBadgeTests : BunitTestContext
         var root = component.Find(".bit-bdg");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: tomato;"));
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1329,7 +1329,7 @@ public class BitBadgeTests : BunitTestContext
         }
         else
         {
-            Assert.IsTrue(style!.Contains(expectedStyle));
+            Assert.Contains(expectedStyle, style!);
         }
     }
 
@@ -1390,7 +1390,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.AddChildContent("<span class=\"child\">child</span>");
         });
 
-        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.ContainsSingle(component.FindAll(".child"));
         Assert.AreEqual("5", component.Find(".bit-bdg-con").TextContent);
     }
 
@@ -1467,8 +1467,8 @@ public class BitBadgeTests : BunitTestContext
 
         // The template is what the badge is showing, so an unrelated numeric Content of zero next to it is
         // not an empty counter and must not take the badge off the page.
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
+        Assert.ContainsSingle(component.FindAll(".tpl"));
     }
 
     [TestMethod]
@@ -1480,7 +1480,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -1508,7 +1508,7 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, (nint)0);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -1555,9 +1555,9 @@ public class BitBadgeTests : BunitTestContext
 
         // An icon is content of its own rather than a number, so ShowZero takes the emptied count off the
         // badge and leaves the glyph - and the badge - where they are.
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ico").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-con").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ico"));
+        Assert.IsEmpty(component.FindAll(".bit-bdg-con"));
     }
 
     [TestMethod]
@@ -1570,8 +1570,8 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.ContentTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"tpl\">new</span>")));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(1, component.FindAll(".tpl").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
+        Assert.ContainsSingle(component.FindAll(".tpl"));
     }
 
     [TestMethod]
@@ -1633,15 +1633,15 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Content, 0.0);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Content, 0m));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Content, 0.5));
 
-        Assert.AreEqual(1, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-bdg-ctn"));
     }
 
     [TestMethod]
@@ -1703,7 +1703,7 @@ public class BitBadgeTests : BunitTestContext
         // A badge that leads somewhere is a link even when it also does something on the way there: the
         // navigation is what cannot be reproduced by a handler on a button.
         Assert.AreEqual("A", component.Find(".bit-bdg-ctn").TagName);
-        Assert.AreEqual(0, component.FindAll("button").Count);
+        Assert.IsEmpty(component.FindAll("button"));
     }
 
     [TestMethod]
@@ -1864,7 +1864,7 @@ public class BitBadgeTests : BunitTestContext
 
         // A link is focusable, so it cannot be hidden from assistive technologies the way the rest of the
         // badge is: the region stays on the link itself rather than moving out to the root.
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-lvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-lvr"));
 
         var badge = component.Find(".bit-bdg-ctn");
 
@@ -1882,8 +1882,8 @@ public class BitBadgeTests : BunitTestContext
             parameters.Add(p => p.Description, "Online");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
+        Assert.IsEmpty(component.FindAll(".bit-bdg-vhd"));
     }
 
     [TestMethod]
@@ -2051,7 +2051,7 @@ public class BitBadgeTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Content, 0));
 
-        Assert.AreEqual(0, component.FindAll(".bit-bdg-ctn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bdg-ctn"));
 
         component.Render(parameters => parameters.Add(p => p.Content, 1));
 

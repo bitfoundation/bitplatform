@@ -27,13 +27,13 @@ public class BitFileUploadPrerenderTests
         // The removal request goes through an injected HttpClient, which an app registers itself.
         services => services.AddScoped(_ => new HttpClient()));
 
-        StringAssert.Contains(html, "bit-upl");
-        StringAssert.Contains(html, "bit-upl-dra");
-        StringAssert.Contains(html, "Attach");
-        StringAssert.Contains(html, "type=\"file\"");
-        StringAssert.Contains(html, "name=\"attachments\"");
-        StringAssert.Contains(html, "invoice.pdf");
-        StringAssert.Contains(html, "Already uploaded");
-        StringAssert.Contains(html, "value=\"invoice.pdf\"");
+        Assert.Contains("bit-upl", html);
+        Assert.Contains("bit-upl-dra", html);
+        Assert.Contains("Attach", html);
+        Assert.Contains("type=\"file\"", html);
+        Assert.Contains("name=\"attachments\"", html);
+        Assert.Contains("invoice.pdf", html);
+        Assert.Contains("Already uploaded", html);
+        Assert.Contains("value=\"invoice.pdf\"", html);
     }
 }

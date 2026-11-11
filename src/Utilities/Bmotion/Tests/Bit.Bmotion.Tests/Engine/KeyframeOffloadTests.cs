@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using Bit.Bmotion.Tests.TestInfra;
 
@@ -72,7 +72,7 @@ public class KeyframeOffloadTests
         Assert.AreEqual(1.4, WebAnimationKeyframes.At(kf, 1.0 / 3, WebAnimationKeyframes.Scale), 2e-3);
         // Half-way through that segment it is eased out within it, past the linear mid-point.
         double mid = WebAnimationKeyframes.At(kf, 1.0 / 6, WebAnimationKeyframes.Scale);
-        Assert.IsTrue(mid > 1.2 + 0.05, $"the segment eases on its own: {mid}");
+        Assert.IsGreaterThan(1.2 + 0.05, mid, $"the segment eases on its own: {mid}");
         Assert.AreEqual(1.0, WebAnimationKeyframes.Scale(kf[^1]), 1e-9);
     }
 
@@ -149,7 +149,7 @@ public class KeyframeOffloadTests
 
         var cancel = interop.ArgsOf("cancelWaapiAnimation").Single();
         Assert.AreEqual(4242, cancel[1]);
-        Assert.AreEqual(true, cancel[2]);
+        Assert.IsTrue((bool?)cancel[2]);
 
         // The new offload starts from the realized middle keyframe.
         var keyframes = OffloadedKeyframes(interop)!;

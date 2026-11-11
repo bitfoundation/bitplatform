@@ -83,23 +83,23 @@ public class AzureMonitorLiveMetricsTests
         var ok = documents[0];
         Assert.AreEqual("Request", ok.GetProperty("DocumentType").GetString());
         Assert.AreEqual("DocumentType", ok.EnumerateObject().First().Name, "The discriminator comes first.");
-        CollectionAssert.AreEqual(new[] { "all-requests" }, StreamIds(ok));
+        Assert.AreSequenceEqual(new[] { "all-requests" }, StreamIds(ok));
         Assert.AreEqual("GET /orders/{id}", ok.GetProperty("Name").GetString());
         Assert.AreEqual("https://shop.test/orders/7", ok.GetProperty("Url").GetString());
         Assert.AreEqual("200", ok.GetProperty("ResponseCode").GetString());
         Assert.AreEqual("PT1.5S", ok.GetProperty("Duration").GetString(), "An ISO 8601 duration.");
 
-        CollectionAssert.AreEqual(new[] { "failed", "all-requests" }, StreamIds(documents[1]));
+        Assert.AreSequenceEqual(new[] { "failed", "all-requests" }, StreamIds(documents[1]));
         Assert.AreEqual("503", documents[1].GetProperty("ResponseCode").GetString());
 
         Assert.AreEqual("Trace", documents[2].GetProperty("DocumentType").GetString());
         Assert.AreEqual("Order 7 placed", documents[2].GetProperty("Message").GetString());
-        CollectionAssert.AreEqual(new[] { "orders" }, StreamIds(documents[2]));
+        Assert.AreSequenceEqual(new[] { "orders" }, StreamIds(documents[2]));
 
         Assert.AreEqual("RemoteDependency", documents[3].GetProperty("DocumentType").GetString());
         Assert.AreEqual("GET /api/orders", documents[3].GetProperty("Name").GetString());
         Assert.AreEqual("PT1.5S", documents[3].GetProperty("Duration").GetString());
-        CollectionAssert.AreEqual(new[] { "failed" }, StreamIds(documents[3]));
+        Assert.AreSequenceEqual(new[] { "failed" }, StreamIds(documents[3]));
 
         Assert.AreEqual(0, Post(live).GetProperty("Documents").GetArrayLength(), "A sample is sent once.");
     }
@@ -151,8 +151,7 @@ public class AzureMonitorLiveMetricsTests
         Assert.AreEqual("Exception", documents[0].GetProperty("DocumentType").GetString());
         Assert.AreEqual("System.TimeoutException", documents[0].GetProperty("ExceptionType").GetString());
         Assert.AreEqual("The call timed out", documents[0].GetProperty("ExceptionMessage").GetString());
-        CollectionAssert.AreEqual(new[] { "order" }, documents[0].GetProperty("Properties").EnumerateArray().Select(p => p.GetProperty("key").GetString()).ToArray(),
-                                  "Its exception.* attributes are its fields.");
+        Assert.AreSequenceEqual(new[] { "order" }, documents[0].GetProperty("Properties").EnumerateArray().Select(p => p.GetProperty("key").GetString()).ToArray(), "Its exception.* attributes are its fields.");
         Assert.AreEqual("Read timed out", documents[1].GetProperty("ExceptionMessage").GetString());
     }
 
@@ -184,7 +183,7 @@ public class AzureMonitorLiveMetricsTests
             Apply(traces, all);
             traces.OnRecord(Request(200));
             traces.OnRecord(Records.Log("hello", severity: BelemetrySeverity.Warn));
-            CollectionAssert.AreEqual(new[] { "Request" }, DocumentTypes(Post(traces)), "Application Insights gets no logs from this exporter.");
+            Assert.AreSequenceEqual(new[] { "Request" }, DocumentTypes(Post(traces)), "Application Insights gets no logs from this exporter.");
         }
 
         await using var warnings = Create(o => o.MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Warning);
@@ -213,7 +212,7 @@ public class AzureMonitorLiveMetricsTests
 
         var documents = Post(live).GetProperty("Documents").EnumerateArray().Select(StreamIds).Select(ids => string.Join(",", ids)).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "a", "a", "b", "b" }, documents, "Each stream takes two; a sample no stream has quota for is not sent.");
+        Assert.AreSequenceEqual(new[] { "a", "a", "b", "b" }, documents, "Each stream takes two; a sample no stream has quota for is not sent.");
     }
 
     [TestMethod]
@@ -400,18 +399,18 @@ public class AzureMonitorLiveMetricsTests
             """);
 
         var configuration = live.Configuration!;
-        CollectionAssert.AreEqual(new[] { "s" }, configuration.StreamIds.ToArray());
-        CollectionAssert.AreEqual(new[] { "m" }, configuration.MetricIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "s" }, configuration.StreamIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "m" }, configuration.MetricIds.ToArray());
 
         live.OnRecord(Request(200));
         var point = Post(live);
-        Assert.HasCount(1, point.GetProperty("Documents").EnumerateArray().ToList(), "The stream's valid group still samples.");
+        Assert.ContainsSingle(point.GetProperty("Documents").EnumerateArray().ToList(), "The stream's valid group still samples.");
         Assert.AreEqual(1, Metrics(point)["m"]);
 
         var errors = point.GetProperty("CollectionConfigurationErrors").EnumerateArray()
                           .Select(e => $"{e.GetProperty("CollectionConfigurationErrorType").GetString()}:{Data(e).GetValueOrDefault("DocumentStreamInfoId") ?? Data(e)["MetricId"]}")
                           .ToArray();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "DocumentStreamFailureToCreateFilterUnexpected:s",
             "DocumentStreamFailureToCreate:s",
@@ -447,8 +446,8 @@ public class AzureMonitorLiveMetricsTests
               ] }
             """);
 
-        CollectionAssert.AreEqual(new[] { "s" }, live.Configuration!.StreamIds.ToArray());
-        CollectionAssert.AreEqual(new[] { "ok" }, live.Configuration.MetricIds.ToArray(), "An absent or null list is an empty one.");
+        Assert.AreSequenceEqual(new[] { "s" }, live.Configuration!.StreamIds.ToArray());
+        Assert.AreSequenceEqual(new[] { "ok" }, live.Configuration.MetricIds.ToArray(), "An absent or null list is an empty one.");
 
         live.OnRecord(Request(200));
         var point = Post(live);
@@ -459,7 +458,7 @@ public class AzureMonitorLiveMetricsTests
                           .Select(e => (Type: e.GetProperty("CollectionConfigurationErrorType").GetString(), Message: e.GetProperty("Message").GetString()!,
                                         Id: Data(e).GetValueOrDefault("DocumentStreamInfoId") ?? Data(e)["MetricId"]))
                           .ToList();
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
         {
             "DocumentStreamFailureToCreateFilterUnexpected:s",
             "DocumentStreamFailureToCreateFilterUnexpected:s",
@@ -507,7 +506,7 @@ public class AzureMonitorLiveMetricsTests
         Assert.AreEqual("Payment declined", Properties(documents[1])["message"], "A failed span's status message.");
         Assert.AreEqual("MyApp.Orders", Properties(documents[2])["CategoryName"], "A trace's category.");
         Assert.AreEqual("Custom", Properties(documents[3])["CategoryName"]);
-        Assert.HasCount(1, documents[3].GetProperty("Properties").EnumerateArray().ToList(), "The attribute only.");
+        Assert.ContainsSingle(documents[3].GetProperty("Properties").EnumerateArray().ToList(), "The attribute only.");
         Assert.AreEqual(1, Metrics(point)["orders"]);
     }
 
@@ -556,8 +555,7 @@ public class AzureMonitorLiveMetricsTests
         host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Errors);
         host.Consent.Decide(BelemetryFeatures.All);
 
-        CollectionAssert.AreEqual(new[] { "Trace" }, DocumentTypes(Post(live)),
-                                  "The exception goes - the pipeline purged its record at the revoke; the trace, whose feature was not revoked, stays.");
+        Assert.AreSequenceEqual(new[] { "Trace" }, DocumentTypes(Post(live)), "The exception goes - the pipeline purged its record at the revoke; the trace, whose feature was not revoked, stays.");
     }
 
     [TestMethod]
@@ -637,13 +635,12 @@ public class AzureMonitorLiveMetricsTests
         var document = Post(live).GetProperty("Documents").EnumerateArray().Single();
         Assert.AreEqual("PageVisitTime", document.GetProperty("Name").GetString());
         var properties = Properties(document);
-        CollectionAssert.AreEqual(new Dictionary<string, string?> { ["tenant"] = "contoso", ["PageName"] = "Orders", ["PageUrl"] = "https://shop.test/orders" }, properties,
-                                  "Its fields' attributes are no properties, and its PageName takes the place of the attribute's.");
+        Assert.AreSequenceEqual(new Dictionary<string, string?> { ["tenant"] = "contoso", ["PageName"] = "Orders", ["PageUrl"] = "https://shop.test/orders" }, properties, "Its fields' attributes are no properties, and its PageName takes the place of the attribute's.");
 
         using var envelope = JsonDocument.Parse(AzureMonitorEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [visit]), new("ikey", MaskIp: false), out _));
         var written = envelope.RootElement[0].GetProperty("data").GetProperty("baseData").GetProperty("properties").EnumerateObject()
                               .Select(p => KeyValuePair.Create(p.Name, (string?)p.Value.GetString())).ToList();
-        CollectionAssert.AreEqual(properties.ToList(), written, "The properties of its item in Application Insights, once each.");
+        Assert.AreSequenceEqual(properties.ToList(), written, "The properties of its item in Application Insights, once each.");
     }
 
     [TestMethod]
@@ -706,13 +703,12 @@ public class AzureMonitorLiveMetricsTests
         var point = Post(live);
         var documents = point.GetProperty("Documents").EnumerateArray().ToList();
         Assert.HasCount(2, documents);
-        CollectionAssert.AreEqual(new[] { "slow" }, StreamIds(documents[0]), "1.5 s is over 1 s; 0.5 s is not.");
-        CollectionAssert.AreEqual(new[] { "orders" }, StreamIds(documents[1]));
+        Assert.AreSequenceEqual(new[] { "slow" }, StreamIds(documents[0]), "1.5 s is over 1 s; 0.5 s is not.");
+        Assert.AreSequenceEqual(new[] { "orders" }, StreamIds(documents[1]));
         Assert.AreEqual(2, Metrics(point)["n"]);
         Assert.AreEqual(500, Metrics(point)["fastest"]);
         Assert.AreEqual(1500, Metrics(point)["slowest"]);
-        CollectionAssert.AreEqual(new[] { "The telemetry type 'Metric' is not supported: Belemetry has no items of it.", "The aggregation '' is not supported." },
-                                  point.GetProperty("CollectionConfigurationErrors").EnumerateArray().Select(e => e.GetProperty("Message").GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "The telemetry type 'Metric' is not supported: Belemetry has no items of it.", "The aggregation '' is not supported." }, point.GetProperty("CollectionConfigurationErrors").EnumerateArray().Select(e => e.GetProperty("Message").GetString()).ToArray());
     }
 
     [TestMethod]
@@ -734,15 +730,15 @@ public class AzureMonitorLiveMetricsTests
         Assert.AreEqual("e2", handler.Requests[1].Message.Headers.GetValues("x-ms-qps-configuration-etag").Single(),
                         "Its etag is carried back: the service does not send the body again with every response.");
         Assert.AreEqual("e2", live.Configuration!.ETag, "An empty body changes nothing.");
-        Assert.HasCount(1, diagnostics, "Read once.");
+        Assert.ContainsSingle(diagnostics, "Read once.");
 
         using var post = JsonDocument.Parse(handler.Requests[1].Body);
         var point = post.RootElement[0];
         Assert.AreEqual(0, point.GetProperty("Documents").GetArrayLength(), "Nothing is sampled - and what the configuration it replaced took went.");
         var error = point.GetProperty("CollectionConfigurationErrors").EnumerateArray().Single();
         Assert.AreEqual("CollectionConfigurationFailureToCreateUnexpected", error.GetProperty("CollectionConfigurationErrorType").GetString());
-        CollectionAssert.AreEqual(new Dictionary<string, string?> { ["ETag"] = "e2" }, Data(error));
-        Assert.HasCount(1, Post(live).GetProperty("CollectionConfigurationErrors").EnumerateArray().ToList(), "Reported with every data point while it lasts.");
+        Assert.AreSequenceEqual(new Dictionary<string, string?> { ["ETag"] = "e2" }, Data(error));
+        Assert.ContainsSingle(Post(live).GetProperty("CollectionConfigurationErrors").EnumerateArray().ToList(), "Reported with every data point while it lasts.");
 
         Apply(live, Streams("""{ "TelemetryType": "Request", "Filters": { "Filters": [] } }"""), "e4");
         live.OnRecord(Request(200));
@@ -877,7 +873,9 @@ public class AzureMonitorLiveMetricsTests
     private static void Apply(AzureMonitorLiveMetrics live, string configuration, string etag = "e1")
     {
         live.ApplyConfiguration(Encoding.UTF8.GetBytes(configuration), etag);
-        Assert.AreEqual(etag, live.Configuration?.ETag);
+        var expectedValue = etag;
+        var actualValue = live.Configuration?.ETag;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     private static async Task WaitUntil(Func<bool> condition)

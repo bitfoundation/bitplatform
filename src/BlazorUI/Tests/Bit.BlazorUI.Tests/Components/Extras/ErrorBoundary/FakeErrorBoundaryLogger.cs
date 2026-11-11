@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 /// Stands in for the logger every Blazor host registers, so a test can observe that the boundary logs
 /// what it caught exactly as the framework's own boundary does.
 /// </summary>
-public class FakeErrorBoundaryLogger : IErrorBoundaryLogger
+internal class FakeErrorBoundaryLogger : IErrorBoundaryLogger
 {
     public List<Exception> Logged { get; } = [];
 

@@ -36,7 +36,7 @@ public sealed class BitThemeDensityPresetsTests
 
         Assert.IsTrue(double.TryParse(overlay.Layout.DensityScale, NumberStyles.Float, CultureInfo.InvariantCulture, out var scale),
             $"DensityScale '{overlay.Layout.DensityScale}' must be a plain unitless number; spacing() multiplies it with the --bit-spa-scaling-factor length.");
-        Assert.IsTrue(scale > 1, $"A spacious overlay must expand spacing (scale > 1), got {scale}.");
+        Assert.IsGreaterThan(1, scale, $"A spacious overlay must expand spacing (scale > 1), got {scale}.");
 
         // Same invariant as the compact overlay: the base spacing unit is a CSS length and must
         // not be overridden by a density preset.

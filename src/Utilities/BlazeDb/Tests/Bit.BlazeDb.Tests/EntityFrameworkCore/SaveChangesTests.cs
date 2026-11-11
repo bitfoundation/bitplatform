@@ -211,7 +211,7 @@ public class SaveChangesTests
         await using var context = test.CreateContext();
 
         context.People.Add(new Person { Id = 1, Name = "Ada", City = "London", Age = 36 });
-        Assert.AreEqual(1, await context.SaveChangesAsync());
+        Assert.AreEqual(1, await context.SaveChangesAsync(TestContext.CancellationToken));
         Assert.IsNotNull(test.People.Get(1));
     }
 
@@ -227,7 +227,7 @@ public class SaveChangesTests
         {
             context.People.Add(new Person { Id = 1, Name = "Ada", City = "London", Age = 36 });
             context.SaveChanges();
-            await context.Database.GetBlazeDb().FlushAsync();
+            await context.Database.GetBlazeDb().FlushAsync(TestContext.CancellationToken);
             await context.Database.GetService<BlazeDbEngineCache>().ReleaseAsync(storage);
         }
 
@@ -288,7 +288,7 @@ public class SaveChangesTests
             Assert.AreEqual(1, context.SaveChanges());
             Assert.AreEqual(0, context.SaveChanges());
 
-            await context.Database.GetBlazeDb().FlushAsync();
+            await context.Database.GetBlazeDb().FlushAsync(TestContext.CancellationToken);
             await context.Database.GetService<BlazeDbEngineCache>().ReleaseAsync(storage);
         }
 
@@ -297,6 +297,8 @@ public class SaveChangesTests
         Assert.AreSequenceEqual(["a", "b", "c"], reloaded.Tags);
         Assert.AreSequenceEqual([9, 2], reloaded.Scores);
         Assert.AreSequenceEqual(new byte[] { 1, 7 }, reloaded.Payload);
-        await reopened.Database.EnsureDeletedAsync();
+        await reopened.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -28,7 +28,7 @@ public class CodeReviewTests
 
         Assert.AreEqual("Error", finding.Severity);
         Assert.AreEqual(6, finding.Line);
-        StringAssert.Contains(finding.Fix, "OnAfterRenderAsync");
+        Assert.Contains("OnAfterRenderAsync", finding.Fix);
     }
 
     [TestMethod]
@@ -41,7 +41,7 @@ public class CodeReviewTests
         var finding = Single(review, "browser-call-during-prerender");
 
         Assert.AreEqual("Warning", finding.Severity);
-        StringAssert.Contains(finding.Message, "Prerendering");
+        Assert.Contains("Prerendering", finding.Message);
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ public class CodeReviewTests
     {
         var finding = Single(Review("var canvas = ImageCanvas.Create(1200, 630, background);\ncanvas.FillCircle(center, 10, red);"), "image-buffer-not-disposed");
 
-        StringAssert.Contains(finding.Message, "ImageCanvas");
+        Assert.Contains("ImageCanvas", finding.Message);
     }
 
     // -- borrowed-buffer-disposed / editor-owns-loaded-buffer ----------------------------------
@@ -234,7 +234,7 @@ public class CodeReviewTests
         var finding = Single(Review("@page \"/x\"\n@inject ImageProcessor Processor"), "processor-injected-in-browser");
 
         Assert.AreEqual(2, finding.Line);
-        StringAssert.Contains(finding.Fix, "ImageProcessorFactory");
+        Assert.Contains("ImageProcessorFactory", finding.Fix);
 
         None(Review("@inject ImageProcessorFactory Processors"), "processor-injected-in-browser");
 
@@ -254,7 +254,7 @@ public class CodeReviewTests
         var finding = Single(review, "browser-services-with-headless-registration");
 
         Assert.AreEqual(3, finding.Line);
-        StringAssert.Contains(finding.Message, "ImageLoader");
+        Assert.Contains("ImageLoader", finding.Message);
 
         None(Review("builder.Services.AddBitBmageHeadlessServices();\napp.MapPost(\"/x\", (ImageProcessor processor) => 1);"), "browser-services-with-headless-registration");
     }
@@ -313,7 +313,7 @@ public class CodeReviewTests
         var finding = Single(review, "blazor-package-missing");
         Assert.AreEqual("Error", finding.Severity);
         Assert.AreEqual(3, finding.Line);
-        StringAssert.Contains(finding.Fix, "Bit.Bmage.Blazor");
+        Assert.Contains("Bit.Bmage.Blazor", finding.Fix);
 
         // A project is a browser project by what it uses: the editor, or the browser registration.
         Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.Razor\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\n<BmageEditor />"), "blazor-package-missing");
@@ -465,7 +465,7 @@ public class CodeReviewTests
         var finding = Single(review, "resize-late-in-pipeline");
 
         Assert.AreEqual(3, finding.Line);
-        StringAssert.Contains(finding.Message, "Brightness");
+        Assert.Contains("Brightness", finding.Message);
 
         None(Review("var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Brightness(0.1f).Sharpen(0.3f);"), "resize-late-in-pipeline");
         None(Review("var pipeline = ImagePipeline.Create().SmartCrop(AspectRatio.Square).Resize(256, 256);"), "resize-late-in-pipeline");
@@ -541,7 +541,7 @@ public class CodeReviewTests
 
         Assert.IsTrue(review.Passed);
         Assert.IsEmpty(review.Findings);
-        CollectionAssert.AreEqual(BmageCodeReview.Rules, review.RulesApplied);
+        Assert.AreSequenceEqual(BmageCodeReview.Rules, review.RulesApplied);
     }
 
     [TestMethod]
@@ -553,7 +553,7 @@ public class CodeReviewTests
             @inject ImageProcessor Processor
             """);
 
-        CollectionAssert.AreEqual(new[] { "Error", "Warning", "Suggestion" }, review.Findings.Select(finding => finding.Severity).ToArray());
+        Assert.AreSequenceEqual(new[] { "Error", "Warning", "Suggestion" }, review.Findings.Select(finding => finding.Severity).ToArray());
         Assert.IsFalse(review.Passed);
 
         Assert.IsTrue(Review("_src = encoded.ToDataUrl();").Passed, "A suggestion alone failed the review.");
@@ -562,12 +562,12 @@ public class CodeReviewTests
     [TestMethod]
     public void Catalog_EveryRuleIsUnique_AndNamesAGuideThatExists()
     {
-        CollectionAssert.AllItemsAreUnique(BmageCodeReview.Rules);
+        Assert.AreAllDistinct(BmageCodeReview.Rules);
 
         foreach (var rule in BmageCodeReview.Catalog)
         {
             Assert.IsNotNull(BmageSourceCatalog.ResolveDocumentName(rule.Source), $"'{rule.Id}' cites a guide that does not exist: '{rule.Source}'.");
-            CollectionAssert.Contains(new[] { "Error", "Warning", "Suggestion" }, rule.Severity);
+            Assert.Contains(rule.Severity, new[] { "Error", "Warning", "Suggestion" });
         }
     }
 
@@ -582,7 +582,7 @@ public class CodeReviewTests
 
         foreach (var rule in BmageCodeReview.Rules)
         {
-            StringAssert.Contains(source, $"\"{rule}\"", $"No test exercises '{rule}'.");
+            Assert.Contains($"\"{rule}\"", source, $"No test exercises '{rule}'.");
         }
     }
 
@@ -622,7 +622,7 @@ public class CodeReviewTests
     {
         var findings = review.Findings.Where(finding => finding.Rule == rule).ToArray();
 
-        Assert.HasCount(1, findings, $"Expected one '{rule}' finding; got: {string.Join(" | ", review.Findings.Select(finding => $"{finding.Rule}@{finding.Line}"))}");
+        Assert.ContainsSingle(findings, $"Expected one '{rule}' finding; got: {string.Join(" | ", review.Findings.Select(finding => $"{finding.Rule}@{finding.Line}"))}");
 
         return findings[0];
     }

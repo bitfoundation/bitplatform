@@ -44,8 +44,8 @@ public class ProfilerTimeAndRouteTests : BunitContext
 
             Assert.HasCount(4, timeline.Bars);
             Assert.AreEqual(3, timeline.Depth);
-            CollectionAssert.AreEqual(new[] { list.InstanceId, row1.InstanceId, row2.InstanceId, cell.InstanceId }, timeline.Bars.Select(b => b.InstanceId).ToArray(), "in the order they started");
-            CollectionAssert.AreEqual(new[] { 0, 1, 1, 2 }, timeline.Bars.Select(b => b.Depth).ToArray());
+            Assert.AreSequenceEqual(new[] { list.InstanceId, row1.InstanceId, row2.InstanceId, cell.InstanceId }, timeline.Bars.Select(b => b.InstanceId).ToArray(), "in the order they started");
+            Assert.AreSequenceEqual(new[] { 0, 1, 1, 2 }, timeline.Bars.Select(b => b.Depth).ToArray());
             Assert.AreEqual(4, timeline.Bars[3].StartMs, 0.01);
             Assert.AreEqual(4.5, timeline.SpanMs, 0.01);
             GC.KeepAlive(alive);
@@ -138,8 +138,8 @@ public class ProfilerTimeAndRouteTests : BunitContext
 
         var pageB = routes["/bev-tests/route-b"];
         CollectionAssert.IsSubsetOf(new[] { "RoutedPageB", "RoutedWidget" }, pageB.Top.Select(t => t.Component).ToArray(), string.Join(" | ", routes.Values.Select(r => r.Route + ": " + string.Join(", ", r.Top.Select(t => t.Component)))));
-        Assert.IsTrue(routes["/bev-tests/route-a"].Top.Any(t => t.Component == "RoutedPageA"), "the second visit to A");
-        Assert.IsFalse(routes.Values.Where(r => r.Route != "/bev-tests/route-b").Any(r => r.Top.Any(t => t.Component is "RoutedPageB" or "RoutedWidget")), "nothing of B on the page before it");
+        Assert.Contains(t => t.Component == "RoutedPageA", routes["/bev-tests/route-a"].Top, "the second visit to A");
+        Assert.DoesNotContain(r => r.Top.Any(t => t.Component is "RoutedPageB" or "RoutedWidget"), routes.Values.Where(r => r.Route != "/bev-tests/route-b"), "nothing of B on the page before it");
     }
 
     [TestMethod]
@@ -194,8 +194,8 @@ public class ProfilerTimeAndRouteTests : BunitContext
         panel.FindAll(".bev-segmented button").Single(b => b.TextContent == "Time").Click();
         var axis = panel.Find(".bev-time-axis");
         Assert.AreEqual("img", axis.GetAttribute("role"));
-        StringAssert.Contains(axis.GetAttribute("aria-label"), "2 renders");
-        CollectionAssert.AreEqual(new[] { "ParentComponent", "ChildComponent" }, panel.FindAll(".bev-time-bar").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Contains("2 renders", axis.GetAttribute("aria-label")!);
+        Assert.AreSequenceEqual(new[] { "ParentComponent", "ChildComponent" }, panel.FindAll(".bev-time-bar").Select(b => b.TextContent.Trim()).ToArray());
         Assert.Contains("top:18px", panel.FindAll(".bev-time-bar")[1].GetAttribute("style")!, StringComparison.Ordinal);
 
         Assert.IsEmpty(panel.FindAll(".bev-section").Where(s => s.TextContent.Contains("Costliest there", StringComparison.Ordinal)), "not computed until asked");
@@ -242,7 +242,7 @@ public class ProfilerTimeAndRouteTests : BunitContext
         .Sum(row => int.Parse(row.QuerySelectorAll("td")[2].TextContent.Trim(), System.Globalization.CultureInfo.InvariantCulture));
 }
 
-public class RoutedShell : ComponentBase
+internal class RoutedShell : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -261,12 +261,14 @@ public class RoutedShell : ComponentBase
 }
 
 [Route("/bev-tests/route-a")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The router discovers this fixture through its public type.")]
 public class RoutedPageA : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "page A");
 }
 
 [Route("/bev-tests/route-b")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0004", Justification = "The router discovers this fixture through its public type.")]
 public class RoutedPageB : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -277,7 +279,7 @@ public class RoutedPageB : ComponentBase
     }
 }
 
-public class RoutedWidget : ComponentBase
+internal class RoutedWidget : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "widget");
 }

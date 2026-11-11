@@ -151,7 +151,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await NodeKey(cut, "c", "Enter");
 
         Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.IsTrue(cut.Instance.IsConnecting);
     }
 
@@ -258,7 +258,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(aboutTheOldWiring));
 
         // d -> b was answered, but a -> c went first: moving the source to d now makes d -> c, which nobody judged.
-        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreSequenceEqual(new[] { ("a", "c"), ("d", "b"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were answered");
         Assert.HasCount(ended + 1, connectEnds, "the move still waiting on the app was reported ended");
         Assert.IsTrue(connectEnds[^1] is { IsReconnect: true, IsValid: true });
@@ -270,16 +270,14 @@ public class KeyboardReconnectionReviewTests : BunitContext
             ? BlowAriaLabels.Default.Reconnected("Other source", "Other sink")
             : BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
         Assert.HasCount(ended + 2, connectEnds);
-        CollectionAssert.AreEqual(new[]
+        Assert.AreSequenceEqual(new[]
             {
                 (true, true, BlowConnectionRejection.None),
                 (true, aboutTheNewWiring, aboutTheNewWiring ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
-            },
-            connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
+            }, connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
         Assert.AreEqual(("c", BlowHandleType.Target), (connectEnds[^1].Start.NodeId, connectEnds[^1].Start.HandleType),
             "the end reported as staying is b, where the gesture began, not c, where the wiring judged last hangs from");
-        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, aboutTheNewWiring) },
-            reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
+        Assert.AreSequenceEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, aboutTheNewWiring) }, reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
     }
 
     [TestMethod]
@@ -305,7 +303,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
             await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
         }
 
-        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c"), ("x", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreSequenceEqual(new[] { ("a", "c"), ("d", "c"), ("x", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.IsEmpty(pending, "the app was asked a fourth time");
         Assert.AreEqual(("y", "b"), (edges[0].Source, edges[0].Target), "a wiring the app never approved was applied");
         Assert.AreEqual((true, false, BlowConnectionRejection.Unsettled),
@@ -338,7 +336,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = "a"));
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
 
-        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreSequenceEqual(new[] { ("a", "c"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.IsEmpty(pending, "the app was asked again about a wiring it had answered about");
         Assert.AreEqual(answer ? ("a", "c") : ("a", "b"), (edges[0].Source, edges[0].Target));
         Assert.AreEqual((answer, answer ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
@@ -372,13 +370,12 @@ public class KeyboardReconnectionReviewTests : BunitContext
                 askedNow.Add(connection);
                 return Task.FromResult(answerNow);
             }
-            : null;
+        : null;
         cut.Render(p => p.Add(c => c.OnBeforeConnect, confirmNow));
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
 
-        CollectionAssert.AreEqual(new[] { ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray(),
-            "the confirmation the app had let go of was asked again");
-        CollectionAssert.AreEqual(replaced ? new[] { ("d", "c") } : [], askedNow.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreSequenceEqual(new[] { ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray(), "the confirmation the app had let go of was asked again");
+        Assert.AreSequenceEqual(replaced ? new[] { ("d", "c") } : [], askedNow.Select(c => (c.Source, c.Target)).ToArray());
 
         // The confirmation set now has the last word: its no refuses the move, though the one it replaced said yes.
         var applied = !replaced || answerNow;

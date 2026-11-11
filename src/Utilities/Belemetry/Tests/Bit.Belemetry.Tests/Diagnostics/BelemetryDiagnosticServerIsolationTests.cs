@@ -55,11 +55,11 @@ public class BelemetryDiagnosticServerIsolationTests
 
         Assert.AreEqual("Alice's failure", a.GetEvents().Single().Exception!.Message);
         Assert.AreEqual("Bob's warning", b.GetEvents().Single().Message);
-        Assert.HasCount(1, a.GetExceptionGroups());
+        Assert.ContainsSingle(a.GetExceptionGroups());
         Assert.IsEmpty(b.GetExceptionGroups());
 
-        var captureB = await On(circuitB, () => b.CaptureAsync().AsTask());
-        Assert.IsFalse(captureB.Events.Any(e => e.Exception is not null), "Another circuit's exception is never in this circuit's capture.");
+        var captureB = await On(circuitB, () => b.CaptureAsync(cancellationToken: TestContext.CancellationToken).AsTask());
+        Assert.DoesNotContain(e => e.Exception is not null, captureB.Events, "Another circuit's exception is never in this circuit's capture.");
     }
 
     [TestMethod]
@@ -82,12 +82,12 @@ public class BelemetryDiagnosticServerIsolationTests
         handle.SetTag(BelemetryDiagnosticEventFactory.ComponentTypeTag, "MyApp.Pages.Orders");
 
         // A library's ConfigureAwait(false): no synchronization context any more, the event's activity still current.
-        await Task.Run(() => logger.LogWarning("after ConfigureAwait(false)"));
+        await Task.Run(() => logger.LogWarning("after ConfigureAwait(false)"), TestContext.CancellationToken);
         On(circuit, handle.Stop);
 
         var events = diagnostics.GetEvents();
-        Assert.IsTrue(events.Any(e => e.Message == "after ConfigureAwait(false)"));
-        Assert.IsTrue(events.Any(e => e.Name == "handle_event" && e.ComponentType == "MyApp.Pages.Orders"));
+        Assert.Contains(e => e.Message == "after ConfigureAwait(false)", events);
+        Assert.Contains(e => e.Name == "handle_event" && e.ComponentType == "MyApp.Pages.Orders", events);
     }
 
     [TestMethod]
@@ -130,7 +130,9 @@ public class BelemetryDiagnosticServerIsolationTests
         }
 
         var index = host.Pipeline.Diagnostics.TraceIndex!;
-        Assert.HasCount(1, index.Find([traceId]));
+        Assert.ContainsSingle(index.Find([traceId]));
         Assert.IsEmpty(index.Find([ActivityTraceId.CreateRandom().ToHexString()]));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

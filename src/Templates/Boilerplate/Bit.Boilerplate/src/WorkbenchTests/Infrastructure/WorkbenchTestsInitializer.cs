@@ -11,13 +11,13 @@ public static class WorkbenchTestsInitializer
     private static readonly Lazy<Task<WorkbenchTestServer>> readOnlyServer = new(() => new WorkbenchTestServer().Start(isDevMode: false));
     private static readonly Lazy<Task<WorkbenchTestServer>> codeCopyServer = new(() => new WorkbenchTestServer().Start());
 
-    public static Task<WorkbenchTestServer> SharedServer => sharedServer.Value;
+    internal static Task<WorkbenchTestServer> SharedServer => sharedServer.Value;
 
     /// <summary>A Workbench outside dev mode, like a published demo or the plain run bit CLI starts.</summary>
-    public static Task<WorkbenchTestServer> ReadOnlyServer => readOnlyServer.Value;
+    internal static Task<WorkbenchTestServer> ReadOnlyServer => readOnlyServer.Value;
 
     /// <summary>A Workbench in dev mode for the tests that write into a copy of the code, as the texts it saves stay in its memory.</summary>
-    public static Task<WorkbenchTestServer> CodeCopyServer => codeCopyServer.Value;
+    internal static Task<WorkbenchTestServer> CodeCopyServer => codeCopyServer.Value;
 
     [AssemblyInitialize]
     public static void Initialize(TestContext testContext)

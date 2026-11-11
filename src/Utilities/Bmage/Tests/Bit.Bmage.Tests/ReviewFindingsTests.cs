@@ -65,7 +65,7 @@ public sealed class ReviewFindingsTests
         using var image = ImageBuffer.Create(100, 100, Rgba32.White);
         new FillLayer(Rgba32.Transparent) { BlendMode = BlendMode.Copy, Mask = Mask.Ellipse() with { Feather = 8 } }.Composite(image);
         Assert.AreEqual(0, image[50, 50].A);
-        Assert.IsTrue(Enumerable.Range(0, 50).Any(x => image[x, 50].A is > 0 and < 255), "The feathered edge left no partly cleared pixels.");
+        Assert.Contains(x => image[x, 50].A is > 0 and < 255, Enumerable.Range(0, 50), "The feathered edge left no partly cleared pixels.");
     }
 
     [TestMethod]
@@ -105,7 +105,7 @@ public sealed class ReviewFindingsTests
     {
         var processor = new ImageProcessor();
         using var image = ParallelProcessingTests.Noise(32, 32, seed: 1);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
         var loaded = 0;
         var items = Enumerable.Range(0, 40).Select(i => BatchItem.Deferred(_ =>
         {
@@ -115,11 +115,11 @@ public sealed class ReviewFindingsTests
 
         var consumed = 0;
         var mostAhead = 0;
-        await foreach (var _ in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create(), new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png }))
+        await foreach (var _ in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create(), new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken))
         {
             consumed++;
             mostAhead = Math.Max(mostAhead, Volatile.Read(ref loaded) - consumed);
-            await Task.Delay(10);
+            await Task.Delay(10, TestContext.CancellationToken);
         }
 
         Assert.AreEqual(40, consumed);
@@ -132,11 +132,11 @@ public sealed class ReviewFindingsTests
     {
         var processor = new ImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 2);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
 
         await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () =>
         {
-            await foreach (var _ in processor.ProcessBatchStreamAsync(TimesOut(), ImagePipeline.Create())) { }
+            await foreach (var _ in processor.ProcessBatchStreamAsync(TimesOut(), ImagePipeline.Create(), cancellationToken: TestContext.CancellationToken)) { }
         });
 
         async IAsyncEnumerable<BatchItem> TimesOut()
@@ -153,9 +153,9 @@ public sealed class ReviewFindingsTests
     {
         var processor = new ImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 3);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
 
-        var result = await processor.ProcessBatchAsync([new BatchItem(png), new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { MaxConcurrency = int.MaxValue });
+        var result = await processor.ProcessBatchAsync([new BatchItem(png), new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { MaxConcurrency = int.MaxValue }, TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.SuccessCount);
         Assert.AreEqual(2, ImageProcessor.WorkerCount(int.MaxValue, 2));
@@ -240,7 +240,7 @@ public sealed class ReviewFindingsTests
         new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 100, 100), Pipeline = ImagePipeline.Create().Crop(crop) }.Composite(throughPipeline);
         new ImageLayer { Image = cropped, Bounds = new RectangleF(0, 0, 100, 100) }.Composite(direct);
 
-        CollectionAssert.AreEqual(direct.Pixels.ToArray(), throughPipeline.Pixels.ToArray(), "The cropped layer was shrunk before its crop and drawn blurred.");
+        Assert.AreSequenceEqual(direct.Pixels.ToArray(), throughPipeline.Pixels.ToArray(), "The cropped layer was shrunk before its crop and drawn blurred.");
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public sealed class ReviewFindingsTests
         var old = new FakeModule(identifier => { if (identifier == "configureWorkers") throw new JSException("configureWorkers is not a function"); });
         await using (var interop = new BrowserImageInterop(new ImportingJSRuntime(old), new BitBmageOptions { MaxCodecWorkers = 2 }))
         {
-            Assert.AreSame(old, await interop.GetModuleAsync());
+            Assert.AreSame(old, await interop.GetModuleAsync(TestContext.CancellationToken));
             Assert.IsTrue(interop.IsLoaded);
             Assert.IsFalse(old.Disposed);
         }
@@ -275,11 +275,11 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance);
 
-        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/beach.jpg")));
+        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/beach.jpg"), cancellationToken: TestContext.CancellationToken));
 
-        StringAssert.Contains(error.Message, "https://photos.example/beach.jpg");
-        StringAssert.Contains(error.Message, "CORS header");
-        StringAssert.Contains(error.Message, "Failed to fetch", "and what the browser said, for whoever debugs it");
+        Assert.Contains("https://photos.example/beach.jpg", error.Message);
+        Assert.Contains("CORS header", error.Message);
+        Assert.Contains("Failed to fetch", error.Message, "and what the browser said, for whoever debugs it");
         Assert.IsInstanceOfType<JSException>(error.InnerException);
     }
 
@@ -291,7 +291,7 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg"), cancellationToken: TestContext.CancellationToken));
         Assert.AreEqual(123_456L, passed);
     }
 
@@ -299,14 +299,14 @@ public sealed class ReviewFindingsTests
     public async Task AUrlServingNoMoreThanTheSourceLimitIsDecoded()
     {
         using var image = TestImages.Gradient(12, 9);
-        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var png = Codecs.Png.PngEncoder.Encode(image, cancellationToken: TestContext.CancellationToken).Data;
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "fetchImage"
             ? new FakeHandle(new JsonObject { ["mimeType"] = "image/png", ["byteLength"] = png.Length }, png)
             : null);
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
 
-        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"));
+        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(image.Size, loaded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
@@ -321,11 +321,14 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         using var rasterizer = new Text.BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
 
-        var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle()));
-        StringAssert.Contains(error.Message, "20000x9000");
-        Assert.AreEqual(1_000_000L, passed?[7]);
-        Assert.AreEqual(4_000, passed?[8]);
-        Assert.AreEqual(3_000, passed?[9]);
+        var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle(), TestContext.CancellationToken));
+        Assert.Contains("20000x9000", error.Message);
+        var actualValue = passed?[7];
+        Assert.AreEqual(1_000_000L, actualValue);
+        var actualValue1 = passed?[8];
+        Assert.AreEqual(4_000, actualValue1);
+        var actualValue2 = passed?[9];
+        Assert.AreEqual(3_000, actualValue2);
     }
 
     [TestMethod]
@@ -339,20 +342,20 @@ public sealed class ReviewFindingsTests
         using var rasterizer = new Text.BrowserTextRasterizer(interop);
         var style = new TextStyle();
 
-        await rasterizer.MeasureAsync("a", style);
-        await rasterizer.MeasureAsync("a", style);
-        CollectionAssert.AreEqual(new[] { "a" }, rendered);
+        await rasterizer.MeasureAsync("a", style, TestContext.CancellationToken);
+        await rasterizer.MeasureAsync("a", style, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { "a" }, rendered);
 
         // A bitmap cached under looser limits is not handed out under tighter ones.
         rasterizer.Limits = rasterizer.Limits with { MaxPixels = 32_000_000 };
-        await rasterizer.MeasureAsync("a", style);
-        CollectionAssert.AreEqual(new[] { "a", "a" }, rendered);
+        await rasterizer.MeasureAsync("a", style, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { "a", "a" }, rendered);
 
         // Past 64 MB the oldest goes first, however few the entries.
-        foreach (var text in new[] { "b", "c", "d", "e" }) await rasterizer.MeasureAsync(text, style);
+        foreach (var text in new[] { "b", "c", "d", "e" }) await rasterizer.MeasureAsync(text, style, TestContext.CancellationToken);
         rendered.Clear();
-        foreach (var text in new[] { "b", "c", "d", "e", "a" }) await rasterizer.MeasureAsync(text, style);
-        CollectionAssert.AreEqual(new[] { "a" }, rendered);
+        foreach (var text in new[] { "b", "c", "d", "e", "a" }) await rasterizer.MeasureAsync(text, style, TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { "a" }, rendered);
     }
 
     [TestMethod]
@@ -370,17 +373,17 @@ public sealed class ReviewFindingsTests
             0x2C, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3B,
         ];
         Assert.AreEqual(1, decoder.Identify(gif)!.Width);
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(gif, DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(gif, DecodeOptions.Default, PooledPixelAllocator.Shared, TestContext.CancellationToken));
 
         // A file whose size cannot be read is refused, rather than handed to a browser that may read a larger one in it.
         byte[] noFrame = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, .. "JFIF\0"u8, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9];
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, DecodeOptions.Default, PooledPixelAllocator.Shared));
-        CollectionAssert.DoesNotContain(called, "decode");
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, DecodeOptions.Default, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        Assert.DoesNotContain("decode", called);
 
         // Unlimited, there is nothing to check the size against.
         var unlimited = DecodeOptions.Default with { Limits = ImageLimits.Unrestricted };
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, unlimited, PooledPixelAllocator.Shared));
-        Assert.AreEqual(1, called.Count(identifier => identifier == "decode"));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, unlimited, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        Assert.ContainsSingle(identifier => identifier == "decode", called);
     }
 
     /// <summary>
@@ -391,7 +394,7 @@ public sealed class ReviewFindingsTests
     public async Task TheBrowserDecodersSizeCheckAllowsForTheResizeItAsksTheBrowserFor()
     {
         using var small = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(small).Data;
+        var png = Codecs.Png.PngEncoder.Encode(small, cancellationToken: TestContext.CancellationToken).Data;
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), 8_000);
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), 6_000);
         var called = new List<string>();
@@ -400,13 +403,13 @@ public sealed class ReviewFindingsTests
         var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
         var options = DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 8_000_000 } };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(20_000, 20_000) }, PooledPixelAllocator.Shared));
-        CollectionAssert.DoesNotContain(called, "decode");
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(20_000, 20_000) }, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        Assert.DoesNotContain("decode", called);
 
         // These reach the browser, which the fake answers with nothing.
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 2_048) }, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 0) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 2_048) }, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 0) }, PooledPixelAllocator.Shared, TestContext.CancellationToken));
         Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
     }
 
@@ -416,7 +419,7 @@ public sealed class ReviewFindingsTests
         using var small = TestImages.Gradient(8, 8);
         byte[] Png(int width, int height)
         {
-            var png = Codecs.Png.PngEncoder.Encode(small).Data;
+            var png = Codecs.Png.PngEncoder.Encode(small, cancellationToken: TestContext.CancellationToken).Data;
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
             return png;
@@ -426,11 +429,11 @@ public sealed class ReviewFindingsTests
         await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
         var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
-        CollectionAssert.DoesNotContain(called, "decode");
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        Assert.DoesNotContain("decode", called);
 
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), DecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), DecodeOptions.Default, PooledPixelAllocator.Shared, TestContext.CancellationToken));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), DecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, PooledPixelAllocator.Shared, TestContext.CancellationToken));
         Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
     }
 
@@ -451,7 +454,7 @@ public sealed class ReviewFindingsTests
         using var rendered = back.Render(new Size(1000, 800), null, new OperationContext(budget));
         Assert.IsLessThanOrEqualTo(2L * 1000 * 800, budget.PeakBytes);
         using var expected = chain.Render(new Size(1000, 800));
-        CollectionAssert.AreEqual(expected.Values.ToArray(), rendered.Values.ToArray());
+        Assert.AreSequenceEqual(expected.Values.ToArray(), rendered.Values.ToArray());
     }
 
     [TestMethod]
@@ -499,9 +502,9 @@ public sealed class ReviewFindingsTests
     {
         var processor = new ImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 9);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png, TestContext.CancellationToken)).Data;
 
-        var result = await processor.ProcessBatchAsync([new BatchItem(png), null!, new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { ExportOptions = ImageExportOptions.Png });
+        var result = await processor.ProcessBatchAsync([new BatchItem(png), null!, new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { ExportOptions = ImageExportOptions.Png }, TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.SuccessCount);
         Assert.AreEqual(1, result.FailureCount);
@@ -522,7 +525,7 @@ public sealed class ReviewFindingsTests
 
         var reported = values.ToArray();
         // One share for the pipeline's step, one for each layer.
-        Assert.IsTrue(reported.Any(value => value > 0.34 && value < 0.99), $"The layers reported nothing: {string.Join(", ", reported)}.");
+        Assert.Contains(value => value > 0.34 && value < 0.99, reported, $"The layers reported nothing: {string.Join(", ", reported)}.");
         Assert.AreEqual(1.0, reported[^1], 1e-9);
         for (var i = 1; i < reported.Length; i++) Assert.IsGreaterThanOrEqualTo(reported[i - 1], reported[i], $"Progress went from {reported[i - 1]} to {reported[i]}.");
     }
@@ -568,7 +571,7 @@ public sealed class ReviewFindingsTests
             {
                 using var part = mask.RenderWindow(size, window, source, OperationContext.Default);
                 for (var y = 0; y < window.Height; y++)
-                    CollectionAssert.AreEqual(whole.GetRow(window.Y + y).Slice(window.X, window.Width).ToArray(), part.GetRow(y).ToArray(), $"{mask.Kind} in {window}, row {y}.");
+                    Assert.AreSequenceEqual(whole.GetRow(window.Y + y).Slice(window.X, window.Width).ToArray(), part.GetRow(y).ToArray(), $"{mask.Kind} in {window}, row {y}.");
             }
         }
     }
@@ -599,11 +602,11 @@ public sealed class ReviewFindingsTests
         using (var session = new Editing.ImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new Editing.ImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
         {
             session.Apply(d => d.AddLayer(layer), "Add");
-            await session.RenderPreviewAsync();
+            await session.RenderPreviewAsync(TestContext.CancellationToken);
             foreach (var opacity in new[] { 0.8f, 0.6f, 0.4f })
             {
                 session.ApplyTransient(d => d.UpdateLayer(d.FindLayer(layer.Id)! with { Opacity = opacity }));
-                await session.RenderPreviewAsync();
+                await session.RenderPreviewAsync(TestContext.CancellationToken);
             }
             Assert.AreEqual(1, counter.Runs, "Every frame prepared the layer's image again.");
         }
@@ -696,4 +699,6 @@ public sealed class ReviewFindingsTests
     {
         public void Report(double value) => report(value);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

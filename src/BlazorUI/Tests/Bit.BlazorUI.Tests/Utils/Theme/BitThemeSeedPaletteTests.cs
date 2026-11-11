@@ -38,11 +38,11 @@ public sealed class BitThemeSeedPaletteTests
         }
 
         for (var r = 0; r <= 0xFF; r += 0x55)
-        for (var g = 0; g <= 0xFF; g += 0x55)
-        for (var b = 0; b <= 0xFF; b += 0x55)
-        {
-            yield return FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
-        }
+            for (var g = 0; g <= 0xFF; g += 0x55)
+                for (var b = 0; b <= 0xFF; b += 0x55)
+                {
+                    yield return FormattableString.Invariant($"#{r:X2}{g:X2}{b:X2}");
+                }
     }
 
     private static (double L, double C, double H) Oklch(string hex)
@@ -92,8 +92,7 @@ public sealed class BitThemeSeedPaletteTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count,
-            $"{failures.Count} of {packaged.Count} tokens differ from {paletteFile}: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{failures.Count} of {packaged.Count} tokens differ from {paletteFile}: {string.Join("; ", failures.Take(12))}");
     }
 
     [TestMethod]
@@ -110,8 +109,7 @@ public sealed class BitThemeSeedPaletteTests
 
         var focusVars = BitThemeUtilities.ToCssVariables(theme).Keys.Where(k => k.EndsWith("-focus", StringComparison.Ordinal)).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), focusVars,
-            $"focus tokens must stay aliased, got: {string.Join(", ", focusVars)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), focusVars, $"focus tokens must stay aliased, got: {string.Join(", ", focusVars)}");
     }
 
     // ── Completeness ──────────────────────────────────────────────────────────
@@ -173,8 +171,7 @@ public sealed class BitThemeSeedPaletteTests
         if (theme.Color.Required is null) unset.Add("Required");
         if (theme.Color.Background.Overlay is null) unset.Add("Background.Overlay");
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), unset,
-            $"a whole-theme seed must leave no color slot unset: {string.Join(", ", unset)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), unset, $"a whole-theme seed must leave no color slot unset: {string.Join(", ", unset)}");
     }
 
     [TestMethod]
@@ -185,10 +182,9 @@ public sealed class BitThemeSeedPaletteTests
         // follow the primitives on their own - pinning would freeze them to this palette).
         var cssVars = BitThemeUtilities.ToCssVariables(BitThemeFactory.CreateLightThemeFromSeed(PackagedPrimary));
 
-        Assert.IsTrue(cssVars.Count > 0);
+        Assert.IsNotEmpty(cssVars);
         var strays = cssVars.Keys.Where(k => k.StartsWith("--bit-clr-", StringComparison.Ordinal) is false).ToArray();
-        CollectionAssert.AreEqual(Array.Empty<string>(), strays,
-            $"only color variables may be emitted, got: {string.Join(", ", strays)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), strays, $"only color variables may be emitted, got: {string.Join(", ", strays)}");
     }
 
     // ── Contrast, for any seed ────────────────────────────────────────────────
@@ -228,8 +224,7 @@ public sealed class BitThemeSeedPaletteTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count,
-            $"{failures.Count} on-color pairings fell below {OnColorFloor}:1: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{failures.Count} on-color pairings fell below {OnColorFloor}:1: {string.Join("; ", failures.Take(12))}");
     }
 
     [TestMethod]
@@ -261,18 +256,17 @@ public sealed class BitThemeSeedPaletteTests
             };
 
             foreach (var (surfaceName, surface) in surfaces)
-            foreach (var (overlayName, overlay, floor) in overlays)
-            {
-                var ratio = BitThemeColorContrast.GetContrastRatio(overlay, surface);
-                if (ratio < floor)
+                foreach (var (overlayName, overlay, floor) in overlays)
                 {
-                    failures.Add($"seed {seed} {overlayName} {overlay} on {surfaceName} {surface} = {ratio:F2}:1 (floor {floor})");
+                    var ratio = BitThemeColorContrast.GetContrastRatio(overlay, surface);
+                    if (ratio < floor)
+                    {
+                        failures.Add($"seed {seed} {overlayName} {overlay} on {surfaceName} {surface} = {ratio:F2}:1 (floor {floor})");
+                    }
                 }
-            }
         }
 
-        Assert.AreEqual(0, failures.Count,
-            $"{failures.Count} foreground/surface pairings fell below their floor: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{failures.Count} foreground/surface pairings fell below their floor: {string.Join("; ", failures.Take(12))}");
     }
 
     [TestMethod]
@@ -303,8 +297,7 @@ public sealed class BitThemeSeedPaletteTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count,
-            $"{failures.Count} disabled pairings fell below {NonTextFloor}:1: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{failures.Count} disabled pairings fell below {NonTextFloor}:1: {string.Join("; ", failures.Take(12))}");
     }
 
     // ── Behavior of the knobs ─────────────────────────────────────────────────
@@ -326,7 +319,7 @@ public sealed class BitThemeSeedPaletteTests
 
         var rotation = Math.Abs(harmonizedHue - canonicalHue);
         if (rotation > 180) rotation = 360 - rotation;
-        Assert.IsTrue(rotation <= 15.5, $"error hue rotated {rotation:F1}°, above the 15° cap");
+        Assert.IsLessThanOrEqualTo(15.5, rotation, $"error hue rotated {rotation:F1}°, above the 15° cap");
 
         // Reds live around 20-40° in OKLCH; a capped rotation cannot leave that neighborhood.
         Assert.IsTrue(harmonizedHue is > 0 and < 60, $"harmonized error hue {harmonizedHue:F1}° is no longer a red");
@@ -362,11 +355,11 @@ public sealed class BitThemeSeedPaletteTests
 
         var (_, chroma, hue) = Oklch(surface);
 
-        Assert.IsTrue(chroma > 0, $"the tinted surface {surface} should carry some chroma");
+        Assert.IsGreaterThan(0, chroma, $"the tinted surface {surface} should carry some chroma");
 
         var delta = Math.Abs(hue - seedHue);
         if (delta > 180) delta = 360 - delta;
-        Assert.IsTrue(delta < 12.0, $"tinted surface {surface} (H={hue:F1}) drifted from the seed hue {seedHue:F1}");
+        Assert.IsLessThan(12.0, delta, $"tinted surface {surface} (H={hue:F1}) drifted from the seed hue {seedHue:F1}");
     }
 
     [TestMethod]
@@ -379,11 +372,11 @@ public sealed class BitThemeSeedPaletteTests
 
         var (_, chroma, hue) = Oklch(surface);
 
-        Assert.IsTrue(chroma > 0.005, $"the dark surface {surface} should keep the packaged tint");
+        Assert.IsGreaterThan(0.005, chroma, $"the dark surface {surface} should keep the packaged tint");
 
         var delta = Math.Abs(hue - seedHue);
         if (delta > 180) delta = 360 - delta;
-        Assert.IsTrue(delta < 12.0, $"dark surface {surface} (H={hue:F1}) drifted from the seed hue {seedHue:F1}");
+        Assert.IsLessThan(12.0, delta, $"dark surface {surface} (H={hue:F1}) drifted from the seed hue {seedHue:F1}");
     }
 
     [TestMethod]
@@ -413,7 +406,7 @@ public sealed class BitThemeSeedPaletteTests
 
         var delta = Math.Abs(secondaryHue - expected);
         if (delta > 180) delta = 360 - delta;
-        Assert.IsTrue(delta < 4.0, $"secondary hue {secondaryHue:F1}° should sit 90° from the seed ({expected:F1}°)");
+        Assert.IsLessThan(4.0, delta, $"secondary hue {secondaryHue:F1}° should sit 90° from the seed ({expected:F1}°)");
     }
 
     [TestMethod]
@@ -430,11 +423,11 @@ public sealed class BitThemeSeedPaletteTests
         var (brandL, _, brandH) = Oklch(brand);
         var (mainL, _, mainH) = Oklch(main);
 
-        Assert.IsTrue(mainL > brandL, $"dark main {main} must be lighter than the brand {brand}");
+        Assert.IsGreaterThan(brandL, mainL, $"dark main {main} must be lighter than the brand {brand}");
 
         var hueDelta = Math.Abs(mainH - brandH);
         if (hueDelta > 180) hueDelta = 360 - hueDelta;
-        Assert.IsTrue(hueDelta < 3.0, $"dark main {main} drifted {hueDelta:F1}° from the brand {brand}");
+        Assert.IsLessThan(3.0, hueDelta, $"dark main {main} drifted {hueDelta:F1}° from the brand {brand}");
     }
 
     [TestMethod]
@@ -481,8 +474,7 @@ public sealed class BitThemeSeedPaletteTests
             }
         }
 
-        Assert.AreEqual(0, failures.Count,
-            $"{failures.Count} light tiers collapsed onto a repeated step: {string.Join("; ", failures.Take(12))}");
+        Assert.IsEmpty(failures, $"{failures.Count} light tiers collapsed onto a repeated step: {string.Join("; ", failures.Take(12))}");
     }
 
     // ── Input validation ──────────────────────────────────────────────────────

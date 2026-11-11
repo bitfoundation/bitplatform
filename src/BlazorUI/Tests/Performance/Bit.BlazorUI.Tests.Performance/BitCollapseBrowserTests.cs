@@ -57,10 +57,10 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         Assert.AreEqual(0, last.Height, 0.5);
 
         var hiddenAt = samples.First(s => s.T > start && s.Drawn is false).T - start;
-        Assert.IsTrue(hiddenAt >= CloseDuration - Margin, $"The content was hidden {hiddenAt:0}ms into the close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, hiddenAt, $"The content was hidden {hiddenAt:0}ms into the close.");
 
         var inertOffAt = samples.First(s => s.T > start && s.Inert is false).T - start;
-        Assert.IsTrue(inertOffAt >= CloseDuration - Margin, $"inert came off {inertOffAt:0}ms into the close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, inertOffAt, $"inert came off {inertOffAt:0}ms into the close.");
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         // From the first frame the track has any size, the content is drawn and reachable.
         var opening = samples.Where(s => s.Collapsed is false).ToList();
 
-        Assert.IsTrue(opening.Count > 0);
+        Assert.IsNotEmpty(opening);
 
         foreach (var sample in opening)
         {
@@ -124,7 +124,7 @@ public class BitCollapseBrowserTests : PerformanceTestBase
             }
         }
 
-        Assert.IsTrue(opening[^1].Height > 0, "The track is not growing.");
+        Assert.IsGreaterThan(0, opening[^1].Height, "The track is not growing.");
     }
 
     [TestMethod]
@@ -139,11 +139,11 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         Assert.IsTrue(midway.Height > 0 && midway.Height < samples[0].Height, $"The track is not shrinking midway ({midway.Height}px).");
 
         var unmountedAt = samples.First(s => s.HasContent is false).T - start;
-        Assert.IsTrue(unmountedAt >= CloseDuration - Margin, $"The content was unmounted {unmountedAt:0}ms into a {CloseDuration}ms close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, unmountedAt, $"The content was unmounted {unmountedAt:0}ms into a {CloseDuration}ms close.");
 
         await Expect(Page.Locator("#unmount-collapsed-at")).Not.ToHaveTextAsync("-");
         var collapsedAt = int.Parse(await Page.Locator("#unmount-collapsed-at").InnerTextAsync());
-        Assert.IsTrue(collapsedAt >= CloseDuration - Margin, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, collapsedAt, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
     }
 
     [TestMethod]
@@ -171,8 +171,8 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         var collapsedAt = int.Parse(await Page.Locator("#late-collapsed-at").InnerTextAsync());
 
         // Timed off the 300ms estimate it would have fired more than a second early.
-        Assert.IsTrue(collapsedAt >= CloseDuration - Margin, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
-        Assert.IsTrue(collapsedAt <= CloseDuration + 1000, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
+        Assert.IsGreaterThanOrEqualTo(CloseDuration - Margin, collapsedAt, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
+        Assert.IsLessThanOrEqualTo(CloseDuration + 1000, collapsedAt, $"OnCollapsed fired {collapsedAt}ms into a {CloseDuration}ms close.");
     }
 
     [TestMethod]
@@ -185,14 +185,14 @@ public class BitCollapseBrowserTests : PerformanceTestBase
         var start = StartOfClose(samples);
 
         var hiddenAt = samples.First(s => s.T > start && s.Drawn is false).T - start;
-        Assert.IsTrue(hiddenAt < 400, $"The content was hidden {hiddenAt:0}ms into a close reduced motion collapsed.");
+        Assert.IsLessThan(400, hiddenAt, $"The content was hidden {hiddenAt:0}ms into a close reduced motion collapsed.");
 
         var inertOffAt = samples.First(s => s.T > start && s.Inert is false).T - start;
-        Assert.IsTrue(inertOffAt < 400, $"inert came off {inertOffAt:0}ms into a close reduced motion collapsed.");
+        Assert.IsLessThan(400, inertOffAt, $"inert came off {inertOffAt:0}ms into a close reduced motion collapsed.");
 
         var unmount = await ClickAndSample("btn-unmount", "col-unmount", "unmount-content", 800);
         var unmountedAt = unmount.First(s => s.HasContent is false).T - StartOfClose(unmount);
-        Assert.IsTrue(unmountedAt < 400, $"The content was unmounted {unmountedAt:0}ms into a close reduced motion collapsed.");
+        Assert.IsLessThan(400, unmountedAt, $"The content was unmounted {unmountedAt:0}ms into a close reduced motion collapsed.");
     }
 
     [TestMethod]

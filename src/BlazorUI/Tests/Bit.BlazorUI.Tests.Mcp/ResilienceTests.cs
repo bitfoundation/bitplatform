@@ -25,8 +25,7 @@ public class ResilienceTests : McpTestBase
         // The catalogs are built in the background from startup and nothing waits for them. A first
         // caller who arrives mid-build has to get the same answer as the hundredth, not an empty
         // index.
-        StringAssert.Contains(McpServerFixture.ColdSearch, "BitDatePicker",
-            "The first search this process answered did not find the date picker, so a cold client sees an index that is not there yet.");
+        Assert.Contains("BitDatePicker", McpServerFixture.ColdSearch, "The first search this process answered did not find the date picker, so a cold client sees an index that is not there yet.");
     }
 
     [TestMethod]
@@ -42,8 +41,8 @@ public class ResilienceTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.AreNotEqual(true, result.IsError, $"{tool} threw on an unresolvable argument instead of answering.");
-        StringAssert.Contains(text, "Did you mean", $"{tool} answered '{typed}' with no suggestion at all.");
-        StringAssert.Contains(text, expected, $"{tool} did not suggest {expected} for '{typed}'.");
+        Assert.Contains("Did you mean", text, $"{tool} answered '{typed}' with no suggestion at all.");
+        Assert.Contains(expected, text, $"{tool} did not suggest {expected} for '{typed}'.");
     }
 
     [TestMethod]
@@ -84,7 +83,7 @@ public class ResilienceTests : McpTestBase
         var answers = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
             await CallAsync("GetBitBlazorUIComponent", new { name = "BitDropdown" })));
 
-        Assert.AreEqual(1, answers.Distinct(StringComparer.Ordinal).Count(), "Concurrent callers got different answers.");
+        Assert.ContainsSingle(answers.Distinct(StringComparer.Ordinal), "Concurrent callers got different answers.");
     }
 
     [TestMethod]
@@ -106,13 +105,15 @@ public class ResilienceTests : McpTestBase
             ("FindBitBlazorUIIcons", "?query=save")
         })
         {
-            using var response = await McpServerFixture.Http.GetAsync(McpServerFixture.Url($"api/mcp/{tool}{query}"));
+            using var response = await McpServerFixture.Http.GetAsync(McpServerFixture.Url($"api/mcp/{tool}{query}"), TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"api/mcp/{tool} answered {(int)response.StatusCode}.");
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             Assert.IsGreaterThan(50, body.Length, $"api/mcp/{tool} answered with almost nothing.");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

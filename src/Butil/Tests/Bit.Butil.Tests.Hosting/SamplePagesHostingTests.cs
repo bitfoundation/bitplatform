@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Reflection;
 using Bit.Butil.Samples.Core;
 using ButilTests.Hosting.Infrastructure;
@@ -35,14 +35,14 @@ public class SamplePagesHostingTests
         var failures = new List<string>();
         foreach (var route in routes)
         {
-            using var response = await client.GetAsync(route);
+            using var response = await client.GetAsync(route, TestContext.CancellationToken);
             if (response.StatusCode is not HttpStatusCode.OK) failures.Add($"{route}: {(int)response.StatusCode}");
         }
 
         var errors = factory.Logs.Entries.Where(e => e.Level >= LogLevel.Error).Select(e => e.ToString());
 
         var problems = failures.Concat(errors).ToArray();
-        Assert.AreEqual(0, problems.Length, string.Join(Environment.NewLine, problems));
+        Assert.IsEmpty(problems, string.Join(Environment.NewLine, problems));
     }
 
     private static string[] Routes() =>
@@ -54,4 +54,6 @@ public class SamplePagesHostingTests
             .Select(template => template.StartsWith('/') ? template : "/" + template)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.Ordinal)];
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

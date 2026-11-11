@@ -34,7 +34,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitFileInputValidationTest>(parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -44,7 +44,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
 
         Assert.AreEqual(1, component.Instance.InvalidCount);
         Assert.AreEqual(RequiredMessage, error.TextContent.Trim());
-        Assert.AreEqual(1, component.FindAll(".bit-fin-lbl + .bit-fin-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-lbl + .bit-fin-erm"));
         Assert.AreEqual(error.Id, button.GetAttribute("aria-describedby"));
         Assert.AreEqual("true", button.GetAttribute("aria-invalid"));
 
@@ -53,7 +53,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         SetupFiles([new() { Name = "big.txt", Size = 100, FileId = "1" }]);
         component.Find(".bit-fin-fi").Change(string.Empty);
 
-        Assert.AreEqual(1, component.FindAll(".bit-fin-msg").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-msg"));
         Assert.AreEqual(RequiredMessage, component.Find(".bit-fin-erm").TextContent.Trim());
 
         // A valid file takes the line, and the reference to it, away again.
@@ -61,7 +61,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         component.Find(".bit-fin-fi").Change(string.Empty);
 
         Assert.AreEqual("a.txt", component.Instance.TestModel.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -113,7 +113,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
 
         // The browse button is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
     }
 
@@ -132,7 +132,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-fin-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-erm"));
         Assert.AreEqual("Uploads are paused.", component.Find(".bit-fin-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -167,7 +167,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-fin-lbl").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Free up space", component.Find(".bit-fin-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-fin-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-fin-erm").TextContent);
         Assert.AreEqual("Your storage is full.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -194,12 +194,12 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         // The region the selection is announced out of says nothing of it either.
         Assert.AreEqual(RequiredMessage, wired.Find(".bit-fin-erm").TextContent.Trim());
         Assert.AreEqual(string.Empty, wired.Find(ErrorRegion).TextContent.Trim());
-        Assert.IsFalse(wired.FindAll("[aria-live]").Any(r => r.TextContent.Contains(RequiredMessage)));
+        Assert.DoesNotContain(r => r.TextContent.Contains(RequiredMessage), wired.FindAll("[aria-live]"));
 
         // The messages do not wire a file input for a live region of its errors either.
         Assert.AreEqual(RequiredMessage, plain.Find(".bit-fin-erm").TextContent.Trim());
-        Assert.AreEqual(0, plain.FindAll(ErrorRegion).Count);
-        Assert.IsFalse(plain.FindAll("[aria-live]").Any(r => r.TextContent.Contains(RequiredMessage)));
+        Assert.IsEmpty(plain.FindAll(ErrorRegion));
+        Assert.DoesNotContain(r => r.TextContent.Contains(RequiredMessage), plain.FindAll("[aria-live]"));
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // In the order the two sit under the button: what is wrong with the selection first, then the hint.
-        Assert.AreEqual(1, component.FindAll(".bit-fin-lbl + .bit-fin-erm + .bit-fin-dsc").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-lbl + .bit-fin-erm + .bit-fin-dsc"));
         Assert.AreEqual($"{component.Find(".bit-fin-erm").Id} {component.Find(".bit-fin-dsc").Id}",
                         component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
     }
@@ -276,11 +276,11 @@ public class BitFileInputValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-fin-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-fin-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-describedby"));
     }
 
@@ -296,8 +296,8 @@ public class BitFileInputValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the file input has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-fin-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-fin-erm"));
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Models;
 
@@ -193,7 +193,7 @@ public class ValueUtilityTests
     }
 
     [TestMethod]
-    public void Velocity_DoesNotSettle_WhileTheSourceKeepsChanging()
+    public async global::System.Threading.Tasks.Task Velocity_DoesNotSettle_WhileTheSourceKeepsChanging()
     {
         var context = new ManualSynchronizationContext();
         var source = Bm.Value(0.0);
@@ -205,14 +205,14 @@ public class ValueUtilityTests
         {
             ChangeUnder(context, () => { now = i * 16; source.SetSync(i * 40.0); });
             context.Pump();
-            Thread.Sleep(5);   // well inside the window a 16 ms pace allows
+            await global::System.Threading.Tasks.Task.Delay(5, TestContext.CancellationToken);   // well inside the window a 16 ms pace allows
         }
 
         Assert.AreEqual(2500, velocity.Value, 1e-6);
     }
 
     [TestMethod]
-    public void Velocity_ChangedFromAThreadWithNoWayBack_IsNotSettledFromAnother()
+    public async global::System.Threading.Tasks.Task Velocity_ChangedFromAThreadWithNoWayBack_IsNotSettledFromAnother()
     {
         // No synchronization context, off WebAssembly: a check would run on a timer's thread, racing the thread that
         // changes the source. Nothing is scheduled; the velocity keeps its speed until the source changes again.
@@ -228,7 +228,7 @@ public class ValueUtilityTests
         });
 
         now = 10_000;
-        Thread.Sleep(150);   // three times the window a 16 ms pace allows
+        await global::System.Threading.Tasks.Task.Delay(150, TestContext.CancellationToken);   // three times the window a 16 ms pace allows
 
         Assert.AreEqual(2500, velocity.Value, 1e-6);
         Assert.AreEqual(0, source.GetVelocity(), "the source itself reads as still");
@@ -304,4 +304,5 @@ public class ValueUtilityTests
         Assert.ThrowsExactly<ArgumentException>(() => Bm.SnapTo([0, double.NaN]));
         Assert.ThrowsExactly<ArgumentNullException>(() => Bm.SnapTo(null!));
     }
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
 }

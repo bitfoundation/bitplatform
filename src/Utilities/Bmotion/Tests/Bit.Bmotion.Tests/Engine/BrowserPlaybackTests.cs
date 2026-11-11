@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using Bit.Bmotion.Tests.TestInfra;
 
@@ -51,7 +51,7 @@ public partial class BrowserPlaybackTests
             Bm.Tween(0.4).ToConfig());
 
         var kf = Keyframes(interop);
-        Assert.AreEqual(2, kf.Length);
+        Assert.HasCount(2, kf);
         Assert.AreEqual("rgba(0,0,0,1)", kf[0]["backgroundColor"], "colours are re-encoded for an sRGB mix");
         Assert.AreEqual("rgba(255,0,0,1)", kf[1]["backgroundColor"]);
         Assert.AreEqual("100px", kf[0]["width"]);
@@ -71,9 +71,9 @@ public partial class BrowserPlaybackTests
 
         await engine.AnimateToAsync("el", Values(("backgroundColor", "#FD7F36")), Bm.Spring(stiffness: 300, damping: 10).ToConfig());
 
-        Assert.AreEqual(2, Keyframes(interop).Length, "still the timeline shape");
+        Assert.HasCount(2, Keyframes(interop), "still the timeline shape");
         var easing = (string)Timing(interop)["easing"]!;
-        StringAssert.StartsWith(easing, "linear(");
+        Assert.StartsWith("linear(", easing);
         var progress = Regex.Matches(easing, @"-?\d+(\.\d+)?").Select(m => double.Parse(m.Value, CultureInfo.InvariantCulture)).ToArray();
         Assert.IsTrue(progress.All(p => p is >= 0 and <= 1), $"the curve leaves 0..1: {easing}");
         Assert.AreEqual(1, progress.Max(), "and still reaches the target");
@@ -92,7 +92,7 @@ public partial class BrowserPlaybackTests
 
         var kf = Keyframes(interop);
         Assert.AreEqual("linear", Timing(interop)["easing"], "recorded");
-        Assert.IsTrue(kf.Max(WebAnimationKeyframes.TranslateX) > 100, "the move overshoots, as the spring does");
+        Assert.IsGreaterThan(100, kf.Max(WebAnimationKeyframes.TranslateX), "the move overshoots, as the spring does");
         var reds = kf.Where(k => k.ContainsKey("backgroundColor"))
             .Select(k => int.Parse(Regex.Match((string)k["backgroundColor"], @"rgba?\((\d+)").Groups[1].Value, CultureInfo.InvariantCulture))
             .ToArray();
@@ -113,7 +113,7 @@ public partial class BrowserPlaybackTests
         interop.WaapiPlayhead = (_, _) => (browserPlayedMs, false);
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
-        await Task.Delay(400);   // by the engine's clock: 40px along
+        await Task.Delay(400, TestContext.CancellationToken);   // by the engine's clock: 40px along
         await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
 
         Assert.AreEqual(expectedX, WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]), 0.5,
@@ -154,7 +154,7 @@ public partial class BrowserPlaybackTests
         interop.WaapiPlayhead = (_, _) => (0, false);
         await engine.AnimateToAsync("el", Values(("opacity", 0.5)), Bm.Tween(1).ToConfig());
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
-        Assert.AreEqual(2, interop.ArgsOf("playWaapiAnimation").Count, "two animations in the browser");
+        Assert.HasCount(2, interop.ArgsOf("playWaapiAnimation"), "two animations in the browser");
         int reads = interop.WaapiPlayheadReads;
 
         engine.GetState("el")!.TransformsAfter(100);
@@ -188,10 +188,10 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el");
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
         await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
 
-        Assert.IsTrue(WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]) > 30, "the plan's own clock, as before");
+        Assert.IsGreaterThan(30, WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]), "the plan's own clock, as before");
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public partial class BrowserPlaybackTests
         Assert.AreEqual(500.0, (double)Timing(interop)["duration"]!, 1e-6);
         // 0.1 s into 0.5 s: the opacity's own transition is over while x is still on its way.
         Assert.AreEqual(0, WebAnimationKeyframes.At(kf, 0.2, k => WebAnimationKeyframes.Number(k, "opacity")), 2e-3);
-        Assert.IsTrue(WebAnimationKeyframes.At(kf, 0.2, WebAnimationKeyframes.TranslateX) < 100);
+        Assert.IsLessThan(100, WebAnimationKeyframes.At(kf, 0.2, WebAnimationKeyframes.TranslateX));
     }
 
     [TestMethod]
@@ -228,7 +228,7 @@ public partial class BrowserPlaybackTests
         // Fewer keyframes than frames are sent - the ones linear interpolation can't reproduce - so the browser's
         // value at each frame is read the way it plays them.
         int frames = (int)Math.Round((double)Timing(interop)["duration"]! / (1000.0 / 60)) + 1;
-        Assert.IsTrue(keyframes.Length < frames, "the recording is simplified");
+        Assert.IsLessThan(frames, keyframes.Length, "the recording is simplified");
         var browser = Enumerable.Range(0, frames)
             .Select(i => WebAnimationKeyframes.At(keyframes, (double)i / (frames - 1), WebAnimationKeyframes.TranslateX)).ToArray();
 
@@ -244,7 +244,7 @@ public partial class BrowserPlaybackTests
             loop.Add(State(looped).Transforms["x"]);
         }
 
-        Assert.AreEqual(loop.Count, browser.Length);
+        Assert.HasCount(loop.Count, browser);
         // Within the tenth of a pixel the simplification allows.
         for (int i = 0; i < loop.Count; i++) Assert.AreEqual(loop[i], browser[i], 0.11, $"frame {i}");
     }
@@ -266,7 +266,7 @@ public partial class BrowserPlaybackTests
         double X(double offset) => WebAnimationKeyframes.At(kf, offset, WebAnimationKeyframes.TranslateX);
         Assert.AreEqual(100, X(0.5), 0.11, "out at half-way");
         // The way back eases out too: it leaves the far end fast and settles slowly.
-        Assert.IsTrue(X(0.5) - X(0.55) > X(0.95) - X(1.0), "the way back starts fast and settles slowly");
+        Assert.IsGreaterThan(X(0.95) - X(1.0), X(0.5) - X(0.55), "the way back starts fast and settles slowly");
     }
 
     [TestMethod]
@@ -279,7 +279,7 @@ public partial class BrowserPlaybackTests
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.5, repeat: BmRepeat.Reverse()).ToConfig());
 
         Assert.AreEqual(0, interop.CountOf("playWaapiAnimation"));
-        Assert.IsTrue(State(engine).ActiveProperties.Contains("x"));
+        Assert.Contains("x", State(engine).ActiveProperties);
     }
 
     [TestMethod]
@@ -292,8 +292,8 @@ public partial class BrowserPlaybackTests
         await engine.AnimateToAsync("el", Values(("d", "M0 0 L20 20"), ("opacity", 0.5)), Bm.Tween(0.4).ToConfig());
 
         var state = State(engine);
-        CollectionAssert.AreEqual(new[] { "d" }, state.ActiveProperties.ToArray(), "an attribute isn't a Web Animation's");
-        CollectionAssert.AreEqual(new[] { "opacity" }, state.BrowserProperties.ToArray());
+        Assert.AreSequenceEqual(new[] { "d" }, state.ActiveProperties.ToArray(), "an attribute isn't a Web Animation's");
+        Assert.AreSequenceEqual(new[] { "opacity" }, state.BrowserProperties.ToArray());
     }
 
     [TestMethod]
@@ -318,15 +318,15 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el", Values(("color", "#0000ff")));
         await engine.AnimateToAsync("el", Values(("color", "#ffff00")), oklab);
-        StringAssert.StartsWith((string)Keyframes(interop)[0]["color"], "oklab(", "the browser mixes oklab() colours in OKLab");
-        Assert.AreEqual(2, Keyframes(interop).Length);
+        Assert.StartsWith("oklab(", (string)Keyframes(interop)[0]["color"], "the browser mixes oklab() colours in OKLab");
+        Assert.HasCount(2, Keyframes(interop));
 
         var (old, oldInterop) = NewEngine();
         await using var __ = old;
         oldInterop.SupportsOklab = false;
         old.RegisterElement("el", Values(("color", "#0000ff")));
         await old.AnimateToAsync("el", Values(("color", "#ffff00")), oklab);
-        Assert.IsTrue(Keyframes(oldInterop).Length > 2, "without oklab() the C# OKLab mix is recorded");
+        Assert.IsGreaterThan(2, Keyframes(oldInterop).Length, "without oklab() the C# OKLab mix is recorded");
     }
 
     [TestMethod]
@@ -341,7 +341,7 @@ public partial class BrowserPlaybackTests
 
         var clock = System.Diagnostics.Stopwatch.StartNew();
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
-        await Task.Delay(20);
+        await Task.Delay(20, TestContext.CancellationToken);
         // A rejection is only told apart from a cancellation within the engine's 50 ms never-started window; a
         // machine too loaded to answer inside it can't judge this either way.
         if (clock.ElapsedMilliseconds > 45) Assert.Inconclusive($"the rejection took {clock.ElapsedMilliseconds} ms to deliver");
@@ -377,11 +377,11 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el", Values(("x", 10.0)));
 
         await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.4).ToConfig());
-        Assert.AreEqual(1, Keyframes(interop).Length, "no first keyframe: the browser starts from the value on screen");
+        Assert.ContainsSingle(Keyframes(interop), "no first keyframe: the browser starts from the value on screen");
 
         // An authored first frame is the author's, not the engine's guess, and is kept.
         await engine.AnimateToAsync("el", Values(("x", new double[] { 0, 50 })), Bm.Tween(0.4).ToConfig());
-        Assert.AreEqual(2, Keyframes(interop).Length);
+        Assert.HasCount(2, Keyframes(interop));
     }
 
     [TestMethod]
@@ -397,7 +397,7 @@ public partial class BrowserPlaybackTests
 
         var kf = Keyframes(interop);
         Assert.IsTrue(kf.All(k => k.ContainsKey("offset")), "every keyframe says where it falls");
-        Assert.IsTrue((double)kf[0]["offset"] > 0, "the first frame is left to the browser");
+        Assert.IsGreaterThan(0, (double)kf[0]["offset"], "the first frame is left to the browser");
         Assert.AreEqual(1.0, (double)kf[^1]["offset"], 1e-9);
     }
 
@@ -435,7 +435,7 @@ public partial class BrowserPlaybackTests
         engine.ComputeFrame(160);
         engine.ComputeFrame(176);
 
-        Assert.IsTrue(State(engine).Transforms["x"] > atRetarget, "still carried forwards by its momentum");
+        Assert.IsGreaterThan(atRetarget, State(engine).Transforms["x"], "still carried forwards by its momentum");
     }
 
     [TestMethod]
@@ -462,9 +462,9 @@ public partial class BrowserPlaybackTests
         await engine.AnimateToAsync("el", Values(("x", 0.0)), spring);
 
         var kf = Keyframes(interop);
-        Assert.IsTrue(kf.Length > 2, "a spring carrying velocity has a curve of its own: recorded");
+        Assert.IsGreaterThan(2, kf.Length, "a spring carrying velocity has a curve of its own: recorded");
         double frame = (1000.0 / 60) / (double)Timing(interop)["duration"]!;
-        Assert.IsTrue(WebAnimationKeyframes.At(kf, frame, WebAnimationKeyframes.TranslateX) > WebAnimationKeyframes.TranslateX(kf[0]),
+        Assert.IsGreaterThan(WebAnimationKeyframes.TranslateX(kf[0]), WebAnimationKeyframes.At(kf, frame, WebAnimationKeyframes.TranslateX),
             "it keeps going the way it was going before it turns round");
     }
 
@@ -485,7 +485,7 @@ public partial class BrowserPlaybackTests
         engine.ComputeFrame(160);
         engine.ComputeFrame(176);
 
-        Assert.IsTrue(State(engine).Transforms["x"] < atRetarget);
+        Assert.IsLessThan(atRetarget, State(engine).Transforms["x"]);
     }
 
     // ── Values the engine never set ───────────────────────────────────────────
@@ -501,7 +501,7 @@ public partial class BrowserPlaybackTests
         await engine.AnimateToAsync("el", Values(("width", "300px")), Bm.Tween(0.4).ToConfig());
 
         var read = interop.ArgsOf("readStyles").Single();
-        CollectionAssert.AreEqual(new[] { "width" }, (string[])read[1]!);
+        Assert.AreSequenceEqual(new[] { "width" }, (string[])read[1]!);
         Assert.AreEqual("100px", Keyframes(interop)[0]["width"], "animated from the stylesheet's width");
 
         // Known from then on: nothing is read again.
@@ -526,14 +526,14 @@ public partial class BrowserPlaybackTests
         stylesheet = "rgb(0, 128, 0)";
         await engine.DeactivateGestureLayerAsync("el", "hover");
         Assert.AreEqual("rgba(0,128,0,1)", Keyframes(interop)[1]["backgroundColor"]);
-        CollectionAssert.AreEqual(new[] { "backgroundColor" }, (string[])interop.ArgsOf("readStyles").Last()[2]!);
+        Assert.AreSequenceEqual(new[] { "backgroundColor" }, (string[])interop.ArgsOf("readStyles").Last()[2]!);
 
         interop.FinishWaapi();
         // The hand-back follows the finish on its continuation: tick until it is flushed.
         string? written = null;
         for (int i = 0; i < 100 && written != ""; i++)
         {
-            await Task.Delay(5);
+            await Task.Delay(5, TestContext.CancellationToken);
             if (engine.ComputeFrame(i * 16.0)?.GetValueOrDefault("el")?.TryGetValue("backgroundColor", out var v) == true) written = v;
         }
         Assert.AreEqual("", written, "the inline declaration is removed once it's back");
@@ -554,8 +554,9 @@ public partial class BrowserPlaybackTests
         await engine.ActivateGestureLayerAsync("el", "hover", Values(("backgroundColor", "rgb(255, 0, 0)")), Bm.Tween(0.3).ToConfig());
         interop.FinishWaapi();
         var frame = engine.ComputeFrame(0);
+        var actualValue = frame?["el"].TryGetValue("backgroundColor", out var v) == true && v == "";
 
-        Assert.IsFalse(frame?["el"].TryGetValue("backgroundColor", out var v) == true && v == "", "nothing is handed back");
+        Assert.IsFalse(actualValue, "nothing is handed back");
         Assert.AreEqual("rgb(255, 0, 0)", State(engine).StringValues["backgroundColor"]);
     }
 
@@ -578,7 +579,7 @@ public partial class BrowserPlaybackTests
         await Task.WhenAll(enter, leave);
 
         // Only the way back plays - an enter that resumed after its leave would leave the overlay on for good.
-        Assert.IsFalse(interop.ArgsOf("playWaapiAnimation").Any(p => ((Dictionary<string, object>[])p[2]!)[^1]["backgroundColor"] as string == "rgba(255,0,0,1)"),
+        Assert.DoesNotContain(p => ((Dictionary<string, object>[])p[2]!)[^1]["backgroundColor"] as string == "rgba(255,0,0,1)", interop.ArgsOf("playWaapiAnimation"),
             "the overtaken enter must not play");
     }
 
@@ -598,6 +599,8 @@ public partial class BrowserPlaybackTests
 
         Assert.AreEqual(1, interop.CountOf("playWaapiAnimation"), "two animations of one transform would cancel each other");
         var last = (string)Keyframes(interop)[^1]["transform"];
-        StringAssert.Contains(last, "translate(110px,200px)");
+        Assert.Contains("translate(110px,200px)", last);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

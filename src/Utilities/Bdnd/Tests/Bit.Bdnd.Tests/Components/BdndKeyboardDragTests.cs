@@ -156,7 +156,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
         await CommandAsync(Source(cut), "next");
 
         var asks = Sources.Invocations["keyboardNavigate"].Where(i => (string?)i.Arguments[2] == binId && (string)i.Arguments[4]! == "next").ToArray();
-        Assert.AreEqual(asked, asks.Length);
+        Assert.HasCount(asked, asks);
         // only the first ask scrolls: the others wait
         Assert.AreSequenceEqual(new[] { false }.Concat(Enumerable.Repeat(true, asked - 1)), asks.Select(i => (bool)i.Arguments[5]!));
         Assert.AreEqual("Bin is the last drop target in that direction.", Announcements[^1]);
@@ -195,7 +195,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
         Assert.IsFalse(await CommandAsync(Source(cut), "cancel"));
 
         Assert.AreEqual("end:crate:False:", _log[^1]);
-        Assert.IsFalse(_log.Any(l => l.StartsWith("drop:", StringComparison.Ordinal)));
+        Assert.DoesNotContain(l => l.StartsWith("drop:", StringComparison.Ordinal), _log);
         Assert.IsFalse(Manager.IsDragging());
         Assert.AreEqual("Dragging Crate was cancelled.", Announcements[^1]);
     }
@@ -302,7 +302,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
         Assert.IsFalse(drop.IsCompleted);
         gate.SetResult();
 
-        Assert.IsFalse(await drop.WaitAsync(TimeSpan.FromSeconds(10)));
+        Assert.IsFalse(await drop.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
         Assert.AreEqual("end:crate:True:late", _log[^1]);
     }
 
@@ -376,7 +376,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         Assert.IsFalse(await CommandAsync(Source(cut), "next"));
 
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("predicate failed", error.Message);
         Assert.IsFalse(Manager.IsDragging());
         Assert.AreEqual("end:crate:False:", _log[^1]);
@@ -530,7 +530,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         Assert.IsTrue(await StartAsync(Source(cut)));
 
-        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10));
+        var error = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         Assert.AreEqual("bad text", error.Message);
         Assert.IsTrue(Manager.IsDragging());
     }
@@ -729,12 +729,12 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         show = false;
         cut.Render();
-        Assert.AreEqual(0, Sources.Invocations["dispose"].Count, "the registration lives on while the drag does");
+        Assert.IsEmpty(Sources.Invocations["dispose"], "the registration lives on while the drag does");
 
         Assert.IsFalse(await source.InvokeAsync(() => dotNetRef.Value.HandleKeyboardCommand("cancel")));
 
         Assert.AreSequenceEqual(new[] { "end:False" }, _log);
-        Assert.AreEqual(1, Sources.Invocations["dispose"].Count);
+        Assert.ContainsSingle(Sources.Invocations["dispose"]);
         Assert.ThrowsExactly<ObjectDisposedException>(() => dotNetRef.Value);
     }
 
@@ -766,7 +766,7 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         // the draggable now showing the card - not the source, which is gone - took the focus over, once
         Assert.AreEqual("second", cut.Find("[data-card]").GetAttribute("data-card"));
-        Assert.HasCount(1, Sources.Invocations["adoptFocus"]);
+        Assert.ContainsSingle(Sources.Invocations["adoptFocus"]);
         var newcomer = cut.FindComponent<BdndDraggable<string>>();
         Assert.IsFalse(Manager.WantsFocus("the card", "card", SourceIdOf(newcomer.Instance)), "nothing else takes it once it was taken");
 
@@ -793,4 +793,6 @@ public class BdndKeyboardDragTests : BdndComponentTestBase
 
         Assert.IsEmpty(Sources.Invocations["adoptFocus"]);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

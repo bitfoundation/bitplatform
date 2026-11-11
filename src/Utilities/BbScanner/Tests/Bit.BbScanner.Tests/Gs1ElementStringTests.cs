@@ -148,8 +148,8 @@ public class Gs1ElementStringTests
     {
         var exception = Assert.ThrowsExactly<FormatException>(() => BbGs1ElementString.Parse($"0109521234543213{GS}17261331"));
 
-        StringAssert.Contains(exception.Message, "(17)");
-        StringAssert.Contains(exception.Message, "date");
+        Assert.Contains("(17)", exception.Message);
+        Assert.Contains("date", exception.Message);
     }
 
     [TestMethod]

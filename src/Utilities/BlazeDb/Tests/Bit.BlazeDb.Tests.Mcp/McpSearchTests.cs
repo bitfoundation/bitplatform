@@ -94,7 +94,7 @@ public partial class McpSearchTests
         // Deconstruct names every property it has, so it answers a question about any one of them first.
         var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = query, ["limit"] = 50 });
 
-        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        Assert.DoesNotContain(IsObjectPlumbing, result.Hits, $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public partial class McpSearchTests
         {
             var result = await McpCall.StructuredAsync<BlazeDbSearchResultDto>("SearchBlazeDb", new() { ["query"] = query, ["limit"] = 50 });
 
-            Assert.IsFalse(result.Hits.Any(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "The demo"), query);
+            Assert.DoesNotContain(hit => hit.Kind == "Guide section" && hit.Title is "MCP server" or "The demo", result.Hits, query);
         }
     }
 
@@ -202,7 +202,7 @@ public partial class McpSearchTests
             Assert.IsTrue(match.Success, $"'{call}' is not a call a caller can make verbatim.");
 
             var tool = match.Groups["tool"].Value;
-            CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{call}' names a tool that does not exist.");
+            Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{call}' names a tool that does not exist.");
 
             // The inspector's hit is a pointer to the tool itself: its argument is the caller's own source.
             if (tool == "InspectBlazeDbTable") continue;

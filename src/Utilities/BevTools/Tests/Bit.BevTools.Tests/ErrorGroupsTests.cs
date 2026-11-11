@@ -140,7 +140,7 @@ public class ErrorGroupsTests : BunitContext
         Assert.Contains("2 groups · 4 errors", panel.Markup, StringComparison.Ordinal);
 
         panel.Find("input[aria-label='Filter errors']").Input("source:http");
-        Assert.HasCount(1, panel.FindAll("tbody tr.bev-row"), "the http group, not \"No errors\"");
+        Assert.ContainsSingle(panel.FindAll("tbody tr.bev-row"), "the http group, not \"No errors\"");
     }
 
     [TestMethod]

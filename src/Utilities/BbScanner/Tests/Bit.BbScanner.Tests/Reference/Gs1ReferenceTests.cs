@@ -47,7 +47,7 @@ public class Gs1ReferenceTests
     [TestMethod]
     public void TheCasesComeFromTheIndependentChecker()
     {
-        StringAssert.StartsWith(File.Value.Generator, "BWIPP");
+        Assert.StartsWith("BWIPP", File.Value.Generator);
         Assert.IsGreaterThan(2000, File.Value.Cases.Length);
         Assert.IsGreaterThan(500, File.Value.Cases.Select(c => c.Ai).Distinct().Count(), "Every AI of the table has cases.");
     }

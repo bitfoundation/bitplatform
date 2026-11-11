@@ -37,12 +37,12 @@ public class EngineFlushTests
 
         Assert.AreEqual(1, interop.CountOf("startRafLoop"));
         var frame = engine.ComputeFrame(0);
-        StringAssert.Contains(frame!["el"]["transform"], "30px");
+        Assert.Contains("30px", frame!["el"]["transform"]);
 
         // While the loop runs, every frame picks the position up by itself - no restart per move.
         engine.SetDragPosition("el", 45, 10);
         Assert.AreEqual(1, interop.CountOf("startRafLoop"));
-        StringAssert.Contains(engine.ComputeFrame(16)!["el"]["transform"], "45px");
+        Assert.Contains("45px", engine.ComputeFrame(16)!["el"]["transform"]);
     }
 
     [TestMethod]
@@ -57,9 +57,9 @@ public class EngineFlushTests
 
         Assert.IsFalse(interop.WasCalled("startRafLoop"), "Blazor Server has no frame loop to start");
         var written = StylesWrittenTo(interop, "el");
-        Assert.AreEqual(2, written.Length, "one write per reported position");
-        StringAssert.Contains(written[0]["transform"], "30px");
-        StringAssert.Contains(written[1]["transform"], "45px");
+        Assert.HasCount(2, written, "one write per reported position");
+        Assert.Contains("30px", written[0]["transform"]);
+        Assert.Contains("45px", written[1]["transform"]);
     }
 
     // ── Complete ──────────────────────────────────────────────────────────────

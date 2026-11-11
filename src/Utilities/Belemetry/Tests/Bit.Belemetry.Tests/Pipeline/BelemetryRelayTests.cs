@@ -54,7 +54,7 @@ public class BelemetryRelayTests
 
         // A full page queue plus what a consent decision releases (10 + 5) as a burst, whatever the rate; one record a
         // minute refills far slower than this test runs.
-        Assert.AreEqual(15 + 3, host.Memory.Logs.Count, "One page's flood costs the other pages nothing.");
+        Assert.HasCount(15 + 3, host.Memory.Logs, "One page's flood costs the other pages nothing.");
     }
 
     [TestMethod]
@@ -71,7 +71,7 @@ public class BelemetryRelayTests
         await bridge.RelayAsync(Batch(40));
         await host.FlushAsync();
 
-        Assert.AreEqual(40, host.Memory.Logs.Count);
+        Assert.HasCount(40, host.Memory.Logs);
     }
 
     [TestMethod]

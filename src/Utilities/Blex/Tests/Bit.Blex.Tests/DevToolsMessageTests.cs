@@ -136,6 +136,6 @@ public class DevToolsMessageTests
 
         var line = captured.ToString().TrimEnd('\r', '\n');
         Assert.IsFalse(line.Contains('\r') || line.Contains('\n'), line);
-        StringAssert.Contains(line, @"counter/Nope\u000d\u000a[Blex] forged line\u202edesrever");
+        Assert.Contains(@"counter/Nope\u000d\u000a[Blex] forged line\u202edesrever", line);
     }
 }

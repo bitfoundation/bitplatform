@@ -1,11 +1,6 @@
 namespace Boilerplate.Tests.E2E.Infrastructure;
 
-/// <summary>
-/// One signed-in session against one deployed API: the scope it lives in, its <see cref="HttpClient"/>, and the typed
-/// controllers resolved beside them. <see cref="DbContextFactory"/> and <see cref="McpClient"/> belong to the global
-/// client alone, so they are null on one a test made for itself.
-/// </summary>
-public sealed class DeployedApiClient(
+internal sealed class DeployedApiClient(
     AsyncServiceScope scope,
     HttpClient httpClient,
     IDbContextFactory<AppDbContext>? dbContextFactory = null,

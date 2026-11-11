@@ -38,15 +38,17 @@ public class BitAiDependencyInjectionTests
         var writer = Task.Run(() =>
         {
             for (var i = 0; i < 5000; i++) policy.RememberAlwaysApproved($"tool_{i}");
-        });
+        }, TestContext.CancellationToken);
 
         while (!writer.IsCompleted)
         {
-            await policy.RequiresApprovalAsync(new BitAiToolDefinition("tool_1") { Risk = BitAiToolRisk.Destructive }, invocation);
+            await policy.RequiresApprovalAsync(new BitAiToolDefinition("tool_1") { Risk = BitAiToolRisk.Destructive }, invocation, TestContext.CancellationToken);
         }
 
         await writer;
         Assert.IsFalse(await policy.RequiresApprovalAsync(
-            new BitAiToolDefinition("tool_4999") { Risk = BitAiToolRisk.Destructive }, invocation));
+            new BitAiToolDefinition("tool_4999") { Risk = BitAiToolRisk.Destructive }, invocation, TestContext.CancellationToken));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

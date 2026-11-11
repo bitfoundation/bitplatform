@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -76,7 +76,7 @@ public sealed class LazyLoadingTests : BunitContext
         // The registry's warnings still reach the application's log.
         var palette = app.GetBaletteService();
         palette.Register(BaletteCmd.New("Home").Id("home"), BaletteCmd.New("Start").Id("home"));
-        Assert.IsTrue(logs.Messages(LogLevel.Warning).Any(message => message.Contains("home", StringComparison.Ordinal)), string.Join(Environment.NewLine, logs.Entries));
+        Assert.Contains(message => message.Contains("home", StringComparison.Ordinal), logs.Messages(LogLevel.Warning), string.Join(Environment.NewLine, logs.Entries));
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public sealed class LazyLoadingTests : BunitContext
         secondCircuit.GetBaletteService();
 
         var warning = logs.Messages(LogLevel.Warning).Single();
-        StringAssert.Contains(warning, "AddBitBaletteServices");
+        Assert.Contains("AddBitBaletteServices", warning);
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public sealed class LazyLoadingTests : BunitContext
 
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.GetBaletteService());
 
-        StringAssert.Contains(error.Message, "AddBitBaletteServices");
+        Assert.Contains("AddBitBaletteServices", error.Message);
     }
 
     [TestMethod]

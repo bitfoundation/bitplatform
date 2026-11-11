@@ -51,9 +51,8 @@ public sealed class NestingTests : BdndTest
 
         // One dragstart, claimed by one source: exactly one library tag on it.
         var starts = await DragStartsAsync(page.MainFrame);
-        Assert.HasCount(1, starts, "one gesture raised more than one dragstart");
-        Assert.HasCount(1, starts[0].Types.Where(t => t.StartsWith("application/x-bit-bdnd-", StringComparison.Ordinal)),
-            "the dragstart was tagged by more than one source: " + string.Join(", ", starts[0].Types));
+        Assert.ContainsSingle(starts, "one gesture raised more than one dragstart");
+        Assert.ContainsSingle(starts[0].Types.Where(t => t.StartsWith("application/x-bit-bdnd-", StringComparison.Ordinal)), "the dragstart was tagged by more than one source: " + string.Join(", ", starts[0].Types));
     }
 
     [TestMethod]

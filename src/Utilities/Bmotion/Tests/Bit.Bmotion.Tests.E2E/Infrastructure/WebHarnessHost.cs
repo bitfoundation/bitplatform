@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bmotion.Tests.E2E.Infrastructure;
 
 /// <summary>One running Bit.Bmotion.Tests.Harness.Web process: a default render mode and a set of library options.</summary>
-public sealed class WebHarnessHost : IAsyncDisposable
+internal sealed class WebHarnessHost : IAsyncDisposable
 {
     private readonly ChildProcess _process;
 

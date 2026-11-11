@@ -17,7 +17,7 @@ public class BitAiNestingDepthTests
 
         var elapsed = BitAiMarkdownSpec.Time(() => document = BitAiMarkdownSpec.Parse(source));
 
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"Took {elapsed.TotalMilliseconds:F0}ms.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"Took {elapsed.TotalMilliseconds:F0}ms.");
         Assert.IsInRange(1, 32, BitAiMarkdownSpec.BlockDepth(document.Blocks));
     }
 
@@ -26,7 +26,7 @@ public class BitAiNestingDepthTests
     {
         var source = BitAiMarkdownSpec.Repeat("[", 5000) + "a" + BitAiMarkdownSpec.Repeat("](u)", 5000);
         var elapsed = BitAiMarkdownSpec.Time(() => BitAiMarkdownSpec.Parse(source));
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"Took {elapsed.TotalMilliseconds:F0}ms.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"Took {elapsed.TotalMilliseconds:F0}ms.");
     }
 
     [TestMethod]
@@ -37,7 +37,7 @@ public class BitAiNestingDepthTests
 
         var elapsed = BitAiMarkdownSpec.Time(() => inlines = BitAiInlineParser.Parse(source));
 
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"Took {elapsed.TotalMilliseconds:F0}ms.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"Took {elapsed.TotalMilliseconds:F0}ms.");
         Assert.IsInRange(1, 32, BitAiMarkdownSpec.InlineDepth(inlines));
     }
 
@@ -51,7 +51,7 @@ public class BitAiNestingDepthTests
 
         var elapsed = BitAiMarkdownSpec.Time(() => document = BitAiMarkdownSpec.Parse(source));
 
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(1), $"Took {elapsed.TotalMilliseconds:F0}ms.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), elapsed, $"Took {elapsed.TotalMilliseconds:F0}ms.");
         Assert.IsInRange(1, 32, BitAiMarkdownSpec.BlockDepth(document.Blocks));
     }
 

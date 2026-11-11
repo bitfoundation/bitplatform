@@ -31,7 +31,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         {
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
             // Rebuilt visible, not stranded in the hidden keep-alive wrapper.
-            Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+            Assert.IsEmpty(cut.FindAll("div[hidden] [data-testid=stateful]"));
         });
     }
 
@@ -68,7 +68,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     public async Task IncludeActive_keeps_the_loaded_data_and_does_not_rerun_guards_or_loaders()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
+        cut.WaitForAssertion(() => Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent));
         cut.Find("[data-testid=inc]").Click();
 
         await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
@@ -78,7 +78,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
             // Instances rebuilt (layout counter reset)...
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
             // ...but this is not a navigation: the chain keeps the data it already loaded.
-            Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1"));
+            Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent);
         });
 
         Assert.AreEqual(1, cut.Instance.ParentLoaderRuns);
@@ -91,15 +91,15 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/lifecycle");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("activated:first=True", log));
 
         await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
 
         cut.WaitForAssertion(() =>
         {
-            CollectionAssert.Contains(log, "deactivated:Disposing");
-            Assert.AreEqual(2, log.FindAll(e => e == "activated:first=True").Count);
-            Assert.AreEqual(0, log.FindAll(e => e.StartsWith("renavigated:")).Count);
+            Assert.Contains("deactivated:Disposing", log);
+            Assert.HasCount(2, log.FindAll(e => e == "activated:first=True"));
+            Assert.IsEmpty(log.FindAll(e => e.StartsWith("renavigated:")));
         });
     }
 
@@ -138,7 +138,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("div[hidden] [data-testid=stateful]")));
 
         await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div[hidden] [data-testid=stateful]")));
 
         // The retained /ka instance really was disposed: returning recreates it.
         await cut.InvokeAsync(() => brouter.Navigate("/ka"));
@@ -149,11 +149,11 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     public async Task IncludeActive_with_nothing_matched_is_a_noop()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/nowhere");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=stateful]")));
 
         await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
 
-        Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=stateful]"));
     }
 
     [TestMethod]
@@ -161,7 +161,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/teardown-nav");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated"));
+        cut.WaitForAssertion(() => Assert.Contains("activated", log));
         var nav = Services.GetRequiredService<BunitNavigationManager>();
 
         // The probe's Disposing deactivation navigates to /teardown-nav-target, whose async loader
@@ -172,10 +172,10 @@ public class ClearKeepAliveActiveTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=teardown-nav]").Count);
-            Assert.AreEqual(1, log.FindAll(e => e == "activated").Count);
+            Assert.EndsWith("/teardown-nav-target", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=teardown-nav-target]"));
+            Assert.IsEmpty(cut.FindAll("[data-testid=teardown-nav]"));
+            Assert.ContainsSingle(log.FindAll(e => e == "activated"));
         });
     }
 
@@ -212,7 +212,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         {
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
             // Rebuilt visible, not stranded in the hidden keep-alive wrapper.
-            Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+            Assert.IsEmpty(cut.FindAll("div[hidden] [data-testid=stateful]"));
         });
     }
 
@@ -221,7 +221,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     {
         var (cut, _) = RenderAt<ReloadHost>("http://localhost/lifecycle");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("activated:first=True", log));
         log.Clear();
 
         cut.Find("[data-testid=clear-active]").Click();
@@ -232,8 +232,8 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         // OnDeactivating navigation lock / unsaved-changes guard for the rest of its life.
         cut.WaitForAssertion(() =>
         {
-            CollectionAssert.Contains(log, "deactivated:Disposing");
-            CollectionAssert.Contains(log, "activated:first=True");
+            Assert.Contains("deactivated:Disposing", log);
+            Assert.Contains("activated:first=True", log);
         });
     }
 
@@ -242,7 +242,7 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     {
         var (cut, _) = RenderAt<ReloadHost>("http://localhost/nested/child");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "child:activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("child:activated:first=True", log));
         log.Clear();
 
         cut.Find("[data-testid=clear-active]").Click();
@@ -251,11 +251,11 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         // itself. Sweeping registered routes instead would invert it - registration is
         // parent-before-child - and a page whose Disposing handler flushes through context its
         // layout provides would run after that layout was already torn down.
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "parent:deactivated:Disposing"));
+        cut.WaitForAssertion(() => Assert.Contains("parent:deactivated:Disposing", log));
         var child = log.IndexOf("child:deactivated:Disposing");
         var parent = log.IndexOf("parent:deactivated:Disposing");
-        Assert.IsTrue(child >= 0, $"no child deactivation; log: {string.Join(" | ", log)}");
-        Assert.IsTrue(child < parent, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
+        Assert.IsGreaterThanOrEqualTo(0, child, $"no child deactivation; log: {string.Join(" | ", log)}");
+        Assert.IsLessThan(parent, child, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
     }
 
     [TestMethod]
@@ -278,10 +278,10 @@ public class ClearKeepAliveActiveTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=olayout] [data-testid=stateful]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=olayout] [data-testid=stateful]"));
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
-            CollectionAssert.Contains(log, "deactivated:Disposing");
-            CollectionAssert.Contains(log, "activated:first=True");
+            Assert.Contains("deactivated:Disposing", log);
+            Assert.Contains("activated:first=True", log);
         });
     }
 
@@ -310,10 +310,10 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         Assert.AreEqual(BrouterNavigationStatus.Succeeded, outcome.Status);
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/slow-guard"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=slow-guard]").Count);
+            Assert.EndsWith("/slow-guard", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=slow-guard]"));
             // The page the navigation left is gone, not rebuilt by the reset and stranded beside it.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=stateful]"));
         });
     }
 
@@ -334,10 +334,10 @@ public class ClearKeepAliveActiveTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
+            Assert.EndsWith("/teardown-nav-target", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=teardown-nav-target]"));
             // The page the navigation is leaving must be gone, not resurrected next to its successor.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=stateful]"));
         });
     }
 
@@ -356,9 +356,9 @@ public class ClearKeepAliveActiveTests : BunitTestContext
         // bail-out, so the retained /ka instance - which no navigation owns - is released anyway.
         await cut.InvokeAsync(() => brouter.Navigate("/teardown-nav-target"));
         await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
-        Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+        Assert.IsEmpty(cut.FindAll("div[hidden] [data-testid=stateful]"));
 
-        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-testid=teardown-nav-target]")));
 
         // Really disposed rather than merely unrendered: returning recreates it.
         await cut.InvokeAsync(() => brouter.Navigate("/ka"));

@@ -113,7 +113,7 @@ public class BelemetryHangfireFilterTests
         Assert.IsNotNull(span.Scope.Version);
 
         var insideJob = await Jobs.Completed.Task;
-        StringAssert.Contains(insideJob, span.SpanId, "The span is Activity.Current while the job runs, so its own telemetry nests under it.");
+        Assert.Contains(span.SpanId, insideJob!, "The span is Activity.Current while the job runs, so its own telemetry nests under it.");
     }
 
     [TestMethod]
@@ -125,7 +125,7 @@ public class BelemetryHangfireFilterTests
         Assert.AreEqual("JOB Jobs.Fail", span.Name);
         Assert.AreEqual(BelemetryStatusCode.Error, span.Status);
         Assert.AreEqual(typeof(InvalidOperationException).FullName, span.Attributes.GetString("error.type"));
-        StringAssert.Contains(span.StatusMessage, "boom");
+        Assert.Contains("boom", span.StatusMessage!);
     }
 
     [TestMethod]

@@ -30,11 +30,12 @@ public class BelemetryActivityFilteringTests
             }
             Assert.IsNull(source.StartActivity("Noise.Tick"), "A trailing * ignores a prefix.");
             Assert.IsNull(source.StartActivity("noise.tick"), "Case-insensitive, as the sources list is.");
-            Assert.IsNotNull(source.StartActivity("NoiseNot")?.Also(a => a.Stop()));
+            var actualValue = source.StartActivity("NoiseNot")?.Also(a => a.Stop());
+            Assert.IsNotNull(actualValue);
         }
 
         await host.FlushAsync();
-        CollectionAssert.AreEquivalent(new[] { "Root", "Child", "NoiseNot" }, host.Memory.Spans.Select(s => s.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "Root", "Child", "NoiseNot" }, host.Memory.Spans.Select(s => s.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -59,8 +60,7 @@ public class BelemetryActivityFilteringTests
         Request("custom", "/health");
 
         await host.FlushAsync();
-        CollectionAssert.AreEquivalent(new[] { "/api/orders", "/api/orders/{id}", "/health" },
-            host.Memory.Spans.Select(s => s.Attributes.GetString("url.path") ?? s.Attributes.GetString("http.route") ?? s.Attributes.GetString("custom")).ToArray());
+        Assert.AreSequenceEqual(new[] { "/api/orders", "/api/orders/{id}", "/health" }, host.Memory.Spans.Select(s => s.Attributes.GetString("url.path") ?? s.Attributes.GetString("http.route") ?? s.Attributes.GetString("custom")).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         void Request(string tag, string value)
         {

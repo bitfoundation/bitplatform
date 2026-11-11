@@ -17,7 +17,7 @@ public sealed class IndexedDbTests : BsqliteTest
     public async Task Persistence_opens_on_an_async_capable_build_not_the_synchronous_one()
     {
         var (_, build) = await OpenIdbAsync(Page, UniqueName("idb-build"));
-        CollectionAssert.Contains(new[] { "jspi", "asyncify" }, build);
+        Assert.Contains(build, new[] { "jspi", "asyncify" });
     }
 
     [TestMethod]

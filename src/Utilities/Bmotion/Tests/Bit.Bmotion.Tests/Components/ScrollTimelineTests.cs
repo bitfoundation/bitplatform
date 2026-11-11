@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -43,7 +43,7 @@ public class ScrollTimelineTests
     {
         var js = BmScrollTimeline.Page().ToJsObject();
 
-        Assert.AreEqual(false, js["view"]);
+        Assert.IsFalse((bool?)js["view"]);
         Assert.IsNull(js["selector"]);
         Assert.AreEqual("block", js["axis"]);
     }
@@ -60,7 +60,7 @@ public class ScrollTimelineTests
     {
         var js = BmScrollTimeline.View(range: "entry 0% cover 50%").ToJsObject();
 
-        Assert.AreEqual(true, js["view"]);
+        Assert.IsTrue((bool?)js["view"]);
         Assert.AreEqual("entry 0% cover 50%", js["range"]);
     }
 
@@ -109,7 +109,7 @@ public class ScrollTimelineTests
         var smooth = (Dictionary<string, object?>)js["smooth"]!;
         Assert.AreEqual(stiffness, (double)smooth["stiffness"]!, 1e-9);
         Assert.AreEqual(damping, (double)smooth["damping"]!, 1e-9);
-        Assert.AreEqual(true, js["view"]);
+        Assert.IsTrue((bool?)js["view"]);
         Assert.AreEqual("#hero", js["selector"]);
         Assert.AreEqual("inline", js["axis"]);
     }
@@ -154,12 +154,12 @@ public class ScrollTimelineTests
         Assert.AreEqual("bar", call.Args[0]);
 
         var keyframes = (Dictionary<string, object>[])call.Args[2]!;
-        Assert.AreEqual(2, keyframes.Length);
+        Assert.HasCount(2, keyframes);
         Assert.AreEqual("0", keyframes[0]["opacity"]);
         Assert.AreEqual("1", keyframes[1]["opacity"]);
 
         var spec = (Dictionary<string, object?>)call.Args[3]!;
-        Assert.AreEqual(true, spec["view"]);
+        Assert.IsTrue((bool?)spec["view"]);
         Assert.AreEqual("cover", spec["range"]);
     }
 
@@ -177,7 +177,7 @@ public class ScrollTimelineTests
         var call = ctx.Interop.Calls.Single(c => c.Method == "playScrollTimelineAnimation");
         var keyframes = (Dictionary<string, object>[])call.Args[2]!;
 
-        Assert.AreEqual(4, keyframes.Length);
+        Assert.HasCount(4, keyframes);
         foreach (var frame in keyframes)
         {
             Assert.IsTrue(frame.ContainsKey("opacity"));

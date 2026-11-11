@@ -118,7 +118,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.AreEqual("Loading...", component.Find(".bit-ldn-lbl").TextContent.Trim());
 
         // A visible label is what the live region announces, so the hidden fallback stands down.
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod]
@@ -143,7 +143,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         Assert.AreEqual("tmpl", component.Find(".tmpl").TextContent);
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod]
@@ -156,7 +156,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         Assert.AreEqual("tmpl", component.Find(".tmpl").TextContent);
-        Assert.HasCount(0, component.FindAll(".bit-ldn-lbl"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-lbl"));
     }
 
     [TestMethod,
@@ -189,7 +189,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var root = component.Find(".bit-ldn");
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
-        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-ldn-ltp" or "bit-ldn-lbm" or "bit-ldn-lst" or "bit-ldn-led"));
+        Assert.ContainsSingle(c => c is "bit-ldn-ltp" or "bit-ldn-lbm" or "bit-ldn-lst" or "bit-ldn-led", root.ClassList);
     }
 
     [TestMethod]
@@ -223,7 +223,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // The children of a progressbar are presentational, so neither the label nor the hidden text inside it
         // is ever read, and the role requires a name: the root has to carry it.
         Assert.AreEqual(expectedName, component.Find(".bit-ldn").GetAttribute("aria-label"));
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod,
@@ -299,7 +299,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // A decorative loader draws a wait that its surroundings already report, so it adds nothing of
         // its own to the accessibility tree - not the hidden fallback text, and not a live region, which
         // aria-live would make of the element whatever its role.
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
         Assert.IsNull(root.GetAttribute("aria-live"));
     }
 
@@ -322,7 +322,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // the loader is for - so neither the parameter nor the passed-through attribute revives the live
         // region here, exactly as neither revives the hidden fallback text.
         Assert.IsNull(root.GetAttribute("aria-live"));
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod]
@@ -358,7 +358,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         // The accessible name of the live region is what is read there, so the hidden text underneath it
         // would never be reached - and rendering it anyway is what used to hand a screen reader both.
-        Assert.HasCount(0, component.FindAll(".bit-ldn-srt"));
+        Assert.IsEmpty(component.FindAll(".bit-ldn-srt"));
     }
 
     [TestMethod,
@@ -390,11 +390,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         if (expectedColor is null)
         {
             // Left to the stylesheet, which falls back to the primary color behind --bit-Loading-color.
-            StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-clr"));
+            Assert.DoesNotMatchRegex(new Regex("--bit-ldn-clr"), StyleOf(component));
         }
         else
         {
-            StringAssert.Contains(StyleOf(component), $"--bit-ldn-clr:{expectedColor}");
+            Assert.Contains($"--bit-ldn-clr:{expectedColor}", StyleOf(component));
         }
     }
 
@@ -406,7 +406,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomColor, "hotpink");
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:hotpink");
+        Assert.Contains("--bit-ldn-clr:hotpink", StyleOf(component));
     }
 
     [TestMethod]
@@ -418,7 +418,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomColor, "hotpink");
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-err)");
+        Assert.Contains("--bit-ldn-clr:var(--bit-clr-err)", StyleOf(component));
     }
 
     [TestMethod,
@@ -434,11 +434,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var root = component.Find(".bit-ldn");
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
-        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
+        Assert.ContainsSingle(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg", root.ClassList);
 
         // The size lives in the stylesheet, ahead of --bit-Loading-size, and the whole drawing is laid out in
         // CSS from it - nothing about the geometry is written into the style attribute.
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz|--bit-ldn-size|px"));
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-sz|--bit-ldn-size|px"), StyleOf(component));
     }
 
     [TestMethod]
@@ -449,8 +449,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // An unset Size publishes nothing - neither a class nor a style - so the public --bit-Loading-* variables
         // restyle the 64px default while an explicit value, which does publish its class, wins over them.
         var root = component.Find(".bit-ldn");
-        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-em" or "bit-ldn-csz"));
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-"));
+        Assert.DoesNotContain(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-em" or "bit-ldn-csz", root.ClassList);
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-"), StyleOf(component));
     }
 
     [TestMethod,
@@ -465,11 +465,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         var root = component.Find(".bit-ldn");
-        StringAssert.Contains(StyleOf(component), $"--bit-ldn-sz:{customSize}px");
+        Assert.Contains($"--bit-ldn-sz:{customSize}px", StyleOf(component));
 
         // No size class, so the label scales from the custom size instead of taking a step of the ramp - through a
         // class of its own, which makes that label size a choice the public variable no longer wins over.
-        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
+        Assert.DoesNotContain(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg", root.ClassList);
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-csz"));
     }
 
@@ -484,8 +484,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         // Left as unset as if it had never been given: no size class, no custom size class, no inline size.
-        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-csz"));
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
+        Assert.DoesNotContain(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-csz", component.Find(".bit-ldn").ClassList);
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-sz"), StyleOf(component));
     }
 
     [TestMethod]
@@ -499,7 +499,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-lg"));
         Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-csz"));
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-sz"), StyleOf(component));
     }
 
     [TestMethod,
@@ -513,7 +513,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Speed, speed);
         });
 
-        StringAssert.Contains(StyleOf(component), $"--bit-ldn-spd:{expected}");
+        Assert.Contains($"--bit-ldn-spd:{expected}", StyleOf(component));
     }
 
     [TestMethod,
@@ -527,7 +527,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Speed, speed);
         });
 
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-spd|--bit-ldn-mot-factor"));
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-spd|--bit-ldn-mot-factor"), StyleOf(component));
     }
 
     [TestMethod,
@@ -541,7 +541,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Thickness, thickness);
         });
 
-        StringAssert.Contains(StyleOf(component), $"--bit-ldn-stroke:{expected}px");
+        Assert.Contains($"--bit-ldn-stroke:{expected}px", StyleOf(component));
     }
 
     [TestMethod]
@@ -554,7 +554,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-stroke:6px");
+        Assert.Contains("--bit-ldn-stroke:6px", StyleOf(component));
 
         component.Render(parameters =>
         {
@@ -562,7 +562,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Size, BitSize.Large);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-stroke:6px");
+        Assert.Contains("--bit-ldn-stroke:6px", StyleOf(component));
     }
 
     [TestMethod,
@@ -577,7 +577,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Thickness, thickness);
         });
 
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-stroke"));
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-stroke"), StyleOf(component));
     }
 
     [TestMethod]
@@ -591,7 +591,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-pau"));
 
         // The drawing is held, never removed: the component keeps its structure and its live region.
-        Assert.HasCount(1, component.FindAll($".{ContainerClass}"));
+        Assert.ContainsSingle(component.FindAll($".{ContainerClass}"));
 
         component.Render(parameters =>
         {
@@ -628,7 +628,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-em"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
-        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
+        Assert.DoesNotMatchRegex(new Regex("--bit-ldn-sz"), StyleOf(component));
 
         component.Render(parameters =>
         {
@@ -646,7 +646,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         // Without the 1em class, so the label follows the custom size the way it does on any other loader.
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-sz:20px");
+        Assert.Contains("--bit-ldn-sz:20px", StyleOf(component));
         Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-em"));
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-csz"));
     }
@@ -675,7 +675,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     {
         var component = RenderComponent<TLoading>();
 
-        Assert.HasCount(1, component.FindAll(".bit-ldn"));
+        Assert.ContainsSingle(component.FindAll(".bit-ldn"));
     }
 
     [TestMethod]
@@ -683,7 +683,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     {
         var component = RenderComponent<TLoading>();
 
-        Assert.HasCount(1, component.FindAll(".bit-ldn"));
+        Assert.ContainsSingle(component.FindAll(".bit-ldn"));
 
         // A loader kept in the document across several waits is held back for each of them, rather than
         // being stuck with whatever delay it happened to be created with.
@@ -789,11 +789,11 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         if (expected.Length == 0)
         {
-            StringAssert.DoesNotMatch(style, new Regex("visibility:hidden|display:none"));
+            Assert.DoesNotMatchRegex(new Regex("visibility:hidden|display:none"), style);
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -808,7 +808,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var root = component.Find(".bit-ldn");
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        StringAssert.Contains(root.GetAttribute("style") ?? string.Empty, "margin:4px");
+        Assert.Contains("margin:4px", root.GetAttribute("style") ?? string.Empty);
     }
 
     [TestMethod]
@@ -886,14 +886,14 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             });
         });
 
-        StringAssert.Contains(StyleOf(component), "opacity:0.5");
-        StringAssert.Contains(component.Find($".{ContainerClass}").GetAttribute("style") ?? string.Empty, "outline:1px solid red");
-        StringAssert.Contains(component.Find(".bit-ldn-lbl").GetAttribute("style") ?? string.Empty, "color:tomato");
+        Assert.Contains("opacity:0.5", StyleOf(component));
+        Assert.Contains("outline:1px solid red", component.Find($".{ContainerClass}").GetAttribute("style") ?? string.Empty);
+        Assert.Contains("color:tomato", component.Find(".bit-ldn-lbl").GetAttribute("style") ?? string.Empty);
 
         if (ChildCount > 0)
         {
             var child = component.Find($".{ChildClass}");
-            StringAssert.Contains(child.GetAttribute("style") ?? string.Empty, "border-radius:0");
+            Assert.Contains("border-radius:0", child.GetAttribute("style") ?? string.Empty);
         }
     }
 
@@ -908,7 +908,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var text = component.Find(".bit-ldn-srt");
         Assert.IsTrue(text.ClassList.Contains("custom-srt"));
-        StringAssert.Contains(text.GetAttribute("style") ?? string.Empty, "letter-spacing:1px");
+        Assert.Contains("letter-spacing:1px", text.GetAttribute("style") ?? string.Empty);
     }
 
     [TestMethod]
@@ -934,7 +934,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
                              .Where(name => name is "classes" or "styles" or "speed" or "inline" or "delay" or "paused" or "thickness" or "arialive")
                              .ToArray();
 
-        Assert.HasCount(0, stray);
+        Assert.IsEmpty(stray);
     }
 
     [TestMethod]
@@ -946,7 +946,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Size, BitSize.Small);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-err)");
+        Assert.Contains("--bit-ldn-clr:var(--bit-clr-err)", StyleOf(component));
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
 
         component.Render(parameters =>
@@ -956,7 +956,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.LabelPlacement, BitPlacement.End);
         });
 
-        StringAssert.Contains(StyleOf(component), "--bit-ldn-clr:var(--bit-clr-suc)");
+        Assert.Contains("--bit-ldn-clr:var(--bit-clr-suc)", StyleOf(component));
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-lg"));
         Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-sm"));
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-led"));
@@ -972,7 +972,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         // The stylesheet dims bit-dis and holds its animation the way it holds bit-ldn-pau; the drawing stays.
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-dis"));
-        Assert.HasCount(1, component.FindAll($".{ContainerClass}"));
+        Assert.ContainsSingle(component.FindAll($".{ContainerClass}"));
     }
 
     [TestMethod]
@@ -1008,10 +1008,10 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-ldn-clr:var(--bit-clr-err)");
-        StringAssert.Contains(style, "--bit-ldn-spd:2");
-        StringAssert.Contains(style, "--bit-ldn-stroke:3px");
-        StringAssert.Contains(style, "margin:3px");
+        Assert.Contains("--bit-ldn-clr:var(--bit-clr-err)", style);
+        Assert.Contains("--bit-ldn-spd:2", style);
+        Assert.Contains("--bit-ldn-stroke:3px", style);
+        Assert.Contains("margin:3px", style);
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-led"));
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-inl"));
@@ -1050,7 +1050,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         var root = component.Find(".bit-ldn");
 
-        StringAssert.Contains(root.GetAttribute("style") ?? string.Empty, "--bit-ldn-clr:var(--bit-clr-suc)");
+        Assert.Contains("--bit-ldn-clr:var(--bit-clr-suc)", root.GetAttribute("style") ?? string.Empty);
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-pau"));
@@ -1093,8 +1093,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-ldn-sz:24px");
-        StringAssert.Contains(style, "--bit-ldn-clr:currentColor");
+        Assert.Contains("--bit-ldn-sz:24px", style);
+        Assert.Contains("--bit-ldn-clr:currentColor", style);
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
     }
 
@@ -1118,8 +1118,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "--bit-ldn-sz:24px");
-        StringAssert.Contains(style, "--bit-ldn-clr:hotpink");
+        Assert.Contains("--bit-ldn-sz:24px", style);
+        Assert.Contains("--bit-ldn-clr:hotpink", style);
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
     }
 
@@ -1157,7 +1157,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         // A value the cascade no longer carries goes back to the default instead of staying on the loader.
         root = component.Find(".bit-ldn");
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-clr"));
+        Assert.DoesNotContain("--bit-ldn-clr", (root.GetAttribute("style") ?? string.Empty));
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-sm"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-lg"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-pau"));
@@ -1171,7 +1171,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
 
         // And so does everything once the cascade is gone altogether - back to an unset Size, which publishes no class.
         root = component.Find(".bit-ldn");
-        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
+        Assert.DoesNotContain(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg", root.ClassList);
     }
 
     [TestMethod]
@@ -1191,7 +1191,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.ChildContent, Loader("first", writeSpeed: true));
         });
 
-        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:3"));
+        Assert.Contains("--bit-ldn-spd:3", (component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty));
 
         // A parameter that stops being written keeps its last value, as it does on any Blazor component, and that
         // value - not a default - is what the loader holds when a cascade fills the parameter in.
@@ -1201,7 +1201,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.ChildContent, Loader("second", writeSpeed: false));
         });
 
-        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:2"));
+        Assert.Contains("--bit-ldn-spd:2", (component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty));
 
         component.Render(parameters =>
         {
@@ -1209,7 +1209,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.ChildContent, Loader("third", writeSpeed: false));
         });
 
-        Assert.IsTrue((component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-spd:3"));
+        Assert.Contains("--bit-ldn-spd:3", (component.Find(".bit-ldn").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -1233,7 +1233,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var roots = component.FindAll(".bit-ldn");
         Assert.IsTrue(roots[0].ClassList.Contains("bit-ldn-em"));
         Assert.IsFalse(roots[0].ClassList.Contains("bit-ldn-lg"));
-        Assert.IsFalse((roots[0].GetAttribute("style") ?? string.Empty).Contains("--bit-ldn-sz"));
+        Assert.DoesNotContain("--bit-ldn-sz", (roots[0].GetAttribute("style") ?? string.Empty));
         Assert.IsTrue(roots[1].ClassList.Contains("bit-ldn-lg"));
     }
 

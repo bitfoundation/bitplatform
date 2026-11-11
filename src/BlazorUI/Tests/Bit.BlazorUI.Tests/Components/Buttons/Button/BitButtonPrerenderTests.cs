@@ -23,11 +23,11 @@ public class BitButtonPrerenderTests
             [nameof(BitButton.ChildContent)] = (RenderFragment)(builder => builder.AddContent(0, "Move me")),
         });
 
-        StringAssert.Contains(html, "bit-btn-ffx");
-        StringAssert.Contains(html, "bit-btn-drg");
-        StringAssert.Contains(html, "bit-btn-tlf");
-        StringAssert.Contains(html, "aria-keyshortcuts=\"ArrowUp ArrowDown ArrowLeft ArrowRight\"");
-        StringAssert.Contains(html, "Move me");
+        Assert.Contains("bit-btn-ffx", html);
+        Assert.Contains("bit-btn-drg", html);
+        Assert.Contains("bit-btn-tlf", html);
+        Assert.Contains("aria-keyshortcuts=\"ArrowUp ArrowDown ArrowLeft ArrowRight\"", html);
+        Assert.Contains("Move me", html);
     }
 
     [TestMethod]
@@ -40,8 +40,8 @@ public class BitButtonPrerenderTests
             [nameof(BitButton.ChildContent)] = (RenderFragment)(builder => builder.AddContent(0, "Save")),
         });
 
-        StringAssert.Contains(html, "aria-busy=\"true\"");
-        StringAssert.Contains(html, "bit-btn-spn");
-        StringAssert.Contains(html, "role=\"status\"");
+        Assert.Contains("aria-busy=\"true\"", html);
+        Assert.Contains("bit-btn-spn", html);
+        Assert.Contains("role=\"status\"", html);
     }
 }

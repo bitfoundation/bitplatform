@@ -133,10 +133,10 @@ public class BitFileInputE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"fin-basic\"");
-        StringAssert.Contains(html, "bit-fin-lbl");
-        StringAssert.Contains(html, "Browse or drop a file");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"fin-basic\"", html);
+        Assert.Contains("bit-fin-lbl", html);
+        Assert.Contains("Browse or drop a file", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Route);
         await Expect(Browse("fin-basic")).ToBeVisibleAsync();
@@ -171,7 +171,7 @@ public class BitFileInputE2ETests : E2ETestBase
         var before = Px(await CssAsync(Browse("fin-runtime"), "min-height"));
         await Page.ClickAsync("#btn-runtime-size");
         await Expect(root).ToHaveClassAsync(HasClass("bit-fin-lg"));
-        Assert.IsTrue(Px(await CssAsync(Browse("fin-runtime"), "min-height")) > before);
+        Assert.IsGreaterThan(before, Px(await CssAsync(Browse("fin-runtime"), "min-height")));
 
         await Expect(FileField("fin-runtime")).Not.ToHaveAttributeAsync("multiple", new Regex(".*"));
         await Page.ClickAsync("#btn-runtime-multiple");
@@ -400,8 +400,8 @@ public class BitFileInputE2ETests : E2ETestBase
         try
         {
             Directory.CreateDirectory(Path.Combine(folder, "docs"));
-            await File.WriteAllTextAsync(Path.Combine(folder, "root.txt"), "root");
-            await File.WriteAllTextAsync(Path.Combine(folder, "docs", "readme.txt"), "readme");
+            await File.WriteAllTextAsync(Path.Combine(folder, "root.txt"), "root", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(folder, "docs", "readme.txt"), "readme", TestContext.CancellationToken);
 
             await FileField("fin-directory").SetInputFilesAsync(folder);
 
@@ -477,8 +477,8 @@ public class BitFileInputE2ETests : E2ETestBase
         {
             var a = Path.Combine(folder, "a.txt");
             var b = Path.Combine(folder, "b.txt");
-            await File.WriteAllTextAsync(a, "aaa");
-            await File.WriteAllTextAsync(b, "bbb");
+            await File.WriteAllTextAsync(a, "aaa", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(b, "bbb", TestContext.CancellationToken);
 
             await FileField("fin-append").SetInputFilesAsync(a);
             await FileField("fin-append").SetInputFilesAsync(b);
@@ -868,7 +868,7 @@ public class BitFileInputE2ETests : E2ETestBase
         await Expect(root).ToHaveClassAsync(HasClass("bit-fin-dzn"));
         await Expect(root).ToHaveClassAsync(HasClass("bit-fin-otl"));
         await Expect(Browse("fin-dropzone")).ToHaveCSSAsync("border-top-style", "dashed");
-        Assert.IsTrue((await Browse("fin-dropzone").BoundingBoxAsync())!.Height >= 87.5);
+        Assert.IsGreaterThanOrEqualTo(87.5, (await Browse("fin-dropzone").BoundingBoxAsync())!.Height);
         var icon = root.Locator(".bit-fin-dzi");
         await Expect(icon).ToHaveClassAsync(HasClass("bit-icon--CloudUpload"));
         await Expect(icon).ToHaveAttributeAsync("aria-hidden", "true");
@@ -963,7 +963,7 @@ public class BitFileInputE2ETests : E2ETestBase
         }
 
         Assert.AreEqual(unset, colors["pri"], "Unset is not primary.");
-        Assert.IsTrue(colors.Values.Distinct().Count() >= 12, string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
+        Assert.IsGreaterThanOrEqualTo(12, colors.Values.Distinct().Count(), string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}")));
     }
 
     [TestMethod]
@@ -975,8 +975,8 @@ public class BitFileInputE2ETests : E2ETestBase
 
         await Expect(Root($"fin-size-{smaller}")).ToHaveClassAsync(HasClass($"bit-fin-{smaller}"));
         await Expect(Root($"fin-size-{larger}")).ToHaveClassAsync(HasClass($"bit-fin-{larger}"));
-        Assert.IsTrue(Px(await CssAsync(Browse($"fin-size-{larger}"), "min-height")) > Px(await CssAsync(Browse($"fin-size-{smaller}"), "min-height")), "height");
-        Assert.IsTrue(Px(await CssAsync(Browse($"fin-size-{larger}"), "font-size")) > Px(await CssAsync(Browse($"fin-size-{smaller}"), "font-size")), "font size");
+        Assert.IsGreaterThan(Px(await CssAsync(Browse($"fin-size-{smaller}"), "min-height")), Px(await CssAsync(Browse($"fin-size-{larger}"), "min-height")), "height");
+        Assert.IsGreaterThan(Px(await CssAsync(Browse($"fin-size-{smaller}"), "font-size")), Px(await CssAsync(Browse($"fin-size-{larger}"), "font-size")), "font size");
     }
 
     // ---------------------------------------------------------------- style & class
@@ -1042,7 +1042,7 @@ public class BitFileInputE2ETests : E2ETestBase
         var folder = TempDirectory();
         try
         {
-            await File.WriteAllTextAsync(Path.Combine(folder, "in-folder.txt"), "x");
+            await File.WriteAllTextAsync(Path.Combine(folder, "in-folder.txt"), "x", TestContext.CancellationToken);
             await Expect(FileField("fin-directory")).ToHaveAttributeAsync("webkitdirectory", "");
             await FileField("fin-directory").SetInputFilesAsync(folder);
             await Expect(Root("fin-directory").Locator(".bit-fin-fp")).ToHaveTextAsync(Path.GetFileName(folder));
@@ -1066,7 +1066,7 @@ public class BitFileInputE2ETests : E2ETestBase
 
         var root = Root("fin-vars");
         var button = Browse("fin-vars");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Width <= 300.5);
+        Assert.IsLessThanOrEqualTo(300.5, (await root.BoundingBoxAsync())!.Width);
         await Expect(button).ToHaveCSSAsync("background-color", "rgb(218, 165, 32)");
         await Expect(button).ToHaveCSSAsync("color", "rgb(1, 2, 3)");
         await Expect(button).ToHaveCSSAsync("min-height", "50px");
@@ -1146,13 +1146,13 @@ public class BitFileInputE2ETests : E2ETestBase
         var row = Items("fin-rtl").First;
         var preview = await row.Locator(".bit-fin-prv").BoundingBoxAsync();
         var remove = await row.Locator(".bit-fin-rbt").BoundingBoxAsync();
-        Assert.IsTrue(preview!.X > remove!.X, "The preview is not on the right and the remove button on the left.");
+        Assert.IsGreaterThan(remove!.X, preview!.X, "The preview is not on the right and the remove button on the left.");
 
         await Expect(Root("fin-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         await SelectAsync("fin-rtl-inherited", Text("a.txt"));
         var name = await Items("fin-rtl-inherited").First.Locator(".bit-fin-fn").BoundingBoxAsync();
         var inheritedRemove = await Items("fin-rtl-inherited").First.Locator(".bit-fin-rbt").BoundingBoxAsync();
-        Assert.IsTrue(name!.X > inheritedRemove!.X, "The inherited direction does not mirror the row.");
+        Assert.IsGreaterThan(inheritedRemove!.X, name!.X, "The inherited direction does not mirror the row.");
     }
 
     // ---------------------------------------------------------------- motion
@@ -1163,15 +1163,15 @@ public class BitFileInputE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         var button = Browse("fin-motion");
-        StringAssert.StartsWith(await CssAsync(button, "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(button, "transition-duration"));
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         await Expect(button).Not.ToHaveCSSAsync("transition-duration", new Regex("^0\\.1s"));
         var reduced = (await CssAsync(button, "transition-duration")).Split(',')[0].Trim();
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture) < 0.001, reduced);
+        Assert.IsLessThan(0.001, double.Parse(reduced.TrimEnd('s'), CultureInfo.InvariantCulture), reduced);
 
         await Expect(Root("fin-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
-        StringAssert.StartsWith(await CssAsync(Browse("fin-motion-forced"), "transition-duration"), "0.1s");
+        Assert.StartsWith("0.1s", await CssAsync(Browse("fin-motion-forced"), "transition-duration"));
     }
 }

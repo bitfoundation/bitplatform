@@ -58,7 +58,7 @@ public class PersistenceUnusablePayloadTests
         storage.Data["blex:settings"] = """{"Theme":"dark","FontSize":"huge"}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.Contains(e => e.Source == "persistence", errors);
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"), "it would fail the same way on every load");
@@ -77,7 +77,7 @@ public class PersistenceUnusablePayloadTests
         storage.Data["blex:settings"] = payload;
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.Contains(e => e.Source == "persistence", errors);
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
@@ -90,7 +90,7 @@ public class PersistenceUnusablePayloadTests
         var (manager, store, errors) = Setup();
         var storage = new MemoryStorage();
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         Assert.AreEqual(1, storage.SuspensionWatches);
 
         store.SetTheme("dark");
@@ -114,7 +114,7 @@ public class PersistenceUnusablePayloadTests
             storage.Suspend();   // the page goes at once
         };
 
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(storage.Data.TryGetValue("blex:settings", out var saved), "The page went before anything watched for it.");
         Assert.Contains("dark", saved);
@@ -127,7 +127,7 @@ public class PersistenceUnusablePayloadTests
         var (manager, store, _) = Setup();
         var storage = new MemoryStorage();
         var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         await persistor.DisposeAsync();
         storage.Data.Clear();
 
@@ -136,4 +136,6 @@ public class PersistenceUnusablePayloadTests
 
         Assert.IsEmpty(storage.Data);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

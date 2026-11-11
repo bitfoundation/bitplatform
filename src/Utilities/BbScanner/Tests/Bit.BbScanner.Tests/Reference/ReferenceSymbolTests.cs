@@ -300,9 +300,13 @@ public class ReferenceSymbolTests
             options.Formats = BbBarcodeFormat.All;
             using var decoder = new BbBarcodeDecoder(options);
             var result = decoder.Decode(image.View, suppressDuplicates: false);
+            var expectedValue = symbol.BarcodeFormat;
+            var actualValue = result?.Format;
 
-            Assert.AreEqual(symbol.BarcodeFormat, result?.Format, symbol.Id);
-            Assert.AreEqual(symbol.Expected, result?.Text, symbol.Id);
+            Assert.AreEqual(expectedValue, actualValue, symbol.Id);
+            var expectedValue1 = symbol.Expected;
+            var actualValue2 = result?.Text;
+            Assert.AreEqual(expectedValue1, actualValue2, symbol.Id);
         }
     }
 
@@ -458,9 +462,9 @@ public class ReferenceSymbolTests
     [TestMethod]
     public void TheFixturesComeFromTheIndependentEncoder()
     {
-        StringAssert.StartsWith(ReferenceSymbols.Generator, "BWIPP");
+        Assert.StartsWith("BWIPP", ReferenceSymbols.Generator);
         Assert.IsGreaterThan(40, ReferenceSymbols.All.Count);
-        CollectionAssert.AllItemsAreUnique(ReferenceSymbols.All.Select(s => s.Id).ToList());
+        Assert.AreAllDistinct(ReferenceSymbols.All.Select(s => s.Id).ToList());
     }
 
     private static BbBarcodeResult? Decode(ReferenceSymbol symbol, BbLuminanceBuffer image, BbScannerOptions options)
@@ -482,12 +486,13 @@ public class ReferenceSymbolTests
 
         if (symbol.ExpectedBytes is { } bytes)
         {
-            CollectionAssert.AreEqual(bytes, result.RawBytes.ToArray(), context);
+            Assert.AreSequenceEqual(bytes, result.RawBytes.ToArray(), context);
         }
 
         if (symbol.Gs1)
         {
-            Assert.IsTrue(result.Metadata?.IsGs1, $"{context} is a GS1 symbol.");
+            var actualValue = result.Metadata?.IsGs1;
+            Assert.IsTrue(actualValue, $"{context} is a GS1 symbol.");
 
             // BWIPP checks the element strings it encodes against the GS1 rules, so every one of them must parse,
             // and must encode back to the text it was read as.
@@ -501,12 +506,16 @@ public class ReferenceSymbolTests
 
         if (symbol.Eci is { } eci)
         {
-            Assert.AreEqual(eci, result.Metadata?.Eci, context);
+            var expectedValue = eci;
+            var actualValue1 = result.Metadata?.Eci;
+            Assert.AreEqual(expectedValue, actualValue1, context);
         }
 
         if (symbol.Extension is { } extension)
         {
-            Assert.AreEqual(extension, result.Metadata?.Extension, $"{context}: the add-on");
+            var expectedValue2 = extension;
+            var actualValue3 = result.Metadata?.Extension;
+            Assert.AreEqual(expectedValue2, actualValue3, $"{context}: the add-on");
         }
     }
 }

@@ -48,10 +48,10 @@ public sealed class ScrollTests : BmotionPageTest
         var exact = frames.Select(f => f[0]).ToArray();
         var smooth = frames.Select(f => f[1]).ToArray();
         Assert.AreEqual(0.5, exact[2], 0.05, "the exact bar follows the scroll at once");
-        Assert.IsTrue(smooth[1] < 0.4, $"the smoothed bar jumped: {smooth[1]:0.###}");
+        Assert.IsLessThan(0.4, smooth[1], $"the smoothed bar jumped: {smooth[1]:0.###}");
         for (int i = 1; i < smooth.Length; i++)
-            Assert.IsTrue(smooth[i] >= smooth[i - 1] - 1e-6, $"it went back at frame {i}: {smooth[i - 1]:0.###} -> {smooth[i]:0.###}");
-        Assert.IsTrue(smooth.Max() <= exact[^1] + 0.005, "and never past the scroll");
+            Assert.IsGreaterThanOrEqualTo(smooth[i - 1] - 1e-6, smooth[i], $"it went back at frame {i}: {smooth[i - 1]:0.###} -> {smooth[i]:0.###}");
+        Assert.IsLessThanOrEqualTo(exact[^1] + 0.005, smooth.Max(), "and never past the scroll");
         await WaitForStateAsync("#smooth-progress", $"s => Math.abs(s.scaleX - {exact[^1].ToString(System.Globalization.CultureInfo.InvariantCulture)}) < 0.002");
     }
 

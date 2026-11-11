@@ -37,7 +37,7 @@ public class BitAiReasoningPartViewTests : BitAiTestBase
 
         Assert.AreEqual("DIV", root.TagName);
         Assert.AreEqual(component.Instance.UniqueId, root.GetAttribute("id"));
-        Assert.HasCount(1, component.FindComponents<BitAiCollapsible>());
+        Assert.ContainsSingle(component.FindComponents<BitAiCollapsible>());
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class BitAiReasoningPartViewTests : BitAiTestBase
         part.Complete();
         component.Render();
 
-        StringAssert.StartsWith(component.Find(".bit-airpv-ttl").TextContent, "Thought for");
+        Assert.StartsWith("Thought for", component.Find(".bit-airpv-ttl").TextContent);
         Assert.IsEmpty(component.FindComponents<BitBouncingDotsLoading>());
     }
 
@@ -116,7 +116,7 @@ public class BitAiReasoningPartViewTests : BitAiTestBase
         var component = RenderComponent<BitAiReasoningPartView>(p => p.Add(x => x.Part, part));
         component.Find("[aria-expanded]").Click();
 
-        StringAssert.Contains(component.Find(".bit-airpv-bdy .bit-aimdv-par").InnerHtml, "<strong>one</strong>");
+        Assert.Contains("<strong>one</strong>", component.Find(".bit-airpv-bdy .bit-aimdv-par").InnerHtml);
     }
 
     // Long reasoning scrolls inside the panel, and a scrolling box of text holds nothing that takes the focus: the body
@@ -173,7 +173,7 @@ public class BitAiReasoningPartViewTests : BitAiTestBase
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-airpv-hdr").ClassList.Contains("c-hdr"));
         Assert.IsTrue(component.Find(".bit-airpv-ico").ClassList.Contains("c-ico"));
         Assert.IsTrue(component.Find(".bit-airpv-ttl").ClassList.Contains("c-ttl"));

@@ -24,11 +24,11 @@ public sealed class EditSessionProxyTests
             },
         });
 
-        await session.RenderPreviewAsync();
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
         session.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0f));
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { new Size(100, 50) }, requests);
+        Assert.AreSequenceEqual(new[] { new Size(100, 50) }, requests);
         Assert.AreEqual(new Size(100, 50), preview.Size);
         Assert.AreEqual(new Rgba32(10, 20, 30), preview[50, 25]);
     }
@@ -37,7 +37,7 @@ public sealed class EditSessionProxyTests
     public async Task TheManagedResamplerTakesOverWhenTheScalerCannotHelp()
     {
         using var reference = new ImageEditSession(FastPathEquivalenceTests.Noise(1000, 500, 67), new ImageEditSessionOptions { MaxProxyDimension = 100 });
-        var expected = (await reference.RenderPreviewAsync()).Clone();
+        var expected = (await reference.RenderPreviewAsync(TestContext.CancellationToken)).Clone();
         var wrongSize = ImageBuffer.Create(10, 10);
 
         foreach (var scaled in new ImageBuffer?[] { null, wrongSize })
@@ -47,7 +47,7 @@ public sealed class EditSessionProxyTests
                 MaxProxyDimension = 100,
                 ProxyScaler = (_, _, _) => ValueTask.FromResult(scaled),
             });
-            FastPathEquivalenceTests.AssertSamePixels(expected, await session.RenderPreviewAsync(), scaled is null ? "no proxy" : "wrong size");
+            FastPathEquivalenceTests.AssertSamePixels(expected, await session.RenderPreviewAsync(TestContext.CancellationToken), scaled is null ? "no proxy" : "wrong size");
         }
 
         Assert.IsTrue(wrongSize.IsDisposed);
@@ -71,7 +71,7 @@ public sealed class EditSessionProxyTests
             },
         });
 
-        var render = session.RenderPreviewAsync().AsTask();
+        var render = session.RenderPreviewAsync(TestContext.CancellationToken).AsTask();
         var replacement = FastPathEquivalenceTests.Noise(800, 800, 73);
         session.ReplaceSource(replacement);
         var stale = ImageBuffer.Create(100, 50);
@@ -80,9 +80,11 @@ public sealed class EditSessionProxyTests
         await Assert.ThrowsAsync<OperationCanceledException>(() => render);
         Assert.IsTrue(stale.IsDisposed);
 
-        var preview = await session.RenderPreviewAsync();
+        var preview = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreSame(replacement, sources[^1]);
         Assert.AreEqual(new Size(100, 100), preview.Size);
         Assert.AreEqual(new Rgba32(1, 2, 3), preview[0, 0]);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

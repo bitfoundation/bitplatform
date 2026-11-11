@@ -109,13 +109,13 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
 
         Assert.AreEqual(400, (await Measure("#plain", "collapse-param")).Delay, 1);
         Assert.AreEqual(600, (await Measure("#plain", "chart")).Delay, 1);
-        Assert.IsTrue((await Measure("#plain", "chart-progressive")).Delay > 1000);
+        Assert.IsGreaterThan(1000, (await Measure("#plain", "chart-progressive")).Delay);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         foreach (var probe in new[] { "collapse-param", "chart", "chart-progressive" })
         {
-            Assert.IsTrue((await Measure("#plain", probe)).Delay < Collapsed, $"{probe} still waits under reduced motion.");
+            Assert.IsLessThan(Collapsed, (await Measure("#plain", probe)).Delay, $"{probe} still waits under reduced motion.");
         }
 
         Assert.AreEqual(400, (await Measure("#fam", "collapse-param")).Delay, 1);
@@ -149,7 +149,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
 
         var (midway, end) = (positions[0], positions[1]);
 
-        Assert.IsTrue(end > 0, $"The swiper never moved ({end}px).");
+        Assert.IsGreaterThan(0, end, $"The swiper never moved ({end}px).");
 
         if (animates)
         {
@@ -267,7 +267,7 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
             if (ok is false) failures.Add($"{probe}: {measured.Duration}ms");
         }
 
-        Assert.AreEqual(0, failures.Count, $"Expected {(pace is null ? "collapsed" : $"{pace}ms")} in {set}:\n" + string.Join("\n", failures));
+        Assert.IsEmpty(failures, $"Expected {(pace is null ? "collapsed" : $"{pace}ms")} in {set}:\n" + string.Join("\n", failures));
     }
 
     // The longest duration and delay of a transition or a running animation under a probe, as the engine computed them.

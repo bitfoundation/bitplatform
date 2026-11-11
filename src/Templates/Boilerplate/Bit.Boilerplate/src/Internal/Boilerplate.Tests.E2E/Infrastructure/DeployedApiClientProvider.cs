@@ -15,7 +15,7 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 /// The host these tests reach the deployed apps' backends through. One scope is one identity aimed at one API
 /// (<see cref="CreateApiClientFor"/>); <see cref="GetGlobalApiClient"/> is the one shared across the run.
 /// </summary>
-public static class DeployedApiClientProvider
+internal static class DeployedApiClientProvider
 {
     private static readonly Lazy<IHost> host = new(Build, LazyThreadSafetyMode.ExecutionAndPublication);
     private static readonly SemaphoreSlim globalApiClientGate = new(1, 1);

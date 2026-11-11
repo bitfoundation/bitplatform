@@ -21,14 +21,14 @@ public class BmValueTests
         }));
         value.Subscribe((Func<double, Task>)(async v =>
         {
-            await Task.Delay(1);
+            await Task.Delay(1, TestContext.CancellationToken);
             log.Add($"second {v}");
         }));
 
         await value.SetAsync(5);
 
         // Both asynchronous subscribers have finished by the time SetAsync returns, in subscription order.
-        CollectionAssert.AreEqual(new[] { "first 5", "second 5" }, log);
+        Assert.AreSequenceEqual(new[] { "first 5", "second 5" }, log);
         Assert.AreEqual(5, value.Value);
     }
 
@@ -43,7 +43,7 @@ public class BmValueTests
 
         await value.SetAsync("b");
 
-        CollectionAssert.AreEqual(new[] { "b" }, seen);
+        Assert.AreSequenceEqual(new[] { "b" }, seen);
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public class BmValueTests
         value.SetSync(2);
         subscription.Dispose(); // idempotent
 
-        CollectionAssert.AreEqual(new[] { 1 }, seen);
+        Assert.AreSequenceEqual(new[] { 1 }, seen);
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class BmValueTests
 
         Assert.AreEqual(5, source.Value, "the value itself still holds what it was set to");
         Assert.AreEqual(2, derived.Value, "but no longer notifies anyone");
-        Assert.AreEqual(0, seen.Count);
+        Assert.IsEmpty(seen);
     }
 
     [TestMethod]
@@ -117,4 +117,6 @@ public class BmValueTests
 
         Assert.AreEqual(7, seen);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

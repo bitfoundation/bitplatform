@@ -20,8 +20,8 @@ public sealed class WebPCodecTests
     [DataRow("animated")]
     public void DecodesLossyFilesAsLibwebpDoes(string name)
     {
-        using var expected = PngDecoder.Decode(Asset(name + ".png"));
-        using var decoded = WebPDecoder.Decode(Asset(name + ".webp"));
+        using var expected = PngDecoder.Decode(Asset(name + ".png"), cancellationToken: TestContext.CancellationToken);
+        using var decoded = WebPDecoder.Decode(Asset(name + ".webp"), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(expected.Width, decoded.Width);
         Assert.AreEqual(expected.Height, decoded.Height);
         // The reconstruction is bit exact; only the final YUV to RGB rounding may differ by one.
@@ -33,8 +33,8 @@ public sealed class WebPCodecTests
     [DataRow("lossless-palette")]
     public void DecodesLosslessFilesExactly(string name)
     {
-        using var expected = PngDecoder.Decode(Asset(name + ".png"));
-        using var decoded = WebPDecoder.Decode(Asset(name + ".webp"));
+        using var expected = PngDecoder.Decode(Asset(name + ".png"), cancellationToken: TestContext.CancellationToken);
+        using var decoded = WebPDecoder.Decode(Asset(name + ".webp"), cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded));
     }
 
@@ -58,10 +58,10 @@ public sealed class WebPCodecTests
     public void LossyRoundTripIsCloseToTheSource(double quality)
     {
         using var source = TestImages.Gradient(77, 45);
-        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = quality });
+        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = quality }, TestContext.CancellationToken);
         Assert.AreEqual(ImageFormat.WebP, ImageFormats.Detect(encoded.Data));
         Assert.AreEqual(quality, encoded.Quality);
-        using var decoded = WebPDecoder.Decode(encoded.Data);
+        using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual((77, 45), (decoded.Width, decoded.Height));
         Assert.IsLessThan(quality < 0.5 ? 6.0 : 3.0, TestImages.MeanChannelDifference(source, decoded));
     }
@@ -69,8 +69,8 @@ public sealed class WebPCodecTests
     [TestMethod]
     public void LowerQualityMakesSmallerFiles()
     {
-        using var source = PngDecoder.Decode(Asset("lossy.png"));
-        var sizes = new[] { 0.2, 0.6, 0.95 }.Select(q => WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = q }).Length).ToArray();
+        using var source = PngDecoder.Decode(Asset("lossy.png"), cancellationToken: TestContext.CancellationToken);
+        var sizes = new[] { 0.2, 0.6, 0.95 }.Select(q => WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = q }, TestContext.CancellationToken).Length).ToArray();
         Assert.IsLessThan(sizes[1], sizes[0]);
         Assert.IsLessThan(sizes[2], sizes[1]);
     }
@@ -79,9 +79,9 @@ public sealed class WebPCodecTests
     public void LossyKeepsAlphaExactly()
     {
         using var source = TestImages.Translucent(29, 19);
-        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP);
+        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP, TestContext.CancellationToken);
         Assert.IsTrue(new WebPDecoder().Identify(encoded.Data)!.HasAlpha);
-        using var decoded = WebPDecoder.Decode(encoded.Data);
+        using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         for (var y = 0; y < source.Height; y++)
             for (var x = 0; x < source.Width; x++)
                 Assert.AreEqual(source[x, y].A, decoded[x, y].A);
@@ -111,9 +111,9 @@ public sealed class WebPCodecTests
         {
             using (source)
             {
-                var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP);
+                var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP, TestContext.CancellationToken);
                 if (mask) Assert.AreEqual(0, AlphaFilter(encoded.Data));
-                using var decoded = WebPDecoder.Decode(encoded.Data);
+                using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
                 for (var y = 0; y < source.Height; y++)
                     for (var x = 0; x < source.Width; x++)
                         Assert.AreEqual(source[x, y].A, decoded[x, y].A);
@@ -131,8 +131,8 @@ public sealed class WebPCodecTests
             var asset = Asset(name + ".webp");
             var padded = new byte[asset.Length + 64];
             asset.CopyTo(padded, 32);
-            using var expected = WebPDecoder.Decode(asset);
-            using var decoded = await new WebPDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared);
+            using var expected = WebPDecoder.Decode(asset, cancellationToken: TestContext.CancellationToken);
+            using var decoded = await new WebPDecoder().DecodeAsync(padded.AsMemory(32, asset.Length), DecodeOptions.Default, Memory.PooledPixelAllocator.Shared, TestContext.CancellationToken);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, decoded), name);
         }
     }
@@ -141,8 +141,8 @@ public sealed class WebPCodecTests
     public void OpaqueLossyImagesUseTheSimpleFormat()
     {
         using var source = TestImages.Gradient(16, 16);
-        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP);
-        CollectionAssert.AreEqual("VP8 "u8.ToArray(), encoded.Data[12..16]);
+        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP, TestContext.CancellationToken);
+        Assert.AreSequenceEqual("VP8 "u8.ToArray(), encoded.Data[12..16]);
         Assert.IsFalse(new WebPDecoder().Identify(encoded.Data)!.HasAlpha);
     }
 
@@ -155,10 +155,10 @@ public sealed class WebPCodecTests
     public void LosslessRoundTripsExactly(int width, int height)
     {
         using var source = TestImages.Translucent(width, height);
-        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
-        CollectionAssert.AreEqual("VP8L"u8.ToArray(), encoded.Data[12..16]);
+        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }, TestContext.CancellationToken);
+        Assert.AreSequenceEqual("VP8L"u8.ToArray(), encoded.Data[12..16]);
         Assert.IsNull(encoded.Quality);
-        using var decoded = WebPDecoder.Decode(encoded.Data);
+        using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded));
     }
 
@@ -167,9 +167,9 @@ public sealed class WebPCodecTests
     {
         foreach (var name in new[] { "lossy.png", "lossless-palette.png" })
         {
-            using var source = PngDecoder.Decode(Asset(name));
-            var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
-            using var decoded = WebPDecoder.Decode(encoded.Data);
+            using var source = PngDecoder.Decode(Asset(name), cancellationToken: TestContext.CancellationToken);
+            var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }, TestContext.CancellationToken);
+            using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual(0, TestImages.MaxChannelDifference(source, decoded), name);
         }
     }
@@ -180,8 +180,8 @@ public sealed class WebPCodecTests
         foreach (var (w, h) in new[] { (1, 1), (2, 1), (1, 3), (17, 33), (16, 16) })
         {
             using var source = TestImages.Translucent(w, h);
-            var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
-            using var decoded = WebPDecoder.Decode(encoded.Data);
+            var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 }, TestContext.CancellationToken);
+            using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
             Assert.AreEqual((w, h), (decoded.Width, decoded.Height));
         }
     }
@@ -190,8 +190,8 @@ public sealed class WebPCodecTests
     public void FullyTransparentImagesStayTransparent()
     {
         using var source = ImageBuffer.Create(40, 24, Rgba32.Transparent);
-        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP);
-        using var decoded = WebPDecoder.Decode(encoded.Data);
+        var encoded = WebPEncoder.Encode(source, ImageExportOptions.WebP, TestContext.CancellationToken);
+        using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.IsTrue(decoded.Pixels.ToArray().All(p => p.A == 0));
     }
 
@@ -201,27 +201,29 @@ public sealed class WebPCodecTests
         using var source = TestImages.Translucent(12, 12);
         var exif = new ExifData().WithPrimary(new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("Bmage")));
         source.Metadata = new ImageMetadata(exif, iccProfile: new byte[] { 1, 2, 3, 4 }, xmp: "<x:xmpmeta/>"u8.ToArray());
-        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Metadata = MetadataPolicy.Preserve });
-        using var decoded = WebPDecoder.Decode(encoded.Data);
-        Assert.AreEqual("Bmage", decoded.Metadata?.Exif?.Make);
-        CollectionAssert.AreEqual(new byte[] { 1, 2, 3, 4 }, decoded.Metadata!.IccProfile.ToArray());
+        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Metadata = MetadataPolicy.Preserve }, TestContext.CancellationToken);
+        using var decoded = WebPDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue = decoded.Metadata?.Exif?.Make;
+        Assert.AreEqual("Bmage", actualValue);
+        Assert.AreSequenceEqual(new byte[] { 1, 2, 3, 4 }, decoded.Metadata!.IccProfile.ToArray());
         Assert.IsFalse(decoded.Metadata.Xmp.IsEmpty);
         // Alpha survives the extended header the metadata needs.
         Assert.IsTrue(new WebPDecoder().Identify(encoded.Data)!.HasAlpha);
 
-        var stripped = WebPEncoder.Encode(source, ImageExportOptions.WebP);
-        using var plain = WebPDecoder.Decode(stripped.Data);
-        Assert.IsNull(plain.Metadata?.Exif);
+        var stripped = WebPEncoder.Encode(source, ImageExportOptions.WebP, TestContext.CancellationToken);
+        using var plain = WebPDecoder.Decode(stripped.Data, cancellationToken: TestContext.CancellationToken);
+        var actualValue1 = plain.Metadata?.Exif;
+        Assert.IsNull(actualValue1);
     }
 
     [TestMethod]
     public void AppliesExifOrientationOnDecode()
     {
         using var source = TestImages.Quadrants(8, 8);
-        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true });
+        var encoded = WebPEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true }, TestContext.CancellationToken);
         var rotated = WebPContainer.WriteMetadata(encoded.Data, new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90)));
         Assert.AreEqual(Orientation.Rotate90, new WebPDecoder().Identify(rotated)!.Orientation);
-        using var decoded = WebPDecoder.Decode(rotated, new DecodeOptions { AutoOrient = true });
+        using var decoded = WebPDecoder.Decode(rotated, new DecodeOptions { AutoOrient = true }, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(Orientation.Normal, decoded.Metadata!.Orientation);
         Assert.AreEqual(new Rgba32(0, 0, 255), decoded[0, 0]);
     }
@@ -230,14 +232,14 @@ public sealed class WebPCodecTests
     public void RefusesImagesWebPCannotHold()
     {
         using var wide = ImageBuffer.Create(WebPEncoder.MaxDimension + 1, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wide, ImageExportOptions.WebP));
+        Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wide, ImageExportOptions.WebP, TestContext.CancellationToken));
 
         // The lossless format has a pixel more: its header stores the size less one in 14 bits.
         var lossless = new ImageExportOptions { Format = ImageFormat.WebP, Lossless = true };
-        var encoded = WebPEncoder.Encode(wide, lossless);
+        var encoded = WebPEncoder.Encode(wide, lossless, TestContext.CancellationToken);
         Assert.AreEqual(WebPEncoder.MaxLosslessDimension, new WebPDecoder().Identify(encoded.Data)!.Width);
         using var wider = ImageBuffer.Create(WebPEncoder.MaxLosslessDimension + 1, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wider, lossless));
+        Assert.ThrowsExactly<ImageEncodeException>(() => WebPEncoder.Encode(wider, lossless, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -247,8 +249,8 @@ public sealed class WebPCodecTests
         Assert.IsTrue(ImageCapabilities.Managed.CanEncode(ImageFormat.WebP));
         var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault());
         using var source = TestImages.Gradient(40, 30);
-        var encoded = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 });
-        using var decoded = await processor.DecodeAsync(encoded.Data);
+        var encoded = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.8 }, TestContext.CancellationToken);
+        using var decoded = await processor.DecodeAsync(encoded.Data, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual((40, 30), (decoded.Width, decoded.Height));
         Assert.AreEqual(ImageFormat.WebP, processor.Identify(encoded.Data)!.Format);
     }
@@ -257,10 +259,10 @@ public sealed class WebPCodecTests
     public async Task ASizeBudgetIsMetByLoweringQuality()
     {
         var processor = new ImageProcessor(ImageCodecRegistry.CreateDefault());
-        using var source = PngDecoder.Decode(Asset("lossy.png"));
-        var full = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.95 });
+        using var source = PngDecoder.Decode(Asset("lossy.png"), cancellationToken: TestContext.CancellationToken);
+        var full = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.95 }, TestContext.CancellationToken);
         var budget = full.Length * 2 / 3;
-        var fitted = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.95, MaxFileSize = budget, MinQuality = 0.05 });
+        var fitted = await processor.EncodeAsync(source, new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.95, MaxFileSize = budget, MinQuality = 0.05 }, TestContext.CancellationToken);
         Assert.IsLessThanOrEqualTo(budget, fitted.Length);
         Assert.IsLessThan(0.95, fitted.Quality!.Value);
         Assert.AreEqual((source.Width, source.Height), (fitted.Width, fitted.Height));
@@ -275,12 +277,12 @@ public sealed class WebPCodecTests
         {
             var data = Asset(name + ".webp");
             foreach (var length in new[] { 12, 20, 30, data.Length / 2, data.Length - 3 })
-                Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(data[..length]), $"{name} cut to {length}");
+                Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(data[..length], cancellationToken: TestContext.CancellationToken), $"{name} cut to {length}");
         }
         // An animation cut short anywhere before the end of its first frame.
         var animated = Asset("animated.webp");
         foreach (var length in new[] { 12, 30, 60, 120 })
-            Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(animated[..length]), $"animated cut to {length}");
+            Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(animated[..length], cancellationToken: TestContext.CancellationToken), $"animated cut to {length}");
     }
 
     [TestMethod]
@@ -290,9 +292,9 @@ public sealed class WebPCodecTests
         var data = WebPContainer.WriteMetadata(Asset("lossy.webp"), new ImageMetadata(xmp: "<x/>"u8.ToArray()));
         var vp8x = data.AsSpan(20, 10);
         vp8x[4] = vp8x[5] = vp8x[6] = vp8x[7] = vp8x[8] = vp8x[9] = 0xFF;
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => WebPDecoder.Decode(data));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => WebPDecoder.Decode(data, cancellationToken: TestContext.CancellationToken));
         var limits = new DecodeOptions { Limits = new ImageLimits { MaxWidth = 50 } };
-        Assert.ThrowsExactly<ImageLimitExceededException>(() => WebPDecoder.Decode(Asset("lossless.webp"), limits));
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => WebPDecoder.Decode(Asset("lossless.webp"), limits, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -300,7 +302,7 @@ public sealed class WebPCodecTests
     {
         var data = WebPContainer.WriteMetadata(Asset("lossy.webp"), new ImageMetadata(xmp: "<x/>"u8.ToArray()));
         data[24]++; // canvas one pixel wider than the frame
-        Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(data));
+        Assert.ThrowsExactly<ImageDecodeException>(() => WebPDecoder.Decode(data, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -319,7 +321,7 @@ public sealed class WebPCodecTests
             }
             try
             {
-                using var image = WebPDecoder.Decode(data);
+                using var image = WebPDecoder.Decode(data, cancellationToken: TestContext.CancellationToken);
             }
             catch (Exception ex) when (ex is ImageDecodeException or ImageLimitExceededException)
             {
@@ -327,4 +329,6 @@ public sealed class WebPCodecTests
             }
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

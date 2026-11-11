@@ -65,13 +65,13 @@ public class DemoTests
 
         try
         {
-            Assert.AreEqual(3, replicas.Count);
+            Assert.HasCount(3, replicas);
 
             // Separate documents, separate client identities, separate presence colours. If any of
             // these were shared, the demo would be showing one object through three windows.
-            Assert.AreEqual(3, replicas.Select(r => r.ClientId).Distinct().Count());
-            Assert.AreEqual(3, replicas.Select(r => r.Document).Distinct().Count());
-            Assert.AreEqual(3, replicas.Select(r => r.Color).Distinct().Count());
+            Assert.HasCount(3, replicas.Select(r => r.ClientId).Distinct());
+            Assert.HasCount(3, replicas.Select(r => r.Document).Distinct());
+            Assert.HasCount(3, replicas.Select(r => r.Color).Distinct());
         }
         finally
         {
@@ -343,8 +343,8 @@ public class DemoTests
                     string.Join(Environment.NewLine, session.Log));
 
                 // However many scenarios have run, the seed was shared rather than duplicated.
-                Assert.IsTrue(
-                    CountOf(Text(session.A), "seed text. ") <= 1,
+                Assert.IsLessThanOrEqualTo(
+                    1, CountOf(Text(session.A), "seed text. "),
                     $"The seed text appears more than once after '{scenario.Title}': {Text(session.A)}");
             }
 
@@ -492,7 +492,7 @@ public class DemoTests
                 break;
 
             case "Concurrent insertion into the same list position":
-                Assert.AreEqual(3, list.Count);
+                Assert.HasCount(3, list);
                 Assert.Contains("inserted by A", list);
                 Assert.Contains("inserted by B", list);
                 Assert.ContainsSingle(value => Equals(value, "seed item"), list);

@@ -625,7 +625,7 @@ public class BitElementTests : BunitTestContext
             parameters.AddChildContent("this content has nowhere to go");
         });
 
-        Assert.IsFalse(component.Markup.Contains("this content has nowhere to go"));
+        Assert.DoesNotContain("this content has nowhere to go", component.Markup);
     }
 
     [TestMethod]
@@ -735,7 +735,7 @@ public class BitElementTests : BunitTestContext
         // and the rest of the attributes the component would otherwise write itself are left alone.
         Assert.IsTrue(element.ClassList.Contains("bit-elm"));
         Assert.IsTrue(element.ClassList.Contains("from-attribute"));
-        StringAssert.Contains(element.GetAttribute("style")!, "font-weight: bold;");
+        Assert.Contains("font-weight: bold;", element.GetAttribute("style")!);
         Assert.AreEqual("rtl", element.GetAttribute("dir"));
         Assert.AreEqual("from-attribute", element.GetAttribute("id"));
         Assert.AreEqual("from attribute", element.GetAttribute("aria-label"));
@@ -751,7 +751,7 @@ public class BitElementTests : BunitTestContext
 
         Assert.IsTrue(element.ClassList.Contains("bit-elm"));
         Assert.IsTrue(element.ClassList.Contains("lowercase-class"));
-        StringAssert.Contains(element.GetAttribute("style")!, "color: blue;");
+        Assert.Contains("color: blue;", element.GetAttribute("style")!);
         Assert.AreEqual("lowercase-id", element.GetAttribute("id"));
         Assert.AreEqual("4", element.GetAttribute("tabindex"));
     }
@@ -818,22 +818,22 @@ public class BitElementTests : BunitTestContext
         // The first element takes everything from the cascading parameters.
         Assert.AreEqual("SECTION", elements[0].TagName);
         Assert.IsTrue(elements[0].ClassList.Contains("cascaded"));
-        StringAssert.Contains(elements[0].OuterHtml, "onclick:stoppropagation");
-        StringAssert.Contains(elements[0].OuterHtml, "onclick:preventdefault");
-        StringAssert.Contains(elements[0].OuterHtml, "ondblclick:stoppropagation");
-        StringAssert.Contains(elements[0].OuterHtml, "oncontextmenu:preventdefault");
+        Assert.Contains("onclick:stoppropagation", elements[0].OuterHtml);
+        Assert.Contains("onclick:preventdefault", elements[0].OuterHtml);
+        Assert.Contains("ondblclick:stoppropagation", elements[0].OuterHtml);
+        Assert.Contains("oncontextmenu:preventdefault", elements[0].OuterHtml);
 
         // The second one sets its own tag and its own stopped events, which the cascading parameters must not
         // overwrite - and a parameter it did set is not filled in from them even in part.
         Assert.AreEqual("ARTICLE", elements[1].TagName);
         Assert.IsTrue(elements[1].ClassList.Contains("cascaded"));
-        StringAssert.Contains(elements[1].OuterHtml, "onpointerdown:stoppropagation");
-        Assert.IsFalse(elements[1].OuterHtml.Contains("ondblclick:stoppropagation"));
-        StringAssert.Contains(elements[1].OuterHtml, "oncontextmenu:preventdefault");
+        Assert.Contains("onpointerdown:stoppropagation", elements[1].OuterHtml);
+        Assert.DoesNotContain("ondblclick:stoppropagation", elements[1].OuterHtml);
+        Assert.Contains("oncontextmenu:preventdefault", elements[1].OuterHtml);
 
         // The third one is unwrapped by the cascading parameters, so it is not among the rendered elements at all.
-        Assert.AreEqual(2, elements.Count);
-        StringAssert.Contains(component.Markup, "unwrapped");
+        Assert.HasCount(2, elements);
+        Assert.Contains("unwrapped", component.Markup);
     }
 
     [TestMethod,
@@ -992,7 +992,7 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.StopPropagationEvents, new[] { @event });
         });
 
-        StringAssert.Contains(component.Markup, expected);
+        Assert.Contains(expected, component.Markup);
     }
 
     [TestMethod,
@@ -1008,7 +1008,7 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.PreventDefaultEvents, new[] { @event });
         });
 
-        StringAssert.Contains(component.Markup, expected);
+        Assert.Contains(expected, component.Markup);
     }
 
     [TestMethod]
@@ -1020,10 +1020,10 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.PreventDefaultEvents, new[] { "contextmenu", "dragover" });
         });
 
-        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
-        StringAssert.Contains(component.Markup, "onpointerdown:stopPropagation");
-        StringAssert.Contains(component.Markup, "oncontextmenu:preventDefault");
-        StringAssert.Contains(component.Markup, "ondragover:preventDefault");
+        Assert.Contains("ondblclick:stopPropagation", component.Markup);
+        Assert.Contains("onpointerdown:stopPropagation", component.Markup);
+        Assert.Contains("oncontextmenu:preventDefault", component.Markup);
+        Assert.Contains("ondragover:preventDefault", component.Markup);
     }
 
     [TestMethod]
@@ -1035,9 +1035,9 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.PreventDefaultEvents, []);
         });
 
-        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
-        Assert.IsFalse(component.Markup.Contains("on:stopPropagation"));
-        Assert.IsFalse(component.Markup.Contains(":preventDefault"));
+        Assert.Contains("ondblclick:stopPropagation", component.Markup);
+        Assert.DoesNotContain("on:stopPropagation", component.Markup);
+        Assert.DoesNotContain(":preventDefault", component.Markup);
     }
 
     [TestMethod]
@@ -1049,7 +1049,7 @@ public class BitElementTests : BunitTestContext
             parameters.AddChildContent("<span>content</span>");
         });
 
-        StringAssert.Contains(component.Markup, "ondblclick:stopPropagation");
+        Assert.Contains("ondblclick:stopPropagation", component.Markup);
 
         component.Render(parameters =>
         {
@@ -1057,12 +1057,12 @@ public class BitElementTests : BunitTestContext
             parameters.AddChildContent("<span>content</span>");
         });
 
-        Assert.IsFalse(component.Markup.Contains("ondblclick:stopPropagation"));
-        StringAssert.Contains(component.Markup, "onpointerdown:stopPropagation");
-        StringAssert.Contains(component.Markup, "onkeydown:stopPropagation");
+        Assert.DoesNotContain("ondblclick:stopPropagation", component.Markup);
+        Assert.Contains("onpointerdown:stopPropagation", component.Markup);
+        Assert.Contains("onkeydown:stopPropagation", component.Markup);
         // The frames of the content follow a block of attribute frames as long as the list, so a sequence number
         // that moved with that length would have thrown the content away and built it again.
-        StringAssert.Contains(component.Markup, "<span>content</span>");
+        Assert.Contains("<span>content</span>", component.Markup);
     }
 
     [TestMethod]
@@ -1139,7 +1139,7 @@ public class BitElementTests : BunitTestContext
 
         // The focus of the captured element is one interop call, and the flag it carries is the one asked for here:
         // the overload taking it is what focuses the element without scrolling the document to bring it into view.
-        Assert.AreEqual(1, invocations.Count);
+        Assert.ContainsSingle(invocations);
         Assert.AreEqual(component.Instance.RootElement, invocations[0].Arguments[0]);
         Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
     }
@@ -1159,8 +1159,8 @@ public class BitElementTests : BunitTestContext
         Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
         Assert.AreEqual("-1", element.GetAttribute("tabindex"));
         Assert.IsFalse(element.HasAttribute("role"));
-        StringAssert.Contains(element.OuterHtml, "onclick:preventdefault");
-        StringAssert.Contains(element.OuterHtml, "onauxclick:preventdefault");
+        Assert.Contains("onclick:preventdefault", element.OuterHtml);
+        Assert.Contains("onauxclick:preventdefault", element.OuterHtml);
     }
 
     [TestMethod]
@@ -1170,8 +1170,8 @@ public class BitElementTests : BunitTestContext
 
         var element = component.FindAll(".bit-elm")[7];
 
-        Assert.IsFalse(element.OuterHtml.Contains("onclick:preventdefault"));
-        Assert.IsFalse(element.OuterHtml.Contains("onauxclick:preventdefault"));
+        Assert.DoesNotContain("onclick:preventdefault", element.OuterHtml);
+        Assert.DoesNotContain("onauxclick:preventdefault", element.OuterHtml);
     }
 
     [TestMethod,
@@ -1211,8 +1211,8 @@ public class BitElementTests : BunitTestContext
 
         // The names are written after the two parameters of the click, and the later of two attributes of a name is
         // the one the render tree keeps, so naming the click turns the modifier on whatever the parameter says.
-        StringAssert.Contains(component.Markup, "onclick:stopPropagation");
-        StringAssert.Contains(component.Markup, "onclick:preventDefault");
+        Assert.Contains("onclick:stopPropagation", component.Markup);
+        Assert.Contains("onclick:preventDefault", component.Markup);
     }
 
     [TestMethod]
@@ -1224,7 +1224,7 @@ public class BitElementTests : BunitTestContext
         });
 
         // The three names are one event written three ways, and one attribute of a name is all an element can carry.
-        Assert.AreEqual(1, Regex.Matches(component.Markup, "ondblclick:stopPropagation").Count);
+        Assert.ContainsSingle(Regex.Matches(component.Markup, "ondblclick:stopPropagation"));
     }
 
     [TestMethod]
@@ -1236,8 +1236,8 @@ public class BitElementTests : BunitTestContext
             parameters.Add(p => p.PreventDefault, true);
         });
 
-        StringAssert.Contains(component.Markup, "onclick:stopPropagation");
-        StringAssert.Contains(component.Markup, "onclick:preventDefault");
+        Assert.Contains("onclick:stopPropagation", component.Markup);
+        Assert.Contains("onclick:preventDefault", component.Markup);
 
         component.Render(parameters =>
         {
@@ -1247,8 +1247,8 @@ public class BitElementTests : BunitTestContext
 
         // A modifier that is off writes no attribute at all, so the one the first render wrote is taken away by
         // the renderer not finding it here rather than by a false written over it.
-        Assert.IsFalse(component.Markup.Contains("onclick:stopPropagation"));
-        Assert.IsFalse(component.Markup.Contains("onclick:preventDefault"));
+        Assert.DoesNotContain("onclick:stopPropagation", component.Markup);
+        Assert.DoesNotContain("onclick:preventDefault", component.Markup);
     }
 
     [TestMethod]

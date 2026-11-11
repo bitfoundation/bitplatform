@@ -162,7 +162,7 @@ internal static class E2EAxe
 /// One violation a scan lets through: one axe rule, on the elements one CSS selector finds and on what is inside them,
 /// and why. See <see cref="E2EAxe"/> for when one is allowed.
 /// </summary>
-public sealed record AxeSuppression
+internal sealed record AxeSuppression
 {
     /// <summary>
     /// Through <see cref="KnownIssue"/> or <see cref="Fixture"/>, which say which kind of suppression it is.

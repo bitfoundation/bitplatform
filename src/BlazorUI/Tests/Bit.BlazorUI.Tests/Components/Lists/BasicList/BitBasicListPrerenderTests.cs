@@ -26,11 +26,11 @@ public class BitBasicListPrerenderTests : BunitTestContext
         });
 
         // ceil(600 / 50) + 3 * 2 + 1 = 19 rows, the rest reserved by a spacer of (1000 - 19) * 50px.
-        StringAssert.Contains(html, "row-0;");
-        StringAssert.Contains(html, "row-18;");
-        Assert.IsFalse(html.Contains("row-19;"));
-        StringAssert.Contains(html, "height: 49050px;");
-        StringAssert.Contains(html, "bit-bsl-vwn");
+        Assert.Contains("row-0;", html);
+        Assert.Contains("row-18;", html);
+        Assert.DoesNotContain("row-19;", html);
+        Assert.Contains("height: 49050px;", html);
+        Assert.Contains("bit-bsl-vwn", html);
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public class BitBasicListPrerenderTests : BunitTestContext
 
         for (var i = 0; i < 5; i++)
         {
-            Assert.AreEqual(1, Regex.Matches(html, $"row-{i};").Count);
+            Assert.ContainsSingle(Regex.Matches(html, $"row-{i};"));
         }
     }
 
@@ -62,9 +62,9 @@ public class BitBasicListPrerenderTests : BunitTestContext
         });
 
         // ceil(600 / 100) + 1 * 2 + 1 = 9 rows.
-        StringAssert.Contains(html, "row-8;");
-        Assert.IsFalse(html.Contains("row-9;"));
-        StringAssert.Contains(html, "height: 9100px;");
+        Assert.Contains("row-8;", html);
+        Assert.DoesNotContain("row-9;", html);
+        Assert.Contains("height: 9100px;", html);
     }
 
     [TestMethod]
@@ -76,9 +76,9 @@ public class BitBasicListPrerenderTests : BunitTestContext
             [nameof(BitBasicList<string>.Virtualize)] = true,
         });
 
-        StringAssert.Contains(html, "role=\"list\"");
-        StringAssert.Contains(html, "<div role=\"listitem\">one</div>");
-        StringAssert.Contains(html, "<div role=\"listitem\">two</div>");
+        Assert.Contains("role=\"list\"", html);
+        Assert.Contains("<div role=\"listitem\">one</div>", html);
+        Assert.Contains("<div role=\"listitem\">two</div>", html);
     }
 
     [TestMethod]
@@ -93,10 +93,10 @@ public class BitBasicListPrerenderTests : BunitTestContext
         });
 
         // The first page holds 20 items, 19 of which make the window and the last one its spacer.
-        StringAssert.Contains(html, "row-18;");
-        Assert.IsFalse(html.Contains("row-19;"));
-        StringAssert.Contains(html, "height: 50px;");
-        StringAssert.Contains(html, "bit-bsl-lmb");
+        Assert.Contains("row-18;", html);
+        Assert.DoesNotContain("row-19;", html);
+        Assert.Contains("height: 50px;", html);
+        Assert.Contains("bit-bsl-lmb", html);
     }
 
     [TestMethod]
@@ -117,10 +117,10 @@ public class BitBasicListPrerenderTests : BunitTestContext
         });
 
         Assert.IsFalse(called);
-        StringAssert.Contains(html, "ph-0;");
-        StringAssert.Contains(html, "ph-18;");
-        Assert.IsFalse(html.Contains("ph-19;"));
-        StringAssert.Contains(html, "bit-bsl-vwp");
+        Assert.Contains("ph-0;", html);
+        Assert.Contains("ph-18;", html);
+        Assert.DoesNotContain("ph-19;", html);
+        Assert.Contains("bit-bsl-vwp", html);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class BitBasicListPrerenderTests : BunitTestContext
             [nameof(BitBasicList<int>.RowTemplate)] = RowTemplate,
         });
 
-        StringAssert.Contains(html, "height: 950px;");
+        Assert.Contains("height: 950px;", html);
     }
 
     [TestMethod]
@@ -146,9 +146,9 @@ public class BitBasicListPrerenderTests : BunitTestContext
             [nameof(BitBasicList<int>.EmptyContent)] = (RenderFragment)(b => b.AddMarkupContent(0, "<i class=\"empty\">empty</i>")),
         });
 
-        StringAssert.Contains(html, "class=\"empty\"");
-        Assert.IsFalse(html.Contains("bit-bsl-vwn"));
-        Assert.IsFalse(html.Contains("role=\"list\""));
+        Assert.Contains("class=\"empty\"", html);
+        Assert.DoesNotContain("bit-bsl-vwn", html);
+        Assert.DoesNotContain("role=\"list\"", html);
     }
 
     [TestMethod]
@@ -167,11 +167,11 @@ public class BitBasicListPrerenderTests : BunitTestContext
         // is rendered once, and the window, its spacer and the class laying Virtualize's spacer over it are gone.
         var rows = component.FindAll(".row").Select(r => r.TextContent).ToArray();
 
-        Assert.IsTrue(rows.Length > 0);
-        Assert.AreEqual(rows.Length, rows.Distinct().Count());
+        Assert.IsNotEmpty(rows);
+        Assert.HasCount(rows.Length, rows.Distinct());
         Assert.AreEqual("0", rows[0]);
         Assert.IsFalse(component.Find(".bit-bsl-itm").ClassList.Contains("bit-bsl-vwn"));
-        Assert.IsFalse(component.Markup.Contains("height: 49050px;"));
+        Assert.DoesNotContain("height: 49050px;", component.Markup);
     }
 
     [TestMethod]
@@ -192,9 +192,9 @@ public class BitBasicListPrerenderTests : BunitTestContext
             p.Add(x => x.RowTemplate, i => b => b.AddMarkupContent(0, $"<div class=\"row\">{i}</div>"));
         });
 
-        component.WaitForAssertion(() => Assert.IsTrue(component.FindAll(".row").Count > 0));
+        component.WaitForAssertion(() => Assert.IsNotEmpty(component.FindAll(".row")));
 
-        Assert.AreEqual(0, component.FindAll(".ph").Count);
+        Assert.IsEmpty(component.FindAll(".ph"));
         Assert.IsFalse(component.Find(".bit-bsl-itm").ClassList.Contains("bit-bsl-vwn"));
     }
 
@@ -212,9 +212,9 @@ public class BitBasicListPrerenderTests : BunitTestContext
             p.Add(x => x.EmptyContent, b => b.AddMarkupContent(0, "<div class=\"empty\">empty</div>"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".empty").Count));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindAll(".empty")));
 
-        Assert.AreEqual(0, component.FindAll(".ph").Count);
+        Assert.IsEmpty(component.FindAll(".ph"));
     }
 
     [TestMethod]
@@ -234,8 +234,8 @@ public class BitBasicListPrerenderTests : BunitTestContext
 
         var rows = component.FindAll(".row").Select(r => r.TextContent).ToArray();
 
-        Assert.IsTrue(rows.Length > 0);
-        Assert.AreEqual(rows.Length, rows.Distinct().Count());
+        Assert.IsNotEmpty(rows);
+        Assert.HasCount(rows.Length, rows.Distinct());
         Assert.IsFalse(component.Find(".bit-bsl-itm").ClassList.Contains("bit-bsl-vwn"));
     }
 }

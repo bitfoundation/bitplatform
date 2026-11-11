@@ -80,7 +80,7 @@ public class JsonRoundTripTests
 
         var notify = form.FindField("notify")!;
         Assert.AreEqual(BormFieldType.Checkbox, notify.Type);
-        Assert.AreEqual(true, notify.Attributes["switch"]);
+        Assert.IsTrue((bool?)notify.Attributes["switch"]);
 
         var stars = form.FindField("stars")!;
         Assert.AreEqual(BormFieldType.Custom, stars.Type);
@@ -120,7 +120,7 @@ public class JsonRoundTripTests
         Assert.AreEqual(5, field.MaxItems);
         Assert.Contains(v => v.Key == "uniqueItems", field.Validators);
         Assert.AreEqual("tag", field.Attributes["itemNoun"]);
-        Assert.AreEqual(true, field.Attributes["duplicable"]);
+        Assert.IsTrue((bool?)field.Attributes["duplicable"]);
     }
 
     [TestMethod]

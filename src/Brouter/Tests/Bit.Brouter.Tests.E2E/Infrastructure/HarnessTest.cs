@@ -110,12 +110,12 @@ public abstract class HarnessTest
         // Playwright reports a wait that ran out as System.TimeoutException, not as a PlaywrightException.
         catch (Exception ex) when (ex is TimeoutException or PlaywrightException)
         {
-            Assert.Fail($"window.scrollY is {await ScrollYAsync()}, expected {expected}.");
+            throw new global::System.InvalidOperationException($"window.scrollY is {await ScrollYAsync()}, expected {expected}.", ex);
         }
     }
 
     /// <summary>The URLs of every Bit.Brouter JS module request the page made, with their response statuses.</summary>
-    protected async Task<ModuleRequest[]> BrouterModuleRequestsAsync() =>
+    private protected async Task<ModuleRequest[]> BrouterModuleRequestsAsync() =>
         await Page.EvaluateAsync<ModuleRequest[]>("""
             () => performance.getEntriesByType('resource')
                 .filter(e => /bit-brouter(\.[a-z0-9]+)?\.js/i.test(e.name))
@@ -124,7 +124,7 @@ public abstract class HarnessTest
 
     // A settable class rather than a positional record: Playwright materializes evaluate results
     // through a parameterless constructor.
-    public sealed class ModuleRequest
+    internal sealed class ModuleRequest
     {
         public string Url { get; set; } = string.Empty;
 

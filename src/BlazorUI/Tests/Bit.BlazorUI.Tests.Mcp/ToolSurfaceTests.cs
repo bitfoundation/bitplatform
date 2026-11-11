@@ -25,8 +25,7 @@ public class ToolSurfaceTests : McpTestBase
     {
         var tools = await ToolsAsync();
 
-        CollectionAssert.AreEquivalent(ToolNames, tools.Select(t => t.Name).ToArray(),
-            "The tool set is the design of this server, not an accident. Adding one costs every session's context; removing one breaks the calls the answers name.");
+        Assert.AreSequenceEqual(ToolNames, tools.Select(t => t.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The tool set is the design of this server, not an accident. Adding one costs every session's context; removing one breaks the calls the answers name.");
     }
 
     [TestMethod]
@@ -44,13 +43,13 @@ public class ToolSurfaceTests : McpTestBase
             // Read-only is what lets a client run the tool without stopping to ask a person, which
             // is the difference between an agent that consults the documentation and one that
             // guesses rather than interrupt.
-            Assert.AreEqual(true, annotations.ReadOnlyHint, $"{tool.Name} is not marked read-only.");
-            Assert.AreEqual(true, annotations.IdempotentHint, $"{tool.Name} is not marked idempotent.");
-            Assert.AreEqual(false, annotations.DestructiveHint, $"{tool.Name} is not marked non-destructive.");
+            Assert.IsTrue(annotations.ReadOnlyHint, $"{tool.Name} is not marked read-only.");
+            Assert.IsTrue(annotations.IdempotentHint, $"{tool.Name} is not marked idempotent.");
+            Assert.IsFalse(annotations.DestructiveHint, $"{tool.Name} is not marked non-destructive.");
 
             // Closed world says the answers come from this build rather than from the web, so a
             // disagreement with a search result is this library's version of the truth.
-            Assert.AreEqual(false, annotations.OpenWorldHint, $"{tool.Name} is not marked closed-world.");
+            Assert.IsFalse(annotations.OpenWorldHint, $"{tool.Name} is not marked closed-world.");
         }
     }
 
@@ -70,7 +69,8 @@ public class ToolSurfaceTests : McpTestBase
 
             foreach (var argument in properties.EnumerateObject())
             {
-                Assert.IsTrue(argument.Value.TryGetProperty("description", out var description) && description.GetString()?.Length > 20,
+                var actualValue = argument.Value.TryGetProperty("description", out var description) && description.GetString()?.Length > 20;
+                Assert.IsTrue(actualValue,
                     $"{tool.Name}'s '{argument.Name}' argument has no usable description.");
             }
         }
@@ -99,10 +99,10 @@ public class ToolSurfaceTests : McpTestBase
         using var scope = Assert.Scope();
 
         Assert.IsNotEmpty(instructions, "The server sends no instructions, which is the one thing it gets to say before it is asked anything.");
-        StringAssert.Contains(instructions, "SearchBitBlazorUI", "The instructions do not say which tool to call first.");
-        StringAssert.Contains(instructions, "AddBitBlazorUIServices", "The instructions do not carry the registration that fails without a build error.");
-        StringAssert.Contains(instructions, "the Disabled parameter", "The instructions do not carry the disabled-state rule.");
-        StringAssert.Contains(instructions, "--bit-*", "The instructions do not carry the styling rule.");
+        Assert.Contains("SearchBitBlazorUI", instructions, "The instructions do not say which tool to call first.");
+        Assert.Contains("AddBitBlazorUIServices", instructions, "The instructions do not carry the registration that fails without a build error.");
+        Assert.Contains("the Disabled parameter", instructions, "The instructions do not carry the disabled-state rule.");
+        Assert.Contains("--bit-*", instructions, "The instructions do not carry the styling rule.");
 
         // The counts are interpolated from the catalogs rather than written down, so a hand-typed
         // number cannot go stale in the one message nothing can be checked against.
@@ -118,7 +118,6 @@ public class ToolSurfaceTests : McpTestBase
 
         Assert.AreEqual("bit-blazorui", info.Name);
         Assert.IsNotEmpty(info.Version ?? string.Empty, "The server publishes no version.");
-        StringAssert.Contains(Mcp.ServerInstructions ?? string.Empty, info.Version!,
-            "The instructions quote a different version from the one the server reports.");
+        Assert.Contains(info.Version!, Mcp.ServerInstructions ?? string.Empty, "The instructions quote a different version from the one the server reports.");
     }
 }

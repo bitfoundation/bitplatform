@@ -92,8 +92,8 @@ public class PointCodecTests
         BinkStrokePoints points = TestData.PressureRamp(new Vector2(0, 0), new Vector2(400, 300), 500);
         int binary = BinkPointCodec.Encode(points).Length;
         int json = Encoding.UTF8.GetByteCount(string.Join(',', points.X.ToArray().Select(v => v.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))));
-        Assert.IsTrue(binary < json, $"binary was {binary} bytes, a single JSON coordinate array is {json}");
-        Assert.IsTrue(binary < points.Count * 8, $"expected under {points.Count * 8} bytes but got {binary}");
+        Assert.IsLessThan(json, binary, $"binary was {binary} bytes, a single JSON coordinate array is {json}");
+        Assert.IsLessThan(points.Count * 8, binary, $"expected under {points.Count * 8} bytes but got {binary}");
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class SerializerTests
         BinkDocument loaded = BinkSerializer.Deserialize(json);
 
         Assert.AreEqual(original.Id, loaded.Id);
-        Assert.AreEqual(original.Layers.Count, loaded.Layers.Count);
+        Assert.HasCount(original.Layers.Count, loaded.Layers);
         Assert.AreEqual(original.ElementCount, loaded.ElementCount);
         Assert.AreEqual(original.Settings.Width, loaded.Settings.Width);
         Assert.AreEqual(original.Settings.Background, loaded.Settings.Background);
@@ -289,7 +289,7 @@ public class SerializerTests
         """;
         BinkDocument document = BinkSerializer.Deserialize(json);
         Assert.AreEqual(2, document.ElementCount);
-        Assert.AreEqual(2, document.AllElements.Select(e => e.Id).Distinct().Count());
+        Assert.HasCount(2, document.AllElements.Select(e => e.Id).Distinct());
     }
 
     [TestMethod]
@@ -411,9 +411,9 @@ public class SerializerTests
     {
         BinkDocument document = TestData.SampleDocument();
         using var stream = new MemoryStream();
-        await BinkSerializer.SerializeAsync(document, stream);
+        await BinkSerializer.SerializeAsync(document, stream, cancellationToken: TestContext.CancellationToken);
         stream.Position = 0;
-        BinkDocument loaded = await BinkSerializer.DeserializeAsync(stream);
+        BinkDocument loaded = await BinkSerializer.DeserializeAsync(stream, cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(document.ElementCount, loaded.ElementCount);
     }
 
@@ -426,7 +426,7 @@ public class SerializerTests
 
         string full = BinkSerializer.Serialize(document);
         string stripped = BinkSerializer.Serialize(document, BinkSerializerOptions.Default with { IncludeEmbeddedImages = false });
-        Assert.IsTrue(stripped.Length < full.Length);
+        Assert.IsLessThan(full.Length, stripped.Length);
         Assert.Contains("srcOmitted", stripped, StringComparison.Ordinal);
     }
 
@@ -472,6 +472,8 @@ public class SerializerTests
 
         var context = new BinkCanvasRenderContext();
         BinkDocumentRenderer.Render(document, context, new BinkRenderOptions());
-        Assert.AreEqual(0, context.Strings.Count);
+        Assert.IsEmpty(context.Strings);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

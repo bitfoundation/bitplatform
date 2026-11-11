@@ -20,8 +20,8 @@ public class BitPaginationTests : BunitTestContext
 
         var pages = GetPageButtons(comp);
 
-        Assert.AreEqual(5, pages.Count);
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5" }, pages.Select(p => p.TextContent.Trim()).ToArray());
+        Assert.HasCount(5, pages);
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5" }, pages.Select(p => p.TextContent.Trim()).ToArray());
 
         var selected = comp.Find(".bit-pgn-sel");
 
@@ -29,7 +29,7 @@ public class BitPaginationTests : BunitTestContext
         Assert.AreEqual("page", selected.GetAttribute("aria-current"));
 
         // Only the selected page reports aria-current.
-        Assert.AreEqual(1, pages.Count(p => p.GetAttribute("aria-current") is not null));
+        Assert.ContainsSingle(p => p.GetAttribute("aria-current") is not null, pages);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class BitPaginationTests : BunitTestContext
         var items = comp.FindAll(".bit-pgn > ul > li");
 
         // The three pages plus the previous and next buttons.
-        Assert.AreEqual(5, items.Count);
+        Assert.HasCount(5, items);
         Assert.IsTrue(items.All(i => i.GetAttribute("role") == "listitem"));
     }
 
@@ -81,7 +81,7 @@ public class BitPaginationTests : BunitTestContext
 
         var buttons = comp.FindAll("button");
 
-        Assert.IsTrue(buttons.Count > 0);
+        Assert.IsNotEmpty(buttons);
         Assert.IsTrue(buttons.All(b => b.GetAttribute("type") == "button"));
     }
 
@@ -98,12 +98,12 @@ public class BitPaginationTests : BunitTestContext
 
         var icons = comp.FindAll(".bit-pgn button i");
 
-        Assert.AreEqual(4, icons.Count);
+        Assert.HasCount(4, icons);
         Assert.IsTrue(icons.All(i => i.GetAttribute("aria-hidden") == "true"));
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.GetAttribute("aria-hidden") == "true"));
 
         // The ellipsis is not a control, so it must not carry a disabled attribute either.
@@ -312,9 +312,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 25);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "1", "•••", "24", "25", "26", "•••", "50" },
-            GetRenderedPages(comp));
+        Assert.AreSequenceEqual(
+            new[] { "1", "•••", "24", "25", "26", "•••", "50" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -328,9 +327,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 10);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "1", "2", "•••", "9", "10", "11", "•••", "19", "20" },
-            GetRenderedPages(comp));
+        Assert.AreSequenceEqual(
+            new[] { "1", "2", "•••", "9", "10", "11", "•••", "19", "20" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -345,9 +343,8 @@ public class BitPaginationTests : BunitTestContext
         });
 
         // The gap between 1 and 3 holds page 2 only, which takes the same room as the ellipsis would.
-        CollectionAssert.AreEqual(
-            new[] { "1", "2", "3", "4", "5", "•••", "8" },
-            GetRenderedPages(comp));
+        Assert.AreSequenceEqual(
+            new[] { "1", "2", "3", "4", "5", "•••", "8" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -361,8 +358,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 4);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-elp").Count);
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5", "6", "7" }, GetRenderedPages(comp));
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-elp"));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5", "6", "7" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -377,7 +374,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.ShowLastButton, true);
         });
 
-        CollectionAssert.AreEqual(new[] { "1" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1" }, GetRenderedPages(comp));
         Assert.AreEqual("1", comp.Find(".bit-pgn-sel").TextContent.Trim());
 
         // A single page is both the first and the last one, so nothing can be navigated to.
@@ -399,9 +396,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 10);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "1", "2", "•••", "9", "10", "11", "•••", "19", "20" },
-            GetRenderedPages(comp));
+        Assert.AreSequenceEqual(
+            new[] { "1", "2", "•••", "9", "10", "11", "•••", "19", "20" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -415,7 +411,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 10);
         });
 
-        CollectionAssert.AreEqual(new[] { "1", "•••", "10", "•••", "20" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "•••", "10", "•••", "20" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -480,7 +476,7 @@ public class BitPaginationTests : BunitTestContext
         });
 
         // Page 2 is inside the new range, so nothing is written back and the pagination lands on it.
-        Assert.AreEqual(0, changes.Count);
+        Assert.IsEmpty(changes);
         Assert.AreEqual("2", comp.Find(".bit-pgn-sel").TextContent.Trim());
     }
 
@@ -497,7 +493,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Bind(p => p.SelectedPage, 9, changes.Add);
         });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(4, changes[0]);
 
         comp.Render(parameters =>
@@ -506,7 +502,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Bind(p => p.SelectedPage, 9, changes.Add);
         });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual("4", comp.Find(".bit-pgn-sel").TextContent.Trim());
     }
 
@@ -557,11 +553,11 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.HideOnSinglePage, true);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn"));
 
         comp.Render(parameters => parameters.Add(p => p.Count, 2));
 
-        Assert.AreEqual(1, comp.FindAll(".bit-pgn").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-pgn"));
     }
 
     [TestMethod]
@@ -575,9 +571,9 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.ShowLastButton, true);
         });
 
-        Assert.AreEqual(0, GetPageButtons(comp).Count);
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-elp").Count);
-        Assert.AreEqual(4, comp.FindAll(".bit-pgn button").Count);
+        Assert.IsEmpty(GetPageButtons(comp));
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-elp"));
+        Assert.HasCount(4, comp.FindAll(".bit-pgn button"));
 
         // The navigation still walks the range even without the page buttons.
         FindByAriaLabel(comp, "Next page")!.Click();
@@ -593,7 +589,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 4);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-sum").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-sum"));
 
         comp.Render(parameters => parameters.Add(p => p.ShowSummary, true));
 
@@ -607,7 +603,7 @@ public class BitPaginationTests : BunitTestContext
         // It leads the pagination, ahead of the controls it describes, and stays out of the list of pages
         // so that the items the list reports are the navigation items and nothing else.
         Assert.IsTrue(comp.Find(".bit-pgn > *:first-child").ClassList.Contains("bit-pgn-sum"));
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn > ul .bit-pgn-sum").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn > ul .bit-pgn-sum"));
 
         FindPageButton(comp, 5)!.Click();
 
@@ -765,9 +761,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 2);
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "Page 1", "Page 2", "Page 3" },
-            GetPageButtons(comp).Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "Page 1", "Page 2", "Page 3" }, GetPageButtons(comp).Select(b => b.GetAttribute("aria-label")).ToArray());
     }
 
     [TestMethod]
@@ -780,9 +775,8 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.GetPageAriaLabel, (int page, bool isSelected) => isSelected ? $"current {page}" : $"go to {page}");
         });
 
-        CollectionAssert.AreEqual(
-            new[] { "go to 1", "current 2", "go to 3" },
-            GetPageButtons(comp).Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "go to 1", "current 2", "go to 3" }, GetPageButtons(comp).Select(b => b.GetAttribute("aria-label")).ToArray());
     }
 
     [TestMethod]
@@ -797,7 +791,7 @@ public class BitPaginationTests : BunitTestContext
 
         var root = comp.Find(".bit-pgn");
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
     }
 
@@ -834,12 +828,12 @@ public class BitPaginationTests : BunitTestContext
         var root = comp.Find(".bit-pgn");
 
         Assert.IsTrue(root.ClassList.Contains("root-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("padding: 1rem;"));
+        Assert.Contains("padding: 1rem;", root.GetAttribute("style")!);
 
         var summary = comp.Find(".bit-pgn-sum");
 
         Assert.IsTrue(summary.ClassList.Contains("summary-class"));
-        Assert.IsTrue(summary.GetAttribute("style")!.Contains("color: blue;"));
+        Assert.Contains("color: blue;", summary.GetAttribute("style")!);
 
         Assert.IsTrue(comp.FindAll(".bit-pgn-btn").All(b => b.ClassList.Contains("button-class")));
         Assert.IsTrue(comp.FindAll(".bit-pgn-elp").All(e => e.ClassList.Contains("ellipsis-class")));
@@ -847,7 +841,7 @@ public class BitPaginationTests : BunitTestContext
         var selected = comp.Find(".bit-pgn-sel");
 
         Assert.IsTrue(selected.ClassList.Contains("selected-class"));
-        Assert.IsTrue(selected.GetAttribute("style")!.Contains("color: red;"));
+        Assert.Contains("color: red;", selected.GetAttribute("style")!);
 
         Assert.IsTrue(FindByAriaLabel(comp, "First page")!.ClassList.Contains("first-class"));
         Assert.IsTrue(FindByAriaLabel(comp, "Previous page")!.ClassList.Contains("previous-class"));
@@ -925,9 +919,9 @@ public class BitPaginationTests : BunitTestContext
 
         FindPageButton(comp, 3)!.Click();
 
-        CollectionAssert.AreEqual(before, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(before, GetRenderedPages(comp));
         Assert.AreEqual("3", comp.Find(".bit-pgn-sel").TextContent.Trim());
-        Assert.AreEqual(1, GetPageButtons(comp).Count(b => b.GetAttribute("aria-current") is not null));
+        Assert.ContainsSingle(b => b.GetAttribute("aria-current") is not null, GetPageButtons(comp));
     }
 
 
@@ -943,7 +937,7 @@ public class BitPaginationTests : BunitTestContext
 
         var items = comp.FindAll(".bit-pgn-itm").Where(i => i.QuerySelector(".bit-pgn-elp") is not null).ToList();
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
 
         // The gap is reported as one named item while the dots themselves stay out of the accessibility tree.
         Assert.IsTrue(items.All(i => i.GetAttribute("aria-label") == "More pages"));
@@ -967,7 +961,7 @@ public class BitPaginationTests : BunitTestContext
 
         var items = comp.FindAll(".bit-pgn-itm").Where(i => i.QuerySelector(".bit-pgn-elp") is not null).ToList();
 
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.IsTrue(items.All(i => i.GetAttribute("aria-label") == "Hidden pages"));
     }
 
@@ -1042,7 +1036,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.Count, 12);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-gtp").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-gtp"));
     }
 
     [TestMethod]
@@ -1070,7 +1064,7 @@ public class BitPaginationTests : BunitTestContext
 
         // The jump closes the pagination, after the buttons it is the shortcut for, and stays out of the list.
         Assert.IsTrue(comp.Find(".bit-pgn > *:last-child").ClassList.Contains("bit-pgn-gtp"));
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn > ul .bit-pgn-gtp").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn > ul .bit-pgn-gtp"));
     }
 
     [TestMethod]
@@ -1083,7 +1077,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.GoToPageText, "");
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-gtl").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-gtl"));
 
         // The input is still named on its own.
         Assert.AreEqual("Go to page", comp.Find(".bit-pgn-gti").GetAttribute("aria-label"));
@@ -1280,7 +1274,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.Count, 12);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-pss").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-pss"));
     }
 
     [TestMethod]
@@ -1306,14 +1300,14 @@ public class BitPaginationTests : BunitTestContext
         // The page size opens the pagination, since the whole range of pages follows from it, and it is not
         // one of the navigation items the list enumerates.
         Assert.IsTrue(comp.Find(".bit-pgn > *:first-child").ClassList.Contains("bit-pgn-pss"));
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn > ul .bit-pgn-pss").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn > ul .bit-pgn-pss"));
 
         var options = comp.FindAll(".bit-pgn-pse option");
 
-        CollectionAssert.AreEqual(new[] { "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
 
         // A page size that was never picked opens on the first of the offered ones.
-        Assert.AreEqual(1, options.Count(o => o.HasAttribute("selected")));
+        Assert.ContainsSingle(o => o.HasAttribute("selected"), options);
         Assert.AreEqual("10", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
     }
 
@@ -1330,7 +1324,7 @@ public class BitPaginationTests : BunitTestContext
 
         var options = comp.FindAll(".bit-pgn-pse option");
 
-        CollectionAssert.AreEqual(new[] { "5", "15", "30" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "5", "15", "30" }, options.Select(o => o.TextContent.Trim()).ToArray());
         Assert.AreEqual("15", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
     }
 
@@ -1344,8 +1338,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.PageSizeOptions, []);
         });
 
-        CollectionAssert.AreEqual(new[] { "10", "25", "50", "100" },
-                                  comp.FindAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "10", "25", "50", "100" }, comp.FindAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -1358,7 +1351,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.PageSizeText, "");
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn-psl").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn-psl"));
 
         // The selector is still named on its own.
         Assert.AreEqual("Items per page", comp.Find(".bit-pgn-pse").GetAttribute("aria-label"));
@@ -1580,18 +1573,17 @@ public class BitPaginationTests : BunitTestContext
         });
 
         // Not one control is left as a button, so none of them swaps its markup while the selection moves.
-        Assert.AreEqual(0, comp.FindAll("button").Count);
+        Assert.IsEmpty(comp.FindAll("button"));
 
         var links = comp.FindAll(".bit-pgn-btn");
 
         // The five pages plus the four navigation controls.
-        Assert.AreEqual(9, links.Count);
+        Assert.HasCount(9, links);
         Assert.IsTrue(links.All(l => l.TagName == "A"));
 
         var pages = links.Where(l => l.QuerySelector("i") is null).ToList();
 
-        CollectionAssert.AreEqual(new[] { "/results?page=1", "/results?page=2", "/results?page=3", "/results?page=4", "/results?page=5" },
-                                  pages.Select(p => p.GetAttribute("href")).ToArray());
+        Assert.AreSequenceEqual(new[] { "/results?page=1", "/results?page=2", "/results?page=3", "/results?page=4", "/results?page=5" }, pages.Select(p => p.GetAttribute("href")).ToArray());
 
         // The selected page is still the current one, and it is still a link of its own.
         Assert.AreEqual("3", pages.Single(p => p.GetAttribute("aria-current") == "page").TextContent.Trim());
@@ -1750,8 +1742,8 @@ public class BitPaginationTests : BunitTestContext
 
         comp.FindAll(".bit-pgn-btn").Single(p => p.TextContent.Trim() == "3").Click();
 
-        CollectionAssert.AreEqual(before, GetRenderedPages(comp));
-        Assert.AreEqual(0, comp.FindAll("button").Count);
+        Assert.AreSequenceEqual(before, GetRenderedPages(comp));
+        Assert.IsEmpty(comp.FindAll("button"));
         Assert.AreEqual("3", comp.Find(".bit-pgn-sel").TextContent.Trim());
     }
 
@@ -1810,7 +1802,7 @@ public class BitPaginationTests : BunitTestContext
 
         var options = comp.FindAll(".bit-pgn-pse option");
 
-        CollectionAssert.AreEqual(new[] { "10", "25", "30", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "10", "25", "30", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
         Assert.AreEqual("30", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
     }
 
@@ -1824,8 +1816,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.ShowPageSizeSelector, true);
         });
 
-        CollectionAssert.AreEqual(new[] { "10", "25", "50", "100" },
-                                  comp.FindAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "10", "25", "50", "100" }, comp.FindAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
     }
 
     [TestMethod]
@@ -1839,7 +1830,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 10);
         });
 
-        CollectionAssert.AreEqual(new[] { "1", "2", "•••", "8", "9", "10", "11", "•••", "19", "20" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "2", "•••", "8", "9", "10", "11", "•••", "19", "20" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -1855,7 +1846,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.HideOnSinglePage, true);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn"));
     }
 
     [TestMethod]
@@ -1870,7 +1861,7 @@ public class BitPaginationTests : BunitTestContext
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.TextContent.Trim().Length == 0));
 
         // The item is still named, so the gap in the range is still reported.
@@ -1892,7 +1883,7 @@ public class BitPaginationTests : BunitTestContext
         });
 
         // A page that is not filled to the end is still a page, so the division rounds up.
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4", "5" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -1906,7 +1897,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.TotalItems, totalItems);
         });
 
-        Assert.AreEqual(expected, GetRenderedPages(comp).Length);
+        Assert.HasCount(expected, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -1918,7 +1909,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.PageSize, 10);
         });
 
-        CollectionAssert.AreEqual(new[] { "1" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -1932,7 +1923,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.PageSizeOptions, [25, 50]);
         });
 
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "2", "3", "4" }, GetRenderedPages(comp));
     }
 
     [TestMethod]
@@ -1958,11 +1949,11 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.HideOnSinglePage, true);
         });
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn"));
 
         comp.Render(parameters => parameters.Add(p => p.TotalItems, 17));
 
-        Assert.AreEqual(1, comp.FindAll(".bit-pgn").Count);
+        Assert.ContainsSingle(comp.FindAll(".bit-pgn"));
     }
 
     [TestMethod]
@@ -2231,7 +2222,7 @@ public class BitPaginationTests : BunitTestContext
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.TagName == "DIV"));
         Assert.IsTrue(ellipsis.All(e => e.ClassList.Contains("bit-pgn-elb") is false));
     }
@@ -2250,7 +2241,7 @@ public class BitPaginationTests : BunitTestContext
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.TagName == "BUTTON"));
         Assert.IsTrue(ellipsis.All(e => e.GetAttribute("type") == "button"));
 
@@ -2275,7 +2266,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.DefaultSelectedPage, 25);
         });
 
-        CollectionAssert.AreEqual(new[] { "1", "•••", "24", "25", "26", "•••", "50" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "•••", "24", "25", "26", "•••", "50" }, GetRenderedPages(comp));
 
         // The gap between 26 and 50 is jumped into halfway along.
         comp.FindAll(".bit-pgn-elp")[1].Click();
@@ -2283,7 +2274,7 @@ public class BitPaginationTests : BunitTestContext
         Assert.AreEqual("38", comp.Find(".bit-pgn-sel").TextContent.Trim());
 
         // The range moved along with the selection, so the gap that is jumped into next is the new one.
-        CollectionAssert.AreEqual(new[] { "1", "•••", "37", "38", "39", "•••", "50" }, GetRenderedPages(comp));
+        Assert.AreSequenceEqual(new[] { "1", "•••", "37", "38", "39", "•••", "50" }, GetRenderedPages(comp));
 
         comp.FindAll(".bit-pgn-elp")[0].Click();
 
@@ -2326,7 +2317,7 @@ public class BitPaginationTests : BunitTestContext
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.TagName == "A"));
 
         // The address is the page the jump lands on, so following the link reaches what clicking it does.
@@ -2429,7 +2420,7 @@ public class BitPaginationTests : BunitTestContext
         // The pagination is stretched across the room it is given first, since a box that is only as wide as
         // its own controls has nothing to line them up inside of.
         Assert.IsTrue(root.ClassList.Contains("bit-pgn-aln"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains($"--bit-pgn-justify-content:{value}"));
+        Assert.Contains($"--bit-pgn-justify-content:{value}", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2450,7 +2441,8 @@ public class BitPaginationTests : BunitTestContext
         // out would leave the declaration invalid and the alignment on the initial value rather than on the
         // fallback the custom property carries. The pagination is left laid out the way it is with no alignment.
         Assert.IsFalse(root.ClassList.Contains("bit-pgn-aln"));
-        Assert.IsFalse(root.GetAttribute("style")?.Contains("--bit-pgn-justify-content") ?? false);
+        var actualValue = root.GetAttribute("style")?.Contains("--bit-pgn-justify-content") ?? false;
+        Assert.IsFalse(actualValue);
     }
 
     [TestMethod]
@@ -2464,7 +2456,8 @@ public class BitPaginationTests : BunitTestContext
         var root = comp.Find(".bit-pgn");
 
         Assert.IsFalse(root.ClassList.Contains("bit-pgn-aln"));
-        Assert.IsFalse(root.GetAttribute("style")?.Contains("--bit-pgn-justify-content") ?? false);
+        var actualValue = root.GetAttribute("style")?.Contains("--bit-pgn-justify-content") ?? false;
+        Assert.IsFalse(actualValue);
     }
 
     [TestMethod]
@@ -2566,7 +2559,7 @@ public class BitPaginationTests : BunitTestContext
 
         comp.Render(parameters => parameters.Add(p => p.Count, 1));
 
-        Assert.AreEqual(0, comp.FindAll(".bit-pgn").Count);
+        Assert.IsEmpty(comp.FindAll(".bit-pgn"));
 
         await comp.InvokeAsync(async () => await comp.Instance.FocusAsync());
 
@@ -2589,7 +2582,7 @@ public class BitPaginationTests : BunitTestContext
 
         var ellipsis = comp.FindAll(".bit-pgn-elp");
 
-        Assert.AreEqual(2, ellipsis.Count);
+        Assert.HasCount(2, ellipsis);
         Assert.IsTrue(ellipsis.All(e => e.ClassList.Contains("bit-pgn-btn") is false));
         Assert.IsTrue(ellipsis.All(e => e.ClassList.Contains("button-class") is false));
 
@@ -2612,8 +2605,8 @@ public class BitPaginationTests : BunitTestContext
 
         var style = comp.Find(".bit-pgn").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-pgn-justify-content:center"));
-        Assert.IsTrue(style.Contains("padding: 1rem;"));
+        Assert.Contains("--bit-pgn-justify-content:center", style);
+        Assert.Contains("padding: 1rem;", style);
     }
 
     [TestMethod]
@@ -2646,7 +2639,7 @@ public class BitPaginationTests : BunitTestContext
 
         // A page holding nothing is not a size to offer, and it would leave the range of pages of a total
         // number of items undefined.
-        CollectionAssert.AreEqual(new[] { "15", "30" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "15", "30" }, options.Select(o => o.TextContent.Trim()).ToArray());
         Assert.AreEqual("15", options.Single(o => o.HasAttribute("selected")).GetAttribute("value"));
     }
 
@@ -2662,10 +2655,10 @@ public class BitPaginationTests : BunitTestContext
 
         var options = comp.FindAll(".bit-pgn-pse option");
 
-        CollectionAssert.AreEqual(new[] { "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "10", "25", "50", "100" }, options.Select(o => o.TextContent.Trim()).ToArray());
 
         // The pages of the total are worked out of the size that was fallen back to, and not of an empty one.
-        Assert.AreEqual(5, GetPageButtons(comp).Count);
+        Assert.HasCount(5, GetPageButtons(comp));
     }
 
     [TestMethod]
@@ -2715,7 +2708,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Bind(p => p.PageSize, 0, changes.Add);
         });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
         Assert.AreEqual(10, changes[0]);
 
         comp.Render(parameters =>
@@ -2725,7 +2718,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Bind(p => p.PageSize, 0, changes.Add);
         });
 
-        Assert.AreEqual(1, changes.Count);
+        Assert.ContainsSingle(changes);
     }
 
     [TestMethod]
@@ -3032,7 +3025,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.PageSizeChanged, (int v) => sizes.Add(v));
         });
 
-        CollectionAssert.AreEqual(new[] { 10 }, sizes.ToArray());
+        Assert.AreSequenceEqual(new[] { 10 }, sizes.ToArray());
 
         comp.Render(parameters =>
         {
@@ -3042,7 +3035,7 @@ public class BitPaginationTests : BunitTestContext
 
         // The first of the offered sizes is another one now, so it is a fallback of its own and the value the
         // consumer holds is answered with it rather than being left pointing at nothing.
-        CollectionAssert.AreEqual(new[] { 10, 25 }, sizes.ToArray());
+        Assert.AreSequenceEqual(new[] { 10, 25 }, sizes.ToArray());
     }
 
     [TestMethod]
@@ -3059,7 +3052,7 @@ public class BitPaginationTests : BunitTestContext
             parameters.Add(p => p.SelectedPageChanged, (int v) => pages.Add(v));
         });
 
-        CollectionAssert.AreEqual(new[] { 5 }, pages.ToArray());
+        Assert.AreSequenceEqual(new[] { 5 }, pages.ToArray());
 
         comp.Render(parameters =>
         {
@@ -3068,7 +3061,7 @@ public class BitPaginationTests : BunitTestContext
         });
 
         // The last page of the range that is left is another one, so it is a correction of its own.
-        CollectionAssert.AreEqual(new[] { 5, 3 }, pages.ToArray());
+        Assert.AreSequenceEqual(new[] { 5, 3 }, pages.ToArray());
     }
 
     [TestMethod]
@@ -3085,8 +3078,8 @@ public class BitPaginationTests : BunitTestContext
 
         // Two rows reporting the same size are one choice, and only one of them could ever be the one the
         // selector shows as picked.
-        CollectionAssert.AreEqual(new[] { "10", "25" }, options.Select(o => o.TextContent.Trim()).ToArray());
-        Assert.AreEqual(1, options.Count(o => o.HasAttribute("selected")));
+        Assert.AreSequenceEqual(new[] { "10", "25" }, options.Select(o => o.TextContent.Trim()).ToArray());
+        Assert.ContainsSingle(o => o.HasAttribute("selected"), options);
     }
 
     [TestMethod]
@@ -3105,7 +3098,7 @@ public class BitPaginationTests : BunitTestContext
         ellipsis.Click();
 
         // The jump lands between the page it followed and the last one, and never back at the first page.
-        Assert.IsTrue(comp.Instance.SelectedPage > 1100000000);
+        Assert.IsGreaterThan(1100000000, comp.Instance.SelectedPage);
     }
 
 
@@ -3119,8 +3112,8 @@ public class BitPaginationTests : BunitTestContext
         var roots = component.FindAll(".bit-pgn");
 
         // The hidden one of the second group renders nothing, so four of the five paginations are on the screen.
-        Assert.AreEqual(5, paginations.Count);
-        Assert.AreEqual(4, roots.Count);
+        Assert.HasCount(5, paginations);
+        Assert.HasCount(4, roots);
 
         // The first one takes everything from the cascading parameters.
         var first = roots[0];
@@ -3130,8 +3123,8 @@ public class BitPaginationTests : BunitTestContext
         Assert.IsTrue(first.ClassList.Contains("bit-pgn-lg"));
         Assert.IsTrue(first.ClassList.Contains("bit-pgn-rnd"));
         Assert.IsTrue(first.ClassList.Contains("bit-pgn-aln"));
-        StringAssert.Contains(first.GetAttribute("style")!, "--bit-pgn-justify-content:center");
-        StringAssert.Contains(first.GetAttribute("style")!, "margin:1px");
+        Assert.Contains("--bit-pgn-justify-content:center", first.GetAttribute("style")!);
+        Assert.Contains("margin:1px", first.GetAttribute("style")!);
         Assert.AreEqual("10 de 20", first.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
         Assert.AreEqual("Ir", first.QuerySelector(".bit-pgn-gtl")!.TextContent.Trim());
         Assert.AreEqual("Ir a la página", paginations[0].Instance.GoToPageAriaLabel);
@@ -3140,7 +3133,7 @@ public class BitPaginationTests : BunitTestContext
         // One page at each end and one around the selected page, every control a link from the cascaded address.
         var pages = first.QuerySelectorAll("a.bit-pgn-btn:not(.bit-pgn-lbl)").Select(a => a.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "1", "10", "20" }, pages);
+        Assert.AreSequenceEqual(new[] { "1", "10", "20" }, pages);
         Assert.AreEqual("?p=10", first.QuerySelector(".bit-pgn-sel")!.GetAttribute("href"));
         Assert.AreEqual("Página 10", first.QuerySelector(".bit-pgn-sel")!.GetAttribute("aria-label"));
 
@@ -3158,7 +3151,7 @@ public class BitPaginationTests : BunitTestContext
         var firstButton = first.QuerySelector("[aria-label='Primera']")!;
 
         Assert.AreEqual("Inicio", firstButton.TextContent.Trim());
-        StringAssert.Contains(firstButton.QuerySelector("i")!.GetAttribute("class")!, "Home");
+        Assert.Contains("Home", firstButton.QuerySelector("i")!.GetAttribute("class")!);
         Assert.AreEqual("Ant", first.QuerySelector("[aria-label='Anterior']")!.TextContent.Trim());
         Assert.AreEqual("Sig", first.QuerySelector("[aria-label='Siguiente']")!.TextContent.Trim());
         Assert.AreEqual("Fin", first.QuerySelector("[aria-label='Última']")!.TextContent.Trim());
@@ -3183,7 +3176,7 @@ public class BitPaginationTests : BunitTestContext
         Assert.AreEqual(5, paginations[2].Instance.SelectedPage);
         // One cascaded hook localizes the item range of every pagination, since it is handed the numbers.
         Assert.AreEqual("81 a 100 de 100", sized.QuerySelector(".bit-pgn-sum")!.TextContent.Trim());
-        CollectionAssert.AreEqual(new[] { "20", "40" }, sized.QuerySelectorAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { "20", "40" }, sized.QuerySelectorAll(".bit-pgn-pse option").Select(o => o.TextContent.Trim()).ToArray());
 
         // The cascaded empty text drops the visible label, and the select is named by the cascaded aria-label.
         Assert.IsNull(sized.QuerySelector(".bit-pgn-psl"));
@@ -3244,8 +3237,8 @@ public class BitPaginationTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("second-class"));
         Assert.IsFalse(root.ClassList.Contains("first-class"));
-        StringAssert.Contains(root.GetAttribute("style")!, "margin:2px");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("margin:1px"));
+        Assert.Contains("margin:2px", root.GetAttribute("style")!);
+        Assert.DoesNotContain("margin:1px", root.GetAttribute("style")!);
     }
 
 

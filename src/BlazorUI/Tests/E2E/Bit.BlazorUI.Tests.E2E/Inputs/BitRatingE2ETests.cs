@@ -100,10 +100,10 @@ public class BitRatingE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"rtg-basic\"");
-        StringAssert.Contains(html, "role=\"radiogroup\"");
-        StringAssert.Contains(html, "bit-rtg-btn");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"rtg-basic\"", html);
+        Assert.Contains("role=\"radiogroup\"", html);
+        Assert.Contains("bit-rtg-btn", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Route);
         await Expect(Items("rtg-basic")).ToHaveCountAsync(5);
@@ -142,7 +142,7 @@ public class BitRatingE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-runtime-size");
         await Expect(root).ToHaveClassAsync(HasClass("bit-rtg-lg"));
-        Assert.IsTrue(Px(await ComputedStyleAsync("#rtg-runtime .bit-rtg-btn", "font-size")) > Px(sizeBefore));
+        Assert.IsGreaterThan(Px(sizeBefore), Px(await ComputedStyleAsync("#rtg-runtime .bit-rtg-btn", "font-size")));
 
         await Page.ClickAsync("#btn-runtime-vertical");
         await Expect(root).ToHaveClassAsync(HasClass("bit-rtg-vrt"));
@@ -309,14 +309,14 @@ public class BitRatingE2ETests : E2ETestBase
 
         // The asterisk is drawn, with an empty alternative text so it does not join the accessible name above.
         var asterisk = await root.Locator(".bit-rtg-lbl").EvaluateAsync<string>("el => getComputedStyle(el, '::after').content");
-        StringAssert.StartsWith(asterisk, "\" *\"");
+        Assert.StartsWith("\" *\"", asterisk);
 
         // The label sits above the items and the description below them.
         var label = await BoxAsync(root.Locator(".bit-rtg-lbc"));
         var items = await BoxAsync(root.Locator(".bit-rtg-cnt"));
         var description = await BoxAsync(root.Locator(".bit-rtg-dsc"));
-        Assert.IsTrue(label.Y + label.Height <= items.Y + 0.5);
-        Assert.IsTrue(items.Y + items.Height <= description.Y + 0.5);
+        Assert.IsLessThanOrEqualTo(items.Y + 0.5, label.Y + label.Height);
+        Assert.IsLessThanOrEqualTo(description.Y + 0.5, items.Y + items.Height);
     }
 
     [TestMethod]
@@ -361,18 +361,18 @@ public class BitRatingE2ETests : E2ETestBase
         switch (side)
         {
             case "above":
-                Assert.IsTrue(label.Y + label.Height <= items.Y + 0.5, "The label is not above the items.");
+                Assert.IsLessThanOrEqualTo(items.Y + 0.5, label.Y + label.Height, "The label is not above the items.");
                 break;
             case "below":
-                Assert.IsTrue(items.Y + items.Height <= label.Y + 0.5, "The label is not below the items.");
+                Assert.IsLessThanOrEqualTo(label.Y + 0.5, items.Y + items.Height, "The label is not below the items.");
                 break;
             case "before":
-                Assert.IsTrue(label.X + label.Width <= items.X + 0.5, "The label is not before the items.");
-                Assert.IsTrue(Math.Abs((label.Y + label.Height / 2) - (items.Y + items.Height / 2)) < items.Height, "Not on one row.");
+                Assert.IsLessThanOrEqualTo(items.X + 0.5, label.X + label.Width, "The label is not before the items.");
+                Assert.IsLessThan(items.Height, Math.Abs((label.Y + label.Height / 2) - (items.Y + items.Height / 2)), "Not on one row.");
                 break;
             case "after":
-                Assert.IsTrue(items.X + items.Width <= label.X + 0.5, "The label is not after the items.");
-                Assert.IsTrue(Math.Abs((label.Y + label.Height / 2) - (items.Y + items.Height / 2)) < items.Height, "Not on one row.");
+                Assert.IsLessThanOrEqualTo(label.X + 0.5, items.X + items.Width, "The label is not after the items.");
+                Assert.IsLessThan(items.Height, Math.Abs((label.Y + label.Height / 2) - (items.Y + items.Height / 2)), "Not on one row.");
                 break;
         }
     }
@@ -412,8 +412,8 @@ public class BitRatingE2ETests : E2ETestBase
         var box = await BoxAsync(Page.Locator("#max-100-box"));
         var last = await BoxAsync(Items("rtg-max-100").Nth(99));
         var first = await BoxAsync(Items("rtg-max-100").Nth(0));
-        Assert.IsTrue(last.X + last.Width <= box.X + box.Width + 1);
-        Assert.IsTrue(last.Y > first.Y);
+        Assert.IsLessThanOrEqualTo(box.X + box.Width + 1, last.X + last.Width);
+        Assert.IsGreaterThan(first.Y, last.Y);
         await Expect(Root("rtg-max-100").Locator("input.bit-input-hidden")).ToHaveAttributeAsync("max", "100");
     }
 
@@ -449,7 +449,7 @@ public class BitRatingE2ETests : E2ETestBase
 
         var first = await BoxAsync(Items("rtg-vertical").Nth(0));
         var second = await BoxAsync(Items("rtg-vertical").Nth(1));
-        Assert.IsTrue(first.Y > second.Y, "The first item is not below the second.");
+        Assert.IsGreaterThan(second.Y, first.Y, "The first item is not below the second.");
         Assert.AreEqual(first.X, second.X, 1);
 
         await Items("rtg-vertical").Nth(1).FocusAsync();
@@ -1172,7 +1172,7 @@ public class BitRatingE2ETests : E2ETestBase
         var hidden = Root("rtg-hidden");
         await Expect(hidden).ToHaveCSSAsync("visibility", "hidden");
         await Expect(hidden).Not.ToBeVisibleAsync();
-        Assert.IsTrue((await BoxAsync(hidden)).Width > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(hidden)).Width);
 
         var collapsed = Root("rtg-collapsed");
         await Expect(collapsed).ToHaveCSSAsync("display", "none");
@@ -1267,7 +1267,7 @@ public class BitRatingE2ETests : E2ETestBase
         }
 
         Assert.AreEqual(unset, colors["pri"], "Unset is not primary.");
-        Assert.IsTrue(colors.Values.Distinct().Count() >= 12, $"Too few distinct colors: {string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}"))}");
+        Assert.IsGreaterThanOrEqualTo(12, colors.Values.Distinct().Count(), $"Too few distinct colors: {string.Join(", ", colors.Select(c => $"{c.Key}={c.Value}"))}");
         foreach (var slug in new[] { "sec", "ter", "inf", "suc", "wrn", "swr", "err", "pbg", "pfg", "pbr" })
         {
             Assert.AreNotEqual(colors["pri"], colors[slug], $"{slug} paints like primary.");
@@ -1288,12 +1288,12 @@ public class BitRatingE2ETests : E2ETestBase
         {
             var small = Px(await ComputedStyleAsync($"#rtg-size-{smaller} {part}", "font-size"));
             var large = Px(await ComputedStyleAsync($"#rtg-size-{larger} {part}", "font-size"));
-            Assert.IsTrue(large > small, $"{part}: {larger} ({large}) is not larger than {smaller} ({small}).");
+            Assert.IsGreaterThan(small, large, $"{part}: {larger} ({large}) is not larger than {smaller} ({small}).");
         }
 
         var smallGlyph = await BoxAsync(Empty($"rtg-size-{smaller}", 1));
         var largeGlyph = await BoxAsync(Empty($"rtg-size-{larger}", 1));
-        Assert.IsTrue(largeGlyph.Height > smallGlyph.Height);
+        Assert.IsGreaterThan(smallGlyph.Height, largeGlyph.Height);
     }
 
     [TestMethod]
@@ -1462,7 +1462,7 @@ public class BitRatingE2ETests : E2ETestBase
 
         var first = await BoxAsync(Items("rtg-rtl").Nth(0));
         var second = await BoxAsync(Items("rtg-rtl").Nth(1));
-        Assert.IsTrue(first.X > second.X, "The first item is not on the right.");
+        Assert.IsGreaterThan(second.X, first.X, "The first item is not on the right.");
 
         await Items("rtg-rtl").Nth(1).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1501,7 +1501,7 @@ public class BitRatingE2ETests : E2ETestBase
 
         var first = await BoxAsync(Items("rtg-rtl-inherited").Nth(0));
         var second = await BoxAsync(Items("rtg-rtl-inherited").Nth(1));
-        Assert.IsTrue(first.X > second.X, "The first item is not on the right.");
+        Assert.IsGreaterThan(second.X, first.X, "The first item is not on the right.");
 
         await Items("rtg-rtl-inherited").Nth(1).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1524,7 +1524,7 @@ public class BitRatingE2ETests : E2ETestBase
 
         await Expect(Items("rtg-motion").Nth(0).Locator(".bit-rtg-ict")).Not.ToHaveCSSAsync("transition-duration", "0.1s");
         var reduced = await ComputedStyleAsync("#rtg-motion .bit-rtg-ict", "transition-duration");
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture) < 0.001, reduced);
+        Assert.IsLessThan(0.001, double.Parse(reduced.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture), reduced);
 
         await Expect(Root("rtg-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
         Assert.AreEqual("0.1s", await ComputedStyleAsync("#rtg-motion-forced .bit-rtg-ict", "transition-duration"));

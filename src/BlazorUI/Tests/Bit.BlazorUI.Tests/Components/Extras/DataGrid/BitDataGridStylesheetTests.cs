@@ -47,12 +47,12 @@ public class BitDataGridStylesheetTests
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-DataGrid-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, read);
+        Assert.AreSequenceEqual(PublicVariables, read, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var variable in PublicVariables)
         {
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"^\s*{variable}\s*:", RegexOptions.Multiline), $"{variable} is declared, so it no longer inherits.");
-            StringAssert.Contains(stylesheet, $"//   {variable} ", $"{variable} is missing from the header of the stylesheet.");
+            Assert.Contains($"//   {variable} ", stylesheet, $"{variable} is missing from the header of the stylesheet.");
         }
     }
 
@@ -63,7 +63,7 @@ public class BitDataGridStylesheetTests
 
         var listed = Regex.Matches(demo, @"Name = ""(--bit-DataGrid-[a-z-]+)""").Select(m => m.Groups[1].Value).ToArray();
 
-        CollectionAssert.AreEquivalent(PublicVariables, listed);
+        Assert.AreSequenceEqual(PublicVariables, listed, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class BitDataGridStylesheetTests
         // A grid nested in another one's template must not inherit the state of the row it sits in.
         foreach (var property in new[] { "--bit-dtg-rbg", "--bit-dtg-cbg", "--bit-dtg-tint", "--bit-dtg-stripe-bg", "--bit-dtg-hover-bg" })
         {
-            StringAssert.Contains(root, $"{property}: initial;");
+            Assert.Contains($"{property}: initial;", root);
         }
     }
 
@@ -89,11 +89,11 @@ public class BitDataGridStylesheetTests
         foreach (var selector in new[] { "button.bit-dtg-htext", ".bit-dtg-btn", ".bit-dtg-icon-btn", ".bit-dtg-drag-handle" })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
-            StringAssert.Contains(block, "&:focus-visible", selector);
+            Assert.Contains("&:focus-visible", block, selector);
         }
 
-        StringAssert.Contains(stylesheet, ".bit-dtg-resizer:focus-visible");
-        StringAssert.Contains(stylesheet, "@media (forced-colors: active)");
+        Assert.Contains(".bit-dtg-resizer:focus-visible", stylesheet);
+        Assert.Contains("@media (forced-colors: active)", stylesheet);
     }
 
     // The hint of an unsorted header is laid out like the arrow it previews, holding its room while hidden. With no room
@@ -105,8 +105,8 @@ public class BitDataGridStylesheetTests
         var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         var hint = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-sortable:not([aria-sort]) > .bit-dtg-htext::after {");
-        StringAssert.Contains(hint, "font-size: $tg-fs-2xs;");
-        StringAssert.Contains(hint, "opacity: 0;");
+        Assert.Contains("font-size: $tg-fs-2xs;", hint);
+        Assert.Contains("opacity: 0;", hint);
         foreach (var property in new[] { "width", "margin", "padding", "position", "display" })
         {
             Assert.IsFalse(Regex.IsMatch(hint, $@"(^|[\s;{{]){property}(-[a-z-]+)?\s*:"), $"The hint sets {property}, which would lay it out unlike the arrow it previews.");
@@ -123,11 +123,11 @@ public class BitDataGridStylesheetTests
         var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         var label = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htext {");
-        StringAssert.Contains(label, "overflow-wrap: break-word;");
-        Assert.IsFalse(label.Contains("anywhere"), "A template's content would inherit anywhere.");
+        Assert.Contains("overflow-wrap: break-word;", label);
+        Assert.DoesNotContain("anywhere", label, "A template's content would inherit anywhere.");
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htitle {"), "min-width: 0;");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {"), "max-width: 100%;");
+        Assert.Contains("min-width: 0;", SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-dtg-hcell-wrap .bit-dtg-htitle {"));
+        Assert.Contains("max-width: 100%;", SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-dtg-hcell-wrap .bit-dtg-htext > *) {"));
     }
 
     // The primary button's label is the on-color of its fill, Canvas under a forced palette, which Chromium's Canvas
@@ -139,12 +139,12 @@ public class BitDataGridStylesheetTests
 
         var forced = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
 
-        StringAssert.Contains(forced, """
+        Assert.Contains("""
                 .bit-dtg-btn-primary:not(:disabled) {
                     color: ButtonText;
                     border-color: ButtonText;
                     background-color: ButtonFace;
                 }
-            """.Replace("\r\n", "\n"));
+            """.Replace("\r\n", "\n"), forced);
     }
 }

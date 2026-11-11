@@ -31,7 +31,7 @@ public class BackupAndMigrationTests
     public async Task An_Export_Imports_As_The_Same_Database()
     {
         byte[] file;
-        await using (var source = await BlazeDbDatabase.OpenAsync(Options()))
+        await using (var source = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken))
         {
             source.GetTable(PersonTable.Descriptor).InsertMany([new Person(1, "Ada", 36), new Person(2, "Grace", 45)]);
             source.GetTable(Account.Table).Insert(new Account { Id = 7, Username = "ada", TenantId = 3, Email = "a@x", Slot = 2 });
@@ -42,16 +42,16 @@ public class BackupAndMigrationTests
         var storage = new BlazeDbInMemoryStorage();
         await ImportAsync(file, storage);
 
-        await using var restored = await BlazeDbDatabase.OpenAsync(Options(storage));
-        CollectionAssert.AreEquivalent(new[] { new Person(1, "Ada", 36), new Person(2, "Grace", 45) }, restored.GetTable(PersonTable.Descriptor).Scan().ToList());
+        await using var restored = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { new Person(1, "Ada", 36), new Person(2, "Grace", 45) }, restored.GetTable(PersonTable.Descriptor).Scan().ToList(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.AreEqual("ada", restored.GetTable(Account.Table).Lookup(Account.Indexes.TenantId, 3).Single().Username);
         Assert.AreEqual(4, restored.UserVersion);
-        Assert.AreEqual(0, restored.VerifyIntegrity().Count);
+        Assert.IsEmpty(restored.VerifyIntegrity());
 
         // The imported database is an ordinary one: it takes writes and survives a reopen.
         restored.GetTable(PersonTable.Descriptor).Insert(new Person(3, "Alan", 41));
-        await restored.FlushAsync();
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage.Clone()));
+        await restored.FlushAsync(TestContext.CancellationToken);
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage.Clone()), TestContext.CancellationToken);
         Assert.AreEqual(3, reopened.GetTable(PersonTable.Descriptor).Count);
     }
 
@@ -59,28 +59,28 @@ public class BackupAndMigrationTests
     public async Task An_Export_Carries_Tables_The_Exporter_Did_Not_Register()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var full = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var full = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             full.GetTable(Account.Table).Insert(new Account { Id = 1, Username = "kept" });
         }
 
         byte[] file;
-        await using (var partial = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor)))
+        await using (var partial = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }.AddTable(PersonTable.Descriptor), TestContext.CancellationToken))
         {
-            CollectionAssert.AreEqual(new[] { "accounts" }, partial.UnregisteredTables.ToArray());
+            Assert.AreSequenceEqual(new[] { "accounts" }, partial.UnregisteredTables.ToArray());
             file = await ExportAsync(partial);
         }
 
         var copy = new BlazeDbInMemoryStorage();
         await ImportAsync(file, copy);
-        await using var restored = await BlazeDbDatabase.OpenAsync(Options(copy));
+        await using var restored = await BlazeDbDatabase.OpenAsync(Options(copy), TestContext.CancellationToken);
         Assert.AreEqual("kept", restored.GetTable(Account.Table).Get(1)!.Username);
     }
 
     [TestMethod]
     public async Task Exporting_During_A_Transaction_Is_Refused()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(Options());
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken);
         using var txn = db.BeginTransaction();
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Uncommitted", 1));
 
@@ -95,7 +95,7 @@ public class BackupAndMigrationTests
     public async Task A_Damaged_Export_Is_Refused_And_Writes_Nothing(string damage)
     {
         byte[] file;
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options()))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken))
         {
             db.GetTable(PersonTable.Descriptor).InsertMany(Enumerable.Range(1, 20).Select(i => new Person(i, $"P{i}", i)));
             file = await ExportAsync(db);
@@ -110,7 +110,7 @@ public class BackupAndMigrationTests
 
         var storage = new BlazeDbInMemoryStorage();
         await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(() => ImportAsync(file, storage));
-        Assert.AreEqual(0, storage.FileNames.Count);
+        Assert.IsEmpty(storage.FileNames);
     }
 
     private static byte[] Flip(byte[] bytes, int index)
@@ -124,19 +124,19 @@ public class BackupAndMigrationTests
     public async Task Importing_Over_A_Database_Is_Refused()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var existing = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var existing = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             existing.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Existing", 1));
         }
         byte[] file;
-        await using (var other = await BlazeDbDatabase.OpenAsync(Options()))
+        await using (var other = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken))
         {
             file = await ExportAsync(other);
         }
 
         await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => ImportAsync(file, storage));
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         Assert.AreEqual("Existing", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
     }
 
@@ -144,47 +144,47 @@ public class BackupAndMigrationTests
     public async Task An_Import_Ignores_A_Log_Left_Behind_By_A_Partly_Deleted_Database()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var old = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var old = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             old.GetTable(PersonTable.Descriptor).Insert(new Person(99, "Stale", 1));
         }
         storage.SetFile("manifest.blz", []);
-        await storage.DeleteAsync("manifest.blz"); // gone, but wal-1.blz with the stale row remains
+        await storage.DeleteAsync("manifest.blz", TestContext.CancellationToken); // gone, but wal-1.blz with the stale row remains
 
         byte[] file;
-        await using (var source = await BlazeDbDatabase.OpenAsync(Options()))
+        await using (var source = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken))
         {
             source.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Fresh", 1));
             file = await ExportAsync(source);
         }
         await ImportAsync(file, storage);
 
-        await using var restored = await BlazeDbDatabase.OpenAsync(Options(storage));
-        CollectionAssert.AreEqual(new[] { 1 }, restored.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
+        await using var restored = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
+        Assert.AreSequenceEqual(new[] { 1 }, restored.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
     }
 
     [TestMethod]
     public async Task UserVersion_Is_Zero_Until_Set_And_Survives_A_Reopen()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             Assert.AreEqual(0, db.UserVersion);
             db.SetUserVersion(3);
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
             db.SetUserVersion(5);
             Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => db.SetUserVersion(-1));
         }
 
-        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage));
+        await using var reopened = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken);
         Assert.AreEqual(5, reopened.UserVersion);
-        Assert.AreEqual(0, reopened.UnregisteredTables.Count);
+        Assert.IsEmpty(reopened.UnregisteredTables);
     }
 
     [TestMethod]
     public async Task UserVersion_Rolls_Back_With_Its_Transaction()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(Options());
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken);
         db.SetUserVersion(1);
 
         using (var txn = db.BeginTransaction())
@@ -201,10 +201,10 @@ public class BackupAndMigrationTests
     public async Task A_Database_That_Never_Sets_A_Version_Writes_No_Engine_Table()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
-            await db.CheckpointAsync();
+            await db.CheckpointAsync(TestContext.CancellationToken);
         }
 
         var snapshot = storage.GetFile(storage.Snapshot(2))!;
@@ -233,24 +233,24 @@ public class BackupAndMigrationTests
             return options;
         }
 
-        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(2)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(2), TestContext.CancellationToken))
         {
             Assert.AreEqual(2, db.UserVersion);
         }
-        CollectionAssert.AreEqual(new long[] { 1, 2 }, ran);
+        Assert.AreSequenceEqual(new long[] { 1, 2 }, ran);
 
-        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(3)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(3), TestContext.CancellationToken))
         {
             Assert.AreEqual(3, db.UserVersion);
-            CollectionAssert.AreEquivalent(new[] { 10, 20 }, db.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Age).ToArray());
+            Assert.AreSequenceEqual(new[] { 10, 20 }, db.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Age).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         }
-        CollectionAssert.AreEqual(new long[] { 1, 2, 3 }, ran);
+        Assert.AreSequenceEqual(new long[] { 1, 2, 3 }, ran);
 
-        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(3)))
+        await using (var db = await BlazeDbDatabase.OpenAsync(WithMigrations(3), TestContext.CancellationToken))
         {
             Assert.AreEqual(3, db.UserVersion);
         }
-        CollectionAssert.AreEqual(new long[] { 1, 2, 3 }, ran, "Nothing runs twice.");
+        Assert.AreSequenceEqual(new long[] { 1, 2, 3 }, ran, "Nothing runs twice.");
     }
 
     [TestMethod]
@@ -269,16 +269,16 @@ public class BackupAndMigrationTests
                 }
             });
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await BlazeDbDatabase.OpenAsync(WithMigrations()));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await BlazeDbDatabase.OpenAsync(WithMigrations(), TestContext.CancellationToken));
 
-        await using (var inspect = await BlazeDbDatabase.OpenAsync(Options(storage)))
+        await using (var inspect = await BlazeDbDatabase.OpenAsync(Options(storage), TestContext.CancellationToken))
         {
             Assert.AreEqual(1, inspect.UserVersion, "The first migration committed; the failed one left nothing.");
-            CollectionAssert.AreEqual(new[] { 1 }, inspect.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
+            Assert.AreSequenceEqual(new[] { 1 }, inspect.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).ToArray());
         }
 
         fail = false;
-        await using var retried = await BlazeDbDatabase.OpenAsync(WithMigrations());
+        await using var retried = await BlazeDbDatabase.OpenAsync(WithMigrations(), TestContext.CancellationToken);
         Assert.AreEqual(2, retried.UserVersion);
         Assert.AreEqual(2, retried.GetTable(PersonTable.Descriptor).Count);
     }
@@ -287,12 +287,12 @@ public class BackupAndMigrationTests
     public async Task A_Replica_Does_Not_Run_Migrations_But_Sees_The_Version()
     {
         var storage = new BlazeDbInMemoryStorage();
-        await (await BlazeDbDatabase.OpenAsync(Options(storage).AddMigration(1, _ => { }))).DisposeAsync();
+        await (await BlazeDbDatabase.OpenAsync(Options(storage).AddMigration(1, _ => { }), TestContext.CancellationToken)).DisposeAsync();
 
         var ran = false;
         var replicaOptions = Options(storage).AddMigration(2, _ => ran = true);
         replicaOptions.ReadOnly = true;
-        await using var replica = await BlazeDbDatabase.OpenAsync(replicaOptions);
+        await using var replica = await BlazeDbDatabase.OpenAsync(replicaOptions, TestContext.CancellationToken);
 
         Assert.IsFalse(ran);
         Assert.AreEqual(1, replica.UserVersion);
@@ -306,24 +306,26 @@ public class BackupAndMigrationTests
         Assert.ThrowsExactly<ArgumentNullException>(() => new BlazeDbDatabaseOptions().AddMigration(1, null!));
 
         var duplicate = new BlazeDbDatabaseOptions().AddMigration(1, _ => { }).AddMigration(1, _ => { });
-        Assert.ThrowsExactlyAsync<ArgumentException>(async () => await BlazeDbDatabase.OpenAsync(duplicate)).GetAwaiter().GetResult();
+        Assert.ThrowsExactlyAsync<ArgumentException>(async () => await BlazeDbDatabase.OpenAsync(duplicate, TestContext.CancellationToken)).GetAwaiter().GetResult();
 
         var reserved = new BlazeDbTableDescriptor<int, Person>("__blazedb_mine", static p => p.Id,
             PersonTable.Descriptor.RowWriter, PersonTable.Descriptor.RowReader, PersonTable.Descriptor.KeyWriter, PersonTable.Descriptor.KeyReader);
-        Assert.ThrowsExactlyAsync<ArgumentException>(async () => await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(reserved))).GetAwaiter().GetResult();
+        Assert.ThrowsExactlyAsync<ArgumentException>(async () => await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(reserved), TestContext.CancellationToken)).GetAwaiter().GetResult();
     }
 
     [TestMethod]
     public async Task The_Export_Is_A_Checksummed_Snapshot()
     {
-        await using var db = await BlazeDbDatabase.OpenAsync(Options());
+        await using var db = await BlazeDbDatabase.OpenAsync(Options(), TestContext.CancellationToken);
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
 
         var file = await ExportAsync(db);
 
-        CollectionAssert.AreEqual("BLZS"u8.ToArray(), file[..4]);
+        Assert.AreSequenceEqual("BLZS"u8.ToArray(), file[..4]);
         var body = file.AsSpan(0, file.Length - 4);
         var stored = new BlazeDbBufferReader(file.AsSpan(file.Length - 4)).ReadFixed32();
         Assert.AreEqual(Bit.BlazeDb.Wal.BlazeDbCrc32.Compute(body), stored);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

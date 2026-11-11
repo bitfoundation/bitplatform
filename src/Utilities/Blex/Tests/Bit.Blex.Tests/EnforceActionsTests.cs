@@ -4,7 +4,7 @@ using Bit.Blex.Testing;
 namespace Bit.Blex.Tests;
 
 [BlexStoreAttribute(Name = "vault", EnforceActions = true)]
-public partial class VaultStore
+internal partial class VaultStore
 {
     [BlexStateAttribute] private int _balance;
 
@@ -54,7 +54,7 @@ public class EnforceActionsTests
         await harness.Store.Accrue();
 
         Assert.AreEqual(16, harness.Store.Balance);
-        CollectionAssert.AreEqual(new[] { "Deposit", "Accrue" }, harness.Log.Names.ToArray());
+        Assert.AreSequenceEqual(new[] { "Deposit", "Accrue" }, harness.Log.Names.ToArray());
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class EnforceActionsTests
 
         var rejected = Assert.ThrowsExactly<InvalidOperationException>(() => harness.Store.Sneak(1_000));
 
-        StringAssert.Contains(rejected.Message, "Balance");
+        Assert.Contains("Balance", rejected.Message);
         Assert.AreEqual(10, harness.Store.Balance);
         Assert.IsEmpty(harness.Log.Actions);
     }
@@ -105,7 +105,7 @@ public class EnforceActionsTests
     {
         var names = new VaultStore().ActionDescriptors.Select(a => a.Name).ToArray();
 
-        CollectionAssert.Contains(names, "Deposit");
-        CollectionAssert.DoesNotContain(names, "Set Balance");
+        Assert.Contains("Deposit", names);
+        Assert.DoesNotContain("Set Balance", names);
     }
 }

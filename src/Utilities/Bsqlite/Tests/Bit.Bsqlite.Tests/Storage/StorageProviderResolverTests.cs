@@ -71,9 +71,8 @@ public sealed class StorageProviderResolverTests
 
         Assert.AreSame(indexedDb, resolution.Provider);
         Assert.IsFalse(resolution.IsFirstChoice);
-        CollectionAssert.AreEqual(
-            new[] { BsqliteStorageCandidateStatus.Unavailable, BsqliteStorageCandidateStatus.Selected },
-            resolution.Attempts.Select(a => a.Status).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BsqliteStorageCandidateStatus.Unavailable, BsqliteStorageCandidateStatus.Selected }, resolution.Attempts.Select(a => a.Status).ToArray());
     }
 
     [TestMethod]
@@ -104,7 +103,7 @@ public sealed class StorageProviderResolverTests
                 .ResolveAsync(Database, Select(s => s.Prefer("opfs").Fallback("indexeddb")), Ct)
                 .AsTask());
 
-        Assert.AreEqual(2, failure.Attempts.Count);
+        Assert.HasCount(2, failure.Attempts);
         foreach (var attempt in failure.Attempts)
         {
             Assert.AreEqual(BsqliteStorageCandidateStatus.Unavailable, attempt.Status);

@@ -27,7 +27,7 @@ public class BitAiImagePolicyTests
         Assert.AreEqual(BitAiImageDecision.Show, listed.Decide("https://img.trusted.org/a.png"));
         Assert.AreEqual(BitAiImageDecision.AskFirst, listed.Decide("https://trusted.org/a.png"));
         Assert.AreEqual(BitAiImageDecision.AskFirst, listed.Decide("https://untrusted.org/a.png"));
-        Assert.HasCount(1, listed.Hosts);
+        Assert.ContainsSingle(listed.Hosts);
     }
 
     [TestMethod]

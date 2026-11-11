@@ -86,7 +86,7 @@ public class FormValidatorTests
         var model = new RegistrationModel { FirstName = "", Email = "bad", Age = 5 };
         model.Items.Add(new LineItem { Product = "", Quantity = 0 });
 
-        var messages = await new BormValidator().ValidateAsync(form, new BormModelDataAccessor(model));
+        var messages = await new BormValidator().ValidateAsync(form, new BormModelDataAccessor(model), cancellationToken: TestContext.CancellationToken);
 
         Assert.Contains(m => m.FieldPath == "FirstName", messages);
         Assert.Contains(m => m.FieldPath == "Email", messages);
@@ -105,8 +105,10 @@ public class FormValidatorTests
             .Build();
 
         var model = new RegistrationModel { AccountType = AccountType.Personal };
-        var messages = await new BormValidator().ValidateAsync(form, new BormModelDataAccessor(model));
+        var messages = await new BormValidator().ValidateAsync(form, new BormModelDataAccessor(model), cancellationToken: TestContext.CancellationToken);
 
         Assert.DoesNotContain(m => m.FieldPath == "CompanyName", messages);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

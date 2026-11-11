@@ -119,13 +119,13 @@ public class MauiIntegrationTests
     {
         var storage = new BlexPreferencesStorage(new FakePreferences());
 
-        Assert.IsNull(await storage.GetAsync("k"));
+        Assert.IsNull(await storage.GetAsync("k", TestContext.CancellationToken));
 
-        await storage.SetAsync("k", "v");
-        Assert.AreEqual("v", await storage.GetAsync("k"));
+        await storage.SetAsync("k", "v", TestContext.CancellationToken);
+        Assert.AreEqual("v", await storage.GetAsync("k", TestContext.CancellationToken));
 
-        await storage.RemoveAsync("k");
-        Assert.IsNull(await storage.GetAsync("k"));
+        await storage.RemoveAsync("k", TestContext.CancellationToken);
+        Assert.IsNull(await storage.GetAsync("k", TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -209,4 +209,6 @@ public class MauiIntegrationTests
         Assert.AreEqual("light", provider.GetRequiredService<SettingsStore>().Theme);
         Assert.Contains(e => e.Source == "persistence", errors);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

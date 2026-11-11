@@ -18,7 +18,7 @@ public class ProgressUiTests : BswupTest
 
         await Expect(Page.Locator("#bit-bswup-percent")).ToHaveTextAsync("100%");
         await Expect(Page.Locator("#bit-bswup-progress-bar")).ToHaveAttributeAsync("aria-valuenow", "100");
-        Assert.IsTrue(await Page.Locator("#bit-bswup-assets li").CountAsync() > 0, "ShowAssets listed no downloaded asset.");
+        Assert.IsGreaterThan(0, await Page.Locator("#bit-bswup-assets li").CountAsync(), "ShowAssets listed no downloaded asset.");
         await Expect(Page.Locator("#bit-bswup")).ToBeHiddenAsync();
         await Expect(Page.Locator("#bit-bswup-reload")).ToBeHiddenAsync();
     }
@@ -84,7 +84,7 @@ public class ProgressUiTests : BswupTest
         await InstallAsync();
 
         var elapsed = DateTime.UtcNow - started;
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(45), $"The install took {elapsed}: it waited for the stall watchdog instead of completing.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(45), elapsed, $"The install took {elapsed}: it waited for the stall watchdog instead of completing.");
         await ExpectLoadsAsync(1);
     }
 

@@ -42,7 +42,7 @@ public class MemoryTrendTests
             Assert.HasCount(2, events);
             Assert.AreEqual("Full garbage collection: heap 40 MB → 22 MB", events[0].Title);
             Assert.AreEqual(12, events[0].DurationMs);
-            StringAssert.StartsWith(events[1].Detail, "the heap at the first reading after it");
+            Assert.StartsWith("the heap at the first reading after it", events[1].Detail);
         }
     }
 
@@ -64,7 +64,7 @@ public class MemoryTrendTests
             Assert.AreEqual(25 * MB, sample.HeapBytes);
             Assert.AreEqual(t0.AddMilliseconds(300), sample.At);
             Assert.IsEmpty(memory.FullCollections);
-            Assert.IsFalse(session.Timeline.Snapshot().Any(e => e.Category == "gc"));
+            Assert.DoesNotContain(e => e.Category == "gc", session.Timeline.Snapshot());
 
             // The next one is told against that first reading after the clear.
             Assert.IsTrue(memory.Sample(session, t0.AddMilliseconds(1300), () => Reading(20, 5, index: 5, afterMb: 18, pause: 6)));
@@ -175,8 +175,8 @@ public class MemoryTrendTests
     public void The_runtime_reads_its_own_counters()
     {
         var reading = BevMemoryReading.Now(null);
-        Assert.IsTrue(reading.HeapBytes > 0);
-        Assert.IsTrue(reading.FullCollections >= 0);
+        Assert.IsGreaterThan(0, reading.HeapBytes);
+        Assert.IsGreaterThanOrEqualTo(0, reading.FullCollections);
     }
 }
 
@@ -206,12 +206,12 @@ public class MemoryTrendPanelTests : BunitContext
         var panel = Render<BevToolsPanel>();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Runtime", StringComparison.Ordinal)).Click();
         var text = panel.Find(".bev-body").TextContent;
-        StringAssert.Contains(text, "Memory over time");
-        StringAssert.Contains(text, "WebAssembly memory");
-        StringAssert.Contains(text, "96 MB");
-        StringAssert.Contains(text, "80 MB at the start of the window");
-        StringAssert.Contains(text, "heap after the last: 25 MB");
+        Assert.Contains("Memory over time", text);
+        Assert.Contains("WebAssembly memory", text);
+        Assert.Contains("96 MB", text);
+        Assert.Contains("80 MB at the start of the window", text);
+        Assert.Contains("heap after the last: 25 MB", text);
         Assert.IsNotNull(panel.Find(".bev-body svg polyline"));
-        Assert.HasCount(1, panel.FindAll(".bev-body svg line"));
+        Assert.ContainsSingle(panel.FindAll(".bev-body svg line"));
     }
 }

@@ -39,14 +39,14 @@ public class BitAiConversationListTests : BitAiTestBase
         var component = RenderComponent<BitAiConversationList>(p => p.Add(c => c.Conversations, Conversations()));
 
         var headers = component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray();
-        CollectionAssert.AreEqual(new[] { "Today", "Previous 7 days" }, headers);
+        Assert.AreSequenceEqual(new[] { "Today", "Previous 7 days" }, headers);
 
         var lists = component.FindAll(".bit-aicvl-lst");
         Assert.HasCount(2, lists);
         Assert.AreEqual(component.FindAll(".bit-aicvl-grp")[0].Id, lists[0].GetAttribute("aria-labelledby"));
 
         var titles = component.FindAll(".bit-aicvl-ttl").Select(t => t.TextContent).ToArray();
-        CollectionAssert.AreEqual(new[] { "New trip", "Untitled", "Old trip" }, titles);
+        Assert.AreSequenceEqual(new[] { "New trip", "Untitled", "Old trip" }, titles);
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public class BitAiConversationListTests : BitAiTestBase
 
         var current = component.FindAll("button[aria-current='true']");
 
-        Assert.HasCount(1, current);
+        Assert.ContainsSingle(current);
         Assert.IsTrue(current[0].ClassList.Contains("bit-aicvl-sel"));
         Assert.AreEqual("Old trip", current[0].TextContent.Trim());
         Assert.AreEqual("a while ago", current[0].GetAttribute("title"));
@@ -74,8 +74,9 @@ public class BitAiConversationListTests : BitAiTestBase
             .Add(c => c.OnSelect, s => chosen = s));
 
         component.FindAll(".bit-aicvl-ibt")[2].Click();
+        var actualValue = chosen?.ConversationId;
 
-        Assert.AreEqual("old", chosen?.ConversationId);
+        Assert.AreEqual("old", actualValue);
     }
 
     [TestMethod]
@@ -96,8 +97,9 @@ public class BitAiConversationListTests : BitAiTestBase
         Assert.AreEqual("Delete Untitled", buttons[1].GetAttribute("aria-label"));
 
         buttons[0].Click();
+        var actualValue = deleted?.ConversationId;
 
-        Assert.AreEqual("new", deleted?.ConversationId);
+        Assert.AreEqual("new", actualValue);
     }
 
     // An app that takes a deleted conversation out of the list in its handler, the way a list over a store does.
@@ -179,7 +181,7 @@ public class BitAiConversationListTests : BitAiTestBase
                 new("yesterday", "Just before midnight", startOfToday.AddMinutes(-1)),
             }));
 
-        CollectionAssert.AreEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
     }
 
     // A list with no zone of its own counts its days in the zone the options in force show the times of the messages in.
@@ -197,7 +199,7 @@ public class BitAiConversationListTests : BitAiTestBase
                 new("yesterday", "Just before midnight", startOfToday.AddMinutes(-1)),
             }));
 
-        CollectionAssert.AreEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Today", "Yesterday" }, component.FindAll(".bit-aicvl-grp").Select(h => h.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -260,7 +262,7 @@ public class BitAiConversationListTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "color: red;", GroupHeader = "color: green;", ItemButton = "color: blue;", SelectedItemButton = "font-weight: bold;" }));
 
         Assert.IsTrue(component.Find(".bit-aicvl").ClassList.Contains("custom-root"));
-        StringAssert.Contains(component.Find(".bit-aicvl").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-aicvl").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aicvl-grp").ClassList.Contains("custom-group"));
         Assert.AreEqual("color: green;", component.Find(".bit-aicvl-grp").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-aicvl-lst").ClassList.Contains("custom-list"));
@@ -270,8 +272,8 @@ public class BitAiConversationListTests : BitAiTestBase
         var selected = component.Find(".bit-aicvl-sel");
         Assert.IsTrue(selected.ClassList.Contains("custom-button"));
         Assert.IsTrue(selected.ClassList.Contains("custom-selected"));
-        StringAssert.Contains(selected.GetAttribute("style"), "color: blue;");
-        StringAssert.Contains(selected.GetAttribute("style"), "font-weight: bold;");
+        Assert.Contains("color: blue;", selected.GetAttribute("style")!);
+        Assert.Contains("font-weight: bold;", selected.GetAttribute("style")!);
 
         var other = component.FindAll(".bit-aicvl-ibt").First(b => b.ClassList.Contains("bit-aicvl-sel") is false);
         Assert.IsFalse(other.ClassList.Contains("custom-selected"));
@@ -288,7 +290,7 @@ public class BitAiConversationListTests : BitAiTestBase
         var root = component.Find(".bit-aicvl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: tomato;");
+        Assert.Contains("color: tomato;", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -307,7 +309,7 @@ public class BitAiConversationListTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style!);
         }
     }
 

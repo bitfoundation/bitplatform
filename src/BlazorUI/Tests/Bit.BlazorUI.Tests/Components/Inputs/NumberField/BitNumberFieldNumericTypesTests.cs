@@ -585,7 +585,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 10);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-cbt"));
     }
 
     [TestMethod]
@@ -628,19 +628,19 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         // select() sent from .NET in answer to the focus would land after the first keys typed (selecting them, for
         // the next key to replace) or after the user moved on (taking the focus back in Chromium and WebKit).
         var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
-        Assert.AreEqual(1, registrations.Count);
-        Assert.AreEqual(true, registrations[0].Arguments[1]);
+        Assert.ContainsSingle(registrations);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(registrations[0].Arguments[1]));
 
         component.Find("input").Focus();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"]);
 
         // Turned off, the listener is told so in place.
         component.Render(parameters => parameters.Add(p => p.NoSelectOnFocus, true));
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
-        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"][1].Arguments[1]);
+        Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"]);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"][1].Arguments[1]));
     }
 
     [TestMethod]
@@ -662,7 +662,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         // The render the focus causes lands a round trip later, when the first keys may already be typed: it keeps the
         // text it rendered before, so it writes nothing over them, and it selects nothing either.
         Assert.AreEqual("1,234.50", component.Find("input").GetAttribute("value"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
 
         // A value changed while focused is rendered as the plain number the input shows.
         component.Find("input").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
@@ -1391,7 +1391,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.ShowClearButton, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-cbt"));
     }
 
     [TestMethod]
@@ -1406,11 +1406,11 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, (int? _) => { });
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-cbt"));
 
         component.Render(parameters => parameters.Add(p => p.Value, (int?)null));
 
-        Assert.AreEqual(0, component.FindAll(".bit-nfl-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nfl-cbt"));
     }
 
     [TestMethod]
@@ -1426,7 +1426,7 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         component.Find("input").Change(new ChangeEventArgs { Value = "abc" });
 
         Assert.IsNull(component.Instance.Value);
-        Assert.AreEqual(1, component.FindAll(".bit-nfl-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nfl-cbt"));
     }
 
     [TestMethod]

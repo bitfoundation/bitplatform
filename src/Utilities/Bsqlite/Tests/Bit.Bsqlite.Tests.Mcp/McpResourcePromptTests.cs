@@ -16,21 +16,21 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_the_documents_and_the_setup_guides_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bsqlite://guide", "bsqlite://api", "bsqlite://storage" }, uris);
-        CollectionAssert.Contains(uris, "bsqlite://docs/storage");
-        CollectionAssert.Contains(uris, "bsqlite://docs/Bit.Bsqlite.Testing");
-        CollectionAssert.Contains(uris, "bsqlite://setup/hybrid");
+        Assert.Contains("bsqlite://docs/storage", uris);
+        Assert.Contains("bsqlite://docs/Bit.Bsqlite.Testing", uris);
+        Assert.Contains("bsqlite://setup/hybrid", uris);
 
-        foreach (var document in BsqliteSourceCatalog.Documents) CollectionAssert.Contains(uris, $"bsqlite://docs/{Uri.EscapeDataString(document.Name)}");
-        foreach (var scenario in BsqliteSetupGuide.Scenarios) CollectionAssert.Contains(uris, $"bsqlite://setup/{scenario}");
+        foreach (var document in BsqliteSourceCatalog.Documents) Assert.Contains($"bsqlite://docs/{Uri.EscapeDataString(document.Name)}", uris);
+        foreach (var scenario in BsqliteSetupGuide.Scenarios) Assert.Contains($"bsqlite://setup/{scenario}", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[]
         {
@@ -41,7 +41,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -81,9 +81,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -131,7 +131,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -145,12 +145,12 @@ public class McpResourcePromptTests
         var scenarios = await CompleteAsync("bsqlite://setup/{scenario}", "scenario", "hyb");
         var paths = await CompleteAsync("bsqlite://source/{path}", "path", "SessionLifecycle");
 
-        CollectionAssert.Contains(types, "BsqliteDatabase");
+        Assert.Contains("BsqliteDatabase", types);
         Assert.StartsWith("BsqliteData", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(names, "live-queries");
-        CollectionAssert.Contains(providers, "indexeddb");
-        CollectionAssert.Contains(scenarios, "hybrid");
-        CollectionAssert.Contains(paths, "Demo/Client/Components/SessionLifecycle.razor");
+        Assert.Contains("live-queries", names);
+        Assert.Contains("indexeddb", providers);
+        Assert.Contains("hybrid", scenarios);
+        Assert.Contains("Demo/Client/Components/SessionLifecycle.razor", paths);
     }
 
     [TestMethod]
@@ -158,14 +158,14 @@ public class McpResourcePromptTests
     {
         var scenarios = await CompleteAsync("bsqlite://setup/{scenario}", "scenario", "");
 
-        CollectionAssert.AreEquivalent(BsqliteSetupGuide.Scenarios, scenarios);
+        Assert.AreSequenceEqual(BsqliteSetupGuide.Scenarios, scenarios, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bsqlite-storage" }, "symptom", "")).Completion.Values;
-        var hosting = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bsqlite-to-app" }, "hosting", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bsqlite-storage" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var hosting = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bsqlite-to-app" }, "hosting", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         CollectionAssert.IsSubsetOf(new[] { "unknown", "standalone-wasm", "wasm", "auto", "server" }, hosting.ToArray());
@@ -188,4 +188,6 @@ public class McpResourcePromptTests
 
     private static async Task<string[]> CompleteAsync(string template, string argument, string typed)
         => [.. (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = template }, argument, typed)).Completion.Values];
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

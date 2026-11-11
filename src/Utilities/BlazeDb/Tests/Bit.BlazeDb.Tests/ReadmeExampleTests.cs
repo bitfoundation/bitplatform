@@ -7,7 +7,7 @@ namespace Bit.BlazeDb.Tests;
 /// <summary>The README's quick-start table, as the guide declares it.</summary>
 [BlazeDbTable("readme-todos")]
 [BlazeDbCompoundIndex("CategoryDone", nameof(Category), nameof(Done))]
-public partial class ReadmeTodo
+internal partial class ReadmeTodo
 {
     [BlazeDbKey] public Guid Id { get; set; }
     [BlazeDbIndex(Unique = true)] public string Slug { get; set; } = "";
@@ -62,7 +62,7 @@ public class ReadmeExampleTests
 
         todos.DeleteMany(todos.Range(ReadmeTodo.Indexes.CreatedAt, BlazeDbBound<DateTime>.Unbounded, cutoff).Select(t => t.Id));
 
-        CollectionAssert.AreEqual(new[] { "new" }, todos.Scan().Select(t => t.Slug).ToArray());
+        Assert.AreSequenceEqual(new[] { "new" }, todos.Scan().Select(t => t.Slug).ToArray());
     }
 
     [TestMethod]
@@ -82,7 +82,7 @@ public class ReadmeExampleTests
             txn.Commit();
         }
 
-        CollectionAssert.AreEqual(new[] { "first" }, todos.Scan().Select(t => t.Slug).ToArray());
+        Assert.AreSequenceEqual(new[] { "first" }, todos.Scan().Select(t => t.Slug).ToArray());
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class ReadmeExampleTests
         todos.Insert(Todo("b", DateTime.UtcNow));
         todos.Insert(Todo("c", DateTime.UtcNow, done: true));
 
-        Assert.AreEqual(2, open.Result.Count);
+        Assert.HasCount(2, open.Result);
         Assert.AreEqual(1, renders, "The done row does not concern a list of open ones.");
     }
 
@@ -141,22 +141,27 @@ public class ReadmeExampleTests
                 var todos = db.GetTable(ReadmeTodo.Table);
                 todos.UpsertMany(todos.Scan().Where(t => t.Slug == "").Select(t => new ReadmeTodo
                 {
-                    Id = t.Id, Slug = $"todo-{t.Id:N}", Title = t.Title, Category = t.Category, Done = t.Done, CreatedAt = t.CreatedAt,
+                    Id = t.Id,
+                    Slug = $"todo-{t.Id:N}",
+                    Title = t.Title,
+                    Category = t.Category,
+                    Done = t.Done,
+                    CreatedAt = t.CreatedAt,
                 }).ToList());
             });
 
         using var file = new MemoryStream();
-        await using (var migrated = await BlazeDbDatabase.OpenAsync(options))
+        await using (var migrated = await BlazeDbDatabase.OpenAsync(options, TestContext.CancellationToken))
         {
             Assert.AreEqual(1, migrated.UserVersion);
             Assert.AreEqual($"todo-{legacy.Id:N}", migrated.GetTable(ReadmeTodo.Table).Get(legacy.Id)!.Slug);
-            await migrated.ExportAsync(file);
+            await migrated.ExportAsync(file, TestContext.CancellationToken);
         }
 
         file.Position = 0;
         var restored = new BlazeDbInMemoryStorage();
-        await BlazeDbDatabase.ImportAsync(file, restored);
-        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = restored }.AddTable(ReadmeTodo.Table));
+        await BlazeDbDatabase.ImportAsync(file, restored, TestContext.CancellationToken);
+        await using var reopened = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = restored }.AddTable(ReadmeTodo.Table), TestContext.CancellationToken);
         Assert.AreEqual(1, reopened.UserVersion);
         Assert.AreEqual(1, reopened.GetTable(ReadmeTodo.Table).Count);
         foreach (var issue in reopened.VerifyIntegrity())
@@ -164,4 +169,6 @@ public class ReadmeExampleTests
             Assert.Fail($"{issue.Table} / {issue.Index ?? "primary key"}: {issue.Description}");
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

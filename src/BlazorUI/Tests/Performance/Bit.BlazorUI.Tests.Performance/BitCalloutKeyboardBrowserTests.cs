@@ -170,6 +170,7 @@ public class BitCalloutKeyboardBrowserTests : PerformanceTestBase
     private async Task AssertCalloutIsInsideTheBand(double bandHeight)
     {
         var calloutId = await CalloutIdOf("#with-search");
+        var timedOut = false;
 
         await Expect(Page.Locator($"#{calloutId}")).ToBeVisibleAsync();
 
@@ -189,11 +190,16 @@ public class BitCalloutKeyboardBrowserTests : PerformanceTestBase
         }
         catch (TimeoutException)
         {
+            timedOut = true;
+        }
+
+        if (timedOut)
+        {
             var box = await Page.Locator($"#{calloutId}").BoundingBoxAsync();
             Assert.IsNotNull(box, "The callout has no box, so it is not laid out at all.");
-            Assert.IsTrue(box.Height > 0, "The callout was collapsed to nothing rather than measured against the band.");
-            Assert.IsTrue(box.Y >= 0, $"The callout starts above the screen at {box.Y}.");
-            Assert.IsTrue(box.Y + box.Height <= bandHeight + 1,
+            Assert.IsGreaterThan(0, box.Height, "The callout was collapsed to nothing rather than measured against the band.");
+            Assert.IsGreaterThanOrEqualTo(0, box.Y, $"The callout starts above the screen at {box.Y}.");
+            Assert.IsLessThanOrEqualTo(bandHeight + 1, box.Y + box.Height,
                 $"The callout ends at {box.Y + box.Height}, behind a keyboard that leaves {bandHeight}.");
         }
     }

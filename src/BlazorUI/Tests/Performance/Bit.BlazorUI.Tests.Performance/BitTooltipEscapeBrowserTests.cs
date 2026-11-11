@@ -116,7 +116,7 @@ public class BitTooltipEscapeBrowserTests : PerformanceTestBase
         await Expect(ShownTooltip).ToHaveCountAsync(0);
 
         // The app hears the press, as one that was taken.
-        CollectionAssert.AreEqual(new[] { true }, await Page.EvaluateAsync<bool[]>("() => window.__escapes"));
+        Assert.AreSequenceEqual(new[] { true }, await Page.EvaluateAsync<bool[]>("() => window.__escapes"));
     }
 
     private async Task OpenPage(string? @case = null)

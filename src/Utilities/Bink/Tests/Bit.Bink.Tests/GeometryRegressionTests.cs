@@ -57,7 +57,7 @@ public class GeometryRegressionTests
         BinkRasterSurface surface = Draw(60, 20, c => c.StrokePath(path, new BinkStrokePaint(BinkColor.Black, 8f, Cap: BinkLineCap.Butt, Join: BinkLineJoin.Round)));
 
         // (32.5, 10.5) is 2.5 units past the turn: inside the round join of radius 4.
-        Assert.IsTrue(surface.GetPixel(32, 10).A > 200, $"alpha was {surface.GetPixel(32, 10).A}");
+        Assert.IsGreaterThan(200, surface.GetPixel(32, 10).A, $"alpha was {surface.GetPixel(32, 10).A}");
         Assert.AreEqual(0, surface.GetPixel(36, 10).A);
     }
 
@@ -70,7 +70,7 @@ public class GeometryRegressionTests
         var polygon = new List<Vector2>();
         BinkStrokeOutliner.BuildPolygon(points.AsView(), new BinkOutlineOptions(20f) { PressureCurve = BinkPressureCurve.Constant }, polygon);
 
-        Assert.AreEqual(16, polygon.Count);
+        Assert.HasCount(16, polygon);
         BinkRect bounds = BinkGeometryMath.Bounds(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(polygon));
         Assert.AreEqual(center.X - bounds.Left, bounds.Right - center.X, 5e-4);
         Assert.AreEqual(10f, bounds.Right - center.X, 5e-4);
@@ -102,9 +102,9 @@ public class GeometryRegressionTests
         });
         float paintedRight = maxX + brush.Width / 2f;
 
-        Assert.IsTrue(paintedRight > 105f, $"the test no longer exercises the overshoot (curve reaches {maxX})");
-        Assert.IsTrue(exact.Right >= paintedRight, $"geometry bounds end at {exact.Right}, ink reaches {paintedRight}");
-        Assert.IsTrue(estimate.Right >= paintedRight, $"estimated bounds end at {estimate.Right}, ink reaches {paintedRight}");
+        Assert.IsGreaterThan(105f, paintedRight, $"the test no longer exercises the overshoot (curve reaches {maxX})");
+        Assert.IsGreaterThanOrEqualTo(paintedRight, exact.Right, $"geometry bounds end at {exact.Right}, ink reaches {paintedRight}");
+        Assert.IsGreaterThanOrEqualTo(paintedRight, estimate.Right, $"estimated bounds end at {estimate.Right}, ink reaches {paintedRight}");
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public class GeometryRegressionTests
         string data = path.ToSvgPathData(6);
 
         string[] parts = data.Split(' ');
-        Assert.AreEqual(2, parts.Length);
+        Assert.HasCount(2, parts);
         Assert.AreEqual(-3e38f, float.Parse(parts[0][1..].Split(',')[0], CultureInfo.InvariantCulture), 1e33f);
         Assert.AreEqual(1e30f, float.Parse(parts[1][1..].Split(',')[0], CultureInfo.InvariantCulture), 1e25f);
     }
@@ -258,7 +258,7 @@ public class GeometryRegressionTests
         {
             int a = small.GetPixel(x, 50).A;
             int b = large.GetPixel(x + 1000, 50).A;
-            Assert.IsTrue(Math.Abs(a - b) <= 4, $"pixel {x}: {a} with the unseen part skipped, {b} with it cut");
+            Assert.IsLessThanOrEqualTo(4, Math.Abs(a - b), $"pixel {x}: {a} with the unseen part skipped, {b} with it cut");
             if (a > 128) inked++;
         }
         // And it is still a dashed line, not a solid one.

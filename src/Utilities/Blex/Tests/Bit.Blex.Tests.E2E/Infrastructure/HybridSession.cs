@@ -5,7 +5,7 @@
 /// A failed start is remembered, so the rest of the class fails fast instead of waiting out the
 /// startup timeout once per test.
 /// </summary>
-public static class HybridSession
+internal static class HybridSession
 {
     private static Lazy<Task<HybridHarnessHost>> _host = new(() => HybridHarnessHost.StartAsync());
 

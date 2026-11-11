@@ -24,8 +24,8 @@ public class BitIconE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Contains(html, "<i id=\"ico-accept\" aria-hidden=\"true\" class=\"bit-icon bit-icon--Accept bit-ico-txt bit-ico\">");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<i id=\"ico-accept\" aria-hidden=\"true\" class=\"bit-icon bit-icon--Accept bit-ico-txt bit-ico\">", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#ico-accept")).ToHaveClassAsync(HasClass("bit-icon--Accept"));
@@ -44,9 +44,9 @@ public class BitIconE2ETests : E2ETestBase
         {
             var icon = Page.Locator(id);
             await Expect(icon).ToHaveClassAsync(HasClass($"bit-icon--{name}"));
-            StringAssert.Contains(await ComputedStyleAsync(id, "font-family"), "Fabric MDL2");
+            Assert.Contains("Fabric MDL2", await ComputedStyleAsync(id, "font-family"));
             Assert.AreNotEqual("none", await PseudoAsync(id, "::before", "content"), $"{name} has a glyph.");
-            Assert.IsTrue((await icon.BoundingBoxAsync())!.Width >= 12, $"{name} is drawn with a real width.");
+            Assert.IsGreaterThanOrEqualTo(12, (await icon.BoundingBoxAsync())!.Width, $"{name} is drawn with a real width.");
         }
 
         // A name the set does not have draws nothing.
@@ -100,15 +100,15 @@ public class BitIconE2ETests : E2ETestBase
         await Expect(outline).ToHaveCSSAsync("border-top-color", primary);
         await Expect(outline).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
         await Expect(outline).ToHaveCSSAsync("color", primary);
-        Assert.IsTrue(Px(await ComputedStyleAsync("#ico-variant-Outline", "padding-top")) > 0);
-        Assert.IsTrue(Px(await ComputedStyleAsync("#ico-variant-Outline", "border-top-width")) > 0);
+        Assert.IsGreaterThan(0, Px(await ComputedStyleAsync("#ico-variant-Outline", "padding-top")));
+        Assert.IsGreaterThan(0, Px(await ComputedStyleAsync("#ico-variant-Outline", "border-top-width")));
 
         var fill = Page.Locator("#ico-variant-Fill");
         await Expect(fill).ToHaveClassAsync(HasClass("bit-ico-fil"));
         await Expect(fill).ToHaveCSSAsync("background-color", primary);
         await Expect(fill).ToHaveCSSAsync("color", onPrimary);
 
-        Assert.IsTrue((await fill.BoundingBoxAsync())!.Width > (await Page.Locator("#ico-variant-Text").BoundingBoxAsync())!.Width);
+        Assert.IsGreaterThan((await Page.Locator("#ico-variant-Text").BoundingBoxAsync())!.Width, (await fill.BoundingBoxAsync())!.Width);
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class BitIconE2ETests : E2ETestBase
             var box = await Page.Locator(id).BoundingBoxAsync();
             await Expect(Page.Locator(id)).ToHaveClassAsync(HasClass("bit-ico-cir"));
             Assert.AreEqual(box!.Width, box.Height, 0.5, "As wide as it is tall.");
-            Assert.IsTrue(Px(await ComputedStyleAsync(id, "border-top-left-radius")) >= box.Width / 2, "Fully rounded.");
+            Assert.IsGreaterThanOrEqualTo(box.Width / 2, Px(await ComputedStyleAsync(id, "border-top-left-radius")), "Fully rounded.");
         }
     }
 
@@ -343,8 +343,8 @@ public class BitIconE2ETests : E2ETestBase
         await Expect(Page.Locator("#unnamed-clicks")).ToHaveTextAsync("1");
 
         // Its pointer target is at least 24px without growing the glyph.
-        Assert.IsTrue(Px(await PseudoAsync("#ico-star", "::after", "width")) >= 24);
-        Assert.IsTrue((await star.BoundingBoxAsync())!.Width < 24);
+        Assert.IsGreaterThanOrEqualTo(24, Px(await PseudoAsync("#ico-star", "::after", "width")));
+        Assert.IsLessThan(24, (await star.BoundingBoxAsync())!.Width);
     }
 
     [TestMethod]
@@ -444,7 +444,7 @@ public class BitIconE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(0, 0);
         await Page.Locator("#before-clickable").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
-        StringAssert.Contains(await ComputedStyleAsync("#ico-star", "box-shadow"), await ResolveAsync("color", "var(--bit-clr-pri-focus)"));
+        Assert.Contains(await ResolveAsync("color", "var(--bit-clr-pri-focus)"), await ComputedStyleAsync("#ico-star", "box-shadow"));
     }
 
     [TestMethod]
@@ -666,7 +666,7 @@ public class BitIconE2ETests : E2ETestBase
         await Page.Locator("#before-css-click").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#ico-css-click")).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#ico-css-click", "box-shadow"), "rgb(0, 150, 0)");
+        Assert.Contains("rgb(0, 150, 0)", await ComputedStyleAsync("#ico-css-click", "box-shadow"));
     }
 
     [TestMethod]

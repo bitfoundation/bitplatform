@@ -109,7 +109,7 @@ public abstract class BsqliteTest
     /// Loads the host page and opens a database, keeping the host as <c>globalThis.host</c> for the helpers
     /// below. Returns what the worker reports about itself.
     /// </summary>
-    protected static async Task<HostVersion> OpenHostAsync(IPage page, HostOptions? options = null)
+    private protected static async Task<HostVersion> OpenHostAsync(IPage page, HostOptions? options = null)
     {
         await GotoHostPageAsync(page);
 
@@ -125,7 +125,7 @@ public abstract class BsqliteTest
     }
 
     /// <summary>Runs a batch through the binary path, encoding parameters and decoding rows with the library's wire helpers.</summary>
-    protected static async Task<WireResult[]> ExecuteAsync(IPage page, params WireRequest[] batch)
+    private protected static async Task<WireResult[]> ExecuteAsync(IPage page, params WireRequest[] batch)
     {
         var results = await page.EvaluateAsync<JsonElement>(
             """
@@ -172,11 +172,11 @@ public abstract class BsqliteTest
     }
 
     /// <summary>Convenience for the common case of one statement whose rows are wanted.</summary>
-    protected static async Task<WireResult> QueryAsync(IPage page, string commandText, params WireParameter[] parameters)
+    private protected static async Task<WireResult> QueryAsync(IPage page, string commandText, params WireParameter[] parameters)
         => (await ExecuteAsync(page, new WireRequest(commandText, parameters, "reader")))[0];
 
     /// <summary>Convenience for one statement whose rows are not wanted.</summary>
-    protected static async Task<WireResult> ExecAsync(IPage page, string commandText, params WireParameter[] parameters)
+    private protected static async Task<WireResult> ExecAsync(IPage page, string commandText, params WireParameter[] parameters)
         => (await ExecuteAsync(page, new WireRequest(commandText, parameters, "nonQuery")))[0];
 
     /// <summary>
@@ -184,7 +184,7 @@ public abstract class BsqliteTest
     /// rejection rather than an exception from Playwright, so the SQLite result code survives the boundary: a
     /// test asserting only on the message would pass for the wrong error.
     /// </summary>
-    protected static async Task<WireFailure?> ExecuteExpectingFailureAsync(IPage page, params WireRequest[] batch)
+    private protected static async Task<WireFailure?> ExecuteExpectingFailureAsync(IPage page, params WireRequest[] batch)
     {
         var failure = await page.EvaluateAsync<JsonElement>(
             """

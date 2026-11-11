@@ -88,9 +88,8 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         component.Find("button.bit-tzp-fld").Click();
 
-        CollectionAssert.AreEqual(new[] { "Los Angeles", "New York", "London", "Berlin", "Tehran", "Kolkata", "Tokyo" }, ItemNames(component));
-        CollectionAssert.AreEqual(new[] { "UTC-08:00", "UTC-05:00", "UTC+00:00", "UTC+01:00", "UTC+03:30", "UTC+05:30", "UTC+09:00" },
-                                  component.FindAll(".bit-tzp-itm .bit-tzp-ofs").Select(o => o.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Los Angeles", "New York", "London", "Berlin", "Tehran", "Kolkata", "Tokyo" }, ItemNames(component));
+        Assert.AreSequenceEqual(new[] { "UTC-08:00", "UTC-05:00", "UTC+00:00", "UTC+01:00", "UTC+03:30", "UTC+05:30", "UTC+09:00" }, component.FindAll(".bit-tzp-itm .bit-tzp-ofs").Select(o => o.TextContent).ToArray());
     }
 
     [TestMethod]
@@ -134,12 +133,12 @@ public class BitTimeZonePickerTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, "Asia/Tehran");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-fld .bit-tzp-ofs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-fld .bit-tzp-ofs"));
 
         component.Find("button.bit-tzp-fld").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-itm .bit-tzp-ofs").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-icn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-itm .bit-tzp-ofs"));
+        Assert.IsEmpty(component.FindAll(".bit-tzp-icn"));
         Assert.AreEqual("Tehran", component.FindAll(".bit-tzp-itm").Single(i => i.ClassList.Contains("bit-tzp-sel")).GetAttribute("title"));
     }
 
@@ -176,7 +175,8 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         Assert.IsNotNull(value);
         Assert.AreEqual(TimeSpan.FromHours(9), value.GetUtcOffset(January));
-        Assert.AreEqual("Asia/Tokyo", BitTimeZones.Find(value)?.Id);
+        var actualValue = BitTimeZones.Find(value)?.Id;
+        Assert.AreEqual("Asia/Tokyo", actualValue);
     }
 
     [TestMethod]
@@ -206,7 +206,8 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         Assert.AreEqual("Kolkata", component.Find(".bit-tzp-txt").TextContent);
         Assert.AreEqual("UTC+05:30", component.Find(".bit-tzp-fld .bit-tzp-ofs").TextContent);
-        Assert.AreEqual("Asia/Kolkata", component.Instance.SelectedTimeZone?.Id);
+        var actualValue = component.Instance.SelectedTimeZone?.Id;
+        Assert.AreEqual("Asia/Kolkata", actualValue);
 
         component.Find("button.bit-tzp-fld").Click();
 
@@ -232,7 +233,7 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         // The value is still the value of the field, rather than an empty field.
         Assert.AreEqual("Africa/Cairo", component.Find(".bit-tzp-txt").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-tzp-pls").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tzp-pls"));
         Assert.IsNull(component.Instance.SelectedTimeZone);
     }
 
@@ -292,7 +293,7 @@ public class BitTimeZonePickerTests : BunitTestContext
         component.Find("button.bit-tzp-fld").Click();
         component.Find(".bit-tzp-srch").Input("+5");
 
-        CollectionAssert.AreEqual(new[] { "Karachi", "Kolkata", "Kathmandu" }, ItemNames(component));
+        Assert.AreSequenceEqual(new[] { "Karachi", "Kolkata", "Kathmandu" }, ItemNames(component));
     }
 
     [TestMethod]
@@ -310,18 +311,18 @@ public class BitTimeZonePickerTests : BunitTestContext
         // The key that opened the list is the term it opens with, and the rest are typed into the box after it, in order.
         Assert.IsTrue(component.Instance.IsOpen);
         Assert.AreEqual("+", component.Find(".bit-tzp-srch").GetAttribute("value"));
-        CollectionAssert.AreEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
+        Assert.AreSequenceEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
 
         // The box reports what it holds through its binding, which is what searches for it.
         component.Find(".bit-tzp-srch").Input("+3:30");
 
         Assert.AreEqual("+3:30", component.Find(".bit-tzp-srch").GetAttribute("value"));
-        CollectionAssert.AreEqual(new[] { "Tehran" }, ItemNames(component));
+        Assert.AreSequenceEqual(new[] { "Tehran" }, ItemNames(component));
 
         // A space on the field stays its native click, and a modified key a shortcut.
         component.Find("button.bit-tzp-fld").KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
 
-        CollectionAssert.AreEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
+        Assert.AreSequenceEqual(new[] { "3", ":", "3", "0" }, TypedIntoTheSearchBox());
         Assert.AreEqual("+3:30", component.Find(".bit-tzp-srch").GetAttribute("value"));
     }
 
@@ -349,13 +350,13 @@ public class BitTimeZonePickerTests : BunitTestContext
         component.Find("button.bit-tzp-fld").Click();
 
         component.Find(".bit-tzp-srch").Input("tokyo");
-        StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "1 time zone found");
+        Assert.StartsWith("1 time zone found", component.Find(".bit-tzp-lvr").TextContent);
 
         component.Find(".bit-tzp-srch").Input("asia");
-        StringAssert.Contains(component.Find(".bit-tzp-lvr").TextContent, "3 time zones found");
+        Assert.Contains("3 time zones found", component.Find(".bit-tzp-lvr").TextContent);
 
         component.Find(".bit-tzp-srch").Input("zzzz");
-        StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "No results found");
+        Assert.StartsWith("No results found", component.Find(".bit-tzp-lvr").TextContent);
         Assert.AreEqual("No results found", component.Find(".bit-tzp-nor").TextContent.Trim());
     }
 
@@ -367,7 +368,7 @@ public class BitTimeZonePickerTests : BunitTestContext
         component.Find("button.bit-tzp-fld").Click();
         component.Find(".bit-tzp-srch").Input("+");
 
-        Assert.AreEqual(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm").Count);
+        Assert.HasCount(SevenTimeZones.Count, component.FindAll("button.bit-tzp-itm"));
     }
 
     [TestMethod]
@@ -407,7 +408,7 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         component.Find("button.bit-tzp-fld").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        Assert.Contains("Enter", LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
         CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
     }
@@ -420,12 +421,12 @@ public class BitTimeZonePickerTests : BunitTestContext
     {
         var component = RenderPicker<string>();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
 
         component.Find("button.bit-tzp-fld").Click();
 
-        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
-        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+        Assert.Contains("Character", LastPreventKeys(field: true));
+        Assert.DoesNotContain("Character", LastPreventKeys(field: false));
     }
 
     // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
@@ -463,7 +464,7 @@ public class BitTimeZonePickerTests : BunitTestContext
         // The letter the list was opened with is the term it opens with, and the ones typed while it opened are typed
         // into the box after it, in order - where the browser appends them to whatever the box holds by then.
         component.WaitForAssertion(() => Assert.AreEqual("t", component.Find(".bit-tzp-srch").GetAttribute("value")));
-        CollectionAssert.AreEqual(new[] { "e", "h" }, TypedIntoTheSearchBox());
+        Assert.AreSequenceEqual(new[] { "e", "h" }, TypedIntoTheSearchBox());
 
         // The box reports what it holds through its binding, which is what searches for it.
         component.Find(".bit-tzp-srch").Input("teh");
@@ -499,13 +500,13 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         var names = ItemNames(component);
 
-        CollectionAssert.AreEqual(new[] { "Tokyo", "Kolkata", "Los Angeles" }, names.Take(3).ToArray());
-        Assert.AreEqual(SevenTimeZones.Count, names.Length);
+        Assert.AreSequenceEqual(new[] { "Tokyo", "Kolkata", "Los Angeles" }, names.Take(3).ToArray());
+        Assert.HasCount(SevenTimeZones.Count, names);
 
         var items = component.FindAll("button.bit-tzp-itm");
 
         Assert.IsTrue(items[1].ClassList.Contains("bit-tzp-ilp"));
-        Assert.AreEqual(1, component.FindAll(".bit-tzp-ilp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tzp-ilp"));
     }
 
     [TestMethod]
@@ -515,7 +516,7 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         component.Find("button.bit-tzp-fld").Click();
 
-        CollectionAssert.AreEqual(new[] { "Kolkata", "Tokyo" }, ItemNames(component));
+        Assert.AreSequenceEqual(new[] { "Kolkata", "Tokyo" }, ItemNames(component));
     }
 
     [TestMethod]
@@ -620,7 +621,7 @@ public class BitTimeZonePickerTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-tzp").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find("button.bit-tzp-fld").GetAttribute("aria-invalid"));
         Assert.AreEqual(component.Find(".bit-tzp-erm").Id, component.Find("button.bit-tzp-fld").GetAttribute("aria-describedby"));
-        StringAssert.StartsWith(component.Find(".bit-tzp-lvr").TextContent, "No office there.");
+        Assert.StartsWith("No office there.", component.Find(".bit-tzp-lvr").TextContent);
     }
 
     [TestMethod]
@@ -731,7 +732,7 @@ public class BitTimeZonePickerTests : BunitTestContext
 
         component.Find("button.bit-tzp-fld").Click();
 
-        Assert.AreEqual(SevenTimeZones.Count, component.FindAll(".it").Count);
+        Assert.HasCount(SevenTimeZones.Count, component.FindAll(".it"));
     }
 
     [TestMethod,

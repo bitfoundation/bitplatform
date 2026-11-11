@@ -44,7 +44,7 @@ public class RoundThirteenReviewTests : BunitContext
         }
         pane.DoubleClick(new MouseEventArgs { ClientX = 10, ClientY = 210 });
 
-        CollectionAssert.AreEqual(new[] { "b" }, doubleClicks);
+        Assert.AreSequenceEqual(new[] { "b" }, doubleClicks);
         Assert.AreEqual(zoom, cut.Instance.GetViewport().Zoom, "the double click on a node zoomed the canvas");
     }
 
@@ -83,7 +83,7 @@ public class RoundThirteenReviewTests : BunitContext
         await cut.FindAll(".bit-blow-node")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Delete" });
 
         Assert.HasCount(2, nodes);
-        Assert.IsTrue(JSInterop.Invocations.Any(i => i.Identifier == "keepFocus"), "focus was not handed back to the pane");
+        Assert.Contains(i => i.Identifier == "keepFocus", JSInterop.Invocations, "focus was not handed back to the pane");
     }
 
     // ---- keys the browser must not also act on ----
@@ -185,7 +185,7 @@ public class RoundThirteenReviewTests : BunitContext
         cut.FindAll(".bit-blow-node")[0].PointerDown(At(10, 10));
         pane.PointerMove(At(260, 10));
 
-        CollectionAssert.AreEqual(new[] { "other" }, overlapping.Select(n => n.Id).ToArray());
+        Assert.AreSequenceEqual(new[] { "other" }, overlapping.Select(n => n.Id).ToArray());
     }
 
     // ---- a pinch with a finger on a node ----
@@ -221,7 +221,7 @@ public class RoundThirteenReviewTests : BunitContext
 
         cut.FindAll(".bit-blow-node")[0].PointerDown(At(10, 10));
         pane.PointerMove(At(795, 300));
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
         var panned = cut.Instance.GetViewport();
         Assert.IsLessThan(0, panned.X, "the drag at the edge did not auto-pan");
         pane.PointerUp(At(795, 300));
@@ -247,7 +247,7 @@ public class RoundThirteenReviewTests : BunitContext
         pane.Click(new MouseEventArgs { ClientX = 600, ClientY = 600 });
 
         Assert.IsFalse(nodes[0].Selected);
-        Assert.HasCount(1, changes, "clearing a selection never reported was not reported either");
+        Assert.ContainsSingle(changes, "clearing a selection never reported was not reported either");
         Assert.IsEmpty(changes[0].Nodes);
     }
 
@@ -262,4 +262,6 @@ public class RoundThirteenReviewTests : BunitContext
 
         Assert.Contains("Selection cleared", cut.Find(".bit-blow-a11y-live").TextContent);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

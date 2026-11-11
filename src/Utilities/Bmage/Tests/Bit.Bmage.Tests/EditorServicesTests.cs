@@ -70,7 +70,7 @@ public sealed class EditorServicesTests
         {
             var capabilities = new Capabilities.ImageCapabilities { Environment = environment, DecodableFormats = all, EncodableFormats = all };
             await using var interop = new BrowserImageInterop(new NoJSRuntime());
-            var processor = await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync();
+            var processor = await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync(TestContext.CancellationToken);
             var codecs = processor.Codecs;
 
             if (environment == Capabilities.ImageEnvironment.BrowserServer)
@@ -112,7 +112,7 @@ public sealed class EditorServicesTests
             NativeEncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg },
         };
         await using var interop = new BrowserImageInterop(new NoJSRuntime());
-        var codecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync()).Codecs;
+        var codecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(capabilities)).GetAsync(TestContext.CancellationToken)).Codecs;
 
         Assert.IsInstanceOfType<Codecs.Browser.BrowserImageDecoder>(codecs.GetDecoder(ImageFormat.WebP));
         Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(codecs.GetEncoder(ImageFormat.WebP));
@@ -130,7 +130,7 @@ public sealed class EditorServicesTests
             NativeDecodableFormats = capabilities.NativeDecodableFormats,
             NativeEncodableFormats = capabilities.NativeEncodableFormats,
         };
-        var wrappedCodecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(wrapped)).GetAsync()).Codecs;
+        var wrappedCodecs = (await new ImageProcessorFactory(interop, new FixedCapabilities(wrapped)).GetAsync(TestContext.CancellationToken)).Codecs;
         Assert.IsInstanceOfType<Codecs.Avif.AvifDecoder>(wrappedCodecs.GetDecoder(ImageFormat.Avif));
         Assert.IsInstanceOfType<Codecs.WebP.WebPEncoder>(wrappedCodecs.GetEncoder(ImageFormat.WebP));
     }
@@ -149,12 +149,11 @@ public sealed class EditorServicesTests
             """;
         var jsRuntime = new ProbedJSRuntime(report);
         await using var interop = new BrowserImageInterop(jsRuntime);
-        var capabilities = await new Capabilities.BrowserCapabilityProvider(interop, jsRuntime).GetAsync();
+        var capabilities = await new Capabilities.BrowserCapabilityProvider(interop, jsRuntime).GetAsync(TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(
-            new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif },
-            capabilities.NativeDecodableFormats!.ToArray());
-        CollectionAssert.AreEquivalent(new[] { ImageFormat.Png, ImageFormat.WebP }, capabilities.NativeEncodableFormats!.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif }, capabilities.NativeDecodableFormats!.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { ImageFormat.Png, ImageFormat.WebP }, capabilities.NativeEncodableFormats!.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         // Off WebAssembly the managed codecs join the full sets, never the browser's own.
         Assert.AreEqual(Capabilities.ImageEnvironment.BrowserServer, capabilities.Environment);
         Assert.IsTrue(capabilities.CanEncode(ImageFormat.Jpeg));
@@ -171,7 +170,7 @@ public sealed class EditorServicesTests
         async Task<string> DecodeWith(byte[] data, Exception? managedFails = null)
         {
             managed.Fails = managedFails;
-            using var image = await decoder.DecodeAsync(data, new Codecs.DecodeOptions(), Memory.PooledPixelAllocator.Shared);
+            using var image = await decoder.DecodeAsync(data, new Codecs.DecodeOptions(), Memory.PooledPixelAllocator.Shared, TestContext.CancellationToken);
             return image.Metadata!.FileName!;
         }
 
@@ -231,4 +230,6 @@ public sealed class EditorServicesTests
             public ValueTask DisposeAsync() => ValueTask.CompletedTask;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

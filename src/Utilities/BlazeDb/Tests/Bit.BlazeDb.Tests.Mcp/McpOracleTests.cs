@@ -24,7 +24,7 @@ public partial class McpOracleTests
 
         var indexed = BlazeDbApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BlazeDbSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BlazeDbSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BlazeDbSourceCatalog.GuideSections.Length, BlazeDbSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -80,9 +80,8 @@ public partial class McpOracleTests
     {
         // RS2008 checks the tracking files against the descriptors inside the generator's own build; this
         // holds the catalog the docs are written from to the same set.
-        CollectionAssert.AreEquivalent(
-            BlazeDbDiagnosticsReference.Descriptors.Select(descriptor => descriptor.Id).ToArray(),
-            BlazeDbDiagnosticsReference.Entries.Where(entry => entry.Doc is not null).Select(entry => entry.Id).ToArray());
+        Assert.AreSequenceEqual(
+            BlazeDbDiagnosticsReference.Descriptors.Select(descriptor => descriptor.Id).ToArray(), BlazeDbDiagnosticsReference.Entries.Where(entry => entry.Doc is not null).Select(entry => entry.Id).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -101,16 +100,15 @@ public partial class McpOracleTests
             ("GetBlazeDbSourceFile", "?path=Demo/Client/Data/DemoModels.cs", new() { ["path"] = "Demo/Client/Data/DemoModels.cs" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBlazeDb" or "InspectBlazeDbTable")
             {
@@ -127,4 +125,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^\| BLZ\d{3} \|", RegexOptions.Multiline)]
     private static partial Regex TableRowRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

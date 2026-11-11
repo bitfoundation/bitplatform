@@ -21,8 +21,8 @@ public class BitCarouselPrerenderTests
         var html = await RenderAsync(itemsCount: 5, new() { [nameof(BitCarousel.VisibleItemsCount)] = 3 });
 
         // Five slides three at a time, moved one at a time, are three steps.
-        Assert.AreEqual(3, Regex.Matches(html, @"class=""bit-csl-dot").Count);
-        StringAssert.Contains(html, "bit-csl-cud");
+        Assert.HasCount(3, Regex.Matches(html, @"class=""bit-csl-dot"));
+        Assert.Contains("bit-csl-cud", html);
     }
 
     [TestMethod]
@@ -43,8 +43,8 @@ public class BitCarouselPrerenderTests
 
             // Each slide takes its share of the container and sits at its own place in the run, in percentages,
             // since there is no measurement to take pixels from.
-            StringAssert.Contains(slides[i], "width:calc(100% / 3)");
-            StringAssert.Contains(slides[i], $"translateX({i * 100}%)");
+            Assert.Contains("width:calc(100% / 3)", slides[i]);
+            Assert.Contains($"translateX({i * 100}%)", slides[i]);
         }
     }
 
@@ -55,10 +55,10 @@ public class BitCarouselPrerenderTests
 
         var slides = Slides(html);
 
-        Assert.IsTrue(slides[0].Contains(" inert"));
-        Assert.IsFalse(slides[2].Contains(" inert"));
-        StringAssert.Contains(slides[2], "translateX(0%)");
-        StringAssert.Contains(slides[0], "translateX(-200%)");
+        Assert.Contains(" inert", slides[0]);
+        Assert.DoesNotContain(" inert", slides[2]);
+        Assert.Contains("translateX(0%)", slides[2]);
+        Assert.Contains("translateX(-200%)", slides[0]);
 
         Assert.IsTrue(Regex.IsMatch(html, @"aria-label=""Slide 3""[^>]*aria-current=""true"""));
     }

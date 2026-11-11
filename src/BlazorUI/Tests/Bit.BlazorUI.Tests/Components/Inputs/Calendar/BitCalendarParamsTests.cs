@@ -44,8 +44,8 @@ public class BitCalendarParamsTests : BunitTestContext
     [TestMethod]
     public void BitCalendarParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCalendar)}", BitCalendarParams.ParamName);
-        Assert.AreEqual("BitParams.BitCalendar", BitCalendarParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitCalendar)}", new BitCalendarParams().Name);
+        Assert.AreEqual("BitParams.BitCalendar", new BitCalendarParams().Name);
     }
 
     [TestMethod]
@@ -76,7 +76,7 @@ public class BitCalendarParamsTests : BunitTestContext
                                          .Where(n => typeof(BitCalendarParams).GetProperty(n) is null)
                                          .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"{nameof(BitCalendarParams)} is missing: {string.Join(", ", missing)}");
+        Assert.IsEmpty(missing, $"{nameof(BitCalendarParams)} is missing: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
@@ -97,8 +97,8 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsTrue(calendar.ClassList.Contains("bit-cal-lg"));
         Assert.AreEqual("Cascaded Label", calendar.GetAttribute("aria-label"));
         Assert.AreEqual("group", calendar.GetAttribute("role"));
-        Assert.IsTrue(component.FindAll(".bit-cal-wnm").Count > 0);
-        Assert.AreEqual(0, component.FindAll(".bit-cal-gtb").Count);
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-wnm"));
+        Assert.IsEmpty(component.FindAll(".bit-cal-gtb"));
     }
 
     [TestMethod]
@@ -124,7 +124,7 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsFalse(calendar.ClassList.Contains("bit-cal-lg"));
 
         // What the calendar left unset is still filled in from the cascade.
-        Assert.IsTrue(component.FindAll(".bit-cal-wnm").Count > 0);
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-wnm"));
     }
 
     [TestMethod]
@@ -280,7 +280,8 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsTrue(calendar.ClassList.Contains("custom-root"));
         Assert.IsTrue(container.ClassList.Contains("custom-container"));
         Assert.IsTrue(grid.ClassList.Contains("custom-grid"));
-        Assert.IsTrue(calendar.GetAttribute("style")?.Contains("color: red;"));
+        var actualValue = calendar.GetAttribute("style")?.Contains("color: red;");
+        Assert.IsTrue(actualValue);
         Assert.AreEqual("margin: 5px;", container.GetAttribute("style"));
         Assert.AreEqual("padding: 10px;", grid.GetAttribute("style"));
     }
@@ -301,10 +302,10 @@ public class BitCalendarParamsTests : BunitTestContext
         var calendar = component.Find(".bit-cal");
 
         Assert.IsTrue(calendar.ClassList.Contains("bit-cal-mcv"));
-        Assert.AreEqual(3, component.FindAll(".bit-cal-dwp").Count);
+        Assert.HasCount(3, component.FindAll(".bit-cal-dwp"));
 
         // The strip opens on the month the cascaded StartingValue falls in, which only the rebuilt view knows about.
-        Assert.IsTrue(component.FindAll(".bit-cal-dbt").Any(b => b.Id!.EndsWith("day-2021-03-10")));
+        Assert.Contains(b => b.Id!.EndsWith("day-2021-03-10"), component.FindAll(".bit-cal-dbt"));
         Assert.AreEqual("March 2021", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
     }
 
@@ -326,7 +327,7 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("bit-dis"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("margin: 1px;"));
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("cascaded-id", root.Id);
 
         // The disabled state a cascade hands down reaches the cells the same way a written one does.
@@ -345,7 +346,7 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-cal-md"));
         Assert.IsFalse(root.ClassList.Contains("bit-cal-mcv"));
         Assert.IsFalse(root.HasAttribute("role"));
-        Assert.AreEqual(1, component.FindAll(".bit-cal-dwp").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-cal-dwp"));
     }
 
     [TestMethod]

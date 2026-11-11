@@ -116,7 +116,7 @@ public class BitDataGridGroupingE2ETests : BitDataGridE2ETestBase
         await Expect(GroupRows(Id).Nth(1)).ToHaveAttributeAsync("style", new Regex(@"--bit-dtg-group-level:\s*1"));
         var outer = await BoxAsync(GroupRows(Id).Nth(0).Locator(".bit-dtg-group-title"));
         var inner = await BoxAsync(GroupRows(Id).Nth(1).Locator(".bit-dtg-group-title"));
-        Assert.IsTrue(inner.X > outer.X + 5, "A nested group is not indented under its parent.");
+        Assert.IsGreaterThan(outer.X + 5, inner.X, "A nested group is not indented under its parent.");
     }
 
     [TestMethod]
@@ -130,7 +130,7 @@ public class BitDataGridGroupingE2ETests : BitDataGridE2ETestBase
         await Expect(DataRows(Id)).ToHaveCountAsync(0);
         await Expect(GroupRows(Id)).ToHaveCountAsync(5);
         var expanded = await GroupRows(Id).Locator(".bit-dtg-group-cell > button").EvaluateAllAsync<string[]>("bs => bs.map(b => b.getAttribute('aria-expanded'))");
-        CollectionAssert.AreEqual(Enumerable.Repeat("false", 5).ToArray(), expanded);
+        Assert.AreSequenceEqual(Enumerable.Repeat("false", 5).ToArray(), expanded);
 
         // New groups follow the choice.
         await GroupButton("Supplier").ClickAsync();

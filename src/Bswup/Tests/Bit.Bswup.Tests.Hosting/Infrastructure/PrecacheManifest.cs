@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace Bit.Bswup.Tests.Hosting.Infrastructure;
 
 /// <summary>A service-worker-assets.js, and what a worker with Bswup's default include/exclude lists precaches from it.</summary>
-public sealed class PrecacheManifest
+internal sealed class PrecacheManifest
 {
     // bit-bswup.sw.ts DEFAULT_ASSETS_INCLUDE / DEFAULT_ASSETS_EXCLUDE.
     private static readonly Regex[] _defaultIncludes =
@@ -32,7 +32,7 @@ public sealed class PrecacheManifest
 
         // self.assetsManifest = { ... };
         var script = await response.Content.ReadAsStringAsync();
-        StringAssert.StartsWith(script.TrimStart('﻿').Trim(), "self.assetsManifest");
+        Assert.StartsWith("self.assetsManifest", script.TrimStart('﻿').Trim());
 
         using var json = JsonDocument.Parse(script[script.IndexOf('{')..(script.LastIndexOf('}') + 1)]);
         return new()

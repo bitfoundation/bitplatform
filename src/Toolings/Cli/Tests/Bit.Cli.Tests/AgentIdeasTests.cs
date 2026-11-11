@@ -9,7 +9,7 @@ public class AgentIdeasTests
     [TestMethod]
     public void TheIdeas_Should_ComeInTheirOrder()
     {
-        CollectionAssert.AreEqual(new[] { "Run", "Rebrand", "Port", "Deploy", "Feature", "Fix" }, AgentIdeas.All.Select(i => i.Kind).ToArray());
+        Assert.AreSequenceEqual(new[] { "Run", "Rebrand", "Port", "Deploy", "Feature", "Fix" }, AgentIdeas.All.Select(i => i.Kind).ToArray());
     }
 
     [TestMethod]
@@ -38,7 +38,7 @@ public class AgentIdeasTests
         console.Profile.Capabilities.Unicode = true;
         console.Write(AgentIdeas.Render(AgentIdeas.CycleSeconds - 2, 110, "⠋"));
 
-        StringAssert.Contains(console.Output, "Fixed on your Test site, ready to go to Production");
+        Assert.Contains("Fixed on your Test site, ready to go to Production", console.Output);
     }
 
     [TestMethod]
@@ -52,11 +52,13 @@ public class AgentIdeasTests
         var result = await console.RunWithStatusAsync("Installing the .NET SDK", async progress =>
         {
             progress("downloading");
-            await Task.Delay(300);
+            await Task.Delay(300, TestContext.CancellationToken);
             return 42;
         });
 
         Assert.AreEqual(42, result);
         Assert.IsGreaterThan(TimeSpan.Zero, console.Ideas.Shown);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

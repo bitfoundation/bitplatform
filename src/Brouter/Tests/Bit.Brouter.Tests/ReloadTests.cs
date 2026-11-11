@@ -63,7 +63,7 @@ public class ReloadTests : BunitTestContext
         {
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
             // Rebuilt visible, not left behind in the hidden keep-alive wrapper.
-            Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+            Assert.IsEmpty(cut.FindAll("div[hidden] [data-testid=stateful]"));
         });
     }
 
@@ -89,7 +89,7 @@ public class ReloadTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/lifecycle");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("activated:first=True", log));
 
         await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
 
@@ -97,9 +97,9 @@ public class ReloadTests : BunitTestContext
         {
             // The old instance was genuinely torn down (Disposing, not Hidden) and the replacement
             // reports a first activation - a rebuilt component, not a renavigated one.
-            CollectionAssert.Contains(log, "deactivated:Disposing");
-            Assert.AreEqual(2, log.FindAll(e => e == "activated:first=True").Count);
-            Assert.AreEqual(0, log.FindAll(e => e.StartsWith("renavigated:")).Count);
+            Assert.Contains("deactivated:Disposing", log);
+            Assert.HasCount(2, log.FindAll(e => e == "activated:first=True"));
+            Assert.IsEmpty(log.FindAll(e => e.StartsWith("renavigated:")));
         });
     }
 
@@ -107,7 +107,7 @@ public class ReloadTests : BunitTestContext
     public async Task Reload_rebuilds_the_whole_chain_including_outlet_hosted_content()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
+        cut.WaitForAssertion(() => Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent));
 
         // The layout (parent route content) holds state too; both it and the outlet-hosted child
         // must come back fresh.
@@ -119,7 +119,7 @@ public class ReloadTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
-            Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-2"));
+            Assert.Contains("child-2", cut.Find("[data-testid=child-data]").TextContent);
         });
     }
 
@@ -179,11 +179,11 @@ public class ReloadTests : BunitTestContext
     public async Task Reload_with_no_matched_chain_is_a_noop()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/nowhere");
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("[data-testid=stateful]")));
 
         await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
 
-        Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=stateful]"));
     }
 
     [TestMethod]
@@ -191,7 +191,7 @@ public class ReloadTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/teardown-nav");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated"));
+        cut.WaitForAssertion(() => Assert.Contains("activated", log));
         var nav = Services.GetRequiredService<BunitNavigationManager>();
 
         // The probe's Disposing deactivation navigates to /teardown-nav-target, whose async loader
@@ -202,10 +202,10 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=teardown-nav]").Count);
-            Assert.AreEqual(1, log.FindAll(e => e == "activated").Count);
+            Assert.EndsWith("/teardown-nav-target", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=teardown-nav-target]"));
+            Assert.IsEmpty(cut.FindAll("[data-testid=teardown-nav]"));
+            Assert.ContainsSingle(log.FindAll(e => e == "activated"));
         });
     }
 
@@ -214,17 +214,17 @@ public class ReloadTests : BunitTestContext
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/nested/child");
         var log = cut.Instance.ProbeLog;
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "child:activated:first=True"));
+        cut.WaitForAssertion(() => Assert.Contains("child:activated:first=True", log));
         log.Clear();
 
         await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
 
         // The reference order the ClearKeepAlive(includeActive) sibling has to match.
-        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "parent:deactivated:Disposing"));
+        cut.WaitForAssertion(() => Assert.Contains("parent:deactivated:Disposing", log));
         var child = log.IndexOf("child:deactivated:Disposing");
         var parent = log.IndexOf("parent:deactivated:Disposing");
-        Assert.IsTrue(child >= 0, $"no child deactivation; log: {string.Join(" | ", log)}");
-        Assert.IsTrue(child < parent, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
+        Assert.IsGreaterThanOrEqualTo(0, child, $"no child deactivation; log: {string.Join(" | ", log)}");
+        Assert.IsLessThan(parent, child, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
     }
 
     [TestMethod]
@@ -244,9 +244,9 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=layout]").Count);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=child-data]").Count);
-            Assert.IsTrue(nav.Uri.EndsWith("/data/view"), nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=layout]"));
+            Assert.ContainsSingle(cut.FindAll("[data-testid=child-data]"));
+            Assert.EndsWith("/data/view", nav.Uri, nav.Uri);
         });
     }
 
@@ -268,7 +268,7 @@ public class ReloadTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual(1, cut.Instance.NotFoundHookCount);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=nf-inline]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=nf-inline]"));
             Assert.IsTrue(nav.Uri.EndsWith("/missing", StringComparison.Ordinal), nav.Uri);
         });
     }
@@ -295,7 +295,7 @@ public class ReloadTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual(hooks, cut.Instance.NotFoundHookCount);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=nf-inline]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=nf-inline]"));
             Assert.IsTrue(nav.Uri.EndsWith("/nowhere", StringComparison.Ordinal), nav.Uri);
         });
     }
@@ -320,10 +320,10 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=olayout] [data-testid=stateful]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=olayout] [data-testid=stateful]"));
             Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
-            CollectionAssert.Contains(log, "deactivated:Disposing");
-            CollectionAssert.Contains(log, "activated:first=True");
+            Assert.Contains("deactivated:Disposing", log);
+            Assert.Contains("activated:first=True", log);
         });
     }
 
@@ -344,8 +344,8 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=root-boundary]").Count);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=rooterr-page]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=root-boundary]"));
+            Assert.IsEmpty(cut.FindAll("[data-testid=rooterr-page]"));
         });
     }
 
@@ -353,7 +353,7 @@ public class ReloadTests : BunitTestContext
     public async Task Reload_cancelled_by_a_loader_restores_the_page_with_its_data()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
-        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
+        cut.WaitForAssertion(() => Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent));
 
         // A loader cancels LATER than a guard does: by then the pipeline has nulled the whole
         // matched chain's LoadedData and this reload has evicted the cached results, so the routes
@@ -364,8 +364,8 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=layout]").Count);
-            Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1"),
+            Assert.ContainsSingle(cut.FindAll("[data-testid=layout]"));
+            Assert.Contains("child-1", cut.Find("[data-testid=child-data]").TextContent,
                 cut.Find("[data-testid=child-data]").TextContent);
         });
     }
@@ -400,8 +400,8 @@ public class ReloadTests : BunitTestContext
         Assert.AreEqual(1, navigated);
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/slow-guard"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=slow-guard]").Count);
+            Assert.EndsWith("/slow-guard", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=slow-guard]"));
         });
     }
 
@@ -432,9 +432,9 @@ public class ReloadTests : BunitTestContext
         Assert.AreEqual(1, navigated);
         cut.WaitForAssertion(() =>
         {
-            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
-            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
-            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+            Assert.EndsWith("/teardown-nav-target", nav.Uri, nav.Uri);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=teardown-nav-target]"));
+            Assert.IsEmpty(cut.FindAll("[data-testid=stateful]"));
         });
     }
 
@@ -457,7 +457,7 @@ public class ReloadTests : BunitTestContext
         // Still armed for real departures - the reload neither disarmed nor consumed it.
         await cut.InvokeAsync(() => brouter.Navigate("/other"));
         cut.WaitForAssertion(() => Assert.AreEqual(1, cut.Instance.LeaveGuardRuns));
-        Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+        Assert.IsEmpty(cut.FindAll("[data-testid=other]"));
     }
 
     [TestMethod]
@@ -474,11 +474,11 @@ public class ReloadTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            Assert.AreEqual(1, cut.FindAll("[data-testid=other]").Count);
+            Assert.ContainsSingle(cut.FindAll("[data-testid=other]"));
             // The torn-down page must not be put back beside the page it redirected to.
-            Assert.AreEqual(0, cut.FindAll("[data-testid=layout]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=layout]"));
             // A redirect IS a navigation, so this one moves the url - the reload itself never does.
-            Assert.IsTrue(nav.Uri.EndsWith("/other"), nav.Uri);
+            Assert.EndsWith("/other", nav.Uri, nav.Uri);
         });
     }
 

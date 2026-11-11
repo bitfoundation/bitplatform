@@ -26,9 +26,9 @@ public class BitGridE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/grid");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"cols-4\"");
-        StringAssert.Contains(html, "bit-grd-itm");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"cols-4\"", html);
+        Assert.Contains("bit-grd-itm", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BitGridE2ETests : E2ETestBase
         AssertClose((await BoxAsync("#cs-8")).Y, (await BoxAsync("#cs-4")).Y, "8 + 4 share a row");
         AssertClose(600, (await BoxAsync("#cs-20")).W, "ColumnSpan 20 is capped at a row");
         AssertClose(150, (await BoxAsync("#cs-3")).W, "ColumnSpan 3");
-        Assert.IsTrue((await BoxAsync("#cs-3")).Y > (await BoxAsync("#cs-20")).Y, "after the full row");
+        Assert.IsGreaterThan((await BoxAsync("#cs-20")).Y, (await BoxAsync("#cs-3")).Y, "after the full row");
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class BitGridE2ETests : E2ETestBase
 
         // The DOM order is untouched.
         var ids = await Page.Locator("#ord > .bit-grd-itm").EvaluateAllAsync<string[]>("els => els.map(e => e.id)");
-        CollectionAssert.AreEqual(new[] { "ord-1", "ord-2", "ord-3" }, ids);
+        Assert.AreSequenceEqual(new[] { "ord-1", "ord-2", "ord-3" }, ids);
     }
 
     [TestMethod]
@@ -554,7 +554,7 @@ public class BitGridE2ETests : E2ETestBase
         await Expect(list.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(3);
         await Expect(list.GetByRole(AriaRole.Listitem, new() { Name = "Cherry fruit" })).ToHaveCountAsync(1);
         var tags = await Page.Locator("#a11y-ul > *").EvaluateAllAsync<string[]>("els => els.map(e => e.tagName)");
-        CollectionAssert.AreEqual(new[] { "LI", "LI", "LI" }, tags);
+        Assert.AreSequenceEqual(new[] { "LI", "LI", "LI" }, tags);
 
         await Expect(Page.Locator("#a11y-ol")).ToHaveAttributeAsync("role", "list");
         Assert.AreEqual("LI", await Page.Locator("#a11y-ol-item").EvaluateAsync<string>("el => el.tagName"));
@@ -672,7 +672,7 @@ public class BitGridE2ETests : E2ETestBase
 
     private static void AssertClose(double expected, double actual, string what)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= Tolerance, $"{what}: expected {expected}, got {actual}");
+        Assert.IsLessThanOrEqualTo(Tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}");
     }
 
     private sealed record Box(double X, double Y, double W, double H)

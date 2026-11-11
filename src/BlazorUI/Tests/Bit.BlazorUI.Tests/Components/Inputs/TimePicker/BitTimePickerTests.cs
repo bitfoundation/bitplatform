@@ -183,7 +183,7 @@ public class BitTimePickerTests : BunitTestContext
         });
 
         var ampm = component.FindAll(".bit-tpc-am-pm");
-        Assert.AreEqual(1, ampm.Count);
+        Assert.ContainsSingle(ampm);
     }
 
     [TestMethod]
@@ -842,7 +842,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find("button[title='Increase hour']").PointerDown();
 
-        await Task.Delay(30);
+        await Task.Delay(30, TestContext.CancellationToken);
 
         Assert.AreEqual(new TimeSpan(11, 30, 0), value);
 
@@ -895,7 +895,7 @@ public class BitTimePickerTests : BunitTestContext
         await press;
 
         // Long enough for a continuous spin that did start to have stepped a few times.
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
 
         Assert.AreEqual(new TimeSpan(11, 30, 0), value);
     }
@@ -927,14 +927,14 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.AreEqual(2, component.FindAll(".bit-tpc-tin").Count);
+        Assert.HasCount(2, component.FindAll(".bit-tpc-tin"));
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.ShowSeconds, true);
         });
 
-        Assert.AreEqual(3, component.FindAll(".bit-tpc-tin").Count);
+        Assert.HasCount(3, component.FindAll(".bit-tpc-tin"));
     }
 
     [TestMethod]
@@ -1559,7 +1559,7 @@ public class BitTimePickerTests : BunitTestContext
             minutes.Add(new TimeSpan(timeOfDay.Hours, timeOfDay.Minutes, 0));
         }
 
-        Assert.IsTrue(minutes.Contains(value.Value), $"{value} is none of the minutes the clock read between {before:O} and {after:O} (UTC).");
+        Assert.Contains(value.Value, minutes, $"{value} is none of the minutes the clock read between {before:O} and {after:O} (UTC).");
         Assert.AreEqual(0, value.Value.Seconds);
     }
 
@@ -1652,7 +1652,7 @@ public class BitTimePickerTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-tpc-abn");
 
-        Assert.AreEqual(2, buttons.Count);
+        Assert.HasCount(2, buttons);
         Assert.AreEqual("current", buttons[0].TextContent.Trim());
         Assert.AreEqual("reset", buttons[1].TextContent.Trim());
     }
@@ -1662,7 +1662,7 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-act").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-act"));
     }
 
     #endregion
@@ -1843,7 +1843,7 @@ public class BitTimePickerTests : BunitTestContext
         Assert.AreEqual(1, closed);
 
         // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1918,7 +1918,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-wrp").Click();
 
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -1933,7 +1933,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-wrp").Click();
 
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.DoesNotContain(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2272,7 +2272,7 @@ public class BitTimePickerTests : BunitTestContext
 
         var spinButtons = component.FindAll(".bit-tpc-tbt:not(.bit-tpc-bam):not(.bit-tpc-bpm)");
 
-        Assert.AreEqual(6, spinButtons.Count);
+        Assert.HasCount(6, spinButtons);
         Assert.IsTrue(spinButtons.All(b => b.GetAttribute("tabindex") == "-1"));
 
         // The AM/PM buttons are the only pointer-free way to see which half is picked, so they stay reachable.
@@ -2447,7 +2447,7 @@ public class BitTimePickerTests : BunitTestContext
         }
 
         // The callout's class list is joined from parts, so an unset one must leave no empty entry behind.
-        Assert.IsFalse(component.Find(".bit-tpc-cal").GetAttribute("class")!.Contains("  "), "An unset parameter left a gap in the callout's class list.");
+        Assert.DoesNotContain("  ", component.Find(".bit-tpc-cal").GetAttribute("class")!, "An unset parameter left a gap in the callout's class list.");
     }
 
     [TestMethod,
@@ -2568,8 +2568,8 @@ public class BitTimePickerTests : BunitTestContext
         // moved on from both the field and it - which only works if the toggle is asked to.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
-        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[28])); // trapFocus
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[29])); // dismissOnFocusLeave
     }
 
     [TestMethod]
@@ -2582,7 +2582,7 @@ public class BitTimePickerTests : BunitTestContext
 
         // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
         // other part of the page: the callout is never toggled, and nothing is trapped.
-        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
+        Assert.DoesNotContain(i => i.Identifier == "BitBlazorUI.Callouts.toggle", Context.JSInterop.Invocations);
     }
 
     [TestMethod]
@@ -2616,7 +2616,7 @@ public class BitTimePickerTests : BunitTestContext
 
         // It sits on the root, not inside the callout: a region that is hidden while the callout is
         // closed - and moved to the end of the document while it is open - announces nothing.
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-cal [aria-live]").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-cal [aria-live]"));
     }
 
     [TestMethod]
@@ -2637,8 +2637,8 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-chd").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-cft").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-chd"));
+        Assert.IsEmpty(component.FindAll(".bit-tpc-cft"));
     }
 
     #endregion
@@ -2678,7 +2678,7 @@ public class BitTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-des").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-des"));
         Assert.IsNull(component.Find(".bit-tpc-inp").GetAttribute("aria-describedby"));
     }
 
@@ -2781,7 +2781,7 @@ public class BitTimePickerTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
         // Invalid on its own says the value is wrong without saying what is wrong with it.
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-erm"));
     }
 
     [TestMethod]
@@ -2872,9 +2872,9 @@ public class BitTimePickerTests : BunitTestContext
         // ... and the root keeps everything it was given.
         var root = component.Find(".bit-tpc").GetAttribute("style");
         Assert.IsNotNull(root);
-        StringAssert.Contains(root, "margin:1rem");
-        StringAssert.Contains(root, "--bit-TimePicker-color:teal");
-        StringAssert.Contains(root, "--bit-TimePicker-radius:2rem");
+        Assert.Contains("margin:1rem", root);
+        Assert.Contains("--bit-TimePicker-color:teal", root);
+        Assert.Contains("--bit-TimePicker-radius:2rem", root);
     }
 
     [TestMethod]
@@ -2912,7 +2912,7 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.ShowInputClearButton, true);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-clr"));
     }
 
     [TestMethod]
@@ -2932,7 +2932,7 @@ public class BitTimePickerTests : BunitTestContext
 
         Assert.IsTrue(cleared);
         Assert.IsNull(value);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-clr"));
     }
 
     [TestMethod,
@@ -2951,7 +2951,7 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-clr"));
     }
 
     [TestMethod]
@@ -2972,10 +2972,10 @@ public class BitTimePickerTests : BunitTestContext
         component.Find(".bit-tpc-clr").Click();
 
         Assert.IsTrue(string.IsNullOrEmpty(component.Find(".bit-tpc-inp").GetAttribute("value")));
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-clr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-clr"));
 
         // The message the rejected text produced goes with it; the field is empty now, not unreadable.
-        Assert.IsFalse(component.Find(".validation-message").TextContent.Contains("not a time"));
+        Assert.DoesNotContain("not a time", component.Find(".validation-message").TextContent);
     }
 
     #endregion
@@ -3082,7 +3082,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").Input("not a time");
 
-        StringAssert.Contains(component.Find(".validation-message").TextContent, "nope");
+        Assert.Contains("nope", component.Find(".validation-message").TextContent);
     }
 
     [TestMethod]
@@ -3098,7 +3098,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").Input("19:00");
 
-        StringAssert.Contains(component.Find(".validation-message").TextContent, "too late");
+        Assert.Contains("too late", component.Find(".validation-message").TextContent);
     }
 
     [TestMethod]
@@ -3113,7 +3113,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").Input("10:20");
 
-        StringAssert.Contains(component.Find(".validation-message").TextContent, "quarter hours only");
+        Assert.Contains("quarter hours only", component.Find(".validation-message").TextContent);
     }
 
     [TestMethod]
@@ -3126,7 +3126,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").Input("19:00");
 
-        StringAssert.Contains(component.Find(".validation-message").TextContent, "out of the allowed range");
+        Assert.Contains("out of the allowed range", component.Find(".validation-message").TextContent);
     }
 
     [TestMethod]
@@ -3245,7 +3245,7 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.SuffixTemplate, b => b.AddMarkupContent(0, "<b class=\"sfx\">S</b>"));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-pre").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-pre"));
         Assert.IsNotNull(component.Find(".bit-tpc-icn > .pfx"));
         Assert.IsNotNull(component.Find(".bit-tpc-icn > .sfx"));
 
@@ -3263,8 +3263,8 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.Suffix, "UTC");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-pre").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-suf").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-pre"));
+        Assert.IsEmpty(component.FindAll(".bit-tpc-suf"));
         Assert.IsFalse(component.FindAll(".bit-tpc-tin")[0].HasAttribute("aria-describedby"));
     }
 
@@ -3610,9 +3610,9 @@ public class BitTimePickerTests : BunitTestContext
 
         // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
         // against it would be moved out from under the callout - which the scroll then dismisses.
-        Assert.IsTrue(focus >= 0);
-        Assert.IsTrue(toggle >= 0);
-        Assert.IsTrue(focus < toggle);
+        Assert.IsGreaterThanOrEqualTo(0, focus);
+        Assert.IsGreaterThanOrEqualTo(0, toggle);
+        Assert.IsLessThan(toggle, focus);
     }
 
     #endregion
@@ -3639,7 +3639,7 @@ public class BitTimePickerTests : BunitTestContext
         var controls = component.FindAll(".bit-tpc-inp, .bit-tpc-tin, .bit-tpc-tbt, .bit-tpc-abn");
 
         // the field input, the three time inputs, six spin buttons, AM/PM and the two actions
-        Assert.AreEqual(14, controls.Count);
+        Assert.HasCount(14, controls);
 
         foreach (var control in controls)
         {
@@ -3755,7 +3755,7 @@ public class BitTimePickerTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-splat"));
 
         // An explicit direction reaches the callout, which is laid out apart from the root while it is open.
@@ -3787,7 +3787,7 @@ public class BitTimePickerTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
     }
 
@@ -3864,15 +3864,15 @@ public class BitTimePickerTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-tpc-tin").GetAttribute("aria-required"));
 
         // Standalone there is no popup: no overlay to close it with, and no close button either.
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-ovl").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-cbn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-ovl"));
+        Assert.IsEmpty(component.FindAll(".bit-tpc-cbn"));
         Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-sta"));
 
         component.Render(parameters => parameters.Add(p => p.Standalone, false));
 
         Assert.IsNull(component.Find(".bit-tpc-tin").GetAttribute("aria-required"));
-        Assert.AreEqual(1, component.FindAll(".bit-tpc-ovl").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-tpc-cbn").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tpc-ovl"));
+        Assert.ContainsSingle(component.FindAll(".bit-tpc-cbn"));
     }
 
     [TestMethod]
@@ -3893,7 +3893,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.IconTemplate, builder => builder.AddMarkupContent(0, "<b class=\"tpl-icon\">i</b>")));
 
-        Assert.AreEqual(0, component.FindAll(".bit-tpc-ico").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tpc-ico"));
         Assert.IsNotNull(component.Find(".bit-tpc-icn > .tpl-icon"));
     }
 
@@ -4028,7 +4028,7 @@ public class BitTimePickerTests : BunitTestContext
             var element = component.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}");
-            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} lacks {style}");
+            Assert.Contains(style, element.GetAttribute("style")!, $"{selector} lacks {style}");
         }
 
         AssertPart(".bit-tpc", "c-root", "--s: root;");
@@ -4100,7 +4100,7 @@ public class BitTimePickerTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-tpc-foc"));
         Assert.IsTrue(root.ClassList.Contains("c-focused"));
-        StringAssert.Contains(root.GetAttribute("style"), "--s: focused;");
+        Assert.Contains("--s: focused;", root.GetAttribute("style")!);
 
         // While the passing style is applied the root says what it would hold without it, which is what a popup
         // relocated to the body copies - so the popup never flips as the focus moves between the field and it.
@@ -4131,13 +4131,13 @@ public class BitTimePickerTests : BunitTestContext
         input.FocusIn();
         input.FocusOut();
 
-        CollectionAssert.AreEqual(new[] { "focus", "focusin", "focusout" }, log);
+        Assert.AreSequenceEqual(new[] { "focus", "focusin", "focusout" }, log);
 
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         component.Find(".bit-tpc-inp").Focus();
 
-        Assert.AreEqual(3, log.Count);
+        Assert.HasCount(3, log);
     }
 
     #endregion
@@ -4168,7 +4168,7 @@ public class BitTimePickerTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-expanded"));
         Assert.AreEqual(component.Find(".bit-tpc-cal").Id, component.Find(".bit-tpc-inp").GetAttribute("aria-controls"));
         Assert.AreEqual(component.Find(".bit-tpc-cal").Id, component.Find(".bit-tpc-wrp").GetAttribute("aria-owns"));
-        StringAssert.Contains(component.Find(".bit-tpc-ovl").GetAttribute("style"), "display:block");
+        Assert.Contains("display:block", component.Find(".bit-tpc-ovl").GetAttribute("style")!);
 
         // Opening again changes nothing and reports nothing a second time.
         await component.InvokeAsync(() => component.Instance.OpenCallout());
@@ -4183,10 +4183,10 @@ public class BitTimePickerTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-tpc-inp").HasAttribute("aria-controls"));
         Assert.IsFalse(component.Find(".bit-tpc-wrp").HasAttribute("aria-owns"));
-        StringAssert.Contains(component.Find(".bit-tpc-ovl").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-tpc-ovl").GetAttribute("style")!);
 
         // Opening from code is not a click on the field, and a close driven from code leaves the focus alone.
-        CollectionAssert.AreEqual(new[] { "open", "close" }, log);
+        Assert.AreSequenceEqual(new[] { "open", "close" }, log);
         Assert.AreEqual(focusCalls, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
     }
 
@@ -4312,9 +4312,9 @@ public class BitTimePickerTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         // The key listener, the callout and the swipe gesture are all taken away with the picker.
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.TimePicker.dispose"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear"));
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swipes.dispose"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.TimePicker.dispose", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Callouts.clear", Context.JSInterop.Invocations);
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.Swipes.dispose", Context.JSInterop.Invocations);
     }
 
     [TestMethod,
@@ -4357,6 +4357,8 @@ public class BitTimePickerTests : BunitTestContext
         Assert.IsFalse(clearButton.HasAttribute("disabled"));
         Assert.IsNull(clearButton.GetAttribute("aria-disabled"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 
     #endregion
 }

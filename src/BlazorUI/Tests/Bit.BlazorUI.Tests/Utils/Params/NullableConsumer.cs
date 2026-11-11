@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Utils.Params;
 
-public sealed class NullableConsumer : ComponentBase
+internal sealed class NullableConsumer : ComponentBase
 {
     [CascadingParameter] public int? NullableNumber { get; set; }
 

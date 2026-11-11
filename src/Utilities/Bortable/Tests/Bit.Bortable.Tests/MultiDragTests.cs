@@ -275,7 +275,7 @@ public class MultiDragTests : BortableTestContext
         // The browser layer has no use for the exception: the list raises it as its own, and still answers what to say.
         var announced = await Renderer.Dispatcher.InvokeAsync(() => Zone(list).EndAsync("drop"));
         Assert.AreEqual("offline", (await PassedOnAsync()).Message);
-        StringAssert.StartsWith(announced, "Cancelled.");
+        Assert.StartsWith("Cancelled.", announced);
         Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
         // OnEnd still follows OnStart, reporting the drag cancelled.
         Assert.AreEqual("Start:L1 Change:L1 End:L1", Sequence(log));
@@ -395,7 +395,7 @@ public class MultiDragTests : BortableTestContext
         var announced = await Renderer.Dispatcher.InvokeAsync(() => Zone(l2).EndAsync("drop"));
 
         Assert.AreEqual("offline", (await PassedOnAsync()).Message);
-        StringAssert.StartsWith(announced, "Cancelled.");
+        Assert.StartsWith("Cancelled.", announced);
         Assert.AreSequenceEqual(["A", "B", "C", "D"], left);
         Assert.AreSequenceEqual(["X", "Y"], right);
         Assert.AreEqual("Start:L1 Change:L2 End:L1", Sequence(log));

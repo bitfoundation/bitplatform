@@ -42,7 +42,7 @@ public class BelemetryAzureMonitorExporterTests
         Assert.AreEqual(1, rejected, "The 400 is refused for good.");
         Assert.AreEqual(2, retry.Count);
         using var body = JsonDocument.Parse(retry.Body);
-        CollectionAssert.AreEqual(new[] { "b", "c" }, body.RootElement.EnumerateArray().Select(e => e.GetProperty("item").GetString()).ToArray());
+        Assert.AreSequenceEqual(new[] { "b", "c" }, body.RootElement.EnumerateArray().Select(e => e.GetProperty("item").GetString()).ToArray());
         Assert.AreEqual(request.Url, retry.Url);
         Assert.AreEqual(request.Exporter, retry.Exporter);
         Assert.AreEqual("gzip", retry.ContentEncoding);

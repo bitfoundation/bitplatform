@@ -42,8 +42,8 @@ public class BitElementParamsTests : BunitTestContext
     [TestMethod]
     public void BitElementParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitElement)}", BitElementParams.ParamName);
-        Assert.AreEqual("BitParams.BitElement", BitElementParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitElement)}", new BitElementParams().Name);
+        Assert.AreEqual("BitParams.BitElement", new BitElementParams().Name);
     }
 
     [TestMethod]
@@ -86,8 +86,8 @@ public class BitElementParamsTests : BunitTestContext
 
         var root = component.Find(".bit-elm");
 
-        StringAssert.Contains(root.OuterHtml, "onclick:stoppropagation");
-        StringAssert.Contains(root.OuterHtml, "onclick:preventdefault");
+        Assert.Contains("onclick:stoppropagation", root.OuterHtml);
+        Assert.Contains("onclick:preventdefault", root.OuterHtml);
     }
 
     [TestMethod]
@@ -101,9 +101,9 @@ public class BitElementParamsTests : BunitTestContext
 
         var root = component.Find(".bit-elm");
 
-        StringAssert.Contains(root.OuterHtml, "ondblclick:stoppropagation");
-        StringAssert.Contains(root.OuterHtml, "onpointerdown:stoppropagation");
-        StringAssert.Contains(root.OuterHtml, "oncontextmenu:preventdefault");
+        Assert.Contains("ondblclick:stoppropagation", root.OuterHtml);
+        Assert.Contains("onpointerdown:stoppropagation", root.OuterHtml);
+        Assert.Contains("oncontextmenu:preventdefault", root.OuterHtml);
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class BitElementParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitElementParams { NoWrapper = true, Element = "section" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-elm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-elm"));
         Assert.AreEqual("content", component.Markup);
     }
 
@@ -139,8 +139,8 @@ public class BitElementParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-fam"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("cascaded-id", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("2", root.GetAttribute("tabindex"));
         Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
     }
@@ -199,10 +199,10 @@ public class BitElementParamsTests : BunitTestContext
 
         Assert.AreEqual("SECTION", root.TagName);
         // A modifier the element wrote as false is a decision, so the cascaded true does not turn it on.
-        Assert.IsFalse(root.OuterHtml.Contains("onclick:stoppropagation"));
-        Assert.IsFalse(root.OuterHtml.Contains("onclick:preventdefault"));
-        StringAssert.Contains(root.OuterHtml, "onpointerdown:stoppropagation");
-        Assert.IsFalse(root.OuterHtml.Contains("ondblclick:stoppropagation"));
+        Assert.DoesNotContain("onclick:stoppropagation", root.OuterHtml);
+        Assert.DoesNotContain("onclick:preventdefault", root.OuterHtml);
+        Assert.Contains("onpointerdown:stoppropagation", root.OuterHtml);
+        Assert.DoesNotContain("ondblclick:stoppropagation", root.OuterHtml);
         Assert.IsTrue(root.ClassList.Contains("own"));
         Assert.IsFalse(root.ClassList.Contains("cascaded"));
         Assert.AreEqual("ltr", root.GetAttribute("dir"));

@@ -115,7 +115,7 @@ public class ScreenshotApiTests
     [TestMethod]
     public async Task ACaptureWhereWebSocketsAreRefused_Should_NotWaitOutTheCircuitsLongPolling()
     {
-        await using var refusingServer = await new WorkbenchTestServer().Start(services => services.AddSingleton<IStartupFilter, RefuseWebSockets>());
+        await using var refusingServer = await new WorkbenchTestServer().Start(services => services.AddSingleton<IStartupFilter, RefuseWebSockets>(), cancellationToken: TestContext.CancellationToken);
         using var refusingClient = refusingServer.CreateClient();
         refusingClient.Timeout = TimeSpan.FromMinutes(2);
 

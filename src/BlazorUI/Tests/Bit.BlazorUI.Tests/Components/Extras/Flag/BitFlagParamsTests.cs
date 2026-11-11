@@ -38,7 +38,7 @@ public class BitFlagParamsTests : BunitTestContext
     [TestMethod]
     public void BitFlagParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitFlag", BitFlagParams.ParamName);
+        Assert.AreEqual("BitParams.BitFlag", new BitFlagParams().Name);
         Assert.AreEqual(BitFlagParams.ParamName, new BitFlagParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitFlagParams());
     }
@@ -137,8 +137,8 @@ public class BitFlagParamsTests : BunitTestContext
 
         // A shaped packaged flag is cut to the flag, which the cascaded shape has to reach as well as the class.
         Assert.IsTrue(root.ClassList.Contains("bit-flg-crp"));
-        StringAssert.Contains(root.GetAttribute("style"), "height:2rem");
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-flg-crp-w:");
+        Assert.Contains("height:2rem", root.GetAttribute("style")!);
+        Assert.Contains("--bit-flg-crp-w:", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public class BitFlagParamsTests : BunitTestContext
 
         Assert.IsFalse(root.ClassList.Contains("bit-flg-rnd"));
         Assert.IsTrue(root.ClassList.Contains("bit-flg-sm"));
-        StringAssert.Contains(root.GetAttribute("style"), "height:3rem");
+        Assert.Contains("height:3rem", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class BitFlagParamsTests : BunitTestContext
     {
         var component = RenderWithParams(new BitFlagParams { Emoji = true });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
         Assert.AreEqual(BitCountries.Netherlands.Emoji, component.Find(".bit-flg-emj").TextContent);
         Assert.IsTrue(component.Find(".bit-flg").ClassList.Contains("bit-flg-emo"));
     }
@@ -225,7 +225,7 @@ public class BitFlagParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-cnt"));
         Assert.IsTrue(root.ClassList.Contains("bit-flg-asp"));
-        StringAssert.Contains(root.GetAttribute("style"), "aspect-ratio:4/3");
+        Assert.Contains("aspect-ratio:4/3", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -256,8 +256,8 @@ public class BitFlagParamsTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
         Assert.IsTrue(img.ClassList.Contains("cascaded-image"));
-        StringAssert.Contains(root.GetAttribute("style"), "color:red");
-        StringAssert.Contains(img.GetAttribute("style"), "opacity:0.5");
+        Assert.Contains("color:red", root.GetAttribute("style")!);
+        Assert.Contains("opacity:0.5", img.GetAttribute("style")!);
     }
 
     /// <summary>
@@ -278,7 +278,7 @@ public class BitFlagParamsTests : BunitTestContext
         Assert.AreEqual("own", img.GetAttribute("data-both"));
         Assert.AreEqual("cascaded", img.GetAttribute("data-cascaded"));
 
-        Assert.AreEqual(2, own.Count);
+        Assert.HasCount(2, own);
         Assert.IsFalse(own.ContainsKey("data-cascaded"));
     }
 
@@ -317,7 +317,7 @@ public class BitFlagParamsTests : BunitTestContext
         var root = component.Find(".bit-flg");
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-rnd"));
-        StringAssert.Contains(root.GetAttribute("style"), "height:3rem");
+        Assert.Contains("height:3rem", root.GetAttribute("style")!);
     }
 
     /// <summary>
@@ -412,7 +412,7 @@ public class BitFlagParamsTests : BunitTestContext
 
         Assert.AreEqual(PackagedNetherlands, component.Find("img").GetAttribute("src"));
         Assert.IsFalse(root.ClassList.Contains("bit-flg-cir"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("height:2rem"));
+        Assert.DoesNotContain("height:2rem", (root.GetAttribute("style") ?? string.Empty));
     }
 
     /// <summary>
@@ -424,7 +424,7 @@ public class BitFlagParamsTests : BunitTestContext
         var component = RenderWithParams(new BitFlagParams { SrcPattern = "https://flagcdn.com/{iso2}.svg" },
                                          flag => flag.Add(p => p.ImageSet, BitFlagImageSet.Shiny));
 
-        StringAssert.StartsWith(component.Find("img").GetAttribute("src"), "_content/Bit.BlazorUI.Assets/flags/NL-shiny-");
+        Assert.StartsWith("_content/Bit.BlazorUI.Assets/flags/NL-shiny-", component.Find("img").GetAttribute("src"));
     }
 
     [TestMethod]
@@ -433,7 +433,7 @@ public class BitFlagParamsTests : BunitTestContext
         var component = RenderWithParams(new BitFlagParams { Emoji = true }, flag => flag.Add(p => p.Src, "own.svg"));
 
         Assert.AreEqual("own.svg", component.Find("img").GetAttribute("src"));
-        Assert.AreEqual(0, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll(".bit-flg-emj"));
     }
 
     [TestMethod]
@@ -456,8 +456,8 @@ public class BitFlagParamsTests : BunitTestContext
         var style = root.GetAttribute("style") ?? string.Empty;
 
         Assert.IsTrue(root.ClassList.Contains("bit-flg-lg"));
-        Assert.IsFalse(style.Contains("height:2rem"));
-        Assert.IsFalse(style.Contains("width:3rem"));
+        Assert.DoesNotContain("height:2rem", style);
+        Assert.DoesNotContain("width:3rem", style);
     }
 
     [TestMethod]
@@ -468,8 +468,8 @@ public class BitFlagParamsTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "height:2rem");
-        Assert.IsFalse(style.Contains("width:3rem"));
+        Assert.Contains("height:2rem", style);
+        Assert.DoesNotContain("width:3rem", style);
     }
 
     [TestMethod]
@@ -480,9 +480,9 @@ public class BitFlagParamsTests : BunitTestContext
 
         var style = component.Find(".bit-flg").GetAttribute("style") ?? string.Empty;
 
-        StringAssert.Contains(style, "aspect-ratio:3/2");
-        StringAssert.Contains(style, "height:2rem");
-        Assert.IsFalse(style.Contains("width:2rem"));
+        Assert.Contains("aspect-ratio:3/2", style);
+        Assert.Contains("height:2rem", style);
+        Assert.DoesNotContain("width:2rem", style);
     }
 
     /// <summary>
@@ -564,8 +564,8 @@ public class BitFlagParamsTests : BunitTestContext
             parameters.Add(p => p.SrcPattern, "/flags/{iso2}.svg");
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-flg-emj").Count);
+        Assert.IsEmpty(component.FindAll("img"));
+        Assert.ContainsSingle(component.FindAll(".bit-flg-emj"));
     }
 
     [TestMethod]
@@ -593,7 +593,7 @@ public class BitFlagParamsTests : BunitTestContext
             parameters.Add(p => p.SrcPattern, "/flags/{iso2}.svg");
         });
 
-        Assert.AreEqual(0, component.FindAll("img").Count);
+        Assert.IsEmpty(component.FindAll("img"));
     }
 
     [TestMethod]

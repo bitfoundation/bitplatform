@@ -431,7 +431,7 @@ public class BuildingsUITests : ShowcaseUITest
         var download = await Page.RunAndWaitForDownloadAsync(() => Press(ListPane.GetByRole(AriaRole.Button, new() { Name = BitBlazorUIStrings.DataGridExportCsvText, Exact = true })));
 
         var path = await download.PathAsync();
-        var text = await File.ReadAllTextAsync(path);
+        var text = await File.ReadAllTextAsync(path, TestContext.CancellationToken);
 
         Assert.Contains("Euromast", text);
         Assert.DoesNotContain("Rijksmuseum", text);

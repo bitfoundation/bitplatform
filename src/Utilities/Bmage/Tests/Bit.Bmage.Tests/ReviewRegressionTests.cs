@@ -41,7 +41,7 @@ public sealed class ReviewRegressionTests
         using var canvas = ImageCanvas.Create(100, 100);
         canvas.DrawPolyline([new Vector2(10, 10), new Vector2(90, 10), new Vector2(90, 90), new Vector2(10, 10)], Rgba32.Black,
             new StrokeStyle { Width = 4 });
-        Assert.IsTrue(canvas.Buffer[50, 50].A > 0, "the diagonal back to the start was not drawn");
+        Assert.IsGreaterThan(0, canvas.Buffer[50, 50].A, "the diagonal back to the start was not drawn");
     }
 
     [TestMethod]
@@ -168,7 +168,7 @@ public sealed class ReviewRegressionTests
         }
         session.Commit("Brightness");
 
-        Assert.AreEqual(3, session.History.Entries.Count);
+        Assert.HasCount(3, session.History.Entries);
         Assert.AreEqual("Brightness", session.History.CurrentEntry.Label);
         session.Undo();
         Assert.AreSame(beforeDrag, session.Document);
@@ -182,7 +182,7 @@ public sealed class ReviewRegressionTests
         session.ApplyTransient(d => d.WithPipeline(d.Pipeline.Replace(0, new BrightnessAdjustment(0.2f))));
         session.Apply(d => d.WithPipeline(d.Pipeline.Replace(0, new BrightnessAdjustment(0.2f))), "Brightness");
 
-        Assert.AreEqual(2, session.History.Entries.Count);
+        Assert.HasCount(2, session.History.Entries);
         Assert.AreEqual("Brightness", session.History.CurrentEntry.Label);
     }
 
@@ -210,7 +210,7 @@ public sealed class ReviewRegressionTests
     public async Task APreviewRenderedBeforeAnEditIsStillStale()
     {
         using var session = new ImageEditSession(TestImages.Gradient(64, 64));
-        var render = session.RenderPreviewAsync();
+        var render = session.RenderPreviewAsync(TestContext.CancellationToken);
         session.AddOperation(new BrightnessAdjustment(0.4f));
         await render;
         Assert.IsTrue(session.IsPreviewStale);
@@ -221,7 +221,7 @@ public sealed class ReviewRegressionTests
     {
         var session = new ImageEditSession(TestImages.Gradient(512, 512));
         session.AddOperation(new BlurFilter(8));
-        var render = session.RenderPreviewAsync().AsTask();
+        var render = session.RenderPreviewAsync(TestContext.CancellationToken).AsTask();
         session.Dispose();
         var error = await Capture.ExceptionAsync(() => render);
         Assert.IsTrue(error is null or OperationCanceledException, $"unexpected {error?.GetType().Name}: {error?.Message}");
@@ -250,15 +250,15 @@ public sealed class ReviewRegressionTests
         var session = new ImageEditSession(TestImages.Gradient(64, 64));
         session.AddOperation(gate);
         var original = session.Original;
-        var export = Task.Run(async () => await session.RenderFullAsync());
-        Assert.IsTrue(gate.Reached.Wait(TimeSpan.FromSeconds(30)), "the export started");
+        var export = Task.Run(async () => await session.RenderFullAsync(cancellationToken: TestContext.CancellationToken));
+        Assert.IsTrue(gate.Reached.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken), "the export started");
 
         session.Dispose();
         Assert.IsFalse(original.IsDisposed, "the export is still reading the original");
 
         gate.Open.Set();
         using (await export) { }
-        for (var i = 0; i < 200 && !original.IsDisposed; i++) await Task.Delay(10);
+        for (var i = 0; i < 200 && !original.IsDisposed; i++) await Task.Delay(10, TestContext.CancellationToken);
         Assert.IsTrue(original.IsDisposed, "and it is released once the export is done");
     }
 
@@ -268,8 +268,8 @@ public sealed class ReviewRegressionTests
     public void JpegDecodesNeutralGreyWithoutAGreenCast()
     {
         using var source = ImageBuffer.Create(32, 32, new Rgba32(100, 100, 100));
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 1.0 });
-        using var decoded = JpegDecoder.Decode(encoded.Data);
+        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 1.0 }, TestContext.CancellationToken);
+        using var decoded = JpegDecoder.Decode(encoded.Data, cancellationToken: TestContext.CancellationToken);
         var pixel = decoded[16, 16];
         Assert.AreEqual(pixel.R, pixel.G);
         Assert.AreEqual(pixel.B, pixel.G);
@@ -285,7 +285,7 @@ public sealed class ReviewRegressionTests
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(18), 1);
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(22), int.MinValue);
         BinaryPrimitives.WriteUInt16LittleEndian(bmp.AsSpan(28), 24);
-        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp));
+        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -294,17 +294,17 @@ public sealed class ReviewRegressionTests
         var bmp = new byte[64];
         bmp[0] = (byte)'B'; bmp[1] = (byte)'M';
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(14), int.MaxValue - 5);
-        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp));
+        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp, cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void PngChunkLengthsThatWouldOverflowAreIgnored()
     {
         using var source = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(source).Data.ToArray();
+        var png = Codecs.Png.PngEncoder.Encode(source, cancellationToken: TestContext.CancellationToken).Data.ToArray();
         // Corrupt the IHDR length to just below int.MaxValue.
         BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(8), 0x7FFFFFF3);
-        var error = Capture.Exception(() => Codecs.Png.PngDecoder.Decode(png));
+        var error = Capture.Exception(() => Codecs.Png.PngDecoder.Decode(png, cancellationToken: TestContext.CancellationToken));
         Assert.IsTrue(error is null or ImageException, $"unexpected {error?.GetType().Name}");
     }
 
@@ -320,7 +320,7 @@ public sealed class ReviewRegressionTests
     public void JpegRefusesDimensionsItCannotStore()
     {
         using var wide = ImageBuffer.Create(70_000, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ImageEncodeException>(() => JpegEncoder.Encode(wide, new ImageExportOptions { Format = ImageFormat.Jpeg }));
+        Assert.ThrowsExactly<ImageEncodeException>(() => JpegEncoder.Encode(wide, new ImageExportOptions { Format = ImageFormat.Jpeg }, TestContext.CancellationToken));
     }
 
     // ---------------------------------------------------------------- text
@@ -331,6 +331,8 @@ public sealed class ReviewRegressionTests
         var font = FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
         var rasterizer = new FontTextRasterizer().Register("Test", font);
         var metrics = rasterizer.Measure("AB AAAAAAAAAAAA", new TextStyle { FontFamily = "Test", FontSize = 10, MaxWidth = 40 });
-        Assert.IsTrue(metrics.Width <= 40.5f, $"a line is {metrics.Width}px wide, past the 40px limit");
+        Assert.IsLessThanOrEqualTo(40.5f, metrics.Width, $"a line is {metrics.Width}px wide, past the 40px limit");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -26,11 +26,11 @@ public class InstallResilienceTests : BswupTest
             "the requested framework files to be cached");
 
         // Give a (wrongly) started bulk download the time to show.
-        await Task.Delay(3000);
+        await Task.Delay(3000, TestContext.CancellationToken);
         cached = await CachedUrlsAsync(bucket);
 
-        Assert.IsTrue(cached.Length < precache.Length, $"Passive mode cached {cached.Length} of the {precache.Length} manifest assets.");
-        Assert.IsFalse(cached.Any(url => url.Contains("harness-extra.json", StringComparison.Ordinal)), "Passive mode cached an asset the app never requested.");
+        Assert.IsLessThan(precache.Length, cached.Length, $"Passive mode cached {cached.Length} of the {precache.Length} manifest assets.");
+        Assert.DoesNotContain(url => url.Contains("harness-extra.json", StringComparison.Ordinal), cached, "Passive mode cached an asset the app never requested.");
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class InstallResilienceTests : BswupTest
         await EventuallyAsync(() => CachedUrlsAsync(BucketName(manifest.Version)), urls => expected.All(urls.Contains), "every asset to pass its integrity check");
 
         var errors = (await EventsAsync()).Where(e => e.Type == "ERROR").ToArray();
-        Assert.AreEqual(0, errors.Length, string.Join(", ", errors.Select(e => e.ToString())));
+        Assert.IsEmpty(errors, string.Join(", ", errors.Select(e => e.ToString())));
     }
 
     [TestMethod]
@@ -59,11 +59,11 @@ public class InstallResilienceTests : BswupTest
         await InstallAsync();
 
         var rejected = await WaitForEventAsync("ERROR", e => e.Reason == "integrity");
-        StringAssert.Contains(rejected.Url, "harness-extra.json");
+        Assert.Contains("harness-extra.json", rejected.Url!);
         Assert.IsFalse(rejected.Fatal, "Under lax tolerance a tampered asset is skipped, not fatal.");
 
         var manifest = await Session.ManifestAsync(AppPath);
-        Assert.IsFalse((await CachedUrlsAsync(BucketName(manifest.Version))).Any(url => url.Contains("harness-extra.json", StringComparison.Ordinal)),
+        Assert.DoesNotContain(url => url.Contains("harness-extra.json", StringComparison.Ordinal), await CachedUrlsAsync(BucketName(manifest.Version)),
             "Tampered bytes were cached.");
     }
 
@@ -78,10 +78,10 @@ public class InstallResilienceTests : BswupTest
         var key = PrecacheKeys(manifest).Single(url => url.Contains("harness-extra.json", StringComparison.Ordinal));
         await EventuallyAsync(() => CachedUrlsAsync(BucketName(manifest.Version)), urls => urls.Contains(key), "the retried asset to be cached");
 
-        Assert.IsFalse((await EventsAsync()).Any(e => e.Type == "ERROR"), "A failure that a retry recovered was reported.");
+        Assert.DoesNotContain(e => e.Type == "ERROR", await EventsAsync(), "A failure that a retry recovered was reported.");
 
         var attempts = (await Session.RequestsAsync()).Where(r => r.Path.EndsWith("harness-extra.json", StringComparison.Ordinal)).Select(r => r.Status).ToArray();
-        CollectionAssert.AreEqual(new[] { 503, 503, 200 }, attempts, $"Attempts: {string.Join(", ", attempts)}");
+        Assert.AreSequenceEqual(new[] { 503, 503, 200 }, attempts, $"Attempts: {string.Join(", ", attempts)}");
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class InstallResilienceTests : BswupTest
         var error = await WaitForEventAsync("ERROR", e => e.Reason == "manifest");
         Assert.IsTrue(error.Fatal, "An invalid manifest was not reported as fatal.");
         Assert.IsFalse(await IsControlledAsync(), "A worker without a manifest took control of the page.");
-        Assert.AreEqual(0, (await BswupCacheNamesAsync()).Length);
+        Assert.IsEmpty(await BswupCacheNamesAsync());
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class InstallResilienceTests : BswupTest
         await WaitForInteractiveAsync();
 
         var elapsed = DateTime.UtcNow - started;
-        Assert.IsTrue(elapsed < TimeSpan.FromSeconds(45), $"The app started after {elapsed}, not after the 3 second stall timeout.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(45), elapsed, $"The app started after {elapsed}, not after the 3 second stall timeout.");
         Assert.IsFalse(await IsControlledAsync());
     }
 }

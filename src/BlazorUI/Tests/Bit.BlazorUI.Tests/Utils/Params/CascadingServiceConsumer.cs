@@ -8,12 +8,12 @@ public interface ICascadingDemoService
     string Name { get; }
 }
 
-public class CascadingDemoService : ICascadingDemoService
+internal class CascadingDemoService : ICascadingDemoService
 {
     public string Name => "demo-service";
 }
 
-public sealed class CascadingDemoServiceDecorator : CascadingDemoService
+internal sealed class CascadingDemoServiceDecorator : CascadingDemoService
 {
 }
 
@@ -21,12 +21,12 @@ public sealed class CascadingDemoServiceDecorator : CascadingDemoService
 /// A service that is cascaded once and then mutated in place, which is what BitCascadingValue.NotifyChanged
 /// is for: there is no assignment for the provider to notice.
 /// </summary>
-public sealed class MutableCascadingDemoService : ICascadingDemoService
+internal sealed class MutableCascadingDemoService : ICascadingDemoService
 {
     public string Name { get; set; } = "initial";
 }
 
-public sealed class CascadingServiceConsumer : ComponentBase
+internal sealed class CascadingServiceConsumer : ComponentBase
 {
     [CascadingParameter] public ICascadingDemoService? Service { get; set; }
 

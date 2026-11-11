@@ -76,7 +76,7 @@ public class BitChoiceGroupItemValueTypeTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        StringAssert.Contains(component.Markup, "Custom Two");
+        Assert.Contains("Custom Two", component.Markup);
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class BitChoiceGroupItemValueTypeTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        StringAssert.Contains(component.Markup, "Custom Two");
+        Assert.Contains("Custom Two", component.Markup);
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class BitChoiceGroupItemValueTypeTests : BunitTestContext
             parameters.Add(p => p.Items, items);
         });
 
-        StringAssert.Contains(component.Markup, "Custom Two");
+        Assert.Contains("Custom Two", component.Markup);
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public class BitChoiceGroupItemValueTypeTests : BunitTestContext
         var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
             RenderComponent<BitChoiceGroup<BitChoiceGroupOption<Guid>, Guid?>>());
 
-        StringAssert.Contains(exception.Message, "BitChoiceGroupOption<Guid?>");
+        Assert.Contains("BitChoiceGroupOption<Guid?>", exception.Message);
     }
 
     [TestMethod]
@@ -206,5 +206,5 @@ public class BitChoiceGroupItemValueTypeTests : BunitTestContext
                                 string.Join(", ", missing));
     }
 
-    public class DerivedItem : BitChoiceGroupItem<Guid>;
+    internal class DerivedItem : BitChoiceGroupItem<Guid>;
 }

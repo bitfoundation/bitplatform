@@ -16,17 +16,17 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bonboarding://guide", "bonboarding://api", "bonboarding://theme" }, uris);
-        CollectionAssert.Contains(uris, "bonboarding://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "bonboarding://guide/Multi-page%20tours");
+        Assert.Contains("bonboarding://guide/Getting%20started", uris);
+        Assert.Contains("bonboarding://guide/Multi-page%20tours", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bonboarding://guide/{heading}", "bonboarding://api/{typeName}", "bonboarding://source/{path}" }, templates);
     }
@@ -34,7 +34,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -63,9 +63,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -73,7 +73,7 @@ public class McpResourcePromptTests
     {
         foreach (var (name, arguments) in _prompts)
         {
-            var result = await McpTestHost.Client.GetPromptAsync(name, arguments);
+            var result = await McpTestHost.Client.GetPromptAsync(name, arguments, cancellationToken: TestContext.CancellationToken);
 
             var text = string.Join('\n', result.Messages.Select(message => message.Content).OfType<TextContentBlock>().Select(block => block.Text));
 
@@ -82,14 +82,14 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -97,21 +97,21 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://api/{typeName}" }, "typeName", "BonboardingStep")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://guide/{heading}" }, "heading", "multi")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://source/{path}" }, "path", "Flows")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://api/{typeName}" }, "typeName", "BonboardingStep", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://guide/{heading}" }, "heading", "multi", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bonboarding://source/{path}" }, "path", "Flows", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BonboardingStep");
+        Assert.Contains("BonboardingStep", types.ToArray());
         Assert.AreEqual("BonboardingStep", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Multi-page tours");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Pages/Flows.razor");
+        Assert.Contains("Multi-page tours", headings.ToArray());
+        Assert.Contains("Demo/Client/Pages/Flows.razor", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bonboarding-tour" }, "symptom", "")).Completion.Values;
-        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bonboarding-to-app" }, "renderMode", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bonboarding-tour" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bonboarding-to-app" }, "renderMode", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         CollectionAssert.IsSubsetOf(BonboardingSetupGuide.RenderModes, modes.ToArray());
@@ -123,4 +123,6 @@ public class McpResourcePromptTests
 
         return string.Join('\n', result.Contents.OfType<TextResourceContents>().Select(contents => contents.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -4,7 +4,7 @@ namespace Bit.Blex.Tests;
 
 /// <summary>Effects and actions whose runs overlap, parked on gates the test opens.</summary>
 [BlexStoreAttribute(Name = "overlap")]
-public partial class OverlapStore
+internal partial class OverlapStore
 {
     [BlexStateAttribute] private int _count;
 
@@ -57,7 +57,7 @@ public partial class OverlapStore
 }
 
 [BlexStoreAttribute(Name = "strictOverlap", EnforceActions = true)]
-public partial class StrictOverlapStore
+internal partial class StrictOverlapStore
 {
     [BlexStateAttribute] private int _value;
 
@@ -159,7 +159,7 @@ public class OverlappingActionTests
         Assert.AreEqual(1000, store.Count);
 
         gate.SetResult();
-        await Task.Delay(50);   // the effect resumes on its own
+        await Task.Delay(50, TestContext.CancellationToken);   // the effect resumes on its own
 
         Assert.AreSequenceEqual(["overlap/KickOff", "overlap/Run"], recorded.Select(c => c.QualifiedName).ToArray());
         Assert.IsTrue(recorded[1].IsNested, "started from inside KickOff: a replay of KickOff runs it again");
@@ -200,4 +200,6 @@ public class OverlappingActionTests
         await load;
         Assert.AreEqual(1, store.Value, "the effect's own assignment, after its await, is still inside it");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

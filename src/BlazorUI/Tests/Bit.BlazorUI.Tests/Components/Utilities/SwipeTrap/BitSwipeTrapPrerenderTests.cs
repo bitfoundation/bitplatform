@@ -23,12 +23,12 @@ public class BitSwipeTrapPrerenderTests
             [nameof(BitSwipeTrap.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Swipe me")),
         });
 
-        StringAssert.Contains(html, "bit-stp-hrz");
-        StringAssert.Contains(html, @"role=""group""");
-        StringAssert.Contains(html, @"tabindex=""0""");
-        StringAssert.Contains(html, @"aria-keyshortcuts=""ArrowLeft ArrowRight""");
-        StringAssert.Contains(html, @"aria-label=""Swipe to dismiss""");
-        StringAssert.Contains(html, "Swipe me");
+        Assert.Contains("bit-stp-hrz", html);
+        Assert.Contains(@"role=""group""", html);
+        Assert.Contains(@"tabindex=""0""", html);
+        Assert.Contains(@"aria-keyshortcuts=""ArrowLeft ArrowRight""", html);
+        Assert.Contains(@"aria-label=""Swipe to dismiss""", html);
+        Assert.Contains("Swipe me", html);
     }
 
     [TestMethod]
@@ -36,7 +36,7 @@ public class BitSwipeTrapPrerenderTests
     {
         var html = await Prerenderer.RenderAsync<BitSwipeTrap>();
 
-        StringAssert.Contains(html, @"class=""bit-stp""");
+        Assert.Contains(@"class=""bit-stp""", html);
         Assert.DoesNotContain("tabindex", html);
         Assert.DoesNotContain("role=", html);
     }

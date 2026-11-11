@@ -39,9 +39,9 @@ public class BelemetryBrowserConfigFactoryTests
             o.Browser.PageRouteAssemblies.Add(typeof(Pipeline.BelemetryPageRoutesTests).Assembly);
         });
         var routes = Strings(config.GetProperty("pageViews").GetProperty("routes"));
-        CollectionAssert.AreEqual(new[] { "/orders/{id:int}", "/orders", "/Route-Test/Orders" }, routes.Take(3).ToArray());
+        Assert.AreSequenceEqual(new[] { "/orders/{id:int}", "/orders", "/Route-Test/Orders" }, routes.Take(3).ToArray());
         CollectionAssert.IsSubsetOf(new[] { "/route-test/orders/{id:int}", "/route-test/users/{name}" }, routes.Skip(3).ToArray(), "The discovered routes follow the configured ones.");
-        Assert.AreEqual(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase).Count(), "A discovered route configured already is listed once.");
+        Assert.HasCount(routes.Length, routes.Distinct(StringComparer.OrdinalIgnoreCase), "A discovered route configured already is listed once.");
 
         // A repeated start (a script started already) gets the configured routes and the assemblies' only: no scan of the app's references.
         var settings = TestHost.CreateSettings(o =>
@@ -60,7 +60,7 @@ public class BelemetryBrowserConfigFactoryTests
             o.Browser.PageRoutes.Add("/orders/{id:int}");
             o.Browser.DiscoverPageRoutes = true;
         });
-        CollectionAssert.AreEqual(new[] { "/orders/{id:int}" }, BelemetryBrowserConfigFactory.Create(withoutAssemblies, includeDiscoveredRoutes: false).PageViews.Routes!.ToArray());
+        Assert.AreSequenceEqual(new[] { "/orders/{id:int}" }, BelemetryBrowserConfigFactory.Create(withoutAssemblies, includeDiscoveredRoutes: false).PageViews.Routes!.ToArray());
 
         var withoutPageViews = Render(o =>
         {
@@ -74,7 +74,7 @@ public class BelemetryBrowserConfigFactoryTests
     private static string[] Strings(JsonElement element) => element.EnumerateArray().Select(e => e.GetString()!).ToArray();
 
     private static void AssertKeys(JsonElement element, params string[] expected) =>
-        CollectionAssert.AreEquivalent(expected, Keys(element), string.Join(",", Keys(element)));
+        Assert.AreSequenceEqual(expected, Keys(element), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, string.Join(",", Keys(element)));
 
     [TestMethod]
     public void Defaults_MatchTheContractKeyByKey()
@@ -113,7 +113,7 @@ public class BelemetryBrowserConfigFactoryTests
 
         var interactions = config.GetProperty("interactions");
         AssertKeys(interactions, "events", "captureText", "maxTextLength", "rageClicks");
-        CollectionAssert.AreEqual(new[] { "click" }, Strings(interactions.GetProperty("events")));
+        Assert.AreSequenceEqual(new[] { "click" }, Strings(interactions.GetProperty("events")));
         Assert.IsFalse(interactions.GetProperty("captureText").GetBoolean());
         Assert.AreEqual(64, interactions.GetProperty("maxTextLength").GetInt32());
         Assert.IsTrue(interactions.GetProperty("rageClicks").GetBoolean());
@@ -129,12 +129,12 @@ public class BelemetryBrowserConfigFactoryTests
         AssertKeys(dependencies, "fetch", "xhr", "propagateTraceContextTo", "ignoreUrls");
         Assert.IsTrue(dependencies.GetProperty("fetch").GetBoolean());
         Assert.IsTrue(dependencies.GetProperty("xhr").GetBoolean());
-        CollectionAssert.AreEqual(new[] { "same-origin" }, Strings(dependencies.GetProperty("propagateTraceContextTo")));
-        CollectionAssert.AreEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(dependencies.GetProperty("ignoreUrls")));
+        Assert.AreSequenceEqual(new[] { "same-origin" }, Strings(dependencies.GetProperty("propagateTraceContextTo")));
+        Assert.AreSequenceEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(dependencies.GetProperty("ignoreUrls")));
 
         var errors = config.GetProperty("errors");
         AssertKeys(errors, "ignoreMessages", "duplicateWindowMs", "maxPerMinute");
-        CollectionAssert.AreEqual(new[] { "ResizeObserver loop", @"^Script error\.?$" }, Strings(errors.GetProperty("ignoreMessages")));
+        Assert.AreSequenceEqual(new[] { "ResizeObserver loop", @"^Script error\.?$" }, Strings(errors.GetProperty("ignoreMessages")));
         Assert.IsTrue(Regex.IsMatch("Script error.", Strings(errors.GetProperty("ignoreMessages"))[1]), "The cross-origin error with nothing in it.");
         Assert.IsFalse(Regex.IsMatch("Script error in checkout.js", Strings(errors.GetProperty("ignoreMessages"))[1]));
         Assert.AreEqual(5000, errors.GetProperty("duplicateWindowMs").GetInt32());
@@ -143,19 +143,17 @@ public class BelemetryBrowserConfigFactoryTests
         var logs = config.GetProperty("logs");
         AssertKeys(logs, "captureConsole", "consoleLevels");
         Assert.IsFalse(logs.GetProperty("captureConsole").GetBoolean());
-        CollectionAssert.AreEqual(new[] { "error", "warn" }, Strings(logs.GetProperty("consoleLevels")));
+        Assert.AreSequenceEqual(new[] { "error", "warn" }, Strings(logs.GetProperty("consoleLevels")));
 
         var privacy = config.GetProperty("privacy");
         AssertKeys(privacy, "redactQueryParameters", "stripQueryString", "stripFragment", "scrubPatterns", "collectUserAgent", "blockedAttributes", "redactedAttributes");
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { "token", "code", "password", "pwd", "secret", "key", "apikey", "api_key", "auth", "authorization", "session", "sid", "sig", "signature",
                     "email", "access_token", "id_token", "refresh_token", "x-amz-signature", "x-amz-credential", "x-amz-security-token", "x-goog-signature",
-                    "x-goog-credential" },
-            Strings(privacy.GetProperty("redactQueryParameters")));
-        CollectionAssert.AreEqual(
+                    "x-goog-credential" }, Strings(privacy.GetProperty("redactQueryParameters")));
+        Assert.AreSequenceEqual(
             new[] { "password", "passwd", "pwd", "secret", "client_secret", "token", "access_token", "refresh_token", "id_token", "apikey", "api_key", "x-api-key",
-                    "authorization", "proxy-authorization", "cookie", "set-cookie" },
-            Strings(privacy.GetProperty("redactedAttributes")), "The same defaults as config.ts.");
+                    "authorization", "proxy-authorization", "cookie", "set-cookie" }, Strings(privacy.GetProperty("redactedAttributes")), "The same defaults as config.ts.");
         Assert.IsFalse(privacy.GetProperty("stripQueryString").GetBoolean());
         Assert.IsTrue(privacy.GetProperty("stripFragment").GetBoolean());
         Assert.IsTrue(privacy.GetProperty("scrubPatterns").GetBoolean());
@@ -223,7 +221,7 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual(0.25, config.GetProperty("sampling").GetProperty("sessionRatio").GetDouble());
         Assert.IsTrue(config.GetProperty("interactions").GetProperty("captureText").GetBoolean());
         Assert.IsTrue(config.GetProperty("privacy").GetProperty("stripQueryString").GetBoolean());
-        CollectionAssert.AreEqual(new[] { "tenant.secret" }, Strings(config.GetProperty("privacy").GetProperty("blockedAttributes")));
+        Assert.AreSequenceEqual(new[] { "tenant.secret" }, Strings(config.GetProperty("privacy").GetProperty("blockedAttributes")));
         Assert.AreEqual(15000, config.GetProperty("persistence").GetProperty("retryIntervalMs").GetInt32());
     }
 
@@ -285,8 +283,7 @@ public class BelemetryBrowserConfigFactoryTests
         });
 
         var exporters = config.GetProperty("exporters").EnumerateArray().ToList();
-        CollectionAssert.AreEqual(new[] { "otlp", "otlp", "azureMonitor", "console" }, exporters.Select(e => e.GetProperty("type").GetString()).ToArray(),
-                                  "Server-only, metrics-only and Entra ID exporters stay on the server.");
+        Assert.AreSequenceEqual(new[] { "otlp", "otlp", "azureMonitor", "console" }, exporters.Select(e => e.GetProperty("type").GetString()).ToArray(), "Server-only, metrics-only and Entra ID exporters stay on the server.");
 
         var otlp = exporters[0];
         AssertKeys(otlp, "type", "endpoint", "tracesEndpoint", "protocol", "headers", "compression", "signals");
@@ -354,7 +351,7 @@ public class BelemetryBrowserConfigFactoryTests
         TestHost.ApplyTestDefaults(options);
         options.AddSentryExporter("https://abc123@o1.ingest.sentry.io/42");
         var wasm = BelemetryBrowserConfigFactory.Create(new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser: true));
-        CollectionAssert.Contains(wasm.Dependencies.IgnoreUrls, Regex.Escape("https://o1.ingest.sentry.io/api/42/envelope/"));
+        Assert.Contains(Regex.Escape("https://o1.ingest.sentry.io/api/42/envelope/"), wasm.Dependencies.IgnoreUrls);
     }
 
     [TestMethod]
@@ -368,8 +365,8 @@ public class BelemetryBrowserConfigFactoryTests
             o.Browser.ConsoleLevels.AddRange(["error", "info"]);
         });
 
-        CollectionAssert.AreEqual(new[] { "click", "Submit" }, Strings(config.GetProperty("interactions").GetProperty("events")));
-        CollectionAssert.AreEqual(new[] { "error", "warn", "info" }, Strings(config.GetProperty("logs").GetProperty("consoleLevels")));
+        Assert.AreSequenceEqual(new[] { "click", "Submit" }, Strings(config.GetProperty("interactions").GetProperty("events")));
+        Assert.AreSequenceEqual(new[] { "error", "warn", "info" }, Strings(config.GetProperty("logs").GetProperty("consoleLevels")));
     }
 
     [TestMethod]
@@ -387,7 +384,7 @@ public class BelemetryBrowserConfigFactoryTests
         });
 
         var exporters = config.GetProperty("exporters").EnumerateArray().ToList();
-        Assert.HasCount(1, exporters, "A page cannot speak gRPC: without a BrowserEndpoint the exporter stays on the server.");
+        Assert.ContainsSingle(exporters, "A page cannot speak gRPC: without a BrowserEndpoint the exporter stays on the server.");
 
         // In WebAssembly the .NET pipeline cannot speak gRPC either: the exporter becomes OTLP/HTTP to its absolute
         // BrowserEndpoint, and one without is dropped with a warning.
@@ -411,8 +408,8 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, kept.Protocol);
         Assert.AreEqual(new Uri("https://aspire.test:21032"), kept.Endpoint);
         Assert.IsNull(kept.TracesEndpoint, "A per-signal gRPC address means nothing over HTTP to another host.");
-        Assert.HasCount(1, wasm.StartupWarnings);
-        StringAssert.Contains(wasm.StartupWarnings[0], "gRPC");
+        Assert.ContainsSingle(wasm.StartupWarnings);
+        Assert.Contains("gRPC", wasm.StartupWarnings[0]);
         var wasmConfig = BelemetryBrowserConfigFactory.Create(wasm);
         Assert.AreEqual("https://aspire.test:21032/", wasmConfig.Exporters.Single().Endpoint);
         Assert.AreEqual("http/protobuf", wasmConfig.Exporters.Single().Protocol);
@@ -420,7 +417,7 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual("http/protobuf", exporters[0].GetProperty("protocol").GetString());
 
         var ignored = Strings(config.GetProperty("dependencies").GetProperty("ignoreUrls"));
-        Assert.IsTrue(ignored.Any(u => u.Contains("TraceService/Export")), "The gRPC method URLs are export traffic too.");
+        Assert.Contains(u => u.Contains("TraceService/Export"), ignored, "The gRPC method URLs are export traffic too.");
     }
 
     [TestMethod]
@@ -483,7 +480,7 @@ public class BelemetryBrowserConfigFactoryTests
             Regex.Escape("https://westeurope-5.in.applicationinsights.azure.com/"),
             Regex.Escape("https://westeurope.livediagnostics.monitor.azure.com/"),
         };
-        CollectionAssert.AreEqual(expected, ignore, string.Join(" | ", ignore));
+        Assert.AreSequenceEqual(expected, ignore, string.Join(" | ", ignore));
         Assert.IsTrue(Regex.IsMatch("http://collector.test:4318/v1/traces", ignore[3]));
     }
 
@@ -522,12 +519,12 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.DoesNotContain("server-secret", json);
 
         var exporters = BelemetryBrowserConfigFactory.Create(settings).Exporters;
-        CollectionAssert.AreEquivalent(new Dictionary<string, string> { ["x-ingest-key"] = "public", ["x-shared"] = "browser" }, exporters[0].Headers);
+        Assert.AreSequenceEqual(new Dictionary<string, string> { ["x-ingest-key"] = "public", ["x-shared"] = "browser" }, exporters[0].Headers, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsNull(exporters[1].Headers);
 
         var warning = settings.StartupWarnings.Single();
-        StringAssert.Contains(warning, "https://other.test");
-        StringAssert.Contains(warning, "BrowserHeaders");
+        Assert.Contains("https://other.test", warning);
+        Assert.Contains("BrowserHeaders", warning);
     }
 
     [TestMethod]
@@ -549,7 +546,7 @@ public class BelemetryBrowserConfigFactoryTests
 
         var headers = BelemetryBrowserConfigFactory.Create(settings).Exporters.Single().Headers;
 
-        CollectionAssert.AreEquivalent(new Dictionary<string, string> { ["x-api-key"] = "k", ["x-shared"] = "browser" }, headers);
+        Assert.AreSequenceEqual(new Dictionary<string, string> { ["x-api-key"] = "k", ["x-shared"] = "browser" }, headers, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsEmpty(settings.StartupWarnings);
     }
 
@@ -568,7 +565,7 @@ public class BelemetryBrowserConfigFactoryTests
 
         Assert.DoesNotContain("otel-collector.internal", config.GetRawText());
         Assert.DoesNotContain("livediagnostics", config.GetRawText());
-        CollectionAssert.AreEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(config.GetProperty("dependencies").GetProperty("ignoreUrls")));
+        Assert.AreSequenceEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(config.GetProperty("dependencies").GetProperty("ignoreUrls")));
         Assert.AreEqual("https://public.test/", config.GetProperty("exporters")[0].GetProperty("endpoint").GetString());
     }
 
@@ -585,7 +582,7 @@ public class BelemetryBrowserConfigFactoryTests
         }, webHost: true);
 
         Assert.IsEmpty(settings.StartupWarnings, string.Join(" | ", settings.StartupWarnings));
-        Assert.IsFalse(BelemetryBrowserConfigFactory.Create(settings).Exporters.Any(e => e.Endpoint == "https://metrics.test/"), "A metrics-only exporter is not handed to the page.");
+        Assert.DoesNotContain(e => e.Endpoint == "https://metrics.test/", BelemetryBrowserConfigFactory.Create(settings).Exporters, "A metrics-only exporter is not handed to the page.");
 
         var relay = TestHost.CreateSettings(o =>
         {
@@ -633,14 +630,14 @@ public class BelemetryBrowserConfigFactoryTests
         // One for the first exporter's Headers, one per exporter for the user info; none repeats a credential.
         var warnings = settings.StartupWarnings;
         Assert.HasCount(4, warnings, string.Join(" | ", warnings));
-        Assert.IsFalse(warnings.Any(w => w.Contains("secret", StringComparison.Ordinal) || w.Contains('@', StringComparison.Ordinal)), string.Join(" | ", warnings));
+        Assert.DoesNotContain(w => w.Contains("secret", StringComparison.Ordinal) || w.Contains('@', StringComparison.Ordinal), warnings, string.Join(" | ", warnings));
         var userInfo = warnings.Where(w => w.Contains("user info", StringComparison.Ordinal)).ToArray();
         Assert.HasCount(3, userInfo);
-        StringAssert.Contains(userInfo[0], "#0 to https://collector.test:4318/");
-        StringAssert.Contains(userInfo[1], "#1 to https://plain.test/");
-        StringAssert.Contains(userInfo[2], "#2 to https://public.test/otlp");
-        StringAssert.Contains(userInfo[0], "Authorization");
-        StringAssert.Contains(warnings.Single(w => w.Contains("has Headers", StringComparison.Ordinal)), "#0 to https://collector.test:4318/");
+        Assert.Contains("#0 to https://collector.test:4318/", userInfo[0]);
+        Assert.Contains("#1 to https://plain.test/", userInfo[1]);
+        Assert.Contains("#2 to https://public.test/otlp", userInfo[2]);
+        Assert.Contains("Authorization", userInfo[0]);
+        Assert.Contains("#0 to https://collector.test:4318/", warnings.Single(w => w.Contains("has Headers", StringComparison.Ordinal)));
     }
 
     [TestMethod]

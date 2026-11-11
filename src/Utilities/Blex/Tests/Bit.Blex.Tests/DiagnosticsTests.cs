@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Bit.Blex.Query;
 using Microsoft.Extensions.DependencyInjection;
@@ -132,7 +132,7 @@ public class DiagnosticsTests
         await run;
 
         var span = recorder.Spans.Single(s => s.DisplayName == "failing/Watch");
-        Assert.AreEqual(true, span.GetTagItem("blex.cancelled"));
+        Assert.IsTrue((bool?)span.GetTagItem("blex.cancelled"));
         Assert.AreNotEqual(ActivityStatusCode.Error, span.Status);
         Assert.IsEmpty(recorder.Of("blex.action.errors", "failing"));
     }
@@ -174,8 +174,8 @@ public class DiagnosticsTests
         using var recorder = new Recorder();
         using var client = new BlexQueryClient(new BlexManager(), new BlexQueryClientOptions { RetryCount = 0 });
 
-        await client.FetchAsync<int>(["diag-orders", 42], _ => Task.FromResult(1));
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.FetchAsync<int>(["diag-orders", 43], _ => throw new InvalidOperationException()));
+        await client.FetchAsync<int>(["diag-orders", 42], _ => Task.FromResult(1), cancellationToken: TestContext.CancellationToken);
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => client.FetchAsync<int>(["diag-orders", 43], _ => throw new InvalidOperationException(), cancellationToken: TestContext.CancellationToken));
 
         var spans = recorder.Spans.Where(s => s.DisplayName == "query diag-orders").ToList();
         Assert.HasCount(2, spans);
@@ -185,8 +185,10 @@ public class DiagnosticsTests
         lock (recorder.Measurements)
             fetches = [.. recorder.Measurements.Where(m => m.Instrument == "blex.query.fetches" && Equals(m.Tags["blex.query.resource"], "diag-orders"))];
 
-        CollectionAssert.AreEquivalent(new[] { "success", "error" }, fetches.Select(f => (string)f.Tags["blex.query.outcome"]!).ToArray());
+        Assert.AreSequenceEqual(new[] { "success", "error" }, fetches.Select(f => (string)f.Tags["blex.query.outcome"]!).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary><see cref="BlexOptions.UseLogging"/>: actions and failures through the host's ILogger.</summary>
@@ -254,7 +256,8 @@ public class LoggingTests
 
         var entry = logs.Entries.Single(e => e.Id.Name == "BlexActionFailed");
         Assert.AreEqual(LogLevel.Error, entry.Level);
-        Assert.AreEqual("sync-boom", entry.Exception?.Message);
+        var actualValue = entry.Exception?.Message;
+        Assert.AreEqual("sync-boom", actualValue);
     }
 
     [TestMethod]
@@ -267,7 +270,8 @@ public class LoggingTests
 
         var entry = logs.Entries.Single(e => e.Id.Name == "BlexIsolatedFailure");
         Assert.AreEqual(LogLevel.Warning, entry.Level);
-        Assert.AreEqual("bad subscriber", entry.Exception?.Message);
+        var actualValue = entry.Exception?.Message;
+        Assert.AreEqual("bad subscriber", actualValue);
         Assert.ContainsSingle(errors);
     }
 
@@ -278,7 +282,7 @@ public class LoggingTests
 
         counter.Increment();
 
-        Assert.IsFalse(logs.Entries.Any(e => e.Id.Name == "BlexAction"));
+        Assert.DoesNotContain(e => e.Id.Name == "BlexAction", logs.Entries);
     }
 
     [TestMethod]

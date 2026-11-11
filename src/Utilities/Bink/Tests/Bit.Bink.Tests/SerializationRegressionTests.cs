@@ -19,7 +19,7 @@ public class SerializationRegressionTests(TestContext output)
         string valid = BinkSerializer.Serialize(TestData.SampleDocument());
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(valid);
         int at = valid.IndexOf("Drawing", StringComparison.Ordinal);
-        Assert.IsTrue(at > 0);
+        Assert.IsGreaterThan(0, at);
         bytes[at] = 0xC3;
         bytes[at + 1] = 0x28;
 
@@ -181,9 +181,9 @@ public class SerializationRegressionTests(TestContext output)
             output.WriteLine($"{region}: viewBox={viewBox} width={xml.DocumentElement.GetAttribute("width")}");
             Assert.IsFalse(string.IsNullOrWhiteSpace(viewBox));
             string[] parts = viewBox.Split(' ');
-            Assert.AreEqual(4, parts.Length);
-            Assert.IsTrue(float.Parse(parts[2], CultureInfo.InvariantCulture) > 0);
-            Assert.IsTrue(float.Parse(parts[3], CultureInfo.InvariantCulture) > 0);
+            Assert.HasCount(4, parts);
+            Assert.IsGreaterThan(0, float.Parse(parts[2], CultureInfo.InvariantCulture));
+            Assert.IsGreaterThan(0, float.Parse(parts[3], CultureInfo.InvariantCulture));
             Assert.DoesNotContain("NaN", svg, StringComparison.Ordinal);
             Assert.DoesNotContain("Infinity", svg, StringComparison.Ordinal);
             Assert.DoesNotContain("E+", svg, StringComparison.Ordinal);
@@ -209,7 +209,7 @@ public class SerializationRegressionTests(TestContext output)
                 BinkPngCodec.DecodedImage image = BinkPngCodec.Decode(copy);
                 decoded++;
                 Assert.IsTrue(image.Width > 0 && image.Height > 0);
-                Assert.AreEqual(image.Width * image.Height * 4, image.Rgba.Length);
+                Assert.HasCount(image.Width * image.Height * 4, image.Rgba);
             }
             catch (FormatException)
             {
@@ -261,7 +261,7 @@ public class SerializationRegressionTests(TestContext output)
                 output.WriteLine($"{data.Length} bytes rejected: {ex.Message}");
             }
             clock.Stop();
-            Assert.IsTrue(clock.Elapsed.TotalSeconds < 5, $"decoding {data.Length} bytes took {clock.Elapsed.TotalSeconds:0.0} s");
+            Assert.IsLessThan(5, clock.Elapsed.TotalSeconds, $"decoding {data.Length} bytes took {clock.Elapsed.TotalSeconds:0.0} s");
         }
     }
 }

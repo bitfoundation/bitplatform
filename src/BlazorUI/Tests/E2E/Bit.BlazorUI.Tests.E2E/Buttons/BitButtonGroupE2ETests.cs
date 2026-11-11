@@ -116,7 +116,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         var icon = ItemAt("grp-icon", 0).Locator("i.bit-btg-ico");
         await Expect(icon).ToHaveClassAsync(HasClass("bit-icon--Add"));
         await Expect(icon).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue((await icon.BoxAsync()).X < (await ItemAt("grp-icon", 0).Locator(".bit-btg-btx").BoxAsync()).X);
+        Assert.IsLessThan((await ItemAt("grp-icon", 0).Locator(".bit-btg-btx").BoxAsync()).X, (await icon.BoxAsync()).X);
 
         await Expect(Group("grp-icononly")).ToHaveClassAsync(HasClass("bit-btg-ion"));
         await Expect(Group("grp-icononly").Locator(".bit-btg-btx")).ToHaveCountAsync(0);
@@ -129,7 +129,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         var reversed = ItemAt("grp-reversed", 0);
         await Expect(reversed).ToHaveClassAsync(HasClass("bit-btg-rvi"));
         await Expect(reversed).ToHaveCSSAsync("flex-direction", "row-reverse");
-        Assert.IsTrue((await reversed.Locator(".bit-btg-ico").BoxAsync()).X > (await reversed.Locator(".bit-btg-btx").BoxAsync()).X);
+        Assert.IsGreaterThan((await reversed.Locator(".bit-btg-btx").BoxAsync()).X, (await reversed.Locator(".bit-btg-ico").BoxAsync()).X);
         await Expect(ItemAt("grp-reversed", 2)).Not.ToHaveClassAsync(HasClass("bit-btg-rvi"));
     }
 
@@ -507,7 +507,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await Expect(Text("links-key")).ToHaveTextAsync("docs");
         await Expect(ItemAt("grp-links-toggle", 1)).ToBeFocusedAsync();
         Assert.AreEqual(url, Page.Url, "Selecting a radio link does not navigate.");
-        Assert.AreEqual(1, Page.Context.Pages.Count, "Selecting a radio link opens no tab.");
+        Assert.ContainsSingle(Page.Context.Pages, "Selecting a radio link opens no tab.");
     }
 
     [TestMethod]
@@ -688,7 +688,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await Expect(group).ToHaveAttributeAsync("aria-orientation", "vertical");
         var first = await ItemAt("grp-vertical", 0).BoxAsync();
         var second = await ItemAt("grp-vertical", 1).BoxAsync();
-        Assert.IsTrue(second.Y >= first.Y + first.Height - 1, "The buttons are stacked.");
+        Assert.IsGreaterThanOrEqualTo(first.Y + first.Height - 1, second.Y, "The buttons are stacked.");
         ButtonsE2EHelpers.AreClose(first.X, second.X, 0.5, "The buttons share a column");
 
         await ItemAt("grp-vertical", 0).FocusAsync();
@@ -763,16 +763,16 @@ public class BitButtonGroupE2ETests : E2ETestBase
 
         await Expect(Group("grp-fullwidth")).ToHaveClassAsync(HasClass("bit-btg-flw"));
         ButtonsE2EHelpers.AreClose(500, (await Group("grp-fullwidth").BoxAsync()).Width, 0.5, "full width");
-        Assert.IsTrue((await Group("grp-not-fullwidth").BoxAsync()).Width < 400);
+        Assert.IsLessThan(400, (await Group("grp-not-fullwidth").BoxAsync()).Width);
 
         await Expect(Group("grp-justified")).ToHaveClassAsync(HasClass("bit-btg-jst"));
         var widths = new List<double>();
         for (var i = 0; i < 3; i++) widths.Add((await ItemAt("grp-justified", i).BoxAsync()).Width);
-        Assert.IsTrue(widths.Max() - widths.Min() <= 1.5, $"Justified buttons share the width evenly ({string.Join(", ", widths)}).");
+        Assert.IsLessThanOrEqualTo(1.5, widths.Max() - widths.Min(), $"Justified buttons share the width evenly ({string.Join(", ", widths)}).");
 
         var uneven = new List<double>();
         for (var i = 0; i < 3; i++) uneven.Add((await ItemAt("grp-unjustified", i).BoxAsync()).Width);
-        Assert.IsTrue(uneven.Max() - uneven.Min() > 20, "Without Justified the buttons follow their content.");
+        Assert.IsGreaterThan(20, uneven.Max() - uneven.Min(), "Without Justified the buttons follow their content.");
     }
 
     [TestMethod]
@@ -790,7 +790,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         Assert.AreEqual(buttonRadius, await ItemAt("grp-detached", 1).PxAsync("border-top-left-radius"), "each detached button has its own corners");
         var first = await ItemAt("grp-detached", 0).BoxAsync();
         var second = await ItemAt("grp-detached", 1).BoxAsync();
-        Assert.IsTrue(second.X - (first.X + first.Width) > 2, "Detached buttons are apart.");
+        Assert.IsGreaterThan(2, second.X - (first.X + first.Width), "Detached buttons are apart.");
 
         await Expect(Group("grp-detached-gap")).ToHaveAttributeAsync("style", new Regex("--bit-ButtonGroup-gap:\\s*24px"));
         await Expect(Group("grp-detached-gap")).ToHaveCSSAsync("column-gap", "24px");
@@ -820,7 +820,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         {
             case "grp-wrap":
                 await Expect(group).ToHaveCSSAsync("flex-wrap", "wrap");
-                Assert.IsTrue((await group.BoxAsync()).Height > (await Group("grp-clip").BoxAsync()).Height * 2, "Wrap breaks the buttons onto more rows.");
+                Assert.IsGreaterThan((await Group("grp-clip").BoxAsync()).Height * 2, (await group.BoxAsync()).Height, "Wrap breaks the buttons onto more rows.");
                 break;
             case "grp-scroll":
             case "grp-scrollbar":
@@ -831,7 +831,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
                     await Expect(group).ToHaveCSSAsync("scrollbar-width", id == "grp-scroll" ? "none" : "thin");
                 }
                 await group.EvaluateAsync("el => el.scrollLeft = 100");
-                Assert.IsTrue(await group.EvaluateAsync<double>("el => el.scrollLeft") > 0, "The row scrolls.");
+                Assert.IsGreaterThan(0, await group.EvaluateAsync<double>("el => el.scrollLeft"), "The row scrolls.");
                 await ItemAt(id, 7).FocusAsync();
                 await ItemAt(id, 7).ScrollIntoViewIfNeededAsync();
                 await Expect(ItemAt(id, 7)).ToBeInViewportAsync();
@@ -1089,7 +1089,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
             await Expect(Group(id)).ToHaveClassAsync(HasClass("bit-rtl"));
         }
 
-        Assert.IsTrue((await ItemAt(id, 0).BoxAsync()).X > (await ItemAt(id, 1).BoxAsync()).X, "The first button is on the right.");
+        Assert.IsGreaterThan((await ItemAt(id, 1).BoxAsync()).X, (await ItemAt(id, 0).BoxAsync()).X, "The first button is on the right.");
 
         await ItemAt(id, 0).FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
@@ -1138,11 +1138,11 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await OpenAsync(ItemsApi);
 
         var full = ButtonsE2EHelpers.ParseSeconds(await ItemAt("motion-default", 0).StyleAsync("transition-duration"));
-        Assert.IsTrue(full >= 0.05);
+        Assert.IsGreaterThanOrEqualTo(0.05, full);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        Assert.IsTrue(ButtonsE2EHelpers.ParseSeconds(await ItemAt("motion-default", 0).StyleAsync("transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, ButtonsE2EHelpers.ParseSeconds(await ItemAt("motion-default", 0).StyleAsync("transition-duration")));
         Assert.AreEqual(full, ButtonsE2EHelpers.ParseSeconds(await ItemAt("motion-forced", 0).StyleAsync("transition-duration")), 0.0001);
     }
 
@@ -1168,7 +1168,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Matches(html, new Regex(@"<div id=""grp-basic"" role=""toolbar"" class=""[^""]*\bbit-btg\b"));
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex(@"<div id=""grp-basic"" role=""toolbar"" class=""[^""]*\bbit-btg\b"), html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 }

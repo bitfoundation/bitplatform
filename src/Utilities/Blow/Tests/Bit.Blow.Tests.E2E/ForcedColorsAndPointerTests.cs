@@ -45,8 +45,8 @@ public sealed class ForcedColorsAndPointerTests : BlowTest
         Assert.AreEqual("true", styles["forced"], "forced colours were not emulated");
         // The badge is drawn in the system's text colour, and its glyph - the shape - is still there.
         Assert.AreEqual(styles["canvasText"], styles["failedBadge"]);
-        StringAssert.Contains(styles["failedGlyph"], "✕");
-        StringAssert.Contains(styles["skippedGlyph"], "–");
+        Assert.Contains("✕", styles["failedGlyph"]);
+        Assert.Contains("–", styles["skippedGlyph"]);
     }
 
     [TestMethod]
@@ -79,6 +79,6 @@ public sealed class ForcedColorsAndPointerTests : BlowTest
 
         await EventuallyAsync(async () => Math.Abs((await NodeBoxAsync(page, "2")).Y - (before.Y + 20 * zoom)) < 0.5, "Move down moved the node");
         AssertNear(before.X + 20 * zoom, (await NodeBoxAsync(page, "2")).X, 0.5, "Move right moved the node");
-        StringAssert.Contains(await page.Locator(".bit-blow-a11y-live").First.TextContentAsync(), "moved");
+        Assert.Contains("moved", (await page.Locator(".bit-blow-a11y-live").First.TextContentAsync())!);
     }
 }

@@ -56,11 +56,11 @@ public class BitDropMenuE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"dm-basic\"");
-        StringAssert.Contains(html, "bit-drm-btn");
-        StringAssert.Contains(html, "Quick settings");
-        StringAssert.Contains(html, "aria-haspopup=\"dialog\"");
-        StringAssert.Contains(html, ">Loading<");
+        Assert.Contains("id=\"dm-basic\"", html);
+        Assert.Contains("bit-drm-btn", html);
+        Assert.Contains("Quick settings", html);
+        Assert.Contains("aria-haspopup=\"dialog\"", html);
+        Assert.Contains(">Loading<", html);
 
         await OpenAsync(Url);
         Assert.IsFalse(await IsCircuitDeadAsync());
@@ -222,7 +222,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         var fit = await BoxAsync(Root("dm-fit-width"));
 
         Assert.AreEqual(container.Width, full.Width, 1);
-        Assert.IsTrue(fit.Width < container.Width / 2, $"A drop menu without FullWidth fits its content ({fit.Width}px).");
+        Assert.IsLessThan(container.Width / 2, fit.Width, $"A drop menu without FullWidth fits its content ({fit.Width}px).");
     }
 
     [TestMethod]
@@ -253,7 +253,7 @@ public class BitDropMenuE2ETests : E2ETestBase
 
         // The icon actually renders a glyph of the icon font.
         var font = await ComputedStyleAsync("#dm-icon .bit-drm-icn", "font-family");
-        StringAssert.Contains(font.ToLowerInvariant(), "fabric");
+        Assert.Contains("fabric", font.ToLowerInvariant());
     }
 
     [TestMethod]
@@ -448,14 +448,14 @@ public class BitDropMenuE2ETests : E2ETestBase
         await WaitSettledAsync(matched);
         var root = await BoxAsync(Root("dm-match-width"));
         var box = await BoxAsync(matched);
-        Assert.IsTrue(box.Width >= root.Width - 1, $"MatchWidth: callout {box.Width}px, button {root.Width}px.");
+        Assert.IsGreaterThanOrEqualTo(root.Width - 1, box.Width, $"MatchWidth: callout {box.Width}px, button {root.Width}px.");
         await Page.Keyboard.PressAsync("Escape");
         await Expect(matched).ToBeHiddenAsync();
 
         var unmatched = await OpenMenuAsync("dm-no-match-width");
         var other = await BoxAsync(Root("dm-no-match-width"));
         var otherBox = await BoxAsync(unmatched);
-        Assert.IsTrue(otherBox.Width < other.Width / 2, $"Without MatchWidth the callout fits its content ({otherBox.Width}px).");
+        Assert.IsLessThan(other.Width / 2, otherBox.Width, $"Without MatchWidth the callout fits its content ({otherBox.Width}px).");
     }
 
     [TestMethod]
@@ -469,14 +469,14 @@ public class BitDropMenuE2ETests : E2ETestBase
         await Expect(width).ToBeHiddenAsync();
 
         var min = await OpenMenuAsync("dm-min-width");
-        Assert.IsTrue((await BoxAsync(min)).Width >= 255, "MinWidth=16rem keeps a short content's callout 16rem wide.");
+        Assert.IsGreaterThanOrEqualTo(255, (await BoxAsync(min)).Width, "MinWidth=16rem keeps a short content's callout 16rem wide.");
         await Page.Keyboard.PressAsync("Escape");
         await Expect(min).ToBeHiddenAsync();
 
         var max = await OpenMenuAsync("dm-max-width");
         var maxBox = await BoxAsync(max);
-        Assert.IsTrue(maxBox.Width <= 257, $"MaxWidth=16rem caps the callout ({maxBox.Width}px).");
-        Assert.IsTrue(maxBox.Height > 40, "The long content wraps onto several lines instead.");
+        Assert.IsLessThanOrEqualTo(257, maxBox.Width, $"MaxWidth=16rem caps the callout ({maxBox.Width}px).");
+        Assert.IsGreaterThan(40, maxBox.Height, "The long content wraps onto several lines instead.");
     }
 
     [TestMethod]
@@ -487,7 +487,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         var callout = await OpenMenuAsync("dm-max-height");
 
         await Expect(callout).ToHaveClassAsync(HasClass("bit-drm-mxh"));
-        Assert.IsTrue((await BoxAsync(callout)).Height <= 161, "MaxHeight=10rem.");
+        Assert.IsLessThanOrEqualTo(161, (await BoxAsync(callout)).Height, "MaxHeight=10rem.");
         Assert.IsTrue(await callout.EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight + 10"), "The rest of the content scrolls.");
 
         await callout.EvaluateAsync("el => el.scrollTop = el.scrollHeight");
@@ -582,7 +582,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         await Expect(callout).ToHaveAttributeAsync("data-bit-cal-pos", "right");
         var root = await BoxAsync(Root("dm-drop-direction"));
         var beside = await BoxAsync(callout);
-        Assert.IsTrue(beside.X >= root.X + root.Width - 1, "Placed to the right of the button.");
+        Assert.IsGreaterThanOrEqualTo(root.X + root.Width - 1, beside.X, "Placed to the right of the button.");
     }
 
     [TestMethod]
@@ -625,7 +625,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         await Button("dm-hover-delay").HoverAsync();
         Assert.AreEqual("false", await Button("dm-hover-delay").GetAttributeAsync("aria-expanded"), "Not open as soon as the pointer arrives.");
         await Expect(callout).ToBeVisibleAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 550, $"HoverOpenDelay=600 (opened after {watch.ElapsedMilliseconds}ms).");
+        Assert.IsGreaterThanOrEqualTo(550, watch.ElapsedMilliseconds, $"HoverOpenDelay=600 (opened after {watch.ElapsedMilliseconds}ms).");
 
         // Restarted ahead of the move that starts the HoverCloseDelay, so the time the move takes to come back is not
         // taken off what is measured.
@@ -634,7 +634,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         await Expect(callout).ToBeVisibleAsync();
         Assert.AreEqual("true", await Button("dm-hover-delay").GetAttributeAsync("aria-expanded"), "Still open as soon as the pointer leaves.");
         await Expect(callout).ToBeHiddenAsync();
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 800, $"HoverCloseDelay=900 (closed after {watch.ElapsedMilliseconds}ms).");
+        Assert.IsGreaterThanOrEqualTo(800, watch.ElapsedMilliseconds, $"HoverCloseDelay=900 (closed after {watch.ElapsedMilliseconds}ms).");
     }
 
     [TestMethod]
@@ -1092,16 +1092,16 @@ public class BitDropMenuE2ETests : E2ETestBase
         switch (size)
         {
             case "Small":
-                Assert.IsTrue(heights["Small"] < heights["Medium"], $"Small {heights["Small"]} < Medium {heights["Medium"]}.");
-                Assert.IsTrue(fonts["Small"] < fonts["Medium"]);
+                Assert.IsLessThan(heights["Medium"], heights["Small"], $"Small {heights["Small"]} < Medium {heights["Medium"]}.");
+                Assert.IsLessThan(fonts["Medium"], fonts["Small"]);
                 break;
             case "Medium":
                 Assert.AreEqual(heights["none"], heights["Medium"], 0.5, "An unset Size is the medium one.");
                 Assert.AreEqual(fonts["none"], fonts["Medium"], 0.1);
                 break;
             default:
-                Assert.IsTrue(heights["Large"] > heights["Medium"], $"Large {heights["Large"]} > Medium {heights["Medium"]}.");
-                Assert.IsTrue(fonts["Large"] > fonts["Medium"]);
+                Assert.IsGreaterThan(heights["Medium"], heights["Large"], $"Large {heights["Large"]} > Medium {heights["Medium"]}.");
+                Assert.IsGreaterThan(fonts["Medium"], fonts["Large"]);
                 break;
         }
     }
@@ -1184,7 +1184,7 @@ public class BitDropMenuE2ETests : E2ETestBase
 
         await Page.Locator("#btn-visibility-hidden").ClickAsync();
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(root)).Width > 0, "A hidden drop menu keeps its room.");
+        Assert.IsGreaterThan(0, (await BoxAsync(root)).Width, "A hidden drop menu keeps its room.");
 
         await Page.Locator("#btn-visibility-collapsed").ClickAsync();
         await Expect(root).ToHaveCSSAsync("display", "none");
@@ -1203,7 +1203,7 @@ public class BitDropMenuE2ETests : E2ETestBase
         var root = Root("dm-css-vars");
         await Expect(root).ToHaveCSSAsync("border-top-left-radius", "999px");
         await Expect(root).ToHaveCSSAsync("background-color", "rgb(200, 100, 50)");
-        Assert.IsTrue((await BoxAsync(root)).Height >= 49.5, "--bit-DropMenu-min-height: 50px.");
+        Assert.IsGreaterThanOrEqualTo(49.5, (await BoxAsync(root)).Height, "--bit-DropMenu-min-height: 50px.");
 
         var callout = await OpenMenuAsync("dm-css-vars");
         // The callout is moved to the body, yet it keeps inheriting from the ancestor.
@@ -1242,7 +1242,7 @@ public class BitDropMenuE2ETests : E2ETestBase
 
         var icon = await BoxAsync(root.Locator(".bit-drm-icn"));
         var text = await BoxAsync(root.Locator(".bit-drm-txt"));
-        Assert.IsTrue(icon.X > text.X, "The leading icon sits on the right, right to left.");
+        Assert.IsGreaterThan(text.X, icon.X, "The leading icon sits on the right, right to left.");
 
         var callout = await OpenMenuAsync("dm-rtl");
         await WaitSettledAsync(callout);
@@ -1265,7 +1265,7 @@ public class BitDropMenuE2ETests : E2ETestBase
 
         var icon = await BoxAsync(root.Locator(".bit-drm-icn"));
         var text = await BoxAsync(root.Locator(".bit-drm-txt"));
-        Assert.IsTrue(icon.X > text.X, "The leading icon sits on the right in an rtl ancestor.");
+        Assert.IsGreaterThan(text.X, icon.X, "The leading icon sits on the right in an rtl ancestor.");
 
         var callout = await OpenMenuAsync("dm-rtl-inherited");
         await WaitSettledAsync(callout);
@@ -1375,19 +1375,19 @@ public class BitDropMenuE2ETests : E2ETestBase
             case "top":
                 Assert.AreEqual(0, box.Y, 2);
                 Assert.AreEqual(400, box.Width, 2);
-                Assert.IsTrue(box.Height < 800, "A sheet is as tall as its content.");
+                Assert.IsLessThan(800, box.Height, "A sheet is as tall as its content.");
                 break;
             default:
                 Assert.AreEqual(800, box.Y + box.Height, 2);
                 Assert.AreEqual(400, box.Width, 2);
-                Assert.IsTrue(box.Height < 800, "A sheet is as tall as its content.");
+                Assert.IsLessThan(800, box.Height, "A sheet is as tall as its content.");
                 break;
         }
 
         // The scroll container is capped to the room the screen leaves where the panel comes to rest, not where its
         // slide had carried it when it was measured - a bottom sheet measured from below the screen would get none.
         var list = await BoxAsync(callout.Locator("#responsive-list"));
-        Assert.IsTrue(list.Height > 150, $"The content of the panel shows ({list.Height}px).");
+        Assert.IsGreaterThan(150, list.Height, $"The content of the panel shows ({list.Height}px).");
         await Expect(callout.GetByText("Row 5", new() { Exact = true })).ToBeVisibleAsync();
     }
 
@@ -1416,11 +1416,11 @@ public class BitDropMenuE2ETests : E2ETestBase
         var root = await BoxAsync(Root("dm-responsive"));
         var box = await BoxAsync(callout);
         Assert.AreEqual(root.X, box.X, 2);
-        Assert.IsTrue(box.Height < 600, "Not a full-height panel.");
+        Assert.IsLessThan(600, box.Height, "Not a full-height panel.");
 
         // ScrollContainerId names the part of the content the placement caps to the room the viewport leaves.
         var cap = await Page.Locator("#responsive-list").EvaluateAsync<string>("el => el.style.maxHeight");
-        StringAssert.EndsWith(cap, "px", $"The scroll container is capped in pixels ({cap}).");
+        Assert.EndsWith("px", cap, $"The scroll container is capped in pixels ({cap}).");
     }
 
     [TestMethod]

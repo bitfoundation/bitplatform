@@ -43,7 +43,7 @@ public class BlowCanvasTests : BunitContext
 
         var cut = Render(nodes, edges);
 
-        Assert.AreEqual(2, cut.FindAll(".bit-blow-node").Count);
+        Assert.HasCount(2, cut.FindAll(".bit-blow-node"));
         Assert.ContainsSingle(cut.FindAll(".bit-blow-edge"));
     }
 
@@ -136,7 +136,7 @@ public class BlowCanvasTests : BunitContext
 
         var cut = Render([a, b]);
 
-        Assert.AreEqual(2, cut.FindAll(".bit-blow-node").Count);
+        Assert.HasCount(2, cut.FindAll(".bit-blow-node"));
     }
 
     [TestMethod]
@@ -464,7 +464,8 @@ public class BlowCanvasTests : BunitContext
         Assert.ContainsSingle(edges);
         Assert.AreEqual("a", edges[0].Source);
         Assert.AreEqual("b", edges[0].Target);
-        Assert.AreEqual("a", connected?.Source);
+        var actualValue = connected?.Source;
+        Assert.AreEqual("a", actualValue);
     }
 
     [TestMethod]

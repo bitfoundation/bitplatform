@@ -220,7 +220,7 @@ public class CollaborationConvergenceTests
         await using var sz = new BinkCollaborationSession(zoe, tz, "zoe");
         using var history = new BinkHistoryManager(zoe);
 
-        await sz.RequestSnapshotAsync();
+        await sz.RequestSnapshotAsync(TestContext.CancellationToken);
         await ta.DeliverAsync(tz.Sent[0]);
         BinkCollaborationMessage answer = Assert.ContainsSingle(ta.Sent);
 
@@ -232,7 +232,7 @@ public class CollaborationConvergenceTests
         Assert.AreEqual(2, alex.ElementCount);
         Assert.AreSequenceEqual(Ids(alex), Ids(zoe));
         // The replay is a remote change: it is not sent again and does not enter the undo history.
-        Assert.AreEqual(sent, tz.Sent.Count);
+        Assert.HasCount(sent, tz.Sent);
         Assert.AreEqual(1, history.UndoCount);
     }
 
@@ -248,7 +248,7 @@ public class CollaborationConvergenceTests
         await using var ss = new BinkCollaborationSession(sam, ts, "sam");
         await using var sz = new BinkCollaborationSession(zoe, tz, "zoe");
 
-        await sz.RequestSnapshotAsync();
+        await sz.RequestSnapshotAsync(TestContext.CancellationToken);
         await ta.DeliverAsync(Assert.ContainsSingle(tz.Sent));
         BinkCollaborationMessage answer = Assert.ContainsSingle(ta.Sent);
 
@@ -274,7 +274,7 @@ public class CollaborationConvergenceTests
         await using var sa = new BinkCollaborationSession(alex, ta, "alex");
         await using var ss = new BinkCollaborationSession(sam, ts, "sam");
 
-        await sa.SendSnapshotAsync();
+        await sa.SendSnapshotAsync(TestContext.CancellationToken);
         alex.AddElement(Stroke(0));
         BinkCollaborationMessage snapshot = ta.Sent[0];
         BinkCollaborationMessage edit = ta.Sent[1];
@@ -413,7 +413,8 @@ public class CollaborationConvergenceTests
         BinkPresenceState stored = Assert.ContainsSingle(session.Participants);
         Assert.AreEqual("sam", stored.ParticipantId);
         Assert.AreEqual(clock.Now, stored.Timestamp);
-        Assert.AreEqual("sam", reported?.ParticipantId);
+        var actualValue = reported?.ParticipantId;
+        Assert.AreEqual("sam", actualValue);
 
         await transport.DeliverAsync(new BinkCollaborationMessage
         {
@@ -457,7 +458,7 @@ public class CollaborationConvergenceTests
         BinkPresenceState stored = Assert.ContainsSingle(session.Participants);
         Assert.IsLessThanOrEqualTo(10_000, stored.LiveStroke!.Count);
         Assert.IsTrue(stored.LiveStroke.All(p => float.IsFinite(p.X) && float.IsFinite(p.Y)));
-        Assert.AreEqual(50, stored.Selection!.Count);
+        Assert.HasCount(50, stored.Selection!);
         Assert.IsNull(stored.Cursor);
         Assert.IsTrue(float.IsFinite(stored.LiveStrokeBounds.Width));
     }
@@ -476,7 +477,7 @@ public class CollaborationConvergenceTests
         BinkDrawingOperation? applied = null;
         sam.Changed += (_, e) => applied ??= e.Operation;
 
-        await sa.SendSnapshotAsync();
+        await sa.SendSnapshotAsync(TestContext.CancellationToken);
         await ts.DeliverAsync(Assert.ContainsSingle(ta.Sent));
 
         Guid[] removed = ((BinkBatchOperation)applied!).Operations.OfType<BinkRemoveElementOperation>().Select(r => r.ElementId).ToArray();
@@ -515,16 +516,16 @@ public class CollaborationConvergenceTests
         Assert.AreEqual(3, session.PendingCount);
 
         transport.IsConnected = true;
-        Task flush = session.FlushAsync();
+        Task flush = session.FlushAsync(TestContext.CancellationToken);
         document.AddElement(Stroke(3));
         transport.Open();
         await flush;
-        await session.FlushAsync();
+        await session.FlushAsync(TestContext.CancellationToken);
 
         long[] sent = transport.Sent.Select(m => m.Sequence).ToArray();
         Assert.HasCount(4, sent);
         Assert.AreSequenceEqual(sent.Order().ToArray(), sent);
-        Assert.AreEqual(4, sent.Distinct().Count());
+        Assert.HasCount(4, sent.Distinct());
         Assert.AreEqual(0, session.PendingCount);
     }
 
@@ -547,6 +548,8 @@ public class CollaborationConvergenceTests
         await ts.DeliverAsync(Assert.ContainsSingle(ta.Sent));
         await ta.DeliverAsync(Assert.ContainsSingle(ts.Sent));
 
-        CollectionAssert.AreNotEqual(Ids(alex), Ids(sam));
+        Assert.AreNotSequenceEqual(Ids(alex), Ids(sam));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

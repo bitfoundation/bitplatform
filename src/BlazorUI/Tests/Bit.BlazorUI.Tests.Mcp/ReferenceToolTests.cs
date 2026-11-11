@@ -24,7 +24,7 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.StartsWith(answer, "# BitColor");
+        Assert.StartsWith("# BitColor", answer);
         Assert.IsGreaterThan(10, values.Length, "BitColor lost most of its values.");
 
         foreach (var row in values)
@@ -59,7 +59,7 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "void Add(object? value, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)");
+        Assert.Contains("void Add(object? value, Type valueType, string? name = null, bool isFixed = false, bool enabled = true)", answer);
         Assert.DoesNotContain("= False", answer, "A bool default is written as .NET prints it rather than as C# declares it.");
         Assert.DoesNotContain("= True", answer, "A bool default is written as .NET prints it rather than as C# declares it.");
     }
@@ -71,8 +71,8 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.StartsWith(answer, "# BitCss.Var.Color.Primary");
-        StringAssert.Contains(answer, "--bit-clr-pri", "The CSS custom property the constant holds is missing, and it is the value the whole type exists for.");
+        Assert.StartsWith("# BitCss.Var.Color.Primary", answer);
+        Assert.Contains("--bit-clr-pri", answer, "The CSS custom property the constant holds is missing, and it is the value the whole type exists for.");
     }
 
     [TestMethod]
@@ -84,14 +84,14 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(root, "`BitCss.Var`", "BitCss does not name the branches it is organised into.");
-        StringAssert.Contains(root, "`BitCss.Class`");
+        Assert.Contains("`BitCss.Var`", root, "BitCss does not name the branches it is organised into.");
+        Assert.Contains("`BitCss.Class`", root);
 
         // And every branch it names is a name the same tool resolves: the path is the full dotted
         // one and not the CLR simple name, which would send a caller to a different type entirely.
         var branch = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCss.Var.Color" });
 
-        StringAssert.Contains(branch, "`BitCss.Var.Color.Primary`", "A nested branch is named by its simple name, which does not resolve.");
+        Assert.Contains("`BitCss.Var.Color.Primary`", branch, "A nested branch is named by its simple name, which does not resolve.");
 
         var leaf = await CallAsync("GetBitBlazorUIType", new { typeName = "BitCss.Var.Color.Primary" });
 
@@ -105,7 +105,7 @@ public class ReferenceToolTests : McpTestBase
         // into the next call, so it carries the name the type actually has.
         var answer = await CallAsync("GetBitBlazorUIType", new { typeName = "Css.Var.Color" });
 
-        StringAssert.StartsWith(answer, "# BitCss.Var.Color");
+        Assert.StartsWith("# BitCss.Var.Color", answer);
     }
 
     [TestMethod]
@@ -115,17 +115,17 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(listing, "## enum");
-        StringAssert.Contains(listing, "`BitColor`");
+        Assert.Contains("## enum", listing);
+        Assert.Contains("`BitColor`", listing);
 
         // A type named after a component is read in that component's context, and the listing says
         // where rather than repeating it - it names one as an example, so the assertion is about the
         // list rather than about the prose above it.
         Assert.DoesNotContain("- `BitButtonClassStyles`", listing);
-        StringAssert.Contains(listing, "GetBitBlazorUIComponent");
+        Assert.Contains("GetBitBlazorUIComponent", listing);
 
         // Anything it leaves out is counted, not silently dropped.
-        StringAssert.Contains(listing, "not listed here");
+        Assert.Contains("not listed here", listing);
 
         // "Referenced by a component" is a test on the name, not on the characters: BitLink names
         // no Link parameter, and a substring test listed the Assets component under it.
@@ -140,7 +140,7 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "FindBitBlazorUIIcons", "BitIconName does not point at the tool that searches it.");
+        Assert.Contains("FindBitBlazorUIIcons", answer, "BitIconName does not point at the tool that searches it.");
         Assert.IsLessThan(20_000, answer.Length, "BitIconName answered with something close to all two thousand names.");
     }
 
@@ -155,20 +155,20 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "dotnet add package Bit.BlazorUI");
-        StringAssert.Contains(answer, "@using Bit.BlazorUI");
-        StringAssert.Contains(answer, "AddBitBlazorUIServices");
-        StringAssert.Contains(answer, "_content/Bit.BlazorUI/styles/bit.blazorui.css");
-        StringAssert.Contains(answer, "_content/Bit.BlazorUI/scripts/bit.blazorui.js");
+        Assert.Contains("dotnet add package Bit.BlazorUI", answer);
+        Assert.Contains("@using Bit.BlazorUI", answer);
+        Assert.Contains("AddBitBlazorUIServices", answer);
+        Assert.Contains("_content/Bit.BlazorUI/styles/bit.blazorui.css", answer);
+        Assert.Contains("_content/Bit.BlazorUI/scripts/bit.blazorui.js", answer);
 
         // The optional packages, with the whole of what each one takes rather than a mention.
-        StringAssert.Contains(answer, "Bit.BlazorUI.Extras");
-        StringAssert.Contains(answer, "Bit.BlazorUI.AI");
-        StringAssert.Contains(answer, "Bit.BlazorUI.Icons");
-        StringAssert.Contains(answer, "Bit.BlazorUI.Legacy");
+        Assert.Contains("Bit.BlazorUI.Extras", answer);
+        Assert.Contains("Bit.BlazorUI.AI", answer);
+        Assert.Contains("Bit.BlazorUI.Icons", answer);
+        Assert.Contains("Bit.BlazorUI.Legacy", answer);
 
         // And the check that proves it worked.
-        StringAssert.Contains(answer, "## Verify");
+        Assert.Contains("## Verify", answer);
     }
 
     [TestMethod]
@@ -177,13 +177,13 @@ public class ReferenceToolTests : McpTestBase
         using var scope = Assert.Scope();
 
         var server = await CallAsync("GetBitBlazorUISetupGuide", new { hostingModel = "server" });
-        StringAssert.Contains(server, "trySingleton", "The Blazor Server guide does not warn about singleton services leaking across circuits.");
+        Assert.Contains("trySingleton", server, "The Blazor Server guide does not warn about singleton services leaking across circuits.");
 
         var wasm = await CallAsync("GetBitBlazorUISetupGuide", new { hostingModel = "wasm" });
-        StringAssert.Contains(wasm, "trySingleton: true");
+        Assert.Contains("trySingleton: true", wasm);
 
         var webApp = await CallAsync("GetBitBlazorUISetupGuide", new { hostingModel = "web-app" });
-        StringAssert.Contains(webApp, "both", "The Blazor Web App guide does not say the services go in both containers.");
+        Assert.Contains("both", webApp, "The Blazor Web App guide does not say the services go in both containers.");
     }
 
     [TestMethod]
@@ -197,12 +197,12 @@ public class ReferenceToolTests : McpTestBase
         // the page is - which is a pass for the tool and a fail for this assertion.
         Assert.DoesNotContain("could not be rendered", index, "The theming page did not render on the server.");
 
-        StringAssert.StartsWith(index, "# Theming");
-        StringAssert.Contains(index, "--bit-*");
+        Assert.StartsWith("# Theming", index);
+        Assert.Contains("--bit-*", index);
 
         foreach (var chapter in new[] { "Design tokens", "Presets", "The C# API", "Server-side rendering" })
         {
-            StringAssert.Contains(index, $"**{chapter}**", $"The theming index has no '{chapter}' chapter.");
+            Assert.Contains($"**{chapter}**", index, $"The theming index has no '{chapter}' chapter.");
         }
 
         // The closing block every page carries is not part of the reference.
@@ -216,8 +216,8 @@ public class ReferenceToolTests : McpTestBase
 
         var chapter = await CallAsync("GetBitBlazorUIThemingGuide", new { section = "Design tokens" });
 
-        StringAssert.StartsWith(chapter, "## Design tokens");
-        StringAssert.Contains(chapter, "--bit-clr-");
+        Assert.StartsWith("## Design tokens", chapter);
+        Assert.Contains("--bit-clr-", chapter);
         Assert.DoesNotContain("\n## Presets", chapter, "The chapter brought its neighbour with it.");
 
         // Matching ignores case and punctuation, and reaches the sub-headings the index advertises.
@@ -232,15 +232,15 @@ public class ReferenceToolTests : McpTestBase
         using var scope = Assert.Scope();
 
         var cart = await CallAsync("FindBitBlazorUIIcons", new { query = "shopping cart" });
-        StringAssert.Contains(cart, "ShoppingCart");
+        Assert.Contains("ShoppingCart", cart);
 
         // Names are matched word by word, so a two-word query finds the Pascal-case name.
         var friend = await CallAsync("FindBitBlazorUIIcons", new { query = "add friend" });
-        StringAssert.Contains(friend, "AddFriend");
+        Assert.Contains("AddFriend", friend);
 
         // The answer says what the glyph needs to render at all, because a missing package is an
         // empty box rather than an error.
-        StringAssert.Contains(cart, "Bit.BlazorUI.Icons");
+        Assert.Contains("Bit.BlazorUI.Icons", cart);
     }
 
     [TestMethod]
@@ -253,18 +253,18 @@ public class ReferenceToolTests : McpTestBase
         // two can never disagree about whether the library has a home icon.
         var house = await CallAsync("FindBitBlazorUIIcons", new { query = "house" });
 
-        StringAssert.Contains(house, "Home", "'house' found nothing, so the alias table is not reaching the tool.");
-        StringAssert.Contains(house, "no 'house'", "'house' was answered without saying what it was read as.");
+        Assert.Contains("Home", house, "'house' found nothing, so the alias table is not reaching the tool.");
+        Assert.Contains("no 'house'", house, "'house' was answered without saying what it was read as.");
 
         // A misspelling is one edit from a word of a name, which is close enough to answer rather
         // than refuse - a tool that answers a typo with nothing is a tool that gets called twice.
         var typo = await CallAsync("FindBitBlazorUIIcons", new { query = "calender" });
-        StringAssert.Contains(typo, "Calendar");
+        Assert.Contains("Calendar", typo);
 
         // And an alias table entry is written best first: "spinner" is a ProgressRing before it is
         // a Sync, and there are twenty Sync glyphs to bury it under.
         var spinner = await CallAsync("FindBitBlazorUIIcons", new { query = "spinner", limit = 3 });
-        StringAssert.Contains(spinner, "ProgressRing");
+        Assert.Contains("ProgressRing", spinner);
     }
 
     [TestMethod]
@@ -275,7 +275,7 @@ public class ReferenceToolTests : McpTestBase
         // glyph name rather than the member name is a miss that only shows up at build time.
         var star = await CallAsync("FindBitBlazorUIIcons", new { query = "12 point star" });
 
-        StringAssert.Contains(star, "_12PointStar");
+        Assert.Contains("_12PointStar", star);
     }
 
     /// <summary>
@@ -295,15 +295,15 @@ public class ReferenceToolTests : McpTestBase
         using var scope = Assert.Scope();
 
         // The members the type's own assembly declares are still there, under the contributed ones.
-        StringAssert.Contains(answer, "FluentDark", $"{typeName} lost the presets the core package declares.");
+        Assert.Contains("FluentDark", answer, $"{typeName} lost the presets the core package declares.");
 
-        StringAssert.Contains(answer, "MaterialDark", $"{typeName} does not name what Bit.BlazorUI.Extras adds to it.");
-        StringAssert.Contains(answer, value, $"{typeName}'s contributed members answer without the token each one is.");
-        StringAssert.Contains(answer, "Bit.BlazorUI.Extras", "The package a contributed member needs is not named.");
+        Assert.Contains("MaterialDark", answer, $"{typeName} does not name what Bit.BlazorUI.Extras adds to it.");
+        Assert.Contains(value, answer, $"{typeName}'s contributed members answer without the token each one is.");
+        Assert.Contains("Bit.BlazorUI.Extras", answer, "The package a contributed member needs is not named.");
 
         // The two ways a contributed name is not a const, which is where markup that compiles
         // against one version stops compiling against another.
-        StringAssert.Contains(answer, "`case` label", "The answer does not say a contributed name cannot be a case label.");
+        Assert.Contains("`case` label", answer, "The answer does not say a contributed name cannot be a case label.");
     }
 
     /// <summary>
@@ -319,8 +319,8 @@ public class ReferenceToolTests : McpTestBase
 
         using var scope = Assert.Scope();
 
-        StringAssert.Contains(answer, "GetBitBlazorUIType(typeName: \"BitThemePresets\")", "The container does not point at the type its members are read off.");
-        StringAssert.Contains(answer, "MaterialDark");
+        Assert.Contains("GetBitBlazorUIType(typeName: \"BitThemePresets\")", answer, "The container does not point at the type its members are read off.");
+        Assert.Contains("MaterialDark", answer);
 
         // The compiler's own implementation of those members is not an API anyone calls.
         Assert.DoesNotContain("get_MaterialDark", answer, "The container answers with the compiler-generated accessors.");

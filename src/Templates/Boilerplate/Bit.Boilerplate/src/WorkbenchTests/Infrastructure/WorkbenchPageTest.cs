@@ -2,16 +2,11 @@ using Microsoft.Playwright.TestAdapter;
 
 namespace Boilerplate.WorkbenchTests.Infrastructure;
 
-/// <summary>
-/// A browser test against a shared Workbench, in a fresh browser context with nothing saved. Only the Workbench
-/// answers it, so a map tile or anything else from the internet can't make a test slow or flaky. A test with
-/// <see cref="SurfacesAttribute"/> runs once per surface, and any other on a desktop with an agent.
-/// </summary>
-public class WorkbenchPageTest : PageTest
+public abstract class WorkbenchPageTest : PageTest
 {
     private static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);
 
-    protected WorkbenchTestServer Server { get; private set; } = default!;
+    private protected WorkbenchTestServer Server { get; private set; } = default!;
 
     /// <summary>The surface this run of the test is on.</summary>
     protected WorkbenchSurface Surface => TestContext.TestData?.OfType<WorkbenchSurface>().Select(surface => (WorkbenchSurface?)surface).FirstOrDefault() ?? WorkbenchSurface.DesktopWithAgent;
@@ -22,7 +17,7 @@ public class WorkbenchPageTest : PageTest
     protected bool HasAgent => Surface is WorkbenchSurface.DesktopWithAgent or WorkbenchSurface.PhoneWithAgent;
 
     /// <summary>The Workbench these tests run against.</summary>
-    protected virtual Task<WorkbenchTestServer> ServerToTest => HasAgent ? WorkbenchTestsInitializer.SharedServer : WorkbenchTestsInitializer.ReadOnlyServer;
+    private protected virtual Task<WorkbenchTestServer> ServerToTest => HasAgent ? WorkbenchTestsInitializer.SharedServer : WorkbenchTestsInitializer.ReadOnlyServer;
 
     [TestInitialize]
     public async Task WorkbenchPageSetup()

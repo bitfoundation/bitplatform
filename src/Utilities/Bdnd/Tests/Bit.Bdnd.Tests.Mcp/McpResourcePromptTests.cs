@@ -18,20 +18,20 @@ public partial class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bdnd://guide", "bdnd://api", "bdnd://sample-scenario" }, uris);
-        CollectionAssert.Contains(uris, "bdnd://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "bdnd://guide/Coming%20from%20React%20DnD");
+        Assert.Contains("bdnd://guide/Getting%20started", uris);
+        Assert.Contains("bdnd://guide/Coming%20from%20React%20DnD", uris);
 
         // Only the top-level sections are listed; the rest stay behind the template.
-        CollectionAssert.DoesNotContain(uris, "bdnd://guide/Install");
+        Assert.DoesNotContain("bdnd://guide/Install", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bdnd://guide/{heading}", "bdnd://api/{typeName}", "bdnd://source/{path}" }, templates);
     }
@@ -39,7 +39,7 @@ public partial class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -85,9 +85,9 @@ public partial class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public partial class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -158,7 +158,7 @@ public partial class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -166,23 +166,23 @@ public partial class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://api/{typeName}" }, "typeName", "BdndDrop")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://guide/{heading}" }, "heading", "drop")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://source/{path}" }, "path", "Sortable")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://api/{typeName}" }, "typeName", "BdndDrop", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://guide/{heading}" }, "heading", "drop", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bdnd://source/{path}" }, "path", "Sortable", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BdndDropTarget<TItem>");
+        Assert.Contains("BdndDropTarget<TItem>", types.ToArray());
         Assert.StartsWith("BdndDrop", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Drop targets");
-        CollectionAssert.Contains(headings.ToArray(), "Drop results");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Pages/Sortable/SortableCard.razor");
+        Assert.Contains("Drop targets", headings.ToArray());
+        Assert.Contains("Drop results", headings.ToArray());
+        Assert.Contains("Demo/Client/Pages/Sortable/SortableCard.razor", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bdnd-drag" }, "symptom", "")).Completion.Values;
-        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-bdnd-feature" }, "feature", "sortable")).Completion.Values;
-        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bdnd-to-app" }, "renderMode", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bdnd-drag" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-bdnd-feature" }, "feature", "sortable", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bdnd-to-app" }, "renderMode", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         Assert.IsNotEmpty(features);
@@ -212,4 +212,6 @@ public partial class McpResourcePromptTests
 
     [GeneratedRegex(@"`<?(?<type>I?Bdnd[A-Z][A-Za-z]*)")]
     private static partial Regex BdndTypeRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

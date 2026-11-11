@@ -33,11 +33,11 @@ public class BitCardE2ETests : E2ETestBase
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "id=\"crd-basic\"");
-        StringAssert.Contains(html, "class=\"bit-crd-lnk");
+        Assert.Contains("id=\"crd-basic\"", html);
+        Assert.Contains("class=\"bit-crd-lnk", html);
         Assert.IsTrue(Regex.IsMatch(html, "id=\"crd-loading\"[^>]*aria-busy=\"true\""), "The loading card is not prerendered busy.");
-        StringAssert.Contains(html, "bit-crd-skb");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("bit-crd-skb", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -46,8 +46,8 @@ public class BitCardE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var card = El("crd-basic");
-        Assert.IsTrue(Px(await StyleAsync(card, "padding-top")) > 0);
-        Assert.IsTrue(Px(await StyleAsync(card, "border-top-left-radius")) > 0);
+        Assert.IsGreaterThan(0, Px(await StyleAsync(card, "padding-top")));
+        Assert.IsGreaterThan(0, Px(await StyleAsync(card, "border-top-left-radius")));
         Assert.AreNotEqual("none", await StyleAsync(card, "box-shadow"));
         await Expect(card).Not.ToHaveClassAsync(HasClass("bit-crd-sct"));
         Assert.AreEqual(await StyleAsync(El("crd-bg-secondary"), "background-color"), await StyleAsync(card, "background-color"));
@@ -55,7 +55,7 @@ public class BitCardE2ETests : E2ETestBase
         var box = await BoxAsync(card);
         var content = await BoxAsync(El("crd-basic-content"));
         var section = await BoxAsync(El("basic"));
-        Assert.IsTrue(box.Width < section.Width / 2, "The card is not as narrow as its content.");
+        Assert.IsLessThan(section.Width / 2, box.Width, "The card is not as narrow as its content.");
         Near(box.Width, content.Width + 2 * Px(await StyleAsync(card, "padding-left")), "fit to the content");
     }
 
@@ -71,7 +71,7 @@ public class BitCardE2ETests : E2ETestBase
         Assert.IsTrue(await El("crd-dim").EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"));
 
         await El("crd-dim").EvaluateAsync("el => el.scrollTop = 50");
-        Assert.IsTrue(await El("crd-dim").EvaluateAsync<double>("el => el.scrollTop") > 0);
+        Assert.IsGreaterThan(0, await El("crd-dim").EvaluateAsync<double>("el => el.scrollTop"));
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class BitCardE2ETests : E2ETestBase
 
         Near(160, (await BoxAsync(El("crd-min"))).Width, "MinWidth 10rem");
         Near(288, (await BoxAsync(El("crd-max"))).Width, "MaxWidth 18rem");
-        Assert.IsTrue((await BoxAsync(El("crd-minh"))).Height >= 95.5, "MinHeight 6rem");
+        Assert.IsGreaterThanOrEqualTo(95.5, (await BoxAsync(El("crd-minh"))).Height, "MinHeight 6rem");
         Near(80, (await BoxAsync(El("crd-maxh"))).Height, "MaxHeight 5rem");
         Assert.IsTrue(await El("crd-maxh").EvaluateAsync<bool>("el => el.scrollHeight > el.clientHeight"));
     }
@@ -99,12 +99,12 @@ public class BitCardE2ETests : E2ETestBase
 
         var footer = await BoxAsync(El("crd-scb-footer"));
         var cardBox = await BoxAsync(card);
-        Assert.IsTrue(footer.Y + footer.Height <= cardBox.Y + cardBox.Height + 0.5, "The footer is pushed out of the card.");
+        Assert.IsLessThanOrEqualTo(cardBox.Y + cardBox.Height + 0.5, footer.Y + footer.Height, "The footer is pushed out of the card.");
 
         var title = await BoxAsync(Part("crd-scb", "bit-crd-ttl"));
         await body.EvaluateAsync("el => el.scrollTop = 100");
         Near(title.Y, (await BoxAsync(Part("crd-scb", "bit-crd-ttl"))).Y, "the header moved");
-        Assert.IsTrue(await body.EvaluateAsync<double>("el => el.scrollTop") > 0);
+        Assert.IsGreaterThan(0, await body.EvaluateAsync<double>("el => el.scrollTop"));
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class BitCardE2ETests : E2ETestBase
         Near(two.Height, one.Height, "one height for the row");
         Near(two.Height, three.Height, "one height for the row");
         Near(one.Width, three.Width, "the cells' width");
-        Assert.IsTrue(one.Width > 200);
+        Assert.IsGreaterThan(200, one.Width);
 
         Near(500, (await BoxAsync(El("crd-fw"))).Width, "FullWidth");
         Near(150, (await BoxAsync(El("crd-fh"))).Height, "FullHeight");
@@ -137,8 +137,8 @@ public class BitCardE2ETests : E2ETestBase
         await Expect(El("crd-header-ttl")).ToHaveCSSAsync("font-weight", "600");
         await Expect(El("crd-header-ttl")).Not.ToHaveAttributeAsync("role", new Regex(".*"));
         Assert.AreNotEqual(await StyleAsync(El("crd-header-ttl"), "color"), await StyleAsync(El("crd-header-sub"), "color"));
-        Assert.IsTrue((await BoxAsync(El("crd-header-sub"))).Y > (await BoxAsync(El("crd-header-ttl"))).Y);
-        Assert.IsTrue((await BoxAsync(El("crd-header-body"))).Y > (await BoxAsync(El("crd-header-sub"))).Y);
+        Assert.IsGreaterThan((await BoxAsync(El("crd-header-ttl"))).Y, (await BoxAsync(El("crd-header-sub"))).Y);
+        Assert.IsGreaterThan((await BoxAsync(El("crd-header-sub"))).Y, (await BoxAsync(El("crd-header-body"))).Y);
     }
 
     [TestMethod]
@@ -153,7 +153,7 @@ public class BitCardE2ETests : E2ETestBase
         var icon = Page.Locator("#crd-icon i.bit-crd-hic");
         await Expect(icon).ToHaveClassAsync(HasClass("bit-icon--Rocket"));
         await Expect(icon).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue((await BoxAsync(icon)).X < (await BoxAsync(El("crd-icon-ttl"))).X);
+        Assert.IsLessThan((await BoxAsync(El("crd-icon-ttl"))).X, (await BoxAsync(icon)).X);
 
         // A level outside 1..6 is not a heading.
         await Expect(El("crd-badlevel-ttl")).Not.ToHaveAttributeAsync("role", new Regex(".*"));
@@ -181,8 +181,8 @@ public class BitCardE2ETests : E2ETestBase
         var action = await BoxAsync(El("crd-act-btn"));
         var body = await BoxAsync(El("crd-actions-body"));
         var footer = await BoxAsync(El("crd-ftr-btn"));
-        Assert.IsTrue(action.X > title.X + title.Width, "The actions are not at the end of the header.");
-        Assert.IsTrue(footer.Y > body.Y + body.Height - 1, "The footer is not under the body.");
+        Assert.IsGreaterThan(title.X + title.Width, action.X, "The actions are not at the end of the header.");
+        Assert.IsGreaterThan(body.Y + body.Height - 1, footer.Y, "The footer is not under the body.");
 
         await El("crd-act-btn").ClickAsync();
         await El("crd-ftr-btn").ClickAsync();
@@ -211,8 +211,8 @@ public class BitCardE2ETests : E2ETestBase
 
         var card = await BoxAsync(El("crd-floating"));
         var fab = await BoxAsync(El("crd-fab"));
-        Assert.IsTrue(fab.Y - card.Y < 20, "Not at the top of the card.");
-        Assert.IsTrue(card.X + card.Width - (fab.X + fab.Width) < 20, "Not at the end of the card.");
+        Assert.IsLessThan(20, fab.Y - card.Y, "Not at the top of the card.");
+        Assert.IsLessThan(20, card.X + card.Width - (fab.X + fab.Width), "Not at the end of the card.");
         await Expect(Page.Locator("#crd-floating > .bit-crd-fac")).ToHaveCSSAsync("position", "absolute");
 
         await El("crd-fab").ClickAsync();
@@ -240,7 +240,7 @@ public class BitCardE2ETests : E2ETestBase
         var coverBox = await BoxAsync(cover);
         Near(cardBox.Width, coverBox.Width, "full bleed");
         Near(cardBox.Y, coverBox.Y, "at the head of the card");
-        Assert.IsTrue((await BoxAsync(El("crd-cover-ttl"))).Y > coverBox.Y + coverBox.Height - 1, "The header is not under the cover.");
+        Assert.IsGreaterThan(coverBox.Y + coverBox.Height - 1, (await BoxAsync(El("crd-cover-ttl"))).Y, "The header is not under the cover.");
     }
 
     [TestMethod]
@@ -264,7 +264,7 @@ public class BitCardE2ETests : E2ETestBase
 
         var reversedCover = await BoxAsync(Page.Locator("#crd-reversed > .bit-crd-cvr"));
         var reversedMain = await BoxAsync(Page.Locator("#crd-reversed > .bit-crd-mai"));
-        Assert.IsTrue(reversedCover.Y > reversedMain.Y, "Reversed does not put the cover last.");
+        Assert.IsGreaterThan(reversedMain.Y, reversedCover.Y, "Reversed does not put the cover last.");
 
         await Expect(Page.Locator("#crd-cover-tpl > .bit-crd-cvr > #crd-cover-tpl-art")).ToBeVisibleAsync();
         await Expect(Page.Locator("#crd-cover-tpl img")).ToHaveCountAsync(0);
@@ -281,7 +281,7 @@ public class BitCardE2ETests : E2ETestBase
         var card = await BoxAsync(El("crd-hrz"));
         var cover = await BoxAsync(Page.Locator("#crd-hrz > .bit-crd-cvr"));
         var main = await BoxAsync(Page.Locator("#crd-hrz > .bit-crd-mai"));
-        Assert.IsTrue(cover.X < main.X, "The cover is not first.");
+        Assert.IsLessThan(main.X, cover.X, "The cover is not first.");
         Near(card.Width * 0.33, cover.Width, "a third of the card", 2);
         Near(cover.Y, main.Y, "on one row");
 
@@ -289,11 +289,11 @@ public class BitCardE2ETests : E2ETestBase
 
         var revCover = await BoxAsync(Page.Locator("#crd-hrz-rev > .bit-crd-cvr"));
         var revMain = await BoxAsync(Page.Locator("#crd-hrz-rev > .bit-crd-mai"));
-        Assert.IsTrue(revCover.X > revMain.X, "Reversed does not put the cover at the end.");
+        Assert.IsGreaterThan(revMain.X, revCover.X, "Reversed does not put the cover at the end.");
 
         var rtlCover = await BoxAsync(Page.Locator("#crd-hrz-rtl > .bit-crd-cvr"));
         var rtlMain = await BoxAsync(Page.Locator("#crd-hrz-rtl > .bit-crd-mai"));
-        Assert.IsTrue(rtlCover.X > rtlMain.X, "RTL does not mirror the horizontal card.");
+        Assert.IsGreaterThan(rtlMain.X, rtlCover.X, "RTL does not mirror the horizontal card.");
     }
 
     [TestMethod]
@@ -395,7 +395,7 @@ public class BitCardE2ETests : E2ETestBase
         await Expect(card).ToHaveClassAsync(HasClass("bit-crd-sel"));
         await Expect(button).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(card).ToHaveCSSAsync("outline-style", "solid");
-        Assert.IsTrue(Px(await StyleAsync(card, "outline-width")) >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, Px(await StyleAsync(card, "outline-width")));
 
         await El("crd-sel-ttl").ClickAsync();
         await Expect(El("sel-value")).ToHaveTextAsync("False");
@@ -506,7 +506,7 @@ public class BitCardE2ETests : E2ETestBase
 
         await El("crd-link-pin").ClickAsync();
         await Expect(El("pinned")).ToHaveTextAsync("True");
-        Assert.IsFalse(Page.Url.Contains("navigated=1"), "The action navigated with the card.");
+        Assert.DoesNotContain("navigated=1", Page.Url, "The action navigated with the card.");
 
         // The anchor lies over the body, so the click on the body lands on it.
         var body = await BoxAsync(El("crd-link-body"));
@@ -551,7 +551,7 @@ public class BitCardE2ETests : E2ETestBase
 
         await El("crd-link-dis").DispatchEventAsync("click");
         await NextFramesAsync();
-        Assert.IsFalse(Page.Url.Contains("navigated=1"));
+        Assert.DoesNotContain("navigated=1", Page.Url);
     }
 
     [TestMethod]
@@ -568,7 +568,7 @@ public class BitCardE2ETests : E2ETestBase
         await Expect(Page.Locator("#crd-loading .bit-crd-skb")).ToHaveCountAsync(3);
         Assert.AreEqual("bit-crd-skb-anm", await PseudoStyleAsync(Page.Locator("#crd-loading .bit-crd-skb").First, "::after", "animation-name"));
         var bars = Page.Locator("#crd-loading .bit-crd-skb");
-        Assert.IsTrue((await BoxAsync(bars.Nth(2))).Width < (await BoxAsync(bars.Nth(0))).Width, "The last bar is not shorter.");
+        Assert.IsLessThan((await BoxAsync(bars.Nth(0))).Width, (await BoxAsync(bars.Nth(2))).Width, "The last bar is not shorter.");
 
         await Expect(El("crd-loading-custom")).ToBeVisibleAsync();
         await Expect(Page.Locator("#crd-loading-tpl .bit-crd-skb")).ToHaveCountAsync(0);
@@ -609,7 +609,7 @@ public class BitCardE2ETests : E2ETestBase
         }
 
         // The theme's ramp climbs in steps, so 1 and 4 share one; every step is a shadow of its own.
-        Assert.AreEqual(6, shadows.Distinct().Count(), string.Join(" | ", shadows));
+        Assert.HasCount(6, shadows.Distinct(), string.Join(" | ", shadows));
     }
 
     [TestMethod]
@@ -637,7 +637,7 @@ public class BitCardE2ETests : E2ETestBase
         await Expect(El("crd-plain")).ToHaveCSSAsync("border-top-width", "0px");
 
         await Expect(El("crd-square")).ToHaveCSSAsync("border-top-left-radius", "0px");
-        Assert.IsTrue(Px(await StyleAsync(El("crd-outlined"), "border-top-left-radius")) > 0);
+        Assert.IsGreaterThan(0, Px(await StyleAsync(El("crd-outlined"), "border-top-left-radius")));
 
         await Expect(El("crd-nopad")).ToHaveCSSAsync("padding-top", "0px");
         var card = await BoxAsync(El("crd-nopad"));
@@ -661,7 +661,7 @@ public class BitCardE2ETests : E2ETestBase
             colors.Add(await StyleAsync(card, "border-top-color"));
         }
 
-        Assert.AreEqual(4, colors.Distinct().Count(), string.Join(" | ", colors));
+        Assert.HasCount(4, colors.Distinct(), string.Join(" | ", colors));
         Assert.AreEqual(Transparent, colors[3]);
     }
 
@@ -678,7 +678,7 @@ public class BitCardE2ETests : E2ETestBase
             fills.Add(await StyleAsync(El($"crd-bg-{name}"), "background-color"));
         }
 
-        Assert.AreEqual(4, fills.Distinct().Count(), string.Join(" | ", fills));
+        Assert.HasCount(4, fills.Distinct(), string.Join(" | ", fills));
         Assert.AreEqual(Transparent, fills[3]);
     }
 
@@ -810,7 +810,7 @@ public class BitCardE2ETests : E2ETestBase
         var coverBox = await BoxAsync(cover);
         Near(card.Width, coverBox.Width, "the cover fills the card");
         Near(card.Height, coverBox.Height, "the cover fills the card");
-        StringAssert.Contains(await PseudoStyleAsync(cover, "::after", "background-image"), "linear-gradient");
+        Assert.Contains("linear-gradient", await PseudoStyleAsync(cover, "::after", "background-image"));
         await Expect(Page.Locator("#crd-overlay > .bit-crd-mai")).ToHaveCSSAsync("position", "relative");
         await Expect(El("crd-overlay-ttl")).ToHaveCSSAsync("color", "rgb(255, 255, 255)");
         Near(card.Height, 224, "Height 14rem");
@@ -829,7 +829,7 @@ public class BitCardE2ETests : E2ETestBase
         await Expect(El("crd-par-own")).ToHaveClassAsync(HasClass("bit-crd-lg"));
         await Expect(El("crd-par-own")).Not.ToHaveClassAsync(HasClass("bit-crd-sm"));
         await Expect(El("crd-par-own")).ToHaveClassAsync(HasClass("bit-crd-otl"));
-        Assert.IsTrue(Px(await StyleAsync(El("crd-par-own-ttl"), "font-size")) > Px(await StyleAsync(El("crd-par-1-ttl"), "font-size")));
+        Assert.IsGreaterThan(Px(await StyleAsync(El("crd-par-1-ttl"), "font-size")), Px(await StyleAsync(El("crd-par-own-ttl"), "font-size")));
     }
 
     [TestMethod]
@@ -864,7 +864,7 @@ public class BitCardE2ETests : E2ETestBase
             if (semanticFills.Count < 8) semanticFills.Add(fillBg);
         }
 
-        Assert.AreEqual(8, semanticFills.Distinct().Count(), string.Join(" | ", semanticFills));
+        Assert.HasCount(8, semanticFills.Distinct(), string.Join(" | ", semanticFills));
     }
 
     [TestMethod]
@@ -1038,7 +1038,7 @@ public class BitCardE2ETests : E2ETestBase
 
         await Expect(El("crd-vis-hidden")).ToHaveCSSAsync("visibility", "hidden");
         await Expect(El("crd-vis-hidden")).ToBeHiddenAsync();
-        Assert.IsTrue((await BoxAsync(El("crd-vis-hidden"))).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(El("crd-vis-hidden"))).Height);
         await Expect(El("crd-vis-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -1090,8 +1090,8 @@ public class BitCardE2ETests : E2ETestBase
         var title = await BoxAsync(El($"{id}-ttl"));
         var action = await BoxAsync(El(actionId));
 
-        Assert.IsTrue(icon.X > title.X, $"The icon ({icon.X}) does not lead from the right of the title ({title.X}).");
-        Assert.IsTrue(action.X + action.Width <= title.X, $"The actions ({action.X}) are not at the left end of the header ({title.X}).");
+        Assert.IsGreaterThan(title.X, icon.X, $"The icon ({icon.X}) does not lead from the right of the title ({title.X}).");
+        Assert.IsLessThanOrEqualTo(title.X, action.X + action.Width, $"The actions ({action.X}) are not at the left end of the header ({title.X}).");
     }
 
     // The box-shadow a --bit-shd-N token of the theme resolves to.
@@ -1133,7 +1133,7 @@ public class BitCardE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

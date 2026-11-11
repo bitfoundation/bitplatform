@@ -36,7 +36,7 @@ public abstract partial class PrerenderedWebModeTests : WebModeTests
         var response = await GotoAsync("/");
 
         var html = await response!.TextAsync();
-        StringAssert.Contains(html, "id=\"count\" data-count=\"0\"");
+        Assert.Contains("id=\"count\" data-count=\"0\"", html);
         Assert.IsTrue(TokenRegex().IsMatch(html), "The prerendered page carries no token: the store's state never reached the first response.");
     }
 
@@ -65,7 +65,7 @@ public abstract partial class PrerenderedWebModeTests : WebModeTests
 
         // The page awaits the query while prerendering, so the first response carries the server's answer.
         var prerendered = QuoteRegex().Match(await response!.TextAsync()).Groups["quote"].Value;
-        StringAssert.StartsWith(prerendered, "dotnet-", "The prerendered page carries no quote.");
+        Assert.StartsWith("dotnet-", prerendered, "The prerendered page carries no quote.");
 
         await WaitForInteractiveAsync();
 
@@ -100,7 +100,8 @@ public class ServerModeTests : PrerenderedWebModeTests
         await GotoAsync("/");
         await WaitForInteractiveAsync();
         var token = await Page.Locator("#token").GetAttributeAsync("data-token");
-        Assert.AreEqual(32, token?.Length, "The page has no token to lose.");
+        var actualValue = token?.Length;
+        Assert.AreEqual(32, actualValue, "The page has no token to lose.");
 
         // .NET 10 persists a paused circuit's component state and restores it into the circuit that resumes it.
         // <BlexProvider> hands its stores over through that same PersistentComponentState, so the token -
@@ -162,7 +163,7 @@ public class AutoModeTests : PrerenderedWebModeTests
 
             await later.CloseAsync();
             if (DateTime.UtcNow > deadline) Assert.Fail("Auto never switched a later visit to WebAssembly.");
-            await Task.Delay(2000);
+            await Task.Delay(2000, TestContext.CancellationToken);
         }
 
         await ExpectCountAsync(later, 2);

@@ -49,9 +49,9 @@ public class SamplesHostingTests
     {
         var html = await GetPageAsync(sample, "/");
 
-        StringAssert.Contains(html, "<h1>Bmage samples</h1>");
-        StringAssert.Contains(html, "data-renderer=\"Static\"");
-        StringAssert.Contains(html, "<dd id=\"environment\">Prerendering</dd>");
+        Assert.Contains("<h1>Bmage samples</h1>", html);
+        Assert.Contains("data-renderer=\"Static\"", html);
+        Assert.Contains("<dd id=\"environment\">Prerendering</dd>", html);
     }
 
     [TestMethod]
@@ -62,9 +62,9 @@ public class SamplesHostingTests
     {
         var html = await GetPageAsync(sample, "/engine");
 
-        StringAssert.Contains(html, "src=\"data:image/png;base64,iVBORw0KGgo");
-        StringAssert.Contains(html, "Original: 360 × 240 PNG");
-        StringAssert.Contains(html, "encoded on <strong>the server</strong>");
+        Assert.Contains("src=\"data:image/png;base64,iVBORw0KGgo", html);
+        Assert.Contains("Original: 360 × 240 PNG", html);
+        Assert.Contains("encoded on <strong>the server</strong>", html);
     }
 
     [TestMethod]
@@ -75,9 +75,9 @@ public class SamplesHostingTests
     {
         var html = await GetPageAsync(sample, "/capabilities");
 
-        StringAssert.Contains(html, "<dd id=\"capabilities-environment\">Prerendering</dd>");
+        Assert.Contains("<dd id=\"capabilities-environment\">Prerendering</dd>", html);
         // AVIF needs a browser; WebP is the first choice the managed codecs can write.
-        StringAssert.Contains(html, "<dd id=\"capabilities-choice\">WebP</dd>");
+        Assert.Contains("<dd id=\"capabilities-choice\">WebP</dd>", html);
     }
 
     [TestMethod]
@@ -86,11 +86,11 @@ public class SamplesHostingTests
     [DataRow("auto")]
     public async Task The_process_and_editor_pages_are_prerendered(string sample)
     {
-        StringAssert.Contains(await GetPageAsync(sample, "/process"), "class=\"bmg-dropzone");
+        Assert.Contains("class=\"bmg-dropzone", await GetPageAsync(sample, "/process"));
 
         var editor = await GetPageAsync(sample, "/editor");
-        StringAssert.Contains(editor, "<h1>Editor</h1>");
-        StringAssert.Contains(editor, "bmg-prerender");
+        Assert.Contains("<h1>Editor</h1>", editor);
+        Assert.Contains("bmg-prerender", editor);
     }
 
     [TestMethod]
@@ -100,10 +100,10 @@ public class SamplesHostingTests
     public async Task An_unknown_url_is_answered_with_the_not_found_page_and_a_404(string sample)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync("/definitely/not/here");
+        using var response = await client.GetAsync("/definitely/not/here", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "<h1>Not found</h1>");
+        Assert.Contains("<h1>Not found</h1>", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class SamplesHostingTests
     {
         var html = await GetPageAsync(sample, "/Error");
 
-        StringAssert.Contains(html, "<h1>Error</h1>");
+        Assert.Contains("<h1>Error</h1>", html);
         Assert.DoesNotContain("<!--Blazor:", html);
     }
 
@@ -134,10 +134,12 @@ public class SamplesHostingTests
     public async Task The_library_and_sample_assets_are_served(string sample, string path, string mediaType)
     {
         using var client = SampleHostFactories.CreateClient(sample);
-        using var response = await client.GetAsync(path);
+        using var response = await client.GetAsync(path, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual(mediaType, response.Content.Headers.ContentType?.MediaType);
+        var expectedValue = mediaType;
+        var actualValue = response.Content.Headers.ContentType?.MediaType;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     private static async Task<string> GetPageAsync(string sample, string path)
@@ -148,4 +150,6 @@ public class SamplesHostingTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, path);
         return await response.Content.ReadAsStringAsync();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -27,11 +27,11 @@ public class McpUpdateInspectorTests
 
         // The map entry names its root and key. The text's first block was deleted and collected, so it is the one
         // that names the root, with its characters dropped; what survives is anchored to it.
-        Assert.IsTrue(client.Blocks.Any(block => block.Content == "Any" && block.Parent == "root 'meta'" && block.Key == "title" && block.Preview == "[\"Q3 planning\"]"));
-        Assert.IsTrue(client.Blocks.Any(block => block.Content == "Deleted" && block.Parent == "root 'notes'"));
-        Assert.IsTrue(client.Blocks.Any(block => block.Content == "String" && block.Origin is not null && block.Preview!.Contains("budget", StringComparison.Ordinal)));
+        Assert.Contains(block => block.Content == "Any" && block.Parent == "root 'meta'" && block.Key == "title" && block.Preview == "[\"Q3 planning\"]", client.Blocks);
+        Assert.Contains(block => block.Content == "Deleted" && block.Parent == "root 'notes'", client.Blocks);
+        Assert.Contains(block => block.Content == "String" && block.Origin is not null && block.Preview!.Contains("budget", StringComparison.Ordinal), client.Blocks);
         Assert.IsNotEmpty(report.DeleteSet!, "The sample deletes part of its text.");
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("sample", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("sample", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class McpUpdateInspectorTests
         Assert.AreEqual("42@4", block.Origin, "A keystroke is anchored to the character before it.");
         Assert.AreEqual("\"!\"", block.Preview);
         Assert.IsEmpty(report.StateVector!, "A delta from clock 5 implies no unbroken history.");
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("delta", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("delta", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -72,13 +72,13 @@ public class McpUpdateInspectorTests
         Assert.AreEqual("SyncStep2", step2.Kind);
         Assert.AreEqual(1, step2.Version);
         Assert.AreEqual("9", step2.Clients!.Single().Client);
-        Assert.IsTrue(step2.Notes.Any(note => note.StartsWith("A SyncStep2", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("A SyncStep2", StringComparison.Ordinal), step2.Notes);
 
         Assert.AreEqual("SyncStep1", step1.Kind);
         Assert.AreEqual(1L, step1.StateVector!["9"]);
 
         Assert.AreEqual("Auth", auth.Kind);
-        Assert.AreEqual(false, auth.Permitted);
+        Assert.IsFalse(auth.Permitted);
         Assert.AreEqual("read-only document", auth.Reason);
     }
 
@@ -123,7 +123,7 @@ public class McpUpdateInspectorTests
         Assert.IsFalse(report.Valid);
         Assert.AreEqual(expected, report.Error);
         Assert.IsNull(report.Clients);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("all-or-nothing", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("all-or-nothing", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -171,7 +171,7 @@ public class McpUpdateInspectorTests
         Assert.IsTrue(report.Valid);
         Assert.AreEqual("update", report.Kind);
         Assert.AreEqual(2, report.TotalBytes);
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("An empty update", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("An empty update", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -188,7 +188,7 @@ public class McpUpdateInspectorTests
 
         var client = report.Clients!.Single();
 
-        Assert.AreEqual(true, report.BlocksTruncated);
+        Assert.IsTrue(report.BlocksTruncated);
         Assert.HasCount(200, client.Blocks);
         Assert.AreEqual(300, client.BlockCount);
         Assert.AreEqual(update.Length, report.BlockBytes + report.DeleteSetBytes);
@@ -204,7 +204,7 @@ public class McpUpdateInspectorTests
         var report = await InspectAsync(Convert.ToBase64String(update), "update");
 
         Assert.IsTrue(report.Valid, "The decoder stops where the delete set ends and accepts trailing bytes.");
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("2 byte(s) the library's writers would not have produced", StringComparison.Ordinal)), string.Join(" | ", report.Notes));
+        Assert.Contains(note => note.Contains("2 byte(s) the library's writers would not have produced", StringComparison.Ordinal), report.Notes, string.Join(" | ", report.Notes));
     }
 
     internal static Task<BcrdtUpdateInspectionDto> InspectAsync(string? payload, string? readAs = null)

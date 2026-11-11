@@ -101,7 +101,7 @@ public class TrustTests
         Assert.AreEqual(TrustResultKind.Trusted, new ClaudeCodeTrust().Trust(new TrustContext(host.Environment, host.Runner), ProjectFolder(host)).Kind);
 
         Assert.IsNotNull(new FileInfo(config).LinkTarget, "A dotfiles repository keeps tracking the file.");
-        StringAssert.Contains(File.ReadAllText(target), "hasTrustDialogAccepted");
+        Assert.Contains("hasTrustDialogAccepted", File.ReadAllText(target));
 
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
@@ -115,8 +115,8 @@ public class TrustTests
         using var windows = new TestHost(HostOs.Windows);
         using var linux = new TestHost(HostOs.Linux);
 
-        CollectionAssert.AreEqual(new[] { "D:/Sources/Contoso", "d:/Sources/Contoso", "D:\\Sources\\Contoso", "d:\\Sources\\Contoso" }, ClaudeCodeTrust.ProjectKeys("D:\\Sources\\Contoso", windows.Environment).ToArray());
-        CollectionAssert.AreEqual(new[] { "/home/me/Contoso" }, ClaudeCodeTrust.ProjectKeys("/home/me/Contoso", linux.Environment).ToArray());
+        Assert.AreSequenceEqual(new[] { "D:/Sources/Contoso", "d:/Sources/Contoso", "D:\\Sources\\Contoso", "d:\\Sources\\Contoso" }, ClaudeCodeTrust.ProjectKeys("D:\\Sources\\Contoso", windows.Environment).ToArray());
+        Assert.AreSequenceEqual(new[] { "/home/me/Contoso" }, ClaudeCodeTrust.ProjectKeys("/home/me/Contoso", linux.Environment).ToArray());
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public class TrustTests
 
         var root = JsonNode.Parse(File.ReadAllText(config))!;
         Assert.AreEqual("dark", root["theme"]!.GetValue<string>());
-        Assert.HasCount(1, root["trustedFolders"]!.AsArray());
+        Assert.ContainsSingle(root["trustedFolders"]!.AsArray());
 
         var child = Directory.CreateDirectory(Path.Combine(folder, "src")).FullName;
         Assert.AreEqual(TrustResultKind.AlreadyTrusted, new CopilotCliTrust().Trust(context, child).Kind);
@@ -183,7 +183,7 @@ public class TrustTests
         Assert.AreEqual(TrustResultKind.AlreadyTrusted, new CodexTrust().Trust(context, folder).Kind);
 
         var text = File.ReadAllText(config);
-        StringAssert.StartsWith(text, "model = \"gpt-5.2-codex\"\n\n[mcp_servers.docs]\ncommand = \"npx\"\n");
+        Assert.StartsWith("model = \"gpt-5.2-codex\"\n\n[mcp_servers.docs]\ncommand = \"npx\"\n", text);
 
         var model = TomlSerializer.Deserialize<TomlTable>(text)!;
         var projects = (TomlTable)model["projects"];
@@ -205,7 +205,7 @@ public class TrustTests
         var outcome = new CodexTrust().Trust(new TrustContext(host.Environment, host.Runner), folder);
 
         Assert.AreEqual(TrustResultKind.Skipped, outcome.Kind);
-        StringAssert.Contains(File.ReadAllText(config), "untrusted");
+        Assert.Contains("untrusted", File.ReadAllText(config));
     }
 
     [TestMethod]

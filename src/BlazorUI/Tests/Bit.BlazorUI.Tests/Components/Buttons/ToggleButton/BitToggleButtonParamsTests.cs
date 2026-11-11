@@ -52,8 +52,8 @@ public class BitToggleButtonParamsTests : BunitTestContext
     [TestMethod]
     public void BitToggleButtonParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitToggleButton)}", BitToggleButtonParams.ParamName);
-        Assert.AreEqual("BitParams.BitToggleButton", BitToggleButtonParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitToggleButton)}", new BitToggleButtonParams().Name);
+        Assert.AreEqual("BitParams.BitToggleButton", new BitToggleButtonParams().Name);
     }
 
     [TestMethod]
@@ -358,7 +358,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.IsTrue(bitToggleButton.ClassList.Contains("custom-root"));
         Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
         Assert.IsTrue(text.ClassList.Contains("custom-text"));
-        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", bitToggleButton.GetAttribute("style")!);
         Assert.AreEqual("margin: 5px;", icon.GetAttribute("style"));
         Assert.AreEqual("padding: 10px;", text.GetAttribute("style"));
     }
@@ -374,7 +374,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         var bitToggleButton = component.Find(".bit-tgb");
 
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-pri"));
-        CollectionAssert.AreEquivalent(new[] { "bit-tgb", "bit-tgb-ntx", "bit-tgb-pri", "bit-tgb-fil" }, bitToggleButton.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-tgb", "bit-tgb-ntx", "bit-tgb-pri", "bit-tgb-fil" }, bitToggleButton.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsFalse(bitToggleButton.HasAttribute("style"));
     }
 
@@ -400,7 +400,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.IsFalse(bitToggleButton.HasAttribute("disabled"));
         Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-disabled"));
         Assert.AreEqual("3", bitToggleButton.GetAttribute("tabindex"));
-        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "background: blue;");
+        Assert.Contains("background: blue;", bitToggleButton.GetAttribute("style")!);
         Assert.IsTrue(bitToggleButton.ClassList.Contains("base-class"));
     }
 
@@ -420,7 +420,7 @@ public class BitToggleButtonParamsTests : BunitTestContext
         Assert.AreEqual("rtl", bitToggleButton.GetAttribute("dir"));
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-fam"));
-        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", bitToggleButton.GetAttribute("style")!);
         Assert.AreEqual("yes", bitToggleButton.GetAttribute("data-cascaded"));
     }
 }

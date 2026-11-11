@@ -57,16 +57,14 @@ public sealed class BitThemeSemanticAliasReSubstitutionTests : BunitTestContext
         var style = RenderProviderStyle(theme);
         var scssPairs = ScssAliasPairs();
 
-        Assert.IsTrue(scssPairs.Length > 0, "semantic-tokens.scss declares no --bit-sem-*: var(--bit-*) aliases.");
+        Assert.IsNotEmpty(scssPairs, "semantic-tokens.scss declares no --bit-sem-*: var(--bit-*) aliases.");
 
         foreach (var (alias, target) in scssPairs)
         {
-            StringAssert.Contains(style, $"{alias}:var({target})",
-                $"Alias {alias} must be re-declared as var({target}) when its target primitive is overridden.");
+            Assert.Contains($"{alias}:var({target})", style, $"Alias {alias} must be re-declared as var({target}) when its target primitive is overridden.");
         }
 
-        Assert.AreEqual(scssPairs.Length, ReDeclaredAlias.Matches(style).Count,
-            "The provider re-declared a different number of aliases than semantic-tokens.scss defines - " +
+        Assert.HasCount(scssPairs.Length, ReDeclaredAlias.Matches(style), "The provider re-declared a different number of aliases than semantic-tokens.scss defines - " +
             "the C# alias map and the scss have drifted apart.");
     }
 
@@ -78,8 +76,8 @@ public sealed class BitThemeSemanticAliasReSubstitutionTests : BunitTestContext
 
         var style = RenderProviderStyle(theme);
 
-        StringAssert.Contains(style, "--bit-clr-bg-sec:#101418");
-        StringAssert.Contains(style, "--bit-sem-surface-elevated:var(--bit-clr-bg-sec)");
+        Assert.Contains("--bit-clr-bg-sec:#101418", style);
+        Assert.Contains("--bit-sem-surface-elevated:var(--bit-clr-bg-sec)", style);
 
         // Untouched intents must stay absent - a sparse overlay must not clobber unrelated
         // (possibly app-customized) intents.
@@ -98,7 +96,7 @@ public sealed class BitThemeSemanticAliasReSubstitutionTests : BunitTestContext
 
         var style = RenderProviderStyle(theme);
 
-        StringAssert.Contains(style, "--bit-sem-surface-elevated:#222222");
+        Assert.Contains("--bit-sem-surface-elevated:#222222", style);
         Assert.IsFalse(style.Contains("--bit-sem-surface-elevated:var(", StringComparison.Ordinal),
             $"An explicitly-set alias must not be replaced by the re-substitution. Actual: {style}");
     }

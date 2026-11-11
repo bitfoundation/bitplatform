@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 using ButilTests.Hosting.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -30,10 +30,10 @@ public class PrerenderSweepTests
     {
         await using var factory = new HarnessHostFactory(mode);
         using var client = factory.CreateClient();
-        using var response = await client.GetAsync("/prerender-sweep");
+        using var response = await client.GetAsync("/prerender-sweep", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
         // Both of the runtimes a static render can hand out are ones Butil has to recognise as unusable: the
         // placeholder a host without the Server runtime registers, and a Server circuit's runtime that has not
@@ -48,7 +48,7 @@ public class PrerenderSweepTests
         }
 
         var broken = entries.Where(e => e.Outcome is "Failed" or "Hung").ToArray();
-        Assert.AreEqual(0, broken.Length,
+        Assert.IsEmpty(broken,
             $"{broken.Length} member(s) broke the prerendering contract on {runtime}:{Environment.NewLine}" +
             string.Join(Environment.NewLine, broken.Select(e => $"  {e.Outcome}: {e.Service}.{e.Member} - {e.Detail}")));
 
@@ -58,7 +58,7 @@ public class PrerenderSweepTests
         // What the calls handed back was disposed inside the sweep, and the services themselves when the request's
         // scope ended - after the response. Either failing is logged, not thrown, so the log is where it shows.
         var errors = factory.Logs.Entries.Where(e => e.Level >= LogLevel.Error).ToArray();
-        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
     }
 
     private static List<(string Outcome, string Service, string Member, string Detail)> Entries(string html) =>

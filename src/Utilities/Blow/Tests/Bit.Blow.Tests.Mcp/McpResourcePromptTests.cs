@@ -18,20 +18,20 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "blow://guide", "blow://api", "blow://theme", "blow://sample-flow" }, uris);
-        CollectionAssert.Contains(uris, "blow://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "blow://guide/Saving%2C%20undo%20and%20clipboard");
+        Assert.Contains("blow://guide/Getting%20started", uris);
+        Assert.Contains("blow://guide/Saving%2C%20undo%20and%20clipboard", uris);
 
         // Only the top-level sections are listed; the rest stay behind the template.
-        CollectionAssert.DoesNotContain(uris, "blow://guide/Install");
+        Assert.DoesNotContain("blow://guide/Install", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "blow://guide/{heading}", "blow://api/{typeName}", "blow://source/{path}" }, templates);
     }
@@ -39,7 +39,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -84,9 +84,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -143,7 +143,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -151,23 +151,23 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://api/{typeName}" }, "typeName", "BlowCanvas")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://guide/{heading}" }, "heading", "custom")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://source/{path}" }, "path", "SaveRestore")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://api/{typeName}" }, "typeName", "BlowCanvas", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://guide/{heading}" }, "heading", "custom", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "blow://source/{path}" }, "path", "SaveRestore", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BlowCanvas");
+        Assert.Contains("BlowCanvas", types.ToArray());
         Assert.AreEqual("BlowCanvas", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Custom nodes");
-        CollectionAssert.Contains(headings.ToArray(), "Custom edges");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Pages/Examples/SaveRestoreExample.razor");
+        Assert.Contains("Custom nodes", headings.ToArray());
+        Assert.Contains("Custom edges", headings.ToArray());
+        Assert.Contains("Demo/Client/Pages/Examples/SaveRestoreExample.razor", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-blow-flow" }, "symptom", "")).Completion.Values;
-        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-blow-feature" }, "feature", "undo")).Completion.Values;
-        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-blow-to-app" }, "renderMode", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-blow-flow" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var features = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "implement-blow-feature" }, "feature", "undo", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-blow-to-app" }, "renderMode", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         Assert.IsNotEmpty(features);
@@ -187,4 +187,6 @@ public class McpResourcePromptTests
 
         return string.Join('\n', result.Contents.OfType<TextResourceContents>().Select(contents => contents.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

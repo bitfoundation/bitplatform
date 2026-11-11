@@ -48,7 +48,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var bitChoiceGroup = component.FindAll(".bit-chg-icn");
 
-        Assert.AreEqual(bitChoiceGroup.Count, choiceGroupItems.Count);
+        Assert.HasCount(bitChoiceGroup.Count, choiceGroupItems);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var images = component.FindAll(".bit-chg img");
 
-        Assert.AreEqual(choiceGroupItems.Count, images.Count);
+        Assert.HasCount(choiceGroupItems.Count, images);
 
         for (var index = 0; index < images.Count; index++)
         {
@@ -143,7 +143,7 @@ public class BitChoiceGroupTests : BunitTestContext
         });
 
         var bitChoiceGroupLabel = component.Find($"#{component.Find(".bit-chg").GetAttribute("aria-labelledby")}");
-        Assert.IsTrue(bitChoiceGroupLabel.InnerHtml.Contains(label));
+        Assert.Contains(label, bitChoiceGroupLabel.InnerHtml);
     }
 
     [TestMethod,
@@ -188,7 +188,8 @@ public class BitChoiceGroupTests : BunitTestContext
         });
 
         var bitChoiceGroup = component.Find(".bit-chg");
-        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains(customStyle));
+        var actualValue = bitChoiceGroup?.GetAttribute("style")?.Contains(customStyle);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod,
@@ -227,10 +228,16 @@ public class BitChoiceGroupTests : BunitTestContext
                 Assert.IsFalse(bitChoiceGroup.HasAttribute("style"));
                 break;
             case BitVisibility.Hidden:
-                Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("visibility:hidden"));
+                {
+                    var actualValue = bitChoiceGroup?.GetAttribute("style")?.Contains("visibility:hidden");
+                    Assert.IsTrue(actualValue);
+                }
                 break;
             case BitVisibility.Collapsed:
-                Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("display:none"));
+                {
+                    var actualValue1 = bitChoiceGroup?.GetAttribute("style")?.Contains("display:none");
+                    Assert.IsTrue(actualValue1);
+                }
                 break;
         }
     }
@@ -245,7 +252,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var inputs = component.FindAll(".bit-chg-icn input");
 
-        Assert.AreEqual(4, inputs.Count);
+        Assert.HasCount(4, inputs);
 
         foreach (var input in inputs)
         {
@@ -276,7 +283,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         // Read-only must not disable anything by itself; the one disabled input here is the item that
         // opts out through its own Disabled, which read-only has nothing to do with.
-        Assert.AreEqual(1, inputs.Count(i => i.HasAttribute("disabled")));
+        Assert.ContainsSingle(i => i.HasAttribute("disabled"), inputs);
 
         var bitChoiceGroup = component.Find(".bit-chg");
         Assert.AreEqual("true", bitChoiceGroup.GetAttribute("aria-readonly"));
@@ -300,7 +307,7 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var descriptions = component.FindAll(".bit-chg-dsc");
 
-        Assert.AreEqual(2, descriptions.Count);
+        Assert.HasCount(2, descriptions);
         Assert.AreEqual("Description A", descriptions[0].TextContent);
         Assert.AreEqual("Description C", descriptions[1].TextContent);
         Assert.AreNotEqual(descriptions[0].Id, descriptions[1].Id);
@@ -316,8 +323,9 @@ public class BitChoiceGroupTests : BunitTestContext
         });
 
         var bitChoiceGroup = component.Find(".bit-chg");
+        var actualValue = bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-gap:2rem");
 
-        Assert.IsTrue(bitChoiceGroup?.GetAttribute("style")?.Contains("--bit-chg-gap:2rem"));
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod,
@@ -436,7 +444,7 @@ public class BitChoiceGroupTests : BunitTestContext
         // The radios of a group share one name, which is what makes them a group to the browser.
         var names = generated.FindAll(".bit-chg-icn input").Select(i => i.GetAttribute("name")).Distinct().ToList();
 
-        Assert.AreEqual(1, names.Count);
+        Assert.ContainsSingle(names);
         Assert.IsFalse(string.IsNullOrWhiteSpace(names[0]));
 
         var named = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
@@ -494,7 +502,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-chg-inl"));
         Assert.IsFalse(root.ClassList.Contains("bit-chg-ncr"));
         Assert.IsTrue(root.ClassList.Contains("bit-chg-wcr"));
-        Assert.AreEqual(4, component.FindAll(".bit-chg-rad").Count);
+        Assert.HasCount(4, component.FindAll(".bit-chg-rad"));
 
         component.Render(parameters =>
         {
@@ -511,7 +519,7 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-chg-ncr"));
         Assert.IsFalse(root.ClassList.Contains("bit-chg-wcr"));
         // NoCircle takes the radio circle out of every item.
-        Assert.AreEqual(0, component.FindAll(".bit-chg-rad").Count);
+        Assert.IsEmpty(component.FindAll(".bit-chg-rad"));
     }
 
     [TestMethod]
@@ -703,10 +711,10 @@ public class BitChoiceGroupTests : BunitTestContext
             [nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.DefaultValue)] = "v-male",
         });
 
-        StringAssert.Contains(html, "role=\"radiogroup\"");
-        StringAssert.Contains(html, "Gender");
-        StringAssert.Contains(html, "type=\"radio\"");
-        StringAssert.Contains(html, "checked");
-        StringAssert.Contains(html, "bit-chg-ich");
+        Assert.Contains("role=\"radiogroup\"", html);
+        Assert.Contains("Gender", html);
+        Assert.Contains("type=\"radio\"", html);
+        Assert.Contains("checked", html);
+        Assert.Contains("bit-chg-ich", html);
     }
 }

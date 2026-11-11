@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Bit.BevTools.Tests;
 
-public sealed class SupportChild : ComponentBase
+internal sealed class SupportChild : ComponentBase
 {
     [Inject] private ILogger<SupportChild> Logger { get; set; } = default!;
 
@@ -26,7 +26,7 @@ public sealed class SupportChild : ComponentBase
     private static void Fail() => throw new InvalidOperationException("The child broke for order 10423");
 }
 
-public sealed class SupportParent : ComponentBase
+internal sealed class SupportParent : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -82,14 +82,14 @@ public class BelemetryIntegrationTests : BunitContext
     {
         RenderFailingTree();
 
-        var capture = await Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync(new() { IncludeBrowserEvidence = false });
+        var capture = await Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync(new() { IncludeBrowserEvidence = false }, TestContext.CancellationToken);
 
         var child = capture.Components.Single(c => c.Type == typeof(SupportChild).FullName);
         Assert.AreEqual("stack", child.Association, "Named by the exception's first application frame.");
         Assert.AreEqual("BevTools", child.Source);
-        CollectionAssert.Contains(child.Ancestors!.ToArray(), typeof(SupportParent).FullName);
+        Assert.Contains(typeof(SupportParent).FullName, child.Ancestors!.ToArray());
         Assert.IsGreaterThanOrEqualTo(1, child.RenderCount!.Value);
-        Assert.IsFalse(capture.MissingEvidence.Any(m => m.Contains("hierarchy is unavailable")), "BevTools provided it.");
+        Assert.DoesNotContain(m => m.Contains("hierarchy is unavailable"), capture.MissingEvidence, "BevTools provided it.");
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class BelemetryIntegrationTests : BunitContext
 
         cut.Find("#bev-belemetry-capture").Click();
 
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-belemetry-preview")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-belemetry-preview")));
         Assert.Contains("InvalidOperationException in SupportChild", cut.Find(".bit-belemetry-preview-title").TextContent, StringComparison.Ordinal);
     }
 
@@ -140,14 +140,16 @@ public class BelemetryIntegrationTests : BunitContext
         cut.Find(".bev-badge").Click();
         cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Support", StringComparison.Ordinal)).Click();
         cut.Find("#bev-belemetry-capture").Click();
-        cut.WaitForAssertion(() => Assert.HasCount(1, cut.FindAll(".bit-belemetry-preview")));
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll(".bit-belemetry-preview")));
 
         var filter = Services.GetServices<IBelemetryDiagnosticComponentFilter>().Single();
         Assert.IsTrue(filter.IsExcluded(typeof(BevBelemetryPanel).FullName!));
         Assert.IsTrue(filter.IsExcluded(typeof(BevToolsPanel).FullName!));
         Assert.IsFalse(filter.IsExcluded(typeof(SupportChild).FullName!), "Exact namespace: an application under Bit.BevTools.* is the application.");
-        Assert.IsFalse(Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents().Any(e => e.ComponentType is { } type && filter.IsExcluded(type)));
+        Assert.DoesNotContain(e => e.ComponentType is { } type && filter.IsExcluded(type), Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
 /// <summary>The Support panel under <see cref="BevValueAccess.None"/>: BevTools' own rule applies to Belemetry's values too.</summary>

@@ -118,7 +118,7 @@ public sealed class MenuHoverTests : DemoTest
 
         // The keyboard has it now: the pointer leaving does not close it, and Escape gives the focus to the trigger.
         await MoveAwayAsync(page, menu);
-        await Task.Delay(MenubarCloseDelay * 2);
+        await Task.Delay(MenubarCloseDelay * 2, TestContext.CancellationToken);
         await Expect(menu).ToBeVisibleAsync();
         await page.Keyboard.PressAsync("Escape");
         await Expect(menu).ToBeHiddenAsync();
@@ -143,7 +143,7 @@ public sealed class MenuHoverTests : DemoTest
         var box = (await item.BoundingBoxAsync())!;
         await GlideAsync(page, from, (box.X + box.Width * 0.85f, box.Y + box.Height / 2));
 
-        await Task.Delay(MenubarCloseDelay * 2);
+        await Task.Delay(MenubarCloseDelay * 2, TestContext.CancellationToken);
         await Expect(menu).ToBeVisibleAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
         // The pointer highlights the item without focusing the menu.
@@ -229,7 +229,7 @@ public sealed class MenuHoverTests : DemoTest
         await trigger.ClickAsync();
         await Expect(menu).ToBeFocusedAsync();
         await MoveAwayAsync(page, menu);
-        await Task.Delay(MenubarCloseDelay * 2);
+        await Task.Delay(MenubarCloseDelay * 2, TestContext.CancellationToken);
         await Expect(menu).ToBeVisibleAsync();
         await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
 

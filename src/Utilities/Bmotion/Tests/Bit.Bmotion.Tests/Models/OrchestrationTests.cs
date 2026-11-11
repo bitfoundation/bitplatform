@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Models;
+﻿namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
 /// Tests for variant orchestration: the <c>when</c> ordering flag and the duration estimate it is
@@ -52,7 +52,7 @@ public class OrchestrationTests
         double loose = Bm.Spring(stiffness: 100, damping: 10).ToConfig().EstimatedDurationSeconds();
         double stiff = Bm.Spring(stiffness: 400, damping: 40).ToConfig().EstimatedDurationSeconds();
 
-        Assert.IsTrue(stiff < loose, $"a snappier spring must estimate shorter ({stiff} vs {loose})");
+        Assert.IsLessThan(loose, stiff, $"a snappier spring must estimate shorter ({stiff} vs {loose})");
     }
 
     [TestMethod]

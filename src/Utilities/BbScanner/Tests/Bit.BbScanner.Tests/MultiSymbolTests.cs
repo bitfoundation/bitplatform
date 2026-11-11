@@ -17,7 +17,7 @@ public class MultiSymbolTests
 
         var results = DecodeAll(frame, BbBarcodeFormat.QrCode);
 
-        CollectionAssert.AreEquivalent(new[] { "FIRST", "SECOND", "THIRD" }, results.Select(r => r.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "FIRST", "SECOND", "THIRD" }, results.Select(r => r.Text).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(results.All(r => r.Format == BbBarcodeFormat.QrCode));
     }
 
@@ -32,9 +32,8 @@ public class MultiSymbolTests
 
         var results = DecodeAll(frame, BbBarcodeFormat.All);
 
-        CollectionAssert.AreEquivalent(
-            new[] { "https://example.com/item/42", "LOT-2026-7", "4006381333931", "SHIP-0042" },
-            results.Select(r => r.Text).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "https://example.com/item/42", "LOT-2026-7", "4006381333931", "SHIP-0042" }, results.Select(r => r.Text).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -91,7 +90,7 @@ public class MultiSymbolTests
         var all = decoder.DecodeAll(frame.View, suppressDuplicates: false);
 
         Assert.IsNotNull(single);
-        Assert.HasCount(1, all);
+        Assert.ContainsSingle(all);
         Assert.AreEqual(single.Text, all[0].Text);
         Assert.AreEqual(single.BoundingBox, all[0].BoundingBox);
     }
@@ -130,7 +129,7 @@ public class MultiSymbolTests
 
         var results = decoder.DecodeAll(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32, suppressDuplicates: false);
 
-        CollectionAssert.AreEquivalent(new[] { "RGBA-1", "RGBA-2" }, results.Select(r => r.Text).ToArray());
+        Assert.AreSequenceEqual(new[] { "RGBA-1", "RGBA-2" }, results.Select(r => r.Text).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]

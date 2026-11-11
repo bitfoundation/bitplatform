@@ -98,10 +98,10 @@ public class BitNavE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{PAGE}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"nav-basic\"");
-        StringAssert.Contains(html, "aria-label=\"Basic nav\"");
-        StringAssert.Contains(html, "href=\"/e2e/nav/url/home\"");
-        StringAssert.Contains(html, "Status: <span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"nav-basic\"", html);
+        Assert.Contains("aria-label=\"Basic nav\"", html);
+        Assert.Contains("href=\"/e2e/nav/url/home\"", html);
+        Assert.Contains("Status: <span id=\"status\">Loading</span>", html);
     }
 
     [TestMethod]
@@ -302,7 +302,7 @@ public class BitNavE2ETests : E2ETestBase
         var container = await BoxAsync(Page.Locator("#width-container"));
 
         Assert.AreEqual(container.Width, full.Width, 0.5);
-        Assert.IsTrue(fit.Width < container.Width / 2, $"A FitWidth nav ({fit.Width}px) only takes the room of its widest item.");
+        Assert.IsLessThan(container.Width / 2, fit.Width, $"A FitWidth nav ({fit.Width}px) only takes the room of its widest item.");
 
         var longest = await BoxAsync(Item("nav-fit", "A much longer item text"));
         Assert.AreEqual(fit.Width, longest.Width, 1);
@@ -453,7 +453,7 @@ public class BitNavE2ETests : E2ETestBase
         await Expect(home.Locator(".bit-nav-itx")).ToBeVisibleAsync();
         await Expect(home).Not.ToHaveAttributeAsync("aria-label", new Regex(".*"));
         var fullWidth = (await BoxAsync(nav.Locator(".bit-nav-ict").First)).Width;
-        Assert.IsTrue(fullWidth > railWidth, $"The item widens from the rail ({railWidth}px) to the full row ({fullWidth}px).");
+        Assert.IsGreaterThan(railWidth, fullWidth, $"The item widens from the rail ({railWidth}px) to the full row ({fullWidth}px).");
     }
 
     // ---- Expand & Collapse ----
@@ -550,7 +550,7 @@ public class BitNavE2ETests : E2ETestBase
 
         var chevron = await BoxAsync(parent.Locator(".bit-nav-cbt"));
         var text = await BoxAsync(parent.Locator(".bit-nav-itx"));
-        Assert.IsTrue(chevron.X > text.X + text.Width - 1, "The reversed chevron sits after the text.");
+        Assert.IsGreaterThan(text.X + text.Width - 1, chevron.X, "The reversed chevron sits after the text.");
 
         // depth x IndentValue + IndentReversedPadding, whatever the item holds.
         await Expect(parent).ToHaveCSSAsync("padding-inline-start", "4px");
@@ -722,8 +722,8 @@ public class BitNavE2ETests : E2ETestBase
         // The badge follows the suffix.
         var badged = Item("nav-suffix", "Badged");
         var order = await badged.Locator(".bit-nav-sfx").EvaluateAsync<string>("el => [...el.children].map(c => c.className).join('|')");
-        StringAssert.StartsWith(order, "nav-suffix");
-        StringAssert.Contains(order, "bit-nav-bdg");
+        Assert.StartsWith("nav-suffix", order);
+        Assert.Contains("bit-nav-bdg", order);
     }
 
     // ---- Public API ----
@@ -1013,7 +1013,7 @@ public class BitNavE2ETests : E2ETestBase
         await Expect(badge).ToHaveCSSAsync("background-color", await ResolveColorAsync("var(--bit-clr-err)"));
         var badgeBox = await BoxAsync(badge);
         var textBox = await BoxAsync(inbox.Locator(".bit-nav-itx"));
-        Assert.IsTrue(badgeBox.X > textBox.X + textBox.Width, "The badge follows the text.");
+        Assert.IsGreaterThan(textBox.X + textBox.Width, badgeBox.X, "The badge follows the text.");
 
         await Expect(Item("nav-badges", "Drafts").Locator(".bit-nav-vhd")).ToHaveTextAsync(" (12 drafts)");
 
@@ -1023,7 +1023,7 @@ public class BitNavE2ETests : E2ETestBase
         await Expect(alerts.Locator(".bit-nav-vhd")).ToHaveTextAsync(" (New alerts)");
         var dot = await BoxAsync(alerts.Locator(".bit-nav-bdt"));
         Assert.AreEqual(dot.Width, dot.Height, 0.5, "The dot is round.");
-        Assert.IsTrue(dot.Width < badgeBox.Height, "The dot is smaller than a badge.");
+        Assert.IsLessThan(badgeBox.Height, dot.Width, "The dot is smaller than a badge.");
 
         await Expect(Item("nav-badges", "Silent dot").Locator(".bit-nav-bdt")).ToHaveCountAsync(1);
         await Expect(Item("nav-badges", "Silent dot").Locator(".bit-nav-vhd")).ToHaveCountAsync(0);
@@ -1051,7 +1051,7 @@ public class BitNavE2ETests : E2ETestBase
 
         var item = await BoxAsync(inbox.Locator(".bit-nav-itm"));
         var badge = await BoxAsync(inbox.Locator(".bit-nav-bdg"));
-        Assert.IsTrue(badge.Y < item.Y + item.Height / 2, "The badge sits at the top of the rail item.");
+        Assert.IsLessThan(item.Y + item.Height / 2, badge.Y, "The badge sits at the top of the rail item.");
     }
 
     // ---- Color & Accent ----
@@ -1081,7 +1081,7 @@ public class BitNavE2ETests : E2ETestBase
             painted.Add(expected);
         }
 
-        Assert.IsTrue(painted.Count >= 10, $"The roles paint in distinct colors ({painted.Count} distinct of {Colors.Length}).");
+        Assert.IsGreaterThanOrEqualTo(10, painted.Count, $"The roles paint in distinct colors ({painted.Count} distinct of {Colors.Length}).");
     }
 
     [TestMethod]
@@ -1108,7 +1108,7 @@ public class BitNavE2ETests : E2ETestBase
             fills.Add(fill);
         }
 
-        Assert.IsTrue(fills.Count >= 10, $"The accents fill in distinct colors ({fills.Count} distinct of {Colors.Length}).");
+        Assert.IsGreaterThanOrEqualTo(10, fills.Count, $"The accents fill in distinct colors ({fills.Count} distinct of {Colors.Length}).");
 
         // Unset, the selection takes the neutral PrimaryBackground fill.
         var neutral = await Page.Locator("#nav-accent-default .bit-nav-sel").EvaluateAsync<string>("el => getComputedStyle(el).backgroundColor");
@@ -1383,7 +1383,7 @@ public class BitNavE2ETests : E2ETestBase
         await Page.Locator("#btn-cycle-visibility").ClickAsync();
         await Expect(Page.Locator("#visibility-state")).ToHaveTextAsync("Hidden");
         await Expect(nav).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxAsync(nav)).Height > 0);
+        Assert.IsGreaterThan(0, (await BoxAsync(nav)).Height);
 
         await Page.Locator("#btn-cycle-visibility").ClickAsync();
         await Expect(Page.Locator("#visibility-state")).ToHaveTextAsync("Collapsed");
@@ -1418,8 +1418,8 @@ public class BitNavE2ETests : E2ETestBase
         var navBox = await BoxAsync(nav);
         var sibling = Item("nav-rtl", "Rtl sibling");
         var text = await BoxAsync(sibling.Locator(".bit-nav-itx"));
-        Assert.IsTrue(text.X + text.Width > navBox.X + navBox.Width - 60, "The text starts at the right edge of a right-to-left nav.");
-        Assert.IsTrue(text.X > navBox.X + navBox.Width / 2, "And stays in its right half.");
+        Assert.IsGreaterThan(navBox.X + navBox.Width - 60, text.X + text.Width, "The text starts at the right edge of a right-to-left nav.");
+        Assert.IsGreaterThan(navBox.X + navBox.Width / 2, text.X, "And stays in its right half.");
 
         // The indentation is on the right.
         await Expect(sibling).ToHaveCSSAsync("padding-right", "27px");
@@ -1429,11 +1429,11 @@ public class BitNavE2ETests : E2ETestBase
         var parent = Item("nav-rtl", "Rtl parent");
         var chevron = await BoxAsync(parent.Locator(".bit-nav-cbt"));
         var parentText = await BoxAsync(parent.Locator(".bit-nav-itx"));
-        Assert.IsTrue(chevron.X > parentText.X);
+        Assert.IsGreaterThan(parentText.X, chevron.X);
 
         var ltrText = await BoxAsync(Item("nav-ltr", "Ltr sibling").Locator(".bit-nav-itx"));
         var ltrNav = await BoxAsync(Nav("nav-ltr"));
-        Assert.IsTrue(ltrText.X < ltrNav.X + 60, "A left-to-right nav keeps its text at the left.");
+        Assert.IsLessThan(ltrNav.X + 60, ltrText.X, "A left-to-right nav keeps its text at the left.");
     }
 
     [TestMethod]
@@ -1577,7 +1577,7 @@ public class BitNavE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Tab");
 
         var keys = await Page.EvaluateAsync<string[]>("() => window.__navKeys");
-        CollectionAssert.AreEqual(new[] { "ArrowDown:true", "End:true", "Home:true", "Tab:false" }, keys);
+        Assert.AreSequenceEqual(new[] { "ArrowDown:true", "End:true", "Home:true", "Tab:false" }, keys);
     }
 
     [TestMethod]
@@ -1684,7 +1684,7 @@ public class BitNavE2ETests : E2ETestBase
             visited.Add(await FocusedTextAsync());
         }
 
-        CollectionAssert.AreEqual(new[] { "Alpha", "Beta", "Delta", "Echo" }, visited);
+        Assert.AreSequenceEqual(new[] { "Alpha", "Beta", "Delta", "Echo" }, visited);
     }
 
     [TestMethod]
@@ -1806,7 +1806,7 @@ public class BitNavE2ETests : E2ETestBase
 
         // The bar is never thinner than the thick stroke, and every item reserves the same room so nothing moves.
         var selectedWidth = await NumberStyleAsync(selected, "border-left-width");
-        Assert.IsTrue(selectedWidth >= 2, $"The bar is {selectedWidth}px wide.");
+        Assert.IsGreaterThanOrEqualTo(2, selectedWidth, $"The bar is {selectedWidth}px wide.");
         Assert.AreEqual(selectedWidth, await NumberStyleAsync(other, "border-left-width"), 0.01);
 
         // A disabled item is drawn in GrayText.
@@ -1821,12 +1821,12 @@ public class BitNavE2ETests : E2ETestBase
         await OpenAsync(PAGE);
 
         var duration = await Chevron("nav-motion", "Motion parent").Locator("i").EvaluateAsync<string>("el => getComputedStyle(el).transitionDuration");
-        Assert.IsTrue(double.Parse(duration.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture) > 0.01, $"The chevron turns over a duration ({duration}).");
+        Assert.IsGreaterThan(0.01, double.Parse(duration.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture), $"The chevron turns over a duration ({duration}).");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await Chevron("nav-motion", "Motion parent").Locator("i").EvaluateAsync<string>("el => getComputedStyle(el).transitionDuration");
-        Assert.IsTrue(double.Parse(reduced.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture) < 0.01, $"Reduced motion collapses it ({reduced}).");
+        Assert.IsLessThan(0.01, double.Parse(reduced.TrimEnd('s'), System.Globalization.CultureInfo.InvariantCulture), $"Reduced motion collapses it ({reduced}).");
 
         // ForceAnimation brings it back.
         var forced = await Chevron("nav-motion-force", "Forced parent").Locator("i").EvaluateAsync<string>("el => getComputedStyle(el).transitionDuration");

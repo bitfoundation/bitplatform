@@ -3,6 +3,8 @@ using System.Text.Json.Nodes;
 using Bit.Blex.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Blex.Tests;
 
 [TestClass]

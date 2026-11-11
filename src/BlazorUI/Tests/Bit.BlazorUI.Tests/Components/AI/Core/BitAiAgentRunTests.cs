@@ -30,9 +30,8 @@ public class BitAiAgentRunTests
 
         run.SetStatus(status);
 
-        CollectionAssert.AreEqual(
-            new[] { BitAiAgentStepStatus.Completed, BitAiAgentStepStatus.Skipped, BitAiAgentStepStatus.Skipped },
-            run.Steps.Select(s => s.Status).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BitAiAgentStepStatus.Completed, BitAiAgentStepStatus.Skipped, BitAiAgentStepStatus.Skipped }, run.Steps.Select(s => s.Status).ToArray());
         Assert.AreEqual("Built", run.Steps[0].Summary);
         Assert.IsNotNull(run.Steps[1].CompletedAt);
     }
@@ -48,7 +47,8 @@ public class BitAiAgentRunTests
 
         Assert.AreEqual(BitAiAgentRunStatus.Failed, run.Status);
         Assert.AreEqual(BitAiAgentStepStatus.Failed, run.Steps[0].Status);
-        Assert.AreEqual("3 tests failed.", run.Steps[0].Error?.Message);
+        var actualValue = run.Steps[0].Error?.Message;
+        Assert.AreEqual("3 tests failed.", actualValue);
         Assert.AreEqual(BitAiAgentStepStatus.Skipped, run.Steps[1].Status);
         Assert.AreEqual(BitAiAgentStepStatus.Skipped, run.Steps[2].Status);
     }

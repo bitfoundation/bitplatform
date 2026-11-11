@@ -50,12 +50,12 @@ public class JsonSchemaUnionTests
         var payment = form.FindField("payment")!;
 
         Assert.AreEqual(BormFieldType.Object, payment.Type);
-        CollectionAssert.AreEqual(new[] { "kind", "number", "holder", "iban" }, payment.Children.Select(c => c.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "kind", "number", "holder", "iban" }, payment.Children.Select(c => c.Name).ToArray());
 
         var kind = payment.Children[0];
         Assert.IsTrue(kind.Required);
-        CollectionAssert.AreEqual(new[] { "card", "bank" }, kind.Options.Select(o => o.Value).ToArray());
-        CollectionAssert.AreEqual(new[] { "Card", "Bank transfer" }, kind.Options.Select(o => o.Label).ToArray());
+        Assert.AreSequenceEqual(new[] { "card", "bank" }, kind.Options.Select(o => o.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "Card", "Bank transfer" }, kind.Options.Select(o => o.Label).ToArray());
 
         var number = payment.Children[1];
         Assert.IsTrue(number.ClearOnHide);
@@ -65,7 +65,7 @@ public class JsonSchemaUnionTests
     }
 
     [TestMethod]
-    public void Choosing_a_branch_shows_its_fields_requires_what_it_requires_and_clears_what_it_abandons()
+    public async global::System.Threading.Tasks.Task Choosing_a_branch_shows_its_fields_requires_what_it_requires_and_clears_what_it_abandons()
     {
         var form = BormJsonSchemaImporter.Import(Payment);
         var data = new Dictionary<string, object?>();
@@ -86,9 +86,8 @@ public class JsonSchemaUnionTests
         Assert.IsNull(state.GetValue("payment.number"));
         Assert.IsTrue(state.IsRequired(holder, "payment.holder"));
 
-        Assert.IsFalse(state.ValidateAsync().AsTask().Result);
-        CollectionAssert.AreEquivalent(new[] { "payment.iban", "payment.holder" },
-            state.AllMessages.Select(m => m.FieldPath).ToArray());
+        Assert.IsFalse((await state.ValidateAsync().AsTask()));
+        Assert.AreSequenceEqual(new[] { "payment.iban", "payment.holder" }, state.AllMessages.Select(m => m.FieldPath).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -111,7 +110,7 @@ public class JsonSchemaUnionTests
 
         var pet = form.FindField("pet")!;
         Assert.AreEqual("petType", pet.Children[0].Name);
-        CollectionAssert.AreEqual(new[] { "cat", "dog" }, pet.Children[0].Options.Select(o => o.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "cat", "dog" }, pet.Children[0].Options.Select(o => o.Value).ToArray());
         Assert.AreEqual(BormFieldType.Integer, pet.Children.Single(c => c.Name == "lives").Type);
     }
 
@@ -138,8 +137,8 @@ public class JsonSchemaUnionTests
         """);
 
         var pet = form.FindField("pet")!;
-        CollectionAssert.AreEqual(new[] { "petType", "name", "lives", "bark" }, pet.Children.Select(c => c.Name).ToArray());
-        CollectionAssert.AreEqual(new[] { "cat", "Dog" }, pet.Children[0].Options.Select(o => o.Value).ToArray());
+        Assert.AreSequenceEqual(new[] { "petType", "name", "lives", "bark" }, pet.Children.Select(c => c.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "cat", "Dog" }, pet.Children[0].Options.Select(o => o.Value).ToArray());
 
         var state = new BormState(form, new BormDictionaryDataAccessor());
         var name = pet.Children[1];
@@ -172,7 +171,7 @@ public class JsonSchemaUnionTests
     }
 
     [TestMethod]
-    public void A_discriminated_union_at_the_root_shapes_the_whole_form()
+    public async global::System.Threading.Tasks.Task A_discriminated_union_at_the_root_shapes_the_whole_form()
     {
         var form = BormJsonSchemaImporter.Import("""
         {
@@ -183,12 +182,12 @@ public class JsonSchemaUnionTests
         }
         """);
 
-        CollectionAssert.AreEqual(new[] { "type", "name", "vat" }, form.Fields.Select(f => f.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "type", "name", "vat" }, form.Fields.Select(f => f.Name).ToArray());
         // The choice keeps the constants' type, so choosing "Company" stores the number 2.
         var data = new Dictionary<string, object?>();
         var state = new BormState(form, new BormDictionaryDataAccessor(data));
         var context = new BormFieldContext(state, form.Fields[0], "type");
-        context.SetFromStringAsync("2").Wait();
+        await context.SetFromStringAsync("2").WaitAsync(TestContext.CancellationToken);
         Assert.AreEqual(2L, data["type"]);
         Assert.IsTrue(state.IsVisible(form.Fields[2], "vat"));
     }
@@ -309,4 +308,6 @@ public class JsonSchemaUnionTests
         Assert.IsTrue(ok, error);
         Assert.IsNotNull(form.FindField("root"));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

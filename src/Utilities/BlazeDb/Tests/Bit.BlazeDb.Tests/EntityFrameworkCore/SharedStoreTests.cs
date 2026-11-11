@@ -140,7 +140,7 @@ public class SharedStoreTests
         // moment a context that does know it shares the engine.
         var storage = new BlazeDbInMemoryStorage();
         await using (var engine = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions { Storage = storage }
-                         .AddTable(Person.Table).AddTable(Order.Table)))
+                         .AddTable(Person.Table).AddTable(Order.Table), TestContext.CancellationToken))
         {
             engine.GetTable(Person.Table).Insert(Ada());
             engine.GetTable(Order.Table).Insert(new Order { Id = 10, PersonId = 1, Total = 9.5m });
@@ -158,7 +158,7 @@ public class SharedStoreTests
         Assert.AreEqual(9.5m, full.Orders.Single(o => o.PersonId == 1).Total);
         Assert.IsEmpty(full.Database.GetBlazeDb().UnregisteredTables);
 
-        await full.Database.EnsureDeletedAsync();
+        await full.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public class SharedStoreTests
 
         context.ChangeTracker.Clear();
         var filtered = context.People.Where(p => p.Age > 22).Skip(1).Take(5).ToList();
-        Assert.AreEqual(filtered.Count, context.ChangeTracker.Entries().Count());
+        Assert.HasCount(filtered.Count, context.ChangeTracker.Entries());
     }
 
     [TestMethod]
@@ -269,9 +269,9 @@ public class SharedStoreTests
     {
         var options = IsolatedOptions();
         using var first = new PeopleContext(options);
-        Assert.IsTrue(await first.Database.EnsureCreatedAsync());
+        Assert.IsTrue(await first.Database.EnsureCreatedAsync(TestContext.CancellationToken));
         using var second = new PeopleContext(options);
-        Assert.IsFalse(await second.Database.EnsureCreatedAsync());
+        Assert.IsFalse(await second.Database.EnsureCreatedAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -319,8 +319,8 @@ public class SharedStoreTests
         {
             context.People.Add(Ada());
             context.SaveChanges();
-            await context.Database.GetBlazeDb().FlushAsync();
-            Assert.IsTrue(await context.Database.EnsureDeletedAsync());
+            await context.Database.GetBlazeDb().FlushAsync(TestContext.CancellationToken);
+            Assert.IsTrue(await context.Database.EnsureDeletedAsync(TestContext.CancellationToken));
         }
         Assert.IsEmpty(storage.FileNames);
 
@@ -329,13 +329,13 @@ public class SharedStoreTests
             Assert.IsEmpty(context.People.ToList());
             context.People.Add(new Person { Id = 2, Name = "Grace", City = "NYC", Age = 45 });
             context.SaveChanges();
-            await context.Database.GetBlazeDb().FlushAsync();
-            await context.Database.EnsureDeletedAsync();
+            await context.Database.GetBlazeDb().FlushAsync(TestContext.CancellationToken);
+            await context.Database.EnsureDeletedAsync(TestContext.CancellationToken);
         }
 
         using var again = new PeopleContext(options);
         Assert.IsEmpty(again.People.ToList());
-        await again.Database.EnsureDeletedAsync();
+        await again.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -346,8 +346,8 @@ public class SharedStoreTests
         using var a = new PeopleContext(options);
         using var b = new PeopleContext(options);
 
-        var opening = a.Database.EnsureCreatedAsync();
-        await Task.Delay(50);
+        var opening = a.Database.EnsureCreatedAsync(TestContext.CancellationToken);
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.IsFalse(opening.IsCompleted);
 
         // Reads block until the first open is through; nothing recovers the same storage twice.
@@ -358,7 +358,7 @@ public class SharedStoreTests
         Assert.AreEqual(1, storage.ManifestReads);
         Assert.AreSame(a.Database.GetBlazeDb(), b.Database.GetBlazeDb());
 
-        await a.Database.EnsureDeletedAsync();
+        await a.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
 
     /// <summary>Holds the first manifest read open so an open can be caught in flight.</summary>
@@ -414,8 +414,8 @@ public class SharedStoreTests
         Assert.AreEqual("London", context.Database.GetBlazeDb().GetTable(Person.Table).Get(1)!.City);
         Assert.AreSame(ada, context.People.Single(p => p.Id == 1));
         Assert.AreSame(ada, context.People.OrderBy(p => p.Id).First());
-        Assert.AreEqual(2, context.People.ToList().Count);
-        Assert.AreEqual(2, context.ChangeTracker.Entries().Count());
+        Assert.HasCount(2, context.People.ToList());
+        Assert.HasCount(2, context.ChangeTracker.Entries());
 
         grace.Email = "grace@y";
         Assert.AreEqual(2, context.SaveChanges());
@@ -563,11 +563,11 @@ public class SharedStoreTests
         }
 
         storage.Release();
-        Assert.IsTrue(await context.Database.EnsureCreatedAsync());
+        Assert.IsTrue(await context.Database.EnsureCreatedAsync(TestContext.CancellationToken));
         Assert.AreEqual(1, storage.ManifestReads); // One open, one engine, one flusher on the storage.
         Assert.IsEmpty(context.People.ToList());
 
-        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureDeletedAsync(TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -591,7 +591,7 @@ public class SharedStoreTests
         }
 
         Assert.AreSame(engine, context.Database.GetBlazeDb());
-        Assert.IsTrue(await context.Database.EnsureDeletedAsync());
+        Assert.IsTrue(await context.Database.EnsureDeletedAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -636,4 +636,6 @@ public class SharedStoreTests
         public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>
             _inner.DeleteAsync(name, cancellationToken);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

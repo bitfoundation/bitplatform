@@ -104,7 +104,7 @@ internal static class BitAiMarkdownSpec
             var prefix = source[..length];
             var expected = Dump(BitAiMarkdownParser.Parse(prefix, options, isComplete: false));
             var actual = Dump(parser.Parse(prefix, isComplete: false));
-            Assert.IsTrue(expected == actual, $"Mismatch at prefix {length}: {prefix}\nexpected: {expected}\nactual:   {actual}");
+            Assert.AreEqual(expected, actual, $"Mismatch at prefix {length}: {prefix}\nexpected: {expected}\nactual:   {actual}");
         }
 
         Assert.AreEqual(Dump(BitAiMarkdownParser.Parse(source, options)), Dump(parser.Parse(source, isComplete: true)));

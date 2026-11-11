@@ -22,8 +22,7 @@ public class ProgressCatalogTests
             .Select(property => property.Name)
             .ToArray();
 
-        CollectionAssert.AreEquivalent(reflected, BswupProgressCatalog.Parameters.Select(p => p.Name).ToArray(),
-            "the reference is meant to be the assembly's own answer, with nothing added or left out");
+        Assert.AreSequenceEqual(reflected, BswupProgressCatalog.Parameters.Select(p => p.Name).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "the reference is meant to be the assembly's own answer, with nothing added or left out");
     }
 
     [TestMethod]
@@ -53,8 +52,7 @@ public class ProgressCatalogTests
 
         Assert.AreEqual("true", parameter.Default);
         Assert.AreEqual("bool", parameter.Type);
-        StringAssert.Contains(parameter.Summary, "false",
-            "the answer has to name the opt-out, not just the current value");
+        Assert.Contains("false", parameter.Summary!, "the answer has to name the opt-out, not just the current value");
     }
 
     [TestMethod]
@@ -63,7 +61,7 @@ public class ProgressCatalogTests
         var names = BswupProgressCatalog.Parameters.Select(parameter => parameter.Name).ToArray();
 
         Assert.AreEqual("AutoReload", names[0], "what happens when an update finishes leads");
-        Assert.IsTrue(Array.IndexOf(names, "ChildContent") > Array.IndexOf(names, "ShowAssets"));
+        Assert.IsGreaterThan(Array.IndexOf(names, "ShowAssets"), Array.IndexOf(names, "ChildContent"));
     }
 
     [TestMethod]
@@ -89,7 +87,7 @@ public class ProgressCatalogTests
             "bit-bswup-reload", "bit-bswup-reload-status",
         })
         {
-            CollectionAssert.Contains(ids, expected);
+            Assert.Contains(expected, ids);
         }
 
         Assert.IsTrue(BswupProgressCatalog.ProgressUi.Elements.All(element => string.IsNullOrWhiteSpace(element.Role) is false));
@@ -104,7 +102,7 @@ public class ProgressCatalogTests
             .Select(element => element.Id)
             .ToArray();
 
-        CollectionAssert.AreEquivalent(new[] { "bit-bswup-reload", "bit-bswup-reload-status" }, componentOwned);
+        Assert.AreSequenceEqual(new[] { "bit-bswup-reload", "bit-bswup-reload-status" }, componentOwned, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -112,19 +110,19 @@ public class ProgressCatalogTests
     {
         var requires = string.Join("\n", BswupProgressCatalog.ProgressUi.Requires);
 
-        StringAssert.Contains(requires, "bit-bswup.progress.css");
-        StringAssert.Contains(requires, "bit-bswup.progress.js");
+        Assert.Contains("bit-bswup.progress.css", requires);
+        Assert.Contains("bit-bswup.progress.js", requires);
     }
 
     [TestMethod]
     public void ProgressUi_CarriesTheRuntimeConfigCallAndTheCaveats()
     {
-        StringAssert.Contains(BswupProgressCatalog.ProgressUi.RuntimeConfig, "BitBswupProgress.config");
+        Assert.Contains("BitBswupProgress.config", BswupProgressCatalog.ProgressUi.RuntimeConfig);
 
         var notes = string.Join("\n", BswupProgressCatalog.ProgressUi.Notes);
 
-        StringAssert.Contains(notes, "BACKGROUND UPDATE");
-        StringAssert.Contains(notes, "Content-Security-Policy");
-        StringAssert.Contains(notes, "index.html", "the standalone-WebAssembly caveat is the one people hit");
+        Assert.Contains("BACKGROUND UPDATE", notes);
+        Assert.Contains("Content-Security-Policy", notes);
+        Assert.Contains("index.html", notes, "the standalone-WebAssembly caveat is the one people hit");
     }
 }

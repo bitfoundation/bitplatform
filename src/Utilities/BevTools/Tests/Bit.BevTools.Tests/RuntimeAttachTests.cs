@@ -67,7 +67,9 @@ public class RuntimeAttachTests : BunitContext
         var late = session.Components.All.Single(r => r.Type == typeof(ChildComponent) && r != child);
         Assert.AreEqual(1, late.RenderCount);
         Assert.AreEqual(BevRenderCause.Initial, late.LastRender!.Cause);
-        Assert.AreEqual(typeof(LazyHost), late.Parent?.Type);
+        var expectedValue = typeof(LazyHost);
+        var actualValue = late.Parent?.Type;
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -170,6 +172,7 @@ public class RuntimeAttachTests : BunitContext
     }
 
     [TestMethod]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0067", Justification = "The synchronous configuration callback must wait for another attach to detect a held lock.")]
     public void Attach_runs_the_app_s_configure_callback_outside_its_lock()
     {
         using var provider = new ServiceCollection().BuildServiceProvider();
@@ -179,7 +182,7 @@ public class RuntimeAttachTests : BunitContext
 
         // A callback that waits on an attach of another scope, made on another thread, deadlocked inside the lock.
         Attached = BitBevTools.Attach(first.ServiceProvider, _ =>
-            Assert.IsTrue(Task.Run(() => other = BitBevTools.Attach(second.ServiceProvider)).Wait(TimeSpan.FromSeconds(10))));
+            Assert.IsTrue(Task.Run(() => other = BitBevTools.Attach(second.ServiceProvider)).Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken)));
 
         Assert.IsNotNull(other);
         other.Dispose();
@@ -216,12 +219,12 @@ public class RuntimeAttachTests : BunitContext
             .BuildServiceProvider();
         using var scope = provider.CreateScope();
         var client = scope.ServiceProvider.GetRequiredService<HttpClient>();
-        await client.GetAsync("before");
+        await client.GetAsync("before", TestContext.CancellationToken);
 
         Attached = BitBevTools.Attach(scope.ServiceProvider);
         using (Attached.UseAmbient())
         {
-            await client.GetAsync("after");
+            await client.GetAsync("after", TestContext.CancellationToken);
         }
 
         Assert.AreEqual(1, Attached.Http.Count);
@@ -249,9 +252,11 @@ public class RuntimeAttachTests : BunitContext
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromResult(respond(request));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }
 
-public class LazyHost : ComponentBase
+internal class LazyHost : ComponentBase
 {
     [Inject] public IServiceProvider Services { get; set; } = default!;
 

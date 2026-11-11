@@ -6,7 +6,7 @@
 /// its option lookups live in the page, not on the server - and every test opens its own browser context, so
 /// sharing the process shares nothing.
 /// </summary>
-public sealed class DemoHost : IAsyncDisposable
+internal sealed class DemoHost : IAsyncDisposable
 {
     private readonly ChildProcess? _process;
 

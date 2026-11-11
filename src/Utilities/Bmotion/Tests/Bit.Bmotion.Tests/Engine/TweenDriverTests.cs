@@ -116,7 +116,7 @@ public class TweenDriverTests
         // only completion is guaranteed.
         Assert.IsTrue(done);
         // A cancelled Tick must exit before _apply, so no new value is emitted after Cancel().
-        Assert.AreEqual(logCountAfterFirstTick, log.Count);
+        Assert.HasCount(logCountAfterFirstTick, log);
     }
 
     // ── Repeat ────────────────────────────────────────────────────────────────

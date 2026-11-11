@@ -68,7 +68,7 @@ internal sealed class McpServerFixture : IAsyncDisposable
         var result = await Client.CallToolAsync(tool, arguments ?? []);
         var text = string.Join('\n', result.Content.OfType<TextContentBlock>().Select(block => block.Text));
 
-        Assert.IsFalse(result.IsError is true, $"'{tool}' answered with an error: {text}");
+        Assert.AreNotEqual(true, result.IsError, $"'{tool}' answered with an error: {text}");
 
         return text;
     }

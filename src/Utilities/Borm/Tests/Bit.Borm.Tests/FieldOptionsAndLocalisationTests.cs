@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Bit.Borm.Tests;
 
 /// <summary>Renders every UI string in Klingon, so anything hard-coded in English stands out.</summary>
-public sealed class StubMessageProvider : IBormMessageProvider
+internal sealed class StubMessageProvider : IBormMessageProvider
 {
     public string Get(string key, params object?[] args) => $"[{key}]";
 }

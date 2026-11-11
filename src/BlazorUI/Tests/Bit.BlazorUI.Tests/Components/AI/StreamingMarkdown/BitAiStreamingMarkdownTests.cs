@@ -37,7 +37,7 @@ public class BitAiStreamingMarkdownTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         // The class of the component is its own, not the Markdown view's.
         Assert.IsFalse(component.Find(".bit-aimdv").ClassList.Contains("custom-class"));
     }
@@ -51,9 +51,9 @@ public class BitAiStreamingMarkdownTests : BitAiTestBase
             .Add(c => c.Styles, new() { Root = "margin: 1px", Markdown = new() { Root = "margin: 2px" } }));
 
         Assert.IsTrue(component.Find(".bit-aismd").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-aismd").GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", component.Find(".bit-aismd").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aimdv").ClassList.Contains("c-view"));
-        StringAssert.Contains(component.Find(".bit-aimdv").GetAttribute("style"), "margin: 2px");
+        Assert.Contains("margin: 2px", component.Find(".bit-aimdv").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aimdv-par").ClassList.Contains("c-par"));
     }
 
@@ -93,7 +93,7 @@ public class BitAiStreamingMarkdownTests : BitAiTestBase
             .Add(c => c.CascadedOptions, ui));
 
         Assert.IsEmpty(withoutMath.FindAll(".bit-aimdv-mth"));
-        StringAssert.Contains(withoutMath.Find(".bit-aimdv-par").TextContent, "$x^2$");
+        Assert.Contains("$x^2$", withoutMath.Find(".bit-aimdv-par").TextContent);
     }
 
     [TestMethod]
@@ -116,13 +116,13 @@ public class BitAiStreamingMarkdownTests : BitAiTestBase
             .Add(c => c.IsStreaming, true));
 
         Assert.IsNotEmpty(component.FindAll(".bit-aimdv-crt"));
-        Assert.IsFalse(component.Markup.Contains("**"));
+        Assert.DoesNotContain("**", component.Markup);
 
         component.Render(p => p
             .Add(c => c.Text, "First.\n\nSecond **bold**.")
             .Add(c => c.IsStreaming, false));
 
-        StringAssert.Contains(component.Markup, "<strong>bold</strong>");
+        Assert.Contains("<strong>bold</strong>", component.Markup);
         Assert.IsEmpty(component.FindAll(".bit-aimdv-crt"));
     }
 

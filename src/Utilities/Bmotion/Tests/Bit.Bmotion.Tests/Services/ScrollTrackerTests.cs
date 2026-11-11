@@ -92,7 +92,7 @@ public class ScrollTrackerTests
         await tracker.ObserveAsync(_ => { });
         await tracker.ObserveAsync(new BmScrollOptions { ContainerId = "list" }, _ => { });
 
-        CollectionAssert.AreEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray());
+        Assert.AreSequenceEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray());
         Assert.AreEqual("list", interop.ArgsOf("observeScroll")[1][0], "the new subscription watches the container");
     }
 
@@ -108,7 +108,7 @@ public class ScrollTrackerTests
 
         var observed = interop.ArgsOf("observeScroll").Select(a => (string)a[2]!).ToArray();
         var unobserved = interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray();
-        CollectionAssert.AreEquivalent(observed, unobserved, "every subscription ever opened must be closed");
+        Assert.AreSequenceEqual(observed, unobserved, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "every subscription ever opened must be closed");
         Assert.IsTrue(FakeBmotionInterop.IsDisposed(interop.ScrollReferences["scroll-key-2"]),
             "a scroll event arriving after disposal must not reach the tracker");
 
@@ -133,8 +133,7 @@ public class ScrollTrackerTests
         gate.SetResult();
         await observing;
 
-        CollectionAssert.AreEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray(),
-            "the subscription that came back after disposal must be removed, or the JS listener outlives the tracker");
+        Assert.AreSequenceEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray(), "the subscription that came back after disposal must be removed, or the JS listener outlives the tracker");
     }
 
     [TestMethod]

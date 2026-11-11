@@ -36,7 +36,7 @@ public class BitTimelineParamsTests : BunitTestContext
     public void BitTimelineParamsShouldHaveCorrectParamName()
     {
         // The params object is not generic, so its name is the bare component name, whatever the timeline is generic over.
-        Assert.AreEqual("BitParams.BitTimeline", BitTimelineParams.ParamName);
+        Assert.AreEqual("BitParams.BitTimeline", new BitTimelineParams().Name);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class BitTimelineParamsTests : BunitTestContext
                                                              .ToArray();
 
         // Guards the guard: a reflection walk that found nothing would let every parameter through in silence.
-        Assert.IsTrue(parameters.Length > 10, $"Only {parameters.Length} parameters were found on BitTimeline.");
+        Assert.IsGreaterThan(10, parameters.Length, $"Only {parameters.Length} parameters were found on BitTimeline.");
 
         foreach (var name in parameters)
         {
@@ -148,7 +148,7 @@ public class BitTimelineParamsTests : BunitTestContext
     {
         var type = component.GetType();
 
-        Assert.IsTrue(expected.Count > 10, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
+        Assert.IsGreaterThan(10, expected.Count, $"Only {expected.Count} cascading parameters were found on {type.Name}.");
 
         foreach (var (name, value) in expected)
         {

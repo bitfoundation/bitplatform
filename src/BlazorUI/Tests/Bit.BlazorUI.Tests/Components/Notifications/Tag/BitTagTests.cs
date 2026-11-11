@@ -586,8 +586,8 @@ public class BitTagTests : BunitTestContext
         var rel = component.Find(".bit-tag-cnt").GetAttribute("rel");
 
         Assert.IsNotNull(rel);
-        Assert.IsTrue(rel.Contains("nofollow"));
-        Assert.IsTrue(rel.Contains("noreferrer"));
+        Assert.Contains("nofollow", rel);
+        Assert.Contains("noreferrer", rel);
     }
 
     [TestMethod,
@@ -1049,7 +1049,7 @@ public class BitTagTests : BunitTestContext
 
         component.Find(".bit-tag-cnt").Click();
 
-        Assert.AreEqual(true, changed);
+        Assert.IsTrue(changed);
     }
 
     [TestMethod]
@@ -1279,7 +1279,7 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.Text, "Design");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-vhd"));
         Assert.IsNull(component.Find(".bit-tag-cnt").GetAttribute("aria-hidden"));
     }
 
@@ -1294,7 +1294,7 @@ public class BitTagTests : BunitTestContext
         });
 
         // the button carries the name itself, and a name announced twice is worse than one announced once
-        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-vhd"));
         Assert.AreEqual("Show the filters", component.Find("button.bit-tag-cnt").GetAttribute("aria-label"));
     }
 
@@ -1309,7 +1309,7 @@ public class BitTagTests : BunitTestContext
 
         // the tag cannot see what the app put in there, so it never hides it
         Assert.AreEqual("A template", component.Find(".bit-tag-vhd").TextContent);
-        Assert.AreEqual(0, component.FindAll("[aria-hidden]").Count);
+        Assert.IsEmpty(component.FindAll("[aria-hidden]"));
     }
 
     [TestMethod]
@@ -1446,7 +1446,7 @@ public class BitTagTests : BunitTestContext
         });
 
         Assert.IsNull(component.Find(".bit-tag").GetAttribute("aria-describedby"));
-        Assert.AreEqual(0, component.FindAll(".bit-tag-vhd").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-vhd"));
     }
 
     [TestMethod]
@@ -1742,7 +1742,7 @@ public class BitTagTests : BunitTestContext
         });
 
         // the picture is hidden behind the name, so the name is read once rather than twice
-        Assert.AreEqual(1, component.FindAll(".bit-tag-vhd").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tag-vhd"));
         Assert.AreEqual("true", component.Find(".bit-tag-img").GetAttribute("aria-hidden"));
     }
 
@@ -2083,7 +2083,7 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.Text, "Status");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-tag-sci").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-sci"));
     }
 
     [TestMethod]
@@ -2356,7 +2356,7 @@ public class BitTagTests : BunitTestContext
 
         // the picture only renders where there is no icon to take its place, so an alt sitting next to an
         // icon names nothing and must not be taken for the name of the tag
-        Assert.AreEqual(0, component.FindAll(".bit-tag-img").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tag-img"));
         Assert.AreEqual("Pinned to the top", component.Find(".bit-tag-vhd").TextContent);
     }
 
@@ -2769,15 +2769,21 @@ public class BitTagTests : BunitTestContext
         var tagHint = tagAnchor.QuerySelector(".bit-tag-vhd");
 
         Assert.AreEqual(linkAnchor.GetAttribute("aria-label"), tagAnchor.GetAttribute("aria-label"));
-        Assert.AreEqual(linkHint?.TextContent, tagHint?.TextContent);
-        Assert.AreEqual(linkHint?.Id is { Length: > 0 }, tagHint?.Id is { Length: > 0 });
+        var expectedValue = linkHint?.TextContent;
+        var actualValue = tagHint?.TextContent;
+        Assert.AreEqual(expectedValue, actualValue);
+        var expectedValue1 = linkHint?.Id is { Length: > 0 };
+        var actualValue2 = tagHint?.Id is { Length: > 0 };
+        Assert.AreEqual(expectedValue1, actualValue2);
 
         // the hint's id is each component's own, so the lists are compared with it taken out
         static string? WithoutHintId(string? labelledBy, string? hintId)
             => hintId is { Length: > 0 } ? labelledBy?.Replace(hintId, "{hint}") : labelledBy;
+        var expectedValue3 = WithoutHintId(linkAnchor.GetAttribute("aria-labelledby"), linkHint?.Id);
+        var actualValue4 = WithoutHintId(tagAnchor.GetAttribute("aria-labelledby"), tagHint?.Id);
 
-        Assert.AreEqual(WithoutHintId(linkAnchor.GetAttribute("aria-labelledby"), linkHint?.Id),
-                        WithoutHintId(tagAnchor.GetAttribute("aria-labelledby"), tagHint?.Id));
+        Assert.AreEqual(expectedValue3,
+actualValue4);
     }
 
     [TestMethod]
@@ -2804,9 +2810,9 @@ public class BitTagTests : BunitTestContext
             parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
         });
 
-        Assert.AreEqual(0, sameTab.FindAll(".bit-tag-vhd").Count);
-        Assert.AreEqual(0, disabled.FindAll(".bit-tag-vhd").Count);
-        Assert.AreEqual(0, button.FindAll(".bit-tag-vhd").Count);
+        Assert.IsEmpty(sameTab.FindAll(".bit-tag-vhd"));
+        Assert.IsEmpty(disabled.FindAll(".bit-tag-vhd"));
+        Assert.IsEmpty(button.FindAll(".bit-tag-vhd"));
     }
 
     [TestMethod]

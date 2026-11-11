@@ -24,17 +24,17 @@ public sealed class ExportSearchTests
             var counting = new CountingEncoder();
             var registry = ImageCodecRegistry.CreateDefault().AddEncoder(counting);
             var processor = new ImageProcessor(registry);
-            var largest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.95 }).Length;
-            var smallest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.3 }).Length;
+            var largest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.95 }, TestContext.CancellationToken).Length;
+            var smallest = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = 0.3 }, TestContext.CancellationToken).Length;
             var budget = (long)(smallest + (largest - smallest) * fraction);
 
-            var result = await processor.EncodeAsync(image, ImageExportOptions.Jpeg with { Quality = 0.95, MinQuality = 0.3, MaxFileSize = budget });
+            var result = await processor.EncodeAsync(image, ImageExportOptions.Jpeg with { Quality = 0.95, MinQuality = 0.3, MaxFileSize = budget }, TestContext.CancellationToken);
 
-            Assert.IsTrue(result.Length <= budget, $"{result.Length} bytes for a budget of {budget}");
-            Assert.IsTrue(counting.Encodes <= bisection, $"{counting.Encodes} encodes for a budget of {budget}");
+            Assert.IsLessThanOrEqualTo(budget, result.Length, $"{result.Length} bytes for a budget of {budget}");
+            Assert.IsLessThanOrEqualTo(bisection, counting.Encodes, $"{counting.Encodes} encodes for a budget of {budget}");
             // Nearly the highest quality that fits: one notch higher must not fit.
-            var better = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = result.Quality!.Value + 0.03 }).Length;
-            Assert.IsTrue(better > budget * 0.97, $"quality {result.Quality} leaves room: {better} bytes still fit {budget}");
+            var better = JpegEncoder.Encode(image, ImageExportOptions.Jpeg with { Quality = result.Quality!.Value + 0.03 }, TestContext.CancellationToken).Length;
+            Assert.IsGreaterThan(budget * 0.97, better, $"quality {result.Quality} leaves room: {better} bytes still fit {budget}");
         }
     }
 
@@ -48,4 +48,6 @@ public sealed class ExportSearchTests
             return ValueTask.FromResult(JpegEncoder.Encode(image, options, cancellationToken));
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

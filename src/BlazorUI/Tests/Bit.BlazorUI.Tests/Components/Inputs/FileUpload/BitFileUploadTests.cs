@@ -55,7 +55,7 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.Label, string.Empty);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-upl-lbl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-lbl"));
     }
 
     [TestMethod]
@@ -67,7 +67,7 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         Assert.IsNotNull(com.Find(".custom-label"));
-        Assert.AreEqual(0, com.FindAll(".bit-upl-lbl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-lbl"));
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public class BitFileUploadTests : BunitTestContext
         var root = com.Find(".bit-upl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("background-color: red"));
+        Assert.Contains("background-color: red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class BitFileUploadTests : BunitTestContext
             parameters.Add(p => p.HideLabel, true);
         });
 
-        Assert.AreEqual(0, com.FindAll(".bit-upl-lbl").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-lbl"));
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class BitFileUploadTests : BunitTestContext
         var description = com.Find(".bit-upl-dsc");
 
         Assert.IsNotNull(com.Find(".custom-description"));
-        Assert.IsFalse(description.TextContent.Contains("plain text"));
+        Assert.DoesNotContain("plain text", description.TextContent);
     }
 
     [TestMethod]
@@ -230,7 +230,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-upl-dsc").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-dsc"));
     }
 
     [TestMethod]
@@ -266,7 +266,7 @@ public class BitFileUploadTests : BunitTestContext
         var label = com.Find(".bit-upl-lbl");
 
         Assert.IsTrue(label.ClassList.Contains("custom-label"));
-        Assert.IsTrue(label.GetAttribute("style")!.Contains("color: blue"));
+        Assert.Contains("color: blue", label.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -338,7 +338,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.HasCount(2, items);
         Assert.AreEqual("one.txt", com.FindAll(".bit-upl-fn")[0].TextContent.Trim());
         Assert.AreEqual("two.txt", com.FindAll(".bit-upl-fn")[1].TextContent.Trim());
-        Assert.AreEqual(2, com.Instance.Files.Count);
+        Assert.HasCount(2, com.Instance.Files);
     }
 
     [TestMethod]
@@ -354,7 +354,7 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         Assert.IsEmpty(com.FindAll(".bit-upl-itm"));
-        Assert.AreEqual(1, com.Instance.Files.Count);
+        Assert.ContainsSingle(com.Instance.Files);
     }
 
     [TestMethod]
@@ -523,7 +523,7 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         Assert.IsNotNull(invalidFiles);
-        Assert.HasCount(1, invalidFiles);
+        Assert.ContainsSingle(invalidFiles);
         Assert.AreEqual("big.txt", invalidFiles[0].Name);
     }
 
@@ -1053,7 +1053,7 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.AreEqual(2, com.Instance.Files.Count);
+        Assert.HasCount(2, com.Instance.Files);
         Assert.AreEqual("a.txt", com.Instance.Files[0].Name);
         Assert.AreEqual("b.txt", com.Instance.Files[1].Name);
     }
@@ -1071,7 +1071,7 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.AreEqual(1, com.Instance.Files.Count);
+        Assert.ContainsSingle(com.Instance.Files);
         Assert.AreEqual("b.txt", com.Instance.Files[0].Name);
     }
 
@@ -1131,7 +1131,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual("a.txt", com.Find(".custom-item").TextContent.Trim());
         Assert.IsEmpty(com.FindAll(".bit-upl-itm"));
         // the wrapper of a templated file keeps carrying the listitem role of the list it lives in.
-        Assert.HasCount(1, com.FindAll("[role='list'] > [role='listitem']"));
+        Assert.ContainsSingle(com.FindAll("[role='list'] > [role='listitem']"));
     }
 
     [TestMethod]
@@ -1467,7 +1467,7 @@ public class BitFileUploadTests : BunitTestContext
         // only an image has a thumbnail of its own; the box is still there, carrying a type glyph,
         // so the names of a mixed list stay lined up along one edge.
         Assert.IsEmpty(com.FindAll("img.bit-upl-prv"));
-        Assert.HasCount(1, com.FindAll(".bit-upl-prv.bit-upl-pvi"));
+        Assert.ContainsSingle(com.FindAll(".bit-upl-prv.bit-upl-pvi"));
     }
 
     [TestMethod]
@@ -1505,7 +1505,7 @@ public class BitFileUploadTests : BunitTestContext
         var preview = com.Find(".bit-upl-prv");
 
         Assert.IsTrue(preview.ClassList.Contains("custom-preview"));
-        Assert.IsTrue(preview.GetAttribute("style")!.Contains("border-radius: 0"));
+        Assert.Contains("border-radius: 0", preview.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1517,7 +1517,7 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.HasCount(1, com.FindAll("[role='list']"));
+        Assert.ContainsSingle(com.FindAll("[role='list']"));
 
         await com.InvokeAsync(() => com.Instance.RemoveFile());
 
@@ -1815,7 +1815,7 @@ public class BitFileUploadTests : BunitTestContext
 
         // starting a file that is already on its way would do nothing, so it offers no button for it,
         // but it can still be called off before its turn ever comes.
-        Assert.HasCount(1, buttons);
+        Assert.ContainsSingle(buttons);
         Assert.AreEqual("Cancel b.txt", buttons[0].GetAttribute("aria-label"));
     }
 
@@ -1956,7 +1956,7 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.RemoveFile(com.Instance.Files[0]));
 
         // an empty listitem for a file that is not in the list anymore is noise in the accessibility tree.
-        Assert.HasCount(1, com.FindAll("[role='listitem']"));
+        Assert.ContainsSingle(com.FindAll("[role='listitem']"));
         Assert.AreEqual("b.txt", com.Find(".custom-item").TextContent.Trim());
     }
 
@@ -1990,7 +1990,7 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 100));
         Assert.IsNull(com.Instance.Files[0].UploadSpeed);
 
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
 
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 500));
 
@@ -2011,7 +2011,7 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Upload());
 
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
 
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 500));
 
@@ -2084,9 +2084,9 @@ public class BitFileUploadTests : BunitTestContext
         var url = Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"].Single().Arguments[4] as string;
 
         Assert.IsNotNull(url);
-        Assert.IsTrue(url.StartsWith("/upload?"));
-        Assert.IsTrue(url.Contains("album=trip"));
-        Assert.IsTrue(url.Contains("token=fresh"));
+        Assert.StartsWith("/upload?", url);
+        Assert.Contains("album=trip", url);
+        Assert.Contains("token=fresh", url);
     }
 
     [TestMethod]
@@ -2191,7 +2191,7 @@ public class BitFileUploadTests : BunitTestContext
 
         Assert.IsNotNull(handler.LastRequest);
         Assert.AreEqual(HttpMethod.Delete, handler.LastRequest.Method);
-        Assert.IsTrue(handler.LastRequest.RequestUri!.ToString().Contains("fileName=a.txt"));
+        Assert.Contains("fileName=a.txt", handler.LastRequest.RequestUri!.ToString());
         Assert.AreEqual("file-1", handler.LastRequest.Headers.GetValues("BIT_FILE_ID").Single());
         Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
     }
@@ -2302,7 +2302,7 @@ public class BitFileUploadTests : BunitTestContext
         // this report was the one that got skipped depends on the clock, so only its arrival is asserted.
         Assert.AreEqual(80, com.Instance.Files[0].LastChunkUploadedSize);
 
-        await Task.Delay(400);
+        await Task.Delay(400, TestContext.CancellationToken);
 
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 80));
 
@@ -2345,7 +2345,7 @@ public class BitFileUploadTests : BunitTestContext
         // from the running request and start the file over from its very first byte.
         await com.InvokeAsync(() => com.Instance.Upload());
 
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
         Assert.AreEqual(60, com.Instance.Files[0].LastChunkUploadedSize);
     }
 
@@ -2425,7 +2425,7 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Upload());
 
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.CancellationToken);
 
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 400));
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(1, 200));
@@ -2707,7 +2707,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsFalse(instance.AllowDrop);
         Assert.IsFalse(instance.AllowPaste);
         Assert.IsFalse(instance.AllowDuplicates);
-        Assert.AreEqual(2, instance.AllowedExtensions.Count);
+        Assert.HasCount(2, instance.AllowedExtensions);
         Assert.IsTrue(instance.Append);
         Assert.IsTrue(instance.AutoChunkSize);
         Assert.IsTrue(instance.AutoReset);
@@ -2792,9 +2792,9 @@ public class BitFileUploadTests : BunitTestContext
         var label = com.Find(".bit-upl-lbl");
 
         Assert.IsTrue(root.ClassList.Contains("custom-root"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.IsTrue(label.ClassList.Contains("custom-label"));
-        Assert.IsTrue(label.GetAttribute("style")!.Contains("color: blue"));
+        Assert.Contains("color: blue", label.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2860,11 +2860,11 @@ public class BitFileUploadTests : BunitTestContext
         // the removed file leaves the list, and the focus is handed to the item that takes its place
         // rather than being dropped on the document body with the button that was pressed.
         Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
-        Assert.HasCount(1, com.FindAll(".bit-upl-itm"));
+        Assert.ContainsSingle(com.FindAll(".bit-upl-itm"));
 
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(focusCountBeforeRemove + 1, focused.Count);
+        Assert.HasCount(focusCountBeforeRemove + 1, focused);
         focused[^1].Arguments[0].ShouldBeElementReferenceTo(remainingRemoveButton);
     }
 
@@ -2955,7 +2955,7 @@ public class BitFileUploadTests : BunitTestContext
         var preview = com.Find(".bit-upl-prv");
 
         Assert.AreEqual("DIV", preview.TagName);
-        Assert.Contains("bit-upl-pvi", preview.ClassName);
+        Assert.Contains("bit-upl-pvi", preview.ClassName!);
         Assert.Contains($"bit-icon--{glyph}", preview.InnerHtml);
     }
 
@@ -3075,7 +3075,7 @@ public class BitFileUploadTests : BunitTestContext
 
         Assert.AreEqual("bit-upl-drj nope", args[8]);
         Assert.AreEqual("color:red", args[9]);
-        CollectionAssert.AreEqual(new[] { "image/*", "application/pdf" }, (string[])args[10]!);
+        Assert.AreSequenceEqual(new[] { "image/*", "application/pdf" }, (string[])args[10]!);
         Assert.AreEqual(3, args[11]);
     }
 
@@ -3118,7 +3118,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(0, com.Instance.OverallUploadProgress);
         Assert.AreEqual("Already uploaded", com.Find(".bit-upl-us").TextContent.Trim());
         // a file that never travelled from here shows its size alone rather than a count running up to it.
-        Assert.AreEqual(0, com.FindAll(".bit-upl-pct").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-pct"));
     }
 
     [TestMethod]
@@ -3264,7 +3264,7 @@ public class BitFileUploadTests : BunitTestContext
         // the same collection is the same record, and the render it arrives on is not a reason to undo
         // what the user has done to the list since.
         Assert.AreEqual(BitFileUploadStatus.Removed, com.Instance.Files[0].Status);
-        Assert.AreEqual(0, com.FindAll(".bit-upl-itm").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-itm"));
     }
 
     [TestMethod]
@@ -3461,11 +3461,11 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         // nothing has been selected or uploaded in this visit yet, whatever the record already holds.
-        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "No file selected. 1 already attached.");
+        Assert.StartsWith("No file selected. 1 already attached.", com.Find(".bit-upl-lvr").TextContent);
 
         SelectFiles(com);
 
-        StringAssert.StartsWith(com.Find(".bit-upl-lvr").TextContent, "1 file selected. 1 already attached.");
+        Assert.StartsWith("1 file selected. 1 already attached.", com.Find(".bit-upl-lvr").TextContent);
     }
 
     [TestMethod]
@@ -3473,7 +3473,7 @@ public class BitFileUploadTests : BunitTestContext
     {
         var com = RenderComponent<BitFileUpload>();
 
-        Assert.AreEqual(0, com.FindAll(".bit-upl-lic").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-lic"));
     }
 
     [TestMethod]
@@ -3539,7 +3539,7 @@ public class BitFileUploadTests : BunitTestContext
 
         SelectFiles(com);
 
-        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-bat"));
     }
 
     [TestMethod]
@@ -3555,35 +3555,34 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         // an empty list has nothing to act on.
-        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+        Assert.IsEmpty(com.FindAll(".bit-upl-bat"));
 
         SelectFiles(com);
 
         // the buttons keep their places, and the ones with nothing to do are only marked unavailable.
-        CollectionAssert.AreEqual(new[] { "Send all", "Cancel all", "Clear" },
-                                  com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray());
-        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+        Assert.AreSequenceEqual(new[] { "Send all", "Cancel all", "Clear" }, com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.AreSequenceEqual(new[] { false, true, false }, AriaDisabledStates(com));
 
         com.FindAll(".bit-upl-bab")[0].Click();
 
         // once everything is on its way only calling it off is left.
         Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.InProgress));
-        CollectionAssert.AreEqual(new[] { true, false, true }, AriaDisabledStates(com));
+        Assert.AreSequenceEqual(new[] { true, false, true }, AriaDisabledStates(com));
 
         // an unavailable button still takes the click, and does nothing with it.
         com.FindAll(".bit-upl-bab")[2].Click();
-        Assert.AreEqual(2, com.Instance.Files.Count);
+        Assert.HasCount(2, com.Instance.Files);
 
         com.FindAll(".bit-upl-bab")[1].Click();
 
         Assert.IsTrue(com.Instance.Files.All(f => f.Status == BitFileUploadStatus.Canceled));
         // a canceled file can be retried, and a settled list cleared.
-        CollectionAssert.AreEqual(new[] { false, true, false }, AriaDisabledStates(com));
+        Assert.AreSequenceEqual(new[] { false, true, false }, AriaDisabledStates(com));
 
         com.FindAll(".bit-upl-bab")[2].Click();
 
-        Assert.AreEqual(0, com.Instance.Files.Count);
-        Assert.AreEqual(0, com.FindAll(".bit-upl-bat").Count);
+        Assert.IsEmpty(com.Instance.Files);
+        Assert.IsEmpty(com.FindAll(".bit-upl-bat"));
 
         static bool[] AriaDisabledStates(IRenderedComponent<BitFileUpload> com)
             => com.FindAll(".bit-upl-bab").Select(b => b.GetAttribute("aria-disabled") == "true").ToArray();
@@ -3604,7 +3603,7 @@ public class BitFileUploadTests : BunitTestContext
 
         // the selection already means upload, so there is no button to ask for it.
         var buttons = com.FindAll(".bit-upl-bab").Select(b => b.TextContent.Trim()).ToArray();
-        CollectionAssert.AreEqual(new[] { "Cancel all", "Clear" }, buttons);
+        Assert.AreSequenceEqual(new[] { "Cancel all", "Clear" }, buttons);
     }
 
     [TestMethod]
@@ -3757,7 +3756,7 @@ public class BitFileUploadTests : BunitTestContext
 
         // the base OnChange heard every move of the value the user made, and only those: the failure was the
         // server's answer rather than an edit, so it moved the value without being reported as a change.
-        CollectionAssert.AreEqual(new[] { "a.txt,b.txt", "a.txt", "a.txt", null }, values);
+        Assert.AreSequenceEqual(new[] { "a.txt,b.txt", "a.txt", "a.txt", null }, values);
     }
 
     [TestMethod]
@@ -3788,7 +3787,7 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         Assert.AreEqual("invoice.pdf,b.txt", value);
-        CollectionAssert.AreEqual(new[] { "invoice.pdf,b.txt" }, changes);
+        Assert.AreSequenceEqual(new[] { "invoice.pdf,b.txt" }, changes);
     }
 
     [TestMethod]
@@ -3848,9 +3847,9 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         // a selection hands the whole list over, the rejected file included; the value is what is left of it.
-        Assert.HasCount(1, filesChanges);
-        CollectionAssert.AreEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
-        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+        Assert.ContainsSingle(filesChanges);
+        Assert.AreSequenceEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
+        Assert.AreSequenceEqual(new[] { "a.txt" }, values);
 
         await com.InvokeAsync(() => com.Instance.Upload());
         await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
@@ -3858,10 +3857,10 @@ public class BitFileUploadTests : BunitTestContext
         // a status change hands over the one file it is about; a failed upload is not an edit of the user's, so
         // the base OnChange does not hear of the value it emptied.
         var last = filesChanges[^1];
-        Assert.HasCount(1, last);
+        Assert.ContainsSingle(last);
         Assert.AreEqual("a.txt", last[0].Name);
         Assert.AreEqual(BitFileUploadStatus.Failed, last[0].Status);
-        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+        Assert.AreSequenceEqual(new[] { "a.txt" }, values);
         Assert.IsNull(com.Instance.Value);
     }
 
@@ -3903,7 +3902,7 @@ public class BitFileUploadTests : BunitTestContext
         // files stay, and so the value names them again - and quietly, since the change came from the consumer
         // rather than the user.
         Assert.AreEqual("invoice.pdf", com.Instance.Files.Single().Name);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"]);
         Assert.AreEqual("invoice.pdf", value);
         Assert.AreEqual(3, valueChanges);
         Assert.AreEqual(1, filesChanges);
@@ -3931,7 +3930,7 @@ public class BitFileUploadTests : BunitTestContext
         com.Render(parameters => parameters.Add(p => p.Value, "other.txt"));
 
         Assert.AreEqual("a.txt", com.Instance.Files.Single().Name);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"]);
 
         // the list writes its own value back the next time it changes.
         SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "2", Index = 0 }]);
@@ -4012,12 +4011,12 @@ public class BitFileUploadTests : BunitTestContext
         com.FindAll(".bit-upl-bab")[2].Click();
 
         Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.Files.Single().Status);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
 
         await browse.ClickAsync(new());
         await com.InvokeAsync(() => com.Instance.Browse());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"]);
 
         // an editable one browses again.
         com.Render(parameters => parameters.Add(p => p.ReadOnly, false));
@@ -4027,7 +4026,7 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Browse());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"]);
     }
 
     [TestMethod]
@@ -4050,7 +4049,7 @@ public class BitFileUploadTests : BunitTestContext
 
         var buttons = com.FindAll(".bit-upl-usi");
 
-        CollectionAssert.AreEqual(new[] { "Pause", "Cancel" }, buttons.Select(b => b.GetAttribute("title")).ToArray());
+        Assert.AreSequenceEqual(new[] { "Pause", "Cancel" }, buttons.Select(b => b.GetAttribute("title")).ToArray());
         Assert.IsTrue(buttons.All(b => b.GetAttribute("aria-disabled") == "true" && b.HasAttribute("disabled") is false));
 
         buttons[0].Click();
@@ -4059,7 +4058,7 @@ public class BitFileUploadTests : BunitTestContext
         com.FindAll(".bit-upl-bab")[1].Click();
 
         Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.pause"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.pause"]);
     }
 
     [TestMethod,
@@ -4209,7 +4208,7 @@ public class BitFileUploadTests : BunitTestContext
         // marked modified or validated before the user does anything.
         Assert.AreEqual("invoice.pdf", model.Value);
         Assert.IsFalse(editContext.IsModified());
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
     }
 
     [TestMethod]
@@ -4275,7 +4274,7 @@ public class BitFileUploadTests : BunitTestContext
 
         // a status change reports the value ahead of the files, as a selection does, so a handler of either reads
         // the value the change left behind.
-        CollectionAssert.AreEqual(new[] { "value:a.txt", "files:a.txt", "value:", "files:" }, order);
+        Assert.AreSequenceEqual(new[] { "value:a.txt", "files:a.txt", "value:", "files:" }, order);
     }
 
     [TestMethod]
@@ -4331,7 +4330,7 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.Upload());
 
         // the defaults first.
-        CollectionAssert.AreEqual(new[] { "Pause", "Cancel" }, com.FindAll(".bit-upl-usi").Select(b => b.GetAttribute("title")).ToArray());
+        Assert.AreSequenceEqual(new[] { "Pause", "Cancel" }, com.FindAll(".bit-upl-usi").Select(b => b.GetAttribute("title")).ToArray());
         Assert.IsTrue(com.Find(".bit-upl-usi[title='Pause'] i").ClassList.Contains("bit-icon--Pause"));
         Assert.IsTrue(com.Find(".bit-upl-usi[title='Cancel'] i").ClassList.Contains("bit-icon--Cancel"));
 
@@ -4379,7 +4378,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(BitFileUploadStatus.Paused, com.Instance.Files[0].Status);
 
         // a paused file offers its upload button again, to resume it, beside the cancel button.
-        CollectionAssert.AreEqual(new[] { "Upload", "Cancel" }, com.FindAll(".bit-upl-usi").Select(b => b.GetAttribute("title")).ToArray());
+        Assert.AreSequenceEqual(new[] { "Upload", "Cancel" }, com.FindAll(".bit-upl-usi").Select(b => b.GetAttribute("title")).ToArray());
 
         await com.Find(".bit-upl-usi[title='Upload']").ClickAsync(new());
         Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
@@ -4409,13 +4408,13 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.Upload());
 
-        CollectionAssert.AreEqual(new[] { "a.txt" }, uploading);
+        Assert.AreSequenceEqual(new[] { "a.txt" }, uploading);
 
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 40));
         await com.InvokeAsync(() => com.Instance.__HandleChunkUploadProgress(0, 70));
 
         // the first report is the start of the request itself, before a byte has gone out.
-        CollectionAssert.AreEqual(new long[] { 0, 40, 70 }, progress);
+        Assert.AreSequenceEqual(new long[] { 0, 40, 70 }, progress);
     }
 
     [TestMethod]
@@ -4442,15 +4441,15 @@ public class BitFileUploadTests : BunitTestContext
 
         var args = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.FileUpload.setup").Arguments;
 
-        Assert.AreEqual(true, args[3]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[3]));
         Assert.AreEqual("/upload", args[4]);
         Assert.AreSame(headers, args[5]);
         Assert.AreEqual("PUT", args[6]);
-        Assert.AreEqual(true, args[7]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[7]));
         Assert.AreEqual(2000L, args[8]);
         Assert.AreEqual("payload", args[9]);
-        Assert.AreEqual(true, args[10]);
-        Assert.AreEqual(true, args[11]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[10]));
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(args[11]));
     }
 
     [TestMethod]
@@ -4476,8 +4475,8 @@ public class BitFileUploadTests : BunitTestContext
         var request = handler.LastRequest!;
         var url = request.RequestUri!.ToString();
 
-        Assert.IsTrue(url.Contains("fileName=a.txt"));
-        Assert.IsTrue(url.Contains("album=trip"));
+        Assert.Contains("fileName=a.txt", url);
+        Assert.Contains("album=trip", url);
         Assert.AreEqual("1", request.Headers.GetValues("x-static").Single());
 
         // the providers answer in place of the static values, right before the request goes out.
@@ -4498,9 +4497,9 @@ public class BitFileUploadTests : BunitTestContext
         request = handler.LastRequest!;
         url = request.RequestUri!.ToString();
 
-        Assert.IsTrue(url.Contains("fileName=b.txt"));
-        Assert.IsTrue(url.Contains("token=fresh"));
-        Assert.IsFalse(url.Contains("album=trip"));
+        Assert.Contains("fileName=b.txt", url);
+        Assert.Contains("token=fresh", url);
+        Assert.DoesNotContain("album=trip", url);
         Assert.AreEqual("2", request.Headers.GetValues("x-fresh").Single());
         Assert.IsFalse(request.Headers.Contains("x-static"));
     }
@@ -4518,7 +4517,7 @@ public class BitFileUploadTests : BunitTestContext
         SelectFiles(com);
 
         Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
-        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"]);
     }
 
     [TestMethod]
@@ -4547,7 +4546,7 @@ public class BitFileUploadTests : BunitTestContext
 
         var messages = com.FindAll(".bit-upl-us").Select(m => m.TextContent.Trim()).ToArray();
 
-        CollectionAssert.AreEqual(new[] { string.Empty, "Twice", "Too big", "Wrong kind", "Too many" }, messages);
+        Assert.AreSequenceEqual(new[] { string.Empty, "Twice", "Too big", "Wrong kind", "Too many" }, messages);
     }
 
     [TestMethod]
@@ -4617,8 +4616,8 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
-        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("margin: 1px;", root.GetAttribute("style")!);
+        Assert.Contains("visibility:hidden", root.GetAttribute("style")!);
         Assert.AreEqual("root", root.GetAttribute("data-test"));
     }
 
@@ -4688,7 +4687,7 @@ public class BitFileUploadTests : BunitTestContext
 
         await com.Instance.DisposeAsync();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.clear"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.clear"]);
     }
 
     [TestMethod]
@@ -4710,7 +4709,7 @@ public class BitFileUploadTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, clear.Invocations);
+        Assert.ContainsSingle(clear.Invocations);
         Assert.AreSame(fileUpload, reference.Value);
 
         clear.SetVoidResult();
@@ -4794,7 +4793,7 @@ public class BitFileUploadTests : BunitTestContext
             var element = com.Find(selector);
 
             Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
-            StringAssert.Contains(element.GetAttribute("style") ?? string.Empty, style, $"{selector} lacks {style}.");
+            Assert.Contains(style, element.GetAttribute("style") ?? string.Empty, $"{selector} lacks {style}.");
         }
 
         AssertPart(".bit-upl-lic", "c-label-icon", "--s: label-icon;");
@@ -4856,4 +4855,6 @@ public class BitFileUploadTests : BunitTestContext
             return Task.FromResult(new HttpResponseMessage(statusCode));
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

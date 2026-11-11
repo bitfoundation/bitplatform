@@ -173,8 +173,8 @@ public class BitMessageParamsTests : BunitTestContext
     [TestMethod]
     public void BitMessageParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMessage)}", BitMessageParams.ParamName);
-        Assert.AreEqual("BitParams.BitMessage", BitMessageParams.ParamName);
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMessage)}", new BitMessageParams().Name);
+        Assert.AreEqual("BitParams.BitMessage", new BitMessageParams().Name);
     }
 
     [TestMethod]
@@ -229,10 +229,10 @@ public class BitMessageParamsTests : BunitTestContext
         var root = component.Find(".bit-msg");
         var style = root.GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-msg-justifycontent:center"));
-        Assert.IsTrue(style.Contains("--bit-msg-boxshadow:var(--bit-shd-4)"));
-        Assert.IsTrue(style.Contains("--bit-msg-maxlines:2"));
-        Assert.IsTrue(style.Contains("outline: 1px solid red;"));
+        Assert.Contains("--bit-msg-justifycontent:center", style);
+        Assert.Contains("--bit-msg-boxshadow:var(--bit-shd-4)", style);
+        Assert.Contains("--bit-msg-maxlines:2", style);
+        Assert.Contains("outline: 1px solid red;", style);
         Assert.IsTrue(component.Find(".bit-msg-cnt").ClassList.Contains("bit-msg-clp"));
     }
 
@@ -272,8 +272,8 @@ public class BitMessageParamsTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Message.observeOverflow"];
 
-        Assert.HasCount(1, invocation);
-        Assert.AreEqual(true, invocation[0].Arguments[3]);
+        Assert.ContainsSingle(invocation);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation[0].Arguments[3]));
     }
 
     [TestMethod]
@@ -288,7 +288,7 @@ public class BitMessageParamsTests : BunitTestContext
             AutoDismissTime = TimeSpan.FromMilliseconds(1000),
         });
 
-        Assert.HasCount(1, component.FindAll(".bit-msg-prb"));
+        Assert.ContainsSingle(component.FindAll(".bit-msg-prb"));
 
         // Waited for on the message's own renders rather than polled from the test thread: bUnit drops its parsed
         // DOM before it rebuilds the markup, so a FindAll landing in between parses the old markup and keeps it

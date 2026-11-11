@@ -40,7 +40,7 @@ public class BrowserTimingTests
         var samples = BmotionBrowserTiming.SampleProgress(config)!.Value.Samples;
 
         Assert.AreEqual("linear", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: true));
-        StringAssert.StartsWith(BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: false), "linear(");
+        Assert.StartsWith("linear(", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: false));
         Assert.AreEqual("linear", BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: false, preferKeyword: false));
     }
 

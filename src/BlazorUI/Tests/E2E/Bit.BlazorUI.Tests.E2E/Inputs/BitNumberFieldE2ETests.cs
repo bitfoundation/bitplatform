@@ -95,9 +95,9 @@ public class BitNumberFieldE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}{Url}");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"nf-basic\"");
-        StringAssert.Contains(html, "role=\"spinbutton\"");
-        StringAssert.Contains(html, "id=\"status\">Loading<");
+        Assert.Contains("id=\"nf-basic\"", html);
+        Assert.Contains("role=\"spinbutton\"", html);
+        Assert.Contains("id=\"status\">Loading<", html);
 
         await OpenAsync(Url);
         await Expect(Root("nf-basic")).ToHaveClassAsync(HasClass("bit-nfl"));
@@ -288,7 +288,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         var root = Root("nf-visibility");
         await Page.ClickAsync("#btn-vis-hidden");
         await Expect(root).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await BoxOfAsync(root)).Height > 20);
+        Assert.IsGreaterThan(20, (await BoxOfAsync(root)).Height);
 
         await Page.ClickAsync("#btn-vis-collapsed");
         await Expect(root).ToHaveCSSAsync("display", "none");
@@ -373,9 +373,9 @@ public class BitNumberFieldE2ETests : E2ETestBase
         var down = await BoxOfAsync(Page.Locator("#nf-compact .bit-nfl-adn"));
         var input = await BoxOfAsync(Input("nf-compact"));
 
-        Assert.IsTrue(up.Y + up.Height <= down.Y + 1, "Increase is stacked above decrease.");
+        Assert.IsLessThanOrEqualTo(down.Y + 1, up.Y + up.Height, "Increase is stacked above decrease.");
         Assert.AreEqual(up.X, down.X, 1);
-        Assert.IsTrue(up.X >= input.X + input.Width - 1, "The stack sits after the input.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, up.X, "The stack sits after the input.");
 
         await Page.Locator("#nf-compact .bit-nfl-aup").ClickAsync();
         await Expect(Text("compact-value")).ToHaveTextAsync("[1]");
@@ -414,8 +414,8 @@ public class BitNumberFieldE2ETests : E2ETestBase
         var down = await BoxOfAsync(Decrement("nf-spread"));
         var up = await BoxOfAsync(Increment("nf-spread"));
 
-        Assert.IsTrue(down.X + down.Width <= input.X + 1, "Decrease leads.");
-        Assert.IsTrue(up.X >= input.X + input.Width - 1, "Increase trails.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, down.X + down.Width, "Decrease leads.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, up.X, "Increase trails.");
         await Expect(Input("nf-spread")).ToHaveClassAsync(HasClass("bit-nfl-cin"));
         await Expect(Input("nf-spread")).ToHaveCSSAsync("text-align", "center");
 
@@ -776,10 +776,10 @@ public class BitNumberFieldE2ETests : E2ETestBase
 
         switch (placement)
         {
-            case "top": Assert.IsTrue(label.Y + label.Height <= box.Y + 1, "above"); break;
-            case "bottom": Assert.IsTrue(label.Y >= box.Y + box.Height - 1, "below"); break;
-            case "start": Assert.IsTrue(label.X + label.Width <= box.X + 1, "before"); break;
-            case "end": Assert.IsTrue(label.X >= box.X + box.Width - 1, "after"); break;
+            case "top": Assert.IsLessThanOrEqualTo(box.Y + 1, label.Y + label.Height, "above"); break;
+            case "bottom": Assert.IsGreaterThanOrEqualTo(box.Y + box.Height - 1, label.Y, "below"); break;
+            case "start": Assert.IsLessThanOrEqualTo(box.X + 1, label.X + label.Width, "before"); break;
+            case "end": Assert.IsGreaterThanOrEqualTo(box.X + box.Width - 1, label.X, "after"); break;
         }
     }
 
@@ -829,7 +829,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Input("nf-error")).ToHaveAttributeAsync("aria-describedby", $"{errorId} {descriptionId}");
         var messageBox = await BoxOfAsync(message);
         var descriptionBox = await BoxOfAsync(Page.Locator("#nf-error .bit-nfl-des"));
-        Assert.IsTrue(messageBox.Y < descriptionBox.Y, "The error sits above the description.");
+        Assert.IsLessThan(descriptionBox.Y, messageBox.Y, "The error sits above the description.");
 
         await TypeOverAsync("nf-error", "3");
         await Expect(message).ToHaveCountAsync(0);
@@ -866,7 +866,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-toggle-loading");
         await Expect(Page.Locator("#nf-loading .bit-nfl-spn")).ToBeVisibleAsync();
         await Expect(Page.Locator("#nf-loading .bit-nfl-lod")).ToHaveAttributeAsync("aria-hidden", "true");
-        StringAssert.Contains(await ComputedStyleAsync("#nf-loading .bit-nfl-spn", "animation-name"), "bit-spin");
+        Assert.Contains("bit-spin", await ComputedStyleAsync("#nf-loading .bit-nfl-spn", "animation-name"));
         await Expect(Input("nf-loading")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(Status("nf-loading")).ToHaveTextAsync("Recalculating the price");
 
@@ -897,7 +897,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Root("nf-desc-side")).ToHaveClassAsync(HasClass("bit-nfl-hds"));
         var box = await BoxOfAsync(Box("nf-desc-side"));
         var description = await BoxOfAsync(Page.Locator("#nf-desc-side .bit-nfl-des"));
-        Assert.IsTrue(description.Y >= box.Y + box.Height - 1, "The hint is under the row.");
+        Assert.IsGreaterThanOrEqualTo(box.Y + box.Height - 1, description.Y, "The hint is under the row.");
     }
 
 
@@ -926,7 +926,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Root("nf-fullwidth")).ToHaveClassAsync(HasClass("bit-nfl-fwd"));
         var container = await BoxOfAsync(Page.Locator("#fullwidth-box"));
         Assert.AreEqual(container.Width, (await BoxOfAsync(Root("nf-fullwidth"))).Width, 1);
-        Assert.IsTrue((await BoxOfAsync(Root("nf-notfullwidth"))).Width < container.Width - 50);
+        Assert.IsLessThan(container.Width - 50, (await BoxOfAsync(Root("nf-notfullwidth"))).Width);
     }
 
 
@@ -961,8 +961,8 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(suffix).ToHaveTextAsync("km");
 
         var input = await BoxOfAsync(Input("nf-affix"));
-        Assert.IsTrue((await BoxOfAsync(prefix)).X < input.X);
-        Assert.IsTrue((await BoxOfAsync(suffix)).X > input.X + input.Width - 1);
+        Assert.IsLessThan(input.X, (await BoxOfAsync(prefix)).X);
+        Assert.IsGreaterThan(input.X + input.Width - 1, (await BoxOfAsync(suffix)).X);
 
         var prefixId = await prefix.Locator("span").GetAttributeAsync("id");
         var suffixId = await suffix.Locator("span").GetAttributeAsync("id");
@@ -1118,7 +1118,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var expected = await Text("c2-de-expected").TextContentAsync();
-        StringAssert.Contains(expected, "1.234,50");
+        Assert.Contains("1.234,50", expected!);
         await Expect(Input("nf-c2-de")).ToHaveValueAsync(expected!);
 
         await TypeOverAsync("nf-de", "1.234,5");
@@ -1742,7 +1742,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
     {
         await OpenAsync(Url);
 
-        StringAssert.Contains(await ComputedStyleAsync("#nf-style", "box-shadow"), "rgb(0, 255, 255)");
+        Assert.Contains("rgb(0, 255, 255)", await ComputedStyleAsync("#nf-style", "box-shadow"));
         await Expect(Root("nf-class")).ToHaveClassAsync(HasClass("custom-class"));
     }
 
@@ -1823,7 +1823,7 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Root("nf-rtl")).ToHaveAttributeAsync("dir", "rtl");
 
         var ltrInput = await BoxOfAsync(Input("nf-ltr"));
-        Assert.IsTrue((await BoxOfAsync(Decrement("nf-ltr"))).X < ltrInput.X, "LTR: decrease on the left.");
+        Assert.IsLessThan(ltrInput.X, (await BoxOfAsync(Decrement("nf-ltr"))).X, "LTR: decrease on the left.");
 
         var input = await BoxOfAsync(Input("nf-rtl"));
         var down = await BoxOfAsync(Decrement("nf-rtl"));
@@ -1832,10 +1832,10 @@ public class BitNumberFieldE2ETests : E2ETestBase
         var label = await BoxOfAsync(Page.Locator("#nf-rtl .bit-nfl-lbl"));
         var box = await BoxOfAsync(Box("nf-rtl"));
 
-        Assert.IsTrue(down.X >= input.X + input.Width - 1, "RTL: decrease on the right.");
-        Assert.IsTrue(up.X + up.Width <= input.X + 1, "RTL: increase on the left.");
-        Assert.IsTrue(suffix.X < input.X, "RTL: the suffix on the left.");
-        Assert.IsTrue(label.X >= box.X + box.Width - 1, "RTL: a Start label on the right.");
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, down.X, "RTL: decrease on the right.");
+        Assert.IsLessThanOrEqualTo(input.X + 1, up.X + up.Width, "RTL: increase on the left.");
+        Assert.IsLessThan(input.X, suffix.X, "RTL: the suffix on the left.");
+        Assert.IsGreaterThanOrEqualTo(box.X + box.Width - 1, label.X, "RTL: a Start label on the right.");
     }
 
     [TestMethod]
@@ -1845,12 +1845,12 @@ public class BitNumberFieldE2ETests : E2ETestBase
 
         await Expect(Root("nf-rtl-cascade")).ToHaveClassAsync(HasClass("bit-rtl"));
         var input = await BoxOfAsync(Input("nf-rtl-cascade"));
-        Assert.IsTrue((await BoxOfAsync(Decrement("nf-rtl-cascade"))).X >= input.X + input.Width - 1);
+        Assert.IsGreaterThanOrEqualTo(input.X + input.Width - 1, (await BoxOfAsync(Decrement("nf-rtl-cascade"))).X);
 
         await Expect(Root("nf-rtl-inherited")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
         var inherited = await BoxOfAsync(Input("nf-rtl-inherited"));
-        Assert.IsTrue((await BoxOfAsync(Decrement("nf-rtl-inherited"))).X >= inherited.X + inherited.Width - 1);
-        Assert.IsTrue((await BoxOfAsync(Page.Locator("#nf-rtl-inherited .bit-nfl-suf"))).X < inherited.X);
+        Assert.IsGreaterThanOrEqualTo(inherited.X + inherited.Width - 1, (await BoxOfAsync(Decrement("nf-rtl-inherited"))).X);
+        Assert.IsLessThan(inherited.X, (await BoxOfAsync(Page.Locator("#nf-rtl-inherited .bit-nfl-suf"))).X);
     }
 
 
@@ -1862,15 +1862,15 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var normal = await ComputedStyleAsync("#nf-motion .bit-nfl-cnt", "transition-duration");
-        Assert.IsTrue(MaxSeconds(normal) > 0.01, normal);
+        Assert.IsGreaterThan(0.01, MaxSeconds(normal), normal);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
         var reduced = await ComputedStyleAsync("#nf-motion .bit-nfl-cnt", "transition-duration");
-        Assert.IsTrue(MaxSeconds(reduced) < 0.011, reduced);
+        Assert.IsLessThan(0.011, MaxSeconds(reduced), reduced);
 
         await Expect(Root("nf-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
         var forced = await ComputedStyleAsync("#nf-motion-force .bit-nfl-cnt", "transition-duration");
-        Assert.IsTrue(MaxSeconds(forced) > 0.01, forced);
+        Assert.IsGreaterThan(0.01, MaxSeconds(forced), forced);
     }
 
     internal static double MaxSeconds(string durations) =>
@@ -1916,11 +1916,11 @@ public class BitNumberFieldTouchE2ETests : E2ETestBase
 
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => matchMedia('(pointer: coarse)').matches"), "The context has a coarse pointer.");
         var height = await Page.Locator("#nf-touch .bit-nfl-cnt").EvaluateAsync<double>("el => el.getBoundingClientRect().height");
-        Assert.IsTrue(height >= 47.5, $"Each half of the stack clears 24px ({height}px).");
+        Assert.IsGreaterThanOrEqualTo(47.5, height, $"Each half of the stack clears 24px ({height}px).");
         foreach (var button in new[] { "#nf-touch .bit-nfl-aup", "#nf-touch .bit-nfl-adn", "#nf-touch-hide .bit-nfl-aup", "#nf-touch-hide .bit-nfl-adn" })
         {
             var size = await Page.Locator(button).EvaluateAsync<double>("el => el.getBoundingClientRect().height");
-            Assert.IsTrue(size >= 23.9, $"{button} is at least 24px tall ({size}px).");
+            Assert.IsGreaterThanOrEqualTo(23.9, size, $"{button} is at least 24px tall ({size}px).");
         }
     }
 }

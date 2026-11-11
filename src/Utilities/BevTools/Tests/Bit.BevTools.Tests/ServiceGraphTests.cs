@@ -7,24 +7,24 @@ public class ServiceGraphTests
 {
     public interface IRepo { }
 
-    public sealed class Repo : IRepo { }
+    internal sealed class Repo : IRepo { }
 
-    public sealed class ScopedThing(IRepo repo)
+    internal sealed class ScopedThing(IRepo repo)
     {
         public IRepo Repo { get; } = repo;
     }
 
-    public sealed class Captor(ScopedThing thing)
+    internal sealed class Captor(ScopedThing thing)
     {
         public ScopedThing Thing { get; } = thing;
     }
 
-    public sealed class A(B b)
+    internal sealed class A(B b)
     {
         public B B { get; } = b;
     }
 
-    public sealed class B(A a)
+    internal sealed class B(A a)
     {
         public A A { get; } = a;
     }
@@ -69,7 +69,7 @@ public class ServiceGraphTests
         var graph = BevServiceGraph.Build(services);
 
         var cycle = Assert.ContainsSingle(graph.FindCycles());
-        Assert.AreEqual(2, cycle.Count);
+        Assert.HasCount(2, cycle);
         var finding = Assert.ContainsSingle(f => f.RuleId == "di.cycle", graph.Analyze());
         Assert.Contains("A → B → A", finding.Title);
     }

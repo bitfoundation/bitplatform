@@ -38,7 +38,7 @@ public partial class McpOracleTests
             Assert.AreEqual(loaded.Id.ToString(), report.Id, context);
             Assert.AreEqual(loaded.ElementCount, report.Elements!.Sum(count => count.Count), context);
             Assert.AreEqual(loaded.TotalPointCount, report.TotalPoints, context);
-            Assert.AreEqual(loaded.Layers.Count, report.Layers!.Length, context);
+            Assert.HasCount(loaded.Layers.Count, report.Layers!, context);
             Assert.AreEqual(Encoding.UTF8.GetByteCount(BinkSerializer.Serialize(loaded)), report.CompactBytes, context);
             Assert.AreEqual(Encoding.UTF8.GetByteCount(BinkSerializer.Serialize(loaded, BinkSerializerOptions.Readable)), report.ReadableBytes, context);
             Assert.AreEqual(png.Width, report.Png!.Width, context);
@@ -60,7 +60,7 @@ public partial class McpOracleTests
     [TestMethod]
     public void The_brush_catalog_is_the_default_registry()
     {
-        CollectionAssert.AreEquivalent(BinkBrushRegistry.Default.Kinds.ToArray(), BinkBrushCatalog.Brushes.Select(brush => brush.Kind).ToArray());
+        Assert.AreSequenceEqual(BinkBrushRegistry.Default.Kinds.ToArray(), BinkBrushCatalog.Brushes.Select(brush => brush.Kind).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var entry in BinkBrushCatalog.Brushes)
         {
@@ -101,7 +101,7 @@ public partial class McpOracleTests
 
         var indexed = BinkApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BinkSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BinkSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BinkSourceCatalog.GuideSections.Length, BinkSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -164,16 +164,15 @@ public partial class McpOracleTests
             ("GetBinkSourceFile", "?path=Demo/Client/Pages/Signature.razor", new() { ["path"] = "Demo/Client/Pages/Signature.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBink" or "InspectBinkDocument")
             {
@@ -221,4 +220,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

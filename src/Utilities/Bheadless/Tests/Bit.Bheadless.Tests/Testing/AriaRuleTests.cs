@@ -197,7 +197,7 @@ public class AriaRuleTests
     public void Aria_hidden_focus_reports_each_element_once()
     {
         var report = Audit("<div aria-hidden='true'><div aria-hidden='true'><button>x</button></div></div>");
-        Assert.AreEqual(1, report.Violations.Count(v => v.RuleId == "aria-hidden-focus"));
+        Assert.ContainsSingle(v => v.RuleId == "aria-hidden-focus", report.Violations);
     }
 
     [TestMethod]

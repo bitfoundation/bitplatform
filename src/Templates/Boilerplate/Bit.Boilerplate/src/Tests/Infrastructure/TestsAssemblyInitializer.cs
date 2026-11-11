@@ -11,7 +11,7 @@ using Microsoft.Data.Sqlite;
 namespace Boilerplate.Tests.Infrastructure;
 
 [TestClass]
-public partial class TestsAssemblyInitializer
+public static partial class TestsAssemblyInitializer
 {
     //#if (aspire == true)
     private static DistributedApplication? aspireApp;
@@ -129,11 +129,11 @@ public partial class TestsAssemblyInitializer
 
     //#if (aspire == true)
     [AssemblyCleanup]
-    public static async Task Cleanup()
+    public static async Task Cleanup(TestContext testContext)
     {
         if (aspireApp is not null)
         {
-            await aspireApp.StopAsync();
+            await aspireApp.StopAsync(testContext.CancellationToken);
             await aspireApp.DisposeAsync();
         }
     }

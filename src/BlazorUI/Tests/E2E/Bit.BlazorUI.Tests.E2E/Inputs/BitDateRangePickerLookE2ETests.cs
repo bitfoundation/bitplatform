@@ -80,7 +80,7 @@ public class BitDateRangePickerLookE2ETests : BitDatePickersE2ETestBase
         }
 
         var classes = await Page.Locator("#drp-color-none").GetAttributeAsync("class");
-        Assert.IsFalse(Colors.Any(c => classes!.Split(' ').Contains($"bit-dtrp-{c.Suffix}")), classes);
+        Assert.DoesNotContain(c => classes!.Split(' ').Contains($"bit-dtrp-{c.Suffix}"), Colors, classes);
     }
 
     [TestMethod]
@@ -154,10 +154,10 @@ public class BitDateRangePickerLookE2ETests : BitDatePickersE2ETestBase
         await Expect(Page.Locator("#drp-iconstart")).ToHaveClassAsync(HasClass("bit-dtrp-lic"));
         var icon = await BoxAsync(Page.Locator("#drp-iconstart .bit-dtrp-ico"));
         var input = await BoxAsync(Input("drp-iconstart"));
-        Assert.IsTrue(icon.X < input.X, "The icon leads the input.");
+        Assert.IsLessThan(input.X, icon.X, "The icon leads the input.");
         var endIcon = await BoxAsync(Page.Locator("#drp-size-none .bit-dtrp-ico"));
         var endInput = await BoxAsync(Input("drp-size-none"));
-        Assert.IsTrue(endIcon.X > endInput.X, "By default the icon follows the input.");
+        Assert.IsGreaterThan(endInput.X, endIcon.X, "By default the icon follows the input.");
     }
 
     [TestMethod]
@@ -403,16 +403,16 @@ public class BitDateRangePickerLookE2ETests : BitDatePickersE2ETestBase
         await OpenAsync(Route);
 
         var normal = await PickerIdAsync("drp-motion");
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(normal), "animation-duration")) >= 0.1, "The callout animates in.");
+        Assert.IsGreaterThanOrEqualTo(0.1, Seconds(await StyleOfAsync(Callout(normal), "animation-duration")), "The callout animates in.");
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
         var reduced = await OpenPickerAsync("drp-motion");
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(reduced), "animation-duration")) < 0.001, "Reduced motion collapses the entry animation.");
+        Assert.IsLessThan(0.001, Seconds(await StyleOfAsync(Callout(reduced), "animation-duration")), "Reduced motion collapses the entry animation.");
         await Page.Keyboard.PressAsync("Escape");
 
         var forced = await OpenPickerAsync("drp-motion-force");
         await Expect(Page.Locator("#drp-motion-force")).ToHaveClassAsync(HasClass("bit-fam"));
-        Assert.IsTrue(Seconds(await StyleOfAsync(Callout(forced), "animation-duration")) >= 0.1, "ForceAnimation brings the animation back.");
+        Assert.IsGreaterThanOrEqualTo(0.1, Seconds(await StyleOfAsync(Callout(forced), "animation-duration")), "ForceAnimation brings the animation back.");
     }
 }

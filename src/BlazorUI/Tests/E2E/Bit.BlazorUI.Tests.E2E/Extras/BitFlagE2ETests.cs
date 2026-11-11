@@ -122,7 +122,7 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual(32, w, 0.5);
         Assert.AreEqual(32, h, 0.5);
         var radius = ParsePx(await ComputedStyleAsync("#flag-circular", "border-top-left-radius"));
-        Assert.IsTrue(radius >= 16, $"A circular flag's corner is at least half its size, was {radius}.");
+        Assert.IsGreaterThanOrEqualTo(16, radius, $"A circular flag's corner is at least half its size, was {radius}.");
     }
 
     [TestMethod]
@@ -267,15 +267,15 @@ public class BitFlagE2ETests : E2ETestBase
         var flat = Page.Locator("#flag-set-flat > img");
         await Expect(flat).ToHaveAttributeAsync("src", $"{SetPath}BR-flat-48.webp");
         var srcSet = await flat.GetAttributeAsync("srcset");
-        StringAssert.Contains(srcSet, $"{SetPath}BR-flat-16.webp 0.33x");
-        StringAssert.Contains(srcSet, $"{SetPath}BR-flat-48.webp 1x");
-        StringAssert.Contains(srcSet, $"{SetPath}BR-flat-64.webp 1.33x");
+        Assert.Contains($"{SetPath}BR-flat-16.webp 0.33x", srcSet!);
+        Assert.Contains($"{SetPath}BR-flat-48.webp 1x", srcSet);
+        Assert.Contains($"{SetPath}BR-flat-64.webp 1.33x", srcSet);
 
         await Expect(Page.Locator("#flag-set-shiny > img")).ToHaveAttributeAsync("src", $"{SetPath}BR-shiny-48.webp");
 
         await flat.ScrollIntoViewIfNeededAsync();
         await WaitForImageAsync("#flag-set-flat > img");
-        StringAssert.EndsWith(await flat.EvaluateAsync<string>("i => i.currentSrc"), "BR-flat-48.webp");
+        Assert.EndsWith("BR-flat-48.webp", await flat.EvaluateAsync<string>("i => i.currentSrc"));
         await Expect(flat).ToHaveAttributeAsync("src", $"{SetPath}BR-flat-48.webp");
     }
 
@@ -306,10 +306,10 @@ public class BitFlagE2ETests : E2ETestBase
         var flag = Page.Locator("#flag-set-shaped");
         await Expect(flag).ToHaveClassAsync(HasClass("bit-flg-crp"));
         await Expect(flag.Locator("> img")).ToHaveAttributeAsync("src", $"{SetPath}BR-flat-64.webp");
-        StringAssert.Contains(await flag.GetAttributeAsync("style"), "--bit-flg-crp-s:64");
+        Assert.Contains("--bit-flg-crp-s:64", (await flag.GetAttributeAsync("style"))!);
         var (w, h) = await SizeAsync("#flag-set-shaped");
         Assert.AreEqual(48, h, 0.5);
-        Assert.IsTrue(w > h, "The frame takes the proportions of the flag rather than the square image.");
+        Assert.IsGreaterThan(h, w, "The frame takes the proportions of the flag rather than the square image.");
     }
 
     [TestMethod]
@@ -346,7 +346,7 @@ public class BitFlagE2ETests : E2ETestBase
         await OpenAsync("/e2e/flag");
 
         var img = Page.Locator("#flag-src > img");
-        StringAssert.StartsWith(await img.GetAttributeAsync("src"), "data:image/svg+xml");
+        Assert.StartsWith("data:image/svg+xml", await img.GetAttributeAsync("src"));
         await Expect(Page.Locator("#flag-src")).Not.ToHaveClassAsync(HasClass("bit-flg-crp"));
         await img.ScrollIntoViewIfNeededAsync();
         await WaitForImageAsync("#flag-src > img");
@@ -676,7 +676,7 @@ public class BitFlagE2ETests : E2ETestBase
         await Expect(flag).ToHaveRoleAsync(AriaRole.Button);
         await Expect(flag).Not.ToHaveClassAsync(HasClass("bit-flg-clk"));
         await Expect(flag).ToHaveAttributeAsync("title", "Not shipped to Portugal yet");
-        Assert.IsTrue(double.Parse(await ComputedStyleAsync("#flag-click-disabled", "opacity"), System.Globalization.CultureInfo.InvariantCulture) < 1);
+        Assert.IsLessThan(1, double.Parse(await ComputedStyleAsync("#flag-click-disabled", "opacity"), System.Globalization.CultureInfo.InvariantCulture));
 
         await flag.ClickAsync(new() { Force = true });
         await flag.FocusAsync();
@@ -776,7 +776,7 @@ public class BitFlagE2ETests : E2ETestBase
         await OpenAsync("/e2e/flag");
 
         var count = int.Parse(await Page.Locator("#all-count").InnerTextAsync());
-        Assert.IsTrue(count > 200);
+        Assert.IsGreaterThan(200, count);
         await Expect(Page.Locator("#all-flags .bit-flg")).ToHaveCountAsync(count);
         await Expect(Page.Locator("#all-flags .bit-flg > img")).ToHaveCountAsync(count);
 
@@ -785,7 +785,7 @@ public class BitFlagE2ETests : E2ETestBase
             const results = await Promise.all(srcs.map(async s => (await fetch(s)).ok ? null : s));
             return results.filter(r => r);
         }");
-        Assert.AreEqual(0, failed.Length, string.Join(", ", failed));
+        Assert.IsEmpty(failed, string.Join(", ", failed));
     }
 
     [TestMethod]
@@ -875,7 +875,7 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual("6px", await ComputedStyleAsync("#flag-vars", "border-top-left-radius"));
         Assert.AreEqual("3px", await ComputedStyleAsync("#flag-vars", "border-top-width"));
         Assert.AreEqual("rgb(220, 20, 60)", await ComputedStyleAsync("#flag-vars", "border-top-color"));
-        StringAssert.Contains(await ComputedStyleAsync("#flag-vars", "box-shadow"), "rgb(0, 0, 255) 0px 0px 0px 5px");
+        Assert.Contains("rgb(0, 0, 255) 0px 0px 0px 5px", await ComputedStyleAsync("#flag-vars", "box-shadow"));
     }
 
     [TestMethod]
@@ -891,13 +891,13 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual(12, sw, 0.5, "Size wins over --bit-Flag-size.");
 
         Assert.AreEqual("grayscale(1) opacity(0.4)", await ComputedStyleAsync("#flag-var-gray", "filter"));
-        StringAssert.Contains(await ComputedStyleAsync("#flag-var-emoji > .bit-flg-emj", "font-family"), "monospace");
+        Assert.Contains("monospace", await ComputedStyleAsync("#flag-var-emoji > .bit-flg-emj", "font-family"));
 
         // Focused before any pointer interaction, so the focus is a keyboard-visible one.
         var click = Page.Locator("#flag-var-click");
         await click.FocusAsync();
         await Expect(click).ToBeFocusedAsync();
-        StringAssert.Contains(await ComputedStyleAsync("#flag-var-click", "box-shadow"), "rgb(255, 0, 0)");
+        Assert.Contains("rgb(255, 0, 0)", await ComputedStyleAsync("#flag-var-click", "box-shadow"));
 
         await click.HoverAsync();
         await Expect(click).ToHaveCSSAsync("opacity", "0.5");
@@ -926,7 +926,7 @@ public class BitFlagE2ETests : E2ETestBase
         // The row reads right to left: the first flag sits at its right end.
         var flagBox = (await rtl.BoundingBoxAsync())!;
         var textBox = (await Page.Locator("#rtl-text").BoundingBoxAsync())!;
-        Assert.IsTrue(flagBox.X > textBox.X);
+        Assert.IsGreaterThan(textBox.X, flagBox.X);
 
         await Expect(Page.Locator("#flag-ltr")).ToHaveAttributeAsync("dir", "ltr");
         await Expect(Page.Locator("#flag-ltr")).Not.ToHaveClassAsync(HasClass("bit-rtl"));
@@ -984,7 +984,7 @@ public class BitFlagE2ETests : E2ETestBase
         Assert.AreEqual(0.1, Seconds(await ComputedStyleAsync("#flag-motion", "transition-duration")), 0.0001);
 
         await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
-        Assert.IsTrue(Seconds(await ComputedStyleAsync("#flag-motion", "transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, Seconds(await ComputedStyleAsync("#flag-motion", "transition-duration")));
         Assert.AreEqual(0.1, Seconds(await ComputedStyleAsync("#flag-motion-forced", "transition-duration")), 0.0001);
         await Expect(Page.Locator("#flag-motion-forced")).ToHaveClassAsync(HasClass("bit-fam"));
     }
@@ -995,9 +995,9 @@ public class BitFlagE2ETests : E2ETestBase
         var response = await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/flag");
         var html = await response.TextAsync();
 
-        StringAssert.Contains(html, "id=\"flag-basic\"");
-        StringAssert.Contains(html, $"{PackagedPath}IR-flat-16.webp");
-        StringAssert.Contains(html, "id=\"status\">Loading<");
+        Assert.Contains("id=\"flag-basic\"", html);
+        Assert.Contains($"{PackagedPath}IR-flat-16.webp", html);
+        Assert.Contains("id=\"status\">Loading<", html);
     }
 
     [TestMethod]

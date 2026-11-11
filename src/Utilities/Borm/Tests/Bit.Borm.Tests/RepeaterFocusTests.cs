@@ -8,7 +8,7 @@ namespace Bit.Borm.Tests;
 /// A renderer that records where the form sent focus. bUnit has no real caret, so the contract under
 /// test is which control the repeater asks for — which is the part that was missing.
 /// </summary>
-public sealed class FocusSpyInput : BormInputBase
+internal sealed class FocusSpyInput : BormInputBase
 {
     public static readonly List<string> Focused = [];
 
@@ -64,7 +64,7 @@ public class RepeaterFocusTests : BunitContext
 
         view.Find("button.bit-borm-btn--add").Click();
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.AreEqual("Items[1].Product", Assert.ContainsSingle(FocusSpyInput.Focused));
     }
 
@@ -75,7 +75,7 @@ public class RepeaterFocusTests : BunitContext
 
         view.FindAll("button.bit-borm-btn--danger")[0].Click();
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.AreEqual("Items[0].Product", Assert.ContainsSingle(FocusSpyInput.Focused));
     }
 
@@ -86,7 +86,7 @@ public class RepeaterFocusTests : BunitContext
 
         view.FindAll("button.bit-borm-btn--danger")[2].Click();
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.AreEqual("Items[1].Product", Assert.ContainsSingle(FocusSpyInput.Focused));
     }
 
@@ -115,7 +115,7 @@ public class RepeaterFocusTests : BunitContext
 
         view.FindAll("button.bit-borm-btn--danger")[0].Click();
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.IsNotNull(view.Find("input#borm_Items_0_Product"));
         Assert.IsNotNull(view.Find("input#borm_Items_1_Product"));
         Assert.IsEmpty(view.FindAll("input#borm_Items_2_Product"));
@@ -131,7 +131,7 @@ public class RepeaterFocusTests : BunitContext
 
         state.InsertArrayItem(form.FindField("Items")!, "Items", 0);
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.IsNotNull(view.Find("input#borm_Items_1_Product"));
     }
 
@@ -161,7 +161,7 @@ public class RepeaterFocusTests : BunitContext
 
         view.Find("button.bit-borm-btn--icon[aria-label*='Duplicate']").Click();
 
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
         Assert.AreEqual("Items[1].Product", Assert.ContainsSingle(FocusSpyInput.Focused));
     }
 }

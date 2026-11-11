@@ -304,7 +304,7 @@ public class BatchAttributionTests : BunitContext
     }
 }
 
-public class PanelLikeComponent : ComponentBase
+internal class PanelLikeComponent : ComponentBase
 {
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

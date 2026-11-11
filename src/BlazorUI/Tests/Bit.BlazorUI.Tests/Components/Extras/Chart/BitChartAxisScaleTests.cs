@@ -36,7 +36,7 @@ public class BitChartAxisScaleTests
         options.Reverse = true;
         var scale = Vertical(options, 0, 100);
 
-        Assert.IsTrue(scale.PixelFor(scale.Min) < scale.PixelFor(scale.Max));
+        Assert.IsLessThan(scale.PixelFor(scale.Max), scale.PixelFor(scale.Min));
     }
 
     [TestMethod]
@@ -59,8 +59,8 @@ public class BitChartAxisScaleTests
         options.SuggestedMax = 10;
         var scale = Vertical(options, 0, 100);
 
-        Assert.IsTrue(scale.Min <= -50);
-        Assert.IsTrue(scale.Max >= 100, "a suggestion below the data must not clamp it");
+        Assert.IsLessThanOrEqualTo(-50, scale.Min);
+        Assert.IsGreaterThanOrEqualTo(100, scale.Max, "a suggestion below the data must not clamp it");
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class BitChartAxisScaleTests
         options.BeginAtZero = true;
         var scale = Vertical(options, 40, 100);
 
-        Assert.IsTrue(scale.Min <= 0);
+        Assert.IsLessThanOrEqualTo(0, scale.Min);
     }
 
     [TestMethod]
@@ -88,10 +88,10 @@ public class BitChartAxisScaleTests
     public void AFlatSeriesShouldStillGetAUsableRange()
     {
         var scale = Vertical(Linear(), 5, 5);
-        Assert.IsTrue(scale.Max > scale.Min);
+        Assert.IsGreaterThan(scale.Min, scale.Max);
 
         var zero = Vertical(Linear(), 0, 0);
-        Assert.IsTrue(zero.Max > zero.Min);
+        Assert.IsGreaterThan(zero.Min, zero.Max);
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class BitChartAxisScaleTests
         var scale = Vertical(options, 0, 100, bottom: 600);
 
         var values = scale.Ticks.Select(t => t.Value).ToList();
-        CollectionAssert.AreEqual(new[] { 0d, 25, 50, 75, 100 }, values);
+        Assert.AreSequenceEqual(new[] { 0d, 25, 50, 75, 100 }, values);
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public class BitChartAxisScaleTests
         options.Ticks.MaxTicksLimit = 3;
         var scale = Vertical(options, 0, 1000, bottom: 900);
 
-        Assert.IsTrue(scale.Ticks.Count <= 4, $"got {scale.Ticks.Count}");
+        Assert.IsLessThanOrEqualTo(4, scale.Ticks.Count, $"got {scale.Ticks.Count}");
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class BitChartAxisScaleTests
             return scale.Ticks.Count;
         }
 
-        Assert.IsTrue(Count(60) < Count(600), "a short axis cannot carry as many labels as a tall one");
+        Assert.IsLessThan(Count(600), Count(60), "a short axis cannot carry as many labels as a tall one");
     }
 
     [TestMethod]
@@ -136,7 +136,7 @@ public class BitChartAxisScaleTests
         options.AutoSkipTicks = false;
         var scale = Vertical(options, 0, 100, bottom: 40);
 
-        Assert.IsTrue(scale.Ticks.Count > 5, $"got {scale.Ticks.Count}");
+        Assert.IsGreaterThan(5, scale.Ticks.Count, $"got {scale.Ticks.Count}");
     }
 
     [TestMethod]
@@ -179,7 +179,7 @@ public class BitChartAxisScaleTests
         scale.SetDataRange(0, 5000);
         scale.SetPixelRange(600, 0);
 
-        Assert.IsTrue(scale.Ticks.Any(t => t.Label.Contains('.')), string.Join("|", scale.Ticks.Select(t => t.Label)));
+        Assert.Contains(t => t.Label.Contains('.'), scale.Ticks, string.Join("|", scale.Ticks.Select(t => t.Label)));
     }
 
     // ---- logarithmic ----
@@ -200,8 +200,8 @@ public class BitChartAxisScaleTests
         var options = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Logarithmic };
         var scale = Vertical(options, 1, 1000);
 
-        Assert.IsTrue(scale.Ticks.Any(t => !t.Minor && t.Label.Length > 0));
-        Assert.IsTrue(scale.Ticks.Any(t => t.Minor), "the in-between gridlines are what make a log axis readable");
+        Assert.Contains(t => !t.Minor && t.Label.Length > 0, scale.Ticks);
+        Assert.Contains(t => t.Minor, scale.Ticks, "the in-between gridlines are what make a log axis readable");
     }
 
     [TestMethod]
@@ -210,7 +210,7 @@ public class BitChartAxisScaleTests
         var options = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Logarithmic };
         var scale = Vertical(options, 0, 100);
 
-        Assert.IsTrue(scale.Min > 0);
+        Assert.IsGreaterThan(0, scale.Min);
     }
 
     // ---- category ----
@@ -252,7 +252,7 @@ public class BitChartAxisScaleTests
         scale.SetDataRange(0, 39);
         scale.SetPixelRange(0, 800);
 
-        Assert.IsTrue(scale.Ticks.Count <= 6, $"got {scale.Ticks.Count}");
+        Assert.IsLessThanOrEqualTo(6, scale.Ticks.Count, $"got {scale.Ticks.Count}");
     }
 
     // ---- zoom ----

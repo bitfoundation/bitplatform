@@ -39,7 +39,7 @@ public sealed class VirtualizedTests : BdndTest
         var deadline = DateTime.UtcNow.AddSeconds(20);
         for (var round = 0; await Row(page, "Row 40").CountAsync() == 0; round++)
         {
-            Assert.IsTrue(DateTime.UtcNow < deadline, "the list never scrolled to Row 40");
+            Assert.IsLessThan(deadline, DateTime.UtcNow, "the list never scrolled to Row 40");
             await MoveAsync(page, nearBottom.Offset(round % 2, 0), steps: 1);
             await page.WaitForTimeoutAsync(100);
         }

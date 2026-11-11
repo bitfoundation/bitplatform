@@ -25,16 +25,16 @@ public class BitPullToRefreshPrerenderTests
             [nameof(BitPullToRefresh.ChildContent)] = (RenderFragment)(b => b.AddMarkupContent(0, "<ul class=\"feed\"><li>one</li></ul>")),
         });
 
-        StringAssert.Contains(html, "bit-ptr-flw");
-        StringAssert.Contains(html, "--bit-ptr-color:var(--bit-clr-suc)");
-        StringAssert.Contains(html, @"role=""group""");
-        StringAssert.Contains(html, @"aria-label=""Pull to refresh the feed""");
-        StringAssert.Contains(html, @"class=""feed""");
-        StringAssert.Contains(html, "bit-ptr-lod");
-        StringAssert.Contains(html, "bit-ptr-spw");
+        Assert.Contains("bit-ptr-flw", html);
+        Assert.Contains("--bit-ptr-color:var(--bit-clr-suc)", html);
+        Assert.Contains(@"role=""group""", html);
+        Assert.Contains(@"aria-label=""Pull to refresh the feed""", html);
+        Assert.Contains(@"class=""feed""", html);
+        Assert.Contains("bit-ptr-lod", html);
+        Assert.Contains("bit-ptr-spw", html);
 
         // The live region is there from the start, with nothing to say yet, and the indicator is not refreshing.
-        StringAssert.Contains(html, @"<span role=""status"" class=""bit-ptr-vhd""></span>");
+        Assert.Contains(@"<span role=""status"" class=""bit-ptr-vhd""></span>", html);
         Assert.DoesNotContain("bit-ptr-spin", html);
         Assert.DoesNotContain("bit-ptr-crl", html);
     }
@@ -47,6 +47,6 @@ public class BitPullToRefreshPrerenderTests
             [nameof(BitPullToRefresh.Disabled)] = true,
         });
 
-        StringAssert.Contains(html, "bit-dis");
+        Assert.Contains("bit-dis", html);
     }
 }

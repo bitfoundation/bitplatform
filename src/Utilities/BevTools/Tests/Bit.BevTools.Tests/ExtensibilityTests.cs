@@ -156,7 +156,7 @@ public class ExtensibilityTests : BunitContext
 
 public readonly record struct Money(decimal Amount);
 
-public sealed class MoneyStore
+internal sealed class MoneyStore
 {
     public decimal Amount { get; private set; }
 
@@ -169,7 +169,7 @@ public sealed class MoneyStore
     }
 }
 
-public sealed class MoneyStateProvider : IBevStateProvider
+internal sealed class MoneyStateProvider : IBevStateProvider
 {
     private readonly MoneyStore _store;
 
@@ -188,7 +188,7 @@ public sealed class MoneyStateProvider : IBevStateProvider
     public event Action<BevStateChangeInfo>? Changed;
 }
 
-public sealed class AcmeBevToolsExtension : IBevToolsExtension
+internal sealed class AcmeBevToolsExtension : IBevToolsExtension
 {
     public string Name => "Acme";
 
@@ -238,14 +238,14 @@ public sealed class AcmeBevToolsExtension : IBevToolsExtension
     }
 }
 
-public sealed class BrokenExtension : IBevToolsExtension
+internal sealed class BrokenExtension : IBevToolsExtension
 {
     public string Name => "Broken";
 
     public void Configure(IBevToolsExtensionBuilder builder) => throw new InvalidOperationException("nope");
 }
 
-public sealed class FailingCommandExtension : IBevToolsExtension
+internal sealed class FailingCommandExtension : IBevToolsExtension
 {
     public const string Title = "Refresh the Acme feed";
 
@@ -266,7 +266,7 @@ public sealed class FailingCommandExtension : IBevToolsExtension
     }
 }
 
-public class AcmePanel : ComponentBase
+internal class AcmePanel : ComponentBase
 {
     private int _refreshes;
 

@@ -292,8 +292,8 @@ public class SharedListTests : BortableTestContext
 
         Assert.AreSequenceEqual(["B", "C", "A"], left);
         Assert.AreSequenceEqual(["X"], right);
-        Assert.IsTrue(log.Any(r => r.Name == "Update" && r.List == "L1"));
-        Assert.IsFalse(log.Any(r => r.List == "L2" && r.Name is "Add" or "Sort" or "ItemsChanged"));
+        Assert.Contains(r => r.Name == "Update" && r.List == "L1", log);
+        Assert.DoesNotContain(r => r.List == "L2" && r.Name is "Add" or "Sort" or "ItemsChanged", log);
     }
 
     [TestMethod]

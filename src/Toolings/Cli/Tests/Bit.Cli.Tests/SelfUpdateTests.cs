@@ -32,7 +32,7 @@ public class SelfUpdateTests
             }
         });
 
-        CollectionAssert.AreEqual(new[] { "1.7.0" }, SelfUpdate.ParseVersions(output).ToArray());
+        Assert.AreSequenceEqual(new[] { "1.7.0" }, SelfUpdate.ParseVersions(output).ToArray());
         Assert.IsEmpty(SelfUpdate.ParseVersions("error: Unable to load the service index for source https://api.nuget.org/v3/index.json."));
     }
 
@@ -43,10 +43,10 @@ public class SelfUpdateTests
         host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.6.2", "1.7.0", "1.8.0-pre-01" }), ("mirror", new[] { "1.6.3" })));
 
         Assert.AreEqual("1.7.0", await Official(host).LatestVersionAsync(CancellationToken.None));
-        CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls.Single().Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls.Single().Arguments.ToArray());
 
         Assert.AreEqual("1.8.0-pre-01", await Official(host, "1.7.0-pre-01").LatestVersionAsync(CancellationToken.None));
-        CollectionAssert.Contains(host.Runner.Calls.Last().Arguments.ToList(), "--prerelease");
+        Assert.Contains("--prerelease", host.Runner.Calls.Last().Arguments.ToList());
     }
 
     [TestMethod]
@@ -69,19 +69,19 @@ public class SelfUpdateTests
 
         Assert.AreEqual(7, await host.RunAsync("new", "Contoso", "--redis", "--yes"), host.Output);
 
-        StringAssert.Contains(host.Output, "bit 1.7.0 is out: this run continues with it");
-        CollectionAssert.AreEqual(new[] { "tool", "install", "Bit.Cli", "--version", "1.7.0", "--tool-path", copy }, host.Runner.Calls.Single(c => c.Arguments is ["tool", "install", ..]).Arguments.ToArray());
+        Assert.Contains("bit 1.7.0 is out: this run continues with it", host.Output);
+        Assert.AreSequenceEqual(new[] { "tool", "install", "Bit.Cli", "--version", "1.7.0", "--tool-path", copy }, host.Runner.Calls.Single(c => c.Arguments is ["tool", "install", ..]).Arguments.ToArray());
 
         var handOff = host.Runner.Calls.Single(c => c.FileName == Path.Combine(copy, executable));
         Assert.IsTrue(handOff.Interactive);
-        CollectionAssert.AreEqual(new[] { "new", "Contoso", "--redis", "--yes" }, handOff.Arguments.ToArray());
+        Assert.AreSequenceEqual(new[] { "new", "Contoso", "--redis", "--yes" }, handOff.Arguments.ToArray());
         Assert.AreEqual("1.6.2", handOff.Environment![SelfUpdate.HandedOffVariable]);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "new"), host.Output);
+        Assert.DoesNotContain(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "new", host.Runner.Calls, host.Output);
 
         var update = host.Runner.Detached.Single();
         Assert.AreEqual(updater, update.FileName);
-        StringAssert.Contains(update.Arguments[^1], $"{Environment.ProcessId}");
-        StringAssert.Contains(update.Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
+        Assert.Contains($"{Environment.ProcessId}", update.Arguments[^1]);
+        Assert.Contains("tool update --global Bit.Cli --version 1.7.0", update.Arguments[^1]);
     }
 
     [TestMethod]
@@ -97,8 +97,8 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-version", "1.5.0", "--yes"), host.Output);
 
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == Path.Combine(pinned, "bit")), host.Output);
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["package", "search", ..] or ["tool", "install", ..]));
+        Assert.Contains(c => c.FileName == Path.Combine(pinned, "bit"), host.Runner.Calls, host.Output);
+        Assert.DoesNotContain(c => c.Arguments is ["package", "search", ..] or ["tool", "install", ..], host.Runner.Calls);
         Assert.IsEmpty(host.Runner.Detached);
         Assert.IsFalse(Directory.Exists(stale));
     }
@@ -115,7 +115,7 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
-        StringAssert.Contains(host.Output, "Couldn't get bit 1.7.0, so bit 1.6.2 goes on.");
+        Assert.Contains("Couldn't get bit 1.7.0, so bit 1.6.2 goes on.", host.Output);
         Assert.IsNotNull(prompter.Find("Create it?"));
         Assert.IsEmpty(host.Runner.Detached);
         Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "cli", "1.7.0")));
@@ -131,8 +131,8 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.Output, "Without --dry-run, bit 1.7.0 would create it.");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]));
+        Assert.Contains("Without --dry-run, bit 1.7.0 would create it.", host.Output);
+        Assert.DoesNotContain(c => c.Arguments is ["tool", "install", ..], host.Runner.Calls);
         Assert.IsEmpty(host.Runner.Detached);
     }
 
@@ -157,15 +157,15 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync("update"), host.Output);
 
-        StringAssert.Contains(host.Output, "bit 1.7.0 replaces 1.6.2 as soon as this command ends.");
-        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
+        Assert.Contains("bit 1.7.0 replaces 1.6.2 as soon as this command ends.", host.Output);
+        Assert.Contains("tool update --global Bit.Cli --version 1.7.0", host.Runner.Detached.Single().Arguments[^1]);
 
         using var source = new TestHost(HostOs.Linux);
         source.Services.SelfUpdate = new SelfUpdate(source.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = false, InstallMethod = "local" };
 
         Assert.AreEqual(0, await source.RunAsync("update"), source.Output);
 
-        StringAssert.Contains(source.Output, "built from source");
+        Assert.Contains("built from source", source.Output);
         Assert.IsEmpty(source.Runner.Calls);
         Assert.IsEmpty(source.Runner.Detached);
     }
@@ -179,7 +179,7 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync("update"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "bit 1.7.0 is out. Update it with: dotnet tool update Bit.Cli --tool-path /home/me/bin --version 1.7.0");
+        Assert.Contains("bit 1.7.0 is out. Update it with: dotnet tool update Bit.Cli --tool-path /home/me/bin --version 1.7.0", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Detached);
     }
 
@@ -192,7 +192,7 @@ public class SelfUpdateTests
 
         Assert.AreEqual(0, await host.RunAsync(["new", "Contoso", "--dry-run", "--yes", .. extra]), host.Output);
 
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["package", "search", ..]), host.Output);
+        Assert.DoesNotContain(c => c.Arguments is ["package", "search", ..], host.Runner.Calls, host.Output);
         Assert.IsFalse(host.Output.Contains("99.0.0", StringComparison.Ordinal), host.Output);
     }
 

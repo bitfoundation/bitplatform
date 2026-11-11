@@ -50,7 +50,7 @@ public partial class McpCatalogConsistencyTests
             foreach (var hit in result.Hits) suggestions.Add(hit.Tool);
         }
 
-        Assert.IsTrue(suggestions.Count > 50, $"Only {suggestions.Count} distinct follow-up calls were suggested; the sample is too small to say much.");
+        Assert.IsGreaterThan(50, suggestions.Count, $"Only {suggestions.Count} distinct follow-up calls were suggested; the sample is too small to say much.");
 
         foreach (var suggestion in suggestions)
         {
@@ -59,7 +59,7 @@ public partial class McpCatalogConsistencyTests
             Assert.IsTrue(call.Success, $"'{suggestion}' is not a tool call a caller could make verbatim.");
 
             var tool = call.Groups["tool"].Value;
-            CollectionAssert.Contains(McpToolSurfaceTests.ExpectedTools, tool, $"'{suggestion}' names a tool this server does not expose.");
+            Assert.Contains(tool, McpToolSurfaceTests.ExpectedTools, $"'{suggestion}' names a tool this server does not expose.");
 
             var arguments = new Dictionary<string, object?>();
             if (call.Groups["argument"].Success) arguments[call.Groups["argument"].Value] = call.Groups["value"].Value;
@@ -84,16 +84,16 @@ public partial class McpCatalogConsistencyTests
 
         var listed = SlugRegex().Matches(index).Select(match => match.Groups["slug"].Value).ToArray();
 
-        var resources = (await McpTestHost.Client.ListResourcesAsync())
+        var resources = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
                         .Where(resource => resource.Uri.StartsWith("brouter://docs/", StringComparison.Ordinal))
                         .Select(resource => resource.Uri["brouter://docs/".Length..])
                         .ToArray();
 
         var completions = (await McpTestHost.Client.CompleteAsync(
-            new ModelContextProtocol.Protocol.ResourceTemplateReference { Uri = "brouter://docs/{slug}" }, "slug", "")).Completion.Values;
+            new ModelContextProtocol.Protocol.ResourceTemplateReference { Uri = "brouter://docs/{slug}" }, "slug", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.AreEquivalent(listed, resources);
-        CollectionAssert.AreEquivalent(listed, completions.ToArray());
+        Assert.AreSequenceEqual(listed, resources, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(listed, completions.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -101,25 +101,25 @@ public partial class McpCatalogConsistencyTests
     {
         // The description spells the slugs out so a model can pick one without spending a call on the
         // index first - which only pays if they are all real, and if the ones worth naming are named.
-        var description = (await McpTestHost.Client.ListToolsAsync())
+        var description = (await McpTestHost.Client.ListToolsAsync(cancellationToken: TestContext.CancellationToken))
                           .Single(tool => tool.Name == "GetBrouterDocsPage").Description!;
 
         var known = DocsCatalog.AllPages.Select(page => page.Slug.Length == 0 ? "overview" : page.Slug).ToArray();
 
         foreach (var slug in known)
         {
-            StringAssert.Contains(description, slug, $"'{slug}' is a documentation page the tool's description never names.");
+            Assert.Contains(slug, description, $"'{slug}' is a documentation page the tool's description never names.");
         }
 
         // And nothing it names is a page that has since been renamed away. Only the quoted words the
         // description lists as slugs are read as slugs - a quoted word in ordinary prose is not one.
         var advertised = QuotedSlugRegex().Matches(description).Select(match => match.Groups["slug"].Value).ToArray();
 
-        Assert.IsTrue(advertised.Length > 0, "The tool's description no longer lists any slug, so nothing here is being checked.");
+        Assert.IsNotEmpty(advertised, "The tool's description no longer lists any slug, so nothing here is being checked.");
 
         foreach (var quoted in advertised)
         {
-            CollectionAssert.Contains(known, quoted, $"The tool's description advertises the slug '{quoted}', which no page has.");
+            Assert.Contains(quoted, known, $"The tool's description advertises the slug '{quoted}', which no page has.");
         }
     }
 
@@ -132,13 +132,13 @@ public partial class McpCatalogConsistencyTests
                                       .Select(match => (Name: match.Groups["name"].Value, Kind: match.Groups["kind"].Value))
                                       .ToArray();
 
-        Assert.IsTrue(listed.Length > 30, $"Only {listed.Length} types were found in the API index.");
+        Assert.IsGreaterThan(30, listed.Length, $"Only {listed.Length} types were found in the API index.");
 
         foreach (var (name, kind) in listed)
         {
             var reference = await McpCall.TextAsync("GetBrouterApi", new() { ["typeName"] = name });
 
-            StringAssert.StartsWith(reference, $"# {name} ({kind})",
+            Assert.StartsWith($"# {name} ({kind})", reference,
                 $"'{name}' is listed as a public type but its reference does not answer under that name and kind.");
         }
     }
@@ -152,7 +152,7 @@ public partial class McpCatalogConsistencyTests
 
         foreach (var constraint in ConstraintCatalog.All)
         {
-            StringAssert.Contains(table, $"`{{value:{constraint.Token}}}`", $"'{constraint.Token}' is not in the documented table.");
+            Assert.Contains($"`{{value:{constraint.Token}}}`", table, $"'{constraint.Token}' is not in the documented table.");
 
             var analysis = await McpCall.StructuredAsync<BrouterRouteAnalysisDto>(
                 "InspectBrouterRouteTemplates", new() { ["templates"] = $"/c/{constraint.Token.Split('(')[0]}/{{value:{constraint.Token}}}" });
@@ -172,14 +172,14 @@ public partial class McpCatalogConsistencyTests
         var table = await McpCall.TextAsync("GetBrouterRouteConstraints");
         var routeTable = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" });
 
-        StringAssert.Contains(routeTable, "ConstraintCatalog.All",
+        Assert.Contains("ConstraintCatalog.All", routeTable,
             "The demo no longer generates its constraint-tester routes from the catalog the tool answers from.");
-        StringAssert.Contains(routeTable, "/c/{c.Kind}/",
+        Assert.Contains("/c/{c.Kind}/", routeTable,
             "The demo's constraint-tester route no longer has the shape the catalog's entries are built for.");
 
         foreach (var constraint in ConstraintCatalog.All)
         {
-            StringAssert.Contains(table, $"| `{{value:{constraint.Token}}}` | {constraint.Category} |",
+            Assert.Contains($"| `{{value:{constraint.Token}}}` | {constraint.Category} |", table,
                 $"'{constraint.Token}' is documented under a category the catalog does not give it.");
         }
     }
@@ -208,7 +208,7 @@ public partial class McpCatalogConsistencyTests
 
                 quotedPaths++;
 
-                Assert.IsTrue(paths.Contains(quoted),
+                Assert.Contains(quoted, paths,
                     $"The '{renderMode}' guide quotes '{quoted}', which the source index does not list.");
             }
 
@@ -216,7 +216,7 @@ public partial class McpCatalogConsistencyTests
             // sample, which would leave the loop above asserting nothing at all.
             if (renderMode is not "standalone-wasm")
             {
-                Assert.IsTrue(quotedPaths > 0, $"The '{renderMode}' guide no longer hands out any file from the source catalog.");
+                Assert.IsGreaterThan(0, quotedPaths, $"The '{renderMode}' guide no longer hands out any file from the source catalog.");
             }
         }
     }
@@ -236,8 +236,8 @@ public partial class McpCatalogConsistencyTests
             Assert.IsFalse(markdown.Contains("could not be rendered", StringComparison.Ordinal),
                 $"The '{page.Title}' page did not render: {markdown[..Math.Min(400, markdown.Length)]}");
 
-            Assert.IsTrue(markdown.Length > 500, $"The '{page.Title}' page came back as {markdown.Length} characters, which is not a page.");
-            StringAssert.Contains(markdown, "# ", $"The '{page.Title}' page came back with no heading at all.");
+            Assert.IsGreaterThan(500, markdown.Length, $"The '{page.Title}' page came back as {markdown.Length} characters, which is not a page.");
+            Assert.Contains("# ", markdown, $"The '{page.Title}' page came back with no heading at all.");
         }
     }
 
@@ -266,4 +266,6 @@ public partial class McpCatalogConsistencyTests
     // The source index lists a file as "- `path` (n lines) - description".
     [GeneratedRegex(@"^- `(?<path>[^`]+)` \(\d+ lines\)", RegexOptions.Multiline)]
     private static partial Regex SourcePathRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

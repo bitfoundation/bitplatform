@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -139,7 +139,7 @@ public class PaneResizeTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved());
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved());
 
-        CollectionAssert.AreEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
+        Assert.AreSequenceEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
     }
 
     [TestMethod]
@@ -154,7 +154,7 @@ public class PaneResizeTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.FitView());
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved());
 
-        CollectionAssert.AreEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
+        Assert.AreSequenceEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
     }
 
     [TestMethod]
@@ -185,7 +185,7 @@ public class PaneResizeTests : BunitContext
         await cut.InvokeAsync(() => pending.SetResult(new BlowDomRect(0, 0, 1000, 600)));
         await Task.WhenAll(first, second);
 
-        CollectionAssert.AreEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
+        Assert.AreSequenceEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
     }
 
     [TestMethod]
@@ -199,7 +199,7 @@ public class PaneResizeTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved(true, new BlowDomRect(0, 0, 1000, 600)));
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved(true, new BlowDomRect(0, 0, 1000, 600)));
 
-        CollectionAssert.AreEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
+        Assert.AreSequenceEqual(new[] { new BlowDimensions(1000, 600) }, sizes);
         Assert.AreEqual(new BlowDimensions(1000, 600), cut.Instance.PaneSize);
     }
 
@@ -274,7 +274,7 @@ public class PaneResizeTests : BunitContext
         var moved = new BlowViewport(10, 20, 1.5);
         await cut.InvokeAsync(() => cut.Instance.SetViewport(moved));
         await cut.InvokeAsync(() => pending.SetResult(new BlowDomRect(0, 0, 800, 600)));
-        await fit.WaitAsync(TimeSpan.FromSeconds(5));
+        await fit.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         Assert.AreEqual(moved, cut.Instance.GetViewport());
     }
@@ -289,7 +289,7 @@ public class PaneResizeTests : BunitContext
         Task fit = Task.CompletedTask;
         await cut.InvokeAsync(() => { fit = cut.Instance.FitViewAsync(new BlowFitViewOptions { Duration = 100 }); });
         await cut.InvokeAsync(() => pending.SetResult(new BlowDomRect(0, 0, 800, 600)));
-        await fit.WaitAsync(TimeSpan.FromSeconds(5));
+        await fit.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         AssertViewport(FitFor(nodes, 800), cut.Instance.GetViewport());
     }
@@ -340,7 +340,7 @@ public class PaneResizeTests : BunitContext
 
         await cut.InvokeAsync(() => cut.Instance.OnResizeObserved(true, new BlowDomRect(0, 0, 1000, 600)));
 
-        var thrown = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        var thrown = await Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual("handler failed", thrown.Message);
     }
 
@@ -359,4 +359,6 @@ public class PaneResizeTests : BunitContext
         var flowY = (300 - from.Y) / from.Zoom;
         AssertViewport(new BlowViewport(400 - flowX * zoom, 300 - flowY * zoom, zoom), cut.Instance.GetViewport());
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

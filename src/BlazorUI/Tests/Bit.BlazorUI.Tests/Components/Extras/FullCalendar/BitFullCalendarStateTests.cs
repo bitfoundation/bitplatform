@@ -29,7 +29,7 @@ public class BitFullCalendarStateTests
     {
         var state = CreateState();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 BitFullCalendarView.Day,
@@ -37,8 +37,7 @@ public class BitFullCalendarStateTests
                 BitFullCalendarView.Month,
                 BitFullCalendarView.Year,
                 BitFullCalendarView.Agenda
-            },
-            state.Views.ToArray());
+            }, state.Views.ToArray());
     }
 
     [TestMethod]
@@ -48,9 +47,8 @@ public class BitFullCalendarStateTests
 
         state.SyncViews([BitFullCalendarView.Agenda, BitFullCalendarView.Day]);
 
-        CollectionAssert.AreEqual(
-            new[] { BitFullCalendarView.Agenda, BitFullCalendarView.Day },
-            state.Views.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BitFullCalendarView.Agenda, BitFullCalendarView.Day }, state.Views.ToArray());
     }
 
     [TestMethod]
@@ -60,11 +58,11 @@ public class BitFullCalendarStateTests
         state.SyncViews([BitFullCalendarView.Day]);
 
         state.SyncViews(null);
-        Assert.AreEqual(5, state.Views.Count);
+        Assert.HasCount(5, state.Views);
 
         state.SyncViews([BitFullCalendarView.Day]);
         state.SyncViews([]);
-        Assert.AreEqual(5, state.Views.Count);
+        Assert.HasCount(5, state.Views);
     }
 
     [TestMethod]
@@ -80,9 +78,8 @@ public class BitFullCalendarStateTests
             BitFullCalendarView.Day
         ]);
 
-        CollectionAssert.AreEqual(
-            new[] { BitFullCalendarView.Week, BitFullCalendarView.Day },
-            state.Views.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BitFullCalendarView.Week, BitFullCalendarView.Day }, state.Views.ToArray());
     }
 
     [TestMethod]
@@ -92,7 +89,7 @@ public class BitFullCalendarStateTests
 
         state.SyncViews([(BitFullCalendarView)42, (BitFullCalendarView)43]);
 
-        Assert.AreEqual(5, state.Views.Count);
+        Assert.HasCount(5, state.Views);
     }
 
     [TestMethod]
@@ -144,9 +141,8 @@ public class BitFullCalendarStateTests
         state.SyncResources(Resources());
         state.SetMode(BitFullCalendarMode.Timeline);
 
-        CollectionAssert.AreEqual(
-            new[] { BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month },
-            state.AvailableViews.ToArray());
+        Assert.AreSequenceEqual(
+            new[] { BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month }, state.AvailableViews.ToArray());
     }
 
     [TestMethod]
@@ -304,7 +300,7 @@ public class BitFullCalendarStateTests
         Assert.AreEqual(10, state.VisibleStartHour);
         Assert.AreEqual(16, state.VisibleEndHour);
         Assert.AreEqual(6, state.VisibleHourCount);
-        CollectionAssert.AreEqual(new[] { 10, 11, 12, 13, 14, 15 }, state.VisibleHours.ToArray());
+        Assert.AreSequenceEqual(new[] { 10, 11, 12, 13, 14, 15 }, state.VisibleHours.ToArray());
         Assert.AreEqual(10, state.StartOfDayHour, "the scroll anchor cannot sit outside the rendered window");
     }
 
@@ -339,12 +335,12 @@ public class BitFullCalendarStateTests
 
         state.SetSlotDurationMinutes(15);
         Assert.AreEqual(15, state.SlotDurationMinutes);
-        CollectionAssert.AreEqual(new[] { 0, 15, 30, 45 }, state.SlotMinutes);
+        Assert.AreSequenceEqual(new[] { 0, 15, 30, 45 }, state.SlotMinutes);
 
         // 45 is not a divisor of 60; it rounds to the nearest accepted duration.
         state.SetSlotDurationMinutes(45);
         Assert.AreEqual(60, state.SlotDurationMinutes);
-        CollectionAssert.AreEqual(new[] { 0 }, state.SlotMinutes);
+        Assert.AreSequenceEqual(new[] { 0 }, state.SlotMinutes);
     }
 
     [TestMethod]
@@ -354,7 +350,7 @@ public class BitFullCalendarStateTests
 
         state.SetHiddenDays([DayOfWeek.Saturday, DayOfWeek.Saturday, DayOfWeek.Sunday]);
 
-        Assert.AreEqual(2, state.HiddenDays.Count);
+        Assert.HasCount(2, state.HiddenDays);
         Assert.AreEqual(5, state.VisibleWeekDayCount);
     }
 
@@ -365,7 +361,7 @@ public class BitFullCalendarStateTests
 
         state.SetHiddenDays([.. System.Enum.GetValues<DayOfWeek>()]);
 
-        Assert.AreEqual(0, state.HiddenDays.Count);
+        Assert.IsEmpty(state.HiddenDays);
         Assert.AreEqual(7, state.VisibleWeekDayCount);
     }
 
@@ -396,7 +392,7 @@ public class BitFullCalendarStateTests
 
         state.SetHiddenDays([DayOfWeek.Sunday]);
 
-        Assert.IsTrue(afterFirst > 0);
+        Assert.IsGreaterThan(0, afterFirst);
         Assert.AreEqual(afterFirst, notifications);
     }
 
@@ -609,10 +605,10 @@ public class BitFullCalendarStateTests
         state.SetView(BitFullCalendarView.Day);
         state.SetSelectedDate(today);
 
-        Assert.AreEqual(1, state.AllEvents.Count, "the master stays the single stored event");
+        Assert.ContainsSingle(state.AllEvents, "the master stays the single stored event");
         Assert.IsNotNull(state.AllEvents.Single().Recurrence);
         // The day view pads its expansion window by a week either side.
-        Assert.IsTrue(state.Events.Count > 1);
+        Assert.IsGreaterThan(1, state.Events.Count);
         Assert.IsTrue(state.Events.All(e => e.IsOccurrence));
         Assert.IsTrue(state.Events.All(e => e.SeriesId == "series"));
     }
@@ -637,8 +633,7 @@ public class BitFullCalendarStateTests
 
         state.SetSelectedDate(today.AddDays(60));
 
-        Assert.IsTrue(state.Events.Any(e => e.StartDate.Date == today.AddDays(60).Date),
-            "an open-ended series keeps producing occurrences wherever the calendar goes");
+        Assert.Contains(e => e.StartDate.Date == today.AddDays(60).Date, state.Events, "an open-ended series keeps producing occurrences wherever the calendar goes");
     }
 
     [TestMethod]
@@ -686,7 +681,7 @@ public class BitFullCalendarStateTests
 
         state.SyncEvents([master]);
 
-        Assert.AreEqual(1, state.AllEvents.Count);
+        Assert.ContainsSingle(state.AllEvents);
         Assert.AreSame(master, state.AllEvents.Single());
     }
 
@@ -930,10 +925,10 @@ public class BitFullCalendarStateTests
         // Another day of the SAME week: the selected date moves, the visible range does not, so
         // consumers are not asked to re-fetch the events they already have.
         state.SetSelectedDate(Monday.AddDays(2));
-        Assert.AreEqual(0, ranges.Count);
+        Assert.IsEmpty(ranges);
 
         state.SetSelectedDate(Monday.AddDays(7));
-        Assert.AreEqual(1, ranges.Count);
+        Assert.ContainsSingle(ranges);
     }
 
     [TestMethod]
@@ -949,7 +944,7 @@ public class BitFullCalendarStateTests
         // Same date, a different span around it.
         state.SetView(BitFullCalendarView.Month);
 
-        Assert.AreEqual(1, ranges.Count);
+        Assert.ContainsSingle(ranges);
         Assert.AreEqual(BitFullCalendarView.Month, ranges[0].View);
     }
 

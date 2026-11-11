@@ -8,7 +8,7 @@ namespace Bit.Bswup.Tests.E2E.Infrastructure;
 /// <see cref="HarnessSession"/>), and the browser keeps service workers and caches per origin, so sharing a
 /// process never shares state between tests.
 /// </summary>
-public static class HarnessHosts
+internal static class HarnessHosts
 {
     private static readonly ConcurrentDictionary<string, Lazy<Task<WebHarnessHost>>> _hosts = new();
 
@@ -46,7 +46,7 @@ public static class HarnessHosts
     }
 }
 
-public sealed class WebHarnessHost : IAsyncDisposable
+internal sealed class WebHarnessHost : IAsyncDisposable
 {
     private readonly ChildProcess _process;
 

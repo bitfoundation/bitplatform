@@ -21,9 +21,9 @@ public class BitAccentColorSwitcherPrerenderTests
 
         // No first-paint machinery, so nothing can ring a swatch but the class - and the server's state is the
         // packaged primary.
-        StringAssert.Contains(html, "bit-acs-act");
-        Assert.IsFalse(html.Contains(BitAccentColorNames.SwatchAttribute), "Without the marker CSS a token on the swatch would key on nothing.");
-        StringAssert.Contains(html, "aria-pressed=\"true\"");
+        Assert.Contains("bit-acs-act", html);
+        Assert.DoesNotContain(BitAccentColorNames.SwatchAttribute, html, "Without the marker CSS a token on the swatch would key on nothing.");
+        Assert.Contains("aria-pressed=\"true\"", html);
     }
 
     [TestMethod]
@@ -40,8 +40,8 @@ public class BitAccentColorSwitcherPrerenderTests
 
         // A cached response reaches visitors whose accent the server never saw, so the class marks nothing and
         // every swatch carries its token for the marker CSS, keyed on the bit-accent root attribute, to ring.
-        Assert.IsFalse(html.Contains("bit-acs-act"));
-        StringAssert.Contains(html, $"{BitAccentColorNames.SwatchAttribute}=\"{PurpleToken}\"");
+        Assert.DoesNotContain("bit-acs-act", html);
+        Assert.Contains($"{BitAccentColorNames.SwatchAttribute}=\"{PurpleToken}\"", html);
     }
 
     [TestMethod]
@@ -55,9 +55,9 @@ public class BitAccentColorSwitcherPrerenderTests
             },
         });
 
-        StringAssert.Contains(html, "role=\"group\"");
-        StringAssert.Contains(html, "title=\"Crimson\"");
-        StringAssert.Contains(html, "--bit-acs-clr:#DC143C");
+        Assert.Contains("role=\"group\"", html);
+        Assert.Contains("title=\"Crimson\"", html);
+        Assert.Contains("--bit-acs-clr:#DC143C", html);
     }
 
     [TestMethod]
@@ -73,8 +73,8 @@ public class BitAccentColorSwitcherPrerenderTests
         });
 
         // The head is only ever rendered this way - it lives in the host page - so this is the one render that matters.
-        StringAssert.Contains(html, BitAccentColorSsr.InlineHeadScriptBody);
-        StringAssert.Contains(html, $"[{BitAccentColorNames.Attribute}=\"{PurpleToken}\"]");
-        StringAssert.Contains(html, $"[{BitAccentColorNames.SwatchAttribute}=\"{PurpleToken}\"]");
+        Assert.Contains(BitAccentColorSsr.InlineHeadScriptBody, html);
+        Assert.Contains($"[{BitAccentColorNames.Attribute}=\"{PurpleToken}\"]", html);
+        Assert.Contains($"[{BitAccentColorNames.SwatchAttribute}=\"{PurpleToken}\"]", html);
     }
 }

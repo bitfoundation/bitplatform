@@ -7,7 +7,7 @@ internal sealed class FixedClock(DateTimeOffset now) : TimeProvider
     public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
 }
 
-public sealed class ExpressionLine
+internal sealed class ExpressionLine
 {
     public string Product { get; set; } = "";
     public int Quantity { get; set; }
@@ -16,7 +16,7 @@ public sealed class ExpressionLine
     public List<int> Lots { get; set; } = [];
 }
 
-public sealed class ExpressionInvoice
+internal sealed class ExpressionInvoice
 {
     public string Customer { get; set; } = "";
     public List<ExpressionLine> Lines { get; set; } = [];
@@ -164,14 +164,14 @@ public class ExpressionLanguageTests
     public void A_comparison_cannot_be_chained()
     {
         var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse("1 < {x} < 5"));
-        StringAssert.Contains(ex.Message, "and");
+        Assert.Contains("and", ex.Message);
     }
 
     [TestMethod]
     public void A_bare_name_is_refused_with_a_hint_to_write_it_in_braces()
     {
         var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse("Age >= 18"));
-        StringAssert.Contains(ex.Message, "{Age}");
+        Assert.Contains("{Age}", ex.Message);
         Assert.AreEqual(0, ex.Position);
     }
 
@@ -195,7 +195,7 @@ public class ExpressionLanguageTests
     public void Malformed_expressions_are_refused_with_a_message_saying_what_is_wrong(string text, string expected)
     {
         var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse(text));
-        StringAssert.Contains(ex.Message, expected);
+        Assert.Contains(expected, ex.Message);
     }
 
     [TestMethod]
@@ -214,7 +214,7 @@ public class ExpressionLanguageTests
     public void The_dependencies_are_the_fields_named_and_a_reference_across_rows_depends_on_the_list()
     {
         var expression = BormExpression.Parse("sum({Lines[].Total}) + {Shipping} - {shipping} * {Lines[0].Total}");
-        CollectionAssert.AreEquivalent(new[] { "Lines", "Shipping", "Lines[0].Total" }, expression.Dependencies.ToArray());
+        Assert.AreSequenceEqual(new[] { "Lines", "Shipping", "Lines[0].Total" }, expression.Dependencies.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 }
 
@@ -260,15 +260,15 @@ public class ExpressionFunctionTests
         Assert.AreEqual(0, Eval("len({None})"));
         Assert.IsNull(Eval("lower({None})"));
         Assert.AreEqual("a1true", Eval("concat('a', 1, true)"));
-        Assert.AreEqual(true, Eval("startsWith({Code}, '  AB')", data));
-        Assert.AreEqual(true, Eval("contains({Code}, 'B-1')", data));
+        Assert.IsTrue((bool?)Eval("startsWith({Code}, '  AB')", data));
+        Assert.IsTrue((bool?)Eval("contains({Code}, 'B-1')", data));
     }
 
     [TestMethod]
     public void Matches_checks_a_literal_pattern_with_a_time_limit()
     {
         var data = new Dictionary<string, object?> { ["Zip"] = "12345", ["Evil"] = new string('a', 40) + "!" };
-        Assert.AreEqual(true, Eval("matches({Zip}, '^\\d{5}$')", data));
+        Assert.IsTrue((bool?)Eval("matches({Zip}, '^\\d{5}$')", data));
         // Nothing to match is not judged - unknown, as Pattern() leaves an empty box to Required().
         Assert.IsNull(Eval("matches({None}, '.*')"));
         // A pattern written to backtrack is either defused by the regex engine or abandoned at its
@@ -312,13 +312,15 @@ public class ExpressionFunctionTests
         {
             var data = new Dictionary<string, object?>
             {
-                ["Born"] = new DateOnly(2008, 3, 16), ["Joined"] = "2025-01-31", ["Left"] = new DateTime(2025, 3, 30)
+                ["Born"] = new DateOnly(2008, 3, 16),
+                ["Joined"] = "2025-01-31",
+                ["Left"] = new DateTime(2025, 3, 30)
             };
             // One day short of an eighteenth birthday is seventeen.
             Assert.AreEqual(17, Eval("age({Born})", data));
             Assert.AreEqual(new DateTime(2026, 3, 15), Eval("today()"));
             Assert.AreEqual(2008, Eval("year({Born})", data));
-            Assert.AreEqual(true, Eval("{Born} > addYears(today(), -18)", data));
+            Assert.IsTrue((bool?)Eval("{Born} > addYears(today(), -18)", data));
             // 31 January to 30 March is one whole month: the second has not come round by its day.
             Assert.AreEqual(1L, Eval("dateDiff({Joined}, {Left}, 'months')", data));
             Assert.AreEqual(58L, Eval("dateDiff({Joined}, {Left})", data));
@@ -347,7 +349,7 @@ public class ExpressionFunctionTests
         try
         {
             Assert.AreEqual(19m, Eval("100 * vatRate('DE')"));
-            Assert.IsTrue(BormExpressionFunctions.Names.Contains("vatRate"));
+            Assert.Contains("vatRate", BormExpressionFunctions.Names);
             Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse("vatRate()"));
         }
         finally
@@ -433,7 +435,7 @@ public class ExpressionSafetyTests
     {
         var text = string.Join(" + ", Enumerable.Repeat("1", BormExpression.MaxLength));
         var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse(text));
-        StringAssert.Contains(ex.Message, "at most");
+        Assert.Contains("at most", ex.Message);
     }
 
     [TestMethod]
@@ -449,7 +451,7 @@ public class ExpressionSafetyTests
                  })
         {
             var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse(text));
-            StringAssert.Contains(ex.Message, "nest");
+            Assert.Contains("nest", ex.Message);
         }
     }
 
@@ -458,7 +460,7 @@ public class ExpressionSafetyTests
     {
         var text = string.Join("+", Enumerable.Repeat("1", 1500));
         var ex = Assert.ThrowsExactly<BormExpressionException>(() => BormExpression.Parse(text));
-        StringAssert.Contains(ex.Message, "parts");
+        Assert.Contains("parts", ex.Message);
     }
 
     [TestMethod]
@@ -482,7 +484,8 @@ public class ExpressionSafetyTests
         ];
         var data = new BormDictionaryDataAccessor(new Dictionary<string, object?>
         {
-            ["a"] = 3L, ["b"] = new Dictionary<string, object?> { ["c"] = "text" },
+            ["a"] = 3L,
+            ["b"] = new Dictionary<string, object?> { ["c"] = "text" },
             ["l"] = new List<object?> { new Dictionary<string, object?> { ["x"] = 1.5 }, null }
         });
 
@@ -503,7 +506,7 @@ public class ExpressionSafetyTests
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Parsing '{text}' threw {ex.GetType().Name}: {ex.Message}");
+                throw new global::System.InvalidOperationException($"Parsing '{text}' threw {ex.GetType().Name}: {ex.Message}", ex);
                 return;
             }
 
@@ -516,7 +519,7 @@ public class ExpressionSafetyTests
             }
             catch (Exception ex)
             {
-                Assert.Fail($"Evaluating '{text}' threw {ex.GetType().Name}: {ex.Message}");
+                throw new global::System.InvalidOperationException($"Evaluating '{text}' threw {ex.GetType().Name}: {ex.Message}", ex);
             }
         }
 

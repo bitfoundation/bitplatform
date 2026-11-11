@@ -20,14 +20,14 @@ public class BitSwiperPrerenderTests
         var html = await RenderAsync(itemsCount: 3, []);
 
         Assert.IsTrue(Regex.IsMatch(html, @"role=""region""[^>]*aria-roledescription=""carousel"""));
-        Assert.AreEqual(3, Regex.Matches(html, @"aria-roledescription=""slide""").Count);
-        StringAssert.Contains(html, "slide-0");
-        StringAssert.Contains(html, "slide-2");
+        Assert.HasCount(3, Regex.Matches(html, @"aria-roledescription=""slide"""));
+        Assert.Contains("slide-0", html);
+        Assert.Contains("slide-2", html);
 
         // The two buttons need no measurement to be there, and the keyboard reaches the root from the first paint.
-        StringAssert.Contains(html, "bit-swp-lbt");
-        StringAssert.Contains(html, "bit-swp-rbt");
-        StringAssert.Contains(html, @"tabindex=""0""");
+        Assert.Contains("bit-swp-lbt", html);
+        Assert.Contains("bit-swp-rbt", html);
+        Assert.Contains(@"tabindex=""0""", html);
     }
 
     [TestMethod]
@@ -36,8 +36,8 @@ public class BitSwiperPrerenderTests
         var html = await RenderAsync(itemsCount: 3, new() { [nameof(BitSwiper.VisibleItemsCount)] = 2, [nameof(BitSwiper.Gap)] = "1rem" });
 
         // The share of the width each item takes is a formula of the parameters, so it needs no measurement.
-        StringAssert.Contains(html, "--bit-swp-isz:calc((100% - 1 * var(--bit-swp-gap, 0px)) / 2)");
-        StringAssert.Contains(html, "--bit-swp-gap:1rem");
+        Assert.Contains("--bit-swp-isz:calc((100% - 1 * var(--bit-swp-gap, 0px)) / 2)", html);
+        Assert.Contains("--bit-swp-gap:1rem", html);
     }
 
     [TestMethod]
@@ -46,7 +46,7 @@ public class BitSwiperPrerenderTests
         var html = await RenderAsync(itemsCount: 3, new() { [nameof(BitSwiper.ShowDots)] = true });
 
         // How many pages there are is what the measurement reports, so there is nothing to draw a dot for yet.
-        Assert.IsFalse(html.Contains("bit-swp-dot"));
+        Assert.DoesNotContain("bit-swp-dot", html);
     }
 
     [TestMethod]
@@ -58,8 +58,8 @@ public class BitSwiperPrerenderTests
         var slide = html.IndexOf("slide-0", System.StringComparison.Ordinal);
 
         // The motion can be stopped before anything else is dealt with, as the carousel pattern asks.
-        Assert.IsTrue(button >= 0, "No play/pause button was prerendered.");
-        Assert.IsTrue(button < slide, "The play/pause button is not ahead of the slides.");
+        Assert.IsGreaterThanOrEqualTo(0, button, "No play/pause button was prerendered.");
+        Assert.IsLessThan(slide, button, "The play/pause button is not ahead of the slides.");
     }
 
     private static Task<string> RenderAsync(int itemsCount, Dictionary<string, object?> parameters)

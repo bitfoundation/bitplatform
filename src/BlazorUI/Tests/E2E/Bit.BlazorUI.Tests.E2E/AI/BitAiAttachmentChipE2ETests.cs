@@ -143,8 +143,8 @@ public class BitAiAttachmentChipE2ETests : E2ETestBase
 
         var root = Root("ach-long");
         var maxWidth = AiE2EHelpers.ParsePx(await ComputedStyleAsync("#ach-long", "max-width"));
-        Assert.IsTrue(maxWidth > 0, "The chip has a max width.");
-        Assert.IsTrue((await root.BoundingBoxAsync())!.Width <= maxWidth + 0.5, "The chip stops at its max width.");
+        Assert.IsGreaterThan(0, maxWidth, "The chip has a max width.");
+        Assert.IsLessThanOrEqualTo(maxWidth + 0.5, (await root.BoundingBoxAsync())!.Width, "The chip stops at its max width.");
 
         await Expect(Tag("ach-long")).ToHaveAttributeAsync("title", full);
         await Expect(Name("ach-long")).ToHaveTextAsync(full);
@@ -155,7 +155,7 @@ public class BitAiAttachmentChipE2ETests : E2ETestBase
         // The details stay on the same line as the name.
         var name = (await Name("ach-long").BoundingBoxAsync())!;
         var details = (await Details("ach-long").BoundingBoxAsync())!;
-        Assert.IsTrue(Math.Abs(name.Y - details.Y) < name.Height + details.Height, "The chip keeps to one row.");
+        Assert.IsLessThan(name.Height + details.Height, Math.Abs(name.Y - details.Y), "The chip keeps to one row.");
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ public class BitAiAttachmentChipE2ETests : E2ETestBase
         await OpenAsync(Route);
 
         await Expect(Root("ach-style")).ToHaveCSSAsync("max-width", "150px");
-        Assert.IsTrue((await Root("ach-style").BoundingBoxAsync())!.Width <= 150.5);
+        Assert.IsLessThanOrEqualTo(150.5, (await Root("ach-style").BoundingBoxAsync())!.Width);
 
         var thumbnail = Thumbnail("ach-style");
         await Expect(thumbnail).ToHaveCSSAsync("width", "24px");
@@ -228,12 +228,12 @@ public class BitAiAttachmentChipE2ETests : E2ETestBase
             var thumbnail = await Thumbnail(id).RectAsync();
             var name = await Name(id).RectAsync();
             var remove = await Remove(id).RectAsync();
-            Assert.IsTrue(thumbnail.Left >= name.Right - 1, $"#{id}: the thumbnail is on the right of the name.");
-            Assert.IsTrue(remove.Right <= name.Left + 1, $"#{id}: the remove button is on the left of the name.");
+            Assert.IsGreaterThanOrEqualTo(name.Right - 1, thumbnail.Left, $"#{id}: the thumbnail is on the right of the name.");
+            Assert.IsLessThanOrEqualTo(name.Left + 1, remove.Right, $"#{id}: the remove button is on the left of the name.");
         }
 
         var ltrThumbnail = await Thumbnail("ach-ltr").RectAsync();
         var ltrName = await Name("ach-ltr").RectAsync();
-        Assert.IsTrue(ltrThumbnail.Right <= ltrName.Left + 1, "Left to right, the thumbnail leads on the left.");
+        Assert.IsLessThanOrEqualTo(ltrName.Left + 1, ltrThumbnail.Right, "Left to right, the thumbnail leads on the left.");
     }
 }

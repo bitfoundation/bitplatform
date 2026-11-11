@@ -25,9 +25,9 @@ public class BitProgressE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Matches(html, new Regex("id=\"prg-basic\" class=\"bit-prb\">.*?role=\"progressbar\"[^>]*aria-valuenow=\"42\""));
-        StringAssert.Contains(html, "id=\"prg-delay-prerendered\" class=\"bit-prb-dlh bit-prb\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.MatchesRegex(new Regex("id=\"prg-basic\" class=\"bit-prb\">.*?role=\"progressbar\"[^>]*aria-valuenow=\"42\""), html);
+        Assert.Contains("id=\"prg-delay-prerendered\" class=\"bit-prb-dlh bit-prb\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#prg-basic .bit-prb-lbl")).ToHaveTextAsync("Uploading report.pdf");
@@ -126,7 +126,7 @@ public class BitProgressE2ETests : E2ETestBase
         await Expect(delayed).ToHaveCSSAsync("visibility", "hidden");
 
         await Expect(delayed).ToHaveCSSAsync("visibility", "visible");
-        Assert.IsTrue(watch.ElapsedMilliseconds >= 1500, $"Revealed after {watch.ElapsedMilliseconds}ms of its 2000.");
+        Assert.IsGreaterThanOrEqualTo(1500, watch.ElapsedMilliseconds, $"Revealed after {watch.ElapsedMilliseconds}ms of its 2000.");
         await Expect(delayed).Not.ToHaveClassAsync(HasClass("bit-prb-dly"));
 
         // A delay set to zero ends the wait at once.
@@ -175,7 +175,7 @@ public class BitProgressE2ETests : E2ETestBase
         await Expect(readout.Locator("bdi")).ToHaveCSSAsync("direction", "ltr");
 
         var bar = await Page.Locator($"#prg-pct-{id} .bit-prb-bcn").BoundingBoxAsync();
-        Assert.IsTrue((await readout.BoundingBoxAsync())!.Y >= bar!.Y + bar.Height - 0.5, "Under the bar.");
+        Assert.IsGreaterThanOrEqualTo(bar!.Y + bar.Height - 0.5, (await readout.BoundingBoxAsync())!.Y, "Under the bar.");
     }
 
     [TestMethod]
@@ -187,8 +187,8 @@ public class BitProgressE2ETests : E2ETestBase
         await Expect(top).ToHaveTextAsync("42 %");
         var label = await Page.Locator("#prg-pct-Top .bit-prb-lbl").BoundingBoxAsync();
         var topBox = await top.BoundingBoxAsync();
-        Assert.IsTrue(topBox!.X > label!.X + label.Width - 1, "To the right of the label, on its row.");
-        Assert.IsTrue(topBox.Y < (await Page.Locator("#prg-pct-Top .bit-prb-bcn").BoundingBoxAsync())!.Y);
+        Assert.IsGreaterThan(label!.X + label.Width - 1, topBox!.X, "To the right of the label, on its row.");
+        Assert.IsLessThan((await Page.Locator("#prg-pct-Top .bit-prb-bcn").BoundingBoxAsync())!.Y, topBox.Y);
 
         var inside = Page.Locator("#prg-pct-Inside .bit-prb-bar > .bit-prb-pci");
         await Expect(inside).ToHaveTextAsync("42 %");
@@ -255,11 +255,11 @@ public class BitProgressE2ETests : E2ETestBase
         var container = await Page.Locator("#prg-buffer .bit-prb-bcn").BoundingBoxAsync();
         await Page.WaitForFunctionAsync("() => { const b = document.querySelector('#prg-buffer .bit-prb-buf').getBoundingClientRect(); const c = document.querySelector('#prg-buffer .bit-prb-bcn').getBoundingClientRect(); return Math.abs(b.width / c.width - 0.55) < 0.01; }");
         await WaitForFillAsync("#prg-buffer", 0.30);
-        Assert.IsTrue((await buffer.BoundingBoxAsync())!.Width < container!.Width);
+        Assert.IsLessThan(container!.Width, (await buffer.BoundingBoxAsync())!.Width);
 
         // A translucent shade of the bar's color.
         var color = await buffer.EvaluateAsync<string>("el => getComputedStyle(el).backgroundColor");
-        StringAssert.Contains(color, "/ 0.38");
+        Assert.Contains("/ 0.38", color);
 
         // Against a Value, the buffer is in the same units.
         await Page.WaitForFunctionAsync("() => { const b = document.querySelector('#prg-buffer-value .bit-prb-buf').getBoundingClientRect(); const c = document.querySelector('#prg-buffer-value .bit-prb-bcn').getBoundingClientRect(); return Math.abs(b.width / c.width - 0.8) < 0.01; }");
@@ -298,7 +298,7 @@ public class BitProgressE2ETests : E2ETestBase
 
         var striped = Page.Locator("#prg-striped .bit-prb-bar");
         await Expect(striped).ToHaveClassAsync(HasClass("bit-prb-stp"));
-        StringAssert.StartsWith(await striped.EvaluateAsync<string>("el => getComputedStyle(el).backgroundImage"), "linear-gradient(45deg");
+        Assert.StartsWith("linear-gradient(45deg", await striped.EvaluateAsync<string>("el => getComputedStyle(el).backgroundImage"));
         await Expect(striped).ToHaveCSSAsync("animation-name", "none");
 
         var moving = Page.Locator("#prg-striped-animated .bit-prb-bar");
@@ -316,7 +316,7 @@ public class BitProgressE2ETests : E2ETestBase
         var root = Page.Locator("#prg-segments");
         await Expect(root).ToHaveClassAsync(HasClass("bit-prb-seg"));
         await Expect(root).ToHaveAttributeAsync("style", new Regex("--bit-prb-segments: 5;--bit-prb-segment-gap: 4px;"));
-        StringAssert.StartsWith(await ComputedStyleAsync("#prg-segments .bit-prb-bcn", "mask-image"), "repeating-linear-gradient(to right");
+        Assert.StartsWith("repeating-linear-gradient(to right", await ComputedStyleAsync("#prg-segments .bit-prb-bcn", "mask-image"));
 
         await Expect(Page.Locator("#prg-segments-gap")).ToHaveAttributeAsync("style", new Regex("--bit-prb-segment-gap: 2px;"));
 
@@ -442,7 +442,7 @@ public class BitProgressE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#prg-custom .bit-prb-bar")).ToHaveCSSAsync("background-color", "rgb(139, 92, 246)");
         await Expect(Page.Locator("#prg-custom .bit-prb-trc")).ToHaveCSSAsync("background-color", "rgb(233, 213, 255)");
-        StringAssert.StartsWith(await ComputedStyleAsync("#prg-custom .bit-prb-buf", "background-color"), "color(srgb 0.545");
+        Assert.StartsWith("color(srgb 0.545", await ComputedStyleAsync("#prg-custom .bit-prb-buf", "background-color"));
         await Expect(Page.Locator("#prg-cir-custom .bit-prb-cbr")).ToHaveCSSAsync("stroke", "rgb(255, 99, 71)");
         await Expect(Page.Locator("#prg-cir-custom .bit-prb-crt")).ToHaveCSSAsync("stroke", "rgb(255, 224, 214)");
     }
@@ -588,7 +588,7 @@ public class BitProgressE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#prg-css-inside .bit-prb-pci")).ToHaveCSSAsync("color", "rgb(250, 250, 250)");
         await Expect(Page.Locator("#prg-css-striped .bit-prb-bar")).ToHaveCSSAsync("background-size", "24px 24px");
-        StringAssert.Contains(await ComputedStyleAsync("#prg-css-striped .bit-prb-bar", "background-image"), "rgba(255, 0, 0, 0.5)");
+        Assert.Contains("rgba(255, 0, 0, 0.5)", await ComputedStyleAsync("#prg-css-striped .bit-prb-bar", "background-image"));
 
         Assert.AreEqual((70, 70), await SizeAsync("#prg-css-ring svg"));
         await Expect(Page.Locator("#prg-css-ring .bit-prb-ctx")).ToHaveCSSAsync("font-size", "19px");
@@ -613,7 +613,7 @@ public class BitProgressE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#prg-indeterminate .bit-prb-ind")).ToHaveCSSAsync("animation-duration", "9s");
-        Assert.IsTrue(Seconds(await ComputedStyleAsync("#prg-basic .bit-prb-bar", "transition-duration")) < 0.001);
+        Assert.IsLessThan(0.001, Seconds(await ComputedStyleAsync("#prg-basic .bit-prb-bar", "transition-duration")));
     }
 
     [TestMethod]
@@ -638,7 +638,7 @@ public class BitProgressE2ETests : E2ETestBase
 
         // The readout reads the number left to right, and the segments are cut from the right.
         await Expect(Page.Locator("#prg-rtl .bit-prb-pnm")).ToHaveCSSAsync("direction", "ltr");
-        StringAssert.StartsWith(await ComputedStyleAsync("#prg-rtl-segments .bit-prb-bcn", "mask-image"), "repeating-linear-gradient(to left");
+        Assert.StartsWith("repeating-linear-gradient(to left", await ComputedStyleAsync("#prg-rtl-segments .bit-prb-bcn", "mask-image"));
     }
 
     [TestMethod]

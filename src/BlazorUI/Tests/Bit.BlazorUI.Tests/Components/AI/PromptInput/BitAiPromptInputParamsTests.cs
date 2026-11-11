@@ -55,7 +55,7 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
     [TestMethod]
     public void BitAiPromptInputParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiPromptInput", BitAiPromptInputParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiPromptInput", new BitAiPromptInputParams().Name);
         Assert.AreEqual(BitAiPromptInputParams.ParamName, new BitAiPromptInputParams().Name);
         Assert.IsInstanceOfType<IBitComponentParams>(new BitAiPromptInputParams());
     }
@@ -112,7 +112,7 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
                                          });
 
         Assert.AreEqual("Mine", component.Find("textarea").GetAttribute("placeholder"));
-        Assert.HasCount(1, component.FindAll("input[type=file]"));
+        Assert.ContainsSingle(component.FindAll("input[type=file]"));
     }
 
     [TestMethod]
@@ -132,6 +132,6 @@ public class BitAiPromptInputParamsTests : BitAiTestBase
             });
         });
 
-        Assert.HasCount(1, component.FindAll("input[type=file]"));
+        Assert.ContainsSingle(component.FindAll("input[type=file]"));
     }
 }

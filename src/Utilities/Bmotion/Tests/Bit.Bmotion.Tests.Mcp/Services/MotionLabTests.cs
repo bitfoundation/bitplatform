@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Mcp.Services;
+﻿namespace Bit.Bmotion.Tests.Mcp.Services;
 
 /// <summary>
 /// The half of the MCP server that answers by running the real engine rather than by quoting text.
@@ -36,9 +36,9 @@ public class MotionLabTests
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 100, damping: 20)", 0, 100);
 
         Assert.AreEqual("Spring", result.Kind);
-        Assert.IsTrue(result.OvershootPercent < 0.5, $"Overshot by {result.OvershootPercent}%.");
+        Assert.IsLessThan(0.5, result.OvershootPercent, $"Overshot by {result.OvershootPercent}%.");
         Assert.AreEqual(0, result.TargetCrossings);
-        StringAssert.Contains(result.Reading, "critically damped");
+        Assert.Contains("critically damped", result.Reading);
     }
 
     [TestMethod]
@@ -46,9 +46,9 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 300, damping: 8)", 0, 100);
 
-        Assert.IsTrue(result.OvershootPercent > 5, $"A spring this lightly damped must overshoot; it measured {result.OvershootPercent}%.");
-        Assert.IsTrue(result.TargetCrossings >= 2, $"It crossed the target {result.TargetCrossings} times.");
-        Assert.IsTrue(result.PeakVelocity > 0);
+        Assert.IsGreaterThan(5, result.OvershootPercent, $"A spring this lightly damped must overshoot; it measured {result.OvershootPercent}%.");
+        Assert.IsGreaterThanOrEqualTo(2, result.TargetCrossings, $"It crossed the target {result.TargetCrossings} times.");
+        Assert.IsGreaterThan(0, result.PeakVelocity);
     }
 
     /// <summary>
@@ -61,9 +61,9 @@ public class MotionLabTests
         var loose = await BmotionMotionLab.SimulateAsync("spring(stiffness: 260, damping: 8)");
         var tight = await BmotionMotionLab.SimulateAsync("spring(stiffness: 260, damping: 26)");
 
-        Assert.IsTrue(tight.OvershootPercent < loose.OvershootPercent,
+        Assert.IsLessThan(loose.OvershootPercent, tight.OvershootPercent,
                       $"Damping 26 overshot {tight.OvershootPercent}%, damping 8 overshot {loose.OvershootPercent}%.");
-        Assert.IsTrue(tight.TargetCrossings <= loose.TargetCrossings);
+        Assert.IsLessThanOrEqualTo(loose.TargetCrossings, tight.TargetCrossings);
     }
 
     [TestMethod]
@@ -71,8 +71,8 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.SimulateAsync("tween(0.5, InOut)", 20, 180);
 
-        Assert.AreNotEqual(0, result.Samples.Length);
-        Assert.IsTrue(result.Samples.Length <= 24, $"{result.Samples.Length} samples is more than a client should be handed.");
+        Assert.IsNotEmpty(result.Samples);
+        Assert.IsLessThanOrEqualTo(24, result.Samples.Length, $"{result.Samples.Length} samples is more than a client should be handed.");
 
         Assert.AreEqual(20, result.Samples[0].Value, 5, "The first sample is not near the starting value.");
         Assert.AreEqual(180, result.Samples[^1].Value, 1, "The last sample is not the resting value.");
@@ -80,7 +80,7 @@ public class MotionLabTests
         // Time only moves forwards, and the pinned last sample is the end of the motion.
         for (int i = 1; i < result.Samples.Length; i++)
         {
-            Assert.IsTrue(result.Samples[i].Seconds >= result.Samples[i - 1].Seconds,
+            Assert.IsGreaterThanOrEqualTo(result.Samples[i - 1].Seconds, result.Samples[i].Seconds,
                           $"Sample {i} goes backwards in time.");
         }
 
@@ -93,7 +93,7 @@ public class MotionLabTests
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 260, damping: 12)");
 
         Assert.AreNotEqual(string.Empty, result.Sparkline);
-        Assert.IsTrue(result.Sparkline.Length <= 48, $"A {result.Sparkline.Length}-character sparkline does not fit a terminal.");
+        Assert.IsLessThanOrEqualTo(48, result.Sparkline.Length, $"A {result.Sparkline.Length}-character sparkline does not fit a terminal.");
     }
 
     [TestMethod]
@@ -103,7 +103,7 @@ public class MotionLabTests
         // bouncy spring as perfectly damped.
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 300, damping: 8)", 100, 0);
 
-        Assert.IsTrue(result.OvershootPercent > 5, $"Measured {result.OvershootPercent}% travelling downwards.");
+        Assert.IsGreaterThan(5, result.OvershootPercent, $"Measured {result.OvershootPercent}% travelling downwards.");
         Assert.AreEqual(100, result.From);
         Assert.AreEqual(0, result.To);
     }
@@ -124,14 +124,14 @@ public class MotionLabTests
         var result = await BmotionMotionLab.SimulateAsync("inertia(velocity: 500)", 0, 100);
 
         Assert.AreEqual("Inertia", result.Kind);
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("ignores the target", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("ignores the target", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
 
         // Reported against the resting point, not against the caller's 100 - otherwise the overshoot
         // would be an artefact of a target inertia never had.
         Assert.AreNotEqual(100, result.To);
         Assert.AreEqual(result.To, result.Samples[^1].Value, 0.5);
-        StringAssert.Contains(result.Reading, "glide");
+        Assert.Contains("glide", result.Reading);
     }
 
     [TestMethod]
@@ -139,10 +139,10 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 400, damping: 0.05)", 0, 100);
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("come to rest", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(warning => warning.Contains("come to rest", StringComparison.OrdinalIgnoreCase), result.Warnings,
                       $"A ringing spring reported no warning. Warnings: {string.Join(" | ", result.Warnings)}");
         // And the advice names the lever, rather than only the symptom.
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("damping", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(warning => warning.Contains("damping", StringComparison.OrdinalIgnoreCase), result.Warnings);
     }
 
     [TestMethod]
@@ -154,10 +154,10 @@ public class MotionLabTests
         // Reading carries the same text, so a client that renders only the human-facing field still
         // learns what went wrong.
         Assert.AreEqual(result.Error, result.Reading);
-        Assert.AreEqual(0, result.Samples.Length);
+        Assert.IsEmpty(result.Samples);
         Assert.AreEqual("Unknown", result.Kind);
         // The spec is echoed back, so the caller can see what the server thought it was given.
-        StringAssert.Contains(result.Transition, "swoosh");
+        Assert.Contains("swoosh", result.Transition);
     }
 
     [TestMethod]
@@ -166,7 +166,7 @@ public class MotionLabTests
         var result = await BmotionMotionLab.SimulateAsync("spring(stiffness: 100, damping: 0, delay: -1e300)", 0, 100);
 
         Assert.IsNotNull(result.Error);
-        Assert.AreEqual(0, result.Samples.Length);
+        Assert.IsEmpty(result.Samples);
     }
 
     /// <summary>
@@ -203,7 +203,7 @@ public class MotionLabTests
         {
             var curve = await BmotionMotionLab.SampleEaseAsync(ease);
 
-            Assert.AreEqual(11, curve.Length, $"BmEase.{ease} sampled {curve.Length} points.");
+            Assert.HasCount(11, curve, $"BmEase.{ease} sampled {curve.Length} points.");
             Assert.AreEqual(0, curve[0], 0.02, $"BmEase.{ease} does not start at 0.");
             Assert.AreEqual(1, curve[^1], 0.02, $"BmEase.{ease} does not end at 1.");
         }
@@ -223,8 +223,8 @@ public class MotionLabTests
     [TestMethod]
     public async Task SampleEase_HonoursTheRequestedNumberOfPoints()
     {
-        Assert.AreEqual(5, (await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 5)).Length);
-        Assert.AreEqual(21, (await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 21)).Length);
+        Assert.HasCount(5, await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 5));
+        Assert.HasCount(21, await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 21));
     }
 
     /// <summary>
@@ -240,7 +240,7 @@ public class MotionLabTests
     {
         var curve = await BmotionMotionLab.SampleEaseAsync(BmEase.Linear, points);
 
-        Assert.AreEqual(2, curve.Length);
+        Assert.HasCount(2, curve);
         Assert.AreEqual(0, curve[0], 0.02);
         Assert.AreEqual(1, curve[1], 0.02);
     }
@@ -304,8 +304,8 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.AnalyzePlaybackAsync([property], "tween(0.4)");
 
-        StringAssert.Contains(result.Reason, property);
-        StringAssert.Contains(result.Reason, equivalent);
+        Assert.Contains(property, result.Reason);
+        Assert.Contains(equivalent, result.Reason);
     }
 
     [TestMethod]
@@ -331,12 +331,12 @@ public class MotionLabTests
         Assert.AreEqual("Frame loop only (instant on Blazor Server)", result.Path);
         Assert.AreEqual("Frame loop", result.OnWebAssembly);
         Assert.AreEqual("Instant", result.OnBlazorServer);
-        CollectionAssert.AreEqual(new[] { "d" }, result.FrameLoopProperties);
-        StringAssert.Contains(result.Reason, "attribute");
+        Assert.AreSequenceEqual(new[] { "d" }, result.FrameLoopProperties);
+        Assert.Contains("attribute", result.Reason);
         Assert.IsNull(result.BrowserKeyframes, "Nothing was handed to the browser.");
 
         Assert.IsNotNull(result.HowToOffload);
-        Assert.AreNotEqual(0, result.HowToOffload.Length, "A frame-loop verdict with no remedy leaves the caller stuck.");
+        Assert.IsNotEmpty(result.HowToOffload, "A frame-loop verdict with no remedy leaves the caller stuck.");
     }
 
     [TestMethod]
@@ -346,11 +346,11 @@ public class MotionLabTests
 
         Assert.IsFalse(result.WorksOnBlazorServer);
         Assert.AreEqual("Browser (timeline) + frame loop only (instant on Blazor Server)", result.Path);
-        CollectionAssert.AreEqual(new[] { "d" }, result.FrameLoopProperties);
+        Assert.AreSequenceEqual(new[] { "d" }, result.FrameLoopProperties);
 
         // The rest still reaches the browser, and is not blamed for the part that does not.
         Assert.AreEqual(2, result.BrowserKeyframes);
-        StringAssert.Contains(result.Reason, "attribute");
+        Assert.Contains("attribute", result.Reason);
         Assert.IsFalse(result.Reason.Contains("opacity is", StringComparison.Ordinal));
     }
 
@@ -365,9 +365,9 @@ public class MotionLabTests
 
         Assert.IsTrue(result.WorksOnBlazorServer, result.Reason);
         Assert.AreEqual("Browser (recorded)", result.Path);
-        StringAssert.Contains(result.Reason, "inertia");
+        Assert.Contains("inertia", result.Reason);
         Assert.IsNull(result.HowToOffload, "The browser plays it; there is nothing to get it there.");
-        Assert.IsTrue(result.HowToPlayAsTimeline!.Any(remedy => remedy.Contains("spring", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(remedy => remedy.Contains("spring", StringComparison.OrdinalIgnoreCase), result.HowToPlayAsTimeline!);
     }
 
     /// <summary>
@@ -381,7 +381,7 @@ public class MotionLabTests
 
         Assert.AreEqual("linear", recorded.BrowserEasing);
         Assert.IsTrue(recorded.BrowserKeyframes > 2, $"A recording of a glide sent {recorded.BrowserKeyframes} keyframes.");
-        StringAssert.Contains(recorded.Reason, "keyframes");
+        Assert.Contains("keyframes", recorded.Reason);
     }
 
     /// <summary>
@@ -399,7 +399,7 @@ public class MotionLabTests
         Assert.AreEqual("Browser (recorded)", flung.Path, "An initial velocity has to be reported as costing the timeline.");
         Assert.IsTrue(still.WorksOnBlazorServer);
         Assert.IsTrue(flung.WorksOnBlazorServer);
-        StringAssert.Contains(flung.Reason, "velocity");
+        Assert.Contains("velocity", flung.Reason);
     }
 
     /// <summary>
@@ -425,8 +425,9 @@ public class MotionLabTests
 
             Assert.AreEqual("Browser (recorded)", result.Path, $"{cause}: {result.Reason}");
             Assert.IsTrue(result.WorksOnBlazorServer, cause);
-            StringAssert.Contains(result.Reason, cause);
-            Assert.AreNotEqual(0, result.HowToPlayAsTimeline?.Length ?? 0, $"{cause}: no way to a timeline was offered.");
+            Assert.Contains(cause, result.Reason);
+            var actualValue = result.HowToPlayAsTimeline?.Length ?? 0;
+            Assert.AreNotEqual(0, actualValue, $"{cause}: no way to a timeline was offered.");
         }
     }
 
@@ -454,8 +455,9 @@ public class MotionLabTests
             Assert.AreEqual("Frame loop only (instant on Blazor Server)", result.Path, $"{cause}: {result.Reason}");
             Assert.AreEqual("Instant", result.OnBlazorServer, cause);
             Assert.IsFalse(result.WorksOnBlazorServer, cause);
-            StringAssert.Contains(result.Reason, cause);
-            Assert.AreNotEqual(0, result.HowToOffload?.Length ?? 0, $"{cause}: no remedy was offered.");
+            Assert.Contains(cause, result.Reason);
+            var actualValue = result.HowToOffload?.Length ?? 0;
+            Assert.AreNotEqual(0, actualValue, $"{cause}: no remedy was offered.");
         }
     }
 
@@ -482,7 +484,7 @@ public class MotionLabTests
         Assert.AreEqual("Instant", result.OnBlazorServer);
         // Nothing animates anywhere, so Server does exactly what WebAssembly does.
         Assert.IsTrue(result.WorksOnBlazorServer);
-        StringAssert.Contains(result.Reason, "no duration");
+        Assert.Contains("no duration", result.Reason);
     }
 
     [TestMethod]
@@ -490,8 +492,8 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.AnalyzePlaybackAsync(["x", "wobbliness"], "tween(0.3)");
 
-        StringAssert.Contains(result.Reason, "wobbliness");
-        StringAssert.Contains(result.Reason, "no such argument");
+        Assert.Contains("wobbliness", result.Reason);
+        Assert.Contains("no such argument", result.Reason);
     }
 
     [TestMethod]
@@ -510,7 +512,7 @@ public class MotionLabTests
     {
         var result = await BmotionMotionLab.AnalyzePlaybackAsync([], "tween(0.3)");
 
-        Assert.AreEqual(0, result.Properties.Length);
+        Assert.IsEmpty(result.Properties);
         Assert.IsNotNull(result.Reason);
 
         // An animation of nothing is not a verdict about the transition - instant or otherwise.

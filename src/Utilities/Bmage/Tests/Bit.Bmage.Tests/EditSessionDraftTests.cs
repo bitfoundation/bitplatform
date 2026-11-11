@@ -19,12 +19,12 @@ public sealed class EditSessionDraftTests
         Assert.AreEqual(session.ProxyScale / 2, session.DraftScale, 1e-3);
         session.AddOperation(new BlurFilter(4f));
 
-        var draft = await session.RenderDraftAsync();
+        var draft = await session.RenderDraftAsync(cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(new System.Drawing.Size(1000, 667), draft.Size);
         Assert.AreEqual(session.DraftScale, session.PreviewScale);
         Assert.IsTrue(session.IsPreviewStale, "a draft is not the preview");
 
-        var full = await session.RenderPreviewAsync();
+        var full = await session.RenderPreviewAsync(TestContext.CancellationToken);
         Assert.AreEqual(new System.Drawing.Size(2000, 1333), full.Size);
         Assert.AreEqual(session.ProxyScale, session.PreviewScale);
         Assert.IsFalse(session.IsPreviewStale);
@@ -41,11 +41,11 @@ public sealed class EditSessionDraftTests
         for (var i = 1; i <= 3; i++)
         {
             session.ApplyTransient(d => d.ReplaceOperation(1, new BrightnessAdjustment(0.05f * i)));
-            await session.RenderDraftAsync();
+            await session.RenderDraftAsync(cancellationToken: TestContext.CancellationToken);
         }
         session.Commit("brightness");
-        await session.RenderPreviewAsync();
-        await session.RenderDraftAsync(d => d.AddAnnotation(new Annotations.RectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }));
+        await session.RenderPreviewAsync(TestContext.CancellationToken);
+        await session.RenderDraftAsync(d => d.AddAnnotation(new Annotations.RectangleAnnotation { Rectangle = new System.Drawing.RectangleF(1, 1, 9, 9) }), TestContext.CancellationToken);
 
         // Once for the draft resolution and once for the full one.
         Assert.AreEqual(2, counting.Applied);
@@ -57,7 +57,7 @@ public sealed class EditSessionDraftTests
         using var session = new ImageEditSession(FastPathEquivalenceTests.Noise(800, 600, 2));
         Assert.AreEqual(session.ProxyScale, session.DraftScale);
         session.AddOperation(new BrightnessAdjustment(0.2f));
-        var draft = await session.RenderDraftAsync();
+        var draft = await session.RenderDraftAsync(cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(new System.Drawing.Size(800, 600), draft.Size);
         Assert.IsFalse(session.IsPreviewStale, "without a draft resolution, the draft is the full preview");
     }
@@ -72,4 +72,6 @@ public sealed class EditSessionDraftTests
             return GetMutableCopy(source, context);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

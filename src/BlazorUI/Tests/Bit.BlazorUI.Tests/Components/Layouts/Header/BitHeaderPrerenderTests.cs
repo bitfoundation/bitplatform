@@ -26,20 +26,20 @@ public class BitHeaderPrerenderTests
             [nameof(BitHeader.ChildContent)] = (RenderFragment)(builder => builder.AddContent(0, "Prerendered")),
         });
 
-        StringAssert.Contains(html, "<header");
-        StringAssert.Contains(html, "bit-hdr-fix");
-        StringAssert.Contains(html, "bit-hdr-anm");
-        StringAssert.Contains(html, "bit-hdr-esc");
-        StringAssert.Contains(html, "Prerendered");
+        Assert.Contains("<header", html);
+        Assert.Contains("bit-hdr-fix", html);
+        Assert.Contains("bit-hdr-anm", html);
+        Assert.Contains("bit-hdr-esc", html);
+        Assert.Contains("Prerendered", html);
 
         // The skip link works without a script at all, so it is there on the first paint.
-        StringAssert.Contains(html, "bit-hdr-skp");
-        StringAssert.Contains(html, @"href=""https://localhost/#main""");
+        Assert.Contains("bit-hdr-skp", html);
+        Assert.Contains(@"href=""https://localhost/#main""", html);
 
         // Nothing has scrolled yet, so there is nothing to slide away from or to lift above.
-        Assert.IsFalse(html.Contains("bit-hdr-hdn"));
-        Assert.IsFalse(html.Contains("bit-hdr-elv"));
-        Assert.IsFalse(html.Contains(" inert"));
+        Assert.DoesNotContain("bit-hdr-hdn", html);
+        Assert.DoesNotContain("bit-hdr-elv", html);
+        Assert.DoesNotContain(" inert", html);
     }
 
     [TestMethod]
@@ -52,7 +52,7 @@ public class BitHeaderPrerenderTests
         });
 
         // The explicit Hidden needs no script, so the first paint is already slid away and inert.
-        StringAssert.Contains(html, "bit-hdr-hdn");
-        StringAssert.Contains(html, " inert");
+        Assert.Contains("bit-hdr-hdn", html);
+        Assert.Contains(" inert", html);
     }
 }

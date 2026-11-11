@@ -36,9 +36,9 @@ public class FormsTests : BunitContext
         var form = Form();
         Assert.AreEqual("SignUpForm", form.OwnerName);
         Assert.AreEqual(nameof(SignUpModel), form.ModelType);
-        CollectionAssert.AreEqual(new[] { "DataAnnotationsValidator" }, form.Validators.ToArray());
-        CollectionAssert.AreEqual(new[] { "ValidationSummary" }, form.MessageDisplays.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Email: Required, EmailAddress", "Code: StringLength" }, form.ValidationAttributes.ToArray());
+        Assert.AreSequenceEqual(new[] { "DataAnnotationsValidator" }, form.Validators.ToArray());
+        Assert.AreSequenceEqual(new[] { "ValidationSummary" }, form.MessageDisplays.ToArray());
+        Assert.AreSequenceEqual(new[] { "Email: Required, EmailAddress", "Code: StringLength" }, form.ValidationAttributes.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsNull(form.LastValidationPassed);
     }
 
@@ -54,7 +54,7 @@ public class FormsTests : BunitContext
         Assert.IsFalse(invalid.LastValidationPassed);
         Assert.AreEqual(1, invalid.Validations);
         var email = invalid.Fields.Single(f => f.Name == "Email");
-        CollectionAssert.AreEqual(new[] { "The Email field is required." }, email.Messages.ToArray());
+        Assert.AreSequenceEqual(new[] { "The Email field is required." }, email.Messages.ToArray());
         var validated = Session.Timeline.Snapshot().Last(e => e.Category == "form");
         Assert.AreEqual("Form validated: SignUpModel, 1 message", validated.Title);
         Assert.AreEqual("SignUpForm", validated.ComponentName);
@@ -70,8 +70,8 @@ public class FormsTests : BunitContext
 
         // The export carries the panel's view of the form, values included in none of it.
         var export = BevSessionExporter.ToJson(Session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "forms" } });
-        StringAssert.Contains(export, "\"model\":\"SignUpModel\"");
-        StringAssert.Contains(export, "\"lastValidationPassed\":true");
+        Assert.Contains("\"model\":\"SignUpModel\"", export);
+        Assert.Contains("\"lastValidationPassed\":true", export);
         Assert.DoesNotContain("ada@example", export, StringComparison.Ordinal);
     }
 
@@ -87,9 +87,9 @@ public class FormsTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "forms.validation", Session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("SignUpForm: SignUpModel's validation attributes are never checked", finding.Title);
-        StringAssert.Contains(finding.Evidence, "Email: Required, EmailAddress");
-        StringAssert.Contains(finding.Suggestion, "<DataAnnotationsValidator />");
-        StringAssert.Contains(Session.Timeline.Snapshot().Last(e => e.Category == "form").Detail, "nothing validates it");
+        Assert.Contains("Email: Required, EmailAddress", finding.Evidence);
+        Assert.Contains("<DataAnnotationsValidator />", finding.Suggestion!);
+        Assert.Contains("nothing validates it", Session.Timeline.Snapshot().Last(e => e.Category == "form").Detail!);
     }
 
     [TestMethod]
@@ -131,7 +131,7 @@ public class FormsTests : BunitContext
         cut.Find("form").Submit();
 
         var email = Form().Fields.Single(f => f.Name == "Email");
-        CollectionAssert.AreEqual(new[] { BevRedactor.HiddenValue }, email.Messages.ToArray());
+        Assert.AreSequenceEqual(new[] { BevRedactor.HiddenValue }, email.Messages.ToArray());
     }
 
     [TestMethod]
@@ -229,13 +229,13 @@ public class FormsTests : BunitContext
 
         panel.WaitForAssertion(() =>
         {
-            StringAssert.Contains(panel.Find(".bev-body").TextContent, "SignUpModel");
-            StringAssert.Contains(panel.Find(".bev-body").TextContent, "never checked");
+            Assert.Contains("SignUpModel", panel.Find(".bev-body").TextContent);
+            Assert.Contains("never checked", panel.Find(".bev-body").TextContent);
         });
     }
 }
 
-public class SignUpModel
+internal class SignUpModel
 {
     [Required, EmailAddress]
     public string? Email { get; set; }
@@ -246,7 +246,7 @@ public class SignUpModel
     public string? Note { get; set; }
 }
 
-public class FormHost : ComponentBase
+internal class FormHost : ComponentBase
 {
     public static object? LastModel;
 
@@ -264,7 +264,7 @@ public class FormHost : ComponentBase
     }
 }
 
-public class ResettingForm : ComponentBase
+internal class ResettingForm : ComponentBase
 {
     private SignUpModel _model = new() { Email = "ada@example.com" };
 
@@ -288,7 +288,7 @@ public class ResettingForm : ComponentBase
     }
 }
 
-public class SubmitHandlingForm : ComponentBase
+internal class SubmitHandlingForm : ComponentBase
 {
     private readonly SignUpModel _model = new();
 
@@ -303,7 +303,7 @@ public class SubmitHandlingForm : ComponentBase
     }
 }
 
-public class SignUpForm : ComponentBase
+internal class SignUpForm : ComponentBase
 {
     private readonly SignUpModel _model = new();
 

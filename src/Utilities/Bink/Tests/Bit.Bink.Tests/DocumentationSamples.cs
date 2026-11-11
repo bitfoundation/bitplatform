@@ -27,7 +27,7 @@ public class DocumentationSamples
 
         Assert.StartsWith("<svg", svg, StringComparison.Ordinal);
         Assert.IsNotEmpty(bytes);
-        Assert.IsTrue(stream.Length > 0);
+        Assert.IsGreaterThan(0, stream.Length);
 
         // docs/export.md - SVG options
         var svgOptions = new BinkSvgExportOptions
@@ -78,9 +78,9 @@ public class DocumentationSamples
 
         byte[] utf8 = BinkSerializer.SerializeToUtf8Bytes(document);
         using var stream = new MemoryStream();
-        await BinkSerializer.SerializeAsync(document, stream);
+        await BinkSerializer.SerializeAsync(document, stream, cancellationToken: TestContext.CancellationToken);
         stream.Position = 0;
-        BinkDocument loaded = await BinkSerializer.DeserializeAsync(stream);
+        BinkDocument loaded = await BinkSerializer.DeserializeAsync(stream, cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(BinkSerializer.TryDeserialize(json, out BinkDocument? d, out string? error));
         Assert.IsNotNull(d);
@@ -180,7 +180,7 @@ public class DocumentationSamples
         Assert.AreEqual(3f, writing.Width);
 
         BinkBrush[] builtIn = [new BinkPenBrush(), new BinkPencilBrush(), new BinkMarkerBrush(), new BinkHighlighterBrush(), new BinkPixelEraserBrush()];
-        Assert.AreEqual(5, builtIn.Length);
+        Assert.HasCount(5, builtIn);
 
         _ = BinkPressureCurve.Pen;
         _ = BinkPressureCurve.Linear;
@@ -201,7 +201,7 @@ public class DocumentationSamples
         var fragments = new List<BinkStroke>();
         bool changed = BinkStrokeEditor.EraseSegments(stroke, [new Vector2(50, 0)], 10f, fragments);
         Assert.IsTrue(changed);
-        Assert.AreEqual(2, fragments.Count);
+        Assert.HasCount(2, fragments);
 
         // docs/mobile-and-stylus.md
         var pan = new BinkPanTool { MinZoom = 0.1f, MaxZoom = 32f, EnablePinchZoom = true };
@@ -269,7 +269,7 @@ public class DocumentationSamples
     }
 
     /// <summary>docs/extending.md - a custom brush registered with the registry.</summary>
-    public sealed record DashedBrush : BinkBrush
+    internal sealed record DashedBrush : BinkBrush
     {
         public const string KindName = "dashed";
 
@@ -299,7 +299,7 @@ public class DocumentationSamples
     }
 
     /// <summary>docs/extending.md - a custom tool.</summary>
-    public sealed class DotTool : BinkToolBase
+    internal sealed class DotTool : BinkToolBase
     {
         public override string Id => "dot";
 
@@ -323,7 +323,7 @@ public class DocumentationSamples
     }
 
     /// <summary>docs/extending.md - a text rasterizer for the .NET PNG exporter.</summary>
-    public sealed class NullTextRasterizer : IBinkTextRasterizer
+    internal sealed class NullTextRasterizer : IBinkTextRasterizer
     {
         public void DrawText(BinkRasterSurface surface, string text, Vector2 origin, in BinkTextStyle style, float scale, float opacity, BinkRect clip)
         {
@@ -376,4 +376,6 @@ public class DocumentationSamples
         BinkDrawingOperation received = BinkOperationCodec.Deserialize(json);
         Assert.IsExactInstanceOfType<BinkAddElementOperation>(received);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

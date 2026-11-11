@@ -67,7 +67,7 @@ public class BitTimeZonePickerParamsTests : BunitTestContext
     [TestMethod]
     public void BitTimeZonePickerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitTimeZonePicker", BitTimeZonePickerParams.ParamName);
+        Assert.AreEqual("BitParams.BitTimeZonePicker", new BitTimeZonePickerParams().Name);
         Assert.AreEqual(BitTimeZonePickerParams.ParamName, new BitTimeZonePickerParams().Name);
     }
 
@@ -97,8 +97,9 @@ public class BitTimeZonePickerParamsTests : BunitTestContext
         foreach (var name in own)
         {
             var target = typeof(BitTimeZonePicker<string>).GetProperty(name);
+            var actualValue = target?.GetCustomAttribute<ParameterAttribute>();
 
-            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitTimeZonePicker has no {name} parameter.");
+            Assert.IsNotNull(actualValue, $"BitTimeZonePicker has no {name} parameter.");
             Assert.IsFalse(_notCascaded.Contains(name), $"{name} belongs to a single field and must not be cascaded.");
         }
     }
@@ -129,7 +130,7 @@ public class BitTimeZonePickerParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-tzp-bse"));
         Assert.IsTrue(root.ClassList.Contains("bit-tzp-brn"));
         Assert.IsTrue(root.ClassList.Contains("bit-tzp-und"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
         Assert.AreEqual("Cascaded title", root.GetAttribute("title"));
 
         Assert.IsTrue(component.Find(".bit-tzp-fld").ClassList.Contains("cascaded-field"));
@@ -205,7 +206,7 @@ public class BitTimeZonePickerParamsTests : BunitTestContext
 
         var titles = component.FindAll("button.bit-tzp-itm").Select(i => i.GetAttribute("title")).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "(UTC-05:00) New York", "(UTC-08:00) Los Angeles", "(UTC-06:00) Mexico City" }, titles);
+        Assert.AreSequenceEqual(new[] { "(UTC-05:00) New York", "(UTC-08:00) Los Angeles", "(UTC-06:00) Mexico City" }, titles);
         Assert.AreEqual("Buscar", component.Find(".bit-tzp-srch").GetAttribute("placeholder"));
 
         component.Find(".bit-tzp-srch").Input("zzzz");

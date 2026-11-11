@@ -27,7 +27,7 @@ public class DataBarFamilyTests
 
             var written = LinearEncoders.DataBarLimited(symbol.Expected![2..]);
 
-            CollectionAssert.AreEqual(expected, written, symbol.Id);
+            Assert.AreSequenceEqual(expected, written, symbol.Id);
         }
     }
 
@@ -46,8 +46,10 @@ public class DataBarFamilyTests
             var digits = value.ToString("D13", CultureInfo.InvariantCulture);
             var gtin = digits + LinearEncoders.EanCheckDigit(digits);
             using var image = SyntheticImage.FromLinear(LinearEncoders.DataBarLimited(gtin), scale: 3, height: 10 * 3, quietZoneModules: 6);
+            var expectedValue = "01" + gtin;
+            var actualValue = Decode(image, BbBarcodeFormat.DataBarLimited, still: true)?.Text;
 
-            Assert.AreEqual("01" + gtin, Decode(image, BbBarcodeFormat.DataBarLimited, still: true)?.Text, gtin);
+            Assert.AreEqual(expectedValue, actualValue, gtin);
         }
     }
 
@@ -96,7 +98,9 @@ public class DataBarFamilyTests
             }
 
             using var image = SyntheticImage.FromLinear(modules, scale: 2, height: 34 * 2, quietZoneModules: 6);
-            Assert.AreEqual(Visible(text), Visible(Decode(image, BbBarcodeFormat.DataBarExpanded, still: true)?.Text), Visible(text));
+            var expectedValue = Visible(text);
+            var actualValue = Visible(Decode(image, BbBarcodeFormat.DataBarExpanded, still: true)?.Text);
+            Assert.AreEqual(expectedValue, actualValue, Visible(text));
             tested++;
         }
 
@@ -108,8 +112,9 @@ public class DataBarFamilyTests
     {
         using var image = SyntheticImage.FromLinear(LinearEncoders.DataBarExpanded("010952123454321310ABC123"), scale: 3, height: 34 * 3, quietZoneModules: 6);
         var result = Decode(image, BbBarcodeFormat.DataBarExpanded, still: false);
+        var actualValue = result?.Text;
 
-        Assert.AreEqual("010952123454321310ABC123", result?.Text);
+        Assert.AreEqual("010952123454321310ABC123", actualValue);
         Assert.IsTrue(result!.Metadata!.IsGs1);
         Assert.AreEqual(BbBarcodeFormat.DataBarExpanded, result.Format);
     }

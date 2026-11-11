@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 
 namespace Bit.Bmotion.Tests.Components;
@@ -17,7 +17,7 @@ public class SplitTextTests
     {
         var chunks = BmotionTextSplitter.Split("hi  there", BmSplitBy.Words);
 
-        Assert.AreEqual(3, chunks.Count);
+        Assert.HasCount(3, chunks);
         Assert.AreEqual("hi", chunks[0].Units.Single());
         Assert.IsTrue(chunks[1].IsGap);
         Assert.AreEqual("  ", chunks[1].Text);
@@ -30,10 +30,10 @@ public class SplitTextTests
     {
         var chunks = BmotionTextSplitter.Split("ab c", BmSplitBy.Chars);
 
-        Assert.AreEqual(3, chunks.Count);
-        CollectionAssert.AreEqual(new[] { "a", "b" }, chunks[0].Units.ToArray());
+        Assert.HasCount(3, chunks);
+        Assert.AreSequenceEqual(new[] { "a", "b" }, chunks[0].Units.ToArray());
         Assert.IsTrue(chunks[1].IsGap);
-        CollectionAssert.AreEqual(new[] { "c" }, chunks[2].Units.ToArray());
+        Assert.AreSequenceEqual(new[] { "c" }, chunks[2].Units.ToArray());
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class SplitTextTests
         var chunks = BmotionTextSplitter.Split("👨‍👩‍👧é", BmSplitBy.Chars);
 
         var units = chunks.Single().Units;
-        Assert.AreEqual(2, units.Count);
+        Assert.HasCount(2, units);
         Assert.AreEqual("👨‍👩‍👧", units[0]);
         Assert.AreEqual("é", units[1]);
     }
@@ -54,7 +54,7 @@ public class SplitTextTests
     {
         var chunks = BmotionTextSplitter.Split("one\r\ntwo\n\nthree", BmSplitBy.Lines);
 
-        Assert.AreEqual(4, chunks.Count);
+        Assert.HasCount(4, chunks);
         Assert.AreEqual("one", chunks[0].Units.Single());
         Assert.AreEqual("two", chunks[1].Units.Single());
         Assert.IsTrue(chunks[2].IsGap);          // the blank line carries no animated unit
@@ -65,8 +65,8 @@ public class SplitTextTests
     [TestMethod]
     public void Split_EmptyText_ProducesNoChunks()
     {
-        Assert.AreEqual(0, BmotionTextSplitter.Split(null, BmSplitBy.Chars).Count);
-        Assert.AreEqual(0, BmotionTextSplitter.Split("", BmSplitBy.Words).Count);
+        Assert.IsEmpty(BmotionTextSplitter.Split(null, BmSplitBy.Chars));
+        Assert.IsEmpty(BmotionTextSplitter.Split("", BmSplitBy.Words));
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
@@ -80,7 +80,7 @@ public class SplitTextTests
             .Add(p => p.UnitClass, "u")
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
-        Assert.AreEqual(3, cut.FindAll("span.u").Count);
+        Assert.HasCount(3, cut.FindAll("span.u"));
     }
 
     [TestMethod]
@@ -93,7 +93,7 @@ public class SplitTextTests
             .Add(p => p.UnitClass, "u")
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
-        Assert.AreEqual(2, cut.FindAll("span.u").Count);
+        Assert.HasCount(2, cut.FindAll("span.u"));
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class SplitTextTests
             .Add(p => p.Animate, Bm.To(x: 10)));
 
         foreach (var unit in cut.FindAll("span.u"))
-            StringAssert.Contains(unit.GetAttribute("style"), "display:inline-block");
+            Assert.Contains("display:inline-block", unit.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -118,7 +118,7 @@ public class SplitTextTests
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
         var groups = cut.FindAll("span[style*='nowrap']");
-        Assert.AreEqual(2, groups.Count);
+        Assert.HasCount(2, groups);
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public class SplitTextTests
         Assert.AreEqual("ab cd", root.GetAttribute("aria-label"));
         Assert.AreEqual("text", root.GetAttribute("role"));
         // Each word group hides its characters, so the sentence is announced once.
-        Assert.AreEqual(2, cut.FindAll("span[aria-hidden='true']").Count);
+        Assert.HasCount(2, cut.FindAll("span[aria-hidden='true']"));
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class SplitTextTests
         var root = cut.Find($"{tag}[aria-label]");
         Assert.AreEqual("ab cd", root.GetAttribute("aria-label"));
         Assert.IsNull(root.GetAttribute("role"));
-        Assert.AreEqual(2, cut.FindAll("span[aria-hidden='true']").Count);
+        Assert.HasCount(2, cut.FindAll("span[aria-hidden='true']"));
     }
 
     [TestMethod]
@@ -222,8 +222,8 @@ public class SplitTextTests
             .Add(p => p.Accessible, false)
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
-        Assert.AreEqual(0, cut.FindAll("[aria-label]").Count);
-        Assert.AreEqual(0, cut.FindAll("[aria-hidden]").Count);
+        Assert.IsEmpty(cut.FindAll("[aria-label]"));
+        Assert.IsEmpty(cut.FindAll("[aria-hidden]"));
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public class SplitTextTests
             .Add(p => p.Text, "a b")
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
-        StringAssert.Contains(cut.Find("span[aria-label]").GetAttribute("style"), "white-space:pre-wrap");
+        Assert.Contains("white-space:pre-wrap", cut.Find("span[aria-label]").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -256,8 +256,7 @@ public class SplitTextTests
             .Add(p => p.Animate, Bm.To(opacity: 1)));
 
         var style = cut.Find("span[aria-label]").GetAttribute("style")!;
-        Assert.IsTrue(style.IndexOf("white-space", StringComparison.Ordinal)
-                      < style.IndexOf("color", StringComparison.Ordinal));
+        Assert.IsLessThan(style.IndexOf("color", StringComparison.Ordinal), style.IndexOf("white-space", StringComparison.Ordinal));
     }
 
     [TestMethod]

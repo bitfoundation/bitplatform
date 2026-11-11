@@ -55,14 +55,14 @@ public class AllocationTests : BunitContext
         var child = Session.Components.All.Single(r => r.Type == typeof(AllocatingChild));
 
         var own = parent.LastRender!.AllocatedBytes!.Value;
-        Assert.IsTrue(own >= 8 * 1024, "the parent's own buffer: " + own);
-        Assert.IsTrue(own < 64 * 1024, "the child's buffer is the child's: " + own);
+        Assert.IsGreaterThanOrEqualTo(8 * 1024, own, "the parent's own buffer: " + own);
+        Assert.IsLessThan(64 * 1024, own, "the child's buffer is the child's: " + own);
         Assert.IsTrue(child.LastRender!.AllocatedBytes >= 64 * 1024);
 
         cut.Render(ps => ps.Add(p => p.ChildBytes, 64 * 1024).Add(p => p.OwnBytes, 8 * 1024));
         Assert.AreEqual(2, parent.RenderCount);
         Assert.AreEqual(parent.Renders.Sum(r => r.AllocatedBytes!.Value), parent.TotalAllocatedBytes);
-        Assert.IsTrue(parent.MaxAllocatedBytes >= 8 * 1024);
+        Assert.IsGreaterThanOrEqualTo(8 * 1024, parent.MaxAllocatedBytes);
         Assert.IsTrue(Session.Timeline.Find(parent.LastRender.EventId)!.TryGetData("allocatedBytes", out var data) && data is long bytes && bytes == parent.LastRender.AllocatedBytes);
     }
 
@@ -106,12 +106,12 @@ public class AllocationTests : BunitContext
         Assert.AreEqual(BevProfileChangeKind.Unchanged, result.Changes.Single(c => c.DisplayName == "Row").Kind, "188 B more per render is below 1 KB");
         var card = result.Changes.Single(c => c.DisplayName == "Card");
         Assert.AreEqual(BevProfileChangeKind.Improved, card.Kind);
-        StringAssert.Contains(card.Reason, "allocated per render -3 KB");
+        Assert.Contains("allocated per render -3 KB", card.Reason!);
         Assert.AreEqual(BevProfileChangeKind.Unchanged, result.Changes.Single(c => c.DisplayName == "Old").Kind, "not measured in the baseline: not compared");
 
         var markdown = result.ToMarkdown();
-        StringAssert.Contains(markdown, "| Allocated per render | Why |");
-        StringAssert.Contains(markdown, "| 2 KB → 20 KB | allocated per render +18 KB (+900 %) |");
+        Assert.Contains("| Allocated per render | Why |", markdown);
+        Assert.Contains("| 2 KB → 20 KB | allocated per render +18 KB (+900 %) |", markdown);
     }
 
     [TestMethod]
@@ -120,10 +120,10 @@ public class AllocationTests : BunitContext
         var baseline = ExportIn("Server", ".NET 10.0.0", ("Grid", 10, 10 * 2048));
         var otherMode = BevProfileComparison.Compare(baseline, ExportIn("WebAssembly", ".NET 10.0.0", ("Grid", 10, 10 * 20480)));
         Assert.AreEqual(BevProfileChangeKind.Unchanged, otherMode.Changes.Single().Kind, "a circuit's runtime and the browser's allocate differently");
-        StringAssert.Contains(Assert.ContainsSingle(otherMode.Warnings), "times and allocations are not");
+        Assert.Contains("times and allocations are not", Assert.ContainsSingle(otherMode.Warnings));
 
         var otherRuntime = BevProfileComparison.Compare(baseline, ExportIn("Server", ".NET 11.0.0", ("Grid", 10, 10 * 2048)));
-        StringAssert.Contains(Assert.ContainsSingle(otherRuntime.Warnings), "Recorded on different runtimes (.NET 10.0.0 → .NET 11.0.0): render counts are comparable, times and allocations are not.");
+        Assert.Contains("Recorded on different runtimes (.NET 10.0.0 → .NET 11.0.0): render counts are comparable, times and allocations are not.", Assert.ContainsSingle(otherRuntime.Warnings));
     }
 
     [TestMethod]
@@ -182,8 +182,8 @@ public class AllocationTests : BunitContext
 
         Session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.allocations", Session.Diagnostics.Findings).Diagnostic;
-        StringAssert.StartsWith(finding.Title, "AllocatingParent allocates");
-        StringAssert.Contains(finding.Evidence, "4 renders in the last 30 s");
+        Assert.StartsWith("AllocatingParent allocates", finding.Title);
+        Assert.Contains("4 renders in the last 30 s", finding.Evidence);
         Assert.DoesNotContain(f => f.Diagnostic.Title.StartsWith("AllocatingChild", StringComparison.Ordinal), Session.Diagnostics.Findings, "the child allocated nothing here");
     }
 
@@ -196,11 +196,11 @@ public class AllocationTests : BunitContext
         panel.FindAll("th button").First(b => b.TextContent.Contains("Allocated", StringComparison.Ordinal)).Click();
 
         var first = panel.FindAll(".bev-body tbody tr.bev-row").First();
-        StringAssert.Contains(first.TextContent, nameof(AllocatingParent), "the most allocating first");
-        StringAssert.Contains(first.InnerHtml, "per render");
+        Assert.Contains(nameof(AllocatingParent), first.TextContent, "the most allocating first");
+        Assert.Contains("per render", first.InnerHtml);
     }
 
-    public sealed class AllocatingParent : ComponentBase
+    internal sealed class AllocatingParent : ComponentBase
     {
         [Parameter] public int OwnBytes { get; set; }
 
@@ -218,7 +218,7 @@ public class AllocationTests : BunitContext
         }
     }
 
-    public sealed class AllocatingChild : ComponentBase
+    internal sealed class AllocatingChild : ComponentBase
     {
         [Parameter] public int Bytes { get; set; }
 

@@ -123,7 +123,7 @@ public sealed class AdversarialGeometryTests
         using var direct = ResampleWithoutPrescale(src, dw, dh);
 
         var mean = TestImages.MeanChannelDifference(viaPrescale, direct);
-        Assert.IsTrue(mean < 10, $"prescale vs direct mean difference {mean:0.0} for {sw}x{sh} -> {dw}x{dh}");
+        Assert.IsLessThan(10, mean, $"prescale vs direct mean difference {mean:0.0} for {sw}x{sh} -> {dw}x{dh}");
     }
 
     /// <summary>Repeated halving never reaches the 4x ratio that triggers the box-reduce path.</summary>
@@ -172,7 +172,7 @@ public sealed class AdversarialGeometryTests
         using var src = Noise(33, 21, 5);
         using var dst = new ResizeOperation(33, 21, ResizeMode.Stretch, filter).Apply(src, OperationContext.Default);
         var max = TestImages.MaxChannelDifference(src, dst);
-        Assert.IsTrue(max <= 1, $"{filter} identity resize changed pixels by {max}");
+        Assert.IsLessThanOrEqualTo(1, max, $"{filter} identity resize changed pixels by {max}");
     }
 
     [TestMethod]
@@ -324,7 +324,7 @@ public sealed class AdversarialGeometryTests
             Warp.Run(src, viaGeneralPath, p => Vector2.Transform(p, inverse), sampling, background, OperationContext.Default);
 
             var maxDifference = TestImages.MaxChannelDifference(viaFastPath, viaGeneralPath);
-            Assert.IsTrue(maxDifference <= 1,
+            Assert.IsLessThanOrEqualTo(1, maxDifference,
                 $"{sampling} at {degrees} degrees differs by {maxDifference} between the affine and general warp paths");
 
             // A one-unit tolerance must not be able to hide a shifted image, so also require that almost every pixel
@@ -334,7 +334,7 @@ public sealed class AdversarialGeometryTests
             var b = viaGeneralPath.Pixels;
             for (var i = 0; i < a.Length; i++) if (a[i] == b[i]) identical++;
             var fraction = identical / (double)a.Length;
-            Assert.IsTrue(fraction > 0.97,
+            Assert.IsGreaterThan(0.97, fraction,
                 $"{sampling} at {degrees} degrees: only {fraction:P1} of pixels matched exactly between the warp paths");
         }
     }

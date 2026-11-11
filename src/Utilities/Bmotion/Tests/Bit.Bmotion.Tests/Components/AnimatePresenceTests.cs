@@ -66,13 +66,13 @@ public class AnimatePresenceTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
         // Mid-exit: still in the DOM, playing its Exit target.
-        Assert.AreEqual(1, cut.FindAll("div.box").Count, "an exiting element must stay mounted while its exit plays");
+        Assert.ContainsSingle(cut.FindAll("div.box"), "an exiting element must stay mounted while its exit plays");
         Assert.AreEqual("0", LastOpacityTarget(ctx, "box"));
         Assert.AreEqual(0, exits);
 
         await ctx.FinishWaapiAsync("box");
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits, "OnExitComplete fires once per completed exit"));
         Assert.IsTrue(ctx.Interop.WasCalled("unregisterElement"), "the removed element must be torn down");
     }
@@ -83,12 +83,12 @@ public class AnimatePresenceTests
         using var ctx = new BmotionTestContext();
         var cut = RenderPresence(ctx, BmPresenceMode.Sync, () => { }, isPresent: false);
 
-        Assert.AreEqual(0, cut.FindAll("div.box").Count);
+        Assert.IsEmpty(cut.FindAll("div.box"));
         Assert.IsFalse(ctx.Interop.WasCalled("registerElement"), "nothing may mount while absent");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, true));
 
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
         Assert.AreEqual("1", LastOpacityTarget(ctx, "box"), "mounting plays the enter animation");
     }
 
@@ -102,7 +102,7 @@ public class AnimatePresenceTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
         // Nothing to play, so the exit is complete at once.
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count));
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")));
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
     }
 
@@ -117,9 +117,9 @@ public class AnimatePresenceTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
 
         int pop = IndexOfLast(ctx, "popLayout", "box");
-        Assert.IsTrue(pop >= 0, "PopLayout mode must pop the exiting element out of the flow");
-        Assert.IsTrue(ctx.Interop.CountOf("playWaapiAnimation") > playsBefore);
-        Assert.IsTrue(pop < IndexOfLast(ctx, "playWaapiAnimation", "box"), "it pops first, then plays the exit");
+        Assert.IsGreaterThanOrEqualTo(0, pop, "PopLayout mode must pop the exiting element out of the flow");
+        Assert.IsGreaterThan(playsBefore, ctx.Interop.CountOf("playWaapiAnimation"));
+        Assert.IsLessThan(IndexOfLast(ctx, "playWaapiAnimation", "box"), pop, "it pops first, then plays the exit");
     }
 
     [TestMethod]
@@ -146,13 +146,13 @@ public class AnimatePresenceTests
 
         // Put back into the flow, after it was popped out.
         int unpop = IndexOfLast(ctx, "unpopLayout", "box");
-        Assert.IsTrue(unpop > IndexOfLast(ctx, "popLayout", "box"), "a cancelled popLayout exit must restore the element");
+        Assert.IsGreaterThan(IndexOfLast(ctx, "popLayout", "box"), unpop, "a cancelled popLayout exit must restore the element");
         Assert.AreEqual("1", LastOpacityTarget(ctx, "box"), "the enter animation replays");
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
 
         // Even once every animation has run its course, the cancelled exit never completes.
         await ctx.FinishWaapiAsync();
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
         Assert.AreEqual(0, exits);
     }
 
@@ -169,7 +169,7 @@ public class AnimatePresenceTests
 
         Assert.AreEqual("1", LastOpacityTarget(ctx, "box"), "Sync re-enters straight away");
         await ctx.FinishWaapiAsync();
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
         Assert.AreEqual(0, exits);
     }
 
@@ -184,12 +184,12 @@ public class AnimatePresenceTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
         var inert = ctx.Interop.ArgsOf("setInert").Single();
         Assert.AreEqual("box", inert[0]);
-        Assert.AreEqual(true, inert[1]);
-        Assert.IsTrue(IndexOfLast(ctx, "setInert", "box") < IndexOfLast(ctx, "playWaapiAnimation", "box"),
+        Assert.IsTrue((bool?)inert[1]);
+        Assert.IsLessThan(IndexOfLast(ctx, "playWaapiAnimation", "box"), IndexOfLast(ctx, "setInert", "box"),
             "inert before the exit plays, so it can't be pressed again on its way out");
 
         cut.Render(ps => ps.Add(p => p.IsPresent, true));
-        Assert.AreEqual(false, ctx.Interop.ArgsOf("setInert").Last()[1], "a cancelled exit makes it interactive again");
+        Assert.IsFalse((bool?)ctx.Interop.ArgsOf("setInert").Last()[1], "a cancelled exit makes it interactive again");
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public class AnimatePresenceTests
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
         await ctx.FinishWaapiAsync("box");
 
-        cut.WaitForAssertion(() => Assert.AreEqual(0, cut.FindAll("div.box").Count),
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll("div.box")),
             TimeSpan.FromSeconds(5));
         Assert.AreEqual(1, exits);
     }
@@ -246,6 +246,6 @@ public class AnimatePresenceTests
         // The exit completed, then the content entered again - and stayed.
         cut.WaitForAssertion(() => Assert.AreEqual(1, exits));
         cut.WaitForAssertion(() => Assert.AreEqual("1", LastOpacityTarget(ctx, "box")));
-        Assert.AreEqual(1, cut.FindAll("div.box").Count);
+        Assert.ContainsSingle(cut.FindAll("div.box"));
     }
 }

@@ -105,7 +105,7 @@ public sealed class SqliteWireFormatTests
         // The last nine bytes are the blob tag, its length, and the bytes themselves.
         Assert.AreEqual(BsqliteWireFormat.TypeCode.Blob, encoded[^9]);
         Assert.AreEqual(4u, BinaryPrimitives.ReadUInt32LittleEndian(encoded.AsSpan(encoded.Length - 8)));
-        CollectionAssert.AreEqual(blob, encoded[^4..]);
+        Assert.AreSequenceEqual(blob, encoded[^4..]);
 
         var results = BsqliteWireFormat.DecodeReply(new ReplyBuilder()
             .Result(["b"], [BsqliteWireFormat.TypeCode.Blob])
@@ -113,7 +113,7 @@ public sealed class SqliteWireFormatTests
             .End()
             .Build());
 
-        CollectionAssert.AreEqual(blob, (byte[]?)Assert.ContainsSingle(Assert.ContainsSingle(Assert.ContainsSingle(results).Rows)));
+        Assert.AreSequenceEqual(blob, (byte[]?)Assert.ContainsSingle(Assert.ContainsSingle(Assert.ContainsSingle(results).Rows)));
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public sealed class SqliteWireFormatTests
         Assert.AreEqual(42L, row[0]);
         Assert.AreEqual(1.5d, row[1]);
         Assert.AreEqual("héllo wörld", row[2]);
-        CollectionAssert.AreEqual(new byte[] { 9 }, (byte[]?)row[3]);
+        Assert.AreSequenceEqual(new byte[] { 9 }, (byte[]?)row[3]);
         Assert.IsNull(row[4]);
     }
 
@@ -158,9 +158,9 @@ public sealed class SqliteWireFormatTests
             .Result(["n"], [BsqliteWireFormat.TypeCode.Text]).Row("First").Row("Second").End()
             .Build());
 
-        Assert.AreEqual(2, results.Count);
+        Assert.HasCount(2, results);
         Assert.AreEqual(1, results[0].RecordsAffected);
-        Assert.AreEqual(2, results[1].Rows.Count);
+        Assert.HasCount(2, results[1].Rows);
         Assert.AreEqual("Second", results[1].Rows[1][0]);
     }
 

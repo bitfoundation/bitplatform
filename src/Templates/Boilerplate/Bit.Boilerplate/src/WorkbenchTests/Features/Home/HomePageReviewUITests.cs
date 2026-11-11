@@ -44,7 +44,7 @@ public class HomePageReviewUITests : ReviewPageTest
 
         var done = await SeedComment(PageKey, Unique("Done"));
 
-        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SetStatus(document.GetMap("threads"), done, WorkbenchReviewStatus.Done, fromAgent: true));
+        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SetStatus(document.GetMap("threads"), done, WorkbenchReviewStatus.Done, fromAgent: true), TestContext.CancellationToken);
 
         await OpenHome();
 
@@ -57,7 +57,7 @@ public class HomePageReviewUITests : ReviewPageTest
         await ClearComments(PageKey);
         await ClearPageStatus(PageKey);
 
-        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SetPageStatus(document.GetMap("pages"), PageKey, WorkbenchPageStatus.Approved, "Sara"));
+        await Server.ReviewHost.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.SetPageStatus(document.GetMap("pages"), PageKey, WorkbenchPageStatus.Approved, "Sara"), TestContext.CancellationToken);
 
         await OpenHome();
 

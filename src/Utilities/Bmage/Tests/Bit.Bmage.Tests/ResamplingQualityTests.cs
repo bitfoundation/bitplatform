@@ -42,11 +42,11 @@ public sealed class ResamplingQualityTests
         {
             var expected = (x + 0.5) / targetWidth * 255;
             var actual = result[x, 8].R;
-            Assert.IsTrue(Math.Abs(actual - expected) <= 4, $"Pixel {x}: expected about {expected:0.#}, got {actual}");
+            Assert.IsLessThanOrEqualTo(4, Math.Abs(actual - expected), $"Pixel {x}: expected about {expected:0.#}, got {actual}");
         }
         // Monotonic: no banding or reversal.
         for (var x = 1; x < targetWidth; x++)
-            Assert.IsTrue(result[x, 8].R >= result[x - 1, 8].R, $"Ramp reversed at {x}");
+            Assert.IsGreaterThanOrEqualTo(result[x - 1, 8].R, result[x, 8].R, $"Ramp reversed at {x}");
     }
 
     /// <summary>A solid colour survives any reduction factor exactly, including through the prepass.</summary>
@@ -112,8 +112,8 @@ public sealed class ResamplingQualityTests
         source.Fill(new Rectangle(0, 0, 1000, 3000), Rgba32.Black);
         using var result = new ResizeOperation(150, 150, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         // The boundary must land at 1/3 of 150 = 50.
-        Assert.IsTrue(result[45, 75].R < 30, "Left of the boundary should still be black");
-        Assert.IsTrue(result[55, 75].R > 225, "Right of the boundary should still be white");
+        Assert.IsLessThan(30, result[45, 75].R, "Left of the boundary should still be black");
+        Assert.IsGreaterThan(225, result[55, 75].R, "Right of the boundary should still be white");
     }
 
     /// <summary>Upscaling must never take the prepass, and must stay smooth.</summary>
@@ -145,6 +145,6 @@ public sealed class ResamplingQualityTests
         using var oneStep = new ResizeOperation(100, 75, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         using var half = new ResizeOperation(400, 300, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(source, OperationContext.Default);
         using var twoStep = new ResizeOperation(100, 75, ResizeMode.Stretch, ResamplingFilter.Auto).Apply(half, OperationContext.Default);
-        Assert.IsTrue(TestImages.MeanChannelDifference(oneStep, twoStep) < 2.0);
+        Assert.IsLessThan(2.0, TestImages.MeanChannelDifference(oneStep, twoStep));
     }
 }

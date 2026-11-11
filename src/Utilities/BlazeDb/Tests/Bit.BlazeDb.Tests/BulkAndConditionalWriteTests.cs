@@ -117,7 +117,7 @@ public class BulkAndConditionalWriteTests
         Assert.ThrowsExactly<BlazeDbUniqueConstraintViolationException>(() => accounts.InsertMany(batch));
 
         Assert.AreEqual(1, accounts.Count);
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
+        Assert.IsEmpty(db.VerifyIntegrity());
 
         accounts.InsertMany(batch.Where(a => a.Username != "taken"));
         Assert.AreEqual(4, accounts.Count);
@@ -162,8 +162,8 @@ public class BulkAndConditionalWriteTests
 
         Assert.AreEqual(5, deleted);
         Assert.AreEqual(15, accounts.Count);
-        Assert.AreEqual(0, accounts.Range(Account.Indexes.Slot, 5, 9).Count());
-        Assert.AreEqual(0, db.VerifyIntegrity().Count);
+        Assert.IsEmpty(accounts.Range(Account.Indexes.Slot, 5, 9));
+        Assert.IsEmpty(db.VerifyIntegrity());
     }
 
     [TestMethod]

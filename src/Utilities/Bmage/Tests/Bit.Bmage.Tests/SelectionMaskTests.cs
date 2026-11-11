@@ -201,7 +201,7 @@ public sealed class MorphedMaskTests
         var soft = new EllipseMask(new RectangleF(5, 5, 40, 30)) { Feather = 2 };
         using var original = soft.Render(Canvas);
         using var same = soft.Expand(0).Render(Canvas);
-        CollectionAssert.AreEqual(original.Values.ToArray(), same.Values.ToArray());
+        Assert.AreSequenceEqual(original.Values.ToArray(), same.Values.ToArray());
 
         // Everything selected: contracting does not shrink it away from the borders of the image.
         using var all = Mask.All().Contract(10).Render(Canvas);

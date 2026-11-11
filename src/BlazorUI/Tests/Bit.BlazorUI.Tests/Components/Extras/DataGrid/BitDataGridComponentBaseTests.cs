@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.DataGrid;
 [TestClass]
 public class BitDataGridComponentBaseTests : BunitTestContext
 {
-    public class Row
+    internal class Row
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -84,7 +84,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         Assert.AreEqual("products-grid", root.Id);
         Assert.AreEqual("grid", root.GetAttribute("data-test"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
 
         foreach (var cls in new[] { "custom-class", "bit-rtl", "bit-dtg-rtl", "bit-dtg-bordered", "bit-dtg-striped", "bit-dtg-hoverable" })
         {
@@ -97,7 +97,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
     {
         var component = RenderGrid(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
 
-        StringAssert.Contains(component.Find(".bit-dtg").GetAttribute("style"), "display:none");
+        Assert.Contains("display:none", component.Find(".bit-dtg").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -142,8 +142,8 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-dtg-table").GetAttribute("aria-disabled"));
 
         // The header keeps its title but offers no sort, resize or drag.
-        Assert.AreEqual(0, component.FindAll("button.bit-dtg-htext").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-resizer").Count);
+        Assert.IsEmpty(component.FindAll("button.bit-dtg-htext"));
+        Assert.IsEmpty(component.FindAll(".bit-dtg-resizer"));
         Assert.IsTrue(component.FindAll(".bit-dtg-header-row .bit-dtg-hcell[draggable]").All(h => h.GetAttribute("draggable") == "false"));
 
         foreach (var control in component.FindAll(".bit-dtg button, .bit-dtg input, .bit-dtg select"))
@@ -170,7 +170,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.FindAll(".bit-dtg-body .bit-dtg-cell[tabindex]")[0].KeyDown(new KeyboardEventArgs { Key = " " });
 
         Assert.AreEqual(0, clicks);
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-selected").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-selected"));
     }
 
     [TestMethod]
@@ -186,7 +186,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.FindAll(".bit-dtg-body .bit-dtg-cell[tabindex]")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
         var focusable = component.FindAll(".bit-dtg-body .bit-dtg-cell[tabindex='0']");
-        Assert.AreEqual(1, focusable.Count);
+        Assert.ContainsSingle(focusable);
         Assert.AreEqual("2", focusable[0].TextContent.Trim());
     }
 
@@ -227,7 +227,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         });
 
         var roots = component.FindAll(".bit-dtg");
-        Assert.AreEqual(2, roots.Count);
+        Assert.HasCount(2, roots);
 
         var first = roots[0];
         Assert.IsFalse(first.ClassList.Contains("bit-dtg-striped"));
@@ -305,27 +305,27 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-dtg").ClassList.Contains("c-root"));
-        StringAssert.Contains(component.Find(".bit-dtg").GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", component.Find(".bit-dtg").GetAttribute("style")!);
         Assert.IsNotNull(component.Find(".bit-dtg-toolbar.c-toolbar"));
         Assert.IsNotNull(component.Find(".bit-dtg-viewport.c-viewport"));
-        StringAssert.Contains(component.Find(".bit-dtg-viewport").GetAttribute("style"), "max-height: 10rem;");
+        Assert.Contains("max-height: 10rem;", component.Find(".bit-dtg-viewport").GetAttribute("style")!);
         Assert.IsNotNull(component.Find(".bit-dtg-header-row.c-header-row"));
         Assert.IsNotNull(component.Find(".bit-dtg-filter-row.c-filter-row"));
-        Assert.AreEqual(3, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell.c-header-cell").Count);
-        StringAssert.Contains(component.FindAll(".bit-dtg-header-row .bit-dtg-hcell.c-header-cell")[0].GetAttribute("style"), "font-style: italic;");
+        Assert.HasCount(3, component.FindAll(".bit-dtg-header-row .bit-dtg-hcell.c-header-cell"));
+        Assert.Contains("font-style: italic;", component.FindAll(".bit-dtg-header-row .bit-dtg-hcell.c-header-cell")[0].GetAttribute("style")!);
         Assert.IsNotNull(component.Find(".bit-dtg-pager.c-pager"));
         Assert.AreEqual("padding: 0;", component.Find(".bit-dtg-pager").GetAttribute("style"));
 
         var rows = component.FindAll(".bit-dtg-body > .bit-dtg-row");
         Assert.IsTrue(rows.All(r => r.ClassList.Contains("c-row")));
-        Assert.AreEqual(1, rows.Count(r => r.ClassList.Contains("c-selected")));
+        Assert.ContainsSingle(r => r.ClassList.Contains("c-selected"), rows);
         Assert.IsTrue(rows[0].ClassList.Contains("c-selected"));
-        StringAssert.Contains(rows[0].GetAttribute("style"), "opacity: 0.9;outline: 1px solid;");
-        Assert.IsFalse(rows[1].GetAttribute("style")!.Contains("outline"));
+        Assert.Contains("opacity: 0.9;outline: 1px solid;", rows[0].GetAttribute("style")!);
+        Assert.DoesNotContain("outline", rows[1].GetAttribute("style")!);
 
         var cells = component.FindAll(".bit-dtg-body .bit-dtg-cell.c-cell");
-        Assert.AreEqual(9, cells.Count);
-        StringAssert.Contains(cells[0].GetAttribute("style"), "letter-spacing: 1px;");
+        Assert.HasCount(9, cells);
+        Assert.Contains("letter-spacing: 1px;", cells[0].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -372,8 +372,8 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         var hidden = component.FindAll(".bit-dtg-header-row .bit-dtg-visually-hidden").Select(e => e.TextContent).ToList();
 
-        CollectionAssert.Contains(hidden, "Reorder");
-        CollectionAssert.Contains(hidden, "Details");
+        Assert.Contains("Reorder", hidden);
+        Assert.Contains("Details", hidden);
     }
 
     [TestMethod]
@@ -391,7 +391,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         component.Find(".bit-dtg-column-chooser").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-column-chooser").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-column-chooser"));
         Assert.AreEqual("false", component.Find(".bit-dtg-toolbar button[aria-controls]").GetAttribute("aria-expanded"));
     }
 
@@ -433,7 +433,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.FindAll(".bit-dtg-resizer")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
         Assert.AreEqual("60", component.FindAll(".bit-dtg-resizer")[1].GetAttribute("aria-valuenow"), "MinWidth bounds the keyboard too.");
 
-        Assert.IsTrue(states.Count >= 2);
+        Assert.IsGreaterThanOrEqualTo(2, states.Count);
         Assert.AreEqual(60, states[^1].Columns.Single(c => c.ColumnId == "Name").Width);
     }
 
@@ -487,14 +487,14 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-hcell")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
 
-        CollectionAssert.AreEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
-        StringAssert.StartsWith(component.Find(".bit-dtg-visually-hidden[role=status]").TextContent, "Id moved to position 2 of 3");
+        Assert.AreSequenceEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
+        Assert.StartsWith("Id moved to position 2 of 3", component.Find(".bit-dtg-visually-hidden[role=status]").TextContent);
 
         // Plain arrows (no Ctrl) and a column at the end move nothing.
         component.FindAll(".bit-dtg-header-row .bit-dtg-hcell")[2].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
         component.FindAll(".bit-dtg-header-row .bit-dtg-hcell")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
-        CollectionAssert.AreEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
     }
 
     [TestMethod]
@@ -508,7 +508,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-hcell")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowLeft", CtrlKey = true });
 
-        CollectionAssert.AreEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
     }
 
     [TestMethod]
@@ -518,7 +518,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         component.FindAll(".bit-dtg-header-row .bit-dtg-hcell")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
 
-        CollectionAssert.AreEqual(new[] { "Id", "Name", "Price" }, HeaderTitles(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Id", "Name", "Price" }, HeaderTitles(component).ToArray());
     }
 
     [TestMethod]
@@ -533,7 +533,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.Find(".bit-dtg-toolbar button[aria-controls]").Click();
 
         var moves = component.FindAll(".bit-dtg-chooser-move");
-        Assert.AreEqual(6, moves.Count);
+        Assert.HasCount(6, moves);
         Assert.AreEqual("Move Id earlier", moves[0].GetAttribute("aria-label"));
         Assert.IsTrue(moves[0].HasAttribute("disabled"), "The first column has nowhere earlier to go.");
         Assert.IsTrue(moves[5].HasAttribute("disabled"), "The last column has nowhere later to go.");
@@ -541,7 +541,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         // Move Id later.
         moves[1].Click();
 
-        CollectionAssert.AreEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Name", "Id", "Price" }, HeaderTitles(component).ToArray());
         Assert.AreEqual("Move Name earlier", component.FindAll(".bit-dtg-chooser-move")[0].GetAttribute("aria-label"));
     }
 
@@ -552,7 +552,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         component.Find(".bit-dtg-toolbar button[aria-controls]").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-dtg-chooser-move").Count);
+        Assert.IsEmpty(component.FindAll(".bit-dtg-chooser-move"));
     }
 
     [TestMethod]
@@ -563,15 +563,15 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.MoveColumnAsync("Price", 0));
 
-        CollectionAssert.AreEqual(new[] { "Price", "Id", "Name" }, HeaderTitles(component).ToArray());
-        Assert.AreEqual(1, states.Count);
+        Assert.AreSequenceEqual(new[] { "Price", "Id", "Name" }, HeaderTitles(component).ToArray());
+        Assert.ContainsSingle(states);
         Assert.AreEqual(0, states[0].Columns.Single(c => c.ColumnId == "Price").Order);
 
         // An unknown id is ignored, and the index is clamped.
         await component.InvokeAsync(() => component.Instance.MoveColumnAsync("Nope", 0));
         await component.InvokeAsync(() => component.Instance.MoveColumnAsync("Id", 99));
 
-        CollectionAssert.AreEqual(new[] { "Price", "Name", "Id" }, HeaderTitles(component).ToArray());
+        Assert.AreSequenceEqual(new[] { "Price", "Name", "Id" }, HeaderTitles(component).ToArray());
     }
 
     // ------------------------------------------------------- state change
@@ -582,11 +582,11 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var states = new List<BitDataGridState>();
         var component = RenderGrid(parameters => parameters.Add(p => p.OnStateChange, (BitDataGridState s) => states.Add(s)));
 
-        Assert.AreEqual(0, states.Count, "The first render is not a change.");
+        Assert.IsEmpty(states, "The first render is not a change.");
 
         component.FindAll("button.bit-dtg-htext")[1].Click();
 
-        Assert.AreEqual(1, states.Count);
+        Assert.ContainsSingle(states);
         Assert.AreEqual("Name", states[0].Sorts.Single().ColumnId);
     }
 
@@ -603,7 +603,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.Find(".bit-dtg-toolbar button[aria-controls]").Click();
         component.FindAll(".bit-dtg-chooser-label input")[0].Change(false);
 
-        Assert.AreEqual(1, states.Count);
+        Assert.ContainsSingle(states);
         Assert.IsFalse(states[0].Columns.Single(c => c.ColumnId == "Id").Visible);
     }
 
@@ -618,8 +618,8 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ApplyStateAsync(state));
 
-        Assert.AreEqual(0, states.Count);
-        Assert.AreEqual(1, component.Instance.ActiveSorts.Count);
+        Assert.IsEmpty(states);
+        Assert.ContainsSingle(component.Instance.ActiveSorts);
     }
 
     // ------------------------------------------------------------- layout
@@ -651,8 +651,8 @@ public class BitDataGridComponentBaseTests : BunitTestContext
 
         // The selection column (44px) is frozen too.
         var style = component.Find(".bit-dtg-viewport").GetAttribute("style")!;
-        StringAssert.Contains(style, "--bit-dtg-frozen-start:124px;");
-        StringAssert.Contains(style, "--bit-dtg-frozen-end:90px;");
+        Assert.Contains("--bit-dtg-frozen-start:124px;", style);
+        Assert.Contains("--bit-dtg-frozen-end:90px;", style);
 
         // The heights of the sticky header and footer are measured in the browser.
         Context.JSInterop.VerifyInvoke("BitBlazorUI.DataGrid.observeStickyBands");
@@ -681,9 +681,9 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         var style = component.Find(".bit-dtg-table").GetAttribute("style")!;
 
         // A minmax() let the declared width fall to MinWidth, and fr is not allowed inside min().
-        StringAssert.Contains(style, "clamp(120px, 220px, 400px)");
-        StringAssert.Contains(style, "minmax(60px, 300px)");
-        Assert.IsFalse(style.Contains("min(1fr"));
+        Assert.Contains("clamp(120px, 220px, 400px)", style);
+        Assert.Contains("minmax(60px, 300px)", style);
+        Assert.DoesNotContain("min(1fr", style);
     }
 
     [TestMethod]
@@ -694,7 +694,7 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         component.FindAll(".bit-dtg-group-btn")[0].Click();
 
         var groupCell = component.Find(".bit-dtg-group-cell");
-        Assert.IsFalse(groupCell.GetAttribute("style")!.Contains("padding"), "The indent comes from --bit-DataGrid-group-indent, not an inline padding.");
-        StringAssert.Contains(component.Find(".bit-dtg-group-row").GetAttribute("style"), "--bit-dtg-group-level:0");
+        Assert.DoesNotContain("padding", groupCell.GetAttribute("style")!, "The indent comes from --bit-DataGrid-group-indent, not an inline padding.");
+        Assert.Contains("--bit-dtg-group-level:0", component.Find(".bit-dtg-group-row").GetAttribute("style")!);
     }
 }

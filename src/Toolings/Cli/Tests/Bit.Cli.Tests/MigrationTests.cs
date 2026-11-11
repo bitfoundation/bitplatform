@@ -21,8 +21,8 @@ public class MigrationTests
         var call = host.Runner.Calls.Single();
         Assert.AreEqual("dotnet", call.FileName);
         Assert.AreEqual(ServerApi(project), call.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Infrastructure/Data/Migrations", "--context", "AppDbContext"), call.Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, "Added the AddProductRating migration");
+        Assert.AreSequenceEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Infrastructure/Data/Migrations", "--context", "AppDbContext"), call.Arguments.ToArray());
+        Assert.Contains("Added the AddProductRating migration", host.FlatOutput);
     }
 
     [TestMethod]
@@ -37,12 +37,12 @@ public class MigrationTests
         var (add, optimize) = (host.Runner.Calls[0], host.Runner.Calls[1]);
 
         Assert.AreEqual(ServerWeb(project), add.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "add", "AddTodoTags", "--output-dir", "Infrastructure/Data/Migrations", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), add.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("migrations", "add", "AddTodoTags", "--output-dir", "Infrastructure/Data/Migrations", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), add.Arguments.ToArray());
         Assert.AreEqual(Path.Combine(project, "src", "Client", "Contoso.Client.Core", "Contoso.Client.Core.csproj"), Path.GetFullPath(Path.Combine(add.WorkingDirectory!, ClientCoreProject)));
 
         Assert.AreEqual(ServerWeb(project), optimize.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject, "--no-build"), optimize.Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, "Regenerated the compiled model");
+        Assert.AreSequenceEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject, "--no-build"), optimize.Arguments.ToArray());
+        Assert.Contains("Regenerated the compiled model", host.FlatOutput);
     }
 
     [TestMethod]
@@ -56,9 +56,9 @@ public class MigrationTests
 
         Assert.HasCount(2, host.Runner.Calls);
         Assert.AreEqual(ServerWeb(project), host.Runner.Calls[0].WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "remove", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), host.Runner.Calls[0].Arguments.ToArray());
-        CollectionAssert.AreEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject, "--no-build"), host.Runner.Calls[1].Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, "Removed the last migration 20261028090000_AddTodoTags");
+        Assert.AreSequenceEqual(Ef("migrations", "remove", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), host.Runner.Calls[0].Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject, "--no-build"), host.Runner.Calls[1].Arguments.ToArray());
+        Assert.Contains("Removed the last migration 20261028090000_AddTodoTags", host.FlatOutput);
 
         host.Runner.Calls.Clear();
 
@@ -66,7 +66,7 @@ public class MigrationTests
 
         var server = host.Runner.Calls.Single();
         Assert.AreEqual(ServerApi(project), server.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "remove", "--context", "AppDbContext"), server.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("migrations", "remove", "--context", "AppDbContext"), server.Arguments.ToArray());
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class MigrationTests
 
         var call = host.Runner.Calls.Single();
         Assert.AreEqual(ServerWeb(project), call.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), call.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("dbcontext", "optimize", "--output-dir", "Infrastructure/Data/CompiledModel", "--namespace", "Contoso.Client.Core.Infrastructure.Data", "--context", "AppOfflineDbContext", "--project", ClientCoreProject), call.Arguments.ToArray());
     }
 
     [TestMethod]
@@ -92,8 +92,8 @@ public class MigrationTests
 
         var call = host.Runner.Calls.Single();
         Assert.AreEqual(ServerApi(project), call.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", "win-x64", "--output", "efbundle.exe", "--force", "--context", "AppDbContext"), call.Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, $"Copy {Path.Combine("src", "Server", "Contoso.Server.Api", "efbundle.exe")} into the deployed app's folder");
+        Assert.AreSequenceEqual(Ef("migrations", "bundle", "--configuration", "Release", "--self-contained", "--target-runtime", "win-x64", "--output", "efbundle.exe", "--force", "--context", "AppDbContext"), call.Arguments.ToArray());
+        Assert.Contains($"Copy {Path.Combine("src", "Server", "Contoso.Server.Api", "efbundle.exe")} into the deployed app's folder", host.FlatOutput);
 
         host.Runner.Calls.Clear();
 
@@ -117,13 +117,13 @@ public class MigrationTests
 
         Assert.AreEqual(CliApp.ExitFailed, await RunInAsync(host, project, "migration", "add", "AddTodoTags", "--offline"));
 
-        Assert.HasCount(1, host.Runner.Calls);
-        StringAssert.Contains(host.FlatOutput, "Couldn't add the AddTodoTags migration");
-        StringAssert.Contains(host.FlatOutput, $"{Path.Combine("src", "Client", "Contoso.Client.Core", "Broken.cs")}(1,35): error CS1002: ; expected");
-        StringAssert.Contains(host.FlatOutput, "Build failed. Use dotnet build to see the errors.");
-        StringAssert.Contains(host.FlatOutput, "Didn't regenerate the compiled model");
-        StringAssert.Contains(host.FlatOutput, $"dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject} --verbose");
-        StringAssert.Contains(host.Output, $"bit was running EF Core's command-line tool, dotnet-ef 10.0.14, in {ServerWeb(project)}: dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject}{Environment.NewLine}");
+        Assert.ContainsSingle(host.Runner.Calls);
+        Assert.Contains("Couldn't add the AddTodoTags migration", host.FlatOutput);
+        Assert.Contains($"{Path.Combine("src", "Client", "Contoso.Client.Core", "Broken.cs")}(1,35): error CS1002: ; expected", host.FlatOutput);
+        Assert.Contains("Build failed. Use dotnet build to see the errors.", host.FlatOutput);
+        Assert.Contains("Didn't regenerate the compiled model", host.FlatOutput);
+        Assert.Contains($"dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject} --verbose", host.FlatOutput);
+        Assert.Contains($"bit was running EF Core's command-line tool, dotnet-ef 10.0.14, in {ServerWeb(project)}: dotnet dnx dotnet-ef@10.0.14 -- migrations add AddTodoTags --output-dir Infrastructure/Data/Migrations --context AppOfflineDbContext --project {ClientCoreProject}{Environment.NewLine}", host.Output);
         Assert.IsLessThan(host.Output.IndexOf("Build failed.", StringComparison.Ordinal), host.Output.IndexOf("bit was running EF Core's", StringComparison.Ordinal));
         Assert.IsFalse(host.Output.Contains("--prefix-output", StringComparison.Ordinal), host.Output);
     }
@@ -146,8 +146,8 @@ public class MigrationTests
 
         var format = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "format");
         Assert.AreEqual(ServerApi(project), format.WorkingDirectory);
-        CollectionAssert.AreEqual(new[] { "format", "Contoso.Server.Api.csproj", "--no-restore", "--include", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.Designer.cs", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs" }, format.Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, "Formatted the migration");
+        Assert.AreSequenceEqual(new[] { "format", "Contoso.Server.Api.csproj", "--no-restore", "--include", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.Designer.cs", "Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs" }, format.Arguments.ToArray());
+        Assert.Contains("Formatted the migration", host.FlatOutput);
     }
 
     [TestMethod]
@@ -166,9 +166,9 @@ public class MigrationTests
 
         Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "AddProductRating"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, "Couldn't format the migration");
-        StringAssert.Contains(host.Output, $"bit ran this in {ServerApi(project)}: dotnet format Contoso.Server.Api.csproj --no-restore --include Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs");
-        StringAssert.Contains(host.FlatOutput, "To try again");
+        Assert.Contains("Couldn't format the migration", host.FlatOutput);
+        Assert.Contains($"bit ran this in {ServerApi(project)}: dotnet format Contoso.Server.Api.csproj --no-restore --include Infrastructure/Data/Migrations/20261029000000_AddProductRating.cs", host.Output);
+        Assert.Contains("To try again", host.FlatOutput);
         Assert.IsTrue(File.Exists(Path.Combine(migrations, "20261029000000_AddProductRating.cs")));
     }
 
@@ -189,9 +189,9 @@ public class MigrationTests
 
         Assert.AreEqual(CliApp.ExitFailed, await RunInAsync(host, project, "migration", "add", "Initial"));
 
-        StringAssert.Contains(host.FlatOutput, "The name 'Initial' is used by an existing migration.");
+        Assert.Contains("The name 'Initial' is used by an existing migration.", host.FlatOutput);
         Assert.IsFalse(host.Output.Contains("0 Error(s)", StringComparison.Ordinal), host.Output);
-        StringAssert.Contains(host.FlatOutput, "dotnet dnx dotnet-ef@10.0.14 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --context AppDbContext --verbose");
+        Assert.Contains("dotnet dnx dotnet-ef@10.0.14 -- migrations add Initial --output-dir Infrastructure/Data/Migrations --context AppDbContext --verbose", host.FlatOutput);
     }
 
     [TestMethod]
@@ -209,7 +209,7 @@ public class MigrationTests
 
         Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "DropProductColor"));
 
-        StringAssert.Contains(host.FlatOutput, "may result in the loss of data. Please review the migration for accuracy.");
+        Assert.Contains("may result in the loss of data. Please review the migration for accuracy.", host.FlatOutput);
         Assert.IsFalse(host.Output.Contains("HangfireLock", StringComparison.Ordinal), host.Output);
         Assert.IsFalse(host.Output.Contains("Sensitive data logging", StringComparison.Ordinal), host.Output);
     }
@@ -222,7 +222,7 @@ public class MigrationTests
         File.Copy(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "src", "Server", "Boilerplate.Server.Api", "Program.Services.cs"), Path.Combine(ServerApi(project), "Program.Services.cs"), overwrite: true);
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "add", "Initial"));
-        StringAssert.Contains(host.FlatOutput, "--database Other, so its database has no provider yet");
+        Assert.Contains("--database Other, so its database has no provider yet", host.FlatOutput);
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "bundle"));
         Assert.IsEmpty(host.Runner.Calls);
@@ -239,7 +239,7 @@ public class MigrationTests
         File.WriteAllText(Path.Combine(ServerApi(project), "Program.Services.cs"), "options.UseOracle(connectionString);");
 
         Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "migration", "add", "Initial"), host.Output);
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.Arguments.Contains("migrations") && c.Arguments.Contains("Initial")));
+        Assert.Contains(c => c.Arguments.Contains("migrations") && c.Arguments.Contains("Initial"), host.Runner.Calls);
     }
 
     [TestMethod]
@@ -249,7 +249,7 @@ public class MigrationTests
         var project = CreateProject(host);
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "add", "AddTodoTags", "--offline"));
-        StringAssert.Contains(host.FlatOutput, "has no offline database");
+        Assert.Contains("has no offline database", host.FlatOutput);
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "optimize"));
         Assert.IsEmpty(host.Runner.Calls);
@@ -282,11 +282,11 @@ public class MigrationTests
         Assert.HasCount(3, host.Runner.Calls);
         var (add, format, optimize) = (host.Runner.Calls[0], host.Runner.Calls[1], host.Runner.Calls[2]);
         Assert.AreEqual(Path.Combine(project, "src", "Contoso.Host"), add.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "add", "AddTodoTags", "--output-dir", "Offline/History", "--context", "AppOfflineDbContext", "--project", dataProject), add.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("migrations", "add", "AddTodoTags", "--output-dir", "Offline/History", "--context", "AppOfflineDbContext", "--project", dataProject), add.Arguments.ToArray());
         Assert.AreEqual(data, format.WorkingDirectory);
-        CollectionAssert.AreEqual(new[] { "format", "Contoso.Client.Data.csproj", "--no-restore", "--include", "Offline/History/20261029000000_AddTodoTags.cs" }, format.Arguments.ToArray());
-        CollectionAssert.AreEqual(Ef("dbcontext", "optimize", "--output-dir", "Offline/Model", "--namespace", "Contoso.Client.Data.Offline.Model", "--context", "AppOfflineDbContext", "--project", dataProject, "--no-build"), optimize.Arguments.ToArray());
-        StringAssert.Contains(host.FlatOutput, $"AppOfflineDbContext in {Path.Combine("src", "Client", "Contoso.Client.Data", "Contoso.Client.Data.csproj")}, started with {Path.Combine("src", "Contoso.Host")}");
+        Assert.AreSequenceEqual(new[] { "format", "Contoso.Client.Data.csproj", "--no-restore", "--include", "Offline/History/20261029000000_AddTodoTags.cs" }, format.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("dbcontext", "optimize", "--output-dir", "Offline/Model", "--namespace", "Contoso.Client.Data.Offline.Model", "--context", "AppOfflineDbContext", "--project", dataProject, "--no-build"), optimize.Arguments.ToArray());
+        Assert.Contains($"AppOfflineDbContext in {Path.Combine("src", "Client", "Contoso.Client.Data", "Contoso.Client.Data.csproj")}, started with {Path.Combine("src", "Contoso.Host")}", host.FlatOutput);
     }
 
     [TestMethod]
@@ -304,7 +304,7 @@ public class MigrationTests
 
         var add = host.Runner.Calls.Single();
         Assert.AreEqual(ServerApi(project), add.WorkingDirectory);
-        CollectionAssert.AreEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Migrations", "--context", "AppDbContext", "--project", "../Contoso.Server.Data/Contoso.Server.Data.csproj"), add.Arguments.ToArray());
+        Assert.AreSequenceEqual(Ef("migrations", "add", "AddProductRating", "--output-dir", "Migrations", "--context", "AppDbContext", "--project", "../Contoso.Server.Data/Contoso.Server.Data.csproj"), add.Arguments.ToArray());
 
         host.Runner.Calls.Clear();
 
@@ -322,8 +322,8 @@ public class MigrationTests
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, project, "migration", "add", "AddTodoTags", "--offline"));
 
-        StringAssert.Contains(host.FlatOutput, "no ASP.NET Core project (Microsoft.NET.Sdk.Web) is it or references it");
-        StringAssert.Contains(host.FlatOutput, "dotnet dnx dotnet-ef@10.0.14 -- migrations add <name> --context AppOfflineDbContext --project src/Client/Contoso.Client.Core/Contoso.Client.Core.csproj --startup-project <the app's .csproj>");
+        Assert.Contains("no ASP.NET Core project (Microsoft.NET.Sdk.Web) is it or references it", host.FlatOutput);
+        Assert.Contains("dotnet dnx dotnet-ef@10.0.14 -- migrations add <name> --context AppOfflineDbContext --project src/Client/Contoso.Client.Core/Contoso.Client.Core.csproj --startup-project <the app's .csproj>", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 
@@ -354,7 +354,7 @@ public class MigrationTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, host.WorkingDirectory, "migration", "add", "Initial"));
-        StringAssert.Contains(host.FlatOutput, "isn't in a bit Boilerplate project");
+        Assert.Contains("isn't in a bit Boilerplate project", host.FlatOutput);
         Assert.IsEmpty(host.Runner.Calls);
     }
 

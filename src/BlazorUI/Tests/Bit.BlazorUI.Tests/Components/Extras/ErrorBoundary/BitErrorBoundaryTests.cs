@@ -68,8 +68,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         var errorRoot = component.Find(".bit-erb");
 
         Assert.IsNotNull(errorRoot);
-        StringAssert.Contains(errorRoot.TextContent, "Oops, Something went wrong");
-        StringAssert.Contains(errorRoot.TextContent, "boom");
+        Assert.Contains("Oops, Something went wrong", errorRoot.TextContent);
+        Assert.Contains("boom", errorRoot.TextContent);
         Assert.IsTrue(called);
     }
 
@@ -99,8 +99,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoot = component.Find(".bit-erb");
 
-        StringAssert.Contains(errorRoot.TextContent, "Custom title");
-        StringAssert.Contains(errorRoot.TextContent, "Custom message");
+        Assert.Contains("Custom title", errorRoot.TextContent);
+        Assert.Contains("Custom message", errorRoot.TextContent);
         Assert.IsFalse(errorRoot.TextContent.Contains("Oops", StringComparison.Ordinal));
     }
 
@@ -114,7 +114,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        StringAssert.Contains(component.Find(".bit-erb").TextContent, "Only a message");
+        Assert.Contains("Only a message", component.Find(".bit-erb").TextContent);
 
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-ttl"));
     }
@@ -180,7 +180,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-erb-ftr button");
 
-        Assert.AreEqual(3, buttons.Count);
+        Assert.HasCount(3, buttons);
         Assert.IsFalse(component.Markup.Contains("Copy details", StringComparison.Ordinal));
     }
 
@@ -199,10 +199,10 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var invocation = Context.JSInterop.Invocations["BitBlazorUI.Extras.copyToClipboard"].Single();
 
-        StringAssert.Contains((string)invocation.Arguments[0]!, "copy me");
+        Assert.Contains("copy me", (string)invocation.Arguments[0]!);
 
         // A copy leaves nothing else on the screen to show for itself, so the button says what it did.
-        StringAssert.Contains(component.Find(".bit-erb-ftr").TextContent, "Copied");
+        Assert.Contains("Copied", component.Find(".bit-erb-ftr").TextContent);
     }
 
     [TestMethod]
@@ -220,7 +220,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         copyButton.Click();
 
-        StringAssert.Contains(component.Find(".bit-erb-ftr").TextContent, "On the clipboard");
+        Assert.Contains("On the clipboard", component.Find(".bit-erb-ftr").TextContent);
     }
 
     [TestMethod]
@@ -235,7 +235,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-erb-ftr button").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-erb-ftr button"));
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var copyButton = component.Find(".bit-erb-ftr .custom-copy");
 
-        StringAssert.Contains(copyButton.GetAttribute("style"), "letter-spacing:2px");
+        Assert.Contains("letter-spacing:2px", copyButton.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -455,7 +455,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         });
 
         Assert.AreEqual("alert", component.Find(".bit-erb-hdr").GetAttribute("role"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -540,7 +540,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var icon = component.Find(".bit-erb-ico");
 
-        StringAssert.Contains(icon.ClassName, "bit-icon--ErrorBadge");
+        Assert.Contains("bit-icon--ErrorBadge", icon.ClassName!);
         Assert.Throws<ElementNotFoundException>(() => component.Find(".bit-erb-svg"));
     }
 
@@ -556,8 +556,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var icon = component.Find(".bit-erb-ico");
 
-        StringAssert.Contains(icon.ClassName, "fa-solid");
-        StringAssert.Contains(icon.ClassName, "fa-bug");
+        Assert.Contains("fa-solid", icon.ClassName!);
+        Assert.Contains("fa-bug", icon.ClassName);
         Assert.IsFalse(icon.ClassName!.Contains("ErrorBadge", StringComparison.Ordinal));
     }
 
@@ -622,8 +622,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var footer = component.Find(".bit-erb-ftr");
 
-        StringAssert.Contains(footer.ClassName, "custom-ftr-class");
-        StringAssert.Contains(footer.GetAttribute("style"), "gap:2rem");
+        Assert.Contains("custom-ftr-class", footer.ClassName!);
+        Assert.Contains("gap:2rem", footer.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -682,10 +682,10 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var buttons = component.FindAll(".bit-erb-ftr button");
 
-        Assert.AreEqual(3, buttons.Count);
-        StringAssert.Contains(buttons[0].TextContent, "Reload it");
-        StringAssert.Contains(buttons[1].TextContent, "Take me home");
-        StringAssert.Contains(buttons[2].TextContent, "Try again");
+        Assert.HasCount(3, buttons);
+        Assert.Contains("Reload it", buttons[0].TextContent);
+        Assert.Contains("Take me home", buttons[1].TextContent);
+        Assert.Contains("Try again", buttons[2].TextContent);
     }
 
     [TestMethod]
@@ -711,7 +711,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         }
         else
         {
-            Assert.AreEqual(expectedCount, component.FindAll(".bit-erb-ftr button").Count);
+            Assert.HasCount(expectedCount, component.FindAll(".bit-erb-ftr button"));
         }
     }
 
@@ -870,7 +870,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         refreshButton.Click();
 
-        Assert.IsTrue(navMan.History.Count > initialCount);
+        Assert.IsGreaterThan(initialCount, navMan.History.Count);
     }
 
     [TestMethod]
@@ -959,7 +959,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         var initialCount = navMan.History.Count;
 
         await component.InvokeAsync(() => context!.Refresh());
-        Assert.IsTrue(navMan.History.Count > initialCount, "Refresh reloads the page like the default UI's Refresh button");
+        Assert.IsGreaterThan(initialCount, navMan.History.Count, "Refresh reloads the page like the default UI's Refresh button");
 
         await component.InvokeAsync(() => context!.GoHome());
         Assert.AreEqual("https://example.com/start", navMan.Uri);
@@ -981,7 +981,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Title, "Another title"));
 
-        Assert.IsTrue(contexts.Count >= 2, "the template is rendered again with the boundary");
+        Assert.IsGreaterThanOrEqualTo(2, contexts.Count, "the template is rendered again with the boundary");
         Assert.IsTrue(contexts.All(c => ReferenceEquals(c, contexts[0])), "a template bound to the context is not handed a new object on every render");
         Assert.AreSame(component.Instance.CaughtException, contexts[0].Exception);
     }
@@ -1023,8 +1023,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoot = component.Find(".bit-erb");
 
-        StringAssert.Contains(errorRoot.ClassName, "custom-class");
-        StringAssert.Contains(errorRoot.GetAttribute("style"), "color: red");
+        Assert.Contains("custom-class", errorRoot.ClassName!);
+        Assert.Contains("color: red", errorRoot.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1053,14 +1053,14 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoot = component.Find(".bit-erb");
 
-        StringAssert.Contains(errorRoot.ClassName, "cls-root");
-        StringAssert.Contains(errorRoot.GetAttribute("style"), "outline-width: 2px;");
+        Assert.Contains("cls-root", errorRoot.ClassName!);
+        Assert.Contains("outline-width: 2px;", errorRoot.GetAttribute("style")!);
         component.Find(".cls-icon");
         component.Find(".cls-title");
         component.Find(".cls-message");
         component.Find(".cls-exception");
         component.Find(".cls-footer");
-        StringAssert.Contains(component.Find(".cls-title").GetAttribute("style"), "font-style: italic");
+        Assert.Contains("font-style: italic", component.Find(".cls-title").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1075,8 +1075,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var style = component.Find(".bit-erb").GetAttribute("style");
 
-        StringAssert.Contains(style, "background: blue");
-        StringAssert.Contains(style, "color: red");
+        Assert.Contains("background: blue", style!);
+        Assert.Contains("color: red", style);
     }
 
     [TestMethod]
@@ -1173,11 +1173,11 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         var errorRoot = component.Find(".bit-erb");
         var style = errorRoot.GetAttribute("style");
 
-        StringAssert.Contains(errorRoot.ClassName, "bit-erb");
-        StringAssert.Contains(errorRoot.ClassName, "custom-class");
-        StringAssert.Contains(errorRoot.ClassName, "splatted-class");
-        StringAssert.Contains(style, "color: red");
-        StringAssert.Contains(style, "font-weight: bold");
+        Assert.Contains("bit-erb", errorRoot.ClassName!);
+        Assert.Contains("custom-class", errorRoot.ClassName);
+        Assert.Contains("splatted-class", errorRoot.ClassName);
+        Assert.Contains("color: red", style!);
+        Assert.Contains("font-weight: bold", style);
     }
 
     [TestMethod]
@@ -1229,7 +1229,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         Assert.IsFalse(errorRoot.HasAttribute("autofocus"));
         Assert.IsFalse(errorRoot.HasAttribute("tabindex"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1252,7 +1252,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("err"));
         });
 
-        Assert.AreEqual(focusCount, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.HasCount(focusCount, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1269,7 +1269,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         // There is no element of the boundary's on the page for it to move the focus to - that is the
         // template's own to make.
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1283,7 +1283,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("logged"));
         });
 
-        Assert.AreEqual(1, logger.Logged.Count);
+        Assert.ContainsSingle(logger.Logged);
         Assert.AreEqual("logged", logger.Logged[0].Message);
     }
 
@@ -1302,7 +1302,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.ChildContent, ThrowingContent("not logged"));
         });
 
-        Assert.AreEqual(0, logger.Logged.Count);
+        Assert.IsEmpty(logger.Logged);
         Assert.IsTrue(called);
     }
 
@@ -1338,7 +1338,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoot = component.Find(".bit-erb");
 
-        StringAssert.Contains(errorRoot.TextContent, "captured out of band");
+        Assert.Contains("captured out of band", errorRoot.TextContent);
         Assert.AreSame(captured, caught);
         Assert.AreSame(captured, component.Instance.CaughtException);
         Assert.Throws<ElementNotFoundException>(() => component.Find(".safe"));
@@ -1355,7 +1355,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         await component.Instance.CaptureAsync(new InvalidOperationException("captured async"));
 
-        StringAssert.Contains(component.Find(".bit-erb").TextContent, "captured async");
+        Assert.Contains("captured async", component.Find(".bit-erb").TextContent);
     }
 
     [TestMethod]
@@ -1371,7 +1371,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Capture(new InvalidOperationException("captured")));
 
-        Assert.AreEqual(1, logger.Logged.Count);
+        Assert.ContainsSingle(logger.Logged);
 
         component.FindAll("button").First(btn => btn.TextContent.Contains("Recover", StringComparison.OrdinalIgnoreCase)).Click();
 
@@ -1392,7 +1392,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoot = component.Find(".bit-erb");
 
-        StringAssert.Contains(errorRoot.TextContent, "the first one");
+        Assert.Contains("the first one", errorRoot.TextContent);
         Assert.IsFalse(errorRoot.TextContent.Contains("the second one", StringComparison.Ordinal));
     }
 
@@ -1416,7 +1416,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         await component.InvokeAsync(child.CaptureNow);
 
-        StringAssert.Contains(component.Find(".bit-erb").TextContent, "captured from the cascade");
+        Assert.Contains("captured from the cascade", component.Find(".bit-erb").TextContent);
     }
 
     [TestMethod]
@@ -1474,7 +1474,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
             parameters.Add(p => p.Title, "Second");
         });
 
-        StringAssert.Contains(component.Find(".bit-erb").TextContent, "Second");
+        Assert.Contains("Second", component.Find(".bit-erb").TextContent);
         Assert.Throws<ElementNotFoundException>(() => component.Find(".throw-switch-safe"));
     }
 
@@ -1650,8 +1650,8 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var errorRoots = component.FindAll(".bit-erb");
 
-        Assert.AreEqual(1, errorRoots.Count);
-        StringAssert.Contains(errorRoots[0].TextContent, "Inner");
+        Assert.ContainsSingle(errorRoots);
+        Assert.Contains("Inner", errorRoots[0].TextContent);
     }
 
     [TestMethod]
@@ -1680,7 +1680,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         // The handler was the one place that was to put right whatever threw, so what it threw is the
         // boundary's own error rather than an exception nothing is left to await.
         component.WaitForAssertion(() =>
-            StringAssert.Contains(component.Find(".bit-erb-exp").TextContent, "the recovery itself failed"));
+            Assert.Contains("the recovery itself failed", component.Find(".bit-erb-exp").TextContent));
     }
 
     [TestMethod]
@@ -1719,7 +1719,7 @@ public partial class BitErrorBoundaryTests : BunitTestContext
 
         var footer = component.Find(".bit-erb-ftr").TextContent;
 
-        StringAssert.Contains(footer, "Copy details");
+        Assert.Contains("Copy details", footer);
         Assert.IsFalse(footer.Contains("Copied", StringComparison.Ordinal));
     }
 

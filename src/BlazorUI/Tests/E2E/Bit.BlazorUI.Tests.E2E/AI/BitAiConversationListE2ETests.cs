@@ -73,7 +73,7 @@ public class BitAiConversationListE2ETests : E2ETestBase
         await Expect(open).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-pri-fg)"));
         var weight = int.Parse(await ComputedStyleAsync("#cvl-basic .bit-aicvl-sel", "font-weight"));
         var rest = int.Parse(await Item("cvl-basic", "Bug triage").EvaluateAsync<string>("e => getComputedStyle(e).fontWeight"));
-        Assert.IsTrue(weight > rest, "The open conversation is drawn heavier.");
+        Assert.IsGreaterThan(rest, weight, "The open conversation is drawn heavier.");
     }
 
     // ---------- select ----------
@@ -219,7 +219,7 @@ public class BitAiConversationListE2ETests : E2ETestBase
         await Expect(Item("cvl-titles", "A title far too long")).ToHaveAttributeAsync("title", "The preview of the long one");
         var row = await List("cvl-titles").Locator(".bit-aicvl-itm").Nth(1).RectAsync();
         var list = await List("cvl-titles").RectAsync();
-        Assert.IsTrue(row.Right <= list.Right + 0.5, "The row stays inside the list.");
+        Assert.IsLessThanOrEqualTo(list.Right + 0.5, row.Right, "The row stays inside the list.");
     }
 
     // ---------- disabled ----------
@@ -335,11 +335,11 @@ public class BitAiConversationListE2ETests : E2ETestBase
         var button = await Item("cvl-rtl", "First conversation").RectAsync();
         var title = await Item("cvl-rtl", "First conversation").Locator(".bit-aicvl-ttl").RectAsync();
         var delete = await Delete("cvl-rtl", "First conversation").RectAsync();
-        Assert.IsTrue(delete.Right <= button.Left + 1, "The delete button is at the left of the row.");
+        Assert.IsLessThanOrEqualTo(button.Left + 1, delete.Right, "The delete button is at the left of the row.");
 
         var text = await Item("cvl-rtl", "First conversation").Locator(".bit-aicvl-ttl").EvaluateAsync<double>(
             "e => { const r = document.createRange(); r.selectNodeContents(e); return r.getBoundingClientRect().right; }");
-        Assert.IsTrue(text > title.Right - 2, "The title starts at the right.");
+        Assert.IsGreaterThan(title.Right - 2, text, "The title starts at the right.");
     }
 
     [TestMethod]

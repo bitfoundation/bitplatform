@@ -61,7 +61,7 @@ public class BlazorSetParametersSourceGeneratorTests
         });
 
         Assert.AreEqual("hi|3||2026|1", html);
-        StringAssert.Contains(run.Source("Greeting"), "case nameof(Title):");
+        Assert.Contains("case nameof(Title):", run.Source("Greeting"));
     }
 
     [TestMethod]
@@ -129,7 +129,7 @@ public class BlazorSetParametersSourceGeneratorTests
 
         var html = await RenderAsync(run, "TestApp.Components.Greeting", new() { ["title"] = "hi", ["count"] = 2 });
 
-        StringAssert.StartsWith(html, "hi|2|");
+        Assert.StartsWith("hi|2|", html);
     }
 
     [TestMethod]
@@ -163,7 +163,7 @@ public class BlazorSetParametersSourceGeneratorTests
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAsync(run, "TestApp.Components.Greeting", new() { ["Title"] = "hi", ["Nope"] = 1 }));
 
-        StringAssert.Contains(exception.Message, "Nope");
+        Assert.Contains("Nope", exception.Message);
     }
 
     [TestMethod]

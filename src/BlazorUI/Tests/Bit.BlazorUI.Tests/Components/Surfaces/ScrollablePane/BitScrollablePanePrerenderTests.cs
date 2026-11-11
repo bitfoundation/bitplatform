@@ -27,12 +27,12 @@ public class BitScrollablePanePrerenderTests
             [nameof(BitScrollablePane.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Hello")),
         });
 
-        StringAssert.Contains(html, "Hello");
-        StringAssert.Contains(html, "height:10rem");
-        StringAssert.Contains(html, "bit-scp-fad");
-        StringAssert.Contains(html, "tabindex=\"0\"");
-        StringAssert.Contains(html, "role=\"region\"");
-        StringAssert.Contains(html, "aria-label=\"Release notes\"");
+        Assert.Contains("Hello", html);
+        Assert.Contains("height:10rem", html);
+        Assert.Contains("bit-scp-fad", html);
+        Assert.Contains("tabindex=\"0\"", html);
+        Assert.Contains("role=\"region\"", html);
+        Assert.Contains("aria-label=\"Release notes\"", html);
     }
 
     [TestMethod]

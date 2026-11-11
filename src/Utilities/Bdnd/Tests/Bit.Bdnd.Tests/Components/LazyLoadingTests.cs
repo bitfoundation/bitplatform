@@ -17,7 +17,7 @@ public sealed class LazyLoadingTests : BdndComponentTestBase
     public LazyLoadingTests() : base(registerServices: false) { }
 
     /// <summary>A component of the app's own that injects the interop, as the sortable card of a registered app does.</summary>
-    public sealed class InjectingCard : ComponentBase
+    internal sealed class InjectingCard : ComponentBase
     {
         [Inject] public BdndInterop Interop { get; set; } = default!;
     }

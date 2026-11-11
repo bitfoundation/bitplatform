@@ -30,7 +30,7 @@ public sealed class ReorderTests : BmotionPageTest
         await ExpectEventAsync("vertical:reordered");
         await ExpectReadoutAsync("vertical-order", "B,C,A,D");
         await Assertions.Expect(Page.Locator("#vertical .item").Nth(2)).ToHaveTextAsync("A");
-        CollectionAssert.AreEqual(new[] { "B", "C", "A", "D" }, await DomOrderAsync("vertical"));
+        Assert.AreSequenceEqual(new[] { "B", "C", "A", "D" }, await DomOrderAsync("vertical"));
 
         // Nothing is left displaced: every item sits in normal flow again.
         foreach (var id in new[] { "A", "B", "C", "D" }.Select(i => $"#vertical .item[data-item='{i}']"))
@@ -50,11 +50,11 @@ public sealed class ReorderTests : BmotionPageTest
         var samples = await SampleAsync(a, 400);
 
         await ExpectReadoutAsync("vertical-order", "D,A,B,C");
-        CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, await DomOrderAsync("vertical"));
+        Assert.AreSequenceEqual(new[] { "D", "A", "B", "C" }, await DomOrderAsync("vertical"));
         var after = await WaitForRestAsync(a);
         Assert.AreEqual(44, after.Top - before.Top, 1, "A didn't end up one place down.");
         Assert.AreEqual(0, after.Y, 0.5, "The layout animation's transform was left on the item.");
-        Assert.IsTrue(samples.Any(s => s.Top > before.Top + 8 && s.Top < after.Top - 8),
+        Assert.Contains(s => s.Top > before.Top + 8 && s.Top < after.Top - 8, samples,
             $"No intermediate position: {string.Join(", ", samples.Select(s => s.Top.ToString("0", CultureInfo.InvariantCulture)))}");
     }
 
@@ -76,7 +76,7 @@ public sealed class ReorderTests : BmotionPageTest
         await Page.Keyboard.PressAsync("Space");
         await ExpectEventAsync("vertical:reordered");
         await ExpectReadoutAsync("vertical-order", "B,C,A,D");
-        CollectionAssert.AreEqual(new[] { "B", "C", "A", "D" }, await DomOrderAsync("vertical"));
+        Assert.AreSequenceEqual(new[] { "B", "C", "A", "D" }, await DomOrderAsync("vertical"));
         await Page.WaitForFunctionAsync("() => document.activeElement?.dataset.item === 'A'");
         await Page.WaitForFunctionAsync("() => document.querySelector('[data-bm-announcer]')?.textContent === 'Dropped at position 3 of 4.'");
 
@@ -97,8 +97,7 @@ public sealed class ReorderTests : BmotionPageTest
         await DragByAsync("#grid .cell[data-item='1']", 64, 44, steps: 16);
         await ExpectEventAsync("grid:reordered");
         await ExpectReadoutAsync("grid-order", "2,3,4,5,1,6");
-        CollectionAssert.AreEqual(new[] { "2", "3", "4", "5", "1", "6" },
-            await Page.Locator("#grid .cell").EvaluateAllAsync<string[]>("els => els.map(e => e.textContent.trim())"));
+        Assert.AreSequenceEqual(new[] { "2", "3", "4", "5", "1", "6" }, await Page.Locator("#grid .cell").EvaluateAllAsync<string[]>("els => els.map(e => e.textContent.trim())"));
         foreach (var i in new[] { "1", "2", "3", "4", "5", "6" })
             await WaitForStateAsync($"#grid .cell[data-item='{i}']", "s => Math.abs(s.x) < 0.5 && Math.abs(s.y) < 0.5");
 
@@ -149,7 +148,7 @@ public sealed class ReorderTests : BmotionPageTest
         var shown = await Page.EvaluateAsync<double>("() => new Promise(r => requestAnimationFrame(() => r(document.getElementById('scrolling').scrollTop)))");
         Assert.AreEqual(end, shown, 1, "it stops at the end of the list");
         var trail = (await Page.EvaluateAsync<double[]>("() => window.__rowCentres")).Select(c => c - edge).ToArray();
-        Assert.IsTrue(trail.Length >= 5, $"it scrolled in steps, one a frame ({trail.Length})");
+        Assert.IsGreaterThanOrEqualTo(5, trail.Length, $"it scrolled in steps, one a frame ({trail.Length})");
         Assert.IsTrue(trail.All(d => Math.Abs(d) < 2), $"the held row trailed the pointer: {string.Join(", ", trail.Select(d => d.ToString("0.#")))}");
 
         await Page.Mouse.UpAsync();
@@ -178,7 +177,7 @@ public sealed class ReorderTests : BmotionPageTest
         await Page.WaitForTimeoutAsync(400);
 
         await ExpectReadoutAsync("vertical-order", "A,B,C,D");
-        CollectionAssert.AreEqual(new[] { "A", "B", "C", "D" }, await DomOrderAsync("vertical"));
+        Assert.AreSequenceEqual(new[] { "A", "B", "C", "D" }, await DomOrderAsync("vertical"));
     }
 
     [TestMethod]

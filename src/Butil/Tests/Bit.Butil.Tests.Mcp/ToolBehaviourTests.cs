@@ -38,7 +38,7 @@ public class ToolBehaviourTests : McpTestBase
                 Assert.Contains(expected, types.Select(type => type.Name));
             }
 
-            Assert.AreEqual(types.Length, types.Select(type => type.Name).Distinct(StringComparer.Ordinal).Count(),
+            Assert.HasCount(types.Length, types.Select(type => type.Name).Distinct(StringComparer.Ordinal),
                 "Two public types answered under the same name, so one of them is unreachable through GetButilApiDetails.");
 
             // "The 'IsInjectable' ones are the classes you inject by their own name" - the tool's
@@ -220,8 +220,9 @@ public class ToolBehaviourTests : McpTestBase
         foreach (var spelling in new[] { "Clipboard", "clipboard", "CLIPBOARD", " Clipboard ", "Bit.Butil.Clipboard" })
         {
             var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = spelling });
+            var actualValue = result.Details?.Name;
 
-            Assert.AreEqual("Clipboard", result.Details?.Name, $"'{spelling}' did not resolve to the Clipboard type.");
+            Assert.AreEqual("Clipboard", actualValue, $"'{spelling}' did not resolve to the Clipboard type.");
         }
     }
 
@@ -308,7 +309,7 @@ public class ToolBehaviourTests : McpTestBase
         {
             Assert.IsTrue(inspection.IsKnown, $"A slug straight out of the docs index did not resolve: {inspection.Message}");
             Assert.AreEqual("Local & Session Storage", inspection.Api);
-            CollectionAssert.AreEquivalent(new[] { "LocalStorage", "SessionStorage" }, inspection.Services ?? []);
+            Assert.AreSequenceEqual(new[] { "LocalStorage", "SessionStorage" }, inspection.Services ?? [], Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         }
     }
 
@@ -380,7 +381,7 @@ public class ToolBehaviourTests : McpTestBase
         {
             Assert.HasCount(25, plan.Apis);
             Assert.IsNotEmpty(plan.Ignored ?? []);
-            Assert.HasCount(5, plan.Ignored);
+            Assert.HasCount(5, plan.Ignored!);
             Assert.Contains("Not planned", string.Join(" ", plan.Checklist));
         }
     }
@@ -393,7 +394,7 @@ public class ToolBehaviourTests : McpTestBase
         using (Assert.Scope())
         {
             Assert.AreSequenceEqual(new[] { "Telepathy" }, plan.Unknown);
-            Assert.AreEqual(1, plan.Apis.Count(api => api.IsKnown), "One bad name must not cost the caller the rest of the plan.");
+            Assert.ContainsSingle(api => api.IsKnown, plan.Apis, "One bad name must not cost the caller the rest of the plan.");
         }
     }
 
@@ -420,7 +421,7 @@ public class ToolBehaviourTests : McpTestBase
             // The matrix is only useful if it distinguishes: a table where every row says the same
             // thing is a table nobody can choose between two APIs with.
             Assert.IsGreaterThan(1, apiPages.Select(page => page.Engines).Distinct(StringComparer.Ordinal).Count());
-            Assert.IsTrue(apiPages.Any(page => page.Requires.Length > 0));
+            Assert.Contains(page => page.Requires.Length > 0, apiPages);
 
             // The preconditions are named, not spelled out - the sentence is a PlanButilFeature away.
             Assert.Contains("Secure context", string.Join(" ", apiPages.SelectMany(page => page.Requires)));
@@ -443,7 +444,7 @@ public class ToolBehaviourTests : McpTestBase
                 Assert.IsNotEmpty(page.Group, $"The '{page.Title}' row sits under no group heading.");
             }
 
-            Assert.AreEqual(pages.Length, pages.Select(page => page.Slug).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
+            Assert.HasCount(pages.Length, pages.Select(page => page.Slug).Distinct(StringComparer.OrdinalIgnoreCase),
                 "Two pages share a slug, so one of them can never be fetched.");
 
             Assert.Contains("clipboard", pages.Select(page => page.Slug));
@@ -561,8 +562,7 @@ public class ToolBehaviourTests : McpTestBase
             .TrimEnd('.', ' ')
             .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-        CollectionAssert.AreEquivalent(ButilMcp.HostingModels, offered,
-            "The hosting models the server offers are not the ones this suite covers.");
+        Assert.AreSequenceEqual(ButilMcp.HostingModels, offered, Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The hosting models the server offers are not the ones this suite covers.");
 
         foreach (var model in ButilMcp.HostingModels)
         {
@@ -621,7 +621,7 @@ public class ToolBehaviourTests : McpTestBase
             ["hybrid"] = ["Sample/Maui/MauiProgram.cs", "Sample/Maui/wwwroot/index.html"],
         };
 
-        CollectionAssert.AreEquivalent(ButilMcp.HostingModels, expected.Keys.ToArray(), "A hosting model has no expected sample files here.");
+        Assert.AreSequenceEqual(ButilMcp.HostingModels, expected.Keys.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "A hosting model has no expected sample files here.");
 
         foreach (var (model, files) in expected)
         {

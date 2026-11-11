@@ -25,13 +25,13 @@ public sealed class BitThemeApcaContrastTests
     [TestMethod]
     public void DarkTextOnLightBackgroundIsPositive()
     {
-        Assert.IsTrue(BitThemeColorContrast.GetApcaContrast("#000000", "#FFFFFF") > 0);
+        Assert.IsGreaterThan(0, BitThemeColorContrast.GetApcaContrast("#000000", "#FFFFFF"));
     }
 
     [TestMethod]
     public void LightTextOnDarkBackgroundIsNegative()
     {
-        Assert.IsTrue(BitThemeColorContrast.GetApcaContrast("#FFFFFF", "#000000") < 0);
+        Assert.IsLessThan(0, BitThemeColorContrast.GetApcaContrast("#FFFFFF", "#000000"));
     }
 
     [TestMethod]
@@ -42,8 +42,8 @@ public sealed class BitThemeApcaContrastTests
         var forward = BitThemeColorContrast.GetApcaContrast("#212121", "#569FFF");
         var reversed = BitThemeColorContrast.GetApcaContrast("#569FFF", "#212121");
 
-        Assert.IsTrue(forward > 0, "dark-on-light is positive");
-        Assert.IsTrue(reversed < 0, "light-on-dark is negative");
+        Assert.IsGreaterThan(0, forward, "dark-on-light is positive");
+        Assert.IsLessThan(0, reversed, "light-on-dark is negative");
         Assert.AreNotEqual(Math.Abs(forward), Math.Abs(reversed), 0.5, "magnitudes differ by polarity");
 
         // WCAG, by contrast, is identical either way.
@@ -81,8 +81,8 @@ public sealed class BitThemeApcaContrastTests
         Assert.IsTrue(BitThemeColorContrast.MeetsApcaBodyText(lightOnDark));
 
         // Ordering of the advisory thresholds.
-        Assert.IsTrue(BitThemeColorContrast.ApcaBodyTextLc > BitThemeColorContrast.ApcaLargeTextLc);
-        Assert.IsTrue(BitThemeColorContrast.ApcaLargeTextLc > BitThemeColorContrast.ApcaNonTextLc);
+        Assert.IsGreaterThan(BitThemeColorContrast.ApcaLargeTextLc, BitThemeColorContrast.ApcaBodyTextLc);
+        Assert.IsGreaterThan(BitThemeColorContrast.ApcaNonTextLc, BitThemeColorContrast.ApcaLargeTextLc);
 
         // A mid-grey pair clears the large-text advisory floor but not body text.
         var mid = BitThemeColorContrast.GetApcaContrast("#767676", "#FFFFFF"); // ~ Lc 70
@@ -130,8 +130,7 @@ public sealed class BitThemeApcaContrastTests
 
                 Assert.IsTrue(double.IsFinite(lc) && Math.Abs(lc) <= 110,
                     $"{name} {role}: APCA produced an out-of-range value {lc}.");
-                Assert.IsTrue(Math.Abs(lc) >= invisibilityFloor,
-                    $"{name} {role}: on-text {text} on fill {main} is APCA Lc {lc:F1}, below the {invisibilityFloor} invisibility floor.");
+                Assert.IsGreaterThanOrEqualTo(invisibilityFloor, Math.Abs(lc), $"{name} {role}: on-text {text} on fill {main} is APCA Lc {lc:F1}, below the {invisibilityFloor} invisibility floor.");
             }
         }
     }

@@ -18,7 +18,7 @@ namespace Bit.Bcrdt.Tests;
 /// bugs would otherwise live.
 /// </para>
 /// </remarks>
-public sealed class CrdtCounter : BcrdtAbstractType
+internal sealed class CrdtCounter : BcrdtAbstractType
 {
     public override BcrdtTypeKind Kind => BcrdtTypeKind.Map;
 

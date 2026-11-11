@@ -39,9 +39,9 @@ public class BitFullCalendarPermissionsTests : BunitTestContext
     {
         var component = RenderCalendar(new() { AllowAdd = false });
 
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-btn-primary").Count, "no Add Event button");
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-cell-add-hint").Count, "no add hint on a slot");
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-hour-slot[role=button]").Count, "the slots are inert");
+        Assert.IsEmpty(component.FindAll(".bit-bfc-btn-primary"), "no Add Event button");
+        Assert.IsEmpty(component.FindAll(".bit-bfc-cell-add-hint"), "no add hint on a slot");
+        Assert.IsEmpty(component.FindAll(".bit-bfc-hour-slot[role=button]"), "the slots are inert");
 
         // Events can still be moved.
         Assert.AreEqual("true", component.Find("[data-bit-bfc-event='1']").GetAttribute("draggable"));
@@ -53,13 +53,13 @@ public class BitFullCalendarPermissionsTests : BunitTestContext
         var noResize = RenderCalendar(new() { AllowResize = false });
         var block = noResize.Find("[data-bit-bfc-event='1']");
         Assert.AreEqual("true", block.GetAttribute("draggable"));
-        Assert.AreEqual(0, noResize.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.IsEmpty(noResize.FindAll(".bit-bfc-resize-handle"));
 
         var noDrag = RenderCalendar(new() { AllowDrag = false });
         block = noDrag.Find("[data-bit-bfc-event='1']");
         Assert.AreEqual("false", block.GetAttribute("draggable"));
         Assert.IsNull(block.GetAttribute("data-bit-bfc-move"));
-        Assert.AreEqual(2, noDrag.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.HasCount(2, noDrag.FindAll(".bit-bfc-resize-handle"));
     }
 
     [TestMethod]
@@ -87,7 +87,7 @@ public class BitFullCalendarPermissionsTests : BunitTestContext
         Assert.IsFalse(state.CanResize(ev));
         Assert.IsTrue(state.CanDelete(ev), "deleting is a permission of its own");
         Assert.IsTrue(state.CanAdd);
-        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-handle").Count);
+        Assert.IsEmpty(component.FindAll(".bit-bfc-resize-handle"));
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class BitFullCalendarPermissionsTests : BunitTestContext
         component.Find("[data-bit-bfc-event='1']").Click();
 
         var footer = component.Find(".bit-bfc-dialog-footer");
-        Assert.IsFalse(footer.QuerySelectorAll(".bit-bfc-btn-danger").Any(), "no Delete");
+        Assert.IsEmpty(footer.QuerySelectorAll(".bit-bfc-btn-danger"), "no Delete");
         Assert.AreEqual(2, footer.QuerySelectorAll("button").Length, "Edit and Close");
     }
 

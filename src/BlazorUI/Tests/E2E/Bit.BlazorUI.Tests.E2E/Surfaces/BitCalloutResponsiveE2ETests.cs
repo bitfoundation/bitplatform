@@ -35,7 +35,7 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
         Near(Width, box.X + box.Width, "on the right edge");
         Near(0, box.Y, "from the top");
         Near(Height, box.Height, "full height");
-        Assert.IsTrue(box.X > 0, "The panel covers the whole width.");
+        Assert.IsGreaterThan(0, box.X, "The panel covers the whole width.");
 
         // A panel is sized against the screen, so there is nothing for an arrow to point at.
         await Expect(Page.Locator(".bit-clo-arw")).ToBeHiddenAsync();
@@ -81,7 +81,7 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
         Near(0, box.Y, "at the top");
         Near(0, box.X, "from the left");
         Near(Width, box.Width, "full width");
-        Assert.IsTrue(box.Height < Height / 2, $"The sheet is {box.Height}px tall.");
+        Assert.IsLessThan(Height / 2, box.Height, $"The sheet is {box.Height}px tall.");
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
         var box = await BoxAsync(Callout);
         Near(Height, box.Y + box.Height, "at the bottom");
         Near(Width, box.Width, "full width");
-        Assert.IsTrue(box.Height < Height / 2, $"The sheet is {box.Height}px tall.");
+        Assert.IsLessThan(Height / 2, box.Height, $"The sheet is {box.Height}px tall.");
     }
 
     [TestMethod]
@@ -246,7 +246,7 @@ public class BitCalloutResponsiveE2ETests : E2ETestBase
 
     private static void Near(double expected, double actual, string what, double tolerance = 1.5)
     {
-        Assert.IsTrue(Math.Abs(expected - actual) <= tolerance, $"{what}: expected {expected}, got {actual}.");
+        Assert.IsLessThanOrEqualTo(tolerance, Math.Abs(expected - actual), $"{what}: expected {expected}, got {actual}.");
     }
 
     private async Task<T> PollAsync<T>(Func<Task<T>> read, Func<T, bool> done, string message)

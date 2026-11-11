@@ -111,7 +111,7 @@ public class BitAiSafeUrlsTests : BitAiTestBase
     public void AnImageOfAnyOtherSourceIsTheBlankPixel(string url)
     {
         Assert.AreEqual(BlankImage, Image(url));
-        StringAssert.StartsWith(BlankImage, "data:image/gif;base64,");
+        Assert.StartsWith("data:image/gif;base64,", BlankImage);
     }
 
     [TestMethod]

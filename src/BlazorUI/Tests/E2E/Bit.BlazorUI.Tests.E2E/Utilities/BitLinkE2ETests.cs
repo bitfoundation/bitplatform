@@ -23,12 +23,12 @@ public class BitLinkE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Contains(html, "id=\"lnk-basic\" class=\"bit-lnk\" href=\"/e2e/link\"");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("id=\"lnk-basic\" class=\"bit-lnk\" href=\"/e2e/link\"", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         // The URL is already matched while prerendering.
         var current = await (await Page.APIRequest.GetAsync($"{BaseUrl}/e2e/link/current")).TextAsync();
-        StringAssert.Matches(current, new Regex("id=\"lnk-match-current\"[^>]*aria-current=\"page\""));
+        Assert.MatchesRegex(new Regex("id=\"lnk-match-current\"[^>]*aria-current=\"page\""), current);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#lnk-basic")).ToHaveTextAsync("Basic link");
@@ -156,15 +156,15 @@ public class BitLinkE2ETests : E2ETestBase
         var start = Page.Locator("#lnk-icon-start > i");
         await Expect(start).ToHaveClassAsync(new Regex(@"bit-lnk-icn bit-lnk-sic bit-icon bit-icon--Link"));
         await Expect(start).ToHaveAttributeAsync("aria-hidden", "true");
-        Assert.IsTrue((await start.BoundingBoxAsync())!.Width > 4, "The glyph is drawn by the icons stylesheet.");
+        Assert.IsGreaterThan(4, (await start.BoundingBoxAsync())!.Width, "The glyph is drawn by the icons stylesheet.");
         await Expect(Page.Locator("#lnk-icon-start")).ToHaveAccessibleNameAsync("Leading icon");
         Assert.IsTrue(await IconIsBeforeTextAsync("#lnk-icon-start"));
 
         var end = Page.Locator("#lnk-icon-end > i");
         await Expect(end).ToHaveClassAsync(new Regex(@"bit-lnk-icn bit-lnk-eic bit-icon bit-icon--ChevronRight"));
         Assert.IsFalse(await IconIsBeforeTextAsync("#lnk-icon-end"), "The trailing icon follows the text.");
-        Assert.IsTrue(Px(await ComputedStyleAsync("#lnk-icon-end > i", "margin-left")) > 0);
-        Assert.IsTrue(Px(await ComputedStyleAsync("#lnk-icon-start > i", "margin-right")) > 0);
+        Assert.IsGreaterThan(0, Px(await ComputedStyleAsync("#lnk-icon-end > i", "margin-left")));
+        Assert.IsGreaterThan(0, Px(await ComputedStyleAsync("#lnk-icon-start > i", "margin-right")));
 
         // The glyph is the size of the text beside it.
         Assert.AreEqual(await ComputedStyleAsync("#lnk-icon-start", "font-size"), await ComputedStyleAsync("#lnk-icon-start > i", "font-size"));
@@ -209,7 +209,7 @@ public class BitLinkE2ETests : E2ETestBase
         var popup = await Page.RunAndWaitForPopupAsync(() => link.ClickAsync());
         await popup.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
 
-        StringAssert.EndsWith(popup.Url, "/e2e/link/current");
+        Assert.EndsWith("/e2e/link/current", popup.Url);
         Assert.IsTrue(await popup.EvaluateAsync<bool>("() => window.opener === null"), "noopener leaves the new tab no opener.");
         await Expect(Page).ToHaveURLAsync(new Regex("/e2e/link$"));
         await popup.CloseAsync();
@@ -499,7 +499,7 @@ public class BitLinkE2ETests : E2ETestBase
         // A focused disabled link draws its ring in the disabled color.
         await Page.Locator("#before-disabled").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
-        StringAssert.Contains(await ComputedStyleAsync("#lnk-a11y-disabled-focus", "box-shadow"), await ResolveAsync("color", "var(--bit-clr-pri-dis-text)"));
+        Assert.Contains(await ResolveAsync("color", "var(--bit-clr-pri-dis-text)"), await ComputedStyleAsync("#lnk-a11y-disabled-focus", "box-shadow"));
     }
 
     [TestMethod]
@@ -525,7 +525,7 @@ public class BitLinkE2ETests : E2ETestBase
         var link = Page.Locator("#lnk-css");
 
         await Expect(link).ToHaveCSSAsync("color", "rgb(10, 20, 30)");
-        StringAssert.Contains(await ComputedStyleAsync("#lnk-css", "font-family"), "monospace");
+        Assert.Contains("monospace", await ComputedStyleAsync("#lnk-css", "font-family"));
         await Expect(link).ToHaveCSSAsync("font-size", "19px");
         await Expect(link).ToHaveCSSAsync("font-weight", "600");
         await Expect(link).ToHaveCSSAsync("text-decoration-color", "rgb(200, 0, 0)");
@@ -551,7 +551,7 @@ public class BitLinkE2ETests : E2ETestBase
         await Page.Keyboard.PressAsync("Tab");
         await Expect(link).ToBeFocusedAsync();
         await Expect(link).ToHaveCSSAsync("color", "rgb(40, 50, 60)");
-        StringAssert.Contains(await ComputedStyleAsync("#lnk-css", "box-shadow"), "rgb(0, 150, 0)");
+        Assert.Contains("rgb(0, 150, 0)", await ComputedStyleAsync("#lnk-css", "box-shadow"));
     }
 
     [TestMethod]
@@ -691,7 +691,7 @@ public class BitLinkE2ETests : E2ETestBase
         foreach (var id in new[] { "#lnk-rtl-icon", "#lnk-rtl-inherited" })
         {
             Assert.IsFalse(await IconIsBeforeTextAsync(id), $"{id}: the leading icon is to the right of the text.");
-            Assert.IsTrue(Px(await ComputedStyleAsync($"{id} > i", "margin-left")) > 0, $"{id}: the gap is on the icon's inline end (left).");
+            Assert.IsGreaterThan(0, Px(await ComputedStyleAsync($"{id} > i", "margin-left")), $"{id}: the gap is on the icon's inline end (left).");
             Assert.AreEqual(0, Px(await ComputedStyleAsync($"{id} > i", "margin-right")));
         }
 

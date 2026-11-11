@@ -47,7 +47,7 @@ public class PersistenceAdvancedTests
         manager.OnError = errors.Add;
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync(); // must not throw
+        await persistor.StartAsync(TestContext.CancellationToken); // must not throw
 
         Assert.AreEqual("light", store.Theme); // defaults kept
         Assert.ContainsSingle(errors);
@@ -67,7 +67,7 @@ public class PersistenceAdvancedTests
         store.StateChanged += () => throw new InvalidOperationException("render boom");
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync(); // must not throw
+        await persistor.StartAsync(TestContext.CancellationToken); // must not throw
 
         Assert.AreEqual("dark", store.Theme); // state applied
         Assert.IsTrue(storage.Data.ContainsKey("blex:settings")); // data NOT deleted
@@ -85,7 +85,7 @@ public class PersistenceAdvancedTests
 
         await using (var persistor = new BlexStatePersistor(manager, storage, options))
         {
-            await persistor.StartAsync();
+            await persistor.StartAsync(TestContext.CancellationToken);
             store.SetTheme("dark");
             await persistor.FlushAsync();
         }
@@ -98,7 +98,7 @@ public class PersistenceAdvancedTests
         var (store2, manager2, _) = (new SettingsStore(), new BlexManager(), 0);
         manager2.Register(store2);
         await using var persistor2 = new BlexStatePersistor(manager2, storage, new BlexPersistenceOptions { Version = 2 });
-        await persistor2.StartAsync();
+        await persistor2.StartAsync(TestContext.CancellationToken);
         Assert.AreEqual("dark", store2.Theme);
     }
 
@@ -122,7 +122,7 @@ public class PersistenceAdvancedTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme);
         Assert.AreEqual(11, store.FontSize); // untouched fields survive migration
@@ -135,7 +135,7 @@ public class PersistenceAdvancedTests
         storage.Data["blex:settings"] = """{"Theme":"ancient"}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 3 });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("light", store.Theme); // discarded -> defaults
     }
@@ -149,7 +149,7 @@ public class PersistenceAdvancedTests
 
         await using (var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions()))
         {
-            await persistor.StartAsync();
+            await persistor.StartAsync(TestContext.CancellationToken);
             store.SetTheme("dark");
             layout.SetView("list");
             await persistor.FlushAsync();
@@ -172,7 +172,7 @@ public class PersistenceAdvancedTests
         storage.Data["blex:layout"] = """{"__blexStoreVersion":1,"state":{"View":"list"}}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions());
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", store.Theme);
         Assert.AreEqual("grid", layout.View);
@@ -199,7 +199,7 @@ public class PersistenceAdvancedTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("list", layout.View);
     }
@@ -214,7 +214,7 @@ public class PersistenceAdvancedTests
         storage.Data["blex:layout"] = """{"__blexStoreVersion":2,"state":{"View":"list"}}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 3 });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("dark", store.Theme);
         Assert.AreEqual("list", layout.View);
@@ -241,9 +241,9 @@ public class PersistenceAdvancedTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { ("layout", 0) }, migrated);
+        Assert.AreSequenceEqual(new[] { ("layout", 0) }, migrated);
         Assert.AreEqual("list", layout.View); // a hook that hands state back keeps it
     }
 
@@ -269,9 +269,9 @@ public class PersistenceAdvancedTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { ("layout", 0) }, migrated);
+        Assert.AreSequenceEqual(new[] { ("layout", 0) }, migrated);
         Assert.AreEqual("grid", layout.View);
     }
 
@@ -284,7 +284,7 @@ public class PersistenceAdvancedTests
         storage.Data["blex:layout"] = """{"__blexVersion":2,"state":{"View":"table"}}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 2 });
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("grid", layout.View);
     }
@@ -298,7 +298,7 @@ public class PersistenceAdvancedTests
 
         await using (var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 2 }))
         {
-            await persistor.StartAsync();
+            await persistor.StartAsync(TestContext.CancellationToken);
             store.SetTheme("dark");
             layout.SetView("list");
             await persistor.FlushAsync();
@@ -321,7 +321,7 @@ public class PersistenceAdvancedTests
                 return state;
             },
         });
-        await persistor2.StartAsync();
+        await persistor2.StartAsync(TestContext.CancellationToken);
 
         Assert.IsEmpty(migrated);
         Assert.AreEqual("dark", store2.Theme);
@@ -347,9 +347,9 @@ public class PersistenceAdvancedTests
         };
 
         await using var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new[] { ("settings", 2) }, migrated);
+        Assert.AreSequenceEqual(new[] { ("settings", 2) }, migrated);
         Assert.AreEqual("dark", store.Theme);
     }
 
@@ -365,7 +365,7 @@ public class PersistenceAdvancedTests
         var options = new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromMinutes(5) };
 
         await using var persistor = new BlexStatePersistor(manager, counting, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         store.SetTheme("a");
         store.SetTheme("b");
@@ -384,7 +384,7 @@ public class PersistenceAdvancedTests
         var options = new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromMinutes(5) };
 
         var persistor = new BlexStatePersistor(manager, storage, options);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
         store.SetTheme("dark");
         Assert.IsFalse(storage.Data.ContainsKey("blex:settings"));
 
@@ -400,7 +400,7 @@ public class PersistenceAdvancedTests
         history.Start();
 
         await using var persistor = new BlexStatePersistor(manager, storage);
-        await persistor.StartAsync();
+        await persistor.StartAsync(TestContext.CancellationToken);
 
         store.SetTheme("dark");
         await persistor.FlushAsync();
@@ -426,4 +426,6 @@ public class PersistenceAdvancedTests
 
         public ValueTask RemoveAsync(string key, CancellationToken ct = default) => inner.RemoveAsync(key, ct);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

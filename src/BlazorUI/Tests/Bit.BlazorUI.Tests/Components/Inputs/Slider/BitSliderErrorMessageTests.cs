@@ -49,7 +49,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
                                  .Where(p => p is not null)
                                  .ToArray();
 
-        CollectionAssert.AreEqual(new[] { "label", "slider", "error" }, parts);
+        Assert.AreSequenceEqual(new[] { "label", "slider", "error" }, parts);
     }
 
     [TestMethod]
@@ -59,13 +59,13 @@ public class BitSliderErrorMessageTests : BunitTestContext
 
         var input = component.Find(".bit-sld-inp");
 
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
         Assert.IsFalse(component.Find(".bit-sld").ClassList.Contains("bit-inv"));
         Assert.IsFalse(input.HasAttribute("aria-invalid"));
         Assert.IsFalse(input.HasAttribute("aria-describedby"));
 
         // a form full of plain sliders does not carry an empty live region per slider
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
 
         // the flag says the value was rejected; it does not invent a line saying why
-        Assert.AreEqual(0, component.FindAll(".bit-sld-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-sld-erm"));
 
         component.Render(parameters => parameters.Add(p => p.Invalid, false));
 
@@ -105,7 +105,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         var errorId = component.Find(".bit-sld-erm").Id;
 
         // a range has one value for the pair, so there is one line for it, and both ends say they are rejected
-        Assert.AreEqual(1, component.FindAll(".bit-sld-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-sld-erm"));
 
         foreach (var thumb in new[] { component.Find(".bit-sld-inp-lwr"), component.Find(".bit-sld-inp-upr") })
         {
@@ -136,7 +136,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         });
 
         Assert.AreEqual("Templated message", component.Find(".bit-sld-erm .custom-error").TextContent.Trim());
-        Assert.IsFalse(component.Find(".bit-sld-erm").TextContent.Contains("Plain message"));
+        Assert.DoesNotContain("Plain message", component.Find(".bit-sld-erm").TextContent);
 
         // the plain text is not on screen, so it is not what the live region announces either
         Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent.Trim());
@@ -190,7 +190,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         var component = RenderComponent<BitSlider>(parameters => parameters.Add(p => p.Invalid, true));
 
         // the flag on its own has nothing to say, and so no live region to say it in
-        Assert.AreEqual(0, component.FindAll("[role=status]").Count);
+        Assert.IsEmpty(component.FindAll("[role=status]"));
         Assert.IsFalse(component.Find(".bit-sld-inp").HasAttribute("aria-describedby"));
 
         component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
@@ -268,7 +268,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
         var descriptionId = component.Find("span.bit-sld-dsc:not([role])").Id;
 
         // the page's own reference is kept, and what is wrong with the value is read ahead of the description
-        CollectionAssert.AreEqual(new[] { "budget-hint", errorId, descriptionId }, describedBy);
+        Assert.AreSequenceEqual(new[] { "budget-hint", errorId, descriptionId }, describedBy);
     }
 
     [TestMethod]
@@ -319,7 +319,7 @@ public class BitSliderErrorMessageTests : BunitTestContext
 
         // the base class registers the class for any rejection, the form's and the app's alike, so the two together
         // still make a single one
-        Assert.AreEqual(1, component.Find(".bit-sld").ClassList.Count(c => c == "bit-inv"));
+        Assert.ContainsSingle(c => c == "bit-inv", component.Find(".bit-sld").ClassList);
         Assert.AreEqual("true", component.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
 
         // and once the app drops its own rejection, the form's still stands

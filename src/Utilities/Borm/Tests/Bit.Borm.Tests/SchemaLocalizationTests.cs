@@ -52,14 +52,13 @@ public class SchemaLocalizationTests : ComponentTestBase
         var cut = Render<BormView>(p => p.Add(x => x.Definition, Form()).Add(x => x.Data, data));
 
         Assert.AreEqual("Aanmelden", cut.Find(".bit-borm-form__title").TextContent);
-        StringAssert.Contains(cut.Find("label[for=borm_name]").TextContent, "Naam");
+        Assert.Contains("Naam", cut.Find("label[for=borm_name]").TextContent);
         Assert.AreEqual("Zoals in uw paspoort.", cut.Find("#borm_name_help").TextContent);
         Assert.AreEqual("Ada Lovelace", cut.Find("#borm_name").GetAttribute("placeholder"));
-        CollectionAssert.AreEqual(new[] { "Alleen", "Team" },
-            cut.FindAll("#borm_plan option").Skip(1).Select(o => o.TextContent).ToArray());
+        Assert.AreSequenceEqual(new[] { "Alleen", "Team" }, cut.FindAll("#borm_plan option").Skip(1).Select(o => o.TextContent).ToArray());
         // Every row of a repeater shares one key, its path with the row taken out.
-        StringAssert.Contains(cut.Find("label[for=borm_Lines_0_Product]").TextContent, "Artikel");
-        StringAssert.Contains(cut.Find(".bit-borm-stepper").TextContent, "Over u");
+        Assert.Contains("Artikel", cut.Find("label[for=borm_Lines_0_Product]").TextContent);
+        Assert.Contains("Over u", cut.Find(".bit-borm-stepper").TextContent);
     }
 
     [TestMethod]
@@ -117,7 +116,7 @@ public class SchemaLocalizationTests : ComponentTestBase
 
             Assert.AreEqual("solo", data["plan"]);
             var review = Render<BormReview>(p => p.Add(x => x.State, state));
-            StringAssert.Contains(review.Find(".bit-borm-review__value").TextContent, "Alleen");
+            Assert.Contains("Alleen", review.Find(".bit-borm-review__value").TextContent);
         }
         finally
         {
@@ -148,14 +147,14 @@ public class SchemaLocalizationTests : ComponentTestBase
         {
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             var cut = Render<BormView>(p => p.Add(x => x.Definition, form));
-            StringAssert.Contains(cut.Find("label[for=borm_name]").TextContent, "Name");
+            Assert.Contains("Name", cut.Find("label[for=borm_name]").TextContent);
 
             // Nothing about the field changed but the language: a field that skips rendering until its value
             // or messages move kept the old label.
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
             cut.Render();
 
-            StringAssert.Contains(cut.Find("label[for=borm_name]").TextContent, "Vorname");
+            Assert.Contains("Vorname", cut.Find("label[for=borm_name]").TextContent);
         }
         finally
         {
@@ -183,7 +182,7 @@ public class SchemaLocalizationTests : ComponentTestBase
 
             // A dialect with no table of its own is read from its language's.
             await cut.InvokeAsync(() => state.Language = "de-CH");
-            StringAssert.Contains(cut.Find("label[for=borm_name]").TextContent, "Vorname");
+            Assert.Contains("Vorname", cut.Find("label[for=borm_name]").TextContent);
             Assert.AreEqual("Bestellung", cut.Find(".bit-borm-form__title").TextContent);
             Assert.AreEqual("de-CH", cut.Find("form").GetAttribute("lang"));
 
@@ -209,7 +208,7 @@ public class SchemaLocalizationTests : ComponentTestBase
         var state = new BormState(form, new BormModelDataAccessor(new BridgePerson()));
 
         // One table per culture, whatever the casing it was named in, holding both calls' texts.
-        Assert.HasCount(1, form.Translations);
+        Assert.ContainsSingle(form.Translations);
         var previous = CultureInfo.CurrentUICulture;
         try
         {

@@ -36,10 +36,10 @@ public partial class BitPdfRangeSourceTests
         await using var source = await RangeAccess.Open(http, 32, 8);
         await using var stream = source.OpenRead();
         var buffer = new byte[200];
-        Assert.AreEqual(7, await stream.ReadAsync(buffer));
+        Assert.AreEqual(7, await stream.ReadAsync(buffer, TestContext.CancellationToken));
         handler.Problem = changedVersion ? "200changed" : "200";
 
-        await Assert.ThrowsAsync<IOException>(() => stream.ReadAsync(buffer).AsTask());
+        await Assert.ThrowsAsync<IOException>(() => stream.ReadAsync(buffer, TestContext.CancellationToken).AsTask());
 
         Assert.AreEqual("bytes=7-", handler.Requests[^1]);
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[^1]);
@@ -54,9 +54,9 @@ public partial class BitPdfRangeSourceTests
         using var handler = new RangeHandler(200);
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 16, 8);
-        await source.Ensure(8, 8);
+        await source.Ensure(8, 8, TestContext.CancellationToken);
         for (int i = 0; i < 10; i++) Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
-        await source.Ensure(16, 8);
+        await source.Ensure(16, 8, TestContext.CancellationToken);
 
         Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
         Assert.Throws<BitPdfMissingDataException>(() => source.Cursor(8, 1).GetByte());
@@ -77,13 +77,13 @@ public partial class BitPdfRangeSourceTests
         {
             await using var stream = source.OpenRead();
             using var destination = new MemoryStream();
-            await stream.CopyToAsync(destination);
+            await stream.CopyToAsync(destination, TestContext.CancellationToken);
             bytes = destination.ToArray();
         }
         else bytes = await source.ReadAll();
 
-        CollectionAssert.AreEqual(handler.Bytes, bytes);
-        Assert.AreEqual(2, handler.Requests.Count);
+        Assert.AreSequenceEqual(handler.Bytes, bytes);
+        Assert.HasCount(2, handler.Requests);
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[^1]);
         Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
         Assert.AreEqual(8, source.Int("AccountedBytes"));
@@ -103,13 +103,13 @@ public partial class BitPdfRangeSourceTests
         {
             await using var stream = source.OpenRead();
             using var destination = new MemoryStream();
-            await stream.CopyToAsync(destination);
+            await stream.CopyToAsync(destination, TestContext.CancellationToken);
             bytes = destination.ToArray();
         }
         else bytes = await source.ReadAll();
 
-        CollectionAssert.AreEqual(handler.Bytes, bytes);
-        Assert.AreEqual(1 + (handler.Bytes.Length + 6) / 7, handler.Requests.Count);
+        Assert.AreSequenceEqual(handler.Bytes, bytes);
+        Assert.HasCount(1 + (handler.Bytes.Length + 6) / 7, handler.Requests);
         Assert.AreEqual("bytes=7-", handler.Requests[2]);
         Assert.IsTrue(handler.Validators.Skip(1).All(v => v == RangeHandler.Tag));
         Assert.AreEqual(handler.Bytes[0], source.Cursor(0, 1).GetByte());
@@ -144,7 +144,7 @@ public partial class BitPdfRangeSourceTests
         using var handler = new RangeHandler(200000);
         using var http = new HttpClient(handler);
         await using var source = await RangeAccess.Open(http, 32, 8);
-        await source.Ensure(80, 8);
+        await source.Ensure(80, 8, TestContext.CancellationToken);
         int cacheBytes = source.Int("AccountedBytes");
         int peak = source.Int("PeakBytes");
         int requests = handler.Requests.Count;
@@ -153,13 +153,13 @@ public partial class BitPdfRangeSourceTests
         {
             await using var stream = source.OpenRead();
             using var destination = new MemoryStream();
-            await stream.CopyToAsync(destination);
+            await stream.CopyToAsync(destination, TestContext.CancellationToken);
             bytes = destination.ToArray();
         }
         else bytes = await source.ReadAll();
 
-        CollectionAssert.AreEqual(handler.Bytes, bytes);
-        Assert.AreEqual(requests + 1, handler.Requests.Count);
+        Assert.AreSequenceEqual(handler.Bytes, bytes);
+        Assert.HasCount(requests + 1, handler.Requests);
         Assert.AreEqual("bytes=0-", handler.Requests[^1]);
         Assert.AreEqual(RangeHandler.Tag, handler.Validators[^1]);
         Assert.AreEqual(cacheBytes, source.Int("AccountedBytes"));
@@ -184,7 +184,7 @@ public partial class BitPdfRangeSourceTests
         handler.Problem = problem;
 
         await Assert.ThrowsAsync<IOException>(() => source.ReadAll());
-        Assert.AreEqual(2, handler.Requests.Count);
+        Assert.HasCount(2, handler.Requests);
         if (problem is not ("short" or "extra")) Assert.AreEqual(0, handler.LastBody!.Reads);
     }
 
@@ -200,12 +200,12 @@ public partial class BitPdfRangeSourceTests
         using var cancellation = new CancellationTokenSource();
         await using var stream = source.OpenRead();
         var work = stream.ReadAsync(new byte[200], cancellation.Token).AsTask();
-        await handler.Entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await handler.Entered.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
         if (reason == "cancel") cancellation.Cancel();
         if (reason == "dispose") await source.DisposeAsync();
 
-        if (reason == "timeout") await Assert.ThrowsAsync<IOException>(() => work.WaitAsync(TimeSpan.FromSeconds(2)));
-        else await Assert.ThrowsAsync<OperationCanceledException>(() => work.WaitAsync(TimeSpan.FromSeconds(2)));
+        if (reason == "timeout") await Assert.ThrowsAsync<IOException>(() => work.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
+        else await Assert.ThrowsAsync<OperationCanceledException>(() => work.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
         Assert.AreEqual(2, handler.Requests, "A copy timeout must surface on its first request.");
         if (reason != "dispose") Assert.AreEqual(0, source.Cursor(0, 1).GetByte());
         await stream.DisposeAsync();
@@ -247,4 +247,6 @@ public partial class BitPdfRangeSourceTests
             base.Dispose(disposing);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

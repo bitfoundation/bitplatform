@@ -79,7 +79,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         Assert.AreEqual("1234567890", root.TextContent);
         // The band is scaled by the length of the text, so a new text is a new width of the band as well.
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:20px");
+        Assert.Contains("--bit-tsh-auto-spread:20px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -193,8 +193,8 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.AddChildContent("this content has nowhere to go");
         });
 
-        Assert.IsFalse(withText.Markup.Contains("nowhere to go"));
-        Assert.IsFalse(withContent.Markup.Contains("nowhere to go"));
+        Assert.DoesNotContain("nowhere to go", withText.Markup);
+        Assert.DoesNotContain("nowhere to go", withContent.Markup);
     }
 
     [TestMethod]
@@ -208,7 +208,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-spread:10px"));
+        Assert.Contains("--bit-tsh-spread:10px", style);
     }
 
     [TestMethod]
@@ -222,7 +222,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-spread:30px"));
+        Assert.Contains("--bit-tsh-spread:30px", style);
     }
 
     // The content takes precedence over the text, so it is the content - measured by ContentLength - that the band
@@ -237,7 +237,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.AddChildContent("content");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:8px");
+        Assert.Contains("--bit-tsh-auto-spread:8px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // The length is counted in user-perceived characters, so an emoji with a skin tone modifier or a letter with a
@@ -253,7 +253,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, text);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-auto-spread:{expected}");
+        Assert.Contains($"--bit-tsh-auto-spread:{expected}", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -269,7 +269,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.ContentLength, contentLength);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-spread:{expected}");
+        Assert.Contains($"--bit-tsh-spread:{expected}", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // A length the browser refuses would make the whole gradient invalid and leave the transparent text with nothing
@@ -286,7 +286,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -306,8 +306,8 @@ public class BitTextShimmerTests : BunitTestContext
 
             var style = component.Find(".bit-tsh").GetAttribute("style");
 
-            StringAssert.Contains(style, "--bit-tsh-spread:1.5px");
-            StringAssert.Contains(style, "--bit-tsh-duration:1500ms");
+            Assert.Contains("--bit-tsh-spread:1.5px", style!);
+            Assert.Contains("--bit-tsh-duration:1500ms", style);
         }
         finally
         {
@@ -331,8 +331,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, expected);
-        Assert.AreEqual(1, Regex.Matches(style, "spread:").Count, style);
+        Assert.Contains(expected, style);
+        Assert.ContainsSingle(Regex.Matches(style, "spread:"), style);
     }
 
     [TestMethod]
@@ -343,14 +343,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Spread, 4);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:20px");
+        Assert.Contains("--bit-tsh-spread:20px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -360,16 +360,16 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-auto-spread:20px"));
-        Assert.IsFalse(style.Contains("--bit-tsh-duration"));
-        Assert.IsFalse(style.Contains("--bit-tsh-delay"));
-        Assert.IsFalse(style.Contains("--bit-tsh-iterations"));
-        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
-        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
-        Assert.IsFalse(style.Contains("--bit-tsh-angle"));
-        Assert.IsFalse(style.Contains("--bit-tsh-mirror"));
-        Assert.IsFalse(style.Contains("--bit-tsh-base-clr"));
-        Assert.IsFalse(style.Contains("--bit-tsh-gradient-clr"));
+        Assert.Contains("--bit-tsh-auto-spread:20px", style);
+        Assert.DoesNotContain("--bit-tsh-duration", style);
+        Assert.DoesNotContain("--bit-tsh-delay", style);
+        Assert.DoesNotContain("--bit-tsh-iterations", style);
+        Assert.DoesNotContain("--bit-tsh-repeat-delay", style);
+        Assert.DoesNotContain("--bit-tsh-cycle", style);
+        Assert.DoesNotContain("--bit-tsh-angle", style);
+        Assert.DoesNotContain("--bit-tsh-mirror", style);
+        Assert.DoesNotContain("--bit-tsh-base-clr", style);
+        Assert.DoesNotContain("--bit-tsh-gradient-clr", style);
     }
 
     [TestMethod]
@@ -392,7 +392,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-duration:1500ms"));
+        Assert.Contains("--bit-tsh-duration:1500ms", style);
     }
 
     [TestMethod]
@@ -403,7 +403,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Duration, -500);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-duration:0ms");
+        Assert.Contains("--bit-tsh-duration:0ms", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -417,7 +417,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Delay, delay);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-delay:{expected}");
+        Assert.Contains($"--bit-tsh-delay:{expected}", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -430,7 +430,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Iterations, iterations);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-iterations:{iterations}");
+        Assert.Contains($"--bit-tsh-iterations:{iterations}", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // A count below one is not a number of sweeps a shimmer can play, so it is left to the stylesheet, which sweeps
@@ -445,7 +445,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Iterations, iterations);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-iterations"));
+        Assert.DoesNotContain("--bit-tsh-iterations", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -456,14 +456,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Iterations, 1);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-iterations:1");
+        Assert.Contains("--bit-tsh-iterations:1", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Iterations, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-iterations"));
+        Assert.DoesNotContain("--bit-tsh-iterations", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -477,8 +477,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsTrue(style.Contains("--bit-tsh-base-clr:#3f3f46"));
-        Assert.IsTrue(style.Contains("--bit-tsh-gradient-clr:#22d3ee"));
+        Assert.Contains("--bit-tsh-base-clr:#3f3f46", style);
+        Assert.Contains("--bit-tsh-gradient-clr:#22d3ee", style);
     }
 
     [TestMethod]
@@ -492,8 +492,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style") ?? string.Empty;
 
-        Assert.IsFalse(style.Contains("--bit-tsh-base-clr"));
-        Assert.IsFalse(style.Contains("--bit-tsh-gradient-clr"));
+        Assert.DoesNotContain("--bit-tsh-base-clr", style);
+        Assert.DoesNotContain("--bit-tsh-gradient-clr", style);
     }
 
     [TestMethod]
@@ -504,7 +504,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.GradientColor, "red");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-gradient-clr:red");
+        Assert.Contains("--bit-tsh-gradient-clr:red", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -513,8 +513,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-tsh-gradient-clr:blue");
-        Assert.IsFalse(style!.Contains("red"));
+        Assert.Contains("--bit-tsh-gradient-clr:blue", style!);
+        Assert.DoesNotContain("red", style!);
     }
 
     [TestMethod,
@@ -559,7 +559,7 @@ public class BitTextShimmerTests : BunitTestContext
         var root = component.Find(".bit-tsh");
 
         Assert.IsTrue(root.ClassList.Contains("bit-tsh-pri"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-gradient-clr:gold");
+        Assert.Contains("--bit-tsh-gradient-clr:gold", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -634,7 +634,9 @@ public class BitTextShimmerTests : BunitTestContext
 
         Assert.AreEqual(reversed, root.ClassList.Contains("bit-tsh-rev"));
         Assert.AreEqual(dir == BitDir.Rtl, root.ClassList.Contains("bit-rtl"));
-        Assert.AreEqual(dir?.ToString().ToLowerInvariant(), root.GetAttribute("dir"));
+        var expectedValue = dir?.ToString().ToLowerInvariant();
+        var actualValue = root.GetAttribute("dir");
+        Assert.AreEqual(expectedValue, actualValue);
     }
 
     [TestMethod]
@@ -757,10 +759,10 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        CollectionAssert.Contains(style.Split(';'), $"--bit-tsh-repeat-delay:{repeatDelay}ms");
+        Assert.Contains($"--bit-tsh-repeat-delay:{repeatDelay}ms", style.Split(';'));
         // The duration is left as it was given: the stylesheet multiplies it by the cycle rather than adding to it.
-        StringAssert.Contains(style, $"--bit-tsh-duration:{duration}ms");
-        Assert.IsFalse(style.Contains("--bit-tsh-cycle"));
+        Assert.Contains($"--bit-tsh-duration:{duration}ms", style);
+        Assert.DoesNotContain("--bit-tsh-cycle", style);
     }
 
     // Without a Duration the pause is written as the literal time the public variable takes - the stylesheet takes it
@@ -775,9 +777,9 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        CollectionAssert.Contains(style.Split(';'), "--bit-tsh-repeat-delay:1000ms");
-        Assert.IsFalse(style.Contains("--bit-tsh-duration"));
-        Assert.IsFalse(style.Contains("--bit-tsh-sweep"));
+        Assert.Contains("--bit-tsh-repeat-delay:1000ms", style.Split(';'));
+        Assert.DoesNotContain("--bit-tsh-duration", style);
+        Assert.DoesNotContain("--bit-tsh-sweep", style);
     }
 
     // A Duration is the sweep the rest is a ratio of, as well as the duration of the animation.
@@ -791,8 +793,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!.Split(';');
 
-        CollectionAssert.Contains(style, "--bit-tsh-duration:3000ms");
-        CollectionAssert.Contains(style, "--bit-tsh-sweep:3000ms");
+        Assert.Contains("--bit-tsh-duration:3000ms", style);
+        Assert.Contains("--bit-tsh-sweep:3000ms", style);
     }
 
     // A pause of nothing, or a sweep of no length to pause between, leaves the stylesheet's defaults alone.
@@ -811,7 +813,7 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        Assert.IsFalse(style.Contains("--bit-tsh-repeat-delay"));
+        Assert.DoesNotContain("--bit-tsh-repeat-delay", style);
     }
 
     [TestMethod]
@@ -828,14 +830,14 @@ public class BitTextShimmerTests : BunitTestContext
         });
 
         // An explicit duration is not retuned by the theme, so neither is the pause that follows it.
-        CollectionAssert.Contains(component.Find(".bit-tsh").GetAttribute("style")!.Split(';'), "--bit-tsh-repeat-delay:1000ms");
+        Assert.Contains("--bit-tsh-repeat-delay:1000ms", component.Find(".bit-tsh").GetAttribute("style")!.Split(';'));
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.RepeatDelay, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-repeat-delay"));
+        Assert.DoesNotContain("--bit-tsh-repeat-delay", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -849,7 +851,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Angle, angle);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), $"--bit-tsh-angle:{expected}");
+        Assert.Contains($"--bit-tsh-angle:{expected}", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -862,7 +864,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Angle, angle);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-angle"));
+        Assert.DoesNotContain("--bit-tsh-angle", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // An explicit length replaces the computed one, whatever the text, the content length and the multiplier say.
@@ -880,8 +882,8 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, $"--bit-tsh-spread:{expected}");
-        Assert.IsFalse(style.Contains("25px"));
+        Assert.Contains($"--bit-tsh-spread:{expected}", style);
+        Assert.DoesNotContain("25px", style);
     }
 
     [TestMethod,
@@ -896,7 +898,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -968,7 +970,7 @@ public class BitTextShimmerTests : BunitTestContext
         Assert.AreEqual("the text", root.TextContent);
         Assert.AreEqual(0, root.QuerySelectorAll("strong").Length);
         // Without the content the band is scaled by the text again.
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:16px");
+        Assert.Contains("--bit-tsh-auto-spread:16px", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1082,7 +1084,7 @@ public class BitTextShimmerTests : BunitTestContext
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -1146,14 +1148,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Delay, 300);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-delay:300ms");
+        Assert.Contains("--bit-tsh-delay:300ms", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Delay, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-delay"));
+        Assert.DoesNotContain("--bit-tsh-delay", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1169,14 +1171,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Duration, 3000);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-duration:3000ms");
+        Assert.Contains("--bit-tsh-duration:3000ms", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Duration, (int?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-duration"));
+        Assert.DoesNotContain("--bit-tsh-duration", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1192,14 +1194,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Angle, -30);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-angle:-30deg");
+        Assert.Contains("--bit-tsh-angle:-30deg", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.Angle, (double?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-angle"));
+        Assert.DoesNotContain("--bit-tsh-angle", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1215,14 +1217,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.BaseColor, "silver");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-base-clr:silver");
+        Assert.Contains("--bit-tsh-base-clr:silver", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.BaseColor, (string?)null);
         });
 
-        Assert.IsFalse(component.Find(".bit-tsh").GetAttribute("style")!.Contains("--bit-tsh-base-clr"));
+        Assert.DoesNotContain("--bit-tsh-base-clr", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1234,7 +1236,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.SpreadLength, "3em");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-spread:3em");
+        Assert.Contains("--bit-tsh-spread:3em", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1242,7 +1244,7 @@ public class BitTextShimmerTests : BunitTestContext
         });
 
         // Without an explicit length the spread is computed from the text again.
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1254,14 +1256,14 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.AddChildContent("content");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
             parameters.Add(p => p.ContentLength, 15);
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:30px");
+        Assert.Contains("--bit-tsh-auto-spread:30px", component.Find(".bit-tsh").GetAttribute("style")!);
     }
 
     // The content takes over from the text, and so does the length the band is scaled by.
@@ -1273,7 +1275,7 @@ public class BitTextShimmerTests : BunitTestContext
             parameters.Add(p => p.Text, "12345678");
         });
 
-        StringAssert.Contains(component.Find(".bit-tsh").GetAttribute("style"), "--bit-tsh-auto-spread:16px");
+        Assert.Contains("--bit-tsh-auto-spread:16px", component.Find(".bit-tsh").GetAttribute("style")!);
 
         component.Render(parameters =>
         {
@@ -1283,7 +1285,7 @@ public class BitTextShimmerTests : BunitTestContext
         var root = component.Find(".bit-tsh");
 
         Assert.AreEqual("content", root.TextContent);
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-tsh-auto-spread:20px");
+        Assert.Contains("--bit-tsh-auto-spread:20px", root.GetAttribute("style")!);
     }
 
     [TestMethod,
@@ -1352,9 +1354,9 @@ public class BitTextShimmerTests : BunitTestContext
 
         var style = component.Find(".bit-tsh").GetAttribute("style")!;
 
-        StringAssert.Contains(style, "display:none");
+        Assert.Contains("display:none", style);
         // The variables of the shimmer are kept beside it, so it shows again as it was.
-        StringAssert.Contains(style, "--bit-tsh-auto-spread:10px");
+        Assert.Contains("--bit-tsh-auto-spread:10px", style);
     }
 
     // A custom element - a name with a hyphen - is a valid name as well, which is how a shimmer is rendered as a web

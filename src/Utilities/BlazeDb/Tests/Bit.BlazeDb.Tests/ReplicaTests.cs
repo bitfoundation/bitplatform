@@ -44,7 +44,7 @@ public class ReplicaTests
         Assert.IsTrue(replica.IsReadOnly);
         Assert.ThrowsExactly<InvalidOperationException>(() => todos.Insert(Make("nope")));
         Assert.ThrowsExactly<InvalidOperationException>(() => replica.BeginTransaction());
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await replica.CheckpointAsync());
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () => await replica.CheckpointAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -55,12 +55,12 @@ public class ReplicaTests
         await using var replica = await OpenReplicaAsync(storage);
 
         writer.GetTable(TodoItem.Table).Insert(Make("from the writer"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         // Nothing arrives until the replica goes back to storage.
         Assert.AreEqual(0, replica.GetTable(TodoItem.Table).Count);
 
-        await replica.ReloadAsync();
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         Assert.AreEqual("from the writer", replica.GetTable(TodoItem.Table).Scan().Single().Title);
     }
@@ -73,7 +73,7 @@ public class ReplicaTests
         await using var replica = await OpenReplicaAsync(storage);
 
         writer.GetTable(TodoItem.Table).Insert(Make("committed but not yet durable"));
-        await replica.ReloadAsync();
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(0, replica.GetTable(TodoItem.Table).Count);
     }
@@ -88,15 +88,15 @@ public class ReplicaTests
         var drop = Make("drop");
         writerTodos.Insert(keep);
         writerTodos.Insert(drop);
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await OpenReplicaAsync(storage);
         Assert.AreEqual(2, replica.GetTable(TodoItem.Table).Count);
 
         writerTodos.Delete(drop.Id);
         writerTodos.Upsert(new TodoItem { Id = keep.Id, Title = "renamed", Done = true });
-        await writer.FlushAsync();
-        await replica.ReloadAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         var rows = replica.GetTable(TodoItem.Table);
         Assert.AreEqual(1, rows.Count);
@@ -111,18 +111,18 @@ public class ReplicaTests
         await using var writer = await OpenWriterAsync(storage);
         var writerTodos = writer.GetTable(TodoItem.Table);
         writerTodos.Insert(new TodoItem { Id = Guid.NewGuid(), Title = "a", Done = true, Category = "work" });
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await OpenReplicaAsync(storage);
         Assert.AreEqual(1, replica.GetTable(TodoItem.Table).CountBy(TodoItem.Indexes.Done, true));
 
         writerTodos.Insert(new TodoItem { Id = Guid.NewGuid(), Title = "b", Done = true, Category = "work" });
-        await writer.FlushAsync();
-        await replica.ReloadAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         var rows = replica.GetTable(TodoItem.Table);
         Assert.AreEqual(2, rows.CountBy(TodoItem.Indexes.Done, true));
-        Assert.AreEqual(2, rows.Lookup(TodoItem.Indexes.Category, "work").Count());
+        Assert.HasCount(2, rows.Lookup(TodoItem.Indexes.Category, "work"));
     }
 
     [TestMethod]
@@ -131,11 +131,11 @@ public class ReplicaTests
         var storage = new BlazeDbInMemoryStorage();
         await using var writer = await OpenWriterAsync(storage);
         writer.GetTable(TodoItem.Table).Insert(Make("only once"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await OpenReplicaAsync(storage);
-        await replica.ReloadAsync();
-        await replica.ReloadAsync();
+        await replica.ReloadAsync(TestContext.CancellationToken);
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         Assert.AreEqual(1, replica.GetTable(TodoItem.Table).Count);
         Assert.AreEqual(1, replica.GetTable(TodoItem.Table).CountBy(TodoItem.Indexes.Done, false));
@@ -151,14 +151,14 @@ public class ReplicaTests
         {
             writerTodos.Insert(Make("row " + i));
         }
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await OpenReplicaAsync(storage);
-        await writer.CheckpointAsync();
+        await writer.CheckpointAsync(TestContext.CancellationToken);
         writerTodos.Insert(Make("after the checkpoint"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
-        await replica.ReloadAsync();
+        await replica.ReloadAsync(TestContext.CancellationToken);
 
         // The replica now reads a different snapshot and WAL generation than it opened with.
         Assert.AreEqual(21, replica.GetTable(TodoItem.Table).Count);
@@ -172,13 +172,13 @@ public class ReplicaTests
         await using var writer = await OpenWriterAsync(storage, o => o.OnCheckpoint = g => announced.Add(g));
 
         writer.GetTable(TodoItem.Table).Insert(Make("row"));
-        await writer.FlushAsync();
-        await writer.CheckpointAsync();
-        await writer.CheckpointAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await writer.CheckpointAsync(TestContext.CancellationToken);
+        await writer.CheckpointAsync(TestContext.CancellationToken);
 
         // Generations increase, which is what a replica uses to tell announcements apart.
-        Assert.AreEqual(2, announced.Count);
-        Assert.IsTrue(announced[1] > announced[0]);
+        Assert.HasCount(2, announced);
+        Assert.IsGreaterThan(announced[0], announced[1]);
     }
 
     [TestMethod]
@@ -187,12 +187,12 @@ public class ReplicaTests
         var storage = new RecordingStorage();
         await using var writer = await OpenWriterAsync(storage);
         writer.GetTable(TodoItem.Table).Insert(Make("row"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         storage.Writes.Clear();
         await using (var replica = await OpenReplicaAsync(storage))
         {
-            await replica.ReloadAsync();
+            await replica.ReloadAsync(TestContext.CancellationToken);
         }
 
         Assert.IsEmpty(storage.Writes);
@@ -216,16 +216,16 @@ public class ReplicaTests
         var storage = new BlazeDbInMemoryStorage();
         await using var writer = await OpenWriterAsync(storage);
         writer.GetTable(TodoItem.Table).Insert(Make("kept"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
         await using var replica = await OpenReplicaAsync(storage);
         Assert.AreEqual(1, replica.GetTable(TodoItem.Table).Count);
 
-        await writer.CheckpointAsync();
+        await writer.CheckpointAsync(TestContext.CancellationToken);
         var snapshot = storage.GetFile(storage.Snapshot(2))!;
         snapshot[^1] ^= 0xFF;
         storage.SetFile(storage.Snapshot(2), snapshot);
 
-        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await replica.ReloadAsync());
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await replica.ReloadAsync(TestContext.CancellationToken));
 
         Assert.AreEqual("kept", replica.GetTable(TodoItem.Table).Scan().Single().Title);
     }
@@ -242,10 +242,10 @@ public class ReplicaTests
         var todos = writer.GetTable(TodoItem.Table);
 
         todos.Insert(Make("in the snapshot"));
-        await writer.FlushAsync();
-        await writer.CheckpointAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await writer.CheckpointAsync(TestContext.CancellationToken);
         todos.Insert(Make("only in the log"));
-        await writer.FlushAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
 
         await using var replica = await OpenReplicaAsync(storage);
         // Only the first read of a log stalls - the replica's. The writer's checkpoint reads the log too, to roll
@@ -254,14 +254,14 @@ public class ReplicaTests
         storage.BeforeRead = name => name.StartsWith("wal-") && Interlocked.Exchange(ref gated, 1) == 0 ? gate.Task : Task.CompletedTask;
 
         // The replica reads the generation-2 manifest and snapshot, then stalls on wal-2 ...
-        var reload = replica.ReloadAsync().AsTask();
-        await Task.Delay(50);
+        var reload = replica.ReloadAsync(TestContext.CancellationToken).AsTask();
+        await Task.Delay(50, TestContext.CancellationToken);
         Assert.IsFalse(reload.IsCompleted);
 
         // ... while the writer moves everything into generation 3 and deletes wal-2.
         todos.Insert(Make("after the checkpoint"));
-        await writer.FlushAsync();
-        await writer.CheckpointAsync();
+        await writer.FlushAsync(TestContext.CancellationToken);
+        await writer.CheckpointAsync(TestContext.CancellationToken);
         gate.SetResult();
         await reload;
 
@@ -322,4 +322,6 @@ public class ReplicaTests
             return _inner.DeleteAsync(name, cancellationToken);
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

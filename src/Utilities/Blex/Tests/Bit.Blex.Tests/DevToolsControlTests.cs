@@ -54,7 +54,7 @@ public class DevToolsControlTests
 
         manager.HandleDevToolsMessage(Dispatch("PAUSE_RECORDING", false));
         store.Increment();
-        Assert.AreEqual(2, devTools.Actions.Count);
+        Assert.HasCount(2, devTools.Actions);
     }
 
     [TestMethod]

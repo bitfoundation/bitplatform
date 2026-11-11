@@ -27,7 +27,7 @@ public class RenderInvalidationTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=other]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=plain]").Count,
+            Assert.IsEmpty(cut.FindAll("[data-testid=plain]"),
                 "the previously matched sibling must be unrendered");
         });
     }
@@ -48,7 +48,7 @@ public class RenderInvalidationTests : BunitTestContext
             Assert.AreEqual("top:42", cut.Find("[data-testid=top]").TextContent);
             Assert.IsNotNull(cut.Find("[data-testid=mid]"));
             Assert.IsNotNull(cut.Find("[data-testid=leaf]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=plain]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=plain]"));
         });
     }
 

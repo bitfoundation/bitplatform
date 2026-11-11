@@ -15,8 +15,8 @@ public class SetupGuideTests
             var guide = BmageSetupGuide.Get(mode);
 
             Assert.IsNotNull(guide, mode);
-            StringAssert.StartsWith(guide, "# Bit.Bmage");
-            StringAssert.Contains(guide, "```csharp");
+            Assert.StartsWith("# Bit.Bmage", guide);
+            Assert.Contains("```csharp", guide);
         }
     }
 
@@ -27,13 +27,13 @@ public class SetupGuideTests
         {
             var guide = BmageSetupGuide.Get(mode)!;
 
-            StringAssert.Contains(guide, "AddBitBmageServices", mode);
-            StringAssert.Contains(guide, "bit-bmage-editor.css", mode);
+            Assert.Contains("AddBitBmageServices", guide, mode);
+            Assert.Contains("bit-bmage-editor.css", guide, mode);
         }
 
         foreach (var mode in new[] { "wasm", "server", "auto" })
         {
-            StringAssert.Contains(BmageSetupGuide.Get(mode), "OnAfterRenderAsync", mode);
+            Assert.Contains("OnAfterRenderAsync", BmageSetupGuide.Get(mode)!, mode);
         }
     }
 
@@ -44,9 +44,9 @@ public class SetupGuideTests
         {
             var guide = BmageSetupGuide.Get(mode)!;
 
-            StringAssert.Contains(guide, "BOTH containers", mode);
-            StringAssert.Contains(guide, "Client/Program.cs", mode);
-            StringAssert.Contains(guide, "Server/Program.cs", mode);
+            Assert.Contains("BOTH containers", guide, mode);
+            Assert.Contains("Client/Program.cs", guide, mode);
+            Assert.Contains("Server/Program.cs", guide, mode);
         }
     }
 
@@ -55,10 +55,10 @@ public class SetupGuideTests
     {
         foreach (var mode in new[] { "wasm", "auto", "standalone-wasm" })
         {
-            StringAssert.Contains(BmageSetupGuide.Get(mode), "<RunAOTCompilation>true</RunAOTCompilation>", mode);
+            Assert.Contains("<RunAOTCompilation>true</RunAOTCompilation>", BmageSetupGuide.Get(mode)!, mode);
         }
 
-        StringAssert.Contains(BmageSetupGuide.Get("server"), "RunAOTCompilation` does not apply");
+        Assert.Contains("RunAOTCompilation` does not apply", BmageSetupGuide.Get("server")!);
     }
 
     [TestMethod]
@@ -66,12 +66,12 @@ public class SetupGuideTests
     {
         var guide = BmageSetupGuide.Get("headless")!;
 
-        StringAssert.Contains(guide, "AddBitBmageHeadlessServices");
-        StringAssert.Contains(guide, "processor.Identify(bytes)");
-        StringAssert.Contains(guide, "ImageCapabilityException");
+        Assert.Contains("AddBitBmageHeadlessServices", guide);
+        Assert.Contains("processor.Identify(bytes)", guide);
+        Assert.Contains("ImageCapabilityException", guide);
         Assert.IsFalse(guide.Contains("bit-bmage-editor.css", StringComparison.Ordinal), "The headless guide tells a server to link a stylesheet.");
         Assert.IsFalse(guide.Contains("ImageFormat.Avif", StringComparison.Ordinal), "The headless guide encodes AVIF, which it cannot.");
-        StringAssert.Contains(guide, "Lossless = true");
+        Assert.Contains("Lossless = true", guide);
     }
 
     [TestMethod]
@@ -79,11 +79,11 @@ public class SetupGuideTests
     {
         var guide = BmageSetupGuide.Get("hybrid")!;
 
-        StringAssert.Contains(guide, "AddMauiBlazorWebView()");
-        StringAssert.Contains(guide, "ImageEnvironment.BrowserServer");
-        StringAssert.Contains(guide, "wwwroot/index.html");
-        StringAssert.Contains(guide, "Share.Default.RequestAsync");
-        StringAssert.Contains(guide, "UseInterpreter");
+        Assert.Contains("AddMauiBlazorWebView()", guide);
+        Assert.Contains("ImageEnvironment.BrowserServer", guide);
+        Assert.Contains("wwwroot/index.html", guide);
+        Assert.Contains("Share.Default.RequestAsync", guide);
+        Assert.Contains("UseInterpreter", guide);
         Assert.IsFalse(guide.Contains("BOTH containers", StringComparison.Ordinal), "The hybrid guide asks for a second container a hybrid app does not have.");
         Assert.IsFalse(guide.Contains("<RunAOTCompilation>true", StringComparison.Ordinal), "The hybrid guide turns on WebAssembly AOT, which does not apply.");
     }

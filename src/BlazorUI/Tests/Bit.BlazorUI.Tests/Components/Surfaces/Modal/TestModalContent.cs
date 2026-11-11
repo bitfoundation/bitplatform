@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 
-public class TestModalContent : ComponentBase
+internal class TestModalContent : ComponentBase
 {
     [Parameter] public string Message { get; set; } = string.Empty;
 

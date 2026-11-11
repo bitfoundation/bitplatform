@@ -277,7 +277,7 @@ public class BitAiMessagePartViewE2ETests : E2ETestBase
         var view = View("mpv-narrow");
         var (_, _, right, _) = await view.RectAsync();
         var (_, _, boxRight, _) = await Page.Locator("#mpv-narrow-box").RectAsync();
-        Assert.IsTrue(right <= boxRight + 0.5, "The part view keeps to the width of the message.");
+        Assert.IsLessThanOrEqualTo(boxRight + 0.5, right, "The part view keeps to the width of the message.");
         await Expect(view).ToHaveCSSAsync("min-width", "0px");
         Assert.IsTrue(await view.EvaluateAsync<bool>("e => [...e.querySelectorAll('*')].some(x => x.scrollWidth > x.clientWidth + 10 && ['auto', 'scroll'].includes(getComputedStyle(x).overflowX))"),
                       "The code scrolls inside its own view.");

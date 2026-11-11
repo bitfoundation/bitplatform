@@ -49,7 +49,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
         var root = component.Find(".bit-aimdv");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
         Assert.AreEqual("answer", root.GetAttribute("id"));
     }
 
@@ -88,7 +88,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 
@@ -113,7 +113,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
 
         var root = component.Find(".bit-aimdv");
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-aimdv-par").ClassList.Contains("c-par"));
         Assert.AreEqual("margin: 2px", component.Find(".bit-aimdv-par").GetAttribute("style"));
@@ -143,9 +143,9 @@ public class BitAiMarkdownViewTests : BitAiTestBase
     {
         var markup = RenderMarkdown("**bold** and *italic* and ~~gone~~").Markup;
 
-        StringAssert.Contains(markup, "<strong>bold</strong>");
-        StringAssert.Contains(markup, "<em>italic</em>");
-        StringAssert.Contains(markup, "<del>gone</del>");
+        Assert.Contains("<strong>bold</strong>", markup);
+        Assert.Contains("<em>italic</em>", markup);
+        Assert.Contains("<del>gone</del>", markup);
     }
 
     [TestMethod]
@@ -258,8 +258,8 @@ public class BitAiMarkdownViewTests : BitAiTestBase
     {
         var markup = RenderMarkdown("<img src=x onerror=alert(1)>").Markup;
 
-        Assert.IsFalse(markup.Contains("onerror=alert(1)>"));
-        StringAssert.Contains(markup, "&lt;img");
+        Assert.DoesNotContain("onerror=alert(1)>", markup);
+        Assert.Contains("&lt;img", markup);
     }
 
     [TestMethod]
@@ -278,7 +278,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
 
         Assert.IsNotNull(component.Find(".bit-aicbv"));
         Assert.IsEmpty(component.FindAll(".bit-aicbv-kwd"));
-        StringAssert.Contains(component.Find(".bit-aicbv-cod").TextContent, "public int Count = 1;");
+        Assert.Contains("public int Count = 1;", component.Find(".bit-aicbv-cod").TextContent);
     }
 
     [TestMethod]
@@ -307,7 +307,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.Document, BitAiMarkdownParser.Parse("## Render mo", isComplete: false))
             .Add(p => p.ShowCaret, true));
 
-        Assert.HasCount(1, heading.FindAll(".bit-aimdv-crt"));
+        Assert.ContainsSingle(heading.FindAll(".bit-aimdv-crt"));
         Assert.IsNotNull(heading.Find("h3.bit-aimdv-hdg > .bit-aimdv-crt"));
 
         var item = RenderComponent<BitAiMarkdownView>(parameters => parameters
@@ -315,7 +315,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.ShowCaret, true));
 
         var items = item.FindAll("li.bit-aimdv-itm");
-        Assert.HasCount(1, item.FindAll(".bit-aimdv-crt"));
+        Assert.ContainsSingle(item.FindAll(".bit-aimdv-crt"));
         Assert.HasCount(2, items);
         Assert.IsNull(items[0].QuerySelector(".bit-aimdv-crt"));
         Assert.AreEqual("LI", item.Find(".bit-aimdv-crt").ParentElement!.TagName);
@@ -332,7 +332,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.Document, BitAiMarkdownParser.Parse(source, isComplete: false))
             .Add(p => p.ShowCaret, true));
 
-        Assert.HasCount(1, component.FindAll(".bit-aimdv-crt"));
+        Assert.ContainsSingle(component.FindAll(".bit-aimdv-crt"));
         Assert.IsTrue(component.Find(".bit-aimdv-crt").ParentElement!.ClassList.Contains("bit-aimdv"));
 
         var finished = RenderComponent<BitAiMarkdownView>(parameters => parameters
@@ -379,7 +379,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
         var marker = component.FindComponent<BitAiCitationMarker>();
 
         Assert.AreSame(citation, marker.Instance.Citation);
-        Assert.IsFalse(component.Find(".bit-aimdv-par").TextContent.Contains("[1]"));
+        Assert.DoesNotContain("[1]", component.Find(".bit-aimdv-par").TextContent);
 
         marker.Find("button").Click();
 
@@ -393,7 +393,7 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.Document, BitAiMarkdownParser.Parse("as stated [7] here")));
 
         Assert.IsEmpty(component.FindComponents<BitAiCitationMarker>());
-        StringAssert.Contains(component.Find(".bit-aimdv-par").TextContent, "[7]");
+        Assert.Contains("[7]", component.Find(".bit-aimdv-par").TextContent);
     }
 
     [TestMethod]
@@ -407,6 +407,6 @@ public class BitAiMarkdownViewTests : BitAiTestBase
             .Add(p => p.CascadedOptions, BitAiUiOptions.Default with { InlineCitations = false }));
 
         Assert.IsEmpty(component.FindComponents<BitAiCitationMarker>());
-        StringAssert.Contains(component.Find(".bit-aimdv-par").TextContent, "[1]");
+        Assert.Contains("[1]", component.Find(".bit-aimdv-par").TextContent);
     }
 }

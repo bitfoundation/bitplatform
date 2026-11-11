@@ -10,7 +10,7 @@ public abstract class WorkbenchCodeCopyPageTest : WorkbenchPageTest
 {
     private static readonly string copyFolder = Path.Combine(AppContext.BaseDirectory, "CodeCopy", "src");
 
-    protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? WorkbenchTestsInitializer.CodeCopyServer : base.ServerToTest;
+    private protected override Task<WorkbenchTestServer> ServerToTest => HasAgent ? WorkbenchTestsInitializer.CodeCopyServer : base.ServerToTest;
 
     /// <summary>The project's own src folder, above the tests' output.</summary>
     protected static string ProjectSource

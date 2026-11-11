@@ -26,13 +26,13 @@ public class BitTimelinePrerenderTests
         });
 
         Assert.IsTrue(Regex.IsMatch(html, @"<ol[^>]*role=""list"""));
-        Assert.AreEqual(2, Regex.Matches(html, @"class=""bit-tln-itm").Count);
-        StringAssert.Contains(html, "First");
-        StringAssert.Contains(html, "Second");
+        Assert.HasCount(2, Regex.Matches(html, @"class=""bit-tln-itm"));
+        Assert.Contains("First", html);
+        Assert.Contains("Second", html);
 
         // A presentational timeline exposes no controls, so nothing is prerendered for the keyboard to reach.
-        Assert.IsFalse(html.Contains(@"role=""button"""));
-        Assert.IsFalse(html.Contains("tabindex"));
+        Assert.DoesNotContain(@"role=""button""", html);
+        Assert.DoesNotContain("tabindex", html);
     }
 
     [TestMethod]
@@ -49,7 +49,7 @@ public class BitTimelinePrerenderTests
 
         // The button is a plain element with the role, since its keys are wired in the browser once it is interactive;
         // it is there from the first paint, and only the clickable item carries one.
-        Assert.AreEqual(1, Regex.Matches(html, @"class=""bit-tln-btn").Count);
+        Assert.ContainsSingle(Regex.Matches(html, @"class=""bit-tln-btn"));
         Assert.IsTrue(Regex.IsMatch(html, @"role=""button""[^>]*tabindex=""0"""));
     }
 }

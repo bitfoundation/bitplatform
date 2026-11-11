@@ -27,13 +27,13 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
             [nameof(BitDataGridLegacy<int>.ChildContent)] = Columns(),
         });
 
-        StringAssert.Contains(html, "row-1;");
-        StringAssert.Contains(html, $"row-{ExpectedWindow};");
-        Assert.IsFalse(html.Contains($"row-{ExpectedWindow + 1};"));
+        Assert.Contains("row-1;", html);
+        Assert.Contains($"row-{ExpectedWindow};", html);
+        Assert.DoesNotContain($"row-{ExpectedWindow + 1};", html);
 
         // The rows not rendered yet are reserved by a spacer, so the scrollbar is already the right length.
-        StringAssert.Contains(html, $"height: {(1000 - ExpectedWindow) * 50}px");
-        StringAssert.Contains(html, "aria-rowcount=\"1001\"");
+        Assert.Contains($"height: {(1000 - ExpectedWindow) * 50}px", html);
+        Assert.Contains("aria-rowcount=\"1001\"", html);
     }
 
     [TestMethod]
@@ -46,8 +46,8 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
             [nameof(BitDataGridLegacy<int>.ChildContent)] = Columns(),
         });
 
-        Assert.AreEqual(5, Regex.Matches(html, "row-\\d+;").Count);
-        Assert.IsFalse(html.Contains("height:"));
+        Assert.HasCount(5, Regex.Matches(html, "row-\\d+;"));
+        Assert.DoesNotContain("height:", html);
     }
 
     [TestMethod]
@@ -69,8 +69,8 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
         });
 
         Assert.AreEqual(0, providerCalls);
-        Assert.AreEqual(ExpectedWindow, Regex.Matches(html, "bit-qkg-plh").Count);
-        Assert.IsFalse(html.Contains("row-"));
+        Assert.HasCount(ExpectedWindow, Regex.Matches(html, "bit-qkg-plh"));
+        Assert.DoesNotContain("row-", html);
     }
 
     [TestMethod]
@@ -85,8 +85,8 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
 
         // Once interactive, Virtualize is mounted (its two spacers), but it renders no row until its JS has measured
         // the viewport (which bUnit's JS never does), so the rows rendered in place stay rather than blanking the body.
-        StringAssert.Contains(component.Markup, "row-1;");
-        StringAssert.Contains(component.Markup, $"row-{ExpectedWindow};");
+        Assert.Contains("row-1;", component.Markup);
+        Assert.Contains($"row-{ExpectedWindow};", component.Markup);
         Assert.HasCount(2 + ExpectedWindow + 1, component.FindAll("tbody tr"));
     }
 
@@ -101,12 +101,12 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
         });
 
         // The whole page of rows is in the markup, under its header, with nothing left to a script.
-        Assert.AreEqual(5, Regex.Matches(html, "row-\\d+;").Count);
-        StringAssert.Contains(html, "bit-qkg custom-grid");
-        StringAssert.Contains(html, "scope=\"col\"");
-        StringAssert.Contains(html, "bit-qkg-hct");
-        StringAssert.Contains(html, "aria-rowcount=\"6\"");
-        StringAssert.Contains(html, "aria-rowindex=\"2\"");
+        Assert.HasCount(5, Regex.Matches(html, "row-\\d+;"));
+        Assert.Contains("bit-qkg custom-grid", html);
+        Assert.Contains("scope=\"col\"", html);
+        Assert.Contains("bit-qkg-hct", html);
+        Assert.Contains("aria-rowcount=\"6\"", html);
+        Assert.Contains("aria-rowindex=\"2\"", html);
     }
 
     [TestMethod]
@@ -130,8 +130,8 @@ public class BitDataGridLegacyPrerenderTests : BunitTestContext
         Assert.IsFalse(rows[0].ClassList.Contains("second"));
         Assert.IsTrue(rows[1].ClassList.Contains("row-class"));
         Assert.IsTrue(rows[1].ClassList.Contains("second"));
-        StringAssert.Contains(rows[0].GetAttribute("style"), "color:red");
-        StringAssert.Contains(rows[1].GetAttribute("style"), "font-weight:bold");
+        Assert.Contains("color:red", rows[0].GetAttribute("style")!);
+        Assert.Contains("font-weight:bold", rows[1].GetAttribute("style")!);
         Assert.AreEqual("Value", component.Find("td").GetAttribute("data-title"));
     }
 

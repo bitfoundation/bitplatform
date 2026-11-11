@@ -43,8 +43,8 @@ public class BitAiPromptInputRaceTests : BitAiTestBase
         fresh.SetResult("/exp".Length);
         stale.SetResult("/ex".Length);
 
-        composer.WaitForAssertion(() => Assert.HasCount(1, composer.FindAll("[role=option]")));
-        StringAssert.Contains(composer.Find("[role=option]").TextContent, "/export");
+        composer.WaitForAssertion(() => Assert.ContainsSingle(composer.FindAll("[role=option]")));
+        Assert.Contains("/export", composer.Find("[role=option]").TextContent);
 
         // And what accepting it replaces is the token there is now, with nothing of it left behind.
         composer.Find("textarea").KeyDown(Key("Enter"));
@@ -75,7 +75,7 @@ public class BitAiPromptInputRaceTests : BitAiTestBase
         composer.Find("textarea").Input("/exp");
 
         var option = Assert.ContainsSingle(composer.FindAll("[role=option]"));
-        StringAssert.Contains(option.TextContent, "/export");
+        Assert.Contains("/export", option.TextContent);
 
         composer.Find("textarea").KeyDown(Key("Enter"));
 
@@ -118,7 +118,7 @@ public class BitAiPromptInputRaceTests : BitAiTestBase
         // "@Jo" typed into the middle of the text: the token is the one before the caret the edit leaves, not the end.
         composer.Find("textarea").Input("hi @Jo there");
 
-        StringAssert.Contains(Assert.ContainsSingle(composer.FindAll("[role=option]")).TextContent, "John");
+        Assert.Contains("John", Assert.ContainsSingle(composer.FindAll("[role=option]")).TextContent);
 
         composer.Find("textarea").KeyDown(Key("Enter"));
 

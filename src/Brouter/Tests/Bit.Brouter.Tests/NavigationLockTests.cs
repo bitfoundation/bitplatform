@@ -29,13 +29,13 @@ public class NavigationLockTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             // The lock saw the pending target and the transient route's Disposing reason...
-            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/other");
+            Assert.Contains("edit:deactivating:Disposing:to=/other", cut.Instance.EditState.Log);
             // ...and cancelled preventively: content and URL both still /edit, and the
             // route-declared LeaveGuard never ran (the lock's decision settled the phase).
             Assert.IsNotNull(cut.Find("[data-testid=lockprobe]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=other]"));
             Assert.IsTrue(nav.Uri.EndsWith("/edit", StringComparison.Ordinal));
-            CollectionAssert.DoesNotContain(cut.Instance.EditState.Log, "edit:leaveguard");
+            Assert.DoesNotContain("edit:leaveguard", cut.Instance.EditState.Log);
         });
     }
 
@@ -51,9 +51,8 @@ public class NavigationLockTests : BunitTestContext
         {
             Assert.IsNotNull(cut.Find("[data-testid=other]"));
             // Innermost first: the content's own lock ran before the route-declared LeaveGuard.
-            CollectionAssert.AreEqual(
-                new[] { "edit:deactivating:Disposing:to=/other", "edit:leaveguard" },
-                cut.Instance.EditState.Log);
+            Assert.AreSequenceEqual(
+                new[] { "edit:deactivating:Disposing:to=/other", "edit:leaveguard" }, cut.Instance.EditState.Log);
         });
     }
 
@@ -71,8 +70,8 @@ public class NavigationLockTests : BunitTestContext
         {
             // A parameter change is not a "leave" - a route-declared LeaveGuard can't veto it -
             // but the content's renavigating lock can: still doc 1, URL untouched.
-            CollectionAssert.Contains(cut.Instance.DocState.Log, "doc:renavigating:to=/doc/2");
-            StringAssert.Contains(cut.Find("[data-testid=doc]").TextContent, "doc 1");
+            Assert.Contains("doc:renavigating:to=/doc/2", cut.Instance.DocState.Log);
+            Assert.Contains("doc 1", cut.Find("[data-testid=doc]").TextContent);
             Assert.IsTrue(nav.Uri.EndsWith("/doc/1", StringComparison.Ordinal));
         });
     }
@@ -86,7 +85,7 @@ public class NavigationLockTests : BunitTestContext
         // Sibling switch under the same host: the kept child survives hidden - Hidden reason.
         await cut.InvokeAsync(() => brouter.Navigate("/shell/sibling"));
         cut.WaitForAssertion(() =>
-            CollectionAssert.Contains(cut.Instance.KaloState.Log, "kalo:deactivating:Hidden:to=/shell/sibling"));
+            Assert.Contains("kalo:deactivating:Hidden:to=/shell/sibling", cut.Instance.KaloState.Log));
 
         await cut.InvokeAsync(() => brouter.Navigate("/shell/kalo"));
         cut.WaitForAssertion(() => cut.Find("[data-testid=lockprobe]"));
@@ -97,7 +96,7 @@ public class NavigationLockTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=other]"));
-            CollectionAssert.Contains(cut.Instance.KaloState.Log, "kalo:deactivating:Disposing:to=/other");
+            Assert.Contains("kalo:deactivating:Disposing:to=/other", cut.Instance.KaloState.Log);
         });
     }
 
@@ -119,9 +118,9 @@ public class NavigationLockTests : BunitTestContext
         {
             // Named views die with the child route - transient regardless of KeepAlive - so the
             // lock sees the Disposing reason, and its cancel keeps content and URL in place.
-            CollectionAssert.Contains(cut.Instance.NamedViewState.Log, "nview:deactivating:Disposing:to=/nshell/plain");
+            Assert.Contains("nview:deactivating:Disposing:to=/nshell/plain", cut.Instance.NamedViewState.Log);
             Assert.IsNotNull(cut.Find("[data-testid=lockprobe]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=nplain]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=nplain]"));
             Assert.IsTrue(nav.Uri.EndsWith("/nshell/view", StringComparison.Ordinal));
         });
 
@@ -132,7 +131,7 @@ public class NavigationLockTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=nplain]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=lockprobe]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=lockprobe]"));
             Assert.IsTrue(nav.Uri.EndsWith("/nshell/plain", StringComparison.Ordinal));
         });
     }
@@ -141,7 +140,7 @@ public class NavigationLockTests : BunitTestContext
     public async Task Keepalive_named_view_lock_sees_disposing_while_primary_content_sees_hidden()
     {
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/nshell/kview");
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-testid=lockprobe]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-testid=lockprobe]")));
 
         await cut.InvokeAsync(() => brouter.Navigate("/nshell/plain"));
 
@@ -151,8 +150,8 @@ public class NavigationLockTests : BunitTestContext
             // The reason is per-context: retention preserves the primary content across the
             // sibling switch (Hidden), but a named view is never kept - its lock honestly sees
             // Disposing in the very same navigation.
-            CollectionAssert.Contains(cut.Instance.KviewState.Log, "kview:deactivating:Hidden:to=/nshell/plain");
-            CollectionAssert.Contains(cut.Instance.KviewSideState.Log, "kviewside:deactivating:Disposing:to=/nshell/plain");
+            Assert.Contains("kview:deactivating:Hidden:to=/nshell/plain", cut.Instance.KviewState.Log);
+            Assert.Contains("kviewside:deactivating:Disposing:to=/nshell/plain", cut.Instance.KviewSideState.Log);
         });
     }
 
@@ -168,7 +167,7 @@ public class NavigationLockTests : BunitTestContext
         {
             // Keep-alive retention means the state survives - the lock can see Hidden and decide
             // "no prompt needed", which no route-declared guard can express.
-            CollectionAssert.Contains(cut.Instance.KalState.Log, "kal:deactivating:Hidden:to=/other");
+            Assert.Contains("kal:deactivating:Hidden:to=/other", cut.Instance.KalState.Log);
             Assert.IsNotNull(cut.Find("[data-testid=other]"));
         });
     }
@@ -194,18 +193,18 @@ public class NavigationLockTests : BunitTestContext
     public void First_cancelling_lock_wins_and_later_handlers_are_skipped()
     {
         var (cut, brouter) = RenderAt<NavigationLockHost>("http://localhost/two");
-        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-testid=lockprobe]").Count));
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-testid=lockprobe]")));
 
         cut.Instance.TwoFirstState.Locked = true;
         cut.InvokeAsync(() => brouter.Navigate("/other"));
 
         cut.WaitForAssertion(() =>
         {
-            CollectionAssert.Contains(cut.Instance.TwoFirstState.Log, "two1:deactivating:Disposing:to=/other");
+            Assert.Contains("two1:deactivating:Disposing:to=/other", cut.Instance.TwoFirstState.Log);
             // The first handler's cancel settled the navigation - the second never saw it
             // (no stacked confirmation prompts).
-            Assert.AreEqual(0, cut.Instance.TwoSecondState.Log.Count);
-            Assert.AreEqual(2, cut.FindAll("[data-testid=lockprobe]").Count);
+            Assert.IsEmpty(cut.Instance.TwoSecondState.Log);
+            Assert.HasCount(2, cut.FindAll("[data-testid=lockprobe]"));
         });
     }
 
@@ -222,15 +221,15 @@ public class NavigationLockTests : BunitTestContext
 
         // The navigation is parked inside the awaited lock: nothing committed yet.
         cut.WaitForAssertion(() =>
-            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/other"));
-        Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+            Assert.Contains("edit:deactivating:Disposing:to=/other", cut.Instance.EditState.Log));
+        Assert.IsEmpty(cut.FindAll("[data-testid=other]"));
         Assert.IsTrue(nav.Uri.EndsWith("/edit", StringComparison.Ordinal));
 
         cut.Instance.EditState.Prompt.TrySetResult(true);
         cut.WaitForAssertion(() =>
         {
             Assert.IsNotNull(cut.Find("[data-testid=lockprobe]"));
-            Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+            Assert.IsEmpty(cut.FindAll("[data-testid=other]"));
             Assert.IsTrue(nav.Uri.EndsWith("/edit", StringComparison.Ordinal));
         });
 
@@ -259,8 +258,8 @@ public class NavigationLockTests : BunitTestContext
         await cut.InvokeAsync(() => brouter.Navigate("/other"));
 
         cut.WaitForAssertion(() =>
-            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/other"));
-        Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+            Assert.Contains("edit:deactivating:Disposing:to=/other", cut.Instance.EditState.Log));
+        Assert.IsEmpty(cut.FindAll("[data-testid=other]"));
         Assert.IsTrue(nav.Uri.EndsWith("/edit", StringComparison.Ordinal));
 
         // A second navigation while the first is still parked supersedes it: the probe observes
@@ -273,7 +272,7 @@ public class NavigationLockTests : BunitTestContext
         {
             Assert.IsNotNull(cut.Find("[data-testid=target]"));
             Assert.IsTrue(nav.Uri.EndsWith("/target", StringComparison.Ordinal));
-            CollectionAssert.Contains(cut.Instance.EditState.Log, "edit:deactivating:Disposing:to=/target");
+            Assert.Contains("edit:deactivating:Disposing:to=/target", cut.Instance.EditState.Log);
         });
 
         // Nothing ever resolved the abandoned prompt - the supersession alone released the lock.

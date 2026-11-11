@@ -7,7 +7,7 @@ namespace Bit.Brouter.Tests.E2E.Infrastructure;
 /// drives that mode. The hosts only hold per-scope state, and every test opens its own browser
 /// context (its own circuit / WebAssembly instance), so sharing a process never shares state.
 /// </summary>
-public static class HarnessHosts
+internal static class HarnessHosts
 {
     private static readonly ConcurrentDictionary<string, Lazy<Task<WebHarnessHost>>> _hosts = new();
 
@@ -32,7 +32,7 @@ public static class HarnessHosts
     }
 }
 
-public sealed class WebHarnessHost : IAsyncDisposable
+internal sealed class WebHarnessHost : IAsyncDisposable
 {
     private readonly ChildProcess _process;
 

@@ -19,10 +19,10 @@ public partial class BitAccentColorSwitcherStylesheetTests
     {
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
-        StringAssert.Contains(stylesheet, "$acs-private-properties: clr;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs {"), "--bit-acs-#{$name}: initial;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs-swt {"), "background-color: var(--bit-acs-clr);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs-act {"), "var(--bit-acs-clr)");
+        Assert.Contains("$acs-private-properties: clr;", stylesheet);
+        Assert.Contains("--bit-acs-#{$name}: initial;", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs {"));
+        Assert.Contains("background-color: var(--bit-acs-clr);", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs-swt {"));
+        Assert.Contains("var(--bit-acs-clr)", SourceFiles.GetScssBlock(stylesheet, "\n.bit-acs-act {"));
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public partial class BitAccentColorSwitcherStylesheetTests
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
 
         // Matched on the prefix so the scheme suffix and a scoped preset both count.
-        StringAssert.Contains(stylesheet, "[bit-theme^=\"cupertino\"] & {");
+        Assert.Contains("[bit-theme^=\"cupertino\"] & {", stylesheet);
 
         var retunes = Regex.Matches(stylesheet, @"--bit-acs-ntr:").Count;
         Assert.AreEqual(2, retunes, "The neutral color is the default plus the one packaged preset far enough away for the difference to show.");
@@ -64,8 +64,8 @@ public partial class BitAccentColorSwitcherStylesheetTests
     {
         var disabled = SourceFiles.GetScssBlock(SourceFiles.StripScssComments(ReadStylesheet()), "\n.bit-acs.bit-dis {");
 
-        StringAssert.Contains(disabled, "opacity: $opa-dis;");
-        StringAssert.Contains(disabled, "cursor: default;");
+        Assert.Contains("opacity: $opa-dis;", disabled);
+        Assert.Contains("cursor: default;", disabled);
     }
 
     private static string ReadStylesheet()

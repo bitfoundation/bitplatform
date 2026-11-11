@@ -85,7 +85,7 @@ public sealed class ModesAndSourcesTests : BaletteTest
         await Assertions.Expect(Item(page, "person:ada@example.com")).ToBeVisibleAsync();
         sinceLastKey.Stop();
         TestContext.WriteLine($"the people row arrived {sinceLastKey.ElapsedMilliseconds} ms after the last key");
-        Assert.IsTrue(sinceLastKey.ElapsedMilliseconds >= 300, $"the people row arrived {sinceLastKey.ElapsedMilliseconds} ms after the last key, sooner than the debounce and the latency allow");
+        Assert.IsGreaterThanOrEqualTo(300, sinceLastKey.ElapsedMilliseconds, $"the people row arrived {sinceLastKey.ElapsedMilliseconds} ms after the last key, sooner than the debounce and the latency allow");
 
         await ExpectActiveAsync(page, "person:ada@example.com");
         var detail = Detail(page);
@@ -112,7 +112,7 @@ public sealed class ModesAndSourcesTests : BaletteTest
         await Assertions.Expect(calls.First).ToContainTextAsync("Completed");
         int count = await calls.CountAsync();
         TestContext.WriteLine($"{query.Length} keystrokes reached the people source {count} time(s)");
-        Assert.IsTrue(count < query.Length / 2, $"{query.Length} keystrokes reached the source {count} times");
+        Assert.IsLessThan(query.Length / 2, count, $"{query.Length} keystrokes reached the source {count} times");
     }
 
     [TestMethod]

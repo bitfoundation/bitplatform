@@ -42,7 +42,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         // Same instance, and the lifecycle says renavigation - what the built-in Router's RouteView
         // does with a page too (OnParametersSet runs, OnInitialized does not).
         cut.WaitForAssertion(() => Assert.AreEqual("count:1", Counter(cut)));
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(
             new[] { "activated:first=True", "renavigated:/rm/1->/rm/2" }, cut.Instance.Log));
     }
 
@@ -61,9 +61,8 @@ public class RemountOnParameterChangeTests : BunitTestContext
         // A brand-new instance: the state the old one accumulated is gone, and the lifecycle reports
         // a Disposing deactivation plus a first activation - never a renavigation.
         cut.WaitForAssertion(() => Assert.AreEqual("count:0", Counter(cut)));
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(
-            new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" },
-            cut.Instance.Log));
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(
+            new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" }, cut.Instance.Log));
     }
 
     [TestMethod]
@@ -81,7 +80,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         // The route parameters are unchanged, so there is nothing to rebuild (a
         // [SupplyParameterFromQuery] property is re-supplied on the live instance).
         cut.WaitForAssertion(() => Assert.AreEqual("count:1", Counter(cut)));
-        cut.WaitForAssertion(() => CollectionAssert.AreEqual(
+        cut.WaitForAssertion(() => Assert.AreSequenceEqual(
             new[] { "activated:first=True", "renavigated:/rm/1->/rm/1" }, cut.Instance.Log));
     }
 
@@ -145,7 +144,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
     {
         UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/shell/doc/1");
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=doc]").TextContent, "doc 1"));
+        cut.WaitForAssertion(() => Assert.Contains("doc 1", cut.Find("[data-testid=doc]").TextContent));
 
         // State in the layout (the shell's own counter) and in the child (the outlet-hosted one).
         Increment(cut);
@@ -153,18 +152,18 @@ public class RemountOnParameterChangeTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("count:1", Counter(cut));
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:1");
+            Assert.Contains("count:1", cut.Find("[data-testid=kp]").TextContent);
         });
 
         await cut.InvokeAsync(() => brouter.Navigate("/shell/doc/2"));
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.Contains(cut.Find("[data-testid=doc]").TextContent, "doc 2");
+            Assert.Contains("doc 2", cut.Find("[data-testid=doc]").TextContent);
             // Only the route whose parameters changed is rebuilt; the layout above it never left
             // the chain and keeps its state.
             Assert.AreEqual("count:1", Counter(cut));
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0");
+            Assert.Contains("count:0", cut.Find("[data-testid=kp]").TextContent);
         });
     }
 
@@ -180,7 +179,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
         cut.WaitForAssertion(() =>
         {
             Assert.AreEqual("count:1", Counter(cut));
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:1");
+            Assert.Contains("count:1", cut.Find("[data-testid=kp]").TextContent);
         });
 
         await cut.InvokeAsync(() => brouter.Navigate("/user/2/edit"));
@@ -191,7 +190,7 @@ public class RemountOnParameterChangeTests : BunitTestContext
             // parent's rebuild replaces - keeping that instance would mean keeping a component whose
             // host is gone.
             Assert.AreEqual("count:0", Counter(cut));
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0");
+            Assert.Contains("count:0", cut.Find("[data-testid=kp]").TextContent);
         });
     }
 
@@ -211,10 +210,10 @@ public class RemountOnParameterChangeTests : BunitTestContext
             // The instance about to be disposed votes with its deactivating lock (not the
             // renavigating one, which belongs to content that survives the change) - and the veto
             // holds: still doc 1, URL untouched.
-            CollectionAssert.Contains(cut.Instance.LockState.Log, "doc:deactivating:Disposing:to=/rmlock/2");
-            CollectionAssert.DoesNotContain(cut.Instance.LockState.Log, "doc:renavigating:to=/rmlock/2");
-            StringAssert.Contains(cut.Find("[data-testid=locked]").TextContent, "doc 1");
-            Assert.IsTrue(nav.Uri.EndsWith("/rmlock/1"));
+            Assert.Contains("doc:deactivating:Disposing:to=/rmlock/2", cut.Instance.LockState.Log);
+            Assert.DoesNotContain("doc:renavigating:to=/rmlock/2", cut.Instance.LockState.Log);
+            Assert.Contains("doc 1", cut.Find("[data-testid=locked]").TextContent);
+            Assert.EndsWith("/rmlock/1", nav.Uri);
         });
     }
 
@@ -233,8 +232,8 @@ public class RemountOnParameterChangeTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(new[] { "doc" }, cut.Instance.GuardFired);
-            StringAssert.Contains(cut.Find("[data-testid=guarded]").TextContent, "doc 1");
+            Assert.AreSequenceEqual(new[] { "doc" }, cut.Instance.GuardFired);
+            Assert.Contains("doc 1", cut.Find("[data-testid=guarded]").TextContent);
         });
 
         cut.Instance.BlockGuard = false;
@@ -242,8 +241,8 @@ public class RemountOnParameterChangeTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            CollectionAssert.AreEqual(new[] { "doc", "doc" }, cut.Instance.GuardFired);
-            StringAssert.Contains(cut.Find("[data-testid=guarded]").TextContent, "doc 2");
+            Assert.AreSequenceEqual(new[] { "doc", "doc" }, cut.Instance.GuardFired);
+            Assert.Contains("doc 2", cut.Find("[data-testid=guarded]").TextContent);
         });
     }
 
@@ -252,10 +251,10 @@ public class RemountOnParameterChangeTests : BunitTestContext
     {
         UseRemount();
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/acct/1/draft");
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0"));
+        cut.WaitForAssertion(() => Assert.Contains("count:0", cut.Find("[data-testid=kp]").TextContent));
 
         cut.Find("[data-testid=kpinc]").Click();
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:1"));
+        cut.WaitForAssertion(() => Assert.Contains("count:1", cut.Find("[data-testid=kp]").TextContent));
 
         // Leaving the kept child while its host is rebuilt: retention cannot save it (the outlet it
         // lives in goes with the host's content), so its lock vote and its deactivation both say
@@ -264,10 +263,10 @@ public class RemountOnParameterChangeTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.Contains(cut.Find("[data-testid=acct]").TextContent, "acct 2");
-            Assert.AreEqual(0, cut.FindAll("[data-testid=kp]").Count);
-            CollectionAssert.Contains(cut.Instance.DraftLockState.Log, "draft:deactivating:Disposing:to=/acct/2");
-            CollectionAssert.AreEqual(
+            Assert.Contains("acct 2", cut.Find("[data-testid=acct]").TextContent);
+            Assert.IsEmpty(cut.FindAll("[data-testid=kp]"));
+            Assert.Contains("draft:deactivating:Disposing:to=/acct/2", cut.Instance.DraftLockState.Log);
+            Assert.AreSequenceEqual(
                 new[] { "activated:first=True", "deactivated:Disposing" }, cut.Instance.DraftLog);
         });
 
@@ -276,10 +275,9 @@ public class RemountOnParameterChangeTests : BunitTestContext
 
         cut.WaitForAssertion(() =>
         {
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0");
-            CollectionAssert.AreEqual(
-                new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" },
-                cut.Instance.DraftLog);
+            Assert.Contains("count:0", cut.Find("[data-testid=kp]").TextContent);
+            Assert.AreSequenceEqual(
+                new[] { "activated:first=True", "deactivated:Disposing", "activated:first=True" }, cut.Instance.DraftLog);
         });
     }
 
@@ -327,19 +325,18 @@ public class RemountOnParameterChangeTests : BunitTestContext
         // outlet survives the parameter change, so leaving the child is an ordinary Hidden and
         // returning resumes the retained instance.
         var (cut, brouter) = RenderAt<RemountHost>("http://localhost/acct/1/draft");
-        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:0"));
+        cut.WaitForAssertion(() => Assert.Contains("count:0", cut.Find("[data-testid=kp]").TextContent));
 
         cut.Find("[data-testid=kpinc]").Click();
         await cut.InvokeAsync(() => brouter.Navigate("/acct/2"));
-        cut.WaitForAssertion(() => CollectionAssert.Contains(cut.Instance.DraftLockState.Log, "draft:deactivating:Hidden:to=/acct/2"));
+        cut.WaitForAssertion(() => Assert.Contains("draft:deactivating:Hidden:to=/acct/2", cut.Instance.DraftLockState.Log));
 
         await cut.InvokeAsync(() => brouter.Navigate("/acct/2/draft"));
         cut.WaitForAssertion(() =>
         {
-            StringAssert.Contains(cut.Find("[data-testid=kp]").TextContent, "count:1");
-            CollectionAssert.AreEqual(
-                new[] { "activated:first=True", "deactivated:Hidden", "activated:first=False" },
-                cut.Instance.DraftLog);
+            Assert.Contains("count:1", cut.Find("[data-testid=kp]").TextContent);
+            Assert.AreSequenceEqual(
+                new[] { "activated:first=True", "deactivated:Hidden", "activated:first=False" }, cut.Instance.DraftLog);
         });
     }
 }

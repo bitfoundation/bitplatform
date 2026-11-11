@@ -10,6 +10,6 @@ internal static class AssertSequence
     public static void Equal<T>(IEnumerable<T> expected, IEnumerable<T>? actual)
     {
         Assert.IsNotNull(actual);
-        CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray());
+        Assert.AreSequenceEqual(expected.ToArray(), actual.ToArray());
     }
 }

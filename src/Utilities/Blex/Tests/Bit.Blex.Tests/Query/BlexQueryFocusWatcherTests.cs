@@ -1,4 +1,4 @@
-using Bit.Blex.Blazor;
+﻿using Bit.Blex.Blazor;
 using Bit.Blex.Query;
 using Microsoft.JSInterop;
 using static Bit.Blex.Tests.Query.QueryTest;
@@ -39,7 +39,7 @@ public class BlexQueryFocusWatcherTests
         var watcher = new BlexQueryFocusWatcher(js, client, new BlexManager());
 
         await watcher.StartAsync(reportOffline: true);
-        Assert.AreEqual(true, js.Module.ArgsOf("watch")![1]);
+        Assert.IsTrue((bool?)js.Module.ArgsOf("watch")![1]);
 
         watcher.OnOffline();
         Assert.IsFalse(client.IsOnline);
@@ -48,7 +48,7 @@ public class BlexQueryFocusWatcherTests
 
         var serverSide = new FakeJsRuntime();
         await new BlexQueryFocusWatcher(serverSide, client, new BlexManager()).StartAsync();
-        Assert.AreEqual(false, serverSide.Module.ArgsOf("watch")![1], "Blazor Server: the browser's network is not the requests'");
+        Assert.IsFalse((bool?)serverSide.Module.ArgsOf("watch")![1], "Blazor Server: the browser's network is not the requests'");
     }
 
     [TestMethod]
@@ -71,18 +71,18 @@ public class BlexQueryFocusWatcherTests
         await Until(() => js.Module.ArgsOf("broadcastInvalidation") is not null);
         Assert.AreSequenceEqual(new object?[] { 3, """["todos"]""", false }, js.Module.ArgsOf("broadcastInvalidation")!);
         server.Respond(1, "milk");
-        await here.WaitAsync(TimeSpan.FromSeconds(5));
+        await here.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         var there = watcher.OnInvalidatedElsewhere("""["todos"]""", exact: false);   // there: applied, not passed on again
         Assert.AreEqual(3, server.Calls, "the other tab's invalidation refetched this tab's todo");
         server.Respond(2, "milk");
-        await there.WaitAsync(TimeSpan.FromSeconds(5));
+        await there.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(1, js.Module.CountOf("broadcastInvalidation"));
 
         await watcher.DisposeAsync();
         var afterwards = client.InvalidateAsync(["todos"]);
         server.Respond(3, "milk");
-        await afterwards.WaitAsync(TimeSpan.FromSeconds(5));
+        await afterwards.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         Assert.AreEqual(1, js.Module.CountOf("broadcastInvalidation"), "a disposed watcher no longer passes anything on");
     }
 
@@ -142,4 +142,6 @@ public class BlexQueryFocusWatcherTests
 
         Assert.IsEmpty(errors);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Demo.Client;
+﻿using Bit.Bmotion.Demo.Client;
 
 namespace Bit.Bmotion.Tests.Mcp.Services;
 
@@ -19,10 +19,10 @@ public class SourceCatalogTests
     [TestMethod]
     public void Readme_IsEmbeddedInTheAssembly()
     {
-        Assert.IsTrue(BmotionSourceCatalog.Readme.Length > 5_000,
+        Assert.IsGreaterThan(5_000, BmotionSourceCatalog.Readme.Length,
                       $"The guide is {BmotionSourceCatalog.Readme.Length} characters - the embedded resource is missing or truncated.");
 
-        StringAssert.Contains(BmotionSourceCatalog.Readme, "Bmotion");
+        Assert.Contains("Bmotion", BmotionSourceCatalog.Readme);
     }
 
     [TestMethod]
@@ -30,12 +30,12 @@ public class SourceCatalogTests
     {
         var sections = BmotionSourceCatalog.GuideSections;
 
-        Assert.IsTrue(sections.Length >= 10, $"Only {sections.Length} sections were found in the guide.");
+        Assert.IsGreaterThanOrEqualTo(10, sections.Length, $"Only {sections.Length} sections were found in the guide.");
 
         foreach (var section in sections)
         {
-            CollectionAssert.Contains(new[] { 2, 3 }, section.Level, $"'{section.Heading}' is at level {section.Level}.");
-            Assert.IsTrue(section.Lines > 0, $"'{section.Heading}' is empty.");
+            Assert.Contains(section.Level, new[] { 2, 3 }, $"'{section.Heading}' is at level {section.Level}.");
+            Assert.IsGreaterThan(0, section.Lines, $"'{section.Heading}' is empty.");
             Assert.AreNotEqual(string.Empty, section.Heading.Trim());
 
             // A sub-section names the section it belongs to; a top-level one has nothing above it.
@@ -51,8 +51,8 @@ public class SourceCatalogTests
     [TestMethod]
     public void GuideSections_LeaveOutTheTableOfContents()
     {
-        Assert.IsFalse(BmotionSourceCatalog.GuideSections.Any(section =>
-            section.Heading.Contains("Table of Contents", StringComparison.OrdinalIgnoreCase)));
+        Assert.DoesNotContain(section =>
+            section.Heading.Contains("Table of Contents", StringComparison.OrdinalIgnoreCase), BmotionSourceCatalog.GuideSections);
     }
 
     /// <summary>
@@ -68,9 +68,8 @@ public class SourceCatalogTests
             var text = BmotionSourceCatalog.GetGuideSection(section.Heading);
 
             Assert.IsNotNull(text, $"The listing offers '{section.Heading}' but nothing fetches it.");
-            StringAssert.StartsWith(text, new string('#', section.Level),
-                                    $"'{section.Heading}' did not come back starting at its own heading.");
-            StringAssert.Contains(text, section.Heading);
+            Assert.StartsWith(new string('#', section.Level), text, $"'{section.Heading}' did not come back starting at its own heading.");
+            Assert.Contains(section.Heading, text);
         }
     }
 
@@ -105,7 +104,7 @@ public class SourceCatalogTests
         var components = BmotionSourceCatalog.GetGuideSection("Components")!;
 
         // A level-2 section carries its own sub-sections...
-        StringAssert.Contains(components, "### Bmotion");
+        Assert.Contains("### Bmotion", components);
         // ...and stops before the next level-2 heading.
         Assert.IsFalse(components.Contains("\n## Transitions", StringComparison.Ordinal),
                        "The Components section ran on into the one after it.");
@@ -113,7 +112,7 @@ public class SourceCatalogTests
         // A level-3 section carries neither its siblings nor the section above it.
         var presence = BmotionSourceCatalog.GetGuideSection("BmotionAnimatePresence")!;
 
-        StringAssert.StartsWith(presence, "### BmotionAnimatePresence");
+        Assert.StartsWith("### BmotionAnimatePresence", presence);
         Assert.IsFalse(presence.Contains("### BmotionPresenceSwitch", StringComparison.Ordinal));
     }
 
@@ -133,7 +132,7 @@ public class SourceCatalogTests
         }
 
         // The Installation section contains a fenced shell block; it has to survive intact.
-        StringAssert.Contains(BmotionSourceCatalog.GetGuideSection("Installation")!, "```");
+        Assert.Contains("```", BmotionSourceCatalog.GetGuideSection("Installation")!);
     }
 
     [TestMethod]
@@ -151,14 +150,14 @@ public class SourceCatalogTests
     {
         var files = BmotionSourceCatalog.SourceFiles;
 
-        Assert.IsTrue(files.Length >= 10, $"Only {files.Length} source files are embedded.");
+        Assert.IsGreaterThanOrEqualTo(10, files.Length, $"Only {files.Length} source files are embedded.");
 
         foreach (var file in files)
         {
             Assert.IsNotNull(BmotionSourceCatalog.GetSourceFile(file.Path),
                              $"'{file.Path}' is listed but cannot be fetched.");
-            Assert.IsTrue(file.Lines > 0, $"'{file.Path}' is empty.");
-            CollectionAssert.Contains(new[] { "Demo page", "Demo", "Host" }, file.Kind, $"'{file.Path}' is a '{file.Kind}'.");
+            Assert.IsGreaterThan(0, file.Lines, $"'{file.Path}' is empty.");
+            Assert.Contains(file.Kind, new[] { "Demo page", "Demo", "Host" }, $"'{file.Path}' is a '{file.Kind}'.");
         }
     }
 
@@ -167,9 +166,9 @@ public class SourceCatalogTests
     {
         Assert.IsNotNull(BmotionSourceCatalog.GetSourceFile("Demo/Server/Program.cs"));
 
-        Assert.IsTrue(BmotionSourceCatalog.SourceFiles.Any(file => file.Kind == "Host"),
+        Assert.Contains(file => file.Kind == "Host", BmotionSourceCatalog.SourceFiles,
                       "Nothing in the catalog is classified as host wiring.");
-        Assert.IsTrue(BmotionSourceCatalog.SourceFiles.Any(file => file.Kind == "Demo page"),
+        Assert.Contains(file => file.Kind == "Demo page", BmotionSourceCatalog.SourceFiles,
                       "Nothing in the catalog is classified as a demo page.");
     }
 
@@ -189,7 +188,7 @@ public class SourceCatalogTests
             .Select(page => $"{page.Title} -> {BmotionSourceCatalog.SourcePathOf(page)}")
             .ToArray();
 
-        Assert.AreEqual(0, missing.Length, $"Advertised but not embedded: {string.Join("; ", missing)}.");
+        Assert.IsEmpty(missing, $"Advertised but not embedded: {string.Join("; ", missing)}.");
 
         foreach (var page in DocsCatalog.AllPages)
         {
@@ -238,7 +237,7 @@ public class SourceCatalogTests
     {
         foreach (var file in BmotionSourceCatalog.SourceFiles.Where(file => file.Description is not null))
         {
-            Assert.IsTrue(file.Description!.Length <= 220, $"'{file.Path}' has a {file.Description.Length}-character description.");
+            Assert.IsLessThanOrEqualTo(220, file.Description!.Length, $"'{file.Path}' has a {file.Description.Length}-character description.");
             Assert.IsFalse(file.Description.Contains('\n'), $"'{file.Path}' has a multi-line description.");
         }
     }

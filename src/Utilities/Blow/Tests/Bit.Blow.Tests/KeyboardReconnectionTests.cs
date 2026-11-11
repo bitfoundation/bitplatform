@@ -86,7 +86,7 @@ public class KeyboardReconnectionTests : BunitContext
             "Moving the end of Edge from Source to Sink at Sink. Move to another node and press Enter to attach it there, "
             + "C to move its other end instead, or Escape to leave it as it was.", Heard(cut));
         Assert.AreEqual(new BlowEdgeReconnectStart(edge, BlowHandleType.Target), starts.Single());
-        Assert.HasCount(1, cut.FindAll(".bit-blow-connectionline"), "nothing shows the end being moved");
+        Assert.ContainsSingle(cut.FindAll(".bit-blow-connectionline"), "nothing shows the end being moved");
 
         await Focus(cut, "c");
         Assert.AreEqual("Press Enter to connect to Other sink.", Heard(cut));
@@ -110,7 +110,7 @@ public class KeyboardReconnectionTests : BunitContext
 
         await EdgeKey(cut, "e", "c");
         await EdgeKey(cut, "e", "c");
-        StringAssert.StartsWith(Heard(cut), "Moving the end of Edge from Source to Sink at Source.");
+        Assert.StartsWith("Moving the end of Edge from Source to Sink at Source.", Heard(cut));
 
         // Stepping from one end to the other ends the first, as letting go of a drag would.
         Assert.AreEqual(new BlowEdgeReconnectEnd(edges[0], BlowHandleType.Target, Rewired: false), ends.Single());
@@ -123,7 +123,7 @@ public class KeyboardReconnectionTests : BunitContext
         await EdgeKey(cut, "e", "c");
         await EdgeKey(cut, "e", "c");
         await EdgeKey(cut, "e", "c");
-        StringAssert.StartsWith(Heard(cut), "Moving the end of Edge from Other source to Sink at Sink.");
+        Assert.StartsWith("Moving the end of Edge from Other source to Sink at Sink.", Heard(cut));
     }
 
     [TestMethod]
@@ -224,7 +224,7 @@ public class KeyboardReconnectionTests : BunitContext
         Assert.IsTrue(cut.Instance.IsConnecting);
         await Focus(cut, "c");
         await NodeKey(cut, "c", "Enter");
-        Assert.HasCount(1, edges, "a new connection was made instead of the edge being moved");
+        Assert.ContainsSingle(edges, "a new connection was made instead of the edge being moved");
         Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target));
     }
 
@@ -312,11 +312,11 @@ public class KeyboardReconnectionTests : BunitContext
         await EdgeKey(cut, "e", "c");
 
         Assert.IsFalse(connectEnds.Single().IsReconnect, "the connection from the node did not end first");
-        StringAssert.StartsWith(Heard(cut), "Moving the end of Edge from Source to Sink at Sink.");
+        Assert.StartsWith("Moving the end of Edge from Source to Sink at Sink.", Heard(cut));
 
         await Focus(cut, "c");
         await NodeKey(cut, "c", "Enter");
-        Assert.HasCount(1, edges);
+        Assert.ContainsSingle(edges);
         Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target));
     }
 

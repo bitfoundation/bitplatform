@@ -53,7 +53,7 @@ public class AdversarialTests : BunitContext
         var children = inspector.Children(new { Endless = Endless() }, "Endless");
 
         Assert.AreEqual(BevNodeKind.Collection, node.Kind);
-        Assert.IsTrue(children.Count <= Session.Options.MaxCollectionItems + 1);
+        Assert.IsLessThanOrEqualTo(Session.Options.MaxCollectionItems + 1, children.Count);
 
         static IEnumerable<int> Endless()
         {
@@ -163,7 +163,7 @@ public class AdversarialTests : BunitContext
     }
 }
 
-public class HostileComponent : ComponentBase
+internal class HostileComponent : ComponentBase
 {
     private readonly Node _self = new();
 
@@ -177,13 +177,13 @@ public class HostileComponent : ComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "still here");
 
-    public sealed class Node
+    internal sealed class Node
     {
         public Node? Next { get; set; }
     }
 }
 
-public class SelfRemoving : ComponentBase
+internal class SelfRemoving : ComponentBase
 {
     private bool _showChild = true;
 

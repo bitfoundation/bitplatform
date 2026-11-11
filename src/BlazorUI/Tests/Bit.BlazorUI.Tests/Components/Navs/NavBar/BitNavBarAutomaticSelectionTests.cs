@@ -21,7 +21,7 @@ public class BitNavBarAutomaticSelectionTests : BunitTestContext
         var component = RenderComponent<BitNavBarAutomaticTest>();
 
         var items = component.FindAll(".bit-nbr-itm");
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
         Assert.IsFalse(items[0].ClassList.Contains("bit-nbr-sel"));
         Assert.IsTrue(items[1].ClassList.Contains("bit-nbr-sel"));
         Assert.IsFalse(items[2].ClassList.Contains("bit-nbr-sel"));

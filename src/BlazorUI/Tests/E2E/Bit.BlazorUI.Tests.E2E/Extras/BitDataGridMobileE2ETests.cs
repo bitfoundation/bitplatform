@@ -21,11 +21,11 @@ public class BitDataGridMobileE2ETests : BitDataGridE2ETestBase
 
         var page = await Page.EvaluateAsync<double[]>("() => [document.documentElement.clientWidth, document.documentElement.scrollWidth]");
         var root = await BoxAsync(Grid("grid-basic"));
-        Assert.IsTrue(root.X + root.Width <= page[0] + 1, "The grid overflows the phone's viewport.");
+        Assert.IsLessThanOrEqualTo(page[0] + 1, root.X + root.Width, "The grid overflows the phone's viewport.");
 
         var viewport = Viewport("grid-basic");
         var widths = await viewport.EvaluateAsync<double[]>("el => [el.scrollWidth, el.clientWidth]");
-        Assert.IsTrue(widths[0] > widths[1], "The grid's columns do not overflow its own viewport.");
+        Assert.IsGreaterThan(widths[1], widths[0], "The grid's columns do not overflow its own viewport.");
 
         await viewport.EvaluateAsync("el => el.scrollLeft = 200");
         await NextFramesAsync();

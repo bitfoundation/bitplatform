@@ -63,9 +63,9 @@ public class TemplateTests
         Assert.IsNull(selection.Set("aspire", "False"));
         Assert.IsFalse(selection.Aspire);
 
-        StringAssert.Contains(selection.Set("database", "Oracle"), "Sqlite");
-        StringAssert.Contains(selection.Set("redis", "maybe"), "true or false");
-        StringAssert.Contains(selection.Set("nope", "1"), "no 'nope' option");
+        Assert.Contains("Sqlite", selection.Set("database", "Oracle")!);
+        Assert.Contains("true or false", selection.Set("redis", "maybe")!);
+        Assert.Contains("no 'nope' option", selection.Set("nope", "1")!);
     }
 
     [TestMethod]
@@ -77,7 +77,7 @@ public class TemplateTests
         selection.Set("redis", "true");
         selection.Set("aspire", "false");
 
-        CollectionAssert.AreEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis" }, selection.ToCommandLineTokens().ToArray());
+        Assert.AreSequenceEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis" }, selection.ToCommandLineTokens().ToArray());
     }
 
     [TestMethod]
@@ -89,8 +89,7 @@ public class TemplateTests
         selection.Set("redis", "true");
         selection.Set("aspire", "false");
 
-        CollectionAssert.AreEqual(new[] { "--database", "Sqlite", "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray(),
-            "With --template-version, the version bit creates the project with can have other defaults.");
+        Assert.AreSequenceEqual(new[] { "--database", "Sqlite", "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray(), "With --template-version, the version bit creates the project with can have other defaults.");
     }
 
     [TestMethod]
@@ -114,7 +113,7 @@ public class TemplateTests
     [DataRow(".Contoso", "start or end with a dot")]
     public void InvalidNames_Should_SayWhy(string name, string reason)
     {
-        StringAssert.Contains(ProjectName.Validate(name), reason);
+        Assert.Contains(reason, ProjectName.Validate(name)!);
     }
 
     [TestMethod]
@@ -124,7 +123,7 @@ public class TemplateTests
         host.AllToolsInstalled();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "فروشگاه", "--platforms", "android", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "com.companyname.");
+        Assert.Contains("com.companyname.", host.Output);
 
         Assert.AreEqual(0, await host.RunAsync("new", "فروشگاه", "--dry-run", "--yes"), host.Output);
     }
@@ -135,11 +134,11 @@ public class TemplateTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "App", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "'App' is also the name of a type");
-        StringAssert.Contains(host.FlatOutput, "bit new MyApp");
+        Assert.Contains("'App' is also the name of a type", host.FlatOutput);
+        Assert.Contains("bit new MyApp", host.FlatOutput);
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso.Program", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "bit new Contoso.MyProgram");
+        Assert.Contains("bit new Contoso.MyProgram", host.FlatOutput);
     }
 
     [TestMethod]
@@ -166,8 +165,8 @@ public class TemplateTests
         using var host = new TestHost();
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", name, "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.FlatOutput, $"'{name.Split('.')[0]}' is also the name of a namespace inside the project");
-        StringAssert.Contains(host.FlatOutput, $"bit new My{name}");
+        Assert.Contains($"'{name.Split('.')[0]}' is also the name of a namespace inside the project", host.FlatOutput);
+        Assert.Contains($"bit new My{name}", host.FlatOutput);
     }
 
     [TestMethod]
@@ -181,8 +180,8 @@ public class TemplateTests
     [TestMethod]
     public void AFirstPartThatComesTwice_Should_BeRefused()
     {
-        StringAssert.Contains(ProjectName.Validate("Contoso.Contoso"), "comes twice");
-        StringAssert.Contains(ProjectName.Validate("Contoso.Shop.Contoso"), "comes twice");
+        Assert.Contains("comes twice", ProjectName.Validate("Contoso.Contoso")!);
+        Assert.Contains("comes twice", ProjectName.Validate("Contoso.Shop.Contoso")!);
         Assert.AreEqual("MyContoso.Contoso", ProjectName.Suggest("contoso.contoso"));
     }
 
@@ -190,15 +189,15 @@ public class TemplateTests
     public void TheTemplatesNamespaces_Should_ComeFromItsFolders()
     {
         CollectionAssert.IsSubsetOf(new[] { "Client", "Server", "Shared", "Core", "Web", "Api", "Components", "Workbench" }, NamespaceNames.Template.ToArray());
-        Assert.IsFalse(NamespaceNames.Template.Contains("Boilerplate"));
-        Assert.IsFalse(NamespaceNames.Template.Contains("src"));
+        Assert.DoesNotContain("Boilerplate", NamespaceNames.Template);
+        Assert.DoesNotContain("src", NamespaceNames.Template);
     }
 
     [TestMethod]
     public void TheTemplatesTypes_Should_ComeFromItsFileNames()
     {
         CollectionAssert.IsSubsetOf(new[] { "App", "Program", "AppDbContext" }, TypeNames.Template.ToArray());
-        Assert.IsFalse(TypeNames.Template.Contains("Boilerplate"));
+        Assert.DoesNotContain("Boilerplate", TypeNames.Template);
         Assert.AreEqual("App", TypeNames.Of("App.razor.cs"));
         Assert.AreEqual("App", TypeNames.Of("App.xaml.cs"));
         Assert.IsNull(TypeNames.Of("App.razor.scss"));
@@ -213,10 +212,10 @@ public class TemplateTests
         var package = Path.Combine(host.WorkingDirectory, "template.nupkg");
         ZipFile.CreateFromDirectory(folder, package);
 
-        Assert.IsTrue(TypeNames.FromPackage(folder).Contains("Shop"));
-        Assert.IsTrue(TypeNames.FromPackage(package).Contains("Shop"));
-        Assert.IsTrue(NamespaceNames.FromPackage(folder).Contains("Shop"));
-        Assert.IsTrue(NamespaceNames.FromPackage(package).Contains("Shop"));
+        Assert.Contains("Shop", TypeNames.FromPackage(folder));
+        Assert.Contains("Shop", TypeNames.FromPackage(package));
+        Assert.Contains("Shop", NamespaceNames.FromPackage(folder));
+        Assert.Contains("Shop", NamespaceNames.FromPackage(package));
     }
 
     [TestMethod]
@@ -238,15 +237,15 @@ public class TemplateTests
     [TestMethod]
     public void Workloads_Should_FollowThePlatformsAndTheHost()
     {
-        CollectionAssert.AreEqual(new[] { "wasm-tools" }, Platforms.Workloads([Platform.Web], HostOs.Windows).ToArray());
-        CollectionAssert.AreEqual(new[] { "wasm-tools", "maui-android" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
-        CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
-        CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
-        CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools" }, Platforms.Workloads([Platform.Web], HostOs.Windows).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools", "maui-android" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
+        Assert.AreSequenceEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
 
         Assert.IsEmpty(Platforms.NativeWorkloads([Platform.Web], HostOs.Windows));
-        CollectionAssert.AreEqual(new[] { "maui-android" }, Platforms.NativeWorkloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
-        CollectionAssert.AreEqual(new[] { "maui" }, Platforms.NativeWorkloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
+        Assert.AreSequenceEqual(new[] { "maui-android" }, Platforms.NativeWorkloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
+        Assert.AreSequenceEqual(new[] { "maui" }, Platforms.NativeWorkloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
     }
 
     [TestMethod]
@@ -278,15 +277,15 @@ public class TemplateTests
     {
         var (platforms, error) = Commands.SharedOptions.ParsePlatforms(["web,android", "windows"], HostOs.Windows);
         Assert.IsNull(error);
-        CollectionAssert.AreEquivalent(new[] { Platform.Web, Platform.Android, Platform.Windows }, platforms.ToArray());
+        Assert.AreSequenceEqual(new[] { Platform.Web, Platform.Android, Platform.Windows }, platforms.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         var (apple, appleError) = Commands.SharedOptions.ParsePlatforms(["ios,macos"], HostOs.Windows);
         Assert.IsNull(appleError);
-        CollectionAssert.AreEquivalent(new[] { Platform.Web, Platform.Ios, Platform.MacOS }, apple.ToArray());
+        Assert.AreSequenceEqual(new[] { Platform.Web, Platform.Ios, Platform.MacOS }, apple.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         Assert.IsNotNull(Commands.SharedOptions.ParsePlatforms(["ios"], HostOs.Linux).Error);
         Assert.IsNotNull(Commands.SharedOptions.ParsePlatforms(["tizen"], HostOs.Linux).Error);
-        CollectionAssert.AreEquivalent(new[] { Platform.Web }, Commands.SharedOptions.ParsePlatforms([], HostOs.Linux).Platforms.ToArray());
+        Assert.AreSequenceEqual(new[] { Platform.Web }, Commands.SharedOptions.ParsePlatforms([], HostOs.Linux).Platforms.ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -300,8 +299,8 @@ public class TemplateTests
             C:\Program Files\dotnet\sdk\10.0.401\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.ImportWorkloads.targets(38,5): error NETSDK1147: To build this project, the following workloads must be installed: wasm-tools
             """;
 
-        CollectionAssert.AreEqual(new[] { "NU1301", "MSB3073", "CS0246", "NETSDK1147" }, DiagnosticCodes.Extract(output).ToArray());
-        StringAssert.Contains(DiagnosticCodes.FirstErrorLine(output), "NU1301");
+        Assert.AreSequenceEqual(new[] { "NU1301", "MSB3073", "CS0246", "NETSDK1147" }, DiagnosticCodes.Extract(output).ToArray());
+        Assert.Contains("NU1301", DiagnosticCodes.FirstErrorLine(output)!);
         Assert.IsNull(DiagnosticCodes.FirstErrorLine("Restore complete."));
     }
 }

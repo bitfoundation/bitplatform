@@ -32,7 +32,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
         var component = RenderComponent<BitColorPickerValidationTest>(parameters => parameters.Add(p => p.ShowValidationMessage, true));
 
         // Nothing is shown before the form has anything to say.
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
 
         component.Find("form").Submit();
@@ -51,13 +51,13 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
         Assert.IsTrue(component.FindAll(".bit-clp-prt").All(b => b.HasAttribute("aria-describedby") is false));
 
         // The line is the last row of the panel, under the palette too.
-        Assert.AreEqual(1, component.FindAll(".bit-clp-prs + .bit-clp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clp-prs + .bit-clp-erm"));
 
         // A pick the form accepts takes the line, and the references to it, away again.
         component.FindAll(".bit-clp-prt")[0].Click();
 
         Assert.IsNotNull(component.Instance.TestModel.Value);
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.HasAttribute("aria-describedby") is false));
 
@@ -110,7 +110,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
 
         // The picker is marked as before, and the message stays where the page puts it.
         Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
     }
 
@@ -129,7 +129,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-clp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clp-erm"));
         Assert.AreEqual("A logo color has to be fully opaque.", component.Find(".bit-clp-erm").TextContent.Trim());
 
         // Once the app takes its message back, the EditContext's takes the line.
@@ -164,7 +164,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
         var labelId = component.Find(".bit-clp-rec").GetAttribute("aria-describedby");
 
         Assert.AreEqual("Upgrade", component.Find(".bit-clp-erm b").TextContent);
-        Assert.IsFalse(component.Find(".bit-clp-erm").TextContent.Contains(RequiredMessage));
+        Assert.DoesNotContain(RequiredMessage, component.Find(".bit-clp-erm").TextContent);
         Assert.AreEqual("Your plan does not include custom theme colors.", component.Find($"#{labelId}").TextContent);
     }
 
@@ -192,7 +192,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
 
         // The messages do not wire a picker for a live region of its own either.
         Assert.AreEqual(RequiredMessage, plain.Find(".bit-clp-erm").TextContent.Trim());
-        Assert.AreEqual(0, plain.FindAll("[role=status]").Count);
+        Assert.IsEmpty(plain.FindAll("[role=status]"));
     }
 
     [TestMethod]
@@ -215,7 +215,7 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
         var error = component.Find(".bit-clp-erm");
         var ids = component.Find(".bit-clp-rec").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(2, ids.Length);
+        Assert.HasCount(2, ids);
         Assert.AreEqual(error.Id, ids[0]);
         Assert.AreEqual(component.Find(".bit-clp-cnr").Id, ids[1]);
         Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-describedby") == error.Id));
@@ -274,11 +274,11 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
 
         component.InvokeAsync(() => editContext.Validate());
 
-        Assert.AreEqual(1, component.FindAll(".bit-clp-erm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-clp-erm"));
 
         component.Render(parameters => parameters.Add(p => p.NoValidate, true));
 
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
         Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-describedby"));
     }
 
@@ -294,8 +294,8 @@ public class BitColorPickerValidationMessageTests : BunitTestContext
         component.InvokeAsync(() => editContext.Validate());
 
         // The model has a message, but the picker has no member of it the message could belong to.
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
-        Assert.AreEqual(0, component.FindAll(".bit-clp-erm").Count);
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
+        Assert.IsEmpty(component.FindAll(".bit-clp-erm"));
     }
 
     [TestMethod]

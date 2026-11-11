@@ -46,7 +46,7 @@ public class StoreRegistryTests
         manager.Register(new SettingsStore());
 
         Assert.ContainsSingle(snapshot);            // the old view is frozen...
-        Assert.AreEqual(2, manager.Stores.Count); // ...and the live one moved on
+        Assert.HasCount(2, manager.Stores); // ...and the live one moved on
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class StoreRegistryTests
         var snapshot = manager.Stores;
         manager.Unregister(counter);
 
-        Assert.AreEqual(2, snapshot.Count);
+        Assert.HasCount(2, snapshot);
         Assert.AreSequenceEqual([settings], manager.Stores);
     }
 

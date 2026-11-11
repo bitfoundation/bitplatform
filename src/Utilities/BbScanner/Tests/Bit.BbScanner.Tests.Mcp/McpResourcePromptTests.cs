@@ -16,17 +16,17 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task The_fixed_resources_and_the_guide_sections_are_listed()
     {
-        var uris = (await McpTestHost.Client.ListResourcesAsync()).Select(resource => resource.Uri).ToArray();
+        var uris = (await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken)).Select(resource => resource.Uri).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bbscanner://guide", "bbscanner://api", "bbscanner://formats" }, uris);
-        CollectionAssert.Contains(uris, "bbscanner://guide/Getting%20started");
-        CollectionAssert.Contains(uris, "bbscanner://guide/PDF417%20status");
+        Assert.Contains("bbscanner://guide/Getting%20started", uris);
+        Assert.Contains("bbscanner://guide/PDF417%20status", uris);
     }
 
     [TestMethod]
     public async Task The_templates_are_published()
     {
-        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync()).Select(template => template.UriTemplate).ToArray();
+        var templates = (await McpTestHost.Client.ListResourceTemplatesAsync(cancellationToken: TestContext.CancellationToken)).Select(template => template.UriTemplate).ToArray();
 
         CollectionAssert.IsSubsetOf(new[] { "bbscanner://guide/{heading}", "bbscanner://api/{typeName}", "bbscanner://formats/{format}", "bbscanner://source/{path}" }, templates);
     }
@@ -34,7 +34,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_listed_resource_reads_back_as_text()
     {
-        foreach (var resource in await McpTestHost.Client.ListResourcesAsync())
+        foreach (var resource in await McpTestHost.Client.ListResourcesAsync(cancellationToken: TestContext.CancellationToken))
         {
             var text = await ReadAsync(resource.Uri);
 
@@ -64,9 +64,9 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Every_prompt_is_published()
     {
-        var names = (await McpTestHost.Client.ListPromptsAsync()).Select(prompt => prompt.Name).ToArray();
+        var names = (await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken)).Select(prompt => prompt.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(_prompts.Select(prompt => prompt.Name).ToArray(), names);
+        Assert.AreSequenceEqual(_prompts.Select(prompt => prompt.Name).ToArray(), names, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -74,7 +74,7 @@ public class McpResourcePromptTests
     {
         foreach (var (name, arguments) in _prompts)
         {
-            var result = await McpTestHost.Client.GetPromptAsync(name, arguments);
+            var result = await McpTestHost.Client.GetPromptAsync(name, arguments, cancellationToken: TestContext.CancellationToken);
 
             var text = string.Join('\n', result.Messages.Select(message => message.Content).OfType<TextContentBlock>().Select(block => block.Text));
 
@@ -83,7 +83,7 @@ public class McpResourcePromptTests
             var mentioned = ToolNames.MentionedIn(text).ToArray();
             Assert.IsNotEmpty(mentioned, name);
 
-            foreach (var tool in mentioned) CollectionAssert.Contains(McpSurfaceTests.ExpectedTools, tool, $"'{name}' mentions '{tool}', which is not a tool.");
+            foreach (var tool in mentioned) Assert.Contains(tool, McpSurfaceTests.ExpectedTools, $"'{name}' mentions '{tool}', which is not a tool.");
         }
     }
 
@@ -99,7 +99,7 @@ public class McpResourcePromptTests
 
         foreach (var (name, arguments) in _prompts)
         {
-            var result = await McpTestHost.Client.GetPromptAsync(name, arguments);
+            var result = await McpTestHost.Client.GetPromptAsync(name, arguments, cancellationToken: TestContext.CancellationToken);
             var text = string.Join('\n', result.Messages.Select(message => message.Content).OfType<TextContentBlock>().Select(block => block.Text));
 
             foreach (var type in System.Text.RegularExpressions.Regex.Matches(text, @"`(I?Bb[A-Z][A-Za-z]*)`").Select(match => match.Groups[1].Value))
@@ -112,7 +112,7 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task An_unknown_prompt_is_an_error()
     {
-        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+        await Assert.ThrowsAsync<McpException>(async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     // ---- Completions -------------------------------------------------------
@@ -120,23 +120,23 @@ public class McpResourcePromptTests
     [TestMethod]
     public async Task Resource_placeholders_complete_from_the_catalogs()
     {
-        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://api/{typeName}" }, "typeName", "BbScanner")).Completion.Values;
-        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://guide/{heading}" }, "heading", "symbol")).Completion.Values;
-        var formats = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://formats/{format}" }, "format", "ean")).Completion.Values;
-        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://source/{path}" }, "path", "Scan")).Completion.Values;
+        var types = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://api/{typeName}" }, "typeName", "BbScanner", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var headings = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://guide/{heading}" }, "heading", "symbol", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var formats = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://formats/{format}" }, "format", "ean", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var paths = (await McpTestHost.Client.CompleteAsync(new ResourceTemplateReference { Uri = "bbscanner://source/{path}" }, "path", "Scan", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
-        CollectionAssert.Contains(types.ToArray(), "BbScanner");
+        Assert.Contains("BbScanner", types.ToArray());
         Assert.AreEqual("BbScanner", types[0], "A value the typed text starts should rank first.");
-        CollectionAssert.Contains(headings.ToArray(), "Symbologies");
-        CollectionAssert.Contains(formats.ToArray(), "Ean13");
-        CollectionAssert.Contains(paths.ToArray(), "Demo/Client/Pages/Scan.razor");
+        Assert.Contains("Symbologies", headings.ToArray());
+        Assert.Contains("Ean13", formats.ToArray());
+        Assert.Contains("Demo/Client/Pages/Scan.razor", paths.ToArray());
     }
 
     [TestMethod]
     public async Task Prompt_arguments_complete_with_the_phrasings_they_were_written_for()
     {
-        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bbscanner" }, "symptom", "")).Completion.Values;
-        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bbscanner-to-app" }, "renderMode", "")).Completion.Values;
+        var symptoms = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "debug-bbscanner" }, "symptom", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
+        var modes = (await McpTestHost.Client.CompleteAsync(new PromptReference { Name = "add-bbscanner-to-app" }, "renderMode", "", cancellationToken: TestContext.CancellationToken)).Completion.Values;
 
         Assert.IsNotEmpty(symptoms);
         CollectionAssert.IsSubsetOf(BbScannerSetupGuide.RenderModes, modes.ToArray());
@@ -148,4 +148,6 @@ public class McpResourcePromptTests
 
         return string.Join('\n', result.Contents.OfType<TextResourceContents>().Select(contents => contents.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

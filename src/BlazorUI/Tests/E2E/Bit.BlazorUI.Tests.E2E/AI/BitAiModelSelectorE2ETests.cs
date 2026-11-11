@@ -279,7 +279,7 @@ public class BitAiModelSelectorE2ETests : E2ETestBase
             // The chevron sits at the inline end: the left.
             var text = await Page.Locator($"#{id} .bit-drp-tcn").RectAsync();
             var chevron = await Page.Locator($"#{id} .bit-drp-icn").RectAsync();
-            Assert.IsTrue(chevron.Right <= text.Left + 1, $"#{id}: the chevron is on the left of the text.");
+            Assert.IsLessThanOrEqualTo(text.Left + 1, chevron.Right, $"#{id}: the chevron is on the left of the text.");
         }
 
         var callout = await OpenListAsync("ms-rtl");

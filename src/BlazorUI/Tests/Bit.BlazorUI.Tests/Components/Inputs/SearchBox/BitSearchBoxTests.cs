@@ -60,7 +60,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         component.WaitForState(() => component.FindAll(".bit-srb-itm")[index].GetAttribute("aria-selected") == "true");
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-sel").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-sel"));
     }
 
     /// <summary>
@@ -231,7 +231,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll("label.bit-srb-lbl").Count);
+        Assert.IsEmpty(component.FindAll("label.bit-srb-lbl"));
         Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-labelledby"));
     }
 
@@ -293,7 +293,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.HideIcon, hideIcon));
 
-        Assert.AreEqual(hideIcon ? 0 : 1, component.FindAll(".bit-srb-iwp").Count);
+        Assert.HasCount(hideIcon ? 0 : 1, component.FindAll(".bit-srb-iwp"));
         Assert.AreEqual(hideIcon, component.Find(".bit-srb").ClassList.Contains("bit-srb-hic"));
     }
 
@@ -426,8 +426,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsNotNull(component.Find("#pre-tpl"));
         Assert.IsNotNull(component.Find("#suf-tpl"));
-        Assert.AreEqual(0, component.FindAll(".bit-srb-pre").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-suf").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-pre"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-suf"));
     }
 
     [TestMethod,
@@ -543,8 +543,8 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-srb-cbt").ClassList.Contains("clear-cls"));
         Assert.IsTrue(component.Find(".bit-srb-sbn").ClassList.Contains("search-cls"));
 
-        StringAssert.Contains(component.Find(".bit-srb").GetAttribute("style"), "z-index: 1;");
-        StringAssert.Contains(component.Find(".bit-srb-inp").GetAttribute("style"), "color: red;");
+        Assert.Contains("z-index: 1;", component.Find(".bit-srb").GetAttribute("style")!);
+        Assert.Contains("color: red;", component.Find(".bit-srb-inp").GetAttribute("style")!);
     }
 
 
@@ -555,10 +555,10 @@ public class BitSearchBoxTests : BunitTestContext
     public void BitSearchBoxClearButtonShouldOnlyRenderWhenThereIsAValue()
     {
         var empty = RenderComponent<BitSearchBox>();
-        Assert.AreEqual(0, empty.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(empty.FindAll(".bit-srb-cbt"));
 
         var filled = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Value, "bit"));
-        Assert.AreEqual(1, filled.FindAll(".bit-srb-cbt").Count);
+        Assert.ContainsSingle(filled.FindAll(".bit-srb-cbt"));
     }
 
     [TestMethod]
@@ -568,17 +568,17 @@ public class BitSearchBoxTests : BunitTestContext
         // from the very first keystroke, so the clear button (and the icon collapsing state) must follow it.
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-hvl"));
 
         component.Find(".bit-srb-inp").Input("bit");
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-cbt"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-hvl"));
 
         component.Find(".bit-srb-inp").Input(string.Empty);
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-hvl"));
     }
 
@@ -588,11 +588,11 @@ public class BitSearchBoxTests : BunitTestContext
         var component = RenderComponent<BitSearchBox>();
 
         component.Find(".bit-srb-inp").Input("bit");
-        Assert.AreEqual(1, component.FindAll(".bit-srb-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-cbt"));
 
         component.Find(".bit-srb-cbt").Click();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-hvl"));
     }
 
@@ -603,7 +603,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("bit");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
     }
 
     [TestMethod]
@@ -634,8 +634,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsNotNull(component.Find(".bit-srb-cbt #clear-tpl"));
         Assert.IsNotNull(component.Find(".bit-srb-sbn #search-tpl"));
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt i").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sbn i").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt i"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-sbn i"));
     }
 
     [TestMethod]
@@ -646,14 +646,14 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.Value, "bit");
             parameters.Add(p => p.ReadOnly, true);
         });
-        Assert.AreEqual(0, readOnly.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(readOnly.FindAll(".bit-srb-cbt"));
 
         var hidden = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.Value, "bit");
             parameters.Add(p => p.HideClearButton, true);
         });
-        Assert.AreEqual(0, hidden.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(hidden.FindAll(".bit-srb-cbt"));
     }
 
     [TestMethod]
@@ -690,7 +690,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(1, clearCount);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
     }
 
     [TestMethod]
@@ -724,7 +724,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.ShowSearchButton, showSearchButton));
 
-        Assert.AreEqual(showSearchButton ? 1 : 0, component.FindAll(".bit-srb-sbn").Count);
+        Assert.HasCount(showSearchButton ? 1 : 0, component.FindAll(".bit-srb-sbn"));
         Assert.AreEqual(showSearchButton, component.Find(".bit-srb").ClassList.Contains("bit-srb-ssb"));
     }
 
@@ -949,8 +949,8 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
         input.Input("apple");
 
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-sel"));
 
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
         WaitForSelectedItem(component, 0);
@@ -1037,7 +1037,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Home" });
         WaitForSelectedItem(component, 0);
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-sel").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-sel"));
     }
 
     [TestMethod]
@@ -1058,7 +1058,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "End" });
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Home" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sel"));
     }
 
     [TestMethod]
@@ -1113,7 +1113,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "PageDown" });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sel"));
     }
 
     [TestMethod]
@@ -1138,7 +1138,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
         component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sel"));
     }
 
     [TestMethod]
@@ -1215,7 +1215,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
         Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
-        Assert.IsFalse(toggles.Contains(true));
+        Assert.DoesNotContain(true, toggles);
     }
 
     [TestMethod]
@@ -1259,10 +1259,10 @@ public class BitSearchBoxTests : BunitTestContext
 
         // The first search reports the list it opened once that opening is done, and goes on to the provider (or
         // not) in the same turn of the renderer, which the empty invocation below waits out.
-        component.WaitForAssertion(() => Assert.IsTrue(toggles.Contains(true)));
+        component.WaitForAssertion(() => Assert.Contains(true, toggles));
         await component.InvokeAsync(() => { });
 
-        Assert.AreEqual(1, requests.Count);
+        Assert.ContainsSingle(requests);
         Assert.AreEqual("ap", requests[0].Term);
         Assert.IsFalse(requests[0].CancelledOnArrival);
     }
@@ -1493,12 +1493,12 @@ public class BitSearchBoxTests : BunitTestContext
         // first one armed for the rest of the life of the page.
         var registrations = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.SearchBox.registerShortcut").ToList();
 
-        Assert.AreEqual(2, registrations.Count);
+        Assert.HasCount(2, registrations);
         Assert.AreEqual("Alt+S", registrations[1].Arguments[1]);
 
         component.Render(parameters => parameters.Add(p => p.FocusShortcut, (string?)null));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.SearchBox.unregisterShortcut"));
+        Assert.ContainsSingle(i => i.Identifier == "BitBlazorUI.SearchBox.unregisterShortcut", Context.JSInterop.Invocations);
     }
 
     #endregion
@@ -1512,7 +1512,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cal").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-cal"));
         Assert.AreEqual("searchbox", component.Find(".bit-srb-inp").GetAttribute("role"));
     }
 
@@ -1548,7 +1548,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var items = component.FindAll(".bit-srb-itm");
 
-        Assert.AreEqual(4, items.Count);
+        Assert.HasCount(4, items);
         for (var i = 0; i < items.Count; i++)
         {
             Assert.AreEqual("option", items[i].GetAttribute("role"));
@@ -1571,10 +1571,10 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
 
         input.Input("ap");
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
 
         input.Input("app");
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1591,11 +1591,11 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
 
         input.Input("apple");
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
 
         // an empty term now matches everything instead of clearing the list.
         input.Input(string.Empty);
-        Assert.AreEqual(Fruits.Count, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(Fruits.Count, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1611,7 +1611,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("apple");
 
-        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1627,8 +1627,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("a");
 
-        Assert.AreEqual(Fruits.Count(f => f.Contains('a', StringComparison.OrdinalIgnoreCase)),
-                        component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(Fruits.Count(f => f.Contains('a', StringComparison.OrdinalIgnoreCase)), component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1647,7 +1646,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var items = component.FindAll(".bit-srb-itm");
 
-        Assert.AreEqual(1, items.Count);
+        Assert.ContainsSingle(items);
         Assert.AreEqual("Apple", items[0].TextContent.Trim());
     }
 
@@ -1718,8 +1717,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         var items = component.FindAll(".bit-srb-itm");
 
-        Assert.AreEqual(3, items.Count);
-        Assert.AreEqual(1, component.FindAll(".bit-srb-sel").Count);
+        Assert.HasCount(3, items);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-sel"));
         Assert.AreEqual("false", items[0].GetAttribute("aria-selected"));
         Assert.AreEqual("true", items[1].GetAttribute("aria-selected"));
         Assert.AreEqual("false", items[2].GetAttribute("aria-selected"));
@@ -1740,7 +1739,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var marks = component.FindAll(".bit-srb-itm mark");
 
-        Assert.AreEqual(1, marks.Count);
+        Assert.ContainsSingle(marks);
         Assert.AreEqual("App", marks[0].TextContent);
         Assert.AreEqual("Red Apple", component.Find(".bit-srb-itm").TextContent.Trim());
     }
@@ -1757,7 +1756,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("app");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm mark").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm mark"));
     }
 
     [TestMethod]
@@ -1771,16 +1770,16 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.SuggestItems, Fruits);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-nrs"));
 
         var input = component.Find(".bit-srb-inp");
 
         input.Input("apple");
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-nrs"));
 
         input.Input("zzz");
         Assert.AreEqual("Nothing here", component.Find(".bit-srb-nrs").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1823,14 +1822,14 @@ public class BitSearchBoxTests : BunitTestContext
     public void BitSearchBoxModelessShouldNotRenderTheOverlay()
     {
         var withOverlay = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
-        Assert.AreEqual(1, withOverlay.FindAll(".bit-srb-ovl").Count);
+        Assert.ContainsSingle(withOverlay.FindAll(".bit-srb-ovl"));
 
         var modeless = RenderComponent<BitSearchBox>(parameters =>
         {
             parameters.Add(p => p.Modeless, true);
             parameters.Add(p => p.SuggestItems, Fruits);
         });
-        Assert.AreEqual(0, modeless.FindAll(".bit-srb-ovl").Count);
+        Assert.IsEmpty(modeless.FindAll(".bit-srb-ovl"));
     }
 
     [TestMethod]
@@ -1879,7 +1878,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
         component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sel"));
         Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-activedescendant"));
     }
 
@@ -1912,7 +1911,7 @@ public class BitSearchBoxTests : BunitTestContext
         // the provider is handed the MaxSuggestCount of the component, which was left at its default.
         Assert.AreEqual(5, component.Instance.MaxSuggestCount);
         Assert.AreEqual(5, receivedTake);
-        Assert.AreEqual(2, items.Count);
+        Assert.HasCount(2, items);
         Assert.AreEqual("apple", items[0].TextContent.Trim());
         Assert.AreEqual("application", items[1].TextContent.Trim());
 
@@ -1921,7 +1920,7 @@ public class BitSearchBoxTests : BunitTestContext
         items = component.FindAll(".bit-srb-itm");
 
         Assert.AreEqual("ban", receivedSearchTerm);
-        Assert.AreEqual(1, items.Count);
+        Assert.ContainsSingle(items);
         Assert.AreEqual("banana", items[0].TextContent.Trim());
     }
 
@@ -1939,7 +1938,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("a");
 
-        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -1960,8 +1959,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         // A faulted ValueTask is a search that could not run, so the message for a search that ran and
         // found nothing must not stand in for it - the live region says what actually happened.
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-nrs"));
     }
 
     [TestMethod]
@@ -1991,7 +1990,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 1);
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-lod").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-lod"));
         Assert.IsFalse(component.Find(".bit-srb-scn").HasAttribute("aria-busy"));
     }
 
@@ -2024,13 +2023,13 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.SuggestItems, Fruits);
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
 
         component.Find(".bit-srb-inp").FocusIn();
 
         component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
 
-        Assert.AreEqual(Fruits.Count, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(Fruits.Count, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -2079,7 +2078,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         FocusAndType(component, "a");
 
-        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-srb-itm"));
 
         // The kind of list a parent hands over once it has finished loading it.
         component.Render(parameters => parameters.Add(p => p.SuggestItems, new List<string> { "Apple", "Banana", "Avocado" }));
@@ -2168,7 +2167,7 @@ public class BitSearchBoxTests : BunitTestContext
         // The callout leaves the markup on its own, but the full screen overlay it opened with is
         // dismissed by nothing unless the component closes itself.
         component.WaitForState(() => component.FindAll(".bit-srb-cal").Count == 0);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-ovl").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-ovl"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-opn"));
     }
 
@@ -2221,8 +2220,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         // A search that could not run must not be told as a search that found nothing.
         Assert.AreEqual("Suggestions are unavailable.", component.Find(".bit-srb-fld").TextContent.Trim());
-        Assert.AreEqual(0, component.FindAll(".bit-srb-nrs").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-nrs"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
 
         // The exception is the one failure an app would otherwise never get to see.
         Assert.IsInstanceOfType<InvalidOperationException>(logged);
@@ -2272,7 +2271,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         // The next search starts from a clean slate, so a provider that recovers is not left reported as broken.
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 1);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-fld").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-fld"));
     }
 
     [TestMethod]
@@ -2290,7 +2289,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         // Nothing was given to report it with, so the callout closes the way an empty result does.
         WaitForClosedCallout(component);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-fld").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-fld"));
     }
 
     #endregion
@@ -2314,7 +2313,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var items = component.FindAll(".bit-srb-itm");
 
-        Assert.AreEqual(1, items.Count);
+        Assert.ContainsSingle(items);
         Assert.AreEqual("José", items[0].TextContent.Trim());
     }
 
@@ -2330,7 +2329,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("jose");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -2376,7 +2375,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var marks = component.FindAll(".bit-srb-itm mark");
 
-        Assert.AreEqual(2, marks.Count);
+        Assert.HasCount(2, marks);
         Assert.AreEqual("Green", marks[0].TextContent);
         Assert.AreEqual("Pie", marks[1].TextContent);
     }
@@ -2396,7 +2395,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var marks = component.FindAll(".bit-srb-itm mark");
 
-        Assert.AreEqual(1, marks.Count);
+        Assert.ContainsSingle(marks);
         Assert.AreEqual("Green Apple", marks[0].TextContent);
     }
 
@@ -2420,7 +2419,7 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
         input.Input("apple");
 
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
 
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
         WaitForSelectedItem(component, 0);
@@ -2469,13 +2468,13 @@ public class BitSearchBoxTests : BunitTestContext
         // empty field has nothing to select, which it checks there): a select() sent from .NET in answer to the focus
         // would land a round trip late, on the keys the user typed by then.
         var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
-        Assert.AreEqual(1, registrations.Count);
-        Assert.AreEqual(true, registrations[0].Arguments[1]);
+        Assert.ContainsSingle(registrations);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(registrations[0].Arguments[1]));
 
         component.Find(".bit-srb-inp").FocusIn();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"]);
     }
 
     [TestMethod]
@@ -2489,8 +2488,8 @@ public class BitSearchBoxTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.SelectTextOnFocus, false));
 
         var registrations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"];
-        Assert.AreEqual(2, registrations.Count);
-        Assert.AreEqual(false, registrations[1].Arguments[1]);
+        Assert.HasCount(2, registrations);
+        Assert.IsFalse(Assert.IsInstanceOfType<bool>(registrations[1].Arguments[1]));
     }
 
     [TestMethod]
@@ -2503,8 +2502,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").FocusIn();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.registerSelectOnFocus"]);
     }
 
     #endregion
@@ -2577,7 +2576,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2598,7 +2597,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Backspace" });
         component.Find(".bit-srb-inp").Input("a");
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
 
         // ... while the very next character typed is completed again.
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "p" });
@@ -2626,7 +2625,7 @@ public class BitSearchBoxTests : BunitTestContext
         // completing the shorter term again would simply put it back.
         component.Find(".bit-srb-inp").Input("ap");
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2645,7 +2644,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2662,7 +2661,7 @@ public class BitSearchBoxTests : BunitTestContext
         // A value that arrives from the outside must not rewrite a field nobody is typing into.
         component.Render(parameters => parameters.Add(p => p.Value, "ap"));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2714,7 +2713,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         WaitForClosedCallout(component);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setProperty"]);
     }
 
     [TestMethod]
@@ -2790,7 +2789,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.getProperty"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.getProperty"]);
     }
 
     [TestMethod]
@@ -2810,7 +2809,7 @@ public class BitSearchBoxTests : BunitTestContext
         // field keeps it as it was - and the select-all of SelectTextOnFocus is not undone by a completion.
         OpenTheCallout(component);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2829,7 +2828,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2846,7 +2845,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.fillAndSelect"]);
     }
 
     [TestMethod]
@@ -2882,7 +2881,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count > 0);
 
-        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(2, component.FindAll(".bit-srb-itm"));
     }
 
     #endregion
@@ -2908,7 +2907,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.AreEqual("Type 2 more", component.Find(".bit-srb-hnt").TextContent.Trim());
         Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
-        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -2930,7 +2929,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.FindAll(".bit-srb-hnt").Count == 0);
 
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
     }
 
     [TestMethod]
@@ -2946,7 +2945,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         FocusAndType(component, string.Empty);
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-hnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-hnt"));
         Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
     }
 
@@ -2979,7 +2978,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         FocusAndType(component, "a");
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-hnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-hnt"));
     }
 
     #endregion
@@ -2993,7 +2992,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-lvr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-lvr"));
     }
 
     [TestMethod]
@@ -3022,11 +3021,11 @@ public class BitSearchBoxTests : BunitTestContext
 
         FocusAndType(component, "apple");
 
-        StringAssert.StartsWith(GetAnnouncement(component), "4 suggestions available.");
+        Assert.StartsWith("4 suggestions available.", GetAnnouncement(component));
 
         component.Find(".bit-srb-inp").Input("banana");
 
-        StringAssert.StartsWith(GetAnnouncement(component), "1 suggestion available.");
+        Assert.StartsWith("1 suggestion available.", GetAnnouncement(component));
     }
 
     [TestMethod]
@@ -3123,7 +3122,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual("4 nataye baraye apple", GetAnnouncement(component));
         Assert.IsNotNull(received);
         Assert.AreEqual("apple", received.SearchTerm);
-        Assert.AreEqual(4, received.SuggestItems.Count);
+        Assert.HasCount(4, received.SuggestItems);
         Assert.IsFalse(received.IsLoading);
         Assert.IsFalse(received.IsSearchTermTooShort);
         Assert.AreEqual(1, received.MinSuggestTriggerChars);
@@ -3162,7 +3161,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsNotNull(received);
         Assert.IsTrue(received.IsSearchTermTooShort);
-        Assert.AreEqual(0, received.SuggestItems.Count);
+        Assert.IsEmpty(received.SuggestItems);
         Assert.AreEqual(4, received.MinSuggestTriggerChars);
     }
 
@@ -3225,7 +3224,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("apple");
 
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
         Assert.AreEqual(string.Empty, GetAnnouncement(component));
     }
 
@@ -3253,7 +3252,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
         Assert.IsTrue(component.Instance.IsSuggestItemsOpen);
-        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+        Assert.HasCount(4, component.FindAll(".bit-srb-itm"));
 
         await component.InvokeAsync(() => component.Instance.HideSuggestItems());
 
@@ -3273,7 +3272,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.ShowSuggestItems());
 
-        StringAssert.StartsWith(GetAnnouncement(component), "4 suggestions available.");
+        Assert.StartsWith("4 suggestions available.", GetAnnouncement(component));
     }
 
     [TestMethod]
@@ -3337,7 +3336,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").Input("zzz");
         component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(0, toggles.Count);
+        Assert.IsEmpty(toggles);
     }
 
     #endregion
@@ -3496,7 +3495,7 @@ public class BitSearchBoxTests : BunitTestContext
         var description = component.Find(".bit-srb-des");
 
         Assert.IsNotNull(component.Find("#custom-description"));
-        Assert.IsFalse(description.TextContent.Contains("plain"));
+        Assert.DoesNotContain("plain", description.TextContent);
         Assert.AreEqual(description.GetAttribute("id"), component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
@@ -3519,8 +3518,8 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-des").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-ard").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-des"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-ard"));
         Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-describedby"));
     }
 
@@ -3537,7 +3536,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var describedBy = component.Find(".bit-srb-inp").GetAttribute("aria-describedby")!.Split(' ');
 
-        Assert.AreEqual(4, describedBy.Length);
+        Assert.HasCount(4, describedBy);
         Assert.AreEqual("outside-hint", describedBy[0]);
         Assert.AreEqual(component.Find(".bit-srb-erm").GetAttribute("id"), describedBy[1]);
         Assert.AreEqual(component.Find(".bit-srb-des").GetAttribute("id"), describedBy[2]);
@@ -3629,7 +3628,7 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>();
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-erm").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-erm"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-invalid"));
     }
@@ -3734,8 +3733,8 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.Loading, true);
         });
 
-        Assert.AreEqual(1, component.FindAll(".bit-srb-lsp .bit-srb-spn").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-srb-cbt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-srb-lsp .bit-srb-spn"));
+        Assert.IsEmpty(component.FindAll(".bit-srb-cbt"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-srb-lng"));
         Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-busy"));
         Assert.AreEqual("Searching", component.Find(".bit-srb-elv").TextContent.Trim());
@@ -3788,8 +3787,8 @@ public class BitSearchBoxTests : BunitTestContext
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.DefaultValue, "apple"));
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-lsp").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-srb-cbt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-lsp"));
+        Assert.ContainsSingle(component.FindAll(".bit-srb-cbt"));
         Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("aria-busy"));
     }
 
@@ -3847,7 +3846,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.SearchButtonAriaLabel, "Run the search");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sbx"));
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-sbt"));
         Assert.AreEqual("Run the search", component.Find(".bit-srb-sbn").GetAttribute("aria-label"));
     }
@@ -3863,7 +3862,7 @@ public class BitSearchBoxTests : BunitTestContext
         });
 
         Assert.IsNotNull(component.Find("#custom-search"));
-        Assert.AreEqual(0, component.FindAll(".bit-srb-sbx").Count);
+        Assert.IsEmpty(component.FindAll(".bit-srb-sbx"));
     }
 
     [TestMethod]
@@ -3906,10 +3905,10 @@ public class BitSearchBoxTests : BunitTestContext
         // ... and the root keeps everything it was given.
         var root = component.Find(".bit-srb").GetAttribute("style");
         Assert.IsNotNull(root);
-        StringAssert.Contains(root, "--bit-SearchBox-item-color: red");
-        StringAssert.Contains(root, "margin: 4px");
-        StringAssert.Contains(root, "--bit-SearchBox-callout-background:#222");
-        StringAssert.Contains(root, "padding:2px");
+        Assert.Contains("--bit-SearchBox-item-color: red", root);
+        Assert.Contains("margin: 4px", root);
+        Assert.Contains("--bit-SearchBox-callout-background:#222", root);
+        Assert.Contains("padding:2px", root);
     }
 
     [TestMethod]
@@ -4097,7 +4096,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
 
-        Assert.AreEqual(1, focuses.Count);
+        Assert.ContainsSingle(focuses);
         Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
     }
 
@@ -4108,7 +4107,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-iwp").Click();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -4125,7 +4124,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsFalse(root.ClassList.Contains("bit-srb-foc"));
         Assert.IsFalse(root.ClassList.Contains("custom-focused"));
-        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
+        Assert.DoesNotContain("color: red;", (root.GetAttribute("style") ?? string.Empty));
         Assert.IsFalse(root.HasAttribute("data-bit-popup-style"));
 
         component.Find(".bit-srb-inp").FocusIn();
@@ -4134,16 +4133,16 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-srb-foc"));
         Assert.IsTrue(root.ClassList.Contains("custom-focused"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red;");
+        Assert.Contains("color: red;", root.GetAttribute("style")!);
 
         // The style of a passing state never reaches the popup: while it is applied, the root publishes the style it
         // has without it for the callout chain to copy instead.
         var popupStyle = root.GetAttribute("data-bit-popup-style");
 
         Assert.IsNotNull(popupStyle);
-        StringAssert.Contains(popupStyle, "padding: 2px;");
-        StringAssert.Contains(popupStyle, "margin: 1px;");
-        Assert.IsFalse(popupStyle.Contains("color: red;"));
+        Assert.Contains("padding: 2px;", popupStyle);
+        Assert.Contains("margin: 1px;", popupStyle);
+        Assert.DoesNotContain("color: red;", popupStyle);
 
         component.Find(".bit-srb-inp").FocusOut();
 
@@ -4187,7 +4186,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-inp").Input("b");
         component.Find(".bit-srb-inp").Input("bi");
 
-        CollectionAssert.AreEqual(new List<string?> { "b", "bi" }, values);
+        Assert.AreSequenceEqual(new List<string?> { "b", "bi" }, values);
     }
 
     [TestMethod]
@@ -4208,8 +4207,8 @@ public class BitSearchBoxTests : BunitTestContext
         // The change event the browser raises as the field loses focus carries the text the input event committed.
         component.Find(".bit-srb-inp").Change("bit");
 
-        CollectionAssert.AreEqual(new List<string?> { "bit" }, changedValues);
-        CollectionAssert.AreEqual(new List<string?> { "bit" }, changes);
+        Assert.AreSequenceEqual(new List<string?> { "bit" }, changedValues);
+        Assert.AreSequenceEqual(new List<string?> { "bit" }, changes);
     }
 
     [TestMethod]
@@ -4227,7 +4226,7 @@ public class BitSearchBoxTests : BunitTestContext
         // Without Immediate the change event is the only word of an edit there is, so it is reported whatever it carries.
         component.Find(".bit-srb-inp").Change("bit");
 
-        CollectionAssert.AreEqual(new List<string?> { "bit", "bit" }, changes);
+        Assert.AreSequenceEqual(new List<string?> { "bit", "bit" }, changes);
     }
 
     [TestMethod]
@@ -4250,9 +4249,9 @@ public class BitSearchBoxTests : BunitTestContext
         component.Find(".bit-srb-cbt").Click();
 
         // Only a dropped keystroke ends before its minute is up, and a kept one would put "bit" back once it is.
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
-        CollectionAssert.AreEqual(new List<string?> { "bit", null }, values);
+        Assert.AreSequenceEqual(new List<string?> { "bit", null }, values);
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -4273,10 +4272,10 @@ public class BitSearchBoxTests : BunitTestContext
         // The press on the clear button leaves the focus in the field, so no change event comes before the click.
         component.Find(".bit-srb-cbt").Click();
 
-        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+        await typing.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
 
         // Nothing was ever committed, so the clearing moved nothing either.
-        Assert.AreEqual(0, values.Count);
+        Assert.IsEmpty(values);
         Assert.IsNull(component.Instance.Value);
     }
 
@@ -4290,7 +4289,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
         // re-render the app between the press and the click.
-        Assert.IsTrue(component.Find(".bit-srb-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase), component.Find(".bit-srb-cbt").Attributes);
     }
 
     [TestMethod]
@@ -4324,7 +4323,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         if (expectedStyle.HasValue())
         {
-            StringAssert.Contains(style, expectedStyle);
+            Assert.Contains(expectedStyle, style);
         }
         else
         {
@@ -4377,12 +4376,12 @@ public class BitSearchBoxTests : BunitTestContext
 
         var setups = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.setupInput"];
 
-        Assert.AreEqual(1, setups.Count);
+        Assert.ContainsSingle(setups);
         Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)setups[0].Arguments[0]!).Id);
 
         component.Render();
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.setupInput"].Count);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.setupInput"]);
     }
 
     [TestMethod]
@@ -4404,9 +4403,9 @@ public class BitSearchBoxTests : BunitTestContext
         var unregistrations = Context.JSInterop.Invocations["BitBlazorUI.SearchBox.unregisterShortcut"];
         var clears = Context.JSInterop.Invocations["BitBlazorUI.Callouts.clear"];
 
-        Assert.AreEqual(1, unregistrations.Count);
+        Assert.ContainsSingle(unregistrations);
         Assert.AreEqual(inputId, unregistrations[0].Arguments[0]);
-        Assert.AreEqual(1, clears.Count);
+        Assert.ContainsSingle(clears);
         Assert.AreEqual(calloutId, clears[0].Arguments[0]);
     }
 
@@ -4428,7 +4427,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         OpenTheCallout(component);
 
-        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle")));
+        component.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "BitBlazorUI.Callouts.toggle", Context.JSInterop.Invocations));
 
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
         var reference = (DotNetObjectReference<BitSearchBox>)toggle.Arguments[0]!;
@@ -4436,7 +4435,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         var disposal = Context.DisposeComponentsAsync();
 
-        Assert.HasCount(1, clear.Invocations);
+        Assert.ContainsSingle(clear.Invocations);
         Assert.AreSame(searchBox, reference.Value);
 
         clear.SetVoidResult();
@@ -4465,7 +4464,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         OpenTheCallout(component);
 
-        component.WaitForAssertion(() => CollectionAssert.Contains(toggles, true));
+        component.WaitForAssertion(() => Assert.Contains(true, toggles));
 
         var searchBox = component.Instance;
 
@@ -4476,7 +4475,7 @@ public class BitSearchBoxTests : BunitTestContext
         clear.SetVoidResult();
         await disposal;
 
-        CollectionAssert.DoesNotContain(toggles, false);
+        Assert.DoesNotContain(false, toggles);
     }
 
     [TestMethod]
@@ -4486,7 +4485,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         await component.Instance.DisposeAsync();
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.SearchBox.unregisterShortcut"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.SearchBox.unregisterShortcut"]);
     }
 
     [TestMethod,
@@ -4513,7 +4512,7 @@ public class BitSearchBoxTests : BunitTestContext
 
             // The callout always takes the width of the component; whether it is held at exactly that width is the
             // parameter's.
-            Assert.AreEqual(true, toggle.Arguments[14]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[14]));
             Assert.AreEqual(fixedCalloutWidth, toggle.Arguments[15]);
         });
     }
@@ -4537,7 +4536,7 @@ public class BitSearchBoxTests : BunitTestContext
         {
             var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-            Assert.AreEqual(true, toggle.Arguments[9]);
+            Assert.IsTrue(Assert.IsInstanceOfType<bool>(toggle.Arguments[9]));
         });
     }
 
@@ -4566,6 +4565,8 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.IsFalse(Renderer.UnhandledException.IsCompleted);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 
     #endregion
 }

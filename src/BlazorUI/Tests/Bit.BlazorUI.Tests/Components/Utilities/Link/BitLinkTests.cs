@@ -1070,7 +1070,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lnk-icn").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lnk-icn"));
     }
 
     [TestMethod,
@@ -1192,7 +1192,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lnk-hnt"));
     }
 
     [TestMethod]
@@ -1206,7 +1206,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "#go-to-section");
         });
 
-        Assert.AreEqual(0, hashLink.FindAll(".bit-lnk-hnt").Count);
+        Assert.IsEmpty(hashLink.FindAll(".bit-lnk-hnt"));
 
         var disabledLink = RenderComponent<BitLink>(parameters =>
         {
@@ -1215,7 +1215,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
-        Assert.AreEqual(0, disabledLink.FindAll(".bit-lnk-hnt").Count);
+        Assert.IsEmpty(disabledLink.FindAll(".bit-lnk-hnt"));
     }
 
     [TestMethod,
@@ -1237,7 +1237,7 @@ public class BitLinkTests : BunitTestContext
         if (expected is null)
         {
             // An empty hint is the announcement being taken off, not an empty one being made.
-            Assert.AreEqual(0, hints.Count);
+            Assert.IsEmpty(hints);
         }
         else
         {
@@ -1255,7 +1255,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lnk-hnt"));
     }
 
     [TestMethod]
@@ -1270,7 +1270,7 @@ public class BitLinkTests : BunitTestContext
 
         // An aria-label replaces the content rather than adding to it, so hidden text beside the content
         // would never be read out - the sentence has to be part of the name itself.
-        Assert.AreEqual(0, component.FindAll(".bit-lnk-hnt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lnk-hnt"));
         Assert.AreEqual("bit platform (opens in a new tab)", component.Find(".bit-lnk").GetAttribute("aria-label"));
     }
 
@@ -1303,7 +1303,7 @@ public class BitLinkTests : BunitTestContext
 
         // The scroll takes the keyboard with it, so the next Tab carries on from the destination.
         Assert.AreEqual("go-to-section", invocation.Arguments[0]);
-        Assert.AreEqual(true, invocation.Arguments[1]);
+        Assert.IsTrue(Assert.IsInstanceOfType<bool>(invocation.Arguments[1]));
     }
 
     [TestMethod]
@@ -1599,7 +1599,7 @@ public class BitLinkTests : BunitTestContext
             parameters.Add(p => p.Href, "https://bitplatform.dev");
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-lnk-dsc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-lnk-dsc"));
         Assert.IsFalse(component.Find(".bit-lnk").HasAttribute("aria-describedby"));
     }
 
@@ -1825,7 +1825,7 @@ public class BitLinkTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Title, "re-rendered"));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal)));
+        Assert.ContainsSingle(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal), Context.JSInterop.Invocations);
     }
 
     [TestMethod,

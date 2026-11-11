@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Bit.Bink.Tests.Components;
 using Bunit;
 using Microsoft.JSInterop;
@@ -77,7 +77,7 @@ public sealed class GridTests
         Assert.AreEqual(100f, path.Bounds.Bottom);
         Assert.AreEqual(6, Lines(path), "One row every 20 units from 0 to 100.");
         Assert.AreEqual(BinkLineCap.Round, paint.Cap);
-        CollectionAssert.AreEqual(new[] { 0f, 20f }, paint.Dash);
+        Assert.AreSequenceEqual(new[] { 0f, 20f }, paint.Dash);
     }
 }
 
@@ -145,7 +145,7 @@ public sealed class BinkCanvasDropTests : BunitContext
         BinkDocument document = canvas.Instance.CurrentDocument;
         Assert.AreEqual(2, document.ElementCount);
         Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Adding and grouping are one step.");
-        Assert.AreEqual(1, document.AllElements.Select(e => e.GroupIds.Single()).Distinct().Count());
+        Assert.ContainsSingle(document.AllElements.Select(e => e.GroupIds.Single()).Distinct());
         Assert.AreEqual(2, canvas.Instance.Selection.Count);
         BinkRect bounds = BinkClipboard.Bounds(document.AllElements);
         Assert.AreEqual(300f, bounds.Center.X, 0.5f);
@@ -197,7 +197,7 @@ public sealed class BinkCanvasDropTests : BunitContext
 
         canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "provideClipboard", module.Invocations));
         JSRuntimeInvocation provide = module.Invocations.Last(i => i.Identifier == "provideClipboard");
-        StringAssert.StartsWith((string)provide.Arguments[1]!, "{\"format\":\"bink\"");
+        Assert.StartsWith("{\"format\":\"bink\"", (string)provide.Arguments[1]!);
         // Twice the selection's bounds and an 8 unit margin.
         Assert.AreEqual((int)MathF.Ceiling((shape.Bounds.Width + 16f) * 2f), provide.Arguments[2]);
         Assert.AreEqual((int)MathF.Ceiling((shape.Bounds.Height + 16f) * 2f), provide.Arguments[3]);
@@ -214,9 +214,11 @@ public sealed class BinkCanvasDropTests : BunitContext
         canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "execute", module.Invocations));
 
         Assert.IsTrue(await canvas.InvokeAsync(() => canvas.Instance.SupportsEyeDropperAsync()));
-        Assert.AreEqual(BinkColor.Parse("#1d4ed8"), await canvas.InvokeAsync(() => canvas.Instance.PickColorAsync()));
+        Assert.AreEqual(BinkColor.Parse("#1d4ed8"), await canvas.InvokeAsync(() => canvas.Instance.PickColorAsync(TestContext.CancellationToken)));
 
         module.Setup<string?>("pickColor", _ => true).SetResult(null);
-        Assert.IsNull(await canvas.InvokeAsync(() => canvas.Instance.PickColorAsync()), "Cancelled, or no eyedropper.");
+        Assert.IsNull(await canvas.InvokeAsync(() => canvas.Instance.PickColorAsync(TestContext.CancellationToken)), "Cancelled, or no eyedropper.");
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

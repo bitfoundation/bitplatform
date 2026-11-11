@@ -50,12 +50,12 @@ public class ResponsivenessTests
             var events = session.Timeline.Snapshot();
             var frame = Assert.ContainsSingle(e => e.Category == "long-frame", events);
             Assert.AreEqual(240, frame.DurationMs);
-            StringAssert.Contains(frame.Detail, "BUTTON#save.onclick (app.js save)");
+            Assert.Contains("BUTTON#save.onclick (app.js save)", frame.Detail!);
             Assert.AreEqual(BevToolsSeverity.Warning, frame.Severity, "190 ms blocking is over the 150 ms threshold");
             var interaction = Assert.ContainsSingle(e => e.Category == "interaction", events, "a 30 ms interaction is counted, not listed");
             Assert.AreEqual("click on <button#save>: next paint after 320.0 ms", interaction.Title);
             Assert.AreEqual("input delay 10.0 ms · processing 280.0 ms · presentation 30.0 ms", interaction.Detail);
-            Assert.IsTrue(interaction.Timestamp < DateTimeOffset.UtcNow.AddMilliseconds(-400), "dated by its age");
+            Assert.IsLessThan(DateTimeOffset.UtcNow.AddMilliseconds(-400), interaction.Timestamp, "dated by its age");
         }
     }
 
@@ -79,9 +79,9 @@ public class ResponsivenessTests
             Assert.AreEqual(click, session.Timeline.Find(interaction.TimelineEventId)!.ParentEventId);
 
             var frame = session.Browser.Responsiveness.Frames.Single();
-            CollectionAssert.AreEqual(new[] { "onclick → Orders.Load", "Batch #7: 120 components" }, frame.During.ToArray());
+            Assert.AreSequenceEqual(new[] { "onclick → Orders.Load", "Batch #7: 120 components" }, frame.During.ToArray());
             Assert.AreEqual(click, frame.TriggerEventId);
-            StringAssert.StartsWith(BevResponsiveness.Describe(frame), "during onclick → Orders.Load, Batch #7: 120 components");
+            Assert.StartsWith("during onclick → Orders.Load, Batch #7: 120 components", BevResponsiveness.Describe(frame));
         }
     }
 
@@ -103,11 +103,11 @@ public class ResponsivenessTests
             var frame = Assert.ContainsSingle(responsiveness.Frames, "the panel's own frame is not recorded");
             Assert.IsTrue(frame.OwnMs is > 10 and < 35, "about 20 ms: " + frame.OwnMs);
             Assert.IsFalse(frame.IsMostlyBevTools);
-            StringAssert.StartsWith(BevResponsiveness.Describe(frame), BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering");
+            Assert.StartsWith(BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering", BevResponsiveness.Describe(frame));
             Assert.AreEqual(1, responsiveness.LongFrameCount, "nor counted");
             Assert.AreEqual(250, responsiveness.TotalBlockingMs);
             Assert.AreEqual(300, responsiveness.LongestFrameMs);
-            Assert.IsFalse(session.Timeline.Snapshot().Any(e => e.Category == "long-frame" && e.DurationMs == 260), "nor in the timeline");
+            Assert.DoesNotContain(e => e.Category == "long-frame" && e.DurationMs == 260, session.Timeline.Snapshot(), "nor in the timeline");
 
             session.Diagnostics.Evaluate(force: true);
             var blocked = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "browser.long-frame", session.Diagnostics.Findings).Diagnostic;
@@ -143,7 +143,7 @@ public class ResponsivenessTests
             var events = session.Timeline.Snapshot().Where(e => e.Category == "interaction").ToArray();
             var evt = Assert.ContainsSingle(events, "one event for the interaction, the first part's replaced");
             Assert.AreEqual(whole.TimelineEventId, evt.Id);
-            StringAssert.StartsWith(evt.Title, "click on <button#save>: next paint after 32");
+            Assert.StartsWith("click on <button#save>: next paint after 32", evt.Title);
 
             // Without an id nothing says two entries are one.
             bridge.ReportResponsiveness([], [Interaction(300, 40, 1, 10), Interaction(200, 40, 1, 10)]);
@@ -169,7 +169,7 @@ public class ResponsivenessTests
             var frame = Assert.ContainsSingle(session.Browser.Responsiveness.Frames, "not shown to be the panel's, so recorded");
             Assert.IsTrue(frame.OwnMsIsLowerBound);
             Assert.IsFalse(frame.IsMostlyBevTools);
-            StringAssert.StartsWith(BevResponsiveness.Describe(frame), "at least " + BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering");
+            Assert.StartsWith("at least " + BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering", BevResponsiveness.Describe(frame));
         }
     }
 
@@ -211,14 +211,14 @@ public class ResponsivenessTests
             var findings = session.Diagnostics.Findings.Select(f => f.Diagnostic).ToList();
             var click = Assert.ContainsSingle(f => f.RuleId == "browser.slow-interaction" && f.Title.StartsWith("click", StringComparison.Ordinal), findings);
             Assert.AreEqual("click on <button#save>: next paint after 420 ms", click.Title, "the 150 ms click is under the threshold");
-            StringAssert.Contains(click.Evidence, "Mostly input delay.");
+            Assert.Contains("Mostly input delay.", click.Evidence);
             var key = Assert.ContainsSingle(f => f.RuleId == "browser.slow-interaction" && f.Title.StartsWith("keydown", StringComparison.Ordinal), findings);
-            StringAssert.Contains(key.Evidence, "Mostly presentation.");
+            Assert.Contains("Mostly presentation.", key.Evidence);
 
             var blocked = Assert.ContainsSingle(f => f.RuleId == "browser.long-frame", findings);
             Assert.AreEqual("The main thread was blocked for 590 ms in 1 frame over the last minute", blocked.Title);
             Assert.AreEqual(BevDiagnosticSeverity.Error, blocked.Severity);
-            StringAssert.Contains(blocked.Suggestion, "Task.Yield");
+            Assert.Contains("Task.Yield", blocked.Suggestion!);
         }
     }
 
@@ -313,11 +313,11 @@ public class ResponsivenessPanelTests : BunitContext
 
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Browser", StringComparison.Ordinal)).Click();
         var text = panel.Find(".bev-body").TextContent;
-        StringAssert.Contains(text, "Responsiveness");
-        StringAssert.Contains(text, "260.0 ms");
-        StringAssert.Contains(text, "click on <button.buy>");
-        StringAssert.Contains(text, "reports long tasks, without the scripts that ran in them");
-        StringAssert.Contains(text, "the browser's part");
+        Assert.Contains("Responsiveness", text);
+        Assert.Contains("260.0 ms", text);
+        Assert.Contains("click on <button.buy>", text);
+        Assert.Contains("reports long tasks, without the scripts that ran in them", text);
+        Assert.Contains("the browser's part", text);
         Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Name.StartsWith("Interaction latency", StringComparison.Ordinal)).Status);
         Assert.AreEqual(BevCapabilityStatus.Partial, session.Capabilities.Single(c => c.Name.StartsWith("Long frames", StringComparison.Ordinal)).Status);
     }

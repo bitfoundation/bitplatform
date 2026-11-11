@@ -34,12 +34,12 @@ public class BitAiToolCallViewTests : BitAiTestBase
     {
         var call = new BitAiToolCallPart("c1", "get_weather");
         var component = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call));
-        StringAssert.Contains(component.Markup, "Calling get_weather");
+        Assert.Contains("Calling get_weather", component.Markup);
 
         call.CompleteArguments(JsonDocument.Parse("""{"city":"Oslo"}""").RootElement);
         call.SetResult(BitAiToolOutcome.FromText("12 degrees"));
 
-        component.WaitForAssertion(() => StringAssert.Contains(component.Markup, "Used get_weather"), TimeSpan.FromSeconds(2));
+        component.WaitForAssertion(() => Assert.Contains("Used get_weather", component.Markup), TimeSpan.FromSeconds(2));
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Markup, "permission denied");
+            Assert.Contains("permission denied", component.Markup);
             Assert.AreEqual("true", component.Find(".bit-aitcv-hdr").GetAttribute("aria-expanded"));
             Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-fld"));
         }, TimeSpan.FromSeconds(2));
@@ -74,14 +74,14 @@ public class BitAiToolCallViewTests : BitAiTestBase
         Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-lin"));
         Assert.IsEmpty(component.FindAll(".bit-aitcv-hdr"));
         Assert.IsEmpty(component.FindAll("button"));
-        StringAssert.Contains(component.Find(".bit-aitcv-lnr").TextContent, "Calling Search products");
-        Assert.HasCount(1, component.FindComponents<BitBouncingDotsLoading>());
+        Assert.Contains("Calling Search products", component.Find(".bit-aitcv-lnr").TextContent);
+        Assert.ContainsSingle(component.FindComponents<BitBouncingDotsLoading>());
 
         call.SetResult(BitAiToolOutcome.FromText("3 found"));
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-aitcv-lnr").TextContent, "Used Search products");
+            Assert.Contains("Used Search products", component.Find(".bit-aitcv-lnr").TextContent);
             Assert.IsEmpty(component.FindComponents<BitBouncingDotsLoading>());
         }, TimeSpan.FromSeconds(2));
     }
@@ -101,7 +101,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
         // A call waiting for a decision asks its question whatever the options say.
         call.SetStatus(BitAiToolCallStatus.AwaitingApproval);
 
-        component.WaitForAssertion(() => Assert.HasCount(1, component.FindComponents<BitAiToolApproval>()), TimeSpan.FromSeconds(2));
+        component.WaitForAssertion(() => Assert.ContainsSingle(component.FindComponents<BitAiToolApproval>()), TimeSpan.FromSeconds(2));
         Assert.IsFalse(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-lin"));
     }
 
@@ -118,7 +118,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
                 ToolCallDisplay = c => c.Status is BitAiToolCallStatus.Completed ? BitAiToolCallDisplay.Hidden : BitAiToolCallDisplay.Status,
             }));
 
-        Assert.HasCount(1, component.FindAll(".bit-aitcv-lnr"));
+        Assert.ContainsSingle(component.FindAll(".bit-aitcv-lnr"));
 
         call.SetResult(BitAiToolOutcome.FromText("done"));
 
@@ -135,7 +135,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
             .Add(c => c.Call, call)
             .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { CollapseToolCalls = false }));
 
-        StringAssert.Contains(component.Markup, "blazor str");
+        Assert.Contains("blazor str", component.Markup);
     }
 
     [TestMethod]
@@ -148,8 +148,8 @@ public class BitAiToolCallViewTests : BitAiTestBase
 
         var approval = component.Find(".bit-aitcv-apv");
         Assert.AreEqual(3, approval.QuerySelectorAll("button").Length);
-        StringAssert.Contains(component.Markup, "Always allow");
-        StringAssert.Contains(component.Markup, "Decline");
+        Assert.Contains("Always allow", component.Markup);
+        Assert.Contains("Decline", component.Markup);
         Assert.IsTrue(component.Find(".bit-aitcv").ClassList.Contains("bit-aitcv-apr"));
     }
 
@@ -188,7 +188,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
             Assert.AreEqual(expected, call.Status);
             Assert.IsEmpty(component.FindAll(".bit-aitcv-apv"));
             var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-            Assert.HasCount(1, focus);
+            Assert.ContainsSingle(focus);
             Assert.AreEqual(header, ((ElementReference)focus[0].Arguments[0]!).Id);
         }, TimeSpan.FromSeconds(2));
     }
@@ -215,7 +215,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
             var line = component.Find(".bit-aitcv-lnr");
             Assert.AreEqual("-1", line.GetAttribute("tabindex"));
             var focus = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
-            Assert.HasCount(1, focus);
+            Assert.ContainsSingle(focus);
             Assert.AreEqual(line.GetAttribute("blazor:elementReference"), ((ElementReference)focus[0].Arguments[0]!).Id);
         }, TimeSpan.FromSeconds(2));
 
@@ -514,7 +514,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
             .Add(c => c.CascadedOptions, BitAiUiOptions.Default with { CollapseToolCalls = false }));
 
         var labels = component.FindAll(".bit-aitcv-shd").Select(l => l.TextContent).ToArray();
-        CollectionAssert.AreEqual(new[] { "Arguments", "Result" }, labels);
+        Assert.AreSequenceEqual(new[] { "Arguments", "Result" }, labels);
         Assert.AreEqual("12 degrees", component.Find(".bit-aitcv-raw").TextContent);
     }
 
@@ -599,8 +599,8 @@ public class BitAiToolCallViewTests : BitAiTestBase
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.AreEqual("tool-card", root.Id);
-        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
-        StringAssert.Contains(root.GetAttribute("style"), "padding:2px");
+        Assert.Contains("margin:1px", root.GetAttribute("style")!);
+        Assert.Contains("padding:2px", root.GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-aitcv-hdr").ClassList.Contains("header-class"));
         Assert.AreEqual("color:red", component.Find(".bit-aitcv-ttl").GetAttribute("style"));
     }
@@ -623,7 +623,7 @@ public class BitAiToolCallViewTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style);
         }
     }
 

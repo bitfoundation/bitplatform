@@ -23,9 +23,9 @@ public class BitMessagePrerenderTests
         });
 
         // The text a delayed announcement holds back for the next render would otherwise never arrive.
-        StringAssert.Contains(html, "Hello");
-        StringAssert.Contains(html, "Saved");
-        StringAssert.Contains(html, "Success");
+        Assert.Contains("Hello", html);
+        Assert.Contains("Saved", html);
+        Assert.Contains("Success", html);
     }
 
     [TestMethod]
@@ -36,6 +36,6 @@ public class BitMessagePrerenderTests
             [nameof(BitMessage.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Hello")),
         });
 
-        StringAssert.Contains(html, "Hello");
+        Assert.Contains("Hello", html);
     }
 }

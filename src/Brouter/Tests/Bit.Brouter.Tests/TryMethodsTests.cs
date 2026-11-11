@@ -58,7 +58,7 @@ public class TryMethodsTests : BunitTestContext
         var brouter = Services.GetRequiredService<IBrouter>();
 
         var ex = Assert.ThrowsExactly<InvalidOperationException>(() => brouter.Navigate("/elsewhere"));
-        StringAssert.Contains(ex.Message, nameof(IBrouter.IsMounted));
+        Assert.Contains(nameof(IBrouter.IsMounted), ex.Message);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => brouter.Back());
         Assert.ThrowsExactly<InvalidOperationException>(() => brouter.ResolveUrl("user"));
@@ -138,7 +138,7 @@ public class TryMethodsTests : BunitTestContext
         Assert.IsTrue(mounted.TryBack());
         Assert.IsTrue(mounted.TryResolveUrl("user", out var url));
         Assert.AreEqual("/resolved/user", url);
-        CollectionAssert.AreEqual(new[] { "Navigate:/a", "Back", "ResolveUrl:user" }, ((RecordingBrouter)mounted).Calls);
+        Assert.AreSequenceEqual(new[] { "Navigate:/a", "Back", "ResolveUrl:user" }, ((RecordingBrouter)mounted).Calls);
 
         // One that does model it gets the no-op behavior without implementing a single Try member.
         Assert.IsFalse(unmounted.TryNavigate("/a"));
@@ -146,7 +146,7 @@ public class TryMethodsTests : BunitTestContext
         Assert.IsFalse(unmounted.TryResolveUrl("user", out _));
         Assert.IsNull(await unmounted.TryNavigateAsync("/a"));
         Assert.IsFalse(await unmounted.TryRevalidateAsync());
-        Assert.AreEqual(0, ((RecordingBrouter)unmounted).Calls.Count);
+        Assert.IsEmpty(((RecordingBrouter)unmounted).Calls);
     }
 
     // Deliberately leaves IsMounted and every Try... member to the interface defaults.

@@ -29,10 +29,10 @@ public class BitVirtualizeBrowserTests : PerformanceTestBase
 
         var rows = await RenderedItems("memory");
 
-        Assert.IsTrue(rows.Length >= 10, $"the ten rows in view are rendered, got {rows.Length}");
-        Assert.IsTrue(rows.Length <= MaxRenderedRows, $"only a window is rendered, got {rows.Length}");
+        Assert.IsGreaterThanOrEqualTo(10, rows.Length, $"the ten rows in view are rendered, got {rows.Length}");
+        Assert.IsLessThanOrEqualTo(MaxRenderedRows, rows.Length, $"only a window is rendered, got {rows.Length}");
         Assert.AreEqual(0, rows.Min());
-        CollectionAssert.AreEqual(Enumerable.Range(0, rows.Length).ToArray(), rows.OrderBy(r => r).ToArray(), "a contiguous window from the first item");
+        Assert.AreSequenceEqual(Enumerable.Range(0, rows.Length).ToArray(), rows.OrderBy(r => r).ToArray(), "a contiguous window from the first item");
 
         await ExpectRowAt("memory", 0, 0);
         await ExpectRowAt("memory", 9, 360);
@@ -77,7 +77,7 @@ public class BitVirtualizeBrowserTests : PerformanceTestBase
 
         var rows = await RenderedItems("memory");
         Assert.IsFalse(rows.Contains(0), "the first window is gone");
-        Assert.IsTrue(rows.Length <= MaxRenderedRows, $"still only a window, got {rows.Length}");
+        Assert.IsLessThanOrEqualTo(MaxRenderedRows, rows.Length, $"still only a window, got {rows.Length}");
 
         await Expect(Report("memory", "range")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex("^500-"));
     }
@@ -98,7 +98,7 @@ public class BitVirtualizeBrowserTests : PerformanceTestBase
         var clientHeight = await List("memory").EvaluateAsync<double>("el => el.clientHeight");
         await ExpectRowAt("memory", 9999, clientHeight - 40);
         await Expect(Report("memory", "at-end")).ToHaveTextAsync("True");
-        Assert.IsTrue((await RenderedItems("memory")).Length <= MaxRenderedRows);
+        Assert.IsLessThanOrEqualTo(MaxRenderedRows, (await RenderedItems("memory")).Length);
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class BitVirtualizeBrowserTests : PerformanceTestBase
         await Expect(Probe("provider").Locator(".placeholder")).ToHaveCountAsync(0);
 
         var rows = await RenderedItems("provider");
-        Assert.IsTrue(rows.Length <= MaxRenderedRows, $"only a window is rendered, got {rows.Length}");
+        Assert.IsLessThanOrEqualTo(MaxRenderedRows, rows.Length, $"only a window is rendered, got {rows.Length}");
 
         await Probe("provider").Locator(".show-requests").ClickAsync();
         await Expect(Report("provider", "requests")).Not.ToBeEmptyAsync();
@@ -126,7 +126,7 @@ public class BitVirtualizeBrowserTests : PerformanceTestBase
         var covering = requests.Select(r => r.Split('+').Select(int.Parse).ToArray())
                                .Where(r => r[0] <= 1000 && r[0] + r[1] > 1009)
                                .ToArray();
-        Assert.IsTrue(covering.Length > 0, $"a window covering the rows in view was asked for: {string.Join(";", requests)}");
+        Assert.IsNotEmpty(covering, $"a window covering the rows in view was asked for: {string.Join(";", requests)}");
         Assert.IsTrue(requests.All(r => int.Parse(r.Split('+')[1]) <= 100), $"no request asks for the whole list: {string.Join(";", requests)}");
     }
 

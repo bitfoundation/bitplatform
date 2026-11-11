@@ -119,7 +119,7 @@ public sealed class SortingTests : BortableTest
         await ReleaseAsync(page);
 
         await AssertOrderAsync(page, "simple-list", "simple-order", "Item 2", "Item 3", "Item 1", "Item 4", "Item 5", "Item 6");
-        Assert.IsTrue(await page.EvaluateAsync<int>("() => window.__flips") > 0, "no item was animated into its new place");
+        Assert.IsGreaterThan(0, await page.EvaluateAsync<int>("() => window.__flips"), "no item was animated into its new place");
 
         // Once the slides are over, no item is left offset or mid-transition, and the items are painted top to
         // bottom in the order the list holds them, each in its original slot.

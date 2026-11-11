@@ -8,7 +8,7 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 /// Content that records every time it is built, so a test can tell a Modal that keeps its content between
 /// openings from one that takes it away and builds it again.
 /// </summary>
-public class TestModalStateContent : ComponentBase
+internal class TestModalStateContent : ComponentBase
 {
     [Parameter] public List<string> Log { get; set; } = [];
 

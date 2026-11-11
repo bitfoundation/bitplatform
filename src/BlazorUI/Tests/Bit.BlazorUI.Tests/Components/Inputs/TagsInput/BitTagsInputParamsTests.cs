@@ -62,7 +62,7 @@ public class BitTagsInputParamsTests : BunitTestContext
 
         var missing = parameters.Where(name => typeof(BitTagsInputParams).GetProperty(name) is null).ToList();
 
-        Assert.AreEqual(0, missing.Count, "BitTagsInputParams is missing: " + string.Join(", ", missing));
+        Assert.IsEmpty(missing, "BitTagsInputParams is missing: " + string.Join(", ", missing));
     }
 
     [TestMethod]
@@ -163,7 +163,7 @@ public class BitTagsInputParamsTests : BunitTestContext
         Assert.AreEqual("true", input.GetAttribute("data-cancel-confirm-keys-on-empty"));
         Assert.AreEqual("[\";\"]", input.GetAttribute("data-separators"));
         Assert.AreEqual("Cascaded more", input.GetAttribute("placeholder"));
-        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+        Assert.Contains(i => i.Identifier == "Blazor._internal.domWrapper.focus", Context.JSInterop.Invocations);
 
         Assert.AreEqual("Cascaded label", component.Find(".bit-tgi-lbl").TextContent.Trim());
         Assert.AreEqual("Cascaded description", component.Find(".bit-tgi-dsc").TextContent.Trim());
@@ -176,7 +176,7 @@ public class BitTagsInputParamsTests : BunitTestContext
 
         // Two of the three tags are drawn, the first of which CanRemoveTag pins in place.
         var tags = component.FindAll(".bit-tgi-tag");
-        Assert.AreEqual(2, tags.Count);
+        Assert.HasCount(2, tags);
         Assert.IsTrue(tags[0].ClassList.Contains("bit-tgi-tag-fix"));
         Assert.AreEqual("Stays.", component.Find($"#{tags[0].GetAttribute("aria-describedby")}").TextContent.Trim());
         Assert.AreEqual("Cascaded hint.", component.Find($"#{tags[1].GetAttribute("aria-describedby")}").TextContent.Trim());
@@ -240,7 +240,7 @@ public class BitTagsInputParamsTests : BunitTestContext
 
         var input = component.Find(".bit-tgi-inp");
 
-        Assert.AreEqual(2, component.FindAll("datalist option").Count);
+        Assert.HasCount(2, component.FindAll("datalist option"));
         Assert.AreEqual("true", input.GetAttribute("data-no-add-on-tab"));
 
         input.Input("apple");
@@ -253,7 +253,7 @@ public class BitTagsInputParamsTests : BunitTestContext
         component.Find(".bit-tgi-inp").Input("veto");
         component.Find(".bit-tgi-inp").KeyDown("Enter");
 
-        Assert.AreEqual(1, invalid.Count);
+        Assert.ContainsSingle(invalid);
         Assert.AreEqual(BitTagsInputInvalidReason.Validator, invalid[0].Reason);
         Assert.AreEqual("vetoed", component.Find(".bit-tgi-ivm").TextContent.Trim());
         Assert.IsFalse(component.Find(".bit-tgi").ClassList.Contains("bit-tgi-rjd"));
@@ -267,12 +267,12 @@ public class BitTagsInputParamsTests : BunitTestContext
         component.Find(".bit-tgi-inp").Input(string.Empty);
         component.Find(".bit-tgi-inp").KeyDown("Backspace");
 
-        Assert.AreEqual(1, component.FindAll(".bit-tgi-tag").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgi-tag"));
 
         component.Find(".bit-tgi-inp").Input("pear");
         component.Find(".bit-tgi-inp").FocusOut();
 
-        Assert.AreEqual(1, component.FindAll(".bit-tgi-tag").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-tgi-tag"));
 
         component.Find(".bit-tgi-dbt").Click();
 
@@ -294,7 +294,7 @@ public class BitTagsInputParamsTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-tgi").ClassList.Contains("cascaded-root"));
-        StringAssert.Contains(component.Find(".bit-tgi").GetAttribute("style"), "--s: root;");
+        Assert.Contains("--s: root;", component.Find(".bit-tgi").GetAttribute("style")!);
         Assert.IsTrue(component.Find(".bit-tgi-lbl").ClassList.Contains("cascaded-label"));
         Assert.AreEqual("--s: label;", component.Find(".bit-tgi-lbl").GetAttribute("style"));
         Assert.IsTrue(component.Find(".bit-tgi-tag").ClassList.Contains("cascaded-tag"));
@@ -380,8 +380,8 @@ public class BitTagsInputParamsTests : BunitTestContext
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreEqual(2, instance.MaxTags);
         Assert.IsFalse(instance.Duplicates);
-        CollectionAssert.AreEqual(new[] { "," }, instance.Separators!.ToArray());
-        CollectionAssert.AreEqual(new[] { "b" }, instance.Suggestions!.ToArray());
+        Assert.AreSequenceEqual(new[] { "," }, instance.Separators!.ToArray());
+        Assert.AreSequenceEqual(new[] { "b" }, instance.Suggestions!.ToArray());
         Assert.AreEqual(StringComparison.Ordinal, instance.Comparison);
 
         // Only what the field did not set itself is taken.
@@ -406,14 +406,14 @@ public class BitTagsInputParamsTests : BunitTestContext
         var instance = component.FindComponent<BitTagsInput>().Instance;
 
         // The defaults of the unset Variant and TagVariant are the only classes beside the root's.
-        CollectionAssert.AreEquivalent(new[] { "bit-tgi", "bit-tgi-otl", "bit-tgi-tgf" }, root.ClassList.ToArray());
+        Assert.AreSequenceEqual(new[] { "bit-tgi", "bit-tgi-otl", "bit-tgi-tgf" }, root.ClassList.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsNull(root.GetAttribute("style"));
         Assert.AreEqual("off", input.GetAttribute("autocomplete"));
         Assert.IsFalse(input.HasAttribute("placeholder"));
         Assert.IsFalse(input.HasAttribute("data-separators"));
         Assert.AreEqual(StringComparison.Ordinal, instance.Comparison);
         Assert.AreEqual(0, instance.MaxTags);
-        Assert.AreEqual(0, component.FindAll(".bit-tgi-lbl").Count);
-        Assert.AreEqual(0, component.FindAll("datalist").Count);
+        Assert.IsEmpty(component.FindAll(".bit-tgi-lbl"));
+        Assert.IsEmpty(component.FindAll("datalist"));
     }
 }

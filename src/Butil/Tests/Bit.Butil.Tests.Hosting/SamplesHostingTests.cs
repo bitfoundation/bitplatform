@@ -43,10 +43,10 @@ public class SamplesHostingTests
         // Index.razor lives in Samples.Core like every other sample page, not in the host, so it is served only because
         // the host maps that assembly's @page endpoints - a host that forgot AddAdditionalAssemblies 404s right here.
         using var client = Samples.CreateClient(sample);
-        using var response = await client.GetAsync("/");
+        using var response = await client.GetAsync("/", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "<h1>Bit.Butil</h1>");
+        Assert.Contains("<h1>Bit.Butil</h1>", await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -56,7 +56,7 @@ public class SamplesHostingTests
     public async Task The_bundle_is_on_the_page_before_the_blazor_script(string sample)
     {
         using var client = Samples.CreateClient(sample);
-        var html = await client.GetStringAsync("/");
+        var html = await client.GetStringAsync("/", TestContext.CancellationToken);
 
         // The app boots as soon as blazor.web.js runs, so window.BitButil has to exist by then.
         var bundle = html.IndexOf("<script src=\"_content/Bit.Butil/bit-butil.js\"></script>", StringComparison.Ordinal);
@@ -73,11 +73,12 @@ public class SamplesHostingTests
         // A host without these renders the pages that load them fine and then fails every call on them. The shared nav
         // menu links every page from every host - E2E included - so every host serves every one of them.
         using var client = Samples.CreateClient(sample);
-        using var response = await client.GetAsync(path);
+        using var response = await client.GetAsync(path, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.IsNotNull(response.Content.Headers.ContentType);
         // A page route answering for an asset would still be a 200; the media type is what tells them apart.
-        Assert.AreEqual(mediaType, response.Content.Headers.ContentType?.MediaType, $"{path} was answered by something other than the file.");
+        Assert.AreEqual(mediaType, response.Content.Headers.ContentType.MediaType, $"{path} was answered by something other than the file.");
     }
 
     [TestMethod]
@@ -90,9 +91,11 @@ public class SamplesHostingTests
         // trailing newline, or with its line endings normalized, is still served as text/plain - the test above cannot
         // tell.
         using var client = Samples.CreateClient(sample);
-        using var response = await client.GetAsync("/data/stream-sample.txt");
+        using var response = await client.GetAsync("/data/stream-sample.txt", TestContext.CancellationToken);
 
-        Assert.HasCount(1024, await response.Content.ReadAsByteArrayAsync());
+        Assert.HasCount(1024, await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
     }
+
+    public TestContext TestContext { get; set; }
 }
 #endif

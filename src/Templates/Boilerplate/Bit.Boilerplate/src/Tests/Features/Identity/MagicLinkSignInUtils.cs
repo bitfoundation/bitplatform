@@ -10,7 +10,7 @@ namespace Boilerplate.Tests.Features.Identity;
 /// every lookup here is additionally scoped by the account's e-mail address so it can never pick up another account's message.
 /// </para>
 /// </summary>
-public static class MagicLinkSignInUtils
+internal static class MagicLinkSignInUtils
 {
     /// <summary>A brand-new, unique e-mail address; its local part is a Guid that isolates this account's captured e-mails.</summary>
     public static string NewTestEmail() => $"{Guid.NewGuid()}@bitplatform.dev";

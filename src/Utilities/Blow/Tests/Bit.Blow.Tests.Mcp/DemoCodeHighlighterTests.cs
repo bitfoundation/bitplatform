@@ -5,6 +5,8 @@ using Bit.Blow.Demo.Client.Examples;
 using Bit.Utilities.Demo;
 using Microsoft.AspNetCore.Components;
 
+[assembly: global::Microsoft.VisualStudio.TestTools.UnitTesting.DoNotParallelizeAttribute]
+
 namespace Bit.Blow.Tests.Mcp;
 
 /// <summary>

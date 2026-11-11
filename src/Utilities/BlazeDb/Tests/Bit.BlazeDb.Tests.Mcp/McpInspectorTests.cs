@@ -55,13 +55,13 @@ public class McpInspectorTests
         var numbered = report.Tables.Single(table => table.TypeName == nameof(NumberedItem));
         var item = report.Tables.Single(table => table.TypeName == nameof(InspectedItem));
 
-        CollectionAssert.AreEqual(new[] { 3, 7, 10 }, numbered.Fields.Select(field => field.FieldNumber).ToArray());
+        Assert.AreSequenceEqual(new[] { 3, 7, 10 }, numbered.Fields.Select(field => field.FieldNumber).ToArray());
         Assert.IsTrue(numbered.Fields.All(field => field.Explicit));
         Assert.IsTrue(item.Fields.All(field => field.Explicit is false));
 
         // A type with only automatic numbers is fine to build, and worth a word before it stores data.
-        Assert.IsTrue(report.Notes.Any(note => note.Contains($"'{nameof(InspectedItem)}' follows declaration order", StringComparison.Ordinal)));
-        Assert.IsFalse(report.Notes.Any(note => note.Contains($"'{nameof(NumberedItem)}'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains($"'{nameof(InspectedItem)}' follows declaration order", StringComparison.Ordinal), report.Notes);
+        Assert.DoesNotContain(note => note.Contains($"'{nameof(NumberedItem)}'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -81,10 +81,10 @@ public class McpInspectorTests
 
         Assert.AreEqual("Hash", byMood.Kind);
         Assert.AreEqual("Mood", byMood.KeyType);
-        CollectionAssert.AreEqual(new[] { "Mood" }, byMood.Members);
+        Assert.AreSequenceEqual(new[] { "Mood" }, byMood.Members);
 
-        CollectionAssert.Contains(item.GeneratedMembers, "InspectedItem.Table : BlazeDbTableDescriptor<Guid, InspectedItem>");
-        CollectionAssert.Contains(item.GeneratedMembers, "InspectedItem.Indexes.ByMood : BlazeDbHashIndexDefinition<InspectedItem, Mood>");
+        Assert.Contains("InspectedItem.Table : BlazeDbTableDescriptor<Guid, InspectedItem>", item.GeneratedMembers);
+        Assert.Contains("InspectedItem.Indexes.ByMood : BlazeDbHashIndexDefinition<InspectedItem, Mood>", item.GeneratedMembers);
     }
 
     [TestMethod]
@@ -196,8 +196,8 @@ public class McpInspectorTests
         {
             var report = await InspectAsync(source);
 
-            Assert.IsTrue(report.Diagnostics.Any(d => d.Id == "BLZ019" && d.Source == "generator"), source);
-            Assert.IsFalse(report.Diagnostics.Any(d => d.Source == "compiler"), source);
+            Assert.Contains(d => d.Id == "BLZ019" && d.Source == "generator", report.Diagnostics, source);
+            Assert.DoesNotContain(d => d.Source == "compiler", report.Diagnostics, source);
         }
     }
 
@@ -223,7 +223,7 @@ public class McpInspectorTests
             """);
 
         Assert.IsFalse(report.IsValid);
-        Assert.IsTrue(report.Diagnostics.Any(d => d.Source == "compiler" && d.Id == "CS0246"));
+        Assert.Contains(d => d.Source == "compiler" && d.Id == "CS0246", report.Diagnostics);
     }
 
     [TestMethod]
@@ -233,7 +233,7 @@ public class McpInspectorTests
 
         var report = await InspectAsync(source);
 
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("INCOMPLETE ANALYSIS", StringComparison.Ordinal)));
+        Assert.Contains(note => note.StartsWith("INCOMPLETE ANALYSIS", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -308,10 +308,10 @@ public class McpInspectorTests
         using var http = McpTestHost.CreateHttpClient();
         var source = $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } public int {{new string('a', BlazeDbTableInspector.MaxNameLength + 1)}} { get; set; } }""";
 
-        using var response = await http.GetAsync($"/api/mcp/InspectBlazeDbTable?source={Uri.EscapeDataString(source)}");
+        using var response = await http.GetAsync($"/api/mcp/InspectBlazeDbTable?source={Uri.EscapeDataString(source)}", TestContext.CancellationToken);
 
         Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
-        using var problem = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        using var problem = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
         Assert.Contains("a name is longer than", problem.RootElement.GetProperty("detail").GetString() ?? "");
     }
 
@@ -388,7 +388,7 @@ public class McpInspectorTests
         Assert.AreEqual(descriptor.Name, table.TableName, table.TypeName);
         Assert.AreEqual(descriptor.KeyMember, table.Key, table.TypeName);
 
-        CollectionAssert.AreEqual(descriptor.Indexes.Select(index => index.Name).ToArray(), table.Indexes.Select(index => index.Name).ToArray(), table.TypeName);
+        Assert.AreSequenceEqual(descriptor.Indexes.Select(index => index.Name).ToArray(), table.Indexes.Select(index => index.Name).ToArray(), table.TypeName);
 
         foreach (var index in descriptor.Indexes)
         {
@@ -397,7 +397,7 @@ public class McpInspectorTests
 
             Assert.AreEqual(index.IsUnique, reported.Unique, index.Name);
             Assert.AreEqual(ordered ? "Ordered" : "Hash", reported.Kind, index.Name);
-            CollectionAssert.AreEqual(index.Members.ToArray(), reported.Members, index.Name);
+            Assert.AreSequenceEqual(index.Members.ToArray(), reported.Members, index.Name);
         }
 
         var writer = new BlazeDbBufferWriter();
@@ -405,7 +405,7 @@ public class McpInspectorTests
 
         var written = ReadTags(writer.WrittenSpan.ToArray());
 
-        CollectionAssert.AreEquivalent(written.Keys.ToArray(), table.Fields.Select(field => field.FieldNumber).ToArray(), table.TypeName);
+        Assert.AreSequenceEqual(written.Keys.ToArray(), table.Fields.Select(field => field.FieldNumber).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, table.TypeName);
 
         foreach (var field in table.Fields)
         {
@@ -418,7 +418,7 @@ public class McpInspectorTests
             .Select(property => property.Name)
             .ToArray();
 
-        CollectionAssert.AreEquivalent(stored, table.Fields.Select(field => field.Property).ToArray(), table.TypeName);
+        Assert.AreSequenceEqual(stored, table.Fields.Select(field => field.Property).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, table.TypeName);
         Assert.AreEqual(descriptor.KeyMember, table.Fields.Single(field => field.IsKey).Property, table.TypeName);
     }
 
@@ -437,4 +437,6 @@ public class McpInspectorTests
 
         return tags;
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

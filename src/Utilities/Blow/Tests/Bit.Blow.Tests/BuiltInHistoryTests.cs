@@ -61,7 +61,7 @@ public class BuiltInHistoryTests : BunitContext
 
         Assert.IsNotNull(cut.Instance.History);
         Assert.IsFalse(cut.Instance.CanUndo);
-        Assert.AreEqual(2, cut.Instance.History!.Current!.Nodes.Count);
+        Assert.HasCount(2, cut.Instance.History!.Current!.Nodes);
     }
 
     [TestMethod]
@@ -137,7 +137,7 @@ public class BuiltInHistoryTests : BunitContext
         await cut.InvokeAsync(() => cut.Instance.UndoAsync());
 
         // The cascaded edge comes back with the node it was hanging off.
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
         Assert.ContainsSingle(edges);
     }
 
@@ -150,11 +150,11 @@ public class BuiltInHistoryTests : BunitContext
 
         cut.Instance.Copy();
         await cut.InvokeAsync(() => cut.Instance.PasteAsync());
-        Assert.AreEqual(3, nodes.Count);
+        Assert.HasCount(3, nodes);
 
         await cut.InvokeAsync(() => cut.Instance.UndoAsync());
 
-        Assert.AreEqual(2, nodes.Count);
+        Assert.HasCount(2, nodes);
     }
 
     [TestMethod]

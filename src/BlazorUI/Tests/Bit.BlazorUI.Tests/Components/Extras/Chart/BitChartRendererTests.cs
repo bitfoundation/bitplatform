@@ -31,8 +31,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions();
         Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(0, options.Scales.Count,
-            "the renderer must complete the scales locally so one options instance can be shared between charts");
+        Assert.IsEmpty(options.Scales, "the renderer must complete the scales locally so one options instance can be shared between charts");
     }
 
     [TestMethod]
@@ -80,10 +79,10 @@ public class BitChartRendererTests
         var a = Render(new BitChartConfig(BitChartType.Line, data), uid: "chartA");
         var b = Render(new BitChartConfig(BitChartType.Line, data), uid: "chartB");
 
-        Assert.IsTrue(a.Defs[0].Id.StartsWith("chartA"), a.Defs[0].Id);
-        Assert.IsTrue(b.Defs[0].Id.StartsWith("chartB"), b.Defs[0].Id);
+        Assert.StartsWith("chartA", a.Defs[0].Id, a.Defs[0].Id);
+        Assert.StartsWith("chartB", b.Defs[0].Id, b.Defs[0].Id);
         Assert.AreNotEqual(a.Defs[0].Id, b.Defs[0].Id, "two charts on one page must not share a defs id");
-        Assert.IsTrue(a.Patterns[0].Id.StartsWith("chartA"), a.Patterns[0].Id);
+        Assert.StartsWith("chartA", a.Patterns[0].Id, a.Patterns[0].Id);
     }
 
     // ---- bar styling ----
@@ -164,7 +163,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, data));
 
         var tiny = (BitChartSvgRect)scene.Elements[1].Shape;
-        Assert.IsTrue(tiny.Height >= 12, $"expected at least 12px, got {tiny.Height}");
+        Assert.IsGreaterThanOrEqualTo(12, tiny.Height, $"expected at least 12px, got {tiny.Height}");
     }
 
     [TestMethod]
@@ -224,8 +223,7 @@ public class BitChartRendererTests
 
         var shared = (BitChartSvgRect)scene.Elements.First(e => e.DatasetIndex == 1 && e.DataIndex == 0).Shape;
         var alone = (BitChartSvgRect)scene.Elements.First(e => e.DatasetIndex == 1 && e.DataIndex == 1).Shape;
-        Assert.IsTrue(alone.Width > shared.Width * 1.8,
-            $"the surviving bar fills the category ({alone.Width} vs {shared.Width})");
+        Assert.IsGreaterThan(shared.Width * 1.8, alone.Width, $"the surviving bar fills the category ({alone.Width} vs {shared.Width})");
     }
 
     [TestMethod]
@@ -294,7 +292,7 @@ public class BitChartRendererTests
 
         Assert.AreEqual(0, scene.DataRanges["y"].Min, 1e-6);
         Assert.AreEqual(100, scene.DataRanges["y"].Max, 1e-6);
-        Assert.IsTrue(scene.Series.Count > 0);
+        Assert.IsNotEmpty(scene.Series);
     }
 
     // ---- line / area ----
@@ -379,7 +377,7 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data));
 
-        Assert.AreEqual(1, scene.Defs.Count, "a gap must not add a duplicate gradient definition");
+        Assert.ContainsSingle(scene.Defs, "a gap must not add a duplicate gradient definition");
     }
 
     [TestMethod]
@@ -392,8 +390,7 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data));
 
-        Assert.AreEqual(3, scene.Elements.Count,
-            "a line drawn without markers still needs hit targets, otherwise it can never show a tooltip");
+        Assert.HasCount(3, scene.Elements, "a line drawn without markers still needs hit targets, otherwise it can never show a tooltip");
     }
 
     [TestMethod]
@@ -406,7 +403,7 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data));
 
-        Assert.AreEqual(0, scene.Elements.Count);
+        Assert.IsEmpty(scene.Elements);
     }
 
     // ---- hit bands ----
@@ -416,7 +413,7 @@ public class BitChartRendererTests
     {
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3)));
 
-        Assert.AreEqual(3, scene.HitBands.Count);
+        Assert.HasCount(3, scene.HitBands);
         var plot = scene.PlotArea!.Value;
         Assert.AreEqual(plot.Left, scene.HitBands.First().X, 0.5);
         Assert.AreEqual(plot.Right, scene.HitBands.Last().X + scene.HitBands.Last().Width, 0.5);
@@ -428,7 +425,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Interaction = { Intersect = true } };
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(0, scene.HitBands.Count);
+        Assert.IsEmpty(scene.HitBands);
     }
 
     [TestMethod]
@@ -443,8 +440,8 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Scatter, data));
 
-        Assert.AreEqual(0, scene.HitBands.Count, "scatter points are placed by value, so index bands make no sense");
-        Assert.AreEqual(3, scene.Elements.Count);
+        Assert.IsEmpty(scene.HitBands, "scatter points are placed by value, so index bands make no sense");
+        Assert.HasCount(3, scene.Elements);
     }
 
     [TestMethod]
@@ -453,7 +450,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { IndexAxis = BitChartIndexAxis.Y };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(3, scene.HitBands.Count);
+        Assert.HasCount(3, scene.HitBands);
         var plot = scene.PlotArea!.Value;
         Assert.AreEqual(plot.Width, scene.HitBands[0].Width, 0.5);
     }
@@ -481,7 +478,7 @@ public class BitChartRendererTests
         }));
 
         var plot = scene.PlotArea!.Value;
-        Assert.AreEqual(3, scene.HitBands.Count);
+        Assert.HasCount(3, scene.HitBands);
         for (int k = 0; k < 3; k++)
         {
             var band = scene.HitBands.Single(b => b.DataIndex == k);
@@ -502,7 +499,7 @@ public class BitChartRendererTests
     {
         var scene = Render(new BitChartConfig(type, Bars(1, 2, 3)));
 
-        Assert.IsTrue(scene.Elements.Count > 0);
+        Assert.IsNotEmpty(scene.Elements);
         foreach (var el in scene.Elements)
             Assert.IsNotNull(el.HoverShape, $"{type} elements must know how they look when hovered");
     }
@@ -569,7 +566,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(10, 20, 30), options));
 
         var labels = scene.Foreground.OfType<BitChartSvgText>().ToList();
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
         for (int i = 0; i < labels.Count; i++)
             Assert.AreEqual(scene.Elements[i].CenterY, labels[i].Y, 0.01,
                 "a horizontal bar's label must be vertically centered on its bar");
@@ -581,7 +578,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Plugins = { DataLabels = { Display = true } } };
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(3, scene.Foreground.OfType<BitChartSvgText>().Count());
+        Assert.HasCount(3, scene.Foreground.OfType<BitChartSvgText>());
     }
 
     [TestMethod]
@@ -590,7 +587,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Plugins = { DataLabels = { Display = true, ShowOnPoints = false } } };
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgText>().Count());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgText>());
     }
 
     [TestMethod]
@@ -624,8 +621,8 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Line, data, options));
 
         var labels = scene.Background.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
-        Assert.IsTrue(labels.Any(l => l.Contains('.')), string.Join("|", labels));
-        Assert.IsFalse(labels.Any(l => l.Contains(',')), string.Join("|", labels));
+        Assert.Contains(l => l.Contains('.'), labels, string.Join("|", labels));
+        Assert.DoesNotContain(l => l.Contains(','), labels, string.Join("|", labels));
     }
 
     [TestMethod]
@@ -638,7 +635,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
         var labels = scene.Background.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
-        Assert.IsTrue(labels.Any(l => l.Contains('.')), string.Join("|", labels));
+        Assert.Contains(l => l.Contains('.'), labels, string.Join("|", labels));
     }
 
     // ---- axes ----
@@ -652,8 +649,7 @@ public class BitChartRendererTests
             return scene.Background.OfType<BitChartSvgText>().Count();
         }
 
-        Assert.IsTrue(TickCount(120) < TickCount(700),
-            "the tick count has to follow the space actually available along the axis");
+        Assert.IsLessThan(TickCount(700), TickCount(120), "the tick count has to follow the space actually available along the axis");
     }
 
     [TestMethod]
@@ -668,7 +664,7 @@ public class BitChartRendererTests
             return Render(new BitChartConfig(BitChartType.Line, Bars(1000, 2000, 3000), options)).PlotArea!.Value;
         }
 
-        Assert.IsTrue(Plot(true).Left < Plot(false).Left);
+        Assert.IsLessThan(Plot(false).Left, Plot(true).Left);
     }
 
     [TestMethod]
@@ -683,7 +679,7 @@ public class BitChartRendererTests
             return Render(new BitChartConfig(BitChartType.Line, Bars(1000, 2000, 3000), options)).PlotArea!.Value;
         }
 
-        Assert.IsTrue(Plot(false).Left < Plot(true).Left);
+        Assert.IsLessThan(Plot(true).Left, Plot(false).Left);
     }
 
     [TestMethod]
@@ -714,7 +710,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Plugins = { Legend = { Filter = i => i.Text != "drop" } } };
         var scene = Render(new BitChartConfig(BitChartType.Bar, data, options));
 
-        Assert.AreEqual(1, scene.Legend!.Items.Count);
+        Assert.ContainsSingle(scene.Legend!.Items);
         Assert.AreEqual("keep", scene.Legend.Items[0].Text);
     }
 
@@ -723,7 +719,7 @@ public class BitChartRendererTests
     {
         var scene = Render(new BitChartConfig(BitChartType.Doughnut, Bars(1, 2, 3)));
 
-        Assert.AreEqual(3, scene.Legend!.Items.Count);
+        Assert.HasCount(3, scene.Legend!.Items);
         Assert.IsTrue(scene.Legend.Items.All(i => i.IsDataIndex));
     }
 
@@ -790,9 +786,9 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, data));
 
         Assert.IsTrue(scene.HasBars);
-        Assert.IsTrue(scene.Series.Count > 0, "the line dataset must contribute a series path");
-        Assert.IsTrue(scene.Elements.Any(e => e.Shape is BitChartSvgRect));
-        Assert.IsTrue(scene.Elements.Any(e => e.Shape is BitChartSvgCircle));
+        Assert.IsNotEmpty(scene.Series, "the line dataset must contribute a series path");
+        Assert.Contains(e => e.Shape is BitChartSvgRect, scene.Elements);
+        Assert.Contains(e => e.Shape is BitChartSvgCircle, scene.Elements);
     }
 
     [TestMethod]
@@ -813,8 +809,8 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, data, options));
 
-        Assert.IsTrue(scene.AxisRanges["y"].Max < 100);
-        Assert.IsTrue(scene.AxisRanges["y2"].Max >= 2000);
+        Assert.IsLessThan(100, scene.AxisRanges["y"].Max);
+        Assert.IsGreaterThanOrEqualTo(2000, scene.AxisRanges["y2"].Max);
     }
 
     // ---- plugins ----
@@ -830,8 +826,8 @@ public class BitChartRendererTests
         var before = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3))).Foreground.Count;
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.IsTrue(scene.Foreground.Count > before);
-        Assert.IsTrue(scene.Background.OfType<BitChartSvgLine>().Any());
+        Assert.IsGreaterThan(before, scene.Foreground.Count);
+        Assert.IsNotEmpty(scene.Background.OfType<BitChartSvgLine>());
     }
 
     [TestMethod]
@@ -845,7 +841,7 @@ public class BitChartRendererTests
             return scene.Foreground.OfType<BitChartSvgRect>().First().Width;
         }
 
-        Assert.IsTrue(Width("iiii") < Width("WWWW"), "the label pill is measured, not counted");
+        Assert.IsLessThan(Width("WWWW"), Width("iiii"), "the label pill is measured, not counted");
     }
 
     [TestMethod]
@@ -858,7 +854,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
         var pills = scene.Foreground.OfType<BitChartSvgRect>().Select(r => r.Fill).ToList();
-        CollectionAssert.AreEqual(new[] { "#2ecc71", "#000000" }, pills);
+        Assert.AreSequenceEqual(new[] { "#2ecc71", "#000000" }, pills);
     }
 
     [TestMethod]
@@ -866,8 +862,8 @@ public class BitChartRendererTests
     {
         var annotation = new BitChartAnnotation();
 
-        StringAssert.StartsWith(annotation.Color, "var(--bit-Chart-annotation-color,");
-        StringAssert.StartsWith(annotation.LabelColor, "var(--bit-Chart-annotation-label-color,");
+        Assert.StartsWith("var(--bit-Chart-annotation-color,", annotation.Color);
+        Assert.StartsWith("var(--bit-Chart-annotation-label-color,", annotation.LabelColor);
         Assert.IsNull(annotation.LabelBackground);
     }
 
@@ -885,14 +881,13 @@ public class BitChartRendererTests
             new BitChartAnnotation { Orientation = BitChartLineOrientation.Vertical, XIsIndex = true, Value = 1, Label = "Launch" },
             new BitChartAnnotation { Kind = BitChartAnnotationKind.Box, Label = "Low", Description = "Low band: under 1" },
             new BitChartAnnotation { Value = 1 });
-        CollectionAssert.AreEqual(new[] { "Target: 2,5", "Launch: B", "Low band: under 1" },
-            ((IBitChartPlugin)annotations).Describe(line).ToArray(), "a mark with neither a label nor a description is decoration");
+        Assert.AreSequenceEqual(new[] { "Target: 2,5", "Launch: B", "Low band: under 1" }, ((IBitChartPlugin)annotations).Describe(line).ToArray(), "a mark with neither a label nor a description is decoration");
 
         var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline());
-        CollectionAssert.AreEqual(new[] { "Trend (Sales)" }, ((IBitChartPlugin)trend).Describe(line).ToArray());
+        Assert.AreSequenceEqual(new[] { "Trend (Sales)" }, ((IBitChartPlugin)trend).Describe(line).ToArray());
 
-        CollectionAssert.AreEqual(new[] { "120 total" }, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(doughnut).ToArray());
-        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin()).Describe(doughnut).Count());
+        Assert.AreSequenceEqual(new[] { "120 total" }, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(doughnut).ToArray());
+        Assert.IsEmpty(((IBitChartPlugin)new BitChartCenterTextPlugin()).Describe(doughnut));
     }
 
     [TestMethod]
@@ -904,16 +899,16 @@ public class BitChartRendererTests
         var doughnut = Render(new BitChartConfig(BitChartType.Doughnut, data, new BitChartOptions())).PluginContext!;
 
         // The cutout text is drawn on a circular chart only, the annotations and trend lines on a cartesian one only.
-        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(bar).Count());
-        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartAnnotationPlugin(new BitChartAnnotation { Value = 2, Label = "Target" })).Describe(doughnut).Count());
-        Assert.AreEqual(0, ((IBitChartPlugin)new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" })).Describe(doughnut).Count());
+        Assert.IsEmpty(((IBitChartPlugin)new BitChartCenterTextPlugin("120", "total")).Describe(bar));
+        Assert.IsEmpty(((IBitChartPlugin)new BitChartAnnotationPlugin(new BitChartAnnotation { Value = 2, Label = "Target" })).Describe(doughnut));
+        Assert.IsEmpty(((IBitChartPlugin)new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" })).Describe(doughnut));
 
         // A trend line fitted to a hidden dataset, or to one that does not exist, is not drawn and so not said.
         var trend = new BitChartTrendlinePlugin(new BitChartTrendline { Label = "Trend" }, new BitChartTrendline { Label = "Ghost", DatasetIndex = 5 });
-        Assert.AreEqual(1, ((IBitChartPlugin)trend).Describe(bar).Count());
+        Assert.ContainsSingle(((IBitChartPlugin)trend).Describe(bar));
         data.Datasets[0].Hidden = true;
         var hidden = Render(new BitChartConfig(BitChartType.Bar, data, new BitChartOptions())).PluginContext!;
-        Assert.AreEqual(0, ((IBitChartPlugin)trend).Describe(hidden).Count());
+        Assert.IsEmpty(((IBitChartPlugin)trend).Describe(hidden));
     }
 
     [TestMethod]
@@ -938,11 +933,13 @@ public class BitChartRendererTests
 
         var plugin = new BitChartAnnotationPlugin(new BitChartAnnotation
         {
-            Orientation = BitChartLineOrientation.Vertical, Value = new DateTime(2026, 3, 1).ToOADate(), Label = "Launch"
+            Orientation = BitChartLineOrientation.Vertical,
+            Value = new DateTime(2026, 3, 1).ToOADate(),
+            Label = "Launch"
         });
 
         // The axis ticks in months over half a year, so the line is named in the same unit the axis labels it with.
-        CollectionAssert.AreEqual(new[] { "Launch: Mar 2026" }, ((IBitChartPlugin)plugin).Describe(ctx).ToArray());
+        Assert.AreSequenceEqual(new[] { "Launch: Mar 2026" }, ((IBitChartPlugin)plugin).Describe(ctx).ToArray());
     }
 
     [TestMethod]
@@ -953,8 +950,8 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Doughnut, Bars(1, 2, 3), options));
 
         var texts = scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
-        CollectionAssert.Contains(texts, "120");
-        CollectionAssert.Contains(texts, "total");
+        Assert.Contains("120", texts);
+        Assert.Contains("total", texts);
     }
 
     // ---- tooltips ----
@@ -977,7 +974,7 @@ public class BitChartRendererTests
         var options = new BitChartOptions { Culture = new CultureInfo("de-DE") };
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1.5), options));
 
-        StringAssert.Contains(scene.Elements[0].Tooltip.Items[0].Text, "1,5");
+        Assert.Contains("1,5", scene.Elements[0].Tooltip.Items[0].Text);
     }
 
     // ---- horizontal (index axis = y) layout ----
@@ -999,8 +996,7 @@ public class BitChartRendererTests
         double narrow = Plot("A", "B", "C").Left;
         double wide = Plot("A very long category name", "B", "C").Left;
 
-        Assert.IsTrue(wide > narrow + 40,
-            $"the categories run down the left edge, so their width is what must be reserved ({wide} vs {narrow})");
+        Assert.IsGreaterThan(narrow + 40, wide, $"the categories run down the left edge, so their width is what must be reserved ({wide} vs {narrow})");
     }
 
     [TestMethod]
@@ -1009,8 +1005,8 @@ public class BitChartRendererTests
         var options = new BitChartOptions { IndexAxis = BitChartIndexAxis.Y };
         var plot = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options)).PlotArea!.Value;
 
-        Assert.IsTrue(plot.Bottom < 300 - 10, $"the value axis under the plot needs room: bottom was {plot.Bottom}");
-        Assert.IsTrue(plot.Right > 580, $"nothing is drawn on the right, so nothing should be reserved: right was {plot.Right}");
+        Assert.IsLessThan(300 - 10, plot.Bottom, $"the value axis under the plot needs room: bottom was {plot.Bottom}");
+        Assert.IsGreaterThan(580, plot.Right, $"nothing is drawn on the right, so nothing should be reserved: right was {plot.Right}");
     }
 
     [TestMethod]
@@ -1027,7 +1023,7 @@ public class BitChartRendererTests
         foreach (var text in scene.Background.OfType<BitChartSvgText>().Where(t => t.Anchor == "end"))
         {
             double left = text.X - BitChartTextMeasure.Width(text.Text, text.FontSize);
-            Assert.IsTrue(left >= -0.5, $"'{text.Text}' starts at {left}, outside the chart");
+            Assert.IsGreaterThanOrEqualTo(-0.5, left, $"'{text.Text}' starts at {left}, outside the chart");
         }
     }
 
@@ -1117,8 +1113,8 @@ public class BitChartRendererTests
         };
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), options));
 
-        Assert.IsTrue(scene.ReversedAxes.Contains("y"));
-        Assert.IsFalse(scene.ReversedAxes.Contains("x"));
+        Assert.Contains("y", scene.ReversedAxes);
+        Assert.DoesNotContain("x", scene.ReversedAxes);
     }
 
     // ---- radial label space ----
@@ -1144,8 +1140,7 @@ public class BitChartRendererTests
         double shortLabels = Radius("A", "B", "C", "D");
         double longLabels = Radius("A", "Operational excellence", "C", "D");
 
-        Assert.IsTrue(longLabels < shortLabels - 20,
-            $"a long category name has to be measured, not assumed ({longLabels} vs {shortLabels})");
+        Assert.IsLessThan(shortLabels - 20, longLabels, $"a long category name has to be measured, not assumed ({longLabels} vs {shortLabels})");
     }
 
     [TestMethod]
@@ -1162,8 +1157,8 @@ public class BitChartRendererTests
         {
             double w = BitChartTextMeasure.Width(text.Text, text.FontSize, text.FontWeight);
             double left = text.Anchor switch { "end" => text.X - w, "middle" => text.X - w / 2, _ => text.X };
-            Assert.IsTrue(left >= -1, $"'{text.Text}' starts at {left}");
-            Assert.IsTrue(left + w <= 601, $"'{text.Text}' ends at {left + w}");
+            Assert.IsGreaterThanOrEqualTo(-1, left, $"'{text.Text}' starts at {left}");
+            Assert.IsLessThanOrEqualTo(601, left + w, $"'{text.Text}' ends at {left + w}");
         }
     }
 
@@ -1185,7 +1180,7 @@ public class BitChartRendererTests
             return scene.Background.OfType<BitChartSvgCircle>().Max(c => c.R);
         }
 
-        Assert.IsTrue(Radius("A distinctly long slice name", "B", "C") < Radius("A", "B", "C") - 10);
+        Assert.IsLessThan(Radius("A", "B", "C") - 10, Radius("A distinctly long slice name", "B", "C"));
     }
 
     // ---- axes at the zero line ----
@@ -1210,10 +1205,8 @@ public class BitChartRendererTests
 
         // Both axis lines run through the middle of a symmetric plot rather than along its edges.
         var lines = scene.Background.OfType<BitChartSvgLine>().ToList();
-        Assert.IsTrue(lines.Any(l => Math.Abs(l.X1 - l.X2) < 0.01 && Math.Abs(l.X1 - plot.CenterX) < plot.Width * 0.1),
-            "expected a vertical axis line near the horizontal center");
-        Assert.IsTrue(lines.Any(l => Math.Abs(l.Y1 - l.Y2) < 0.01 && Math.Abs(l.Y1 - plot.CenterY) < plot.Height * 0.1),
-            "expected a horizontal axis line near the vertical center");
+        Assert.Contains(l => Math.Abs(l.X1 - l.X2) < 0.01 && Math.Abs(l.X1 - plot.CenterX) < plot.Width * 0.1, lines, "expected a vertical axis line near the horizontal center");
+        Assert.Contains(l => Math.Abs(l.Y1 - l.Y2) < 0.01 && Math.Abs(l.Y1 - plot.CenterY) < plot.Height * 0.1, lines, "expected a horizontal axis line near the vertical center");
     }
 
     [TestMethod]
@@ -1228,8 +1221,7 @@ public class BitChartRendererTests
             return Render(new BitChartConfig(BitChartType.Line, Bars(1000, 2000, 3000), options)).PlotArea!.Value;
         }
 
-        Assert.IsTrue(Plot(BitPlacement.Center).Left < Plot(BitPlacement.Left).Left,
-            "a centered axis lives inside the plot, so it must not push the plot inwards");
+        Assert.IsLessThan(Plot(BitPlacement.Left).Left, Plot(BitPlacement.Center).Left, "a centered axis lives inside the plot, so it must not push the plot inwards");
     }
 
     // ---- reversed value axis ----
@@ -1257,7 +1249,7 @@ public class BitChartRendererTests
         // Normally the bar hangs down to the axis at the bottom; reversed, zero is at the top and the
         // bar hangs down from it. Either way it starts at the baseline and is the same length.
         Assert.AreEqual(normal.Height, reversed.Height, 0.5);
-        Assert.IsTrue(reversed.Y < normal.Y, $"reversed bar top {reversed.Y}, normal {normal.Y}");
+        Assert.IsLessThan(normal.Y, reversed.Y, $"reversed bar top {reversed.Y}, normal {normal.Y}");
     }
 
     [TestMethod]
@@ -1303,9 +1295,9 @@ public class BitChartRendererTests
         var options = new BitChartOptions { CutoutPercentage = 100 };
         var scene = Render(new BitChartConfig(BitChartType.Doughnut, Bars(1, 2, 3), options));
 
-        Assert.AreEqual(3, scene.Elements.Count);
+        Assert.HasCount(3, scene.Elements);
         foreach (var el in scene.Elements)
-            Assert.IsFalse(((BitChartSvgPath)el.Shape).D.Contains("NaN"));
+            Assert.DoesNotContain("NaN", ((BitChartSvgPath)el.Shape).D);
     }
 
     [TestMethod]
@@ -1322,7 +1314,7 @@ public class BitChartRendererTests
 
         var scene = Render(new BitChartConfig(BitChartType.Line, data));
 
-        Assert.AreEqual(2, scene.Elements.Count);
+        Assert.HasCount(2, scene.Elements);
     }
 
     [TestMethod]
@@ -1360,8 +1352,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Radar, data, options));
 
         // Circular rings only appear when the named scale is the one actually being read.
-        Assert.IsTrue(scene.Background.OfType<BitChartSvgCircle>().Any(),
-            "the scale named by RAxisID must be the one the chart uses");
+        Assert.IsNotEmpty(scene.Background.OfType<BitChartSvgCircle>(), "the scale named by RAxisID must be the one the chart uses");
     }
 
     // ---- percentage stacking ----
@@ -1395,8 +1386,8 @@ public class BitChartRendererTests
         var scene = Render(PercentStack([10, 10, 10], [-10, -10, -10]));
 
         var range = scene.AxisRanges["y"];
-        Assert.IsTrue(range.Min <= -50, $"a negative share must stay inside the axis, but it stops at {range.Min}");
-        Assert.IsTrue(range.Max >= 50, $"the positive share must stay inside the axis, but it stops at {range.Max}");
+        Assert.IsLessThanOrEqualTo(-50, range.Min, $"a negative share must stay inside the axis, but it stops at {range.Min}");
+        Assert.IsGreaterThanOrEqualTo(50, range.Max, $"the positive share must stay inside the axis, but it stops at {range.Max}");
     }
 
     [TestMethod]
@@ -1405,7 +1396,7 @@ public class BitChartRendererTests
         var scene = Render(PercentStack([10, 10, 10], [-10, -10, -10]));
         var plot = scene.PlotArea!.Value;
 
-        Assert.AreEqual(6, scene.Elements.Count);
+        Assert.HasCount(6, scene.Elements);
         foreach (var el in scene.Elements)
         {
             var r = (BitChartSvgRect)el.Shape;
@@ -1422,14 +1413,15 @@ public class BitChartRendererTests
         var options = new BitChartOptions();
         options.Scales["x"] = new BitChartScaleOptions
         {
-            Id = "x", Type = BitChartScaleType.Category, Ticks = { MinRotation = 30 }
+            Id = "x",
+            Type = BitChartScaleType.Category,
+            Ticks = { MinRotation = 30 }
         };
 
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
 
         // Short labels over a wide axis fit horizontally, but MinRotation is an instruction, not a fallback.
-        Assert.IsTrue(scene.Background.OfType<BitChartSvgText>().Any(t => Math.Abs(t.Rotation - 30) < 1e-6),
-            "MinRotation must be applied even when the labels would have fitted unrotated");
+        Assert.Contains(t => Math.Abs(t.Rotation - 30) < 1e-6, scene.Background.OfType<BitChartSvgText>(), "MinRotation must be applied even when the labels would have fitted unrotated");
     }
 
     [TestMethod]
@@ -1469,7 +1461,7 @@ public class BitChartRendererTests
         {
             var sided = scene.Background.OfType<BitChartSvgText>().Where(t => t.Anchor != "middle").ToList();
 
-            Assert.IsTrue(sided.Count > 1, $"{name}: labels start or end at their place");
+            Assert.IsGreaterThan(1, sided.Count, $"{name}: labels start or end at their place");
             foreach (var text in sided)
                 Assert.IsTrue(text.PhysicalAnchor, $"{name}: '{text.Text}' {text.Anchor} follows the reading direction");
         }
@@ -1485,7 +1477,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(1, 2, 3), options));
         var labels = scene.Background.OfType<BitChartSvgText>().Where(t => t.Text is "A" or "B" or "C").ToList();
 
-        Assert.AreEqual(3, labels.Count);
+        Assert.HasCount(3, labels);
         foreach (var label in labels)
         {
             Assert.AreEqual("start", label.Anchor, label.Text);
@@ -1506,7 +1498,7 @@ public class BitChartRendererTests
 
         var scene = Render(new BitChartConfig(BitChartType.PolarArea, data));
 
-        Assert.AreEqual(0, scene.Elements.Count, "a hidden dataset must not still be drawn");
+        Assert.IsEmpty(scene.Elements, "a hidden dataset must not still be drawn");
         Assert.IsTrue(scene.IsEmpty);
     }
 
@@ -1525,7 +1517,7 @@ public class BitChartRendererTests
 
         var scene = Render(new BitChartConfig(BitChartType.PolarArea, data));
 
-        Assert.AreEqual(3, scene.Elements.Count);
+        Assert.HasCount(3, scene.Elements);
         Assert.IsTrue(scene.Elements.All(e => e.DatasetIndex == 1),
             "the visible dataset is the one that should be drawn, not the hidden first one");
     }
@@ -1547,7 +1539,7 @@ public class BitChartRendererTests
 
         // The 5 sits below the axis minimum: it collapses to nothing rather than drawing a wedge
         // through the far side of the center.
-        Assert.AreEqual(2, scene.Elements.Count);
+        Assert.HasCount(2, scene.Elements);
         foreach (var el in scene.Elements)
             Assert.IsFalse(((BitChartSvgPath)el.Shape).D.Contains('-'),
                 "no arc coordinate should come out negative from a clamped radius");
@@ -1580,7 +1572,7 @@ public class BitChartRendererTests
         Assert.AreEqual(1, probe.Before, $"{type} must give plugins their before-draw hook");
         Assert.AreEqual(1, probe.After, $"{type} must give plugins their after-draw hook");
         Assert.IsFalse(probe.SawCartesian);
-        Assert.IsTrue(probe.OuterRadius > 0, "a radial context has to carry the geometry plugins draw against");
+        Assert.IsGreaterThan(0, probe.OuterRadius, "a radial context has to carry the geometry plugins draw against");
     }
 
     [TestMethod]
@@ -1592,8 +1584,8 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Radar, Bars(1, 2, 3), options));
 
         var texts = scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList();
-        CollectionAssert.Contains(texts, "87");
-        CollectionAssert.Contains(texts, "score");
+        Assert.Contains("87", texts);
+        Assert.Contains("score", texts);
     }
 
     // ---- arcs: corner radius and ring weight ----
@@ -1621,8 +1613,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Pie, data));
 
         foreach (var el in scene.Elements)
-            StringAssert.StartsWith(((BitChartSvgPath)el.Shape).D, "M ",
-                "a pie wedge is still drawn from its point outwards");
+            Assert.StartsWith("M ", ((BitChartSvgPath)el.Shape).D, "a pie wedge is still drawn from its point outwards");
     }
 
     [TestMethod]
@@ -1659,10 +1650,8 @@ public class BitChartRendererTests
             return Math.Sqrt(dx * dx + dy * dy);
         }
 
-        Assert.IsTrue(MidRadius(0, 2, 1) < MidRadius(0, 1, 1),
-            "a heavier outer ring claims radius inwards, so its own midpoint moves towards the center");
-        Assert.IsTrue(MidRadius(1, 1, 2) > MidRadius(1, 1, 1),
-            "a heavier inner ring claims radius outwards, so its own midpoint moves away from the center");
+        Assert.IsLessThan(MidRadius(0, 1, 1), MidRadius(0, 2, 1), "a heavier outer ring claims radius inwards, so its own midpoint moves towards the center");
+        Assert.IsGreaterThan(MidRadius(1, 1, 1), MidRadius(1, 1, 2), "a heavier inner ring claims radius outwards, so its own midpoint moves away from the center");
     }
 
     [TestMethod]
@@ -1715,7 +1704,7 @@ public class BitChartRendererTests
 
         Assert.IsNull(scene.Title, "a sparkline carries no title");
         Assert.IsNull(scene.Legend, "a sparkline carries no legend");
-        Assert.AreEqual(0, scene.Background.Count, "a sparkline draws no axis, grid or tick label");
+        Assert.IsEmpty(scene.Background, "a sparkline draws no axis, grid or tick label");
     }
 
     [TestMethod]
@@ -1724,8 +1713,8 @@ public class BitChartRendererTests
         var plain = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3)));
         var spark = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
 
-        Assert.IsTrue(spark.PlotArea!.Value.Width > plain.PlotArea!.Value.Width);
-        Assert.IsTrue(spark.PlotArea!.Value.Height > plain.PlotArea!.Value.Height);
+        Assert.IsGreaterThan(plain.PlotArea!.Value.Width, spark.PlotArea!.Value.Width);
+        Assert.IsGreaterThan(plain.PlotArea!.Value.Height, spark.PlotArea!.Value.Height);
     }
 
     [TestMethod]
@@ -1733,8 +1722,8 @@ public class BitChartRendererTests
     {
         var scene = Render(new BitChartConfig(BitChartType.Line, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
 
-        Assert.AreEqual(3, scene.Elements.Count, "dropping the chrome must not drop the data");
-        Assert.IsTrue(scene.HitBands.Count > 0, "the plot stays hoverable");
+        Assert.HasCount(3, scene.Elements, "dropping the chrome must not drop the data");
+        Assert.IsNotEmpty(scene.HitBands, "the plot stays hoverable");
     }
 
     [TestMethod]
@@ -1742,8 +1731,7 @@ public class BitChartRendererTests
     {
         var spark = Render(new BitChartConfig(BitChartType.Radar, Bars(1, 2, 3), new BitChartOptions { Sparkline = true }));
 
-        Assert.IsFalse(spark.Background.OfType<BitChartSvgText>().Any(),
-            "a sparkline radar draws no point labels or radial ticks");
+        Assert.IsEmpty(spark.Background.OfType<BitChartSvgText>(), "a sparkline radar draws no point labels or radial ticks");
     }
 
     // ---- trendlines ----
@@ -1763,8 +1751,8 @@ public class BitChartRendererTests
         var falling = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: Bars(3, 2, 1));
 
         // A rising series maps to a falling pixel path (y grows downwards), and vice versa.
-        Assert.IsTrue(EndY(rising) < StartY(rising), "a rising series must give a rising trend line");
-        Assert.IsTrue(EndY(falling) > StartY(falling), "a falling series must give a falling trend line");
+        Assert.IsLessThan(StartY(rising), EndY(rising), "a rising series must give a rising trend line");
+        Assert.IsGreaterThan(StartY(falling), EndY(falling), "a falling series must give a falling trend line");
     }
 
     private static BitChartSvgPath TrendPath(BitChartScene scene)
@@ -1805,8 +1793,8 @@ public class BitChartRendererTests
 
         Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 0).CenterX, points[0].X, 0.5);
         Assert.AreEqual(scene.Elements.First(e => e.DataIndex == 2).CenterX, points[^1].X, 0.5);
-        Assert.IsTrue(points[0].X > plot.Left, "the fit starts at the first point, not the edge");
-        Assert.IsTrue(points[^1].X < plot.Right, "the fit ends at the last point, not the edge");
+        Assert.IsGreaterThan(plot.Left, points[0].X, "the fit starts at the first point, not the edge");
+        Assert.IsLessThan(plot.Right, points[^1].X, "the fit ends at the last point, not the edge");
     }
 
     [TestMethod]
@@ -1820,7 +1808,7 @@ public class BitChartRendererTests
         var scene = Trend(new BitChartTrendline { DatasetIndex = 0, Kind = BitChartTrendlineKind.MovingAverage, Period = 2 },
             data: data);
 
-        Assert.AreEqual(5, PathPoints(TrendPath(scene)).Count);
+        Assert.HasCount(5, PathPoints(TrendPath(scene)));
     }
 
     [TestMethod]
@@ -1864,7 +1852,7 @@ public class BitChartRendererTests
         data.Datasets[0].Hidden = true;
         var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: data);
 
-        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>());
     }
 
     [TestMethod]
@@ -1872,7 +1860,7 @@ public class BitChartRendererTests
     {
         var scene = Trend(new BitChartTrendline { DatasetIndex = 7 });
 
-        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>());
     }
 
     [TestMethod]
@@ -1884,7 +1872,7 @@ public class BitChartRendererTests
         var pill = scene.Foreground.OfType<BitChartSvgRect>().Last();
         Assert.IsTrue(pill.X >= plot.Left - 0.01 && pill.X + pill.Width <= plot.Right + 0.01);
         Assert.IsTrue(pill.Y >= plot.Top - 0.01 && pill.Y + pill.Height <= plot.Bottom + 0.01);
-        CollectionAssert.Contains(scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList(), "trend");
+        Assert.Contains("trend", scene.Foreground.OfType<BitChartSvgText>().Select(t => t.Text).ToList());
     }
 
     [TestMethod]
@@ -1892,8 +1880,7 @@ public class BitChartRendererTests
     {
         var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, BitChartType.Doughnut);
 
-        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any(),
-            "there is no plot to fit a line across on a circular chart");
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>(), "there is no plot to fit a line across on a circular chart");
     }
 
     [TestMethod]
@@ -1901,8 +1888,8 @@ public class BitChartRendererTests
     {
         var scene = Trend(new BitChartTrendline { DatasetIndex = 0, DrawBehindDatasets = true });
 
-        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
-        Assert.IsTrue(scene.Background.OfType<BitChartSvgPath>().Any());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>());
+        Assert.IsNotEmpty(scene.Background.OfType<BitChartSvgPath>());
     }
 
     [TestMethod]
@@ -1911,7 +1898,7 @@ public class BitChartRendererTests
         var data = new BitChartData { Labels = { "A" }, Datasets = { new BitChartDataset { Data = { 5 } } } };
         var scene = Trend(new BitChartTrendline { DatasetIndex = 0 }, data: data);
 
-        Assert.IsFalse(scene.Foreground.OfType<BitChartSvgPath>().Any());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>());
     }
 
     [TestMethod]
@@ -1967,7 +1954,7 @@ public class BitChartRendererTests
 
         // One whisker plus two caps per point, on top of anything else the chart puts in the foreground.
         var lines = scene.Foreground.OfType<BitChartSvgLine>().ToList();
-        Assert.AreEqual(9, lines.Count);
+        Assert.HasCount(9, lines);
     }
 
     [TestMethod]
@@ -2013,7 +2000,7 @@ public class BitChartRendererTests
     {
         var scene = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, 3, null, 3)));
 
-        Assert.AreEqual(6, scene.Foreground.OfType<BitChartSvgLine>().Count());
+        Assert.HasCount(6, scene.Foreground.OfType<BitChartSvgLine>());
     }
 
     [TestMethod]
@@ -2023,7 +2010,7 @@ public class BitChartRendererTests
         data.Datasets[0].ErrorBarCapWidth = 0;
         var scene = Render(new BitChartConfig(BitChartType.Bar, data));
 
-        Assert.AreEqual(3, scene.Foreground.OfType<BitChartSvgLine>().Count());
+        Assert.HasCount(3, scene.Foreground.OfType<BitChartSvgLine>());
     }
 
     [TestMethod]
@@ -2034,18 +2021,18 @@ public class BitChartRendererTests
 
         var whiskers = scene.Foreground.OfType<BitChartSvgLine>()
             .Where(l => Math.Abs(l.X2 - l.X1) > Math.Abs(l.Y2 - l.Y1)).ToList();
-        Assert.AreEqual(3, whiskers.Count, "the whisker follows the value axis, which now runs across the plot");
+        Assert.HasCount(3, whiskers, "the whisker follows the value axis, which now runs across the plot");
     }
 
     [TestMethod]
     public void AnErrorBarShouldBeNamedInTheTooltip()
     {
         var symmetric = Render(new BitChartConfig(BitChartType.Bar, WithErrors(BitChartType.Bar, 5, 5, 5)));
-        StringAssert.Contains(symmetric.Elements[0].Tooltip.Items[0].Text, "±5");
+        Assert.Contains("±5", symmetric.Elements[0].Tooltip.Items[0].Text);
 
         var data = WithErrors(BitChartType.Bar, new BitChartErrorBar(1, 3), null, null);
         var asymmetric = Render(new BitChartConfig(BitChartType.Bar, data));
-        StringAssert.Contains(asymmetric.Elements[0].Tooltip.Items[0].Text, "+3/-1");
+        Assert.Contains("+3/-1", asymmetric.Elements[0].Tooltip.Items[0].Text);
     }
 
     [TestMethod]
@@ -2054,7 +2041,7 @@ public class BitChartRendererTests
         var scene = Render(new BitChartConfig(BitChartType.Bar, Bars(10, 20, 30)));
 
         Assert.IsFalse(scene.Elements[0].Tooltip.Items[0].Text.Contains('±'));
-        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgLine>().Count());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgLine>());
     }
 
     [TestMethod]
@@ -2076,7 +2063,7 @@ public class BitChartRendererTests
             .Where(l => Math.Abs(l.Y2 - l.Y1) > Math.Abs(l.X2 - l.X1))
             .Select(l => Math.Round(l.X1, 3)).OrderBy(x => x).ToList();
         var barCenters = scene.Elements.Select(e => Math.Round(e.CenterX, 3)).OrderBy(x => x).ToList();
-        CollectionAssert.AreEqual(barCenters, whiskerCenters);
+        Assert.AreSequenceEqual(barCenters, whiskerCenters);
     }
 
     // ---- ellipse and polygon annotations ----
@@ -2094,12 +2081,16 @@ public class BitChartRendererTests
         var scene = Annotated(new BitChartAnnotation
         {
             Kind = BitChartAnnotationKind.Ellipse,
-            XMin = 0, XMax = 2, YMin = 1, YMax = 3, XIsIndex = true
+            XMin = 0,
+            XMax = 2,
+            YMin = 1,
+            YMax = 3,
+            XIsIndex = true
         });
 
         var path = scene.Foreground.OfType<BitChartSvgPath>().Single();
-        StringAssert.Contains(path.D, "A ", "an ellipse is drawn from arcs");
-        Assert.IsTrue(path.D.EndsWith("Z"), "and it closes");
+        Assert.Contains("A ", path.D, "an ellipse is drawn from arcs");
+        Assert.EndsWith("Z", path.D, "and it closes");
     }
 
     [TestMethod]
@@ -2108,10 +2099,14 @@ public class BitChartRendererTests
         var scene = Annotated(new BitChartAnnotation
         {
             Kind = BitChartAnnotationKind.Ellipse,
-            XMin = 1, XMax = 1, YMin = 2, YMax = 2, XIsIndex = true
+            XMin = 1,
+            XMax = 1,
+            YMin = 2,
+            YMax = 2,
+            XIsIndex = true
         });
 
-        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgPath>().Count());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgPath>());
     }
 
     [TestMethod]
@@ -2122,11 +2117,15 @@ public class BitChartRendererTests
         var scene = Annotated(new BitChartAnnotation
         {
             Kind = BitChartAnnotationKind.Polygon,
-            Sides = sides, Radius = 15, XMin = 1, Value = 2, XIsIndex = true
+            Sides = sides,
+            Radius = 15,
+            XMin = 1,
+            Value = 2,
+            XIsIndex = true
         });
 
         var poly = scene.Foreground.OfType<BitChartSvgPolygon>().Single();
-        Assert.AreEqual(sides, poly.Points.Count);
+        Assert.HasCount(sides, poly.Points);
         Assert.IsTrue(poly.Closed);
     }
 
@@ -2136,13 +2135,17 @@ public class BitChartRendererTests
         var scene = Annotated(new BitChartAnnotation
         {
             Kind = BitChartAnnotationKind.Polygon,
-            Sides = 3, Radius = 15, XMin = 1, Value = 2, XIsIndex = true
+            Sides = 3,
+            Radius = 15,
+            XMin = 1,
+            Value = 2,
+            XIsIndex = true
         });
 
         var poly = scene.Foreground.OfType<BitChartSvgPolygon>().Single();
         double top = poly.Points.Min(p => p.Y);
-        Assert.AreEqual(1, poly.Points.Count(p => Math.Abs(p.Y - top) < 0.01),
-            "a triangle drawn from the top has exactly one vertex up there");
+        Assert.ContainsSingle(p => Math.Abs(p.Y - top) < 0.01,
+poly.Points, "a triangle drawn from the top has exactly one vertex up there");
     }
 
     [TestMethod]
@@ -2151,7 +2154,12 @@ public class BitChartRendererTests
         BitChartSvgPolygon Poly(double rotation) => Annotated(new BitChartAnnotation
         {
             Kind = BitChartAnnotationKind.Polygon,
-            Sides = 3, Radius = 15, XMin = 1, Value = 2, XIsIndex = true, Rotation = rotation
+            Sides = 3,
+            Radius = 15,
+            XMin = 1,
+            Value = 2,
+            XIsIndex = true,
+            Rotation = rotation
         }).Foreground.OfType<BitChartSvgPolygon>().Single();
 
         Assert.AreNotEqual(Math.Round(Poly(0).Points[0].Y, 3), Math.Round(Poly(180).Points[0].Y, 3));
@@ -2162,7 +2170,11 @@ public class BitChartRendererTests
     {
         var scene = Annotated(new BitChartAnnotation
         {
-            Kind = BitChartAnnotationKind.Point, XMin = 1, Value = 2, XIsIndex = true, Radius = 9
+            Kind = BitChartAnnotationKind.Point,
+            XMin = 1,
+            Value = 2,
+            XIsIndex = true,
+            Radius = 9
         });
 
         Assert.AreEqual(9, scene.Foreground.OfType<BitChartSvgCircle>().Single().R, 1e-6);
@@ -2247,9 +2259,8 @@ public class BitChartRendererTests
 
         // The chart already formats its numbers with the culture; its dates have to follow. The axis
         // ticks on month boundaries, so March is the one both renders are certain to carry.
-        CollectionAssert.Contains(Labels(french), "mars 2026",
-            "a French chart must not print English month names, but drew: " + string.Join(" | ", Labels(french)));
-        CollectionAssert.Contains(Labels(invariant), "Mar 2026");
+        Assert.Contains("mars 2026", Labels(french), "a French chart must not print English month names, but drew: " + string.Join(" | ", Labels(french)));
+        Assert.Contains("Mar 2026", Labels(invariant));
     }
 
     [TestMethod]
@@ -2273,7 +2284,7 @@ public class BitChartRendererTests
 
         // The values are rescaled to percentages; an interval still in the original units would land
         // somewhere meaningless, so it is left out rather than drawn wrong.
-        Assert.AreEqual(0, scene.Foreground.OfType<BitChartSvgLine>().Count());
+        Assert.IsEmpty(scene.Foreground.OfType<BitChartSvgLine>());
     }
 
     // ---- a numeric index axis reads value datasets too ----

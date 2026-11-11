@@ -106,7 +106,7 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.ColumnSpan, columnSpan);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), $"--bit-grd-span:{columnSpan}");
+        Assert.Contains($"--bit-grd-span:{columnSpan}", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.ColumnSpan, -2);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-span:0");
+        Assert.Contains("--bit-grd-span:0", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -135,12 +135,12 @@ public class BitGridItemTests : BunitTestContext
 
         var style = component.Find(".bit-grd-itm").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-xs:12");
-        StringAssert.Contains(style, "--bit-grd-sm:6");
-        StringAssert.Contains(style, "--bit-grd-md:4");
-        StringAssert.Contains(style, "--bit-grd-lg:3");
-        StringAssert.Contains(style, "--bit-grd-xl:2");
-        StringAssert.Contains(style, "--bit-grd-xxl:1");
+        Assert.Contains("--bit-grd-xs:12", style!);
+        Assert.Contains("--bit-grd-sm:6", style);
+        Assert.Contains("--bit-grd-md:4", style);
+        Assert.Contains("--bit-grd-lg:3", style);
+        Assert.Contains("--bit-grd-xl:2", style);
+        Assert.Contains("--bit-grd-xxl:1", style);
     }
 
     [TestMethod]
@@ -154,16 +154,16 @@ public class BitGridItemTests : BunitTestContext
 
         var style = component.Find(".bit-grd-itm").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-span:12");
-        StringAssert.Contains(style, "--bit-grd-md:6");
+        Assert.Contains("--bit-grd-span:12", style!);
+        Assert.Contains("--bit-grd-md:6", style);
 
         // The breakpoints in between are carried upwards by the stylesheet, so rendering them here would
         // only repeat what the cascade already knows.
-        Assert.IsFalse(style!.Contains("--bit-grd-xs"));
-        Assert.IsFalse(style.Contains("--bit-grd-sm"));
-        Assert.IsFalse(style.Contains("--bit-grd-lg"));
-        Assert.IsFalse(style.Contains("--bit-grd-xl"));
-        Assert.IsFalse(style.Contains("--bit-grd-xxl"));
+        Assert.DoesNotContain("--bit-grd-xs", style!);
+        Assert.DoesNotContain("--bit-grd-sm", style);
+        Assert.DoesNotContain("--bit-grd-lg", style);
+        Assert.DoesNotContain("--bit-grd-xl", style);
+        Assert.DoesNotContain("--bit-grd-xxl", style);
     }
 
     [TestMethod]
@@ -345,7 +345,7 @@ public class BitGridItemTests : BunitTestContext
 
         var root = component.Find(".bit-grd-itm");
 
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-off:3");
+        Assert.Contains("--bit-grd-off:3", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-off"));
     }
 
@@ -364,12 +364,12 @@ public class BitGridItemTests : BunitTestContext
 
         var style = component.Find(".bit-grd-itm").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-off-xs:0");
-        StringAssert.Contains(style, "--bit-grd-off-sm:1");
-        StringAssert.Contains(style, "--bit-grd-off-md:2");
-        StringAssert.Contains(style, "--bit-grd-off-lg:3");
-        StringAssert.Contains(style, "--bit-grd-off-xl:4");
-        StringAssert.Contains(style, "--bit-grd-off-xxl:5");
+        Assert.Contains("--bit-grd-off-xs:0", style!);
+        Assert.Contains("--bit-grd-off-sm:1", style);
+        Assert.Contains("--bit-grd-off-md:2", style);
+        Assert.Contains("--bit-grd-off-lg:3", style);
+        Assert.Contains("--bit-grd-off-xl:4", style);
+        Assert.Contains("--bit-grd-off-xxl:5", style);
 
         Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-off"));
     }
@@ -385,8 +385,8 @@ public class BitGridItemTests : BunitTestContext
 
         var style = component.Find(".bit-grd-itm").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-off:0");
-        StringAssert.Contains(style, "--bit-grd-off-md:0");
+        Assert.Contains("--bit-grd-off:0", style!);
+        Assert.Contains("--bit-grd-off-md:0", style);
     }
 
     [TestMethod]
@@ -486,7 +486,7 @@ public class BitGridItemTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-grd-itm-aof-xxl"));
 
         Assert.IsTrue(classList.Contains("bit-grd-itm-off"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-off:2");
+        Assert.Contains("--bit-grd-off:2", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -580,7 +580,7 @@ public class BitGridItemTests : BunitTestContext
         // A negative order is how a single item is moved ahead of the ones that left theirs alone, so it
         // must survive as it was given - written invariantly, as CSS reads it, rather than with the minus sign of the
         // machine's culture (fa-IR and ar-SA lead it with a direction mark).
-        StringAssert.Contains(root.GetAttribute("style"), $"--bit-grd-ord:{order.ToString(CultureInfo.InvariantCulture)}");
+        Assert.Contains($"--bit-grd-ord:{order.ToString(CultureInfo.InvariantCulture)}", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-ord"));
     }
 
@@ -607,7 +607,7 @@ public class BitGridItemTests : BunitTestContext
                 parameters.Add(p => p.Order, -1);
             });
 
-            StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-ord:-1");
+            Assert.Contains("--bit-grd-ord:-1", component.Find(".bit-grd-itm").GetAttribute("style")!);
         }
         finally
         {
@@ -631,12 +631,12 @@ public class BitGridItemTests : BunitTestContext
 
         var style = component.Find(".bit-grd-itm").GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-ord-xs:-1");
-        StringAssert.Contains(style, "--bit-grd-ord-sm:1");
-        StringAssert.Contains(style, "--bit-grd-ord-md:2");
-        StringAssert.Contains(style, "--bit-grd-ord-lg:3");
-        StringAssert.Contains(style, "--bit-grd-ord-xl:4");
-        StringAssert.Contains(style, "--bit-grd-ord-xxl:5");
+        Assert.Contains("--bit-grd-ord-xs:-1", style!);
+        Assert.Contains("--bit-grd-ord-sm:1", style);
+        Assert.Contains("--bit-grd-ord-md:2", style);
+        Assert.Contains("--bit-grd-ord-lg:3", style);
+        Assert.Contains("--bit-grd-ord-xl:4", style);
+        Assert.Contains("--bit-grd-ord-xxl:5", style);
 
         Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-ord"));
     }
@@ -731,7 +731,7 @@ public class BitGridItemTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-grd-itm-grw"));
 
         // The span it falls back to below the medium breakpoint is still the one it was given.
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-span:12");
+        Assert.Contains("--bit-grd-span:12", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -773,7 +773,7 @@ public class BitGridItemTests : BunitTestContext
         Assert.IsTrue(classList.Contains("bit-grd-itm-spn-lg"));
         Assert.IsTrue(classList.Contains("bit-grd-itm-spn-xxl"));
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-md:3");
+        Assert.Contains("--bit-grd-md:3", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -844,7 +844,7 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.AlignSelf, alignment);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), $"align-self:{expected}");
+        Assert.Contains($"align-self:{expected}", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -858,7 +858,7 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.AlignSelf, alignment);
         });
 
-        Assert.IsFalse((component.Find(".bit-grd-itm").GetAttribute("style") ?? string.Empty).Contains("align-self"));
+        Assert.DoesNotContain("align-self", (component.Find(".bit-grd-itm").GetAttribute("style") ?? string.Empty));
     }
 
     [TestMethod]
@@ -871,11 +871,11 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.Md, 6);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-md:6");
+        Assert.Contains("--bit-grd-md:6", component.Find(".bit-grd-itm").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Md, 4));
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-md:4");
+        Assert.Contains("--bit-grd-md:4", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -886,11 +886,11 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.ColumnSpan, 2);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-span:2");
+        Assert.Contains("--bit-grd-span:2", component.Find(".bit-grd-itm").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.ColumnSpan, 5));
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-span:5");
+        Assert.Contains("--bit-grd-span:5", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -904,7 +904,7 @@ public class BitGridItemTests : BunitTestContext
 
         var root = component.Find(".bit-grd-itm");
 
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-off:2");
+        Assert.Contains("--bit-grd-off:2", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-off"));
     }
 
@@ -916,11 +916,11 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.Order, 1);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-ord:1");
+        Assert.Contains("--bit-grd-ord:1", component.Find(".bit-grd-itm").GetAttribute("style")!);
 
         component.Render(parameters => parameters.Add(p => p.Order, -1));
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "--bit-grd-ord:-1");
+        Assert.Contains("--bit-grd-ord:-1", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -945,7 +945,7 @@ public class BitGridItemTests : BunitTestContext
             parameters.Add(p => p.Visibility, BitVisibility.Hidden);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd-itm").GetAttribute("style"), "visibility:hidden");
+        Assert.Contains("visibility:hidden", component.Find(".bit-grd-itm").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -959,7 +959,7 @@ public class BitGridItemTests : BunitTestContext
 
         var root = component.Find(".bit-grd-itm");
 
-        StringAssert.Contains(root.GetAttribute("style"), "background:red");
+        Assert.Contains("background:red", root.GetAttribute("style")!);
         Assert.IsTrue(root.ClassList.Contains("custom-item"));
     }
 
@@ -999,7 +999,7 @@ public class BitGridItemTests : BunitTestContext
         var root = component.Find(".bit-grd-itm");
 
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-atc"));
-        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-span:4");
+        Assert.Contains("--bit-grd-span:4", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1040,13 +1040,13 @@ public class BitGridItemTests : BunitTestContext
         var root = component.Find(".bit-grd-itm");
         var style = root.GetAttribute("style");
 
-        StringAssert.Contains(style, "--bit-grd-span:6");
-        StringAssert.Contains(style, "--bit-grd-md:4");
-        StringAssert.Contains(style, "--bit-grd-off:1");
-        StringAssert.Contains(style, "--bit-grd-off-lg:2");
-        StringAssert.Contains(style, "--bit-grd-ord:-1");
-        StringAssert.Contains(style, "--bit-grd-ord-md:2");
-        StringAssert.Contains(style, "align-self:flex-end");
+        Assert.Contains("--bit-grd-span:6", style!);
+        Assert.Contains("--bit-grd-md:4", style);
+        Assert.Contains("--bit-grd-off:1", style);
+        Assert.Contains("--bit-grd-off-lg:2", style);
+        Assert.Contains("--bit-grd-ord:-1", style);
+        Assert.Contains("--bit-grd-ord-md:2", style);
+        Assert.Contains("align-self:flex-end", style);
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-off"));
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-ord"));
     }
@@ -1085,8 +1085,8 @@ public class BitGridItemTests : BunitTestContext
         var items = component.FindAll(".bit-grd-itm");
 
         Assert.IsNull(items[0].GetAttribute("style"));
-        StringAssert.Contains(items[1].GetAttribute("style"), "--bit-grd-span:2");
-        Assert.IsFalse(items[1].GetAttribute("style")!.Contains("--bit-grd-cols"));
+        Assert.Contains("--bit-grd-span:2", items[1].GetAttribute("style")!);
+        Assert.DoesNotContain("--bit-grd-cols", items[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1096,9 +1096,9 @@ public class BitGridItemTests : BunitTestContext
 
         var grids = component.FindComponents<BitGrid>();
 
-        Assert.AreEqual(2, grids.Count);
+        Assert.HasCount(2, grids);
 
         // The nested grid declares its own column count, which shadows the inherited one for its items.
-        StringAssert.Contains(grids[1].Find(".bit-grd").GetAttribute("style"), "--bit-grd-cols:3");
+        Assert.Contains("--bit-grd-cols:3", grids[1].Find(".bit-grd").GetAttribute("style")!);
     }
 }

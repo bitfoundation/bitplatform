@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Numerics;
 
@@ -228,7 +228,7 @@ public class RasterRobustnessTests
         byte[] unlimited = BinkPngExporter.Export(document);
         byte[] limited = BinkPngExporter.Export(document, new BinkPngExportOptions { MaxRasterWork = 20_000_000 });
 
-        CollectionAssert.AreEqual(unlimited, limited);
+        Assert.AreSequenceEqual(unlimited, limited);
     }
 
     /// <summary>tRNS was honoured only for palette images; colour-key transparency in RGB and grey PNGs was ignored.</summary>

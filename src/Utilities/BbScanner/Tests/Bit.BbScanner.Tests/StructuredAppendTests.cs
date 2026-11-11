@@ -114,14 +114,14 @@ public class StructuredAppendTests
         Assert.AreEqual(BbBarcodeFormat.QrCode, pending.Format);
         Assert.AreEqual(2, pending.Received);
         Assert.AreEqual(3, pending.Count);
-        CollectionAssert.AreEqual(new[] { 1 }, pending.Missing.ToArray());
+        Assert.AreSequenceEqual(new[] { 1 }, pending.Missing.ToArray());
 
         Assert.AreEqual(BbStructuredAppendStatus.Completed, assembler.Add(symbols[1], out message));
         Assert.IsNotNull(message);
         Assert.AreEqual("Hello, structured world", message.Text);
         Assert.AreEqual(BbBarcodeFormat.QrCode, message.Format);
-        CollectionAssert.AreEqual(Encoding.UTF8.GetBytes("Hello, structured world"), message.RawBytes.ToArray());
-        CollectionAssert.AreEqual(symbols, message.Segments.ToArray());
+        Assert.AreSequenceEqual(Encoding.UTF8.GetBytes("Hello, structured world"), message.RawBytes.ToArray());
+        Assert.AreSequenceEqual(symbols, message.Segments.ToArray());
         Assert.IsEmpty(assembler.Pending);
     }
 
@@ -189,7 +189,7 @@ public class StructuredAppendTests
         var assembler = new BbStructuredAppendAssembler();
 
         Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(DataMatrix("C3", 3, 3, 0x0102), out _));
-        CollectionAssert.AreEqual(new[] { 1, 2 }, assembler.Pending.Single().Missing.ToArray());
+        Assert.AreSequenceEqual(new[] { 1, 2 }, assembler.Pending.Single().Missing.ToArray());
         Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(DataMatrix("A1", 1, 3, 0x0102), out _));
         Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(DataMatrix("ELSEWHERE", 1, 3, 0x0103), out _));
         Assert.AreEqual(BbStructuredAppendStatus.Completed, assembler.Add(DataMatrix("B2", 2, 3, 0x0102), out var message));
@@ -229,7 +229,7 @@ public class StructuredAppendTests
         Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(Pdf417("THREE", 2, FileA, last: true), out _));
         pending = assembler.Pending.Single();
         Assert.AreEqual(3, pending.Count);
-        CollectionAssert.AreEqual(new[] { 1 }, pending.Missing.ToArray());
+        Assert.AreSequenceEqual(new[] { 1 }, pending.Missing.ToArray());
 
         Assert.AreEqual(BbStructuredAppendStatus.Added, assembler.Add(Pdf417("OTHER FILE", 1, FileB), out _));
         Assert.AreEqual(BbStructuredAppendStatus.Completed, assembler.Add(Pdf417("TWO", 1, FileA), out var message));
@@ -288,7 +288,7 @@ public class StructuredAppendTests
 
         assembler.Add(symbols[0], out _);
         clock.Advance(TimeSpan.FromSeconds(29));
-        Assert.HasCount(1, assembler.Pending);
+        Assert.ContainsSingle(assembler.Pending);
 
         clock.Advance(TimeSpan.FromSeconds(1));
         Assert.IsEmpty(assembler.Pending);
@@ -369,7 +369,7 @@ public class StructuredAppendTests
         Assert.IsNotNull(message);
         Assert.AreEqual("FIRST SECOND", message.Text);
         Assert.AreEqual(BbBarcodeFormat.MicroPdf417, message.Format);
-        Assert.HasCount(1, assembler.Pending);
+        Assert.ContainsSingle(assembler.Pending);
     }
 
     [TestMethod]

@@ -25,12 +25,12 @@ public class BitOverlayPrerenderTests
             [nameof(BitOverlay.ChildContent)] = (RenderFragment)(b => b.AddContent(0, "Please wait")),
         });
 
-        StringAssert.Contains(html, "bit-ovl-opn");
-        StringAssert.Contains(html, "bit-ovl-mfl");
-        StringAssert.Contains(html, "bit-ovl-ctr");
-        StringAssert.Contains(html, @"tabindex=""-1""");
-        StringAssert.Contains(html, "bit-ovl-cnt");
-        StringAssert.Contains(html, "Please wait");
+        Assert.Contains("bit-ovl-opn", html);
+        Assert.Contains("bit-ovl-mfl", html);
+        Assert.Contains("bit-ovl-ctr", html);
+        Assert.Contains(@"tabindex=""-1""", html);
+        Assert.Contains("bit-ovl-cnt", html);
+        Assert.Contains("Please wait", html);
 
         // An open layer is live from the first paint, and the scroll offset is nothing a prerender could have measured.
         Assert.DoesNotContain("inert", html);
@@ -45,7 +45,7 @@ public class BitOverlayPrerenderTests
             [nameof(BitOverlay.DefaultIsOpen)] = false,
         });
 
-        StringAssert.Contains(html, "inert");
+        Assert.Contains("inert", html);
         Assert.DoesNotContain("bit-ovl-opn", html);
     }
 }

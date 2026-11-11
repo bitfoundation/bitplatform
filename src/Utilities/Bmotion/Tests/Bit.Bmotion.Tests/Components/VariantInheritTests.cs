@@ -1,4 +1,4 @@
-using Bit.Bmotion.Tests.TestInfra;
+﻿using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 
@@ -111,7 +111,7 @@ public class VariantInheritTests
         // Cutting the inherited link must not disable the element's own animation: exactly one
         // compositor animation for it, heading for its own target rather than the parent's variant.
         var calls = ctx.Interop.Calls.Where(c => c.Method == "playWaapiAnimation" && (string?)c.Args[0] == "solo").ToArray();
-        Assert.AreEqual(1, calls.Length);
+        Assert.ContainsSingle(calls);
         var keyframes = (Dictionary<string, object>[])calls[0].Args[2]!;
         Assert.AreEqual("0.5", keyframes[^1]["opacity"]);
     }

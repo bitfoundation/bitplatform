@@ -5,7 +5,7 @@ using Bit.Belemetry.Tests.Harness.Web.Collector;
 namespace Bit.Belemetry.Tests.E2E.Infrastructure;
 
 /// <summary>Reads the capturing receiver (<c>/test-collector/received</c>) of a web harness host.</summary>
-public sealed class CollectorClient(string origin)
+internal sealed class CollectorClient(string origin)
 {
     /// <summary>
     /// Long enough for a WebAssembly boot in Debug plus a flush interval (500 ms) and a retry, on a slow CI runner.

@@ -43,7 +43,7 @@ public class BitAiCollapsibleE2ETests : E2ETestBase
         // The chevron leads, the way a disclosure panel reads.
         var chevron = await Chevron("clp-basic").RectAsync();
         var title = await Page.Locator("#clp-basic .bit-acd-ttl").RectAsync();
-        Assert.IsTrue(chevron.Right <= title.Left + 1, "The chevron sits before the title.");
+        Assert.IsLessThanOrEqualTo(title.Left + 1, chevron.Right, "The chevron sits before the title.");
     }
 
     [TestMethod]
@@ -138,7 +138,7 @@ public class BitAiCollapsibleE2ETests : E2ETestBase
         await Expect(Page.Locator("#clp-suffix")).ToHaveTextAsync("3 steps");
         var suffix = await Page.Locator("#clp-suffix").RectAsync();
         var title = await Page.Locator("#clp-custom-header").RectAsync();
-        Assert.IsTrue(suffix.Left >= title.Right, "The suffix ends the header row.");
+        Assert.IsGreaterThanOrEqualTo(title.Right, suffix.Left, "The suffix ends the header row.");
 
         await header.ClickAsync();
         await Expect(Page.Locator("#clp-templates-body")).ToBeVisibleAsync();
@@ -194,12 +194,12 @@ public class BitAiCollapsibleE2ETests : E2ETestBase
             await Expect(Header(id)).ToHaveCSSAsync("direction", "rtl");
             var chevron = await Chevron(id).RectAsync();
             var title = await Page.Locator($"#{id} .bit-acd-ttl").RectAsync();
-            Assert.IsTrue(chevron.Left >= title.Right - 1, $"#{id}: the chevron is on the right of the title.");
+            Assert.IsGreaterThanOrEqualTo(title.Right - 1, chevron.Left, $"#{id}: the chevron is on the right of the title.");
         }
 
         var ltrChevron = await Chevron("clp-ltr").RectAsync();
         var ltrTitle = await Page.Locator("#clp-ltr .bit-acd-ttl").RectAsync();
-        Assert.IsTrue(ltrChevron.Right <= ltrTitle.Left + 1, "Left to right, the chevron is on the left of the title.");
+        Assert.IsLessThanOrEqualTo(ltrTitle.Left + 1, ltrChevron.Right, "Left to right, the chevron is on the left of the title.");
 
         await Header("clp-rtl").ClickAsync();
         await Expect(Header("clp-rtl")).ToHaveAttributeAsync("aria-expanded", "true");

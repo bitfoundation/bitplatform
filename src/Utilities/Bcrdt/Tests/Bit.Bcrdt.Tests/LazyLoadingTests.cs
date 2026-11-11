@@ -24,7 +24,7 @@ public class LazyLoadingTests
         var clock = Stopwatch.StartNew();
         while (!condition())
         {
-            Assert.IsTrue(clock.Elapsed < Patience, because);
+            Assert.IsLessThan(Patience, clock.Elapsed, because);
             await Task.Delay(10);
         }
     }
@@ -70,8 +70,8 @@ public class LazyLoadingTests
             .UseTransport(id => network.CreateTransport(id))
             .Configure(options => options.Sync = _noHeartbeat));
 
-        BcrdtCollaborativeDocument documentA = await a.OpenAsync("shared");
-        BcrdtCollaborativeDocument documentB = await b.OpenAsync("shared");
+        BcrdtCollaborativeDocument documentA = await a.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument documentB = await b.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await AssertEventuallyAsync(() => documentA.IsSynced && documentB.IsSynced, "both tabs should finish the handshake");
 
         documentA.Text("body").Insert(0, "lazy loaded");
@@ -79,7 +79,7 @@ public class LazyLoadingTests
 
         await a.CloseAsync("shared");
         await b.CloseAsync("shared");
-        CollectionAssert.AreEquivalent(new[] { "shared" }, (await store.ListAsync()).ToArray());
+        Assert.AreSequenceEqual(new[] { "shared" }, (await store.ListAsync(TestContext.CancellationToken)).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -103,12 +103,12 @@ public class LazyLoadingTests
 
         IBcrdtCollaborationService[] services = [.. Enumerable.Range(0, 8).AsParallel().WithDegreeOfParallelism(8).Select(_ =>
         {
-            start.SignalAndWait();
+            start.SignalAndWait(TestContext.CancellationToken);
             return connection.GetBcrdtCollaborationService(_ => Interlocked.Increment(ref configured));
         })];
 
         Assert.AreEqual(1, configured);
-        Assert.AreEqual(1, services.Distinct().Count());
+        Assert.ContainsSingle(services.Distinct());
     }
 
     [TestMethod]
@@ -119,8 +119,8 @@ public class LazyLoadingTests
         // A component got there first: rather than a purely local service that silently never syncs, an error that says
         // how to provide one.
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => connection.GetBcrdtCollaborationService());
-        StringAssert.Contains(error.Message, "AddBitBcrdtServices");
-        StringAssert.Contains(error.Message, "OnInitialized");
+        Assert.Contains("AddBitBcrdtServices", error.Message);
+        Assert.Contains("OnInitialized", error.Message);
 
         // Nothing was created by that, so a configuration that comes later - on the next page - still takes effect.
         bool configured = false;
@@ -138,7 +138,7 @@ public class LazyLoadingTests
 
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => circuit.GetBcrdtCollaborationService(_ => Assert.Fail("not called outside WebAssembly")));
 
-        StringAssert.Contains(error.Message, "AddBitBcrdtServices");
+        Assert.Contains("AddBitBcrdtServices", error.Message);
     }
 
     [TestMethod]
@@ -148,7 +148,7 @@ public class LazyLoadingTests
 
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.GetBcrdtCollaborationService());
 
-        StringAssert.Contains(error.Message, "AddBitBcrdtServices");
+        Assert.Contains("AddBitBcrdtServices", error.Message);
     }
 
     [TestMethod]
@@ -179,7 +179,7 @@ public class LazyLoadingTests
         await renderer.RenderAsync("notes");
 
         var error = renderer.Errors.OfType<InvalidOperationException>().Single();
-        StringAssert.Contains(error.Message, "GetBcrdtCollaborationService");
+        Assert.Contains("GetBcrdtCollaborationService", error.Message);
     }
 
     [TestMethod]
@@ -192,7 +192,7 @@ public class LazyLoadingTests
 
         var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => renderer.RenderAsync("notes"));
 
-        StringAssert.Contains(error.Message, "AddBitBcrdtServices");
+        Assert.Contains("AddBitBcrdtServices", error.Message);
     }
 
     private static ServiceProvider Connection(IJSRuntime jsRuntime)
@@ -263,4 +263,6 @@ public class LazyLoadingTests
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new NotSupportedException();
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

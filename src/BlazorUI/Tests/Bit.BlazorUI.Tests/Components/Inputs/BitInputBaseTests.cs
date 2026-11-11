@@ -117,7 +117,7 @@ public class BitInputBaseTests : BunitTestContext
         component.Find("input").Change("typed");
 
         // The binding is written first, so an OnChange handler reads a model that already holds the value.
-        CollectionAssert.AreEqual(new[] { "bound:typed", "change:typed" }, log);
+        Assert.AreSequenceEqual(new[] { "bound:typed", "change:typed" }, log);
         Assert.AreEqual("typed", component.Instance.Value);
     }
 
@@ -194,13 +194,13 @@ public class BitInputBaseTests : BunitTestContext
 
         // The field is validated and marked modified by the change itself, no submit needed.
         Assert.IsTrue(editContext.IsModified(editContext.Field(nameof(BitTextFieldTestModel.Value))));
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
         Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
 
         component.Find("input").Change("ada@bit.com");
 
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
     }
@@ -225,7 +225,7 @@ public class BitInputBaseTests : BunitTestContext
         // that the assertions never run ahead of a validation the dispatcher had to queue.
         await component.InvokeAsync(() => editContext.Validate());
 
-        Assert.IsTrue(editContext.GetValidationMessages().Any());
+        Assert.IsNotEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find("input").HasAttribute("aria-invalid"));
     }
@@ -261,7 +261,7 @@ public class BitInputBaseTests : BunitTestContext
         }
 
         Assert.IsNotNull(invalidOperation, $"Expected an InvalidOperationException, got {thrown.GetType().Name}: {thrown.Message}");
-        StringAssert.Contains(invalidOperation.Message, "does not support changing the EditContext dynamically.");
+        Assert.Contains("does not support changing the EditContext dynamically.", invalidOperation.Message);
     }
 
     [TestMethod]
@@ -279,7 +279,7 @@ public class BitInputBaseTests : BunitTestContext
         Assert.IsNull(model.Time);
         Assert.AreEqual("nonsense", component.Find(".bit-tpc-inp").GetAttribute("value"));
         Assert.IsTrue(editContext.IsModified(editContext.Field(nameof(BitTimePickerTestModel.Time))));
-        CollectionAssert.AreEqual(new[] { "The Time field is not valid." }, editContext.GetValidationMessages().ToArray());
+        Assert.AreSequenceEqual(new[] { "The Time field is not valid." }, editContext.GetValidationMessages().ToArray());
         Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
         Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-invalid"));
 
@@ -287,7 +287,7 @@ public class BitInputBaseTests : BunitTestContext
         component.Find(".bit-tpc-inp").Input("10:30");
 
         Assert.AreEqual(new TimeSpan(10, 30, 0), model.Time);
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
     }
 
@@ -301,7 +301,7 @@ public class BitInputBaseTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").Input("nonsense");
 
-        CollectionAssert.AreEqual(new[] { "The Start field is not valid." }, editContext.GetValidationMessages().ToArray());
+        Assert.AreSequenceEqual(new[] { "The Start field is not valid." }, editContext.GetValidationMessages().ToArray());
     }
 
     [TestMethod]
@@ -316,7 +316,7 @@ public class BitInputBaseTests : BunitTestContext
 
         // Nothing is parsed into the value, and nothing is said about it either.
         Assert.IsNull(model.Time);
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(editContext.IsModified());
         Assert.IsFalse(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
         Assert.IsFalse(component.Find(".bit-tpc-inp").HasAttribute("aria-invalid"));
@@ -343,7 +343,7 @@ public class BitInputBaseTests : BunitTestContext
         component.Find(".bit-tpc-inp").Input("nonsense");
 
         Assert.AreEqual("nonsense", component.Find(".bit-tpc-inp").GetAttribute("value"));
-        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsEmpty(editContext.GetValidationMessages());
         Assert.IsFalse(editContext.IsModified());
         Assert.IsFalse(component.Find(".bit-tpc").ClassList.Contains("bit-inv"));
 

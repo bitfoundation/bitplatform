@@ -66,7 +66,7 @@ public class JsInteropTrackingTests
             await imported.InvokeVoidAsync("doWork", 1);
 
             var calls = session.Interop.Snapshot();
-            Assert.AreEqual(2, calls.Length);
+            Assert.HasCount(2, calls);
             Assert.AreEqual("module.doWork", calls[1].Identifier);
             Assert.IsTrue(calls[1].IsModuleCall);
             Assert.ContainsSingle(module.Calls, "doWork");
@@ -84,7 +84,7 @@ public class JsInteropTrackingTests
             var fake = new Net10JSRuntime();
             var tracked = (BevTrackingInProcessJSRuntime)fake.WithBevToolsTracking(session);
 
-            Assert.AreEqual("Home", await tracked.GetValueAsync<string>("document.title"));
+            Assert.AreEqual("Home", await tracked.GetValueAsync<string>("document.title", TestContext.CancellationToken));
             await tracked.SetValueAsync("document.title", "Orders");
             var map = await tracked.InvokeConstructorAsync("Map");
             Assert.AreEqual("Orders", tracked.GetValue<string>("document.title"));
@@ -92,13 +92,12 @@ public class JsInteropTrackingTests
             Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(tracked.InvokeConstructor("Set"));
 
             Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(map);
-            Assert.AreEqual(1, await map.GetValueAsync<int>("size"));
+            Assert.AreEqual(1, await map.GetValueAsync<int>("size", TestContext.CancellationToken));
             await map.SetValueAsync("label", "m");
 
-            Assert.AreEqual(true, fake.Values["app.ready"]);
-            CollectionAssert.AreEqual(
-                new[] { "get document.title", "set document.title", "new Map", "get document.title", "set app.ready", "new Set", "get module.size", "set module.label" },
-                session.Interop.Snapshot().Select(c => c.Identifier).ToArray());
+            Assert.IsTrue((bool?)fake.Values["app.ready"]);
+            Assert.AreSequenceEqual(
+                new[] { "get document.title", "set document.title", "new Map", "get document.title", "set app.ready", "new Set", "get module.size", "set module.label" }, session.Interop.Snapshot().Select(c => c.Identifier).ToArray());
             Assert.IsTrue(session.Interop.Snapshot().All(c => c.Succeeded));
         }
     }
@@ -162,4 +161,6 @@ public class JsInteropTrackingTests
         var raw = new FakeJSRuntime();
         Assert.AreSame(raw, raw.WithBevToolsTracking(disabled));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

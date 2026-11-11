@@ -28,7 +28,7 @@ public class BitAiRawHtmlShapeTests
     [DataRow("<b>x", 1)]
     [DataRow("x</b>", 1)]
     public void TagsCommentsAndDeclarationsAreHtml(string source, int count) =>
-        Assert.AreEqual(count, BitAiInlineParser.Parse(source, Html).OfType<BitAiRawHtmlInline>().Count());
+        Assert.HasCount(count, BitAiInlineParser.Parse(source, Html).OfType<BitAiRawHtmlInline>());
 
     // A view writes each inline of raw HTML as markup of its own, which the browser parses on its own: an opening tag
     // alone would be closed on the spot, and the text meant to be inside the element would follow it.
@@ -37,9 +37,8 @@ public class BitAiRawHtmlShapeTests
     {
         var inlines = BitAiInlineParser.Parse("Press <kbd>Ctrl</kbd> + <KBD>K</kbd> to search.", Html);
 
-        CollectionAssert.AreEqual(
-            new[] { "<kbd>Ctrl</kbd>", "<KBD>K</kbd>" },
-            inlines.OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "<kbd>Ctrl</kbd>", "<KBD>K</kbd>" }, inlines.OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
         Assert.AreEqual("Press  +  to search.", string.Concat(inlines.OfType<BitAiTextInline>().Select(t => t.Text)));
     }
 
@@ -55,14 +54,12 @@ public class BitAiRawHtmlShapeTests
     public void ATagTheTextDoesNotCloseStaysATagOfItsOwn()
     {
         // A void element, a self-closing tag and an element whose closing tag has not arrived (yet) close nothing.
-        CollectionAssert.AreEqual(
-            new[] { "<br>", "<img src=\"x\"/>", "<kbd>" },
-            BitAiInlineParser.Parse("a<br>b <img src=\"x\"/> <kbd>Ct", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "<br>", "<img src=\"x\"/>", "<kbd>" }, BitAiInlineParser.Parse("a<br>b <img src=\"x\"/> <kbd>Ct", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
 
         // An escaped one is text, and does not take the closing tag from the element around it.
-        CollectionAssert.AreEqual(
-            new[] { "<b>x \\<b> y</b>" },
-            BitAiInlineParser.Parse("<b>x \\<b> y</b>", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
+        Assert.AreSequenceEqual(
+            new[] { "<b>x \\<b> y</b>" }, BitAiInlineParser.Parse("<b>x \\<b> y</b>", Html).OfType<BitAiRawHtmlInline>().Select(h => h.Html).ToArray());
     }
 
     [TestMethod]
@@ -83,7 +80,7 @@ public class BitAiRawHtmlShapeTests
     [TestMethod]
     public void ABlockLevelTagInterruptsAParagraphButAnInlineTagDoesNot()
     {
-        Assert.AreEqual(2, BitAiMarkdownParser.Parse("text\n<div>\nx", Html).Blocks.Count);
+        Assert.HasCount(2, BitAiMarkdownParser.Parse("text\n<div>\nx", Html).Blocks);
         Assert.ContainsSingle(BitAiMarkdownParser.Parse("text\n<b>x</b>", Html).Blocks);
     }
 

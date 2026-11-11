@@ -111,7 +111,7 @@ internal static class SourceFiles
                              .OrderBy(file => file, StringComparer.Ordinal)
                              .ToList();
 
-        Assert.IsTrue(files.Count > 1, $"The Utils scripts were not found in {folder}.");
+        Assert.IsGreaterThan(1, files.Count, $"The Utils scripts were not found in {folder}.");
 
         return string.Join("\n", files.Select(ReadFullPath));
     }
@@ -244,7 +244,7 @@ internal static class SourceFiles
             {
                 if (kinds[i] is ScssChar.Code) value.Append(stylesheet[i]);
             }
-            Assert.IsTrue(i < stylesheet.Length, $"${name} is not closed by a semicolon.");
+            Assert.IsLessThan(stylesheet.Length, i, $"${name} is not closed by a semicolon.");
 
             var names = value.ToString().Split(',').Select(n => n.Trim()).ToArray();
 
@@ -255,12 +255,12 @@ internal static class SourceFiles
             }
 
             var duplicates = names.GroupBy(n => n, StringComparer.Ordinal).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
-            Assert.AreEqual(0, duplicates.Length, $"${name} lists {string.Join(", ", duplicates)} more than once.");
+            Assert.IsEmpty(duplicates, $"${name} lists {string.Join(", ", duplicates)} more than once.");
 
             lists.Add(new(name, names, resets.Remove(name, out var listResets) ? listResets : []));
         }
 
-        Assert.AreEqual(0, resets.Count, $"No list for the reset that reads it: ${string.Join(", $", resets.Keys)}.");
+        Assert.IsEmpty(resets, $"No list for the reset that reads it: ${string.Join(", $", resets.Keys)}.");
 
         return lists;
     }
@@ -522,7 +522,7 @@ internal static class SourceFiles
         {
             index = stylesheet.IndexOf(start, index + 1, StringComparison.Ordinal);
         }
-        Assert.IsTrue(index >= 0, message ?? $"The stylesheet has no \"{start.Trim()}\" block.");
+        Assert.IsGreaterThanOrEqualTo(0, index, message ?? $"The stylesheet has no \"{start.Trim()}\" block.");
 
         // The block is the one the first brace opens - the outer one when `start` reaches into a nested rule
         // ("@media ... {\n    .bit-foo {") - and an interpolation in the selector (#{$x}) is not taken for it.
@@ -531,10 +531,10 @@ internal static class SourceFiles
         {
             open++;
         }
-        Assert.IsTrue(open < stylesheet.Length, $"The \"{start.Trim()}\" block has no opening brace.");
+        Assert.IsLessThan(stylesheet.Length, open, $"The \"{start.Trim()}\" block has no opening brace.");
 
         var close = FindClose(stylesheet, kinds, open);
-        Assert.IsTrue(close < stylesheet.Length, $"The \"{start.Trim()}\" block is not closed.");
+        Assert.IsLessThan(stylesheet.Length, close, $"The \"{start.Trim()}\" block is not closed.");
 
         return (index, open, close, kinds);
     }

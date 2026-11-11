@@ -35,8 +35,8 @@ public class CollaborationStackTests
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
 
-        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared");
-        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared");
+        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await SettleAsync();
 
         a.Text("body").Insert(0, "hello from A");
@@ -51,12 +51,12 @@ public class CollaborationStackTests
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService clientA = CreateClient(network);
 
-        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared");
+        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         a.Text("body").Insert(0, "already here");
         await SettleAsync();
 
         await using BcrdtCollaborationService clientB = CreateClient(network);
-        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared");
+        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await SettleAsync();
 
         // The handshake, not a replay of past updates, is what brings a late joiner up to date.
@@ -71,14 +71,14 @@ public class CollaborationStackTests
         await using BcrdtCollaborationService clientA = CreateClient(network);
         await using BcrdtCollaborationService clientB = CreateClient(network);
 
-        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared");
-        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared");
+        BcrdtCollaborativeDocument a = await clientA.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument b = await clientB.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
         await SettleAsync();
 
         a.Array("items").Push("shared-start");
         await SettleAsync();
 
-        await a.DisconnectAsync();
+        await a.DisconnectAsync(TestContext.CancellationToken);
 
         // Both sides keep working. Neither can see the other.
         for (int i = 0; i < 20; i++) a.Array("items").Push($"offline-a-{i}");
@@ -88,7 +88,7 @@ public class CollaborationStackTests
         Assert.AreEqual(21, a.Array("items").Count);
         Assert.AreEqual(21, b.Array("items").Count);
 
-        await a.ConnectAsync();
+        await a.ConnectAsync(TestContext.CancellationToken);
         await SettleAsync();
 
         // Reconciliation has to go both ways. The returning client needs what it missed, and the
@@ -106,9 +106,9 @@ public class CollaborationStackTests
         await using BcrdtCollaborationService clientB = CreateClient(network);
 
         BcrdtCollaborativeDocument a = await clientA.OpenAsync(
-            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
+            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
         BcrdtCollaborativeDocument b = await clientB.OpenAsync(
-            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("grace", "Grace", "#00ff00") });
+            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("grace", "Grace", "#00ff00") }, TestContext.CancellationToken);
 
         await SettleAsync();
 
@@ -124,14 +124,14 @@ public class CollaborationStackTests
         await using BcrdtCollaborationService client = CreateClient(network, store);
 
         BcrdtCollaborativeDocument doc = await client.OpenAsync(
-            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") });
+            "shared", new BcrdtOpenDocumentOptions { User = new BcrdtCollaboratorInfo("ada", "Ada", "#ff0000") }, TestContext.CancellationToken);
 
         doc.Text("body").Insert(0, "document content");
         await doc.FlushAsync();
 
         // A reloaded document must know its content and know nothing about who was looking at it.
         using var reloaded = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 99 });
-        BcrdtStoredDocument stored = await store.LoadAsync("shared");
+        BcrdtStoredDocument stored = await store.LoadAsync("shared", TestContext.CancellationToken);
         reloaded.ApplyUpdate(stored.Update!);
 
         Assert.AreEqual("document content", reloaded.GetText("body").ToString());
@@ -144,8 +144,8 @@ public class CollaborationStackTests
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService client = CreateClient(network);
 
-        BcrdtCollaborativeDocument first = await client.OpenAsync("shared");
-        BcrdtCollaborativeDocument second = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument first = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
+        BcrdtCollaborativeDocument second = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreSame(first, second);
     }
@@ -155,7 +155,7 @@ public class CollaborationStackTests
     {
         var network = new BcrdtInMemoryNetwork();
         await using BcrdtCollaborationService client = CreateClient(network);
-        BcrdtCollaborativeDocument doc = await client.OpenAsync("shared");
+        BcrdtCollaborativeDocument doc = await client.OpenAsync("shared", cancellationToken: TestContext.CancellationToken);
 
         int updates = 0;
         doc.Changed += _ => updates++;
@@ -188,11 +188,11 @@ public class CollaborationStackTests
         List<BcrdtConnectionStatus> statuses = [];
         provider.StatusChanged += status => statuses.Add(status);
 
-        await provider.ConnectAsync();
+        await provider.ConnectAsync(TestContext.CancellationToken);
         await SettleAsync();
 
         transport.SimulateDrop();
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.CancellationToken);
 
         Assert.Contains(BcrdtConnectionStatus.Reconnecting, statuses);
         Assert.AreEqual(BcrdtTransportState.Connected, transport.State);
@@ -216,7 +216,7 @@ public class CollaborationStackTests
         // Full jitter means the delay is random, so the property to check is spread rather than
         // any particular value: a fixed schedule would make every client retry in lockstep.
         var samples = Enumerable.Range(0, 50).Select(_ => policy.NextDelay(10)).Distinct().Count();
-        Assert.IsTrue(samples > 20, $"Only {samples} distinct delays; the backoff is not jittering.");
+        Assert.IsGreaterThan(20, samples, $"Only {samples} distinct delays; the backoff is not jittering.");
     }
 
     [TestMethod]
@@ -285,4 +285,6 @@ public class CollaborationStackTests
         // A caret at 6 should still be on the same character, five positions further along.
         Assert.AreEqual(11, BcrdtTextSynchronizer.MapCaretThroughDelta(6, observed));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

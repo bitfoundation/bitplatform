@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -81,7 +81,7 @@ public class BelemetryDiagnosticSecondReviewTests
             recorder.EndAutomaticCapture(capture, generation);
         }
 
-        CollectionAssert.AreEqual(new[] { captures[1], captures[2] }, recorder.Pending());
+        Assert.AreSequenceEqual(new[] { captures[1], captures[2] }, recorder.Pending());
         Assert.AreEqual(1, recorder.Dropped()["pending_capture_limit"]);
     }
 
@@ -101,10 +101,10 @@ public class BelemetryDiagnosticSecondReviewTests
         module.Setup<IJSStreamReference>("getDiagnosticsStream").SetResult(new OversizedStream());
         var diagnostics = context.Services.GetRequiredService<IBelemetryDiagnostics>();
 
-        var capture = await diagnostics.CaptureAsync();
+        var capture = await diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
 
         Assert.IsTrue(capture.Succeeded, capture.Error);
-        Assert.IsTrue(capture.MissingEvidence.Any(m => m.StartsWith("Browser evidence", StringComparison.Ordinal)));
+        Assert.Contains(m => m.StartsWith("Browser evidence", StringComparison.Ordinal), capture.MissingEvidence);
     }
 
     private sealed class OversizedStream : IJSStreamReference
@@ -134,7 +134,7 @@ public class BelemetryDiagnosticSecondReviewTests
     {
         await using var host = DiagnosticsTestHost.Create(o => o.Diagnostics.AutoCaptureTriggers = BelemetryDiagnosticTriggers.UnhandledExceptions);
         host.Factory.CreateLogger("MyApp.Reports.PdfRenderer").LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException("handled")), "handled");
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.CancellationToken);
 
         Assert.AreEqual("log", host.Diagnostics.GetEvents().Single().Exception!.Origin);
         Assert.IsEmpty(host.Diagnostics.PendingCaptures);
@@ -170,13 +170,13 @@ public class BelemetryDiagnosticSecondReviewTests
             logger.LogError(DiagnosticsTestHost.Thrown(() => new InvalidOperationException($"Order {order} failed")), "failed");
         }
 
-        var capture = await host.Diagnostics.CaptureAsync();
+        var capture = await host.Diagnostics.CaptureAsync(cancellationToken: TestContext.CancellationToken);
         var group = capture.ExceptionGroups.Single();
 
         Assert.AreEqual(2, group.Count, "The history's counts stay.");
         Assert.AreEqual(capture.Events.Single(e => e.Exception is not null).Sequence, group.Occurrences.Single().Sequence);
         capture.Confirm();
-        using var zip = new System.IO.Compression.ZipArchive(new MemoryStream(await capture.ExportAsync()));
+        using var zip = new System.IO.Compression.ZipArchive(new MemoryStream(await capture.ExportAsync(TestContext.CancellationToken)));
         var exceptions = new StreamReader(zip.GetEntry("exceptions.json")!.Open()).ReadToEnd();
         Assert.DoesNotContain("10423", exceptions);
         Assert.Contains("99871", exceptions);
@@ -237,7 +237,7 @@ public class BelemetryDiagnosticSecondReviewTests
         });
         var bridge = context.Services.GetRequiredService<BelemetryJsBridge>();
         bridge.Apply(new BelemetryJsContext { Consent = (int)BelemetryFeatures.All, Decided = true });
-        var capture = await context.Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync(new() { IncludeBrowserEvidence = false });
+        var capture = await context.Services.GetRequiredService<IBelemetryDiagnostics>().CaptureAsync(new() { IncludeBrowserEvidence = false }, TestContext.CancellationToken);
 
         Assert.IsInstanceOfType<BelemetryPageConsent>(capture.Content.MayCaptureBrowser!.Target);
         Assert.IsInstanceOfType<BelemetryDiagnosticHub>(capture.Content.MayCapture!.Target);
@@ -264,6 +264,8 @@ public class BelemetryDiagnosticSecondReviewTests
         host.Host.Pipeline.Enqueue(failed);
 
         Assert.IsEmpty(index.Find([ok.TraceId]));
-        Assert.HasCount(1, index.Find([failed.TraceId]));
+        Assert.ContainsSingle(index.Find([failed.TraceId]));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

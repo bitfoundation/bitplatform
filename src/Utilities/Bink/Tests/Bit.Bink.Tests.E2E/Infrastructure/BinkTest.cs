@@ -64,6 +64,7 @@ public abstract class BinkTest
     protected async Task<IPage> NewClipboardPageAsync()
     {
         var context = await NewContextAsync();
+        string unavailableReason;
         try
         {
             await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"], new BrowserContextGrantPermissionsOptions { Origin = BaseUrl });
@@ -71,9 +72,10 @@ public abstract class BinkTest
         }
         catch (PlaywrightException ex)
         {
-            Assert.Inconclusive($"{E2EEnvironment.Browser} cannot be given clipboard access under automation: {ex.Message}");
-            throw;
+            unavailableReason = $"{E2EEnvironment.Browser} cannot be given clipboard access under automation: {ex.Message}";
         }
+
+        throw new AssertInconclusiveException(unavailableReason);
     }
 
     /// <summary>Opens a page of the demo in a context of its own, and waits until its canvas can be drawn on.</summary>

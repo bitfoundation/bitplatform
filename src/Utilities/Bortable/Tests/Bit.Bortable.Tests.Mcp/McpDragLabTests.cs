@@ -28,8 +28,8 @@ public class McpDragLabTests
         Assert.HasCount(2, sample.Lists!);
         Assert.AreEqual("move", report.Kind);
         Assert.IsTrue(report.Changed);
-        CollectionAssert.AreEqual(new[] { "Review the PR", "Set up CI" }, List(report, "done").After);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("the sample in Sample was run", StringComparison.Ordinal)));
+        Assert.AreSequenceEqual(new[] { "Review the PR", "Set up CI" }, List(report, "done").After);
+        Assert.Contains(note => note.Contains("the sample in Sample was run", StringComparison.Ordinal), report.Notes);
     }
 
     // ---- Within a list -------------------------------------------------------
@@ -40,7 +40,7 @@ public class McpDragLabTests
         var report = await InspectAsync(Scenario([List("a", ["A", "B", "C", "D"])], Drag("A", index: 2)));
 
         Assert.AreEqual("reorder", report.Kind);
-        CollectionAssert.AreEqual(new[] { "B", "C", "A", "D" }, List(report, "a").After);
+        Assert.AreSequenceEqual(new[] { "B", "C", "A", "D" }, List(report, "a").After);
         Assert.AreEqual(1, List(report, "a").ItemsChanged);
         Assert.AreEqual("OnStart:a OnChange:a ItemsChanged:a OnUpdate:a OnSort:a OnEnd:a", Sequence(report));
 
@@ -56,7 +56,7 @@ public class McpDragLabTests
         var dragover = Step(report, "dragover");
 
         Assert.IsTrue(dragover.Accepted);
-        CollectionAssert.Contains(dragover.Browser!, "Over('a', 3) -> changed");
+        Assert.Contains("Over('a', 3) -> changed", dragover.Browser!);
     }
 
     [TestMethod]
@@ -64,8 +64,8 @@ public class McpDragLabTests
     {
         var report = await InspectAsync(Scenario([List("a", ["A", "B", "C", "D"])], Drag("D", index: 0)));
 
-        CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, List(report, "a").After);
-        CollectionAssert.Contains(Step(report, "dragover").Browser!, "Over('a', 0) -> changed");
+        Assert.AreSequenceEqual(new[] { "D", "A", "B", "C" }, List(report, "a").After);
+        Assert.Contains("Over('a', 0) -> changed", Step(report, "dragover").Browser!);
     }
 
     [TestMethod]
@@ -85,7 +85,7 @@ public class McpDragLabTests
 
         Assert.IsFalse(report.Changed);
         Assert.AreEqual("OnStart:a OnEnd:a", Sequence(report));
-        Assert.IsFalse(report.Steps!.Any(step => step.Event == "dragover"), "The pointer never left the item.");
+        Assert.DoesNotContain(step => step.Event == "dragover", report.Steps!, "The pointer never left the item.");
         Assert.Contains("released where it started", report.Outcome!);
     }
 
@@ -109,8 +109,8 @@ public class McpDragLabTests
             Drag("A", to: "done", index: 1)));
 
         Assert.AreEqual("move", report.Kind);
-        CollectionAssert.AreEqual(new[] { "B" }, List(report, "todo").After);
-        CollectionAssert.AreEqual(new[] { "X", "A" }, List(report, "done").After);
+        Assert.AreSequenceEqual(new[] { "B" }, List(report, "todo").After);
+        Assert.AreSequenceEqual(new[] { "X", "A" }, List(report, "done").After);
         Assert.AreEqual("OnStart:todo OnChange:done ItemsChanged:todo ItemsChanged:done OnRemove:todo OnAdd:done OnSort:todo OnSort:done OnEnd:todo", Sequence(report));
 
         // While the pointer is over 'done', the item is only previewed there; its original hides.
@@ -139,7 +139,7 @@ public class McpDragLabTests
             [List("a", ["A"], group: "g"), List("b", ["X", "Y"], group: "g")],
             Drag("A", to: "b")));
 
-        CollectionAssert.AreEqual(new[] { "X", "Y", "A" }, List(report, "b").After);
+        Assert.AreSequenceEqual(new[] { "X", "Y", "A" }, List(report, "b").After);
     }
 
     [TestMethod]
@@ -152,7 +152,7 @@ public class McpDragLabTests
         Assert.AreEqual("dragend", dragend.Event);
         Assert.IsFalse(dragend.Accepted);
         Assert.Contains("Whichever of drop and dragend comes first completes it", dragend.Outcome);
-        Assert.AreEqual(1, report.Events!.Count(e => e.Event == "OnEnd"));
+        Assert.ContainsSingle(e => e.Event == "OnEnd", report.Events!);
     }
 
     [TestMethod]
@@ -162,10 +162,10 @@ public class McpDragLabTests
             [List("a", ["A", "B"], group: "g"), List("b", ["X"], group: "g")],
             Drag("A", to: "b", index: 0, release: "outside")));
 
-        CollectionAssert.AreEqual(new[] { "A", "X" }, List(report, "b").After);
-        Assert.IsFalse(report.Steps!.Any(step => step.Event == "drop"), "A release outside any list fires no drop.");
+        Assert.AreSequenceEqual(new[] { "A", "X" }, List(report, "b").After);
+        Assert.DoesNotContain(step => step.Event == "drop", report.Steps!, "A release outside any list fires no drop.");
         Assert.IsTrue(Step(report, "dragend").Accepted);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("as in SortableJS", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("as in SortableJS", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -175,8 +175,8 @@ public class McpDragLabTests
             [List("a", ["A", "B"])],
             Drag("A", index: 1, release: "cancel")));
 
-        CollectionAssert.AreEqual(new[] { "B", "A" }, List(report, "a").After);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("Escape", StringComparison.Ordinal)));
+        Assert.AreSequenceEqual(new[] { "B", "A" }, List(report, "a").After);
+        Assert.Contains(note => note.Contains("Escape", StringComparison.Ordinal), report.Notes);
     }
 
     // ---- Clone ----------------------------------------------------------------
@@ -190,13 +190,14 @@ public class McpDragLabTests
 
         Assert.AreEqual("clone", report.Kind);
         Assert.IsFalse(List(report, "palette").Changed);
-        CollectionAssert.AreEqual(new[] { "Title", "Text (copy)" }, List(report, "form").After);
+        Assert.AreSequenceEqual(new[] { "Title", "Text (copy)" }, List(report, "form").After);
         Assert.AreEqual("OnStart:palette OnChange:form ItemsChanged:form OnAdd:form OnSort:form OnEnd:palette", Sequence(report), "A clone raises no OnRemove, and the source does not sort.");
         Assert.AreEqual("Text (copy)", Event(report, "OnAdd", "form").Item, "The events report the copy.");
 
         // The original stays visible while it is cloned: no bit-bortable-hidden.
         var source = Step(report, "dragover").Rendered?.SingleOrDefault(list => list.List == "palette");
-        Assert.IsTrue(source is null || source.Items.All(item => item.Classes?.Contains("bit-bortable-hidden", StringComparison.Ordinal) is not true));
+        var actualValue = source is null || source.Items.All(item => item.Classes?.Contains("bit-bortable-hidden", StringComparison.Ordinal) is not true);
+        Assert.IsTrue(actualValue);
     }
 
     [TestMethod]
@@ -206,8 +207,8 @@ public class McpDragLabTests
             [List("palette", ["Text"], group: "form", pull: "clone"), List("form", [], group: "form")],
             Drag("Text", to: "form")));
 
-        CollectionAssert.AreEqual(new[] { "Text" }, List(once, "form").After);
-        Assert.IsTrue(once.Notes.Any(note => note.Contains("ICloneable.Clone()", StringComparison.Ordinal)));
+        Assert.AreSequenceEqual(new[] { "Text" }, List(once, "form").After);
+        Assert.Contains(note => note.Contains("ICloneable.Clone()", StringComparison.Ordinal), once.Notes);
 
         var twice = await InspectAsync(Scenario(
             [List("palette", ["Text"], group: "form", pull: "clone"), List("form", ["Text"], group: "form")],
@@ -226,7 +227,7 @@ public class McpDragLabTests
 
         Assert.IsTrue(Step(report, "dragover").Accepted, "The target does not hold the original, so it previews it.");
         Assert.IsFalse(report.Changed);
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("cancelled at the last moment", StringComparison.Ordinal) && note.Contains("'Text!'", StringComparison.Ordinal)));
+        Assert.Contains(note => note.Contains("cancelled at the last moment", StringComparison.Ordinal) && note.Contains("'Text!'", StringComparison.Ordinal), report.Notes);
     }
 
     [TestMethod]
@@ -258,10 +259,10 @@ public class McpDragLabTests
         var dragover = Step(report, "dragover");
 
         Assert.IsTrue(dragover.Accepted);
-        CollectionAssert.Contains(dragover.Browser!, "Over('s', 2) -> changed");
+        Assert.Contains("Over('s', 2) -> changed", dragover.Browser!);
         Assert.AreEqual("bit-bortable-swap-highlight", dragover.Rendered!.Single().Items.Single(item => item.Item == "C").Classes);
 
-        CollectionAssert.AreEqual(new[] { "C", "B", "A" }, List(report, "s").After);
+        Assert.AreSequenceEqual(new[] { "C", "B", "A" }, List(report, "s").After);
         Assert.AreEqual("OnStart:s ItemsChanged:s OnUpdate:s OnSort:s OnEnd:s", Sequence(report), "A swap raises no OnChange: nothing moves until the drop.");
     }
 
@@ -272,8 +273,8 @@ public class McpDragLabTests
             [List("l", ["A", "B"], group: "g", swap: true), List("r", ["X", "Y"], group: "g", swap: true)],
             Drag("A", to: "r", swapWith: "Y")));
 
-        CollectionAssert.AreEqual(new[] { "Y", "B" }, List(report, "l").After);
-        CollectionAssert.AreEqual(new[] { "X", "A" }, List(report, "r").After);
+        Assert.AreSequenceEqual(new[] { "Y", "B" }, List(report, "l").After);
+        Assert.AreSequenceEqual(new[] { "X", "A" }, List(report, "r").After);
         Assert.AreEqual("OnStart:l ItemsChanged:l ItemsChanged:r OnRemove:l OnAdd:r OnSort:l OnSort:r OnEnd:l", Sequence(report));
     }
 
@@ -309,8 +310,8 @@ public class McpDragLabTests
 
         Assert.AreEqual("multi-drag reorder", report.Kind);
         Assert.IsTrue(report.Steps!.Where(step => step.Event == "click").All(step => step.Accepted));
-        CollectionAssert.AreEqual(new[] { "A", "C", "E", "B", "D" }, List(report, "m").After);
-        CollectionAssert.AreEqual(new[] { "B", "D" }, Event(report, "OnUpdate", "m").Items);
+        Assert.AreSequenceEqual(new[] { "A", "C", "E", "B", "D" }, List(report, "m").After);
+        Assert.AreSequenceEqual(new[] { "B", "D" }, Event(report, "OnUpdate", "m").Items);
         Assert.Contains("carries the selection of 2", Step(report, "dragstart").Outcome);
     }
 
@@ -321,9 +322,9 @@ public class McpDragLabTests
             [List("m", ["A", "B", "C", "D"], group: "g", multiDrag: true), List("t", ["X", "Y"], group: "g")],
             Drag("C", selected: ["A", "C"], to: "t", index: 1)));
 
-        CollectionAssert.AreEqual(new[] { "B", "D" }, List(report, "m").After);
-        CollectionAssert.AreEqual(new[] { "X", "A", "C", "Y" }, List(report, "t").After);
-        CollectionAssert.AreEqual(new[] { "A", "C" }, Event(report, "OnAdd", "t").Items);
+        Assert.AreSequenceEqual(new[] { "B", "D" }, List(report, "m").After);
+        Assert.AreSequenceEqual(new[] { "X", "A", "C", "Y" }, List(report, "t").After);
+        Assert.AreSequenceEqual(new[] { "A", "C" }, Event(report, "OnAdd", "t").Items);
     }
 
     [TestMethod]
@@ -334,7 +335,7 @@ public class McpDragLabTests
             Drag("A", selected: ["C", "D"], index: 3)));
 
         Assert.AreEqual("reorder", report.Kind);
-        CollectionAssert.AreEqual(new[] { "B", "C", "D", "A" }, List(report, "m").After);
+        Assert.AreSequenceEqual(new[] { "B", "C", "D", "A" }, List(report, "m").After);
         Assert.Contains("cleared the selection", Step(report, "dragstart").Outcome);
     }
 
@@ -391,7 +392,7 @@ public class McpDragLabTests
             Assert.IsFalse(Step(report, "dragstart").Accepted);
             Assert.Contains("draggable=\"false\"", Step(report, "dragstart").Outcome);
             Assert.IsEmpty(report.Events!);
-            Assert.HasCount(1, report.Steps!, "Without a drag there is nothing to carry anywhere.");
+            Assert.ContainsSingle(report.Steps!, "Without a drag there is nothing to carry anywhere.");
         }
 
         Assert.Contains("Disabled", disabled.Outcome!);
@@ -407,7 +408,7 @@ public class McpDragLabTests
 
         Assert.IsFalse(Step(report, "dragover").Accepted);
         Assert.IsFalse(List(report, "t").Changed);
-        CollectionAssert.AreEqual(new[] { "B", "A", "C", "D" }, List(report, "m").After);
+        Assert.AreSequenceEqual(new[] { "B", "A", "C", "D" }, List(report, "m").After);
         Assert.Contains("refused the selection", report.Outcome!);
     }
 
@@ -425,7 +426,7 @@ public class McpDragLabTests
         Assert.AreEqual("OnStart", events.First());
         Assert.AreEqual("OnEnd", events.Last());
         Assert.IsLessThan(events.IndexOf("OnRemove"), events.LastIndexOf("ItemsChanged"));
-        CollectionAssert.AreEqual(new[] { "B" }, report.Events!.Single(e => e.Event == "ItemsChanged" && e.List == "a").Items);
+        Assert.AreSequenceEqual(new[] { "B" }, report.Events!.Single(e => e.Event == "ItemsChanged" && e.List == "a").Items);
         Assert.IsTrue(report.Events!.All(e => e.Step > 0));
     }
 

@@ -27,9 +27,9 @@ public class McpPromptTests
     [TestMethod]
     public async Task Every_expected_prompt_is_published_with_a_title_and_a_description()
     {
-        var prompts = await McpTestHost.Client.ListPromptsAsync();
+        var prompts = await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
-        CollectionAssert.AreEquivalent(_expectedPrompts, prompts.Select(prompt => prompt.Name).ToArray());
+        Assert.AreSequenceEqual(_expectedPrompts, prompts.Select(prompt => prompt.Name).ToArray(), Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
 
         foreach (var prompt in prompts)
         {
@@ -41,14 +41,14 @@ public class McpPromptTests
     [TestMethod]
     public async Task A_prompts_arguments_are_declared_with_what_they_are_for()
     {
-        var prompts = await McpTestHost.Client.ListPromptsAsync();
+        var prompts = await McpTestHost.Client.ListPromptsAsync(cancellationToken: TestContext.CancellationToken);
 
         // By name rather than by position: an argument added in front of these would otherwise fail
         // the test for the wrong reason, or - worse - pass it about the wrong argument.
         var feature = prompts.Single(prompt => prompt.Name == "implement-brouter-feature")
                              .ProtocolPrompt.Arguments!.SingleOrDefault(argument => argument.Name == "feature");
         Assert.IsNotNull(feature, "'implement-brouter-feature' declares no 'feature' argument.");
-        Assert.AreEqual(true, feature.Required, "A feature request with no feature in it has nothing to work from.");
+        Assert.IsTrue(feature.Required, "A feature request with no feature in it has nothing to work from.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(feature.Description));
 
         // The render mode has a documented stand-in, so it is optional rather than required.
@@ -74,15 +74,15 @@ public class McpPromptTests
 
         foreach (var (name, arguments) in calls)
         {
-            var result = await McpTestHost.Client.GetPromptAsync(name, arguments);
+            var result = await McpTestHost.Client.GetPromptAsync(name, arguments, cancellationToken: TestContext.CancellationToken);
 
-            Assert.AreEqual(1, result.Messages.Count, $"'{name}' produced {result.Messages.Count} messages.");
+            Assert.ContainsSingle(result.Messages, $"'{name}' produced {result.Messages.Count} messages.");
             Assert.AreEqual(Role.User, result.Messages[0].Role, $"'{name}' does not speak as the user.");
 
             var text = (result.Messages[0].Content as TextContentBlock)?.Text;
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(text), $"'{name}' produced an empty message.");
-            StringAssert.Contains(text, "Work in this order", $"'{name}' does not lay out an order to work in.");
+            Assert.Contains("Work in this order", text, $"'{name}' does not lay out an order to work in.");
         }
     }
 
@@ -95,8 +95,7 @@ public class McpPromptTests
 
             foreach (var mentioned in ToolNames.MentionedIn(text))
             {
-                CollectionAssert.Contains(McpToolSurfaceTests.ExpectedTools, mentioned,
-                    $"The '{name}' workflow tells the agent to call '{mentioned}', which this server does not expose.");
+                Assert.Contains(mentioned, McpToolSurfaceTests.ExpectedTools, $"The '{name}' workflow tells the agent to call '{mentioned}', which this server does not expose.");
             }
         }
     }
@@ -106,7 +105,7 @@ public class McpPromptTests
     {
         var text = await GetTextAsync("implement-brouter-feature", new() { ["feature"] = "keep the search page alive across navigations" });
 
-        StringAssert.Contains(text, "keep the search page alive across navigations");
+        Assert.Contains("keep the search page alive across navigations", text);
     }
 
     [TestMethod]
@@ -115,8 +114,8 @@ public class McpPromptTests
         // The workflow is usable before anyone knows the answer: the model is told to determine it.
         var text = await GetTextAsync("add-brouter-to-app", null);
 
-        StringAssert.Contains(text, "unknown");
-        StringAssert.Contains(text, "AddInteractiveServerComponents", "Nothing tells the model how to find the render mode out.");
+        Assert.Contains("unknown", text);
+        Assert.Contains("AddInteractiveServerComponents", text, "Nothing tells the model how to find the render mode out.");
     }
 
     [TestMethod]
@@ -126,9 +125,9 @@ public class McpPromptTests
         // rather than at compile time, which is why the workflow has to say it out loud.
         var text = await GetTextAsync("add-brouter-to-app", new() { ["renderMode"] = "auto" });
 
-        StringAssert.Contains(text, "GetBrouterSetupGuide");
-        StringAssert.Contains(text, "DI containers");
-        StringAssert.Contains(text, "InspectBrouterRouteTemplates", "The workflow never checks the route table it just changed.");
+        Assert.Contains("GetBrouterSetupGuide", text);
+        Assert.Contains("DI containers", text);
+        Assert.Contains("InspectBrouterRouteTemplates", text, "The workflow never checks the route table it just changed.");
     }
 
     [TestMethod]
@@ -136,9 +135,9 @@ public class McpPromptTests
     {
         var text = await GetTextAsync("implement-brouter-feature", new() { ["feature"] = "load data before the page renders" });
 
-        StringAssert.Contains(text, "SearchBrouter");
-        StringAssert.Contains(text, "GetBrouterApi");
-        StringAssert.Contains(text, "do not infer a parameter from another router library");
+        Assert.Contains("SearchBrouter", text);
+        Assert.Contains("GetBrouterApi", text);
+        Assert.Contains("do not infer a parameter from another router library", text);
     }
 
     [TestMethod]
@@ -146,9 +145,9 @@ public class McpPromptTests
     {
         var text = await GetTextAsync("migrate-to-brouter", null);
 
-        StringAssert.Contains(text, "Migrating from the built-in Router");
-        StringAssert.Contains(text, "AppAssembly");
-        StringAssert.Contains(text, "instead of rewriting templates");
+        Assert.Contains("Migrating from the built-in Router", text);
+        Assert.Contains("AppAssembly", text);
+        Assert.Contains("instead of rewriting templates", text);
     }
 
     [TestMethod]
@@ -156,16 +155,16 @@ public class McpPromptTests
     {
         var text = await GetTextAsync("debug-brouter-routing", new() { ["symptom"] = "the route matches but its parameter arrives null" });
 
-        StringAssert.Contains(text, "the route matches but its parameter arrives null");
-        StringAssert.Contains(text, "faq");
-        StringAssert.Contains(text, "InspectBrouterRouteTemplates");
+        Assert.Contains("the route matches but its parameter arrives null", text);
+        Assert.Contains("faq", text);
+        Assert.Contains("InspectBrouterRouteTemplates", text);
     }
 
     [TestMethod]
     public async Task A_prompt_that_does_not_exist_is_a_protocol_error()
     {
         await Assert.ThrowsExactlyAsync<McpProtocolException>(
-            async () => await McpTestHost.Client.GetPromptAsync("write-my-app"));
+            async () => await McpTestHost.Client.GetPromptAsync("write-my-app", cancellationToken: TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -197,4 +196,6 @@ public class McpPromptTests
 
         return string.Join('\n', result.Messages.Select(message => (message.Content as TextContentBlock)?.Text));
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

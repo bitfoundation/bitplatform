@@ -115,7 +115,7 @@ public partial class McpOracleTests
                         if (sizes.Count == before) sizes.Add(0);
                     }
 
-                    CollectionAssert.AreEqual(sizes, report.Replicas!.Single(r => r.Label == label).Updates.Select(update => update.Bytes).ToArray(), $"{context}\n{label}'s update sizes");
+                    Assert.AreSequenceEqual(sizes, report.Replicas!.Single(r => r.Label == label).Updates.Select(update => update.Bytes).ToArray(), $"{context}\n{label}'s update sizes");
                 }
             }
             finally
@@ -213,17 +213,16 @@ public partial class McpOracleTests
                     Assert.AreEqual(structs.Count, client.BlockCount, context);
                     Assert.AreEqual(structs[0].Id.Clock, client.FromClock, context);
                     Assert.AreEqual(structs.Sum(block => (long)block.Length), client.ToClock - client.FromClock, context);
-                    CollectionAssert.AreEqual(structs.Select(block => block.Id.Clock).ToArray(), client.Blocks.Select(block => block.Clock).ToArray(), context);
+                    Assert.AreSequenceEqual(structs.Select(block => block.Id.Clock).ToArray(), client.Blocks.Select(block => block.Clock).ToArray(), context);
                 }
 
                 // A whole document's update implies its whole state vector.
                 var vector = documents[0].GetStateVector();
-                CollectionAssert.AreEquivalent(vector.Select(entry => $"{entry.Key}={entry.Value}").ToArray(), report.StateVector!.Select(entry => $"{entry.Key}={entry.Value}").ToArray(), context);
+                Assert.AreSequenceEqual(vector.Select(entry => $"{entry.Key}={entry.Value}").ToArray(), report.StateVector!.Select(entry => $"{entry.Key}={entry.Value}").ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, context);
 
                 var deleted = BcrdtUpdateOperations.DecodeDeleteSet(update);
-                CollectionAssert.AreEquivalent(
-                    deleted.Clients.SelectMany(client => client.Value.Select(range => $"{client.Key}:{range.Clock}+{range.Length}")).ToArray(),
-                    report.DeleteSet!.Select(range => $"{range.Client}:{range.Clock}+{range.Length}").ToArray(), context);
+                Assert.AreSequenceEqual(
+                    deleted.Clients.SelectMany(client => client.Value.Select(range => $"{client.Key}:{range.Clock}+{range.Length}")).ToArray(), report.DeleteSet!.Select(range => $"{range.Client}:{range.Clock}+{range.Length}").ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, context);
             }
             finally
             {
@@ -254,7 +253,7 @@ public partial class McpOracleTests
             (BcrdtSyncProtocol.EncodePong(), "Pong"),
         ];
 
-        CollectionAssert.AreEquivalent(Enum.GetNames<BcrdtSyncMessageKind>(), messages.Select(message => message.Kind).ToArray(), "Every message kind should be read here.");
+        Assert.AreSequenceEqual(Enum.GetNames<BcrdtSyncMessageKind>(), messages.Select(message => message.Kind).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "Every message kind should be read here.");
 
         foreach (var (message, kind) in messages)
         {
@@ -276,9 +275,8 @@ public partial class McpOracleTests
 
         var indexed = BcrdtApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" },
-            BcrdtApiCatalog.Types.Select(type => type.Package).Distinct().ToArray());
+        Assert.AreSequenceEqual(exported.ToArray(), indexed.ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
+        Assert.AreSequenceEqual(new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" }, BcrdtApiCatalog.Types.Select(type => type.Package).Distinct().ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -329,7 +327,7 @@ public partial class McpOracleTests
             if (fenced is false && HeadingRegex().Match(line) is { Success: true } match) headings.Add(match.Groups["text"].Value.Trim());
         }
 
-        CollectionAssert.AreEqual(headings, BcrdtSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
+        Assert.AreSequenceEqual(headings, BcrdtSourceCatalog.GuideSections.Select(section => section.Heading).ToArray());
         Assert.HasCount(BcrdtSourceCatalog.GuideSections.Length, BcrdtSourceCatalog.GuideSections.Select(section => section.Key).Distinct(StringComparer.Ordinal), "Every section needs a key of its own.");
     }
 
@@ -354,7 +352,7 @@ public partial class McpOracleTests
 
         var embedded = BcrdtSourceCatalog.SourceFiles.Select(file => file.Path).Where(path => path.StartsWith("Demo/Client/", StringComparison.Ordinal)).ToArray();
 
-        CollectionAssert.AreEquivalent(expected, embedded);
+        Assert.AreSequenceEqual(expected, embedded, global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -374,7 +372,7 @@ public partial class McpOracleTests
         var embedded = BcrdtSourceCatalog.SourceFiles.Where(file => file.Path.StartsWith("Demo/Samples/", StringComparison.Ordinal)).ToArray();
 
         Assert.IsNotEmpty(expected);
-        CollectionAssert.AreEquivalent(expected, embedded.Select(file => file.Path).ToArray());
+        Assert.AreSequenceEqual(expected, embedded.Select(file => file.Path).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder);
         Assert.IsTrue(embedded.All(file => file.Kind == "Sample"), "Every file of Demo/Samples is indexed as a Sample.");
     }
 
@@ -394,16 +392,15 @@ public partial class McpOracleTests
             ("GetBcrdtSourceFile", "?path=Demo/Client/Pages/Live.razor", new() { ["path"] = "Demo/Client/Pages/Live.razor" }),
         ];
 
-        CollectionAssert.AreEquivalent(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(),
-            "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
+        Assert.AreSequenceEqual(McpSurfaceTests.ExpectedTools, calls.Select(call => call.Tool).ToArray(), global::Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The HTTP mirror is being exercised for a different set of tools than the server publishes.");
 
         foreach (var (tool, query, arguments) in calls)
         {
-            using var response = await http.GetAsync($"/api/mcp/{tool}{query}");
+            using var response = await http.GetAsync($"/api/mcp/{tool}{query}", TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, tool);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             if (tool is "SearchBcrdt" or "InspectBcrdtMerge" or "InspectBcrdtUpdate")
             {
@@ -423,17 +420,17 @@ public partial class McpOracleTests
 
         const string operations = "A: map meta set title \"x\"; B: map meta set title \"y\"";
 
-        var mergeOverHttp = JsonSerializer.Deserialize<BcrdtMergeReportDto>(await http.GetStringAsync($"/api/mcp/InspectBcrdtMerge?operations={Uri.EscapeDataString(operations)}"), json)!;
+        var mergeOverHttp = JsonSerializer.Deserialize<BcrdtMergeReportDto>(await http.GetStringAsync($"/api/mcp/InspectBcrdtMerge?operations={Uri.EscapeDataString(operations)}", TestContext.CancellationToken), json)!;
         var mergeOverMcp = await McpMergeLabTests.InspectAsync(operations);
 
         Assert.AreEqual(Json(mergeOverMcp.Merged), Json(mergeOverHttp.Merged));
-        CollectionAssert.AreEqual(mergeOverMcp.Notes, mergeOverHttp.Notes);
+        Assert.AreSequenceEqual(mergeOverMcp.Notes, mergeOverHttp.Notes);
 
-        var updateOverHttp = JsonSerializer.Deserialize<BcrdtUpdateInspectionDto>(await http.GetStringAsync("/api/mcp/InspectBcrdtUpdate"), json)!;
+        var updateOverHttp = JsonSerializer.Deserialize<BcrdtUpdateInspectionDto>(await http.GetStringAsync("/api/mcp/InspectBcrdtUpdate", TestContext.CancellationToken), json)!;
         var updateOverMcp = await McpUpdateInspectorTests.InspectAsync(null);
 
         Assert.AreEqual(updateOverMcp.Payload, updateOverHttp.Payload);
-        CollectionAssert.AreEqual(updateOverMcp.Notes, updateOverHttp.Notes);
+        Assert.AreSequenceEqual(updateOverMcp.Notes, updateOverHttp.Notes);
     }
 
     [TestMethod]
@@ -445,7 +442,7 @@ public partial class McpOracleTests
         var page = McpSurfaceTests.FindRepositoryFile("Demo", "Client", "Pages", "McpServer.razor");
         if (page is null) Assert.Inconclusive("The demo's McpServer.razor is not next to this build.");
 
-        var markup = await File.ReadAllTextAsync(page);
+        var markup = await File.ReadAllTextAsync(page, TestContext.CancellationToken);
 
         foreach (var tool in McpSurfaceTests.ExpectedTools) Assert.Contains($"<code>{tool}</code>", markup, tool);
         foreach (var prompt in new[] { "add-bcrdt-to-app", "implement-bcrdt-feature", "debug-bcrdt-sync" }) Assert.Contains(prompt, markup, prompt);
@@ -459,11 +456,11 @@ public partial class McpOracleTests
 
         foreach (var link in links)
         {
-            using var response = await http.GetAsync(link);
+            using var response = await http.GetAsync(link, TestContext.CancellationToken);
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, link);
 
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
 
             Assert.DoesNotContain("has no public type called", body, link);
             Assert.DoesNotContain("No source file at", body, link);
@@ -504,4 +501,6 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"href=""(?<href>/api/mcp/[^""]+)""")]
     private static partial Regex PageLinkRegex();
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

@@ -71,8 +71,8 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar(BasicItems());
 
-        CollectionAssert.AreEqual(new[] { "Home", "Products", "Profile" }, Texts(component));
-        Assert.AreEqual(3, component.FindAll(".bit-nbr-itm").Count);
+        Assert.AreSequenceEqual(new[] { "Home", "Products", "Profile" }, Texts(component));
+        Assert.HasCount(3, component.FindAll(".bit-nbr-itm"));
     }
 
     [TestMethod]
@@ -344,7 +344,7 @@ public class BitNavBarTests : BunitTestContext
 
         Assert.AreEqual("Home", item.GetAttribute("aria-label"));
         Assert.AreEqual("Home", item.GetAttribute("title"));
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-txt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-txt"));
     }
 
     [TestMethod]
@@ -440,8 +440,9 @@ public class BitNavBarTests : BunitTestContext
                                       new() { Text = "Home", Url = "/home" }]);
 
         var items = component.FindAll(".bit-nbr-itm");
+        var actualValue = items[0].QuerySelector(".bit-nbr-vhd")?.TextContent;
 
-        Assert.AreEqual("(opens in a new tab)", items[0].QuerySelector(".bit-nbr-vhd")?.TextContent);
+        Assert.AreEqual("(opens in a new tab)", actualValue);
         Assert.IsNull(items[1].QuerySelector(".bit-nbr-vhd"));
     }
 
@@ -512,7 +513,7 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("external noopener", component.Find(".bit-nbr-itm").GetAttribute("rel"));
     }
 
-    public class BitNavBarRelItem
+    internal class BitNavBarRelItem
     {
         public string? Caption { get; set; }
         public string? Link { get; set; }
@@ -653,9 +654,9 @@ public class BitNavBarTests : BunitTestContext
 
         var component = RenderNavBar(items);
 
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-bdg").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-bdg"));
         Assert.AreEqual("3", component.Find(".bit-nbr-bdg").TextContent);
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-bdt").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-bdt"));
     }
 
     [TestMethod]
@@ -663,7 +664,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar([new() { Text = "Alerts", Badge = "9" }]);
 
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-ico").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-ico"));
         Assert.AreEqual("9", component.Find(".bit-nbr-bdg").TextContent);
     }
 
@@ -672,7 +673,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar([new() { Text = "Home" }]);
 
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-icc").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-icc"));
     }
 
     [TestMethod]
@@ -960,7 +961,7 @@ public class BitNavBarTests : BunitTestContext
         Navigate("/nowhere");
 
         Assert.IsNull(SelectedText(component));
-        Assert.AreEqual(0, component.FindAll("[aria-current]").Count);
+        Assert.IsEmpty(component.FindAll("[aria-current]"));
     }
 
     [TestMethod]
@@ -1045,7 +1046,7 @@ public class BitNavBarTests : BunitTestContext
         items.Add(new() { Text = "Settings", Url = "/settings" });
         component.Render(p => p.Add(c => c.Items, items));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Products", "Profile", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Products", "Profile", "Settings" }, Texts(component));
         Assert.AreEqual("Settings", SelectedText(component));
     }
 
@@ -1107,7 +1108,7 @@ public class BitNavBarTests : BunitTestContext
 
         Navigate("/profile");
 
-        CollectionAssert.AreEqual(new[] { "Home", "Profile" }, selected);
+        Assert.AreSequenceEqual(new[] { "Home", "Profile" }, selected);
     }
 
     [TestMethod]
@@ -1484,7 +1485,7 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("Products", component.Find(".bit-nbr-sel .bit-nbr-txt").TextContent);
     }
 
-    public record ValueItem(string Text, string Url);
+    internal record ValueItem(string Text, string Url);
 
 
 
@@ -1536,7 +1537,7 @@ public class BitNavBarTests : BunitTestContext
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
         var elements = component.FindAll(".bit-nbr-itm");
 
-        Assert.AreEqual(2, focused.Count);
+        Assert.HasCount(2, focused);
         focused[0].Arguments[0].ShouldBeElementReferenceTo(elements[2]);
         focused[1].Arguments[0].ShouldBeElementReferenceTo(elements[0]);
     }
@@ -1658,7 +1659,7 @@ public class BitNavBarTests : BunitTestContext
 
         component.FindAll(".bit-nbr-itm")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1671,7 +1672,7 @@ public class BitNavBarTests : BunitTestContext
         component.FindAll(".bit-nbr-itm")[0].FocusIn();
         component.FindAll(".bit-nbr-itm")[0].KeyDown(new KeyboardEventArgs { Key = key, CtrlKey = true });
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        Assert.IsEmpty(Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
@@ -1778,7 +1779,7 @@ public class BitNavBarTests : BunitTestContext
 
         var items = component.FindAll(".bit-nbr-itm");
 
-        Assert.AreEqual(1, items.Count(i => i.GetAttribute("tabindex") == "0"));
+        Assert.ContainsSingle(i => i.GetAttribute("tabindex") == "0", items);
         Assert.AreEqual("0", items[0].GetAttribute("tabindex"));
     }
 
@@ -1815,8 +1816,8 @@ public class BitNavBarTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(3, component.FindAll(".custom-template").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-txt").Count);
+        Assert.HasCount(3, component.FindAll(".custom-template"));
+        Assert.IsEmpty(component.FindAll(".bit-nbr-txt"));
     }
 
     [TestMethod]
@@ -1842,8 +1843,8 @@ public class BitNavBarTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(1, component.FindAll(".item-template").Count);
-        Assert.AreEqual(2, component.FindAll(".custom-template").Count);
+        Assert.ContainsSingle(component.FindAll(".item-template"));
+        Assert.HasCount(2, component.FindAll(".custom-template"));
     }
 
 
@@ -1860,7 +1861,7 @@ public class BitNavBarTests : BunitTestContext
         var item = component.FindAll(".bit-nbr-itm")[1];
 
         Assert.IsTrue(item.ClassList.Contains("custom-item"));
-        StringAssert.Contains(item.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", item.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1896,25 +1897,25 @@ public class BitNavBarTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("root-class"));
-        StringAssert.Contains(component.Find(".bit-nbr").GetAttribute("style"), "background: red");
+        Assert.Contains("background: red", component.Find(".bit-nbr").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-cnt").ClassList.Contains("container-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-cnt").GetAttribute("style"), "background: green");
+        Assert.Contains("background: green", component.Find(".bit-nbr-cnt").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-itm").ClassList.Contains("item-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-itm").GetAttribute("style"), "background: blue");
+        Assert.Contains("background: blue", component.Find(".bit-nbr-itm").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-bdg").ClassList.Contains("badge-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-bdg").GetAttribute("style"), "background: black");
+        Assert.Contains("background: black", component.Find(".bit-nbr-bdg").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-ico").ClassList.Contains("icon-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-ico").GetAttribute("style"), "background: yellow");
+        Assert.Contains("background: yellow", component.Find(".bit-nbr-ico").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-icc").ClassList.Contains("icon-container-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-icc").GetAttribute("style"), "background: purple");
+        Assert.Contains("background: purple", component.Find(".bit-nbr-icc").GetAttribute("style")!);
 
         Assert.IsTrue(component.Find(".bit-nbr-txt").ClassList.Contains("text-class"));
-        StringAssert.Contains(component.Find(".bit-nbr-txt").GetAttribute("style"), "background: orange");
+        Assert.Contains("background: orange", component.Find(".bit-nbr-txt").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -1932,7 +1933,7 @@ public class BitNavBarTests : BunitTestContext
 
         Assert.IsFalse(items[0].ClassList.Contains("selected-class"));
         Assert.IsTrue(items[1].ClassList.Contains("selected-class"));
-        StringAssert.Contains(items[1].GetAttribute("style"), "background: red");
+        Assert.Contains("background: red", items[1].GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2004,7 +2005,7 @@ public class BitNavBarTests : BunitTestContext
 
         var rendered = component.FindAll(".bit-nbr-itm");
 
-        CollectionAssert.AreEqual(new[] { "Home", "Products", "Profile" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Products", "Profile" }, Texts(component));
 
         Assert.AreEqual("step", rendered[1].GetAttribute("aria-current"));
         // The Products item is the selected one here, so it reads the selected icon and its aria-label is
@@ -2013,14 +2014,14 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("All the products", rendered[1].GetAttribute("title"));
         Assert.AreEqual("_blank", rendered[1].GetAttribute("target"));
         Assert.IsTrue(rendered[1].ClassList.Contains("custom-item"));
-        StringAssert.Contains(rendered[1].GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", rendered[1].GetAttribute("style")!);
         Assert.AreEqual("7", component.Find(".bit-nbr-bdg").TextContent);
 
         Assert.IsTrue(rendered[2].ClassList.Contains("bit-nbr-dis"));
         // It opens a new tab as well, which is said after everything else its name is made of.
         Assert.AreEqual("Products (7 new products) (opens in a new tab)", rendered[1].GetAttribute("aria-label"));
         Assert.AreEqual("Your profile", rendered[2].GetAttribute("aria-label"));
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-bdt").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-bdt"));
     }
 
     [TestMethod]
@@ -2038,11 +2039,11 @@ public class BitNavBarTests : BunitTestContext
             p.Add(c => c.NameSelectors, new BitNavBarNameSelectors<BitNavBarItemLike>());
         });
 
-        CollectionAssert.AreEqual(new[] { "Home", "Products" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Products" }, Texts(component));
         Assert.AreEqual("3", component.Find(".bit-nbr-bdg").TextContent);
     }
 
-    public class BitNavBarItemLike
+    internal class BitNavBarItemLike
     {
         public string? Text { get; set; }
         public string? IconName { get; set; }
@@ -2062,19 +2063,19 @@ public class BitNavBarTests : BunitTestContext
             parameters.Add(p => p.ShowMiddle, false);
         });
 
-        CollectionAssert.AreEqual(new[] { "Home", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Settings" }, Texts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Settings" }, Texts(component));
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
     }
 
     [TestMethod]
@@ -2087,7 +2088,7 @@ public class BitNavBarTests : BunitTestContext
         });
 
         var items = component.FindAll(".bit-nbr-itm");
-        Assert.AreEqual(3, items.Count);
+        Assert.HasCount(3, items);
 
         items[1].Click();
 
@@ -2148,7 +2149,7 @@ public class BitNavBarTests : BunitTestContext
 
         var calls = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.NavBar.setupWheel").ToList();
 
-        Assert.AreEqual(expectedCalls, calls.Count);
+        Assert.HasCount(expectedCalls, calls);
     }
 
     [TestMethod]
@@ -2167,7 +2168,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var expectedName = $"{nameof(BitParams)}.{nameof(BitNavBar<object>)}";
 
-        Assert.AreEqual(expectedName, BitNavBarParams.ParamName);
+        Assert.AreEqual(BitNavBarParams.ParamName, expectedName);
     }
 
     [TestMethod]
@@ -2339,7 +2340,7 @@ public class BitNavBarTests : BunitTestContext
 
         Assert.IsTrue(root.ClassList.Contains("bit-nbr-wrn"));
         Assert.IsTrue(root.ClassList.Contains("bit-nbr-vrt"));
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-itm"));
     }
 
     private IRenderedComponent<BitParams> RenderInBitParams(BitNavBarParams @params,
@@ -2375,7 +2376,7 @@ public class BitNavBarTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Settings" }, Texts(component));
 
         PressKeyOn(component, 0, "End");
 
@@ -2383,7 +2384,7 @@ public class BitNavBarTests : BunitTestContext
         // is the one the Settings option still holds - and not on the element of the option that is gone.
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(2, focused.Count);
+        Assert.HasCount(2, focused);
         Assert.AreEqual(((ElementReference)focused[0].Arguments[0]!).Id, ((ElementReference)focused[1].Arguments[0]!).Id);
         Assert.AreEqual("Settings", component.FindAll(".bit-nbr-txt")[^1].TextContent);
     }
@@ -2466,7 +2467,7 @@ public class BitNavBarTests : BunitTestContext
 
         var wrappers = component.FindAll(".bit-nbr-cnt > li.bit-nbr-lit");
 
-        Assert.AreEqual(3, wrappers.Count);
+        Assert.HasCount(3, wrappers);
         Assert.IsTrue(wrappers.All(w => w.QuerySelector(".bit-nbr-itm") is not null));
     }
 
@@ -2475,7 +2476,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderComponent<BitNavBarOptionsTest>(p => p.Add(c => c.ShowMiddle, true));
 
-        Assert.AreEqual(3, component.FindAll(".bit-nbr-cnt > li.bit-nbr-lit > .bit-nbr-itm").Count);
+        Assert.HasCount(3, component.FindAll(".bit-nbr-cnt > li.bit-nbr-lit > .bit-nbr-itm"));
     }
 
     [TestMethod]
@@ -2510,7 +2511,7 @@ public class BitNavBarTests : BunitTestContext
 
         var alignmentClasses = new[] { "bit-nbr-str", "bit-nbr-end", "bit-nbr-ctr", "bit-nbr-sbt", "bit-nbr-sar", "bit-nbr-sev" };
 
-        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Any(alignmentClasses.Contains));
+        Assert.DoesNotContain<string>(alignmentClasses.Contains, component.Find(".bit-nbr").ClassList);
     }
 
     [TestMethod]
@@ -2527,8 +2528,8 @@ public class BitNavBarTests : BunitTestContext
         Assert.IsNotNull(component.Find(".bit-nbr > .bit-nbr-hdr > .the-header"));
         Assert.IsNotNull(component.Find(".bit-nbr > .bit-nbr-ftr > .the-footer"));
 
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-cnt .the-header").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-cnt .the-footer").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-cnt .the-header"));
+        Assert.IsEmpty(component.FindAll(".bit-nbr-cnt .the-footer"));
     }
 
     [TestMethod]
@@ -2536,8 +2537,8 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderNavBar(BasicItems());
 
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-hdr").Count);
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-ftr").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-hdr"));
+        Assert.IsEmpty(component.FindAll(".bit-nbr-ftr"));
     }
 
     [TestMethod]
@@ -2569,9 +2570,9 @@ public class BitNavBarTests : BunitTestContext
         Assert.IsTrue(footer.ClassList.Contains("footer-class"));
         Assert.IsTrue(wrapper.ClassList.Contains("wrapper-class"));
 
-        StringAssert.Contains(header.GetAttribute("style"), "color: red");
-        StringAssert.Contains(footer.GetAttribute("style"), "color: blue");
-        StringAssert.Contains(wrapper.GetAttribute("style"), "color: green");
+        Assert.Contains("color: red", header.GetAttribute("style")!);
+        Assert.Contains("color: blue", footer.GetAttribute("style")!);
+        Assert.Contains("color: green", wrapper.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2603,11 +2604,11 @@ public class BitNavBarTests : BunitTestContext
             p.Add(c => c.AutoReorderOptions, true);
         });
 
-        Assert.AreEqual(3, withReorder.FindAll("[data-bit-nbr-opt]").Count);
+        Assert.HasCount(3, withReorder.FindAll("[data-bit-nbr-opt]"));
 
         var withoutReorder = RenderComponent<BitNavBarOptionsTest>(p => p.Add(c => c.ShowMiddle, true));
 
-        Assert.AreEqual(0, withoutReorder.FindAll("[data-bit-nbr-opt]").Count);
+        Assert.IsEmpty(withoutReorder.FindAll("[data-bit-nbr-opt]"));
     }
 
     [TestMethod]
@@ -2620,7 +2621,7 @@ public class BitNavBarTests : BunitTestContext
 
         component.Render(p => p.Add(c => c.ShowMiddle, true));
 
-        CollectionAssert.AreEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
+        Assert.AreSequenceEqual(new[] { "Home", "Profile", "Settings" }, Texts(component));
 
         PressKeyOn(component, 0, "ArrowRight");
 
@@ -2644,7 +2645,7 @@ public class BitNavBarTests : BunitTestContext
                                   .Select(e => e.GetAttribute("data-bit-nbr-opt")!)
                                   .ToArray();
 
-        Assert.AreEqual(3, orderedIds.Length);
+        Assert.HasCount(3, orderedIds);
 
         Context.JSInterop.Setup<string[]>("BitBlazorUI.Utils.getChildrenAttributes", _ => true).SetResult(orderedIds);
 
@@ -2680,7 +2681,7 @@ public class BitNavBarTests : BunitTestContext
 
         component.Render(p => p.Add(c => c.ShowMiddle, true));
 
-        Assert.AreEqual(3, component.FindAll(".bit-nbr-itm").Count);
+        Assert.HasCount(3, component.FindAll(".bit-nbr-itm"));
 
         PressKeyOn(component, 0, "End");
 
@@ -2771,7 +2772,7 @@ public class BitNavBarTests : BunitTestContext
 
         Navigate("/profile");
 
-        Assert.IsTrue(ScrollCalls() > initialCalls);
+        Assert.IsGreaterThan(initialCalls, ScrollCalls());
     }
 
     [TestMethod]
@@ -2919,9 +2920,9 @@ public class BitNavBarTests : BunitTestContext
 
         var wrappers = component.FindAll(".bit-nbr-lit");
 
-        Assert.AreEqual(3, wrappers.Count);
-        Assert.AreEqual(2, component.FindAll(".bit-nbr-itm").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+        Assert.HasCount(3, wrappers);
+        Assert.HasCount(2, component.FindAll(".bit-nbr-itm"));
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-lit > .replaced-item"));
         Assert.IsNull(wrappers[1].QuerySelector(".bit-nbr-itm"));
     }
 
@@ -2939,8 +2940,8 @@ public class BitNavBarTests : BunitTestContext
 
         var component = RenderNavBar(items);
 
-        Assert.AreEqual(3, component.FindAll(".bit-nbr-itm").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm > .item-template").Count);
+        Assert.HasCount(3, component.FindAll(".bit-nbr-itm"));
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-itm > .item-template"));
     }
 
     [TestMethod]
@@ -2958,8 +2959,8 @@ public class BitNavBarTests : BunitTestContext
             }));
         });
 
-        Assert.AreEqual(0, component.FindAll(".bit-nbr-itm").Count);
-        Assert.AreEqual(3, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+        Assert.IsEmpty(component.FindAll(".bit-nbr-itm"));
+        Assert.HasCount(3, component.FindAll(".bit-nbr-lit > .replaced-item"));
     }
 
     [TestMethod]
@@ -2989,8 +2990,8 @@ public class BitNavBarTests : BunitTestContext
 
         // The item that carries a template of its own keeps the navbar's element around it, since its own
         // mode is the default one; the rest are replaced by the navbar's template.
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm > .item-template").Count);
-        Assert.AreEqual(2, component.FindAll(".bit-nbr-lit > .replaced-item").Count);
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-itm > .item-template"));
+        Assert.HasCount(2, component.FindAll(".bit-nbr-lit > .replaced-item"));
     }
 
     [TestMethod]
@@ -3044,9 +3045,9 @@ public class BitNavBarTests : BunitTestContext
     {
         var component = RenderComponent<BitNavBarReplacedOptionTest>();
 
-        Assert.AreEqual(2, component.FindAll(".bit-nbr-lit").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-itm").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-nbr-lit > .replaced-option").Count);
+        Assert.HasCount(2, component.FindAll(".bit-nbr-lit"));
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-itm"));
+        Assert.ContainsSingle(component.FindAll(".bit-nbr-lit > .replaced-option"));
     }
 
 
@@ -3101,7 +3102,7 @@ public class BitNavBarTests : BunitTestContext
     {
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
-        Assert.AreEqual(expectedCallCount, focused.Count);
+        Assert.HasCount(expectedCallCount, focused);
         focused[^1].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nbr-itm")[expectedIndex]);
     }
 

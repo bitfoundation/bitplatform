@@ -56,8 +56,7 @@ public sealed class BitComponentDirFallbackTests
     {
         var offenders = EnumerateStylesheets().SelectMany(file => Check(Path.GetFileName(file), SourceFiles.ReadFullPath(file))).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A :dir(rtl) rule is lost for an explicit Dir on an engine without :dir(), or its fallback reaches into a nested instance; write it as :is(.bit-rtl, :dir(rtl)), or read the class through child combinators only, or inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A :dir(rtl) rule is lost for an explicit Dir on an engine without :dir(), or its fallback reaches into a nested instance; write it as :is(.bit-rtl, :dir(rtl)), or read the class through child combinators only, or inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     // The rules that read the class or the dir attribute an explicit Dir renders, and nothing else, on purpose - each a
@@ -90,8 +89,7 @@ public sealed class BitComponentDirFallbackTests
     {
         var offenders = EnumerateStylesheets().SelectMany(file => CheckFollowsResolvedDirection(Path.GetFileName(file), SourceFiles.ReadFullPath(file))).ToArray();
 
-        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
-            $"A right-to-left rule reads only the class or the attribute an explicit Dir renders, so it is lost for a component that is right to left by inheriting the page's direction or by its content (Auto); write it as :is(.bit-rtl, :dir(rtl)), or give it a :dir(rtl) twin and keep the class inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+        Assert.AreSequenceEqual(Array.Empty<string>(), offenders, $"A right-to-left rule reads only the class or the attribute an explicit Dir renders, so it is lost for a component that is right to left by inheriting the page's direction or by its content (Auto); write it as :is(.bit-rtl, :dir(rtl)), or give it a :dir(rtl) twin and keep the class inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
     [TestMethod,
@@ -102,7 +100,7 @@ public sealed class BitComponentDirFallbackTests
         DataRow(".a:not(.bit-rtl) { b: c; }")]
     public void AnRtlRuleWithADirTwinPasses(string stylesheet)
     {
-        CollectionAssert.AreEqual(Array.Empty<string>(), CheckFollowsResolvedDirection("test.scss", stylesheet).ToArray());
+        Assert.AreSequenceEqual(Array.Empty<string>(), CheckFollowsResolvedDirection("test.scss", stylesheet).ToArray());
     }
 
     [TestMethod,
@@ -114,7 +112,7 @@ public sealed class BitComponentDirFallbackTests
         DataRow(".x-chevron:dir(rtl) { b: c; }\n.x.bit-rtl .x-icon { b: c; }")]
     public void AnRtlRuleWithoutADirTwinFails(string stylesheet)
     {
-        Assert.AreEqual(1, CheckFollowsResolvedDirection("test.scss", stylesheet).Count());
+        Assert.ContainsSingle(CheckFollowsResolvedDirection("test.scss", stylesheet));
     }
 
     private static IEnumerable<string> CheckFollowsResolvedDirection(string name, string source)
@@ -178,7 +176,7 @@ public sealed class BitComponentDirFallbackTests
         DataRow("@supports selector(:dir(rtl)) { .a:dir(ltr) { b: c; } }")]
     public void AStylesheetWithAFallbackForEveryDirRulePasses(string stylesheet)
     {
-        CollectionAssert.AreEqual(Array.Empty<string>(), Check("test.scss", stylesheet).ToArray());
+        Assert.AreSequenceEqual(Array.Empty<string>(), Check("test.scss", stylesheet).ToArray());
     }
 
     [TestMethod,
@@ -204,7 +202,7 @@ public sealed class BitComponentDirFallbackTests
     {
         var offenders = Check("test.scss", stylesheet).ToArray();
 
-        Assert.IsTrue(offenders.Any(offender => offender.Contains(reason, StringComparison.Ordinal)), $"Expected \"{reason}\", got: {string.Join(" / ", offenders)}");
+        Assert.Contains(offender => offender.Contains(reason, StringComparison.Ordinal), offenders, $"Expected \"{reason}\", got: {string.Join(" / ", offenders)}");
     }
 
     private static IEnumerable<string> Check(string name, string source)

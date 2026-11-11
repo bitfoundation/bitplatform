@@ -21,12 +21,12 @@ public class BitLayoutStylesheetTests : BunitTestContext
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lyt {");
 
-        StringAssert.Contains(root, "--bit-lyt-hdr-h: var(--bit-Layout-header-height);");
-        StringAssert.Contains(root, "--bit-lyt-ftr-h: var(--bit-Layout-footer-height);");
-        StringAssert.Contains(root, "--bit-lyt-gap: var(--bit-Layout-gap);");
-        StringAssert.Contains(root, "--bit-lyt-pad: var(--bit-Layout-padding);");
-        StringAssert.Contains(root, "--bit-lyt-zin: var(--bit-Layout-z-index, #{$zindex-base});");
-        StringAssert.Contains(root, "--bit-lyt-brd: var(--bit-Layout-border-width, #{$shp-border-width}) #{$shp-border-style} var(--bit-Layout-border-color, #{$clr-brd-pri});");
+        Assert.Contains("--bit-lyt-hdr-h: var(--bit-Layout-header-height);", root);
+        Assert.Contains("--bit-lyt-ftr-h: var(--bit-Layout-footer-height);", root);
+        Assert.Contains("--bit-lyt-gap: var(--bit-Layout-gap);", root);
+        Assert.Contains("--bit-lyt-pad: var(--bit-Layout-padding);", root);
+        Assert.Contains("--bit-lyt-zin: var(--bit-Layout-z-index, #{$zindex-base});", root);
+        Assert.Contains("--bit-lyt-brd: var(--bit-Layout-border-width, #{$shp-border-width}) #{$shp-border-style} var(--bit-Layout-border-color, #{$clr-brd-pri});", root);
     }
 
     [TestMethod]
@@ -45,16 +45,17 @@ public class BitLayoutStylesheetTests : BunitTestContext
 
         // The inline declaration is what makes the parameter win over the public variable: it lands on the same
         // element as the root rule's declaration and outranks it.
-        StringAssert.Contains(style, "--bit-lyt-hdr-h:64px");
-        StringAssert.Contains(style, "--bit-lyt-ftr-h:40px");
-        StringAssert.Contains(style, "--bit-lyt-gap:1rem");
-        StringAssert.Contains(style, "--bit-lyt-pad:2rem");
-        StringAssert.Contains(style, "--bit-lyt-zin:7");
+        Assert.Contains("--bit-lyt-hdr-h:64px", style);
+        Assert.Contains("--bit-lyt-ftr-h:40px", style);
+        Assert.Contains("--bit-lyt-gap:1rem", style);
+        Assert.Contains("--bit-lyt-pad:2rem", style);
+        Assert.Contains("--bit-lyt-zin:7", style);
 
         // A layout given none of them writes none, so the public variables are what decides.
         var defaulted = RenderComponent<BitLayout>();
+        var actualValue = defaulted.Find(".bit-lyt").GetAttribute("style")?.Contains("--bit-lyt-") ?? false;
 
-        Assert.IsFalse(defaulted.Find(".bit-lyt").GetAttribute("style")?.Contains("--bit-lyt-") ?? false);
+        Assert.IsFalse(actualValue);
     }
 
     [TestMethod]
@@ -65,10 +66,10 @@ public class BitLayoutStylesheetTests : BunitTestContext
 
         // A height set once for the whole app says nothing about a page that hides its header, so the offset the
         // pinned panels read is zeroed by the class the component renders when there is no such bar.
-        StringAssert.Contains(root, "--bit-lyt-hdr-o: var(--bit-lyt-hdr-h, 0px);");
-        StringAssert.Contains(root, "--bit-lyt-ftr-o: var(--bit-lyt-ftr-h, 0px);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(root, "&.bit-lyt-nhd {"), "--bit-lyt-hdr-o: 0px;");
-        StringAssert.Contains(SourceFiles.GetScssBlock(root, "&.bit-lyt-nft {"), "--bit-lyt-ftr-o: 0px;");
+        Assert.Contains("--bit-lyt-hdr-o: var(--bit-lyt-hdr-h, 0px);", root);
+        Assert.Contains("--bit-lyt-ftr-o: var(--bit-lyt-ftr-h, 0px);", root);
+        Assert.Contains("--bit-lyt-hdr-o: 0px;", SourceFiles.GetScssBlock(root, "&.bit-lyt-nhd {"));
+        Assert.Contains("--bit-lyt-ftr-o: 0px;", SourceFiles.GetScssBlock(root, "&.bit-lyt-nft {"));
 
         var component = RenderComponent<BitLayout>(parameters =>
         {
@@ -93,12 +94,12 @@ public class BitLayoutStylesheetTests : BunitTestContext
     {
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n{selector} {{", $"No rule for {selector}.");
 
-        StringAssert.Contains(block, $"color: var({color}, inherit);");
-        StringAssert.Contains(block, $"background: var({background}, transparent);");
+        Assert.Contains($"color: var({color}, inherit);", block);
+        Assert.Contains($"background: var({background}, transparent);", block);
 
         if (shadow is not null)
         {
-            StringAssert.Contains(block, $"box-shadow: var({shadow}, none);");
+            Assert.Contains($"box-shadow: var({shadow}, none);", block);
         }
     }
 
@@ -109,8 +110,8 @@ public class BitLayoutStylesheetTests : BunitTestContext
 
         // A pinned bar passes over the content scrolling under it, so a transparent one would show the text sliding
         // beneath it; the public variable still wins, and the rule still costs no specificity.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-lyt-shd > .bit-lyt-hdr) {"), "background: var(--bit-Layout-header-background, #{$clr-bg-pri});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-lyt-sft > .bit-lyt-ftr) {"), "background: var(--bit-Layout-footer-background, #{$clr-bg-pri});");
+        Assert.Contains("background: var(--bit-Layout-header-background, #{$clr-bg-pri});", SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-lyt-shd > .bit-lyt-hdr) {"));
+        Assert.Contains("background: var(--bit-Layout-footer-background, #{$clr-bg-pri});", SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-lyt-sft > .bit-lyt-ftr) {"));
     }
 
     [TestMethod]
@@ -130,7 +131,7 @@ public class BitLayoutStylesheetTests : BunitTestContext
 
         var everywhere = paint.Matches(code).Count - Regex.Matches(code, @"var\(--bit-Layout-border-color\b").Count;
 
-        Assert.IsTrue(everywhere > 10, $"Only {everywhere} paint reads were found.");
+        Assert.IsGreaterThan(10, everywhere, $"Only {everywhere} paint reads were found.");
         Assert.AreEqual(everywhere, inWhere, "A paint variable is read in a rule that carries specificity.");
     }
 
@@ -154,11 +155,11 @@ public class BitLayoutStylesheetTests : BunitTestContext
                               .ToArray();
 
         // Guards the guard: a header that documents nothing would let every variable through in silence.
-        Assert.IsTrue(documented.Length >= 20, $"The header documents only {documented.Length} variables.");
+        Assert.IsGreaterThanOrEqualTo(20, documented.Length, $"The header documents only {documented.Length} variables.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(code, $"var({name}", $"{name} is documented but never read.");
+            Assert.Contains($"var({name}", code, $"{name} is documented but never read.");
         }
     }
 

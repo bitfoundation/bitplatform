@@ -241,7 +241,7 @@ public class WastedRenderTests : BunitContext
 
         var session = context.Services.GetRequiredService<BevToolsSession>();
         var child = session.Components.All.Single(r => r.Type == typeof(ListChild));
-        Assert.AreEqual(5, child.Renders.Length);
+        Assert.HasCount(5, child.Renders);
         Assert.AreEqual(13, child.RenderCount);
         Assert.AreEqual(12, child.RendersWithComparedParameters);
         Assert.AreEqual(12, child.ParentRendersWithUnchangedParameters);
@@ -256,7 +256,7 @@ public class WastedRenderTests : BunitContext
     }
 
     /// <summary>Passes child content in three shapes: rebuilt per render, static, or cached in a field.</summary>
-    public sealed class ContentParent : ComponentBase
+    internal sealed class ContentParent : ComponentBase
     {
         private RenderFragment? _cached;
         private int _count;
@@ -283,7 +283,7 @@ public class WastedRenderTests : BunitContext
         }
     }
 
-    public sealed class ContentChild : ComponentBase
+    internal sealed class ContentChild : ComponentBase
     {
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -291,7 +291,7 @@ public class WastedRenderTests : BunitContext
     }
 
     /// <summary>Recreates the list on every render, which is exactly what forces <see cref="ListChild"/> to re-render.</summary>
-    public sealed class ListParent : ComponentBase
+    internal sealed class ListParent : ComponentBase
     {
         private readonly List<string> _items = ["a", "b"];
         private int _counter;
@@ -317,14 +317,14 @@ public class WastedRenderTests : BunitContext
         }
     }
 
-    public sealed class ListChild : ComponentBase
+    internal sealed class ListChild : ComponentBase
     {
         [Parameter] public List<string> Items { get; set; } = [];
 
         protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, string.Join(",", Items));
     }
 
-    public sealed class SecretHost : ComponentBase
+    internal sealed class SecretHost : ComponentBase
     {
         [BevToolsSensitive] private string _apiPhrase = "plain-1";
         private string _note = "n1";
@@ -349,9 +349,9 @@ public class WastedRenderTests : BunitContext
         }
     }
 
-    public sealed record Phrase(string Value);
+    internal sealed record Phrase(string Value);
 
-    public sealed class SecretChild : ComponentBase
+    internal sealed class SecretChild : ComponentBase
     {
         [Parameter, BevToolsSensitive] public Phrase? Passphrase { get; set; }
 

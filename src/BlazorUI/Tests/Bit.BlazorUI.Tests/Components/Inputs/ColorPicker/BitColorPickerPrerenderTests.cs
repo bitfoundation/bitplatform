@@ -27,18 +27,18 @@ public class BitColorPickerPrerenderTests
             [nameof(BitColorPicker.Presets)] = new[] { "#FF0000", "#00FF00" },
         });
 
-        StringAssert.Contains(html, "bit-clp");
-        StringAssert.Contains(html, "Brand color");
-        StringAssert.Contains(html, "bit-clp-rec");
-        StringAssert.Contains(html, "bit-clp-hsd");
-        StringAssert.Contains(html, "bit-clp-asd");
-        StringAssert.Contains(html, "bit-clp-pre");
-        StringAssert.Contains(html, "bit-clp-cnr");
-        StringAssert.Contains(html, "bit-clp-prt");
+        Assert.Contains("bit-clp", html);
+        Assert.Contains("Brand color", html);
+        Assert.Contains("bit-clp-rec", html);
+        Assert.Contains("bit-clp-hsd", html);
+        Assert.Contains("bit-clp-asd", html);
+        Assert.Contains("bit-clp-pre", html);
+        Assert.Contains("bit-clp-cnr", html);
+        Assert.Contains("bit-clp-prt", html);
         // The hexadecimal field and the carrier of the value both show the color the picker was given.
-        StringAssert.Contains(html, "value=\"#FF0000FF\"");
-        StringAssert.Contains(html, "bit-input-hidden");
-        StringAssert.Contains(html, "value=\"#FF0000\"");
+        Assert.Contains("value=\"#FF0000FF\"", html);
+        Assert.Contains("bit-input-hidden", html);
+        Assert.Contains("value=\"#FF0000\"", html);
     }
 
     [TestMethod]
@@ -52,8 +52,8 @@ public class BitColorPickerPrerenderTests
             [nameof(BitColorPicker.ShowEyeDropper)] = true,
         });
 
-        StringAssert.Contains(html, "value=\"hsl(0,0%,100%)\"");
+        Assert.Contains("value=\"hsl(0,0%,100%)\"", html);
         // The eyedropper is a browser capability nothing can ask about while prerendering, so it is not drawn.
-        Assert.IsFalse(html.Contains("bit-clp-eyd"));
+        Assert.DoesNotContain("bit-clp-eyd", html);
     }
 }

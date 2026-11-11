@@ -105,7 +105,7 @@ public sealed class BitPageVisibilityTests
         await WaitUntilAsync(() => js.InitCount == 2);
         js.Answer("""{"hidden":true,"blurred":false}""");
 
-        Assert.IsTrue(await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.IsTrue(await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         Assert.IsTrue(visibility.IsHidden);
     }
 
@@ -159,7 +159,7 @@ public sealed class BitPageVisibilityTests
 
         visibility.Dispose();
 
-        await Task.Delay(1500);
+        await Task.Delay(1500, TestContext.CancellationToken);
 
         Assert.AreEqual(1, js.InitCount);
         Assert.IsFalse(await visibility.Init());
@@ -272,4 +272,6 @@ public sealed class BitPageVisibilityTests
             return JsonSerializer.Deserialize<TValue>(await json, JsonSerializerOptions.Web)!;
         }
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

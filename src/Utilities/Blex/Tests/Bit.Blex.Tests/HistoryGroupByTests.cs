@@ -131,7 +131,7 @@ public class HistoryGroupByTests
         store.Count = 2;
 
         Assert.AreEqual(2, history.UndoCount);   // each action kept its own step
-        Assert.AreEqual(2, errors.Count);
+        Assert.HasCount(2, errors);
         foreach (var e in errors)
         {
             Assert.AreEqual("history", e.Source);

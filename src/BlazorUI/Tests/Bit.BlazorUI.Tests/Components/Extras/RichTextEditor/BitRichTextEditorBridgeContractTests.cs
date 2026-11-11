@@ -55,10 +55,10 @@ public sealed class BitRichTextEditorBridgeContractTests
         var source = ReadTypeScript();
 
         var start = source.IndexOf("public static updateOptions", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "updateOptions is gone from BitRichTextEditor.ts; this contract needs to follow it.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "updateOptions is gone from BitRichTextEditor.ts; this contract needs to follow it.");
 
         var end = source.IndexOf("public static dispose", start, StringComparison.Ordinal);
-        Assert.IsTrue(end > start, "dispose no longer follows updateOptions; the slice below would read the wrong code.");
+        Assert.IsGreaterThan(start, end, "dispose no longer follows updateOptions; the slice below would read the wrong code.");
 
         return source[start..end];
     }
@@ -85,12 +85,11 @@ public sealed class BitRichTextEditorBridgeContractTests
                                      .Select(m => CamelCase(m.Groups["name"].Value))
                                      .ToArray();
 
-        Assert.IsTrue(declared.Length > 0, "No setup options were found; the property regex no longer matches the C# source.");
+        Assert.IsNotEmpty(declared, "No setup options were found; the property regex no longer matches the C# source.");
 
         foreach (var option in declared)
         {
-            Assert.IsTrue(read.Contains(option),
-                $"BitRichTextEditorSetupOptions declares '{option}', but updateOptions in BitRichTextEditor.ts never reads it, " +
+            Assert.Contains(option, read, $"BitRichTextEditorSetupOptions declares '{option}', but updateOptions in BitRichTextEditor.ts never reads it, " +
                 "so the parameter behind it does nothing.");
         }
     }
@@ -105,8 +104,7 @@ public sealed class BitRichTextEditorBridgeContractTests
         foreach (Match match in ReadOption.Matches(ReadUpdateOptionsBody()))
         {
             var option = match.Groups["name"].Value;
-            Assert.IsTrue(declared.Contains(option),
-                $"BitRichTextEditor.ts reads options.{option}, which BitRichTextEditorSetupOptions never sends, " +
+            Assert.Contains(option, declared, $"BitRichTextEditor.ts reads options.{option}, which BitRichTextEditorSetupOptions never sends, " +
                 "so it silently falls back to its default forever.");
         }
     }
@@ -120,7 +118,7 @@ public sealed class BitRichTextEditorBridgeContractTests
                                      .Select(m => CamelCase(m.Groups["name"].Value))
                                      .ToArray();
 
-        Assert.IsTrue(declared.Length > 0, "No policy fields were found; the property regex no longer matches the C# source.");
+        Assert.IsNotEmpty(declared, "No policy fields were found; the property regex no longer matches the C# source.");
 
         foreach (var field in declared)
         {
@@ -145,12 +143,11 @@ public sealed class BitRichTextEditorBridgeContractTests
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.IsTrue(declared.Length > 0, "BitRichTextEditor exposes no JSInvokable callbacks; the reflection above is wrong.");
+        Assert.IsNotEmpty(declared, "BitRichTextEditor exposes no JSInvokable callbacks; the reflection above is wrong.");
 
         foreach (var callback in declared)
         {
-            Assert.IsTrue(called.Contains(callback!),
-                $"BitRichTextEditor exposes the JSInvokable '{callback}', but nothing in BitRichTextEditor.ts calls it.");
+            Assert.Contains(callback!, called, $"BitRichTextEditor exposes the JSInvokable '{callback}', but nothing in BitRichTextEditor.ts calls it.");
         }
     }
 
@@ -166,8 +163,7 @@ public sealed class BitRichTextEditorBridgeContractTests
         foreach (Match match in InvokedCallback.Matches(ReadTypeScript()))
         {
             var callback = match.Groups["name"].Value;
-            Assert.IsTrue(declared.Contains(callback),
-                $"BitRichTextEditor.ts calls back into '{callback}', which BitRichTextEditor does not expose as a " +
+            Assert.Contains(callback, declared, $"BitRichTextEditor.ts calls back into '{callback}', which BitRichTextEditor does not expose as a " +
                 "JSInvokable - the call throws at runtime and the feature behind it never reports anything.");
         }
     }
@@ -184,12 +180,11 @@ public sealed class BitRichTextEditorBridgeContractTests
                                     .Distinct(StringComparer.Ordinal)
                                     .ToArray();
 
-        Assert.IsTrue(called.Length > 0, "No bridge calls were found; the invocation regex no longer matches the C# source.");
+        Assert.IsNotEmpty(called, "No bridge calls were found; the invocation regex no longer matches the C# source.");
 
         foreach (var function in called)
         {
-            Assert.IsTrue(exported.Contains(function),
-                $"The interop extensions call BitBlazorUI.RichTextEditor.{function}, which the bridge does not export.");
+            Assert.Contains(function, exported, $"The interop extensions call BitBlazorUI.RichTextEditor.{function}, which the bridge does not export.");
         }
     }
 
@@ -203,8 +198,7 @@ public sealed class BitRichTextEditorBridgeContractTests
         foreach (Match match in ExportedFunction.Matches(ReadTypeScript()))
         {
             var function = match.Groups["name"].Value;
-            Assert.IsTrue(called.Contains(function),
-                $"The bridge exports {function}(), which nothing in C# calls - either it is dead code that still ships " +
+            Assert.Contains(function, called, $"The bridge exports {function}(), which nothing in C# calls - either it is dead code that still ships " +
                 "to every visitor, or the call site was renamed and the feature is gone.");
         }
     }
@@ -214,13 +208,13 @@ public sealed class BitRichTextEditorBridgeContractTests
     {
         var source = ReadTypeScript().Replace("\r\n", "\n");
         var start = source.IndexOf("private static focusToolbar(", StringComparison.Ordinal);
-        Assert.IsTrue(start >= 0, "focusToolbar() is gone.");
+        Assert.IsGreaterThanOrEqualTo(0, start, "focusToolbar() is gone.");
         var body = source[start..source.IndexOf("\n        }\n", start, StringComparison.Ordinal)];
 
         // The floating toolbar is the one a keyboard could otherwise never reach, and it has to be walkable once there.
         var quick = body.IndexOf("'.bit-rte-quick'", StringComparison.Ordinal);
         var main = body.IndexOf("'.bit-rte-tlb'", StringComparison.Ordinal);
         Assert.IsTrue(quick >= 0 && main > quick, "Alt+F10 does not prefer the selection toolbar over the main one.");
-        StringAssert.Contains(body, "enableToolbarRoving(toolbar)", "The selection toolbar is entered without a roving tab stop.");
+        Assert.Contains("enableToolbarRoving(toolbar)", body, "The selection toolbar is entered without a roving tab stop.");
     }
 }

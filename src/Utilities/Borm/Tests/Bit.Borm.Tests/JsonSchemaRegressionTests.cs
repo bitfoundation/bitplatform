@@ -978,8 +978,8 @@ public class JsonSchemaRegressionTests
         var clock = System.Diagnostics.Stopwatch.StartNew();
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
-        Assert.AreEqual(300, form.Fields.Count);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.HasCount(300, form.Fields);
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -992,7 +992,7 @@ public class JsonSchemaRegressionTests
         json.Append("}}");
 
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
-        Assert.AreEqual(3000, form.Fields.Count);
+        Assert.HasCount(3000, form.Fields);
         Assert.AreEqual(50, form.Fields[0].MaxLength);
     }
 
@@ -1051,7 +1051,7 @@ public class JsonSchemaRegressionTests
         json.Append("}}");
 
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
-        Assert.AreEqual(100, form.Fields.Count);
+        Assert.HasCount(100, form.Fields);
         Assert.HasCount(250, form.Fields[0].Options);
     }
 
@@ -1094,7 +1094,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(100_000, form.Fields[0].Suggestions);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1112,7 +1112,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(40_000, form.Fields[0].Options);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1157,7 +1157,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(2000, form.Fields);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1176,7 +1176,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(2000, form.Fields);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1195,7 +1195,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(5000, form.Fields);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1220,7 +1220,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.HasCount(5000, form.Fields);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1236,7 +1236,7 @@ public class JsonSchemaRegressionTests
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
 
         Assert.ContainsSingle(form.Fields);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1256,7 +1256,7 @@ public class JsonSchemaRegressionTests
         Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
 
         Assert.Contains("copied", error!, StringComparison.Ordinal);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1275,7 +1275,7 @@ public class JsonSchemaRegressionTests
         Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
 
         Assert.Contains("bytes of it", error!, StringComparison.Ordinal);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1299,7 +1299,7 @@ public class JsonSchemaRegressionTests
 
         var clock = System.Diagnostics.Stopwatch.StartNew();
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
 
         var group = Assert.IsInstanceOfType<BormConditionGroup>(form.Fields.Single(f => f.Name == "f1").RequiredWhen);
         Assert.AreEqual(BormConditionLogic.Or, group.Logic);
@@ -1337,7 +1337,7 @@ public class JsonSchemaRegressionTests
         Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
 
         Assert.Contains("bytes of it", error!, StringComparison.Ordinal);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]
@@ -1368,7 +1368,7 @@ public class JsonSchemaRegressionTests
         Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
 
         Assert.Contains("bytes of it", error!, StringComparison.Ordinal);
-        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+        Assert.IsLessThan(TimeSpan.FromSeconds(3), clock.Elapsed, $"took {clock.Elapsed}");
     }
 
     [TestMethod]

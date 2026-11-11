@@ -1,4 +1,4 @@
-using Bit.Blex.Blazor;
+﻿using Bit.Blex.Blazor;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +46,7 @@ public class BlexProviderTests : BunitContext
         RenderProvider();
         var store = Services.GetRequiredService<CounterStore>();
 
-        await Task.Run(store.Increment);
+        await Task.Run(store.Increment, TestContext.CancellationToken);
 
         var error = Assert.ContainsSingle(_errors);
         Assert.AreEqual("dispatcher", error.Source);
@@ -59,7 +59,7 @@ public class BlexProviderTests : BunitContext
         RenderProvider();
         var store = Services.GetRequiredService<CounterStore>();
 
-        await Task.Run(() => Manager.InvokeAsync(store.Increment));
+        await Task.Run(() => Manager.InvokeAsync(store.Increment), TestContext.CancellationToken);
 
         Assert.IsEmpty(_errors);
         Assert.AreEqual(1, store.Count);
@@ -81,6 +81,8 @@ public class BlexProviderTests : BunitContext
     {
         Render<BlexProvider>(p => p.Add(x => x.ChildContent, (RenderFragment)(b => b.AddContent(0, "app"))));
 
-        Assert.IsFalse(JSInterop.Invocations.Any(invocation => invocation.Arguments.Contains("./_content/Bit.Blex/bit-blex-devtools.js")));
+        Assert.DoesNotContain(invocation => invocation.Arguments.Contains("./_content/Bit.Blex/bit-blex-devtools.js"), JSInterop.Invocations);
     }
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

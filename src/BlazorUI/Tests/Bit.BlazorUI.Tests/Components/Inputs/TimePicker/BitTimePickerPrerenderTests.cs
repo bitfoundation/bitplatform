@@ -29,12 +29,12 @@ public class BitTimePickerPrerenderTests
             [nameof(BitTimePicker.AutoFocus)] = true,
         });
 
-        StringAssert.Contains(html, "bit-tpc-inp");
-        StringAssert.Contains(html, "value=\"13:45\"");
-        StringAssert.Contains(html, "name=\"meeting\"");
-        StringAssert.Contains(html, "Meeting time");
-        StringAssert.Contains(html, "bit-tpc-cal");
-        StringAssert.Contains(html, "aria-expanded=\"true\"");
+        Assert.Contains("bit-tpc-inp", html);
+        Assert.Contains("value=\"13:45\"", html);
+        Assert.Contains("name=\"meeting\"", html);
+        Assert.Contains("Meeting time", html);
+        Assert.Contains("bit-tpc-cal", html);
+        Assert.Contains("aria-expanded=\"true\"", html);
     }
 
     [TestMethod]
@@ -49,10 +49,10 @@ public class BitTimePickerPrerenderTests
             [nameof(BitTimePicker.Value)] = new TimeSpan(13, 45, 30),
         });
 
-        StringAssert.Contains(html, "bit-tpc-sta");
-        StringAssert.Contains(html, "role=\"group\"");
-        StringAssert.Contains(html, "bit-tpc-am-pm");
-        StringAssert.Contains(html, "bit-input-hidden");
-        Assert.IsFalse(html.Contains("bit-tpc-ovl"));
+        Assert.Contains("bit-tpc-sta", html);
+        Assert.Contains("role=\"group\"", html);
+        Assert.Contains("bit-tpc-am-pm", html);
+        Assert.Contains("bit-input-hidden", html);
+        Assert.DoesNotContain("bit-tpc-ovl", html);
     }
 }

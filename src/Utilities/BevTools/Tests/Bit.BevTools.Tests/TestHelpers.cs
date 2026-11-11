@@ -34,7 +34,7 @@ internal static class TestHelpers
     }
 }
 
-public class ParentComponent : ComponentBase
+internal class ParentComponent : ComponentBase
 {
     [Parameter] public bool ShowChild { get; set; } = true;
 
@@ -68,7 +68,7 @@ public class ParentComponent : ComponentBase
     }
 }
 
-public class ChildComponent : ComponentBase
+internal class ChildComponent : ComponentBase
 {
     [Parameter] public string? Text { get; set; }
 
@@ -86,7 +86,7 @@ public class ChildComponent : ComponentBase
     }
 }
 
-public class ThrowingComponent : ComponentBase
+internal class ThrowingComponent : ComponentBase
 {
     [Parameter] public bool Throw { get; set; }
 
@@ -101,7 +101,7 @@ public class ThrowingComponent : ComponentBase
     }
 }
 
-public sealed class FakeJSRuntime : IJSRuntime
+internal sealed class FakeJSRuntime : IJSRuntime
 {
     public List<string> Calls { get; } = [];
 
@@ -120,7 +120,7 @@ public sealed class FakeJSRuntime : IJSRuntime
     }
 }
 
-public sealed class FakeJSObjectReference : IJSObjectReference
+internal sealed class FakeJSObjectReference : IJSObjectReference
 {
     public List<string> Calls { get; } = [];
 

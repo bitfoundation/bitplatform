@@ -22,9 +22,9 @@ public class BitTextE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        StringAssert.Contains(html, "<div id=\"txt-default\" class=\"bit-txt-subtitle1 bit-txt\">Default (Subtitle1)</div>");
-        StringAssert.Contains(html, "<h1 id=\"txt-typo-H1\" class=\"bit-txt-h1 bit-txt\">");
-        StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
+        Assert.Contains("<div id=\"txt-default\" class=\"bit-txt-subtitle1 bit-txt\">Default (Subtitle1)</div>", html);
+        Assert.Contains("<h1 id=\"txt-typo-H1\" class=\"bit-txt-h1 bit-txt\">", html);
+        Assert.Contains("<span id=\"status\">Loading</span>", html);
 
         await OpenAsync(Path);
         await Expect(Page.Locator("#txt-default")).ToHaveTextAsync("Default (Subtitle1)");
@@ -82,9 +82,9 @@ public class BitTextE2ETests : E2ETestBase
 
         for (var i = 1; i < sizes.Count; i++)
         {
-            Assert.IsTrue(sizes[i] <= sizes[i - 1], $"H{i + 1} ({sizes[i]}px) is no larger than H{i} ({sizes[i - 1]}px).");
+            Assert.IsLessThanOrEqualTo(sizes[i - 1], sizes[i], $"H{i + 1} ({sizes[i]}px) is no larger than H{i} ({sizes[i - 1]}px).");
         }
-        Assert.IsTrue(sizes[0] > sizes[5]);
+        Assert.IsGreaterThan(sizes[5], sizes[0]);
 
         foreach (var id in new[] { "#txt-typo-Button", "#txt-typo-Overline" })
         {
@@ -225,7 +225,7 @@ public class BitTextE2ETests : E2ETestBase
         Assert.AreEqual(300, Math.Round((await noWrap.BoundingBoxAsync())!.Width));
 
         // An inline caption has no width to cut against; Block gives it the container's.
-        Assert.IsTrue((await Page.Locator("#txt-nowrap-inline").BoundingBoxAsync())!.Width > 300);
+        Assert.IsGreaterThan(300, (await Page.Locator("#txt-nowrap-inline").BoundingBoxAsync())!.Width);
         await Expect(Page.Locator("#txt-nowrap-block")).ToHaveClassAsync(HasClass("bit-txt-blk"));
         await Expect(Page.Locator("#txt-nowrap-block")).ToHaveCSSAsync("display", "block");
         Assert.AreEqual(300, Math.Round((await Page.Locator("#txt-nowrap-block").BoundingBoxAsync())!.Width));
@@ -243,7 +243,7 @@ public class BitTextE2ETests : E2ETestBase
         await Expect(clamp).ToHaveCSSAsync("-webkit-line-clamp", "2");
         await Expect(clamp).ToHaveAttributeAsync("title", "The full text");
         Assert.AreEqual(lineHeight * 2, (await clamp.BoundingBoxAsync())!.Height, 1, "Two lines tall.");
-        Assert.IsTrue((await Page.Locator("#txt-unclamped").BoundingBoxAsync())!.Height > lineHeight * 3, "The same text runs longer unclamped.");
+        Assert.IsGreaterThan(lineHeight * 3, (await Page.Locator("#txt-unclamped").BoundingBoxAsync())!.Height, "The same text runs longer unclamped.");
 
         await Expect(Page.Locator("#txt-clamp-zero")).Not.ToHaveClassAsync(HasClass("bit-txt-clp"));
         await Expect(Page.Locator("#txt-clamp-zero")).Not.ToHaveAttributeAsync("style", new Regex(".*"));
@@ -298,9 +298,9 @@ public class BitTextE2ETests : E2ETestBase
 
         var preserved = Page.Locator("#txt-pws");
         await Expect(preserved).ToHaveCSSAsync("white-space", "pre-wrap");
-        Assert.IsTrue((await preserved.BoundingBoxAsync())!.Height > (await Page.Locator("#txt-no-pws").BoundingBoxAsync())!.Height,
+        Assert.IsGreaterThan((await Page.Locator("#txt-no-pws").BoundingBoxAsync())!.Height, (await preserved.BoundingBoxAsync())!.Height,
                       "The written line break is kept.");
-        StringAssert.Contains(await preserved.InnerTextAsync(), "\n    indented");
+        Assert.Contains("\n    indented", await preserved.InnerTextAsync());
     }
 
     [TestMethod]
@@ -381,7 +381,7 @@ public class BitTextE2ETests : E2ETestBase
         if (trim != "None")
         {
             var none = (await Page.Locator("#txt-trim-None").BoundingBoxAsync())!.Height;
-            Assert.IsTrue((await text.BoundingBoxAsync())!.Height < none, $"Trim {trim} makes the box shorter than {none}px.");
+            Assert.IsLessThan(none, (await text.BoundingBoxAsync())!.Height, $"Trim {trim} makes the box shorter than {none}px.");
         }
     }
 
@@ -419,7 +419,7 @@ public class BitTextE2ETests : E2ETestBase
         await Expect(colored).ToHaveClassAsync(HasClass("bit-txt-err"));
         await Expect(colored).ToHaveCSSAsync("color", "rgba(0, 0, 0, 0)");
         await Expect(colored).ToHaveCSSAsync("-webkit-text-fill-color", "rgba(0, 0, 0, 0)");
-        StringAssert.StartsWith(await ComputedStyleAsync("#txt-gradient-color", "background-image"), "radial-gradient");
+        Assert.StartsWith("radial-gradient", await ComputedStyleAsync("#txt-gradient-color", "background-image"));
     }
 
     // A text is read on the page rather than over the role's fill, so it is painted in the role's text color (role-text)
@@ -485,15 +485,15 @@ public class BitTextE2ETests : E2ETestBase
         await Expect(Page.GetByText("Read out by a screen reader, drawn nowhere.")).ToHaveCountAsync(1);
 
         var withLink = Page.Locator("#txt-vh-link");
-        Assert.IsTrue((await withLink.BoundingBoxAsync())!.Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await withLink.BoundingBoxAsync())!.Width);
 
         await Page.Locator("#before-skip").FocusAsync();
         await Page.Keyboard.PressAsync("Tab");
         await Expect(Page.Locator("#skip-link")).ToBeFocusedAsync();
-        Assert.IsTrue((await withLink.BoundingBoxAsync())!.Width > 50, "The skip link shows while it has the keyboard focus.");
+        Assert.IsGreaterThan(50, (await withLink.BoundingBoxAsync())!.Width, "The skip link shows while it has the keyboard focus.");
 
         await Page.Keyboard.PressAsync("Tab");
-        Assert.IsTrue((await withLink.BoundingBoxAsync())!.Width <= 1);
+        Assert.IsLessThanOrEqualTo(1, (await withLink.BoundingBoxAsync())!.Width);
     }
 
     [TestMethod]
@@ -525,7 +525,7 @@ public class BitTextE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#txt-visible")).ToBeVisibleAsync();
         await Expect(Page.Locator("#txt-hidden")).ToHaveCSSAsync("visibility", "hidden");
-        Assert.IsTrue((await Page.Locator("#txt-hidden").BoundingBoxAsync())!.Width > 10);
+        Assert.IsGreaterThan(10, (await Page.Locator("#txt-hidden").BoundingBoxAsync())!.Width);
         await Expect(Page.Locator("#txt-collapsed")).ToHaveCSSAsync("display", "none");
     }
 
@@ -538,7 +538,7 @@ public class BitTextE2ETests : E2ETestBase
         await Expect(Page.Locator("#txt-disabled")).ToHaveCSSAsync("opacity", await ResolveAsync("opacity", "var(--bit-opa-dis)"));
 
         await Expect(Page.Locator("#txt-disabled-gradient")).ToHaveCSSAsync("opacity", await ResolveAsync("opacity", "var(--bit-opa-dis)"));
-        StringAssert.StartsWith(await ComputedStyleAsync("#txt-disabled-gradient", "background-image"), "linear-gradient");
+        Assert.StartsWith("linear-gradient", await ComputedStyleAsync("#txt-disabled-gradient", "background-image"));
 
         await Expect(Page.Locator("#txt-disabled-var")).ToHaveCSSAsync("opacity", "0.25");
     }
@@ -587,12 +587,12 @@ public class BitTextE2ETests : E2ETestBase
         await OpenAsync(Path);
 
         await Expect(Page.Locator("#txt-css-body")).ToHaveCSSAsync("color", "rgb(15, 118, 110)");
-        StringAssert.StartsWith(await ComputedStyleAsync("#txt-css-body", "font-family"), "Arial");
-        StringAssert.StartsWith(await ComputedStyleAsync("#txt-css-heading", "font-family"), "Georgia");
+        Assert.StartsWith("Arial", await ComputedStyleAsync("#txt-css-body", "font-family"));
+        Assert.StartsWith("Georgia", await ComputedStyleAsync("#txt-css-heading", "font-family"));
         await Expect(Page.Locator("#txt-css-underline")).ToHaveCSSAsync("text-decoration-color", "rgb(245, 158, 11)");
         await Expect(Page.Locator("#txt-css-underline")).ToHaveCSSAsync("text-decoration-thickness", "2px");
         await Expect(Page.Locator("#txt-css-underline")).ToHaveCSSAsync("text-underline-offset", "6px");
-        StringAssert.Contains(await ComputedStyleAsync("#txt-css-mono", "font-family"), "Courier New");
+        Assert.Contains("Courier New", await ComputedStyleAsync("#txt-css-mono", "font-family"));
         await Expect(Page.Locator("#txt-css-gutter")).ToHaveCSSAsync("margin-bottom", "21px");
         await Expect(Page.Locator("#txt-css-color")).ToHaveCSSAsync("color", await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken("err")})"));
     }

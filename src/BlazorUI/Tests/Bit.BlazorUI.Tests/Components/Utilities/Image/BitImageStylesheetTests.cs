@@ -20,11 +20,11 @@ public partial class BitImageStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.IsTrue(documented.Length > 0, "The stylesheet documents no public variable.");
+        Assert.IsNotEmpty(documented, "The stylesheet documents no public variable.");
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            Assert.Contains($"var({name}, ", stylesheet, $"{name} is documented but never read with a fallback.");
         }
     }
 
@@ -38,7 +38,7 @@ public partial class BitImageStylesheetTests
 
         foreach (var name in read)
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented in the header.");
+            Assert.Contains(name, documented, $"{name} is read but not documented in the header.");
         }
     }
 
@@ -64,8 +64,8 @@ public partial class BitImageStylesheetTests
 
         var block = RuleOf(stylesheet, selector);
 
-        StringAssert.Contains(block, $"var({variable}, ");
-        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read outside {selector}.");
+        Assert.Contains($"var({variable}, ", block);
+        Assert.ContainsSingle(Regex.Matches(SourceFiles.StripScssComments(stylesheet), $@"var\({Regex.Escape(variable)}[,)]"), $"{variable} is read outside {selector}.");
     }
 
     [TestMethod,
@@ -78,10 +78,10 @@ public partial class BitImageStylesheetTests
         // variable the tint is painted from at rest, so a tint the app paints itself is not outranked by the state.
         var rules = SourceFiles.StripScssComments(ReadStylesheet());
 
-        Assert.AreEqual(1, Regex.Matches(rules, $@"var\({Regex.Escape(variable)}[,)]").Count, $"{variable} is read more than once.");
+        Assert.ContainsSingle(Regex.Matches(rules, $@"var\({Regex.Escape(variable)}[,)]"), $"{variable} is read more than once.");
         Assert.IsTrue(Regex.IsMatch(rules, $@"(\.bit-img-clk|&)[^{{}}]*::after \{{\s*--bit-img-tnt-bg: var\({Regex.Escape(variable)}, "),
                       $"{variable} is not read by the clickable frame's tint.");
-        StringAssert.Contains(rules, "background-color: var(--bit-img-tnt-bg, transparent);");
+        Assert.Contains("background-color: var(--bit-img-tnt-bg, transparent);", rules);
     }
 
     [TestMethod]
@@ -91,9 +91,9 @@ public partial class BitImageStylesheetTests
         // preference collapses both halves of the cross-fade together.
         var block = RuleOf(ReadStylesheet(), ".bit-img-plc");
 
-        StringAssert.Contains(block, "&.bit-img-pfo {");
-        StringAssert.Contains(block, "animation-name: bit-img-fade-out;");
-        StringAssert.Contains(block, FadeDuration);
+        Assert.Contains("&.bit-img-pfo {", block);
+        Assert.Contains("animation-name: bit-img-fade-out;", block);
+        Assert.Contains(FadeDuration, block);
     }
 
     [TestMethod]
@@ -105,10 +105,10 @@ public partial class BitImageStylesheetTests
         // reduced motion query, and no ForceAnimation restore, of its own.
         var stylesheet = ReadStylesheet();
 
-        Assert.AreEqual(2, Regex.Matches(stylesheet, Regex.Escape(FadeDuration)).Count);
-        Assert.IsFalse(stylesheet.Contains("prefers-reduced-motion"), "The image collapses its own motion.");
-        Assert.IsFalse(stylesheet.Contains("bit-fam"), "The image restores its own motion.");
-        Assert.IsFalse(stylesheet.Contains("--bit-img-fade-duration"), "The fade reads a private token of its own.");
+        Assert.HasCount(2, Regex.Matches(stylesheet, Regex.Escape(FadeDuration)));
+        Assert.DoesNotContain("prefers-reduced-motion", stylesheet, "The image collapses its own motion.");
+        Assert.DoesNotContain("bit-fam", stylesheet, "The image restores its own motion.");
+        Assert.DoesNotContain("--bit-img-fade-duration", stylesheet, "The fade reads a private token of its own.");
     }
 
     [TestMethod]
@@ -118,8 +118,8 @@ public partial class BitImageStylesheetTests
         // stylesheets are linked, the way it did before the frame had a background of its own.
         var block = RuleOf(ReadStylesheet(), ":where(.bit-img)");
 
-        StringAssert.Contains(block, "background-color: var(--bit-Image-background, transparent);");
-        Assert.AreEqual(1, Regex.Matches(SourceFiles.StripScssComments(ReadStylesheet()), @"var\(--bit-Image-background[,)]").Count);
+        Assert.Contains("background-color: var(--bit-Image-background, transparent);", block);
+        Assert.ContainsSingle(Regex.Matches(SourceFiles.StripScssComments(ReadStylesheet()), @"var\(--bit-Image-background[,)]"));
     }
 
     [TestMethod]
@@ -131,9 +131,9 @@ public partial class BitImageStylesheetTests
         // that it is hidden that way, and that no rule of its own - a nested state included - hides it further.
         var block = RuleOf(ReadStylesheet(), ".bit-img-alt");
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(block, ".bit-img-alt {"), "@include visually-hidden;");
-        Assert.IsFalse(block.Contains("display: none"));
-        Assert.IsFalse(block.Contains("visibility: hidden"));
+        Assert.Contains("@include visually-hidden;", SourceFiles.GetScssDeclarations(block, ".bit-img-alt {"));
+        Assert.DoesNotContain("display: none", block);
+        Assert.DoesNotContain("visibility: hidden", block);
     }
 
     [TestMethod]
@@ -141,20 +141,20 @@ public partial class BitImageStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(RuleOf(stylesheet, ".bit-img-flu"), "max-width: 100%;");
+        Assert.Contains("max-width: 100%;", RuleOf(stylesheet, ".bit-img-flu"));
 
         // The image is scaled with the frame only where it is left to its default fit - the class is never
         // rendered beside an explicit ImageFit, whose own rules set neither max-width nor, for the centered
         // fits, object-fit, and so could not undo it.
         var image = RuleOf(stylesheet, ".bit-img-img.bit-img-fli");
 
-        StringAssert.Contains(image, "max-width: 100%;");
+        Assert.Contains("max-width: 100%;", image);
 
         // A width clamped under a fixed Height would otherwise squeeze the image out of its shape.
-        StringAssert.Contains(image, "object-fit: contain;");
+        Assert.Contains("object-fit: contain;", image);
 
         // The maximized frame's cover comes later with the same specificity, so it still wins over it.
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-img-img.bit-img-fli {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-img-max {", System.StringComparison.Ordinal));
+        Assert.IsLessThan(stylesheet.IndexOf("\n.bit-img-max {", System.StringComparison.Ordinal), stylesheet.IndexOf("\n.bit-img-img.bit-img-fli {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -164,9 +164,9 @@ public partial class BitImageStylesheetTests
         // it takes the frame's; in a frame sized by its content the percentages resolve to nothing.
         var block = RuleOf(ReadStylesheet(), ".bit-img-tpl");
 
-        StringAssert.Contains(block, "width: 100%;");
-        StringAssert.Contains(block, "height: 100%;");
-        StringAssert.Contains(block, "box-sizing: border-box;");
+        Assert.Contains("width: 100%;", block);
+        Assert.Contains("height: 100%;", block);
+        Assert.Contains("box-sizing: border-box;", block);
     }
 
     [TestMethod]
@@ -184,7 +184,7 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldDrawTheFocusRingInTheFocusColor()
     {
-        StringAssert.Contains(ReadStylesheet(), "&:has(.bit-img-img:focus-visible) {\n        outline: $shp-focus-ring-width solid var(--bit-Image-focus-color, #{$clr-pri-focus});");
+        Assert.Contains("&:has(.bit-img-img:focus-visible) {\n        outline: $shp-focus-ring-width solid var(--bit-Image-focus-color, #{$clr-pri-focus});", ReadStylesheet());
     }
 
     [TestMethod]
@@ -197,12 +197,12 @@ public partial class BitImageStylesheetTests
         var stylesheet = ReadStylesheet();
         var focus = SourceFiles.GetScssBlock(stylesheet, "&:has(.bit-img-img:focus-visible) {");
 
-        Assert.IsFalse(focus.Contains("box-shadow"), "The focus ring is drawn with the box-shadow the elevation uses.");
-        Assert.IsFalse(focus.Contains("focus-ring("), "The focus ring is drawn with the box-shadow the elevation uses.");
-        StringAssert.Contains(focus, "@media (forced-colors: active) {\n            outline-color: Highlight;");
+        Assert.DoesNotContain("box-shadow", focus, "The focus ring is drawn with the box-shadow the elevation uses.");
+        Assert.DoesNotContain("focus-ring(", focus, "The focus ring is drawn with the box-shadow the elevation uses.");
+        Assert.Contains("@media (forced-colors: active) {\n            outline-color: Highlight;", focus);
 
         // The native ring of the image is dropped only where the frame can draw its own.
-        StringAssert.Contains(stylesheet, "@supports selector(:has(a)) {\n        .bit-img-img:focus-visible {\n            outline: none;");
+        Assert.Contains("@supports selector(:has(a)) {\n        .bit-img-img:focus-visible {\n            outline: none;", stylesheet);
     }
 
     private const string FadeDuration = "animation-duration: mot-scaled-duration(var(--bit-Image-fade-duration, #{$mot-duration-long}));";

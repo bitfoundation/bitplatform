@@ -68,7 +68,7 @@ public sealed class TourTests : BonboardingTest
         await Assertions.Expect(page.Locator(".bit-bonboarding-root")).ToHaveCountAsync(0);
 
         // Focus goes back to the control that started the tour, so a keyboard user carries on from there.
-        StringAssert.Contains(await FocusedAsync(page), "Take the tour");
+        Assert.Contains("Take the tour", await FocusedAsync(page));
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public sealed class TourTests : BonboardingTest
         await WaitForStepAsync(page, "Create a project");
 
         // The primary button takes focus when a step is shown.
-        StringAssert.Contains(await FocusedAsync(page), "Next");
+        Assert.Contains("Next", await FocusedAsync(page));
 
         for (var i = 0; i < 8; i++)
         {

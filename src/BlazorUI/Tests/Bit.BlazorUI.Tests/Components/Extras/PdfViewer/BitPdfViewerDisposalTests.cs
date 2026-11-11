@@ -42,7 +42,7 @@ public class BitPdfViewerDisposalTests : BunitTestContext
             .Add(v => v.OnZoomChanged, (double _) => zoomEvents++));
         component.WaitForPages(3);
         var disposal = component.InvokeAsync(async () => await component.Instance.DisposeAsync());
-        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         int page = component.Instance.CurrentPage;
         double zoom = component.Instance.Zoom;
         pageEvents = 0; zoomEvents = 0;
@@ -61,13 +61,13 @@ public class BitPdfViewerDisposalTests : BunitTestContext
             Assert.AreEqual(zoom, component.Instance.Zoom);
             Assert.AreEqual(0, pageEvents);
             Assert.AreEqual(0, zoomEvents);
-            Assert.AreEqual(anchors, Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor").Count);
-            Assert.AreEqual(measurements, Context.InvocationsOf("BitBlazorUI.PdfViewer.getViewport").Count);
+            Assert.HasCount(anchors, Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor"));
+            Assert.HasCount(measurements, Context.InvocationsOf("BitBlazorUI.PdfViewer.getViewport"));
         }
         finally
         {
             teardown.SetVoidResult();
-            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         }
     }
 
@@ -85,22 +85,24 @@ public class BitPdfViewerDisposalTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source, source));
         component.WaitForPages(3);
         var disposal = component.InvokeAsync(async () => await component.Instance.DisposeAsync());
-        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         try
         {
             Assert.IsNull(component.Instance.Document, "The viewer must not expose a retired source's document.");
             Assert.IsNull(component.Instance.Metadata);
-            Assert.AreEqual(0, component.Instance.FormFields.Count);
-            Assert.AreEqual(0, component.Instance.StructureTree.Count);
+            Assert.IsEmpty(component.Instance.FormFields);
+            Assert.IsEmpty(component.Instance.StructureTree);
             Assert.AreEqual(0L, component.Instance.FileSize);
         }
         finally
         {
             teardown.SetVoidResult();
-            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         }
     }
 
     private static BitPdfSource Definition() => BitPdfSource.FromUrl("https://pdf.test/document")
         .WithRangeLoading(new() { CacheSize = 128 * 1024, ChunkSize = 4096 });
+
+    public global::Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; }
 }

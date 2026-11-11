@@ -45,9 +45,9 @@ public class BelemetryLimitsTests
     {
         long now = 0;
         var limiter = new BelemetryErrorLimiter(new BelemetryErrorOptions { DuplicateWindow = TimeSpan.Zero, MaxPerMinute = 3 }, () => now);
-        CollectionAssert.AreEqual(new[] { true, true, true, false }, Enumerable.Range(1, 4).Select(i => limiter.ShouldRecord(Error("e" + i))).ToArray());
+        Assert.AreSequenceEqual(new[] { true, true, true, false }, Enumerable.Range(1, 4).Select(i => limiter.ShouldRecord(Error("e" + i))).ToArray());
         now += 20_000; // a third of the minute: one more
-        CollectionAssert.AreEqual(new[] { true, false }, Enumerable.Range(5, 2).Select(i => limiter.ShouldRecord(Error("e" + i))).ToArray());
+        Assert.AreSequenceEqual(new[] { true, false }, Enumerable.Range(5, 2).Select(i => limiter.ShouldRecord(Error("e" + i))).ToArray());
 
         var off = new BelemetryErrorLimiter(new BelemetryErrorOptions { DuplicateWindow = TimeSpan.Zero, MaxPerMinute = 0 }, () => 0);
         Assert.IsTrue(Enumerable.Range(0, 500).All(_ => off.ShouldRecord(Error("boom"))));
@@ -102,8 +102,8 @@ public class BelemetryLimitsTests
         logger.LogInformation("Logs are not errors");
         await host.FlushAsync();
 
-        Assert.AreEqual(1, host.Memory.Logs.Count(l => l.Body == "Tick failed"));
-        Assert.AreEqual(1, host.Memory.Logs.Count(l => l.Body == "Something else failed"));
+        Assert.ContainsSingle(l => l.Body == "Tick failed", host.Memory.Logs);
+        Assert.ContainsSingle(l => l.Body == "Something else failed", host.Memory.Logs);
         Assert.AreEqual(2, host.Memory.Logs.Count(l => l.Body == "Logs are not errors"), "Only errors are deduplicated.");
     }
 
@@ -121,7 +121,7 @@ public class BelemetryLimitsTests
         for (var i = 0; i < 5; i++) logger.LogError("Request failed");
         await host.FlushAsync();
 
-        Assert.AreEqual(5, host.Memory.Logs.Count);
+        Assert.HasCount(5, host.Memory.Logs);
     }
 
     [TestMethod]
@@ -150,7 +150,7 @@ public class BelemetryLimitsTests
         var exported = host.Memory.Logs.Single();
         Assert.AreEqual("[email] " + new string('x', 12), exported.Body, "A cut before scrubbing would have left 'jane@exa...' behind.");
         Assert.AreEqual("[email] " + new string('y', 12), exported.Attributes["payload"]);
-        CollectionAssert.AreEqual(new[] { new string('z', 20), "ok" }, (string[])exported.Attributes["list"]!);
+        Assert.AreSequenceEqual(new[] { new string('z', 20), "ok" }, (string[])exported.Attributes["list"]!);
         Assert.AreEqual(12345678901L, exported.Attributes["n"]);
 
         var exportedSpan = host.Memory.Spans.Single();
@@ -168,7 +168,7 @@ public class BelemetryLimitsTests
         host.Pipeline.Enqueue(log);
         await host.FlushAsync();
 
-        CollectionAssert.AreEqual(new[] { null, "abcd" }, (string?[])host.Memory.Logs.Single().Attributes["tags"]!);
+        Assert.AreSequenceEqual(new[] { null, "abcd" }, (string?[])host.Memory.Logs.Single().Attributes["tags"]!);
     }
 
     [TestMethod]

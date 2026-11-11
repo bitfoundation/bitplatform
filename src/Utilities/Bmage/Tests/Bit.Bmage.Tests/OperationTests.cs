@@ -140,7 +140,7 @@ public sealed class ResizeTests
         Assert.IsTrue(centre.R > 250 && centre.G < 5 && centre.B < 5, $"Centre was {centre}");
         // A pixel on the boundary should be semi-transparent red, not semi-transparent black.
         var edge = result[8, 16];
-        if (edge.A is > 0 and < 255) Assert.IsTrue(edge.R > 200, $"Edge pixel {edge} lost colour");
+        if (edge.A is > 0 and < 255) Assert.IsGreaterThan(200, edge.R, $"Edge pixel {edge} lost colour");
     }
 
     [TestMethod]
@@ -207,7 +207,7 @@ public sealed class PerspectiveTests
         var corners = new[] { new PointF(0, 0), new PointF(32, 0), new PointF(32, 32), new PointF(0, 32) };
         using var result = new PerspectiveTransformOperation(corners, new Size(32, 32)).Apply(source, OperationContext.Default);
         Assert.AreEqual(source.Size, result.Size);
-        Assert.IsTrue(TestImages.MeanChannelDifference(source, result) < 2.0);
+        Assert.IsLessThan(2.0, TestImages.MeanChannelDifference(source, result));
     }
 
     [TestMethod]
@@ -281,7 +281,7 @@ public sealed class AdjustmentTests
         using var source = TestImages.Gradient(16, 16);
         using var once = new InvertFilter().Apply(source, OperationContext.Default);
         using var twice = new InvertFilter().Apply(once, OperationContext.Default);
-        Assert.IsTrue(TestImages.MaxChannelDifference(source, twice) <= 1);
+        Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(source, twice));
     }
 
     [TestMethod]
@@ -322,7 +322,7 @@ public sealed class ColorMatrixTests
         var p = new Vector4(0.3f, 0.6f, 0.9f, 1f);
         var stepwise = b.Transform(a.Transform(p));
         var direct = combined.Transform(p);
-        Assert.IsTrue(Vector4.Distance(stepwise, direct) < 1e-5f, $"{stepwise} vs {direct}");
+        Assert.IsLessThan(1e-5f, Vector4.Distance(stepwise, direct), $"{stepwise} vs {direct}");
     }
 
     [TestMethod]
@@ -342,7 +342,7 @@ public sealed class ColorMatrixTests
         using var stepwise = op2.Apply(op1.Apply(source, OperationContext.Default), OperationContext.Default);
         var fused = (PointOperation)op1.TryFuse(op2)!;
         using var combined = fused.Apply(source, OperationContext.Default);
-        Assert.IsTrue(TestImages.MaxChannelDifference(stepwise, combined) <= 1);
+        Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(stepwise, combined));
     }
 
     [TestMethod]
@@ -372,7 +372,7 @@ public sealed class FilterTests
     {
         using var source = ImageBuffer.Create(32, 32, new Rgba32(77, 88, 99));
         using var result = new BlurFilter(5f).Apply(source, OperationContext.Default);
-        Assert.IsTrue(TestImages.MaxChannelDifference(source, result) <= 1);
+        Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(source, result));
     }
 
     [TestMethod]
@@ -406,7 +406,7 @@ public sealed class FilterTests
         using var sharpened = new SharpenFilter(1.0f, 2f).Apply(blurred, OperationContext.Default);
         var before = Math.Abs(blurred[15, 16].R - blurred[17, 16].R);
         var after = Math.Abs(sharpened[15, 16].R - sharpened[17, 16].R);
-        Assert.IsTrue(after >= before, $"before={before} after={after}");
+        Assert.IsGreaterThanOrEqualTo(before, after, $"before={before} after={after}");
     }
 
     [TestMethod]
@@ -417,7 +417,7 @@ public sealed class FilterTests
         using var b = new NoiseFilter(0.2f, seed: 42).Apply(source, OperationContext.Default);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(a, b));
         using var c = new NoiseFilter(0.2f, seed: 7).Apply(source, OperationContext.Default);
-        Assert.IsTrue(TestImages.MaxChannelDifference(a, c) > 0);
+        Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(a, c));
     }
 
     [TestMethod]
@@ -435,7 +435,7 @@ public sealed class FilterTests
         using var source = ImageBuffer.Create(64, 64, Rgba32.White);
         using var result = new VignetteFilter(1f, 0.5f, 0.5f).Apply(source, OperationContext.Default);
         Assert.AreEqual(255, result[32, 32].R);
-        Assert.IsTrue(result[0, 0].R < 128, $"Corner was {result[0, 0]}");
+        Assert.IsLessThan(128, result[0, 0].R, $"Corner was {result[0, 0]}");
     }
 
     [TestMethod]

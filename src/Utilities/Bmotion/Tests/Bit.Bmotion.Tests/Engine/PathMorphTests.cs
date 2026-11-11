@@ -1,4 +1,4 @@
-namespace Bit.Bmotion.Tests.Engine;
+﻿namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
 /// Tests for SVG shape morphing (plan item 3.2). Same-structure <c>d</c> paths interpolate through
@@ -43,7 +43,7 @@ public class PathMorphTests
         Assert.AreEqual("M0 0 L10 10", single["d"]);
 
         var frames = Bm.To(d: new BmStringKeyframes("M0 0", "M10 10")).ToJsDictionary();
-        CollectionAssert.AreEqual(new[] { "M0 0", "M10 10" }, (string[])frames["d"]!);
+        Assert.AreSequenceEqual(new[] { "M0 0", "M10 10" }, (string[])frames["d"]!);
     }
 
     [TestMethod]

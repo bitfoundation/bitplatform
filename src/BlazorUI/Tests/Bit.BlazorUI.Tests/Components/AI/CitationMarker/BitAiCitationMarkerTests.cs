@@ -115,7 +115,7 @@ public class BitAiCitationMarkerTests : BitAiTestBase
         var root = component.Find(".bit-aicmk");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.Contains("margin: 1px", root.GetAttribute("style")!);
         Assert.AreEqual("-1", root.GetAttribute("tabindex"));
     }
 
@@ -137,7 +137,7 @@ public class BitAiCitationMarkerTests : BitAiTestBase
         }
         else
         {
-            StringAssert.Contains(style, expected);
+            Assert.Contains(expected, style!);
         }
     }
 
@@ -169,7 +169,7 @@ public class BitAiCitationMarkerTests : BitAiTestBase
         var root = component.Find(".bit-aicmk");
 
         Assert.IsTrue(root.ClassList.Contains("c-root"));
-        StringAssert.Contains(root.GetAttribute("style"), "color: red");
+        Assert.Contains("color: red", root.GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -193,7 +193,7 @@ public class BitAiCitationMarkerTests : BitAiTestBase
     [TestMethod]
     public void BitAiCitationMarkerParamsShouldHaveCorrectParamName()
     {
-        Assert.AreEqual("BitParams.BitAiCitationMarker", BitAiCitationMarkerParams.ParamName);
+        Assert.AreEqual("BitParams.BitAiCitationMarker", new BitAiCitationMarkerParams().Name);
         Assert.AreEqual(BitAiCitationMarkerParams.ParamName, new BitAiCitationMarkerParams().Name);
     }
 }

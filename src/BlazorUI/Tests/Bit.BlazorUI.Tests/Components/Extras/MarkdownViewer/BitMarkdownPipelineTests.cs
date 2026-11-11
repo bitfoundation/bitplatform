@@ -28,8 +28,8 @@ public class BitMarkdownPipelineTests
     [TestMethod]
     public void BitMarkdownParserShouldReturnAnEmptyDocumentForNullOrEmptySource()
     {
-        Assert.AreEqual(0, BitMarkdownParser.Parse(null).Children.Count);
-        Assert.AreEqual(0, BitMarkdownParser.Parse(string.Empty).Children.Count);
+        Assert.IsEmpty(BitMarkdownParser.Parse(null).Children);
+        Assert.IsEmpty(BitMarkdownParser.Parse(string.Empty).Children);
     }
 
     [TestMethod]
@@ -39,9 +39,9 @@ public class BitMarkdownPipelineTests
         var crlf = BitMarkdownParser.Parse("a\r\n\r\nb");
         var cr = BitMarkdownParser.Parse("a\r\rb");
 
-        Assert.AreEqual(2, lf.Children.Count);
-        Assert.AreEqual(2, crlf.Children.Count);
-        Assert.AreEqual(2, cr.Children.Count);
+        Assert.HasCount(2, lf.Children);
+        Assert.HasCount(2, crlf.Children);
+        Assert.HasCount(2, cr.Children);
     }
 
     [TestMethod]
@@ -66,8 +66,8 @@ public class BitMarkdownPipelineTests
 
         Assert.ThrowsExactly<InvalidOperationException>(() => builder.Use(new ThrowingExtension()));
 
-        Assert.AreEqual(blockParsers, builder.BlockParsers.Count);
-        Assert.AreEqual(renderers, builder.Renderers.Count);
+        Assert.HasCount(blockParsers, builder.BlockParsers);
+        Assert.HasCount(renderers, builder.Renderers);
 
         // The builder is still usable, and the failed extension can be retried.
         Assert.ThrowsExactly<InvalidOperationException>(() => builder.Use(new ThrowingExtension()));
@@ -159,7 +159,7 @@ public class BitMarkdownPipelineTests
                                            .Select(h => h.Level)
                                            .ToArray();
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, headings);
+        Assert.AreSequenceEqual(new[] { 1, 2, 3 }, headings);
     }
 
     [TestMethod]
@@ -170,12 +170,12 @@ public class BitMarkdownPipelineTests
 
         var view = list.ChildLists.Single();
 
-        Assert.AreEqual(1, view.Count);
+        Assert.ContainsSingle(view);
 
         view.Add(new BitMarkdownListItemNode());
 
         // The view writes through to the strongly typed collection.
-        Assert.AreEqual(2, list.Items.Count);
+        Assert.HasCount(2, list.Items);
         Assert.ThrowsExactly<ArgumentException>(() => view.Add(new BitMarkdownTextNode("x")));
     }
 
@@ -210,8 +210,8 @@ public class BitMarkdownPipelineTests
 
         var document = pipeline.Parse("a[^1]\n\n[^1]: note");
 
-        Assert.AreEqual(1, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>().Count());
-        Assert.AreEqual(0, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownLinkNode>().Count());
+        Assert.ContainsSingle(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>());
+        Assert.IsEmpty(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownLinkNode>());
     }
 
     [TestMethod]
@@ -257,7 +257,7 @@ public class BitMarkdownPipelineTests
 
         var document = pipeline.Parse("---\na: 1\n---\n\n# t");
 
-        Assert.AreEqual(2, document.Children.Count);
+        Assert.HasCount(2, document.Children);
         Assert.IsInstanceOfType<BitMarkdownFrontMatterNode>(document.Children[0]);
         Assert.IsInstanceOfType<BitMarkdownHeadingNode>(document.Children[1]);
     }
@@ -303,7 +303,7 @@ public class BitMarkdownPipelineTests
         var boxes = BitMarkdownAstHelper.Descendants(BitMarkdownPipelines.GitHub.Parse(markdown))
             .OfType<BitMarkdownTaskCheckboxNode>().ToList();
 
-        Assert.AreEqual(2, boxes.Count);
+        Assert.HasCount(2, boxes);
         // Each box knows the line it came from, so nothing has to be searched for again.
         Assert.AreEqual(0, boxes[0].SourceLine);
         Assert.AreEqual(2, boxes[1].SourceLine);
@@ -356,7 +356,7 @@ public class BitMarkdownPipelineTests
         pipeline.Parse(string.Concat(Enumerable.Repeat("a $b ", 16_000)));
         long elapsed = watch.ElapsedMilliseconds;
 
-        Assert.IsTrue(elapsed < 500, $"80KB of spaced dollar signs took {elapsed}ms");
+        Assert.IsLessThan(500, elapsed, $"80KB of spaced dollar signs took {elapsed}ms");
 
         // A closing delimiter that is there is still found, including past one that was rejected.
         Assert.AreEqual("x+1", BitMarkdownAstHelper.Descendants(pipeline.Parse("a $x+1$ b"))
@@ -372,8 +372,8 @@ public class BitMarkdownPipelineTests
 
         var document = BitMarkdownPipelines.Basic.Parse(source);
 
-        Assert.IsTrue(MaxDepth(document) <= 102);
-        Assert.IsTrue(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>().Any());
+        Assert.IsLessThanOrEqualTo(102, MaxDepth(document));
+        Assert.IsNotEmpty(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>());
     }
 
     [TestMethod]
@@ -381,8 +381,8 @@ public class BitMarkdownPipelineTests
     {
         var document = BitMarkdownPipelines.Basic.Parse("*a **b** c* and ***d***");
 
-        Assert.AreEqual(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownEmphasisNode>().Count());
-        Assert.AreEqual(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>().Count());
+        Assert.HasCount(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownEmphasisNode>());
+        Assert.HasCount(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>());
     }
 
     [TestMethod]
@@ -393,7 +393,7 @@ public class BitMarkdownPipelineTests
         var urls = BitMarkdownAstHelper.Descendants(BitMarkdownParser.Parse(source))
             .OfType<BitMarkdownImageNode>().Select(image => image.Url).ToList();
 
-        Assert.AreEqual(1_000, urls.Count);
+        Assert.HasCount(1_000, urls);
         Assert.AreEqual("/a%20b%20c.png", urls[0]);
         Assert.IsTrue(urls.All(url => ReferenceEquals(url, urls[0])));
     }
@@ -417,9 +417,9 @@ public class BitMarkdownPipelineTests
         var document = BitMarkdownParser.Parse("- a" + new string('\n', 60_000) + "  b");
         long elapsed = watch.ElapsedMilliseconds;
 
-        Assert.IsTrue(elapsed < 500, $"60K blank lines in a list item took {elapsed}ms");
+        Assert.IsLessThan(500, elapsed, $"60K blank lines in a list item took {elapsed}ms");
         var item = BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownListItemNode>().Single();
-        Assert.AreEqual(2, item.Children.OfType<BitMarkdownParagraphNode>().Count());
+        Assert.HasCount(2, item.Children.OfType<BitMarkdownParagraphNode>());
     }
 
     [TestMethod]
@@ -433,7 +433,7 @@ public class BitMarkdownPipelineTests
         var table = BitMarkdownAstHelper.Descendants(BitMarkdownPipelines.GitHub.Parse(source))
             .OfType<BitMarkdownTableNode>().Single();
 
-        Assert.AreEqual(50, table.Rows.Count);
+        Assert.HasCount(50, table.Rows);
         Assert.IsTrue(table.Rows.All(row => row.Count == columns));
     }
 
@@ -479,14 +479,14 @@ public class BitMarkdownPipelineTests
         var pipeline = new BitMarkdownPipelineBuilder().UseMathematics().Build();
 
         // "$$5 for two" is prose, so the line above it stays part of the same paragraph.
-        Assert.AreEqual(1, pipeline.Parse("The cost is\n$$5 for two\n").Children.Count);
+        Assert.ContainsSingle(pipeline.Parse("The cost is\n$$5 for two\n").Children);
 
         // A block that does open still interrupts the paragraph above it.
         var document = pipeline.Parse("text\n$$\nx=1\n$$\n");
-        Assert.AreEqual(2, document.Children.Count);
+        Assert.HasCount(2, document.Children);
         Assert.IsInstanceOfType<BitMarkdownMathNode>(document.Children[1]);
         // And so does a complete one-line block.
-        Assert.AreEqual(2, pipeline.Parse("text\n$$ x=1 $$\n").Children.Count);
+        Assert.HasCount(2, pipeline.Parse("text\n$$ x=1 $$\n").Children);
     }
 
     [TestMethod]
@@ -548,13 +548,13 @@ public class BitMarkdownPipelineTests
         // The bundle asks for the flavor, not for particular options, so configuring one before it
         // keeps that configuration.
         var configured = new BitMarkdownPipelineBuilder().UseAutoIdentifiers(anchorLinks: true).UseAdvanced().Build();
-        Assert.IsTrue(BitMarkdownAstHelper.Descendants(configured.Parse("# A"))
-            .OfType<BitMarkdownHeadingAnchorNode>().Any());
+        Assert.IsNotEmpty(BitMarkdownAstHelper.Descendants(configured.Parse("# A"))
+            .OfType<BitMarkdownHeadingAnchorNode>());
 
         // With nothing configured, the bundle's own default still applies.
         var plain = new BitMarkdownPipelineBuilder().UseAdvanced().Build();
-        Assert.IsFalse(BitMarkdownAstHelper.Descendants(plain.Parse("# A"))
-            .OfType<BitMarkdownHeadingAnchorNode>().Any());
+        Assert.IsEmpty(BitMarkdownAstHelper.Descendants(plain.Parse("# A"))
+            .OfType<BitMarkdownHeadingAnchorNode>());
         Assert.AreEqual("a", BitMarkdownAstHelper.Descendants(plain.Parse("# A"))
             .OfType<BitMarkdownHeadingNode>().Single().Id);
     }
@@ -581,10 +581,9 @@ public class BitMarkdownPipelineTests
         // label now undefined - degraded to literal text.
         var document = pipeline.Parse("a[^1]\n[^1]: note");
 
-        Assert.IsTrue(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>().Any());
-        Assert.IsTrue(document.Children.OfType<BitMarkdownFootnotesNode>().Any());
-        StringAssert.DoesNotMatch(BitMarkdownAstHelper.ToPlainText(document),
-            new System.Text.RegularExpressions.Regex(@"\[\^1\]:"));
+        Assert.IsNotEmpty(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>());
+        Assert.IsNotEmpty(document.Children.OfType<BitMarkdownFootnotesNode>());
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\[\^1\]:"), BitMarkdownAstHelper.ToPlainText(document));
     }
 
     [TestMethod]
@@ -596,8 +595,8 @@ public class BitMarkdownPipelineTests
         // citation stayed literal text and the note it pointed at was dropped as uncited.
         var document = pipeline.Parse("note[^1]: colon\n\n[^1]: def");
 
-        Assert.IsTrue(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>().Any());
-        StringAssert.Contains(BitMarkdownAstHelper.ToPlainText(document), "def");
+        Assert.IsNotEmpty(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownFootnoteReferenceNode>());
+        Assert.Contains("def", BitMarkdownAstHelper.ToPlainText(document));
     }
 
     [TestMethod]
@@ -608,9 +607,8 @@ public class BitMarkdownPipelineTests
         // The line right after a sentence is the natural place to explain a term just used.
         var document = pipeline.Parse("Uses HTML here\n*[HTML]: HyperText");
 
-        Assert.AreEqual(1, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownAbbreviationNode>().Count());
-        StringAssert.DoesNotMatch(BitMarkdownAstHelper.ToPlainText(document),
-            new System.Text.RegularExpressions.Regex(@"\*\[HTML\]"));
+        Assert.ContainsSingle(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownAbbreviationNode>());
+        Assert.DoesNotMatchRegex(new System.Text.RegularExpressions.Regex(@"\*\[HTML\]"), BitMarkdownAstHelper.ToPlainText(document));
     }
 
     [TestMethod]
@@ -621,15 +619,15 @@ public class BitMarkdownPipelineTests
         // An info-less ":::" is a closer. Read as an opening fence, a stray one claimed every line
         // that followed it - the rest of a block quote, or the rest of the document.
         var stray = pipeline.Parse("text\n:::\nmore");
-        Assert.IsFalse(BitMarkdownAstHelper.Descendants(stray).OfType<BitMarkdownContainerNode>().Any());
-        StringAssert.Contains(BitMarkdownAstHelper.ToPlainText(stray), "more");
+        Assert.IsEmpty(BitMarkdownAstHelper.Descendants(stray).OfType<BitMarkdownContainerNode>());
+        Assert.Contains("more", BitMarkdownAstHelper.ToPlainText(stray));
 
         // A named fence still opens one, and still closes on an info-less fence.
         var container = pipeline.Parse(":::note Heads up\nbody\n:::\nafter")
             .Children.OfType<BitMarkdownContainerNode>().Single();
         Assert.AreEqual("note", container.Name);
         Assert.AreEqual("Heads up", container.Title);
-        StringAssert.Contains(BitMarkdownAstHelper.ToPlainText(container), "body");
+        Assert.Contains("body", BitMarkdownAstHelper.ToPlainText(container));
     }
 
     [TestMethod]
@@ -640,7 +638,7 @@ public class BitMarkdownPipelineTests
         // A ":::" written inside a code block is sample text, not this container's closer.
         var document = pipeline.Parse(":::note\n```\n:::\n```\n:::");
 
-        Assert.AreEqual(1, document.Children.Count);
+        Assert.ContainsSingle(document.Children);
         var container = document.Children.OfType<BitMarkdownContainerNode>().Single();
         Assert.AreEqual(":::", container.Children.OfType<BitMarkdownCodeBlockNode>().Single().Content);
     }
@@ -654,13 +652,13 @@ public class BitMarkdownPipelineTests
         // this flavor adds included - landed on whichever the browser found first.
         var collided = BitMarkdownAstHelper.Descendants(pipeline.Parse("# A\n\n# B {#a}"))
             .OfType<BitMarkdownHeadingNode>().Select(h => h.Id).ToList();
-        CollectionAssert.AllItemsAreUnique(collided);
+        Assert.AreAllDistinct(collided);
         Assert.AreEqual("a", collided[0]);
 
         // An id nothing else took is kept exactly, which is the whole point of naming one.
         var named = BitMarkdownAstHelper.Descendants(pipeline.Parse("# A\n\n# B {#stable}"))
             .OfType<BitMarkdownHeadingNode>().Select(h => h.Id).ToList();
-        CollectionAssert.AreEqual(new[] { "a", "stable" }, named);
+        Assert.AreSequenceEqual(new[] { "a", "stable" }, named);
     }
 
     private static void AssertBoxesAndCountAgree(string markdown)

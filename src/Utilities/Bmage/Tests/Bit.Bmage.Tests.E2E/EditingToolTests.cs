@@ -85,7 +85,7 @@ public class EditingToolTests : DemoTest
         await page.WaitForFunctionAsync($"() => document.querySelector('.bmg-canvas').getContext('2d').getImageData(400, 300, 1, 1).data[0] === {original[0]}",
             null, new PageWaitForFunctionOptions { Timeout = 60_000 });
         Assert.AreEqual("true", await compare.GetAttributeAsync("aria-pressed"));
-        StringAssert.Contains(await page.Locator(".bmg-compare-badge").InnerTextAsync(), "original");
+        Assert.Contains("original", await page.Locator(".bmg-compare-badge").InnerTextAsync());
 
         await compare.ClickAsync();
         await page.WaitForFunctionAsync($"() => document.querySelector('.bmg-canvas').getContext('2d').getImageData(400, 300, 1, 1).data[0] === {inverted[0]}",
@@ -122,7 +122,7 @@ public class EditingToolTests : DemoTest
         await DragAsync(page, (0.5, 0.3), (0.5, 0.7));
         await WaitForCanvasAsync(page, $"c.getContext('2d').getImageData(c.width >> 1, c.height >> 1, 1, 1).data[1] === {image[1]}");
         var erased = await ReadPixelAsync(page, 0.5, 0.5);
-        CollectionAssert.AreEqual(image, erased, "the eraser shows the image again where it passed");
+        Assert.AreSequenceEqual(image, erased, "the eraser shows the image again where it passed");
         var painted = await ReadPixelAsync(page, 0.3, 0.5);
         Assert.AreEqual(230, painted[0], "and leaves the rest of the stroke");
     }
@@ -149,7 +149,7 @@ public class EditingToolTests : DemoTest
         await page.Locator(".bmg-tool[title='Pick a colour']").ClickAsync();
         await ClickCanvasAsync(page, 0.25, 0.75);
         await page.WaitForSelectorAsync(".bmg-message", new PageWaitForSelectorOptions { Timeout = 30_000 });
-        StringAssert.Contains(await page.Locator(".bmg-message").InnerTextAsync(), "Picked #");
+        Assert.Contains("Picked #", await page.Locator(".bmg-message").InnerTextAsync());
 
         // The brush now paints with the picked colour, which the gradient says has red about a quarter of full.
         await page.Locator(".bmg-tool[title=Brush]").ClickAsync();
@@ -216,7 +216,7 @@ public class EditingToolTests : DemoTest
         await canvas.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Apply" }).ClickAsync();
         await WaitForCanvasAsync(page, "c.width === 1000 && c.height === 700");
         // White around the centred photo, the photo where it was relative to its own centre.
-        CollectionAssert.AreEqual(new[] { 255, 255, 255, 255 }, await ReadPixelAsync(page, 0.01, 0.5));
+        Assert.AreSequenceEqual(new[] { 255, 255, 255, 255 }, await ReadPixelAsync(page, 0.01, 0.5));
         Assert.AreEqual(255, (await ReadPixelAsync(page, 0.5, 0.5))[3]);
     }
 
@@ -290,7 +290,7 @@ public class EditingToolTests : DemoTest
         await clip.ClickAsync();
         await WaitForCanvasAsync(page, PixelIs(0.5, 0.25, above));
         Assert.AreEqual("true", await clip.GetAttributeAsync("aria-pressed"));
-        CollectionAssert.AreEqual(paint, (await ReadPixelAsync(page, 0.5, 0.5))[..3], "where the strokes cross it still shows");
+        Assert.AreSequenceEqual(paint, (await ReadPixelAsync(page, 0.5, 0.5))[..3], "where the strokes cross it still shows");
 
         // Grouped, the two are listed under the group, and hidden with it.
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Group with layer below" }).ClickAsync();
@@ -300,7 +300,7 @@ public class EditingToolTests : DemoTest
         Assert.AreEqual("Group", await page.Locator(".bmg-layer-list > .bmg-layer-item > .bmg-layer .bmg-layer-name").InnerTextAsync());
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Hide: Group" }).ClickAsync();
         await WaitForCanvasAsync(page, PixelIs(0.3, 0.5, beside));
-        CollectionAssert.AreEqual(crossing[..3], (await ReadPixelAsync(page, 0.5, 0.5))[..3], "nothing of either stroke where they crossed");
+        Assert.AreSequenceEqual(crossing[..3], (await ReadPixelAsync(page, 0.5, 0.5))[..3], "nothing of either stroke where they crossed");
     }
 
     [TestMethod]
@@ -327,7 +327,7 @@ public class EditingToolTests : DemoTest
         await DragAsync(page, (0.25, 0.25), (0.5, 0.5));
         // Marching ants around what was selected, and the actions on it in the toolbar.
         await page.WaitForSelectorAsync(".bmg-selection-outline path", new PageWaitForSelectorOptions { Timeout = 30_000 });
-        StringAssert.StartsWith(await page.Locator(".bmg-ants").GetAttributeAsync("d") ?? "", "M");
+        Assert.StartsWith("M", await page.Locator(".bmg-ants").GetAttributeAsync("d") ?? "");
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Make transparent" }).ClickAsync();
         await WaitForCanvasAsync(page, "c.getContext('2d').getImageData(Math.floor(c.width * 0.375), Math.floor(c.height * 0.375), 1, 1).data[3] === 0");
@@ -400,7 +400,7 @@ public class EditingToolTests : DemoTest
 
         // The editor said it was busy before the work began, with undo closed, and opened it again after.
         var states = await page.EvaluateAsync<string[]>("() => window.__busyStates");
-        CollectionAssert.AreEqual(new[] { "true undo-disabled", "false undo-enabled" }, states, string.Join(" | ", states));
+        Assert.AreSequenceEqual(new[] { "true undo-disabled", "false undo-enabled" }, states, string.Join(" | ", states));
     }
 
     [TestMethod]
@@ -412,7 +412,7 @@ public class EditingToolTests : DemoTest
         using (var image = ImageBuffer.Create(400, 300, Rgba32.White))
         {
             image.Fill(new System.Drawing.Rectangle(100, 80, 120, 90), new Rgba32(30, 90, 200));
-            await File.WriteAllBytesAsync(file, Codecs.Png.PngEncoder.Encode(image).Data);
+            await File.WriteAllBytesAsync(file, Codecs.Png.PngEncoder.Encode(image, cancellationToken: TestContext.CancellationToken).Data, TestContext.CancellationToken);
         }
         try
         {
@@ -479,7 +479,7 @@ public class EditingToolTests : DemoTest
         Assert.IsGreaterThanOrEqualTo(3, await page.Locator(".bmg-history-entry").CountAsync(), "placing, retyping and turning are each a step");
         await OpenTabAsync(page, "Tools");
         Assert.AreEqual("Hello there", await page.GetByRole(AriaRole.Textbox, new PageGetByRoleOptions { Name = "Text" }).InputValueAsync());
-        StringAssert.Contains(await page.GetByRole(AriaRole.Slider, new PageGetByRoleOptions { Name = "Text Rotation" }).GetAttributeAsync("aria-valuetext") ?? "", "30");
+        Assert.Contains("30", await page.GetByRole(AriaRole.Slider, new PageGetByRoleOptions { Name = "Text Rotation" }).GetAttributeAsync("aria-valuetext") ?? "");
     }
 
     [TestMethod]
@@ -493,7 +493,7 @@ public class EditingToolTests : DemoTest
         await OpenTabAsync(page, "Export");
         var download = await page.RunAndWaitForDownloadAsync(() => page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Save project" }).ClickAsync(),
             new PageRunAndWaitForDownloadOptions { Timeout = 60_000 });
-        StringAssert.EndsWith(download.SuggestedFilename, ".bmage");
+        Assert.EndsWith(".bmage", download.SuggestedFilename);
         var path = Path.Combine(Path.GetTempPath(), $"bmage-{Guid.NewGuid():N}.bmage");
         await download.SaveAsAsync(path);
         try

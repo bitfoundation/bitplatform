@@ -1,4 +1,4 @@
-// Model shapes the generator used to emit uncompilable code for, or to crash on: a namespace part and
+﻿// Model shapes the generator used to emit uncompilable code for, or to crash on: a namespace part and
 // property names that are keywords, an explicit interface implementation, and compound-index members named
 // like tuple members. That this file compiles is half of the test; GeneratorEdgeCaseTests is the other half.
 namespace Bit.BlazeDb.Tests.@event;
@@ -11,7 +11,7 @@ public interface IHasTenant
 [BlazeDbTable("keyword_rows")]
 [BlazeDbCompoundIndex("ByItems", nameof(Item2), nameof(Item1))]
 [BlazeDbCompoundOrderedIndex("ByRest", nameof(Rest), nameof(@class))]
-public partial class KeywordRow : IHasTenant
+internal partial class KeywordRow : IHasTenant
 {
     [BlazeDbKey]
     public int @int { get; set; }
@@ -49,7 +49,7 @@ public partial struct StructRow
 
 // A key type whose equality ignores part of its encoding: 1.0m == 1.00m.
 [BlazeDbTable("decimal_keys")]
-public partial class DecimalKeyed
+internal partial class DecimalKeyed
 {
     [BlazeDbKey]
     public decimal Id { get; set; }

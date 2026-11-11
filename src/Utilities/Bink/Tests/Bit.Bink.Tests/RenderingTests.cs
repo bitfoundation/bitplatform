@@ -43,7 +43,7 @@ public class RasterizerTests
             byte a = surface.GetPixel(i, i).A;
             if (a is > 20 and < 235) partial++;
         }
-        Assert.IsTrue(partial > 20, $"expected anti-aliased edge pixels, found {partial}");
+        Assert.IsGreaterThan(20, partial, $"expected anti-aliased edge pixels, found {partial}");
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class RasterizerTests
         BinkRasterSurface round = Fill(60, c => c.StrokePath(new BinkPathBuilder().MoveTo(20, 30).LineTo(40, 30).ToGeometry(), new BinkStrokePaint(BinkColor.Black, 10f, 1f, BinkBlendMode.Normal, BinkLineCap.Round)));
         BinkRasterSurface butt = Fill(60, c => c.StrokePath(new BinkPathBuilder().MoveTo(20, 30).LineTo(40, 30).ToGeometry(), new BinkStrokePaint(BinkColor.Black, 10f, 1f, BinkBlendMode.Normal, BinkLineCap.Butt)));
 
-        Assert.IsTrue(round.GetPixel(17, 30).A > 200, "round caps should extend past the endpoint");
+        Assert.IsGreaterThan(200, round.GetPixel(17, 30).A, "round caps should extend past the endpoint");
         Assert.AreEqual(0, butt.GetPixel(17, 30).A);
     }
 
@@ -96,8 +96,8 @@ public class RasterizerTests
 
         BinkColor single = surface.GetPixel(20, 5);
         BinkColor doubled = surface.GetPixel(20, 15);
-        Assert.IsTrue(doubled.B < single.B, "overlapping multiply highlights should get darker");
-        Assert.IsTrue(doubled.R > 200, "a yellow highlighter must not turn the paper dark");
+        Assert.IsLessThan(single.B, doubled.B, "overlapping multiply highlights should get darker");
+        Assert.IsGreaterThan(200, doubled.R, "a yellow highlighter must not turn the paper dark");
     }
 
     [TestMethod]
@@ -207,7 +207,7 @@ public class PngCodecTests
     public void Compresses_a_flat_image_well()
     {
         byte[] png = TestData.CreatePng(200, 200, (_, _) => BinkColor.White);
-        Assert.IsTrue(png.Length < 2000, $"a flat 200x200 image encoded to {png.Length} bytes");
+        Assert.IsLessThan(2000, png.Length, $"a flat 200x200 image encoded to {png.Length} bytes");
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public class PngExportTests
         document.AddElement(new BinkStroke(TestData.Line(new Vector2(10, 50), new Vector2(90, 50), 30), new BinkPenBrush { Width = 6f, PressureCurve = BinkPressureCurve.Constant, TaperEnd = 0 }));
 
         BinkRasterSurface surface = BinkPngExporter.Render(document, BinkPngExportOptions.Default, out _, out _);
-        Assert.IsTrue(surface.GetPixel(50, 50).R < 60, "the stroke should be dark at its center");
+        Assert.IsLessThan(60, surface.GetPixel(50, 50).R, "the stroke should be dark at its center");
         Assert.AreEqual(255, surface.GetPixel(50, 10).R);
     }
 
@@ -259,7 +259,7 @@ public class PngExportTests
 
         BinkRasterSurface surface = BinkPngExporter.Render(document, BinkPngExportOptions.Default, out _, out _);
         Assert.AreEqual(0, surface.GetPixel(25, 5).A);
-        Assert.IsTrue(surface.GetPixel(25, 25).A > 200);
+        Assert.IsGreaterThan(200, surface.GetPixel(25, 25).A);
     }
 
     [TestMethod]
@@ -269,8 +269,8 @@ public class PngExportTests
         document.AddElement(new BinkStroke(TestData.Line(new Vector2(200, 200), new Vector2(240, 240), 10), new BinkPenBrush { Width = 4f }));
 
         BinkPngExportResult result = BinkPngExporter.ExportWithDetails(document, new BinkPngExportOptions { Region = BinkExportRegion.Content, Padding = 5f });
-        Assert.IsTrue(result.Width < 100, $"expected a tight crop but got {result.Width}px");
-        Assert.IsTrue(result.Width > 40);
+        Assert.IsLessThan(100, result.Width, $"expected a tight crop but got {result.Width}px");
+        Assert.IsGreaterThan(40, result.Width);
     }
 
     [TestMethod]
@@ -284,7 +284,7 @@ public class PngExportTests
 
         var options = new BinkPngExportOptions { Region = BinkExportRegion.Custom, CustomRegion = new BinkRect(0, 0, 200, 100), SelectedIds = [a.Id] };
         BinkRasterSurface surface = BinkPngExporter.Render(document, options, out _, out _);
-        Assert.IsTrue(surface.GetPixel(35, 50).R < 100, "the selected stroke should be drawn");
+        Assert.IsLessThan(100, surface.GetPixel(35, 50).R, "the selected stroke should be drawn");
         Assert.AreEqual(255, surface.GetPixel(165, 50).R);
     }
 
@@ -339,7 +339,7 @@ public class PngExportTests
 
         BinkRasterSurface surface = BinkPngExporter.Render(document, BinkPngExportOptions.Default, out _, out _);
         Assert.AreEqual(255, surface.GetPixel(40, 70).R);          // erased on its own layer
-        Assert.IsTrue(surface.GetPixel(40, 30).R < 100, "the eraser must not reach through to the layer below");
+        Assert.IsLessThan(100, surface.GetPixel(40, 30).R, "the eraser must not reach through to the layer below");
     }
 }
 
@@ -370,7 +370,7 @@ public class SvgExportTests
         string svg = BinkSvgExporter.Export(TestData.SampleDocument());
         XmlDocument xml = Parse(svg);
         XmlNodeList paths = xml.GetElementsByTagName("path");
-        Assert.IsTrue(paths.Count >= 5, $"expected several vector paths, found {paths.Count}");
+        Assert.IsGreaterThanOrEqualTo(5, paths.Count, $"expected several vector paths, found {paths.Count}");
         Assert.DoesNotContain("data:image", svg, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -495,7 +495,7 @@ public class SvgExportTests
 
         string svg = BinkSvgExporter.Export(document);
         XmlDocument xml = Parse(svg);
-        Assert.AreEqual(1, xml.GetElementsByTagName("mask").Count);
+        Assert.ContainsSingle(xml.GetElementsByTagName("mask"));
         Assert.Contains("mask=\"url(#", svg, StringComparison.Ordinal);
     }
 
@@ -559,7 +559,7 @@ public class SvgExportTests
         string svg = BinkSvgExporter.Export(document, new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 4f });
         XmlDocument xml = Parse(svg);
         string[] parts = xml.DocumentElement!.GetAttribute("viewBox").Split(' ');
-        Assert.IsTrue(float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture) < 100);
+        Assert.IsLessThan(100, float.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [TestMethod]
@@ -593,7 +593,7 @@ public class RenderConsistencyTests
 
         var counting = new CountingContext();
         int drawn = BinkDocumentRenderer.Render(document, counting, new BinkRenderOptions { ClipBounds = new BinkRect(0, 0, 120, 100) });
-        Assert.IsTrue(drawn < 5, $"expected culling to skip most strokes but drew {drawn}");
+        Assert.IsLessThan(5, drawn, $"expected culling to skip most strokes but drew {drawn}");
     }
 
     private sealed class CountingContext : IBinkRenderContext
@@ -641,7 +641,7 @@ public class ClosedPathStrokingTests
             }
             if (!ink) gaps++;
         }
-        Assert.IsTrue(gaps == 0, $"the ellipse outline has {gaps} gaps out of 360 sampled positions");
+        Assert.AreEqual(0, gaps, $"the ellipse outline has {gaps} gaps out of 360 sampled positions");
     }
 
     [TestMethod]

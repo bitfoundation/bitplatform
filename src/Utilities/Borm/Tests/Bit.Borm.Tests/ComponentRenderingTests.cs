@@ -110,7 +110,7 @@ public class FieldRenderingTests : ComponentTestBase
         // There is no single control for a <label for> to point at, so the group names itself.
         Assert.AreEqual("borm_kind_label", group.GetAttribute("aria-labelledby"));
         Assert.IsNotNull(cut.Find("#borm_kind_label"));
-        Assert.AreEqual(2, cut.FindAll("input[type=radio]").Count);
+        Assert.HasCount(2, cut.FindAll("input[type=radio]"));
     }
 
     [TestMethod]
@@ -205,7 +205,7 @@ public class ValidationRenderingTests : ComponentTestBase
         await cut.Find("form").SubmitAsync();
 
         var links = cut.FindAll(".bit-borm-summary__list a");
-        Assert.AreEqual(2, links.Count);
+        Assert.HasCount(2, links);
         // Built on this page's own address: a bare "#borm_first" resolves against <base href>, not the page.
         Assert.AreEqual("http://localhost/#borm_first", links[0].GetAttribute("href"));
         Assert.Contains("First:", links[0].TextContent, StringComparison.Ordinal);
@@ -328,7 +328,7 @@ public class ArrayRenderingTests : ComponentTestBase
         Assert.IsTrue(cut.Find(".bit-borm-btn--danger").HasAttribute("disabled"));
 
         cut.Find(".bit-borm-btn--add").Click();
-        Assert.AreEqual(2, model.Items.Count);
+        Assert.HasCount(2, model.Items);
 
         // And at the maximum of two, no more can be added.
         Assert.IsTrue(cut.Find(".bit-borm-btn--add").HasAttribute("disabled"));
@@ -434,7 +434,7 @@ public class RenderEfficiencyTests : ComponentTestBase
         cut.Find("input#borm_a").Change("hello");
 
         // The edited field redraws; every other field is left exactly as it was.
-        Assert.IsTrue(counter["a"] > 1, "the edited field should re-render");
+        Assert.IsGreaterThan(1, counter["a"], "the edited field should re-render");
         foreach (var untouched in (string[])["b", "c", "d", "e"])
             Assert.AreEqual(1, counter[untouched]);
     }
