@@ -885,22 +885,119 @@ public sealed partial class BinkDocument
         return byKey != 0 ? byKey > 0 : layer.CompareTo(currentLayer) > 0;
     }
 
-    // Where recently removed elements were: their layer, key and move clock. An element can come back (an undone
-    // removal) while a collaborator moves it: one side applies the move and then the return, the other the return and
-    // then the move. Both settle on whichever of the return and the last position wins, so a return is resolved against
-    // the tombstone as a move would be. Bounded: only removals recent enough to race a return matter.
-    private readonly Dictionary<Guid, (Guid Layer, string Key, long Clock)> _tombstones = new();
-    private readonly Queue<Guid> _tombstoneOrder = new();
-    private const int MaxTombstones = 4096;
+    // Where recently removed elements and layers were: their layer, key and move clock. An element or a layer can come
+    // back (an undone removal) while a collaborator moves it: one side applies the move and then the return, the other
+    // the return and then the move. Both settle on whichever of the return and the last position wins, so a return is
+    // resolved against the tombstone as a move would be, and a collaborator's move that arrives while it is gone
+    // updates the tombstone instead of being lost (see ObserveUnapplied).
+    private readonly Graveyard _elementGraves = new();
+    private readonly Graveyard _layerGraves = new();
 
-    private void Bury(Guid elementId, Guid layerId, string key, long clock)
+    /// <summary>
+    /// Tombstones, bounded: only removals recent enough to race a return matter, so past the limit the oldest is
+    /// forgotten. Each id is held once, however often it is buried, and leaving takes it out at once, so ids that came
+    /// back never take up room or push a real tombstone out early.
+    /// </summary>
+    private sealed class Graveyard
     {
-        if (!_tombstones.ContainsKey(elementId))
+        internal const int Capacity = 4096;
+
+        private readonly Dictionary<Guid, LinkedListNode<Grave>> _graves = new();
+        private readonly LinkedList<Grave> _order = new();
+
+        public int Count => _graves.Count;
+
+        public bool Contains(Guid id) => _graves.ContainsKey(id);
+
+        public bool TryGet(Guid id, out Grave grave)
         {
-            _tombstoneOrder.Enqueue(elementId);
-            while (_tombstoneOrder.Count > MaxTombstones) _tombstones.Remove(_tombstoneOrder.Dequeue());
+            if (_graves.TryGetValue(id, out LinkedListNode<Grave>? node))
+            {
+                grave = node.Value;
+                return true;
+            }
+            grave = default;
+            return false;
         }
-        _tombstones[elementId] = (layerId, key, clock);
+
+        public void Bury(Guid id, Guid layer, string key, long clock)
+        {
+            if (_graves.Remove(id, out LinkedListNode<Grave>? old)) _order.Remove(old);
+            _graves[id] = _order.AddLast(new Grave(id, layer, key, clock));
+            if (_graves.Count <= Capacity) return;
+            Guid oldest = _order.First!.Value.Id;
+            _order.RemoveFirst();
+            _graves.Remove(oldest);
+        }
+
+        /// <summary>Records where a move made while it was gone put it, keeping its place in the queue.</summary>
+        public void Move(Guid id, Guid layer, string key, long clock)
+        {
+            if (_graves.TryGetValue(id, out LinkedListNode<Grave>? node)) node.Value = new Grave(id, layer, key, clock);
+        }
+
+        public bool Remove(Guid id, out Grave grave)
+        {
+            if (_graves.Remove(id, out LinkedListNode<Grave>? node))
+            {
+                _order.Remove(node);
+                grave = node.Value;
+                return true;
+            }
+            grave = default;
+            return false;
+        }
+
+        public void Remove(Guid id) => Remove(id, out _);
+    }
+
+    private readonly record struct Grave(Guid Id, Guid Layer, string Key, long Clock);
+
+    /// <summary>The number of element tombstones held; for tests.</summary>
+    internal int ElementTombstoneCount => _elementGraves.Count;
+
+    /// <summary>Whether a removed element's place is still remembered; for tests.</summary>
+    internal bool HasElementTombstone(Guid elementId) => _elementGraves.Contains(elementId);
+
+    /// <summary>The number of tombstones kept at most, of elements and of layers each.</summary>
+    internal const int MaxTombstones = Graveyard.Capacity;
+
+    /// <summary>
+    /// Takes note of a collaborator's operation that was not applied because what it refers to is gone. A move of an
+    /// element or a layer that was removed here still happened: its clock is learnt, and when it wins over the place the
+    /// tombstone records, the tombstone takes the new place. Without that, undoing the removal here put it back where it
+    /// was, while the mover, applying the removal and then the return, kept it where the move had put it.
+    /// </summary>
+    internal void ObserveUnapplied(BinkDrawingOperation operation)
+    {
+        switch (operation)
+        {
+            case BinkReorderElementOperation move when !ContainsElement(move.ElementId):
+                Learn(move.OrderClock);
+                if (move.OrderKey is { } key && BinkOrderKey.IsValid(key) && _elementGraves.TryGet(move.ElementId, out Grave grave)
+                    && Wins(move.OrderClock, key, move.TargetLayerId, grave.Clock, grave.Key, grave.Layer))
+                {
+                    _elementGraves.Move(move.ElementId, move.TargetLayerId, key, move.OrderClock);
+                }
+                break;
+            case BinkReorderLayerOperation move when !TryGetLayer(move.LayerId, out _):
+                Learn(move.OrderClock);
+                if (move.OrderKey is { } layerKey && BinkOrderKey.IsValid(layerKey) && _layerGraves.TryGet(move.LayerId, out Grave layerGrave)
+                    && Wins(move.OrderClock, layerKey, move.LayerId, layerGrave.Clock, layerGrave.Key, move.LayerId))
+                {
+                    _layerGraves.Move(move.LayerId, move.LayerId, layerKey, move.OrderClock);
+                }
+                break;
+            case BinkBatchOperation batch:
+                foreach (BinkDrawingOperation inner in batch.Operations) ObserveUnapplied(inner);
+                break;
+        }
+    }
+
+    /// <summary>Moves the clock past a tick seen elsewhere.</summary>
+    private void Learn(long clock)
+    {
+        if (clock > _clock) _clock = clock;
     }
 
     /// <summary>The clock stored exactly as given: a rollback restoring what was, or a snapshot stating it.</summary>
@@ -924,6 +1021,8 @@ public sealed partial class BinkDocument
         {
             placed = keyed ? key! : layer.KeyForIndex(index is null ? layer.Count : Math.Clamp(index.Value, 0, layer.Count));
             stamped = Exact(clock);
+            // Back exactly where it was, or where a snapshot says: no longer gone.
+            _elementGraves.Remove(element.Id);
         }
         else
         {
@@ -933,8 +1032,8 @@ public sealed partial class BinkDocument
             // A new addition is not a move: it takes no tick, so replicas that started from the same page (one that
             // drew it, one that opened a copy) agree nothing in it has moved yet. Putting back an element that was
             // here is a move to where it was, made now; a collaborator's clock is kept as it is.
-            stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _tombstones.ContainsKey(element.Id) ? Stamp(0, adopt: false) : 0;
-            if (_tombstones.Remove(element.Id, out var grave) && !Wins(stamped, placed, layer.Id, grave.Clock, grave.Key, grave.Layer)
+            stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _elementGraves.Contains(element.Id) ? Stamp(0, adopt: false) : 0;
+            if (_elementGraves.Remove(element.Id, out Grave grave) && !Wins(stamped, placed, layer.Id, grave.Clock, grave.Key, grave.Layer)
                 && TryGetLayer(grave.Layer, out BinkLayer? graveLayer))
             {
                 // A move it lost while gone beats this return: it comes back where that move put it.
@@ -951,13 +1050,21 @@ public sealed partial class BinkDocument
 
     internal (BinkLayer Layer, int Index, BinkElement Element, string Key, long Clock) RemoveElementCore(Guid elementId)
     {
+        var removed = DetachElement(elementId);
+        // A rollback undoes an addition: the element was never here, so there is nothing for a return to race.
+        if (!Restoring) _elementGraves.Bury(elementId, removed.Layer.Id, removed.Key, removed.Clock);
+        return removed;
+    }
+
+    /// <summary>Takes an element out of its layer, leaving no tombstone: what a removal and a move share.</summary>
+    private (BinkLayer Layer, int Index, BinkElement Element, string Key, long Clock) DetachElement(Guid elementId)
+    {
         if (!_elementLayers.TryGetValue(elementId, out BinkLayer? layer)) throw new InvalidOperationException($"Element {elementId} is not in the document.");
         int index = layer.IndexOf(elementId);
         BinkElement element = layer.Elements[index];
         (string key, long clock) = layer.RemoveAt(index);
         _elementLayers.Remove(elementId);
         if (element is BinkStroke s) _totalPoints -= s.Points.Count;
-        if (!Restoring) Bury(elementId, layer.Id, key, clock);
         return (layer, index, element, key, clock);
     }
 
@@ -1027,9 +1134,8 @@ public sealed partial class BinkDocument
             : current == target && (index is null ? target.Count - 1 : Math.Clamp(index.Value, 0, target.Count - 1)) == position;
         if (unmoved) return (target.Id, position, currentKey, currentClock, currentKey, currentClock);
 
-        (BinkLayer source, int previousIndex, BinkElement element, string previousKey, long previousClock) = RemoveElementCore(elementId);
         // A move is not a removal: it leaves no tombstone.
-        _tombstones.Remove(elementId);
+        (BinkLayer source, int previousIndex, BinkElement element, string previousKey, long previousClock) = DetachElement(elementId);
         string placed = keyed ? key! : target.KeyForIndex(index is null ? target.Count : Math.Clamp(index.Value, 0, target.Count));
         long stamped = exact ? Exact(clock) : Stamp(clock, remote);
         target.Insert(element, placed, stamped);
@@ -1071,8 +1177,29 @@ public sealed partial class BinkDocument
         // The elements keep the clocks they came with only when they come from elsewhere (a collaborator, a file);
         // an undone removal is a new move here, so they start afresh like the layer.
         if (adopt) foreach (long c in layer.Clocks) if (c > _clock) _clock = c;
-        string placed = key is not null && BinkOrderKey.IsValid(key) ? key : LayerKeyForIndex(index is null ? _layers.Count : Math.Clamp(index.Value, 0, _layers.Count));
-        long stamped = Observe(clock, adopt);
+        bool keyed = key is not null && BinkOrderKey.IsValid(key);
+        string placed = keyed ? key! : LayerKeyForIndex(index is null ? _layers.Count : Math.Clamp(index.Value, 0, _layers.Count));
+        long stamped;
+        if (adoptPositions || Restoring)
+        {
+            // A file, a clone or a rollback states the place as it is.
+            stamped = Observe(clock, adopt: true);
+            _layerGraves.Remove(layerId);
+        }
+        else
+        {
+            // As for an element (InsertElementCore): putting back a layer that was here is a move to where it was, made
+            // now, and it is weighed against where the layer last was, which a collaborator may have moved it to
+            // while it was gone, so both sides of the race end with it in one place.
+            stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _layerGraves.Contains(layerId) ? Stamp(0, adopt: false) : 0;
+            if (_layerGraves.Remove(layerId, out Grave grave) && !Wins(stamped, placed, layerId, grave.Clock, grave.Key, layerId))
+            {
+                placed = grave.Key;
+                stamped = grave.Clock;
+            }
+        }
+        // Elements arriving with the layer are here again, whatever removed them before.
+        if (_elementGraves.Count > 0) foreach (BinkElement e in layer.Elements) _elementGraves.Remove(e.Id);
         int at = LayerIndexForKey(placed, layerId);
         _layers.Insert(at, layer);
         _layerKeys.Insert(at, placed);
@@ -1140,6 +1267,7 @@ public sealed partial class BinkDocument
             _elementLayers.Remove(e.Id);
             if (e is BinkStroke s) _totalPoints -= s.Points.Count;
         }
+        if (!Restoring) _layerGraves.Bury(layerId, layerId, key, clock);
         return (index, layer, key, clock);
     }
 

@@ -468,4 +468,36 @@ public sealed class ShapeRecognitionTests
 
         Assert.IsInstanceOfType<BinkEllipseShape>(loaded.AllElements.Single());
     }
+
+    /// <summary>A tool that commits the stroke itself, with metadata, as the docs invite, without calling the base.</summary>
+    private sealed class TaggingDrawTool : BinkDrawTool
+    {
+        protected override void CommitStroke(IBinkToolContext context, BinkStrokePoints points, BinkBrush brush)
+        {
+            var stroke = new BinkStroke(points, brush) { Metadata = new Dictionary<string, string> { ["tag"] = "mine" } };
+            context.Document.AddElement(stroke, context.ActiveLayerId);
+        }
+    }
+
+    [TestMethod]
+    public void A_stroke_committed_by_an_override_that_skips_the_base_is_still_recognized()
+    {
+        // The stroke to replace used to be one only the base CommitStroke recorded, so overriding it turned recognition off.
+        using var context = new TestToolContext();
+        Draw(context, new TaggingDrawTool { ShapeRecognition = BinkShapeRecognitionMode.Always }, Box);
+
+        Assert.IsInstanceOfType<BinkRectangleShape>(context.Document.AllElements.Single());
+    }
+
+    [TestMethod]
+    public void A_brush_without_a_pressure_curve_draws_and_is_recognized_with_the_linear_one()
+    {
+        using var context = new TestToolContext();
+        context.Brush = new BinkPenBrush { Width = 4f } with { PressureCurve = null! };
+        Assert.AreEqual(BinkPressureCurve.Linear, context.Brush.PressureCurve);
+
+        Draw(context, new BinkDrawTool { ShapeRecognition = BinkShapeRecognitionMode.Always }, Box);
+
+        Assert.IsInstanceOfType<BinkRectangleShape>(context.Document.AllElements.Single());
+    }
 }

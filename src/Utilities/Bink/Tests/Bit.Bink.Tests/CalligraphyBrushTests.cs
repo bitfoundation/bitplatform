@@ -55,8 +55,26 @@ public sealed class CalligraphyBrushTests
         // The lean turns a quarter turn halfway: so does the nib.
         Assert.AreEqual(20f, new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (40f, 0f)), brush).Geometry.Path.Bounds.Height, 0.5f);
 
-        // Nearly upright the lean has no direction, and the nib keeps the angle it had.
-        Assert.AreEqual(2f, new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (4f, 0f)), brush).Geometry.Path.Bounds.Height, 0.5f);
+        // Nearly upright the lean counts for less, and the nib turns only part of the way; straight up, not at all.
+        float nearlyUpright = new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (4f, 0f)), brush).Geometry.Path.Bounds.Height;
+        Assert.IsGreaterThan(4f, nearlyUpright);
+        Assert.IsLessThan(18f, nearlyUpright);
+        Assert.AreEqual(2f, new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (0f, 0f)), brush).Geometry.Path.Bounds.Height, 0.5f);
+    }
+
+    [TestMethod]
+    public void A_stroke_cut_where_the_pen_was_upright_keeps_its_ink_in_both_parts()
+    {
+        // Upright points took the angle of the last leaning one, so the part an eraser left, starting upright, turned
+        // its nib back to the brush's angle while the same points in the whole stroke kept the turned one.
+        var brush = new BinkCalligraphyBrush { Width = 20f, NibAngle = 0f, NibThickness = 0.1f, FollowPen = true, PenLean = 90f };
+        BinkStrokePoints whole = Pen(i => i < 10 ? (40f, 0f) : (0f, 0f));
+
+        BinkRect all = new BinkStroke(whole, brush).Geometry.Path.Bounds;
+        BinkRect tail = new BinkStroke(whole.Slice(12, 8), brush).Geometry.Path.Bounds;
+
+        Assert.AreEqual(tail.Right, all.Right, 0.5f, "The last nib is the same in the whole stroke and in its tail.");
+        Assert.AreEqual(105f, all.Right, 0.5f, "Upright, the nib is at the brush's own angle, along the line.");
     }
 
     [TestMethod]

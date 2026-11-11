@@ -38,8 +38,6 @@ public class BinkDrawTool : BinkToolBase
     // Where, in view coordinates, and since when the pointer has stayed within a few pixels: the hold that asks for a shape.
     private System.Numerics.Vector2 _restingAt;
     private double _restingSince;
-    // The stroke CommitStroke added, which shape recognition replaces.
-    private BinkStroke? _committed;
 
     /// <inheritdoc />
     public override string Id => "draw";
@@ -188,15 +186,51 @@ public class BinkDrawTool : BinkToolBase
         _liveGeometry = null;
         _lastGeometryCount = -1;
         _prediction.Clear();
-        _committed = null;
-        CommitStroke(context, points, brush);
-        if (_committed is { } stroke
-            && (ShapeRecognition == BinkShapeRecognitionMode.Always || (ShapeRecognition == BinkShapeRecognitionMode.OnHold && held)))
-        {
-            ReplaceWithShape(context, stroke, points, brush);
-        }
-        _committed = null;
+        bool recognize = ShapeRecognition == BinkShapeRecognitionMode.Always || (ShapeRecognition == BinkShapeRecognitionMode.OnHold && held);
+        if (!recognize) CommitStroke(context, points, brush);
+        else if (CommitWatching(context, points, brush) is { } committed) ReplaceWithShape(context, committed, points, brush);
         context.InvalidateOverlay();
+    }
+
+    /// <summary>
+    /// Runs <see cref="CommitStroke"/> and returns the stroke it added to the document, read from the change it made,
+    /// so an override that adds the stroke itself, without calling the base, still has it recognized as a shape.
+    /// </summary>
+    private BinkStroke? CommitWatching(IBinkToolContext context, BinkStrokePoints points, BinkBrush brush)
+    {
+        BinkDocument document = context.Document;
+        BinkStroke? added = null;
+        void OnChanged(object? sender, BinkDocumentChangedEventArgs e)
+        {
+            if (added is null && e.Origin == BinkChangeOrigin.Local) added = AddedStroke(e.Operation);
+        }
+        document.Changed += OnChanged;
+        try
+        {
+            CommitStroke(context, points, brush);
+        }
+        finally
+        {
+            document.Changed -= OnChanged;
+        }
+        return added;
+    }
+
+    private static BinkStroke? AddedStroke(BinkDrawingOperation operation)
+    {
+        switch (operation)
+        {
+            case BinkAddElementOperation { Element: BinkStroke { IsEraser: false } stroke }:
+                return stroke;
+            case BinkBatchOperation batch:
+                foreach (BinkDrawingOperation inner in batch.Operations)
+                {
+                    if (AddedStroke(inner) is { } found) return found;
+                }
+                return null;
+            default:
+                return null;
+        }
     }
 
     private void TrackRest(in BinkInputSample sample)
@@ -267,7 +301,6 @@ public class BinkDrawTool : BinkToolBase
         if (!BinkLayerGate.Admits(context, layerId)) return;
 
         if (!TryApply(context, () => context.Document.AddElement(stroke, layerId))) return;
-        _committed = stroke;
         context.InvalidateDocument(stroke.Bounds);
     }
 

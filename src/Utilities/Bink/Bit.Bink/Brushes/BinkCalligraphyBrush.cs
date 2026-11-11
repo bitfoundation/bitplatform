@@ -45,9 +45,10 @@ public sealed record BinkCalligraphyBrush : BinkBrush
     /// <summary>
     /// Whether the nib turns with the pen, as a real one turns in the hand. With a pen that reports barrel rotation
     /// (twist), the nib turns by it. Otherwise, with one that reports tilt, it turns by how far the direction the pen
-    /// leans is from <see cref="PenLean"/>: leaning that way, the nib is at <see cref="NibAngle"/>. While the pen is held
-    /// nearly upright its lean has no direction, and the nib keeps the angle it had. Without tilt or twist, a mouse or
-    /// a finger, the nib stays at <see cref="NibAngle"/>. Off by default.
+    /// leans is from <see cref="PenLean"/>: leaning that way, the nib is at <see cref="NibAngle"/>. As the pen is
+    /// raised upright its lean loses its direction, and the nib eases back to <see cref="NibAngle"/>, which it reaches
+    /// when the pen is straight up. Without tilt or twist, a mouse or a finger, the nib stays at <see cref="NibAngle"/>.
+    /// Off by default.
     /// </summary>
     /// <remarks>
     /// Each point's angle depends on that point alone, so a stroke cut in two by an eraser keeps the same ink in both
@@ -62,7 +63,10 @@ public sealed record BinkCalligraphyBrush : BinkBrush
     /// </summary>
     public float PenLean { get; init; } = 45f;
 
-    /// <summary>Tilt in degrees below which the direction the pen leans is too uncertain to turn the nib.</summary>
+    /// <summary>
+    /// Tilt in degrees below which the direction the pen leans is too uncertain to turn the nib all the way: below it the
+    /// turn shrinks with the tilt, to none when the pen is upright.
+    /// </summary>
     private const float MinFollowTilt = 10f;
 
     /// <inheritdoc />
@@ -140,20 +144,20 @@ public sealed record BinkCalligraphyBrush : BinkBrush
 
     /// <summary>
     /// The nib's angle point by point: <see cref="NibAngle"/>, turned by the pen's twist or by how far its lean is from
-    /// <see cref="PenLean"/>, when <see cref="FollowPen"/> is on and the device reports them. While the pen is nearly
-    /// upright the angle is the one before it, or <see cref="NibAngle"/> at the start.
+    /// <see cref="PenLean"/>, when <see cref="FollowPen"/> is on and the device reports them. Each angle is read from its
+    /// own point: one carried over from earlier points would make the part of a stroke an eraser leaves start afresh at
+    /// <see cref="NibAngle"/> and draw differently from the same points in the whole stroke.
     /// </summary>
-    private struct PenFollower
+    private readonly struct PenFollower
     {
         private readonly bool _twist;
         private readonly bool _tilt;
         private readonly float _base;
         private readonly float _lean;
-        private float _current;
 
         public PenFollower(bool enabled, BinkStrokePointsView points, float baseRadians, float leanRadians)
         {
-            _base = _current = baseRadians;
+            _base = baseRadians;
             _lean = leanRadians;
             _twist = enabled && HasAny(points.Twist);
             _tilt = enabled && !_twist && (HasAny(points.TiltX) || HasAny(points.TiltY));
@@ -164,16 +168,22 @@ public sealed record BinkCalligraphyBrush : BinkBrush
             if (_twist)
             {
                 float twist = points.Twist[index];
-                if (float.IsFinite(twist)) _current = _base + twist * MathF.PI / 180f;
-                return _current;
+                return float.IsFinite(twist) ? _base + twist * MathF.PI / 180f : _base;
             }
             if (!_tilt) return _base;
             float tx = points.TiltX[index], ty = points.TiltY[index];
-            if (!float.IsFinite(tx) || !float.IsFinite(ty) || MathF.Max(MathF.Abs(tx), MathF.Abs(ty)) < MinFollowTilt) return _current;
+            if (!float.IsFinite(tx) || !float.IsFinite(ty)) return _base;
+            float tilt = MathF.Max(MathF.Abs(tx), MathF.Abs(ty));
+            if (tilt == 0f) return _base;
             // The direction the pen leans, from its tilt in the two planes.
             float azimuth = MathF.Atan2(MathF.Tan(Math.Clamp(ty, -89f, 89f) * MathF.PI / 180f), MathF.Tan(Math.Clamp(tx, -89f, 89f) * MathF.PI / 180f));
-            _current = _base + azimuth - _lean;
-            return _current;
+            float turn = azimuth - _lean;
+            if (tilt >= MinFollowTilt) return _base + turn;
+            // Nearly upright the direction is uncertain, so it counts for less the more upright the pen is. A nib turned
+            // half a turn is the same nib, so the turn is taken the short way round, within a quarter turn either side,
+            // before it is scaled.
+            turn -= MathF.PI * MathF.Round(turn / MathF.PI);
+            return _base + turn * (tilt / MinFollowTilt);
         }
 
         private static bool HasAny(ReadOnlySpan<float> values)

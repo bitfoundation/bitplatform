@@ -159,10 +159,21 @@ public sealed record BinkAddLayerOperation(Guid LayerId, BinkLayerProperties Pro
     {
         (string key, long clock) = document.InsertLayerCore(LayerId, Properties, Index, Elements, OrderKey, OrderClock, ElementOrderKeys, ElementOrderClocks);
         BinkLayer layer = document.GetLayer(LayerId);
-        IReadOnlyList<string>? keys = Elements is { Count: > 0 } ? layer.Keys.ToArray() : ElementOrderKeys;
-        IReadOnlyList<long>? clocks = Elements is { Count: > 0 } ? layer.Clocks.ToArray() : ElementOrderClocks;
-        applied = this with { OrderKey = key, OrderClock = clock, ElementOrderKeys = keys, ElementOrderClocks = clocks };
+        // The elements' keys and clocks are copied only when the layer did not keep the ones given: copying them every
+        // time cost two arrays the size of the layer on every apply, and made any batch holding it rebuild itself.
+        bool sameElements = Elements is not { Count: > 0 } || (SameAs(ElementOrderKeys, layer.Keys) && SameAs(ElementOrderClocks, layer.Clocks));
+        if (key == OrderKey && clock == OrderClock && sameElements) applied = this;
+        else if (sameElements) applied = this with { OrderKey = key, OrderClock = clock };
+        else applied = this with { OrderKey = key, OrderClock = clock, ElementOrderKeys = layer.Keys.ToArray(), ElementOrderClocks = layer.Clocks.ToArray() };
         return new BinkRemoveLayerOperation(LayerId);
+    }
+
+    private static bool SameAs<T>(IReadOnlyList<T>? given, IReadOnlyList<T> kept)
+    {
+        if (given is null || given.Count != kept.Count) return false;
+        EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+        for (int i = 0; i < kept.Count; i++) if (!comparer.Equals(given[i], kept[i])) return false;
+        return true;
     }
 }
 

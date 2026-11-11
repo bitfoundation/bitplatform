@@ -1,4 +1,4 @@
-namespace Bit.Bink;
+﻿namespace Bit.Bink;
 
 /// <summary>Options for PDF export.</summary>
 public sealed record BinkPdfExportOptions : BinkExportOptions

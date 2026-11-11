@@ -721,6 +721,9 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
             // senders, so over a mesh an edit of what another participant just added can arrive before the
             // addition. Dropping that one lost the edit on this replica alone, so it waits for the addition.
             if (defer && AwaitsDependency(operation)) Defer(received);
+            // A stale move still happened: the document weighs it against where the removed element or layer was, so
+            // undoing the removal here ends where the mover ends.
+            else _document.ObserveUnapplied(operation);
             return false;
         }
 
@@ -784,7 +787,11 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
                 if (!entry.Operation.CanApply(_document))
                 {
                     // Still early, or stale by now: what it refers to arrived and was removed again.
-                    if (!AwaitsDependency(entry.Operation)) _deferred.RemoveAt(i--);
+                    if (!AwaitsDependency(entry.Operation))
+                    {
+                        _deferred.RemoveAt(i--);
+                        _document.ObserveUnapplied(entry.Operation);
+                    }
                     continue;
                 }
                 _deferred.RemoveAt(i--);

@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -340,6 +340,137 @@ public sealed class OrderConvergenceTests
 
             CollectionAssert.AreEqual(Order(alex), Order(zoe));
         }
+    }
+
+    [TestMethod]
+    public async Task Undoing_a_delete_after_a_move_of_the_deleted_element_arrived_ends_in_one_place()
+    {
+        // The move reached the deleting side while the element was gone and was dropped, so its tombstone kept the old
+        // place: the undo put it back there, while the mover, applying the delete and then the return, kept it in front.
+        (BinkDocument alex, BinkDocument zoe, Func<Task> exchange, IAsyncDisposable sessions) = await PairAsync(Page(4));
+        await using (sessions)
+        {
+            using var history = new BinkHistoryManager(alex);
+            Guid x = Order(alex)[1];
+            alex.RemoveElement(x);
+            zoe.Arrange([x], BinkArrangement.BringToFront);
+            await exchange();
+            history.Undo();
+            await exchange();
+
+            Assert.IsTrue(alex.ContainsElement(x));
+            CollectionAssert.AreEqual(Order(alex), Order(zoe));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, DisplayName = "undone before the move arrives")]
+    [DataRow(true, DisplayName = "undone after the move arrived")]
+    public async Task Undoing_a_layer_removal_while_someone_reorders_the_layer_ends_in_one_order(bool exchangeFirst)
+    {
+        // A removed layer left no record of where it was, and came back with a clock of 0, so the reorder won on one
+        // side and was never applied on the other.
+        BinkDocument start = Page(1);
+        start.AddLayer("B");
+        start.AddLayer("C");
+        (BinkDocument alex, BinkDocument zoe, Func<Task> exchange, IAsyncDisposable sessions) = await PairAsync(start);
+        await using (sessions)
+        {
+            using var history = new BinkHistoryManager(alex);
+            Guid b = alex.Layers[1].Id;
+            alex.RemoveLayer(b);
+            zoe.ReorderLayer(b, 2);
+            if (exchangeFirst) await exchange();
+            history.Undo();
+            await exchange();
+
+            Assert.IsTrue(alex.TryGetLayer(b, out _));
+            Assert.AreEqual(LayerOrder(alex), LayerOrder(zoe));
+        }
+    }
+
+    [TestMethod]
+    public void Moves_leave_no_tombstones_and_a_real_one_is_not_pushed_out_by_them()
+    {
+        // Every move took a place in the tombstone queue: thousands of moves filled it with ids that were never
+        // removed, pushing real tombstones out, and a move followed by a delete queued the id twice, so the stale
+        // copy later removed the real tombstone.
+        BinkDocument document = Page(3);
+        Guid[] ids = Order(document);
+        for (int i = 0; i < 5000; i++) document.Arrange([Order(document)[0]], BinkArrangement.BringToFront);
+        Assert.AreEqual(0, document.ElementTombstoneCount);
+
+        document.Arrange([ids[1]], BinkArrangement.BringToFront);
+        document.RemoveElement(ids[1]);
+        Guid layer = document.Layers[0].Id;
+        for (int i = 0; i < BinkDocument.MaxTombstones - 1; i++)
+        {
+            BinkStroke s = Stroke(i % 20);
+            document.AddElement(s, layer);
+            document.RemoveElement(s.Id);
+        }
+
+        Assert.IsTrue(document.HasElementTombstone(ids[1]), "The real tombstone is still among the newest.");
+        Assert.AreEqual(BinkDocument.MaxTombstones, document.ElementTombstoneCount);
+    }
+
+    [TestMethod]
+    public void A_snapshot_leaves_no_tombstones_for_the_elements_it_keeps()
+    {
+        BinkDocument document = Page(4);
+        BinkDocument copy = Copy(document);
+        var operations = new List<BinkDrawingOperation>();
+        foreach (BinkElement e in document.Layers[0].Elements.Reverse()) operations.Add(new BinkRemoveElementOperation(e.Id));
+        for (int i = 0; i < copy.Layers[0].Count; i++)
+        {
+            operations.Add(new BinkAddElementOperation(document.Layers[0].Id, copy.Layers[0].Elements[i]) { OrderKey = copy.Layers[0].KeyAt(i), OrderClock = copy.Layers[0].ClockAt(i), Authoritative = true });
+        }
+
+        document.Apply(new BinkBatchOperation(operations, "Synchronize"), BinkChangeOrigin.Remote);
+
+        Assert.AreEqual(0, document.ElementTombstoneCount);
+    }
+
+    [TestMethod]
+    public void An_element_renamed_for_a_duplicate_id_keeps_the_other_elements_keys()
+    {
+        // Elements tied on a key are ordered by id. The fresh id given to a duplicate could sort it before its tied
+        // neighbour, and keys out of order had the whole layer keyed afresh, so a replica joining from the file had
+        // keys no one else had.
+        BinkDocument document = Page(4);
+        string[] keys = document.Layers[0].Keys.ToArray();
+        Guid[] ids = Order(document);
+        var root = System.Text.Json.Nodes.JsonNode.Parse(BinkSerializer.Serialize(document, new BinkSerializerOptions { IncludeOrderKeys = true }))!;
+        var layer = root["layers"]![0]!;
+        layer["elementKeys"]![2] = keys[1];
+        layer["elements"]![1]!["id"] = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff").ToString();
+        layer["elements"]![2]!["id"] = ids[0].ToString();
+
+        BinkDocument read = BinkSerializer.Deserialize(root.ToJsonString());
+
+        Guid[] order = Order(read);
+        Assert.AreEqual(ids[0], order[0]);
+        Assert.AreEqual(Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"), order[1]);
+        Assert.AreEqual(ids[3], order[3]);
+        Assert.AreEqual(keys[0], read.Layers[0].KeyAt(0), "Elements outside the tie keep their keys.");
+        Assert.AreEqual(keys[3], read.Layers[0].KeyAt(3), "Elements outside the tie keep their keys.");
+    }
+
+    [TestMethod]
+    public void A_layer_added_with_the_keys_it_keeps_is_reported_as_it_was_given()
+    {
+        // The keys and clocks of a layer's elements were copied into a new operation on every apply, even unchanged.
+        BinkDocument document = Page(3);
+        BinkDocument other = Copy(document);
+        BinkDrawingOperation? applied = null;
+        document.Changed += (_, e) => applied = e.Operation;
+        document.DuplicateLayer(document.Layers[0].Id);
+
+        BinkDrawingOperation? reported = null;
+        other.Changed += (_, e) => reported = e.Operation;
+        other.Apply(applied!, BinkChangeOrigin.Remote);
+
+        Assert.AreSame(applied, reported);
     }
 
     [TestMethod]

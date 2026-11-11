@@ -856,6 +856,7 @@ public static class BinkSerializer
         bool clocked = keyed && element.TryGetProperty("elementClocks", out clockArray) && clockArray.ValueKind == JsonValueKind.Array && clockArray.GetArrayLength() == keyArray.GetArrayLength();
         List<string>? keys = keyed ? new List<string>() : null;
         List<long>? clocks = clocked ? new List<long>() : null;
+        List<int>? renamed = null;
         if (element.TryGetProperty("elements", out JsonElement elementArray) && elementArray.ValueKind == JsonValueKind.Array)
         {
             int position = -1;
@@ -873,11 +874,16 @@ public static class BinkSerializer
                 clocks?.Add(ReadClock(clockArray[position]));
                 // A duplicate id would make the element unaddressable. Give it a fresh one rather than
                 // rejecting the whole document: the drawing is still perfectly good.
-                if (document.ContainsElement(parsed.Id) || seenIds.Contains(parsed.Id)) parsed = parsed with { Id = Guid.NewGuid() };
+                if (document.ContainsElement(parsed.Id) || seenIds.Contains(parsed.Id))
+                {
+                    parsed = parsed with { Id = Guid.NewGuid() };
+                    (renamed ??= new List<int>()).Add(elements.Count);
+                }
                 seenIds.Add(parsed.Id);
                 elements.Add(parsed);
             }
         }
+        if (keys is not null && renamed is not null) RekeyRenamedTies(elements, keys, renamed);
         string? layerKey = useLayerKey ? ReadString(element, "key") : null;
         long layerClock = useLayerKey && element.TryGetProperty("clock", out JsonElement clockValue) ? ReadClock(clockValue) : 0;
         try
@@ -889,6 +895,42 @@ public static class BinkSerializer
             // Document limits and validation throw; to a caller loading a file this is a malformed document,
             // which is what TryDeserialize promises to report rather than throw.
             throw new BinkFormatException(ex.Message, ex);
+        }
+    }
+
+    /// <summary>
+    /// Gives new keys to the elements that tie on a key with an element renamed for a duplicate id. Elements with equal
+    /// keys are ordered by id, so a new id can put a tied element on the wrong side of its neighbour, and keys out of
+    /// order make the whole layer's keys be made afresh, leaving this replica with keys no one else has. Only the tied
+    /// run is given keys, spread between the keys around it; every other element keeps its own.
+    /// </summary>
+    private static void RekeyRenamedTies(List<BinkElement> elements, List<string> keys, List<int> renamed)
+    {
+        foreach (int at in renamed)
+        {
+            if (!BinkOrderKey.IsValid(keys[at])) return;
+            int start = at, end = at + 1;
+            while (start > 0 && keys[start - 1] == keys[at]) start--;
+            while (end < keys.Count && keys[end] == keys[at]) end++;
+            if (end - start < 2) continue;
+            bool ordered = true;
+            for (int i = start + 1; i < end && ordered; i++) ordered = elements[i - 1].Id.CompareTo(elements[i].Id) < 0;
+            if (ordered) continue;
+            string? below = start > 0 ? keys[start - 1] : null;
+            string? above = end < keys.Count ? keys[end] : null;
+            // Keys around the run that are themselves out of order leave the layer to be keyed afresh as before.
+            if ((below is not null && (!BinkOrderKey.IsValid(below) || string.CompareOrdinal(below, keys[at]) >= 0))
+                || (above is not null && (!BinkOrderKey.IsValid(above) || string.CompareOrdinal(keys[at], above) >= 0))) return;
+            try
+            {
+                string? previous = below;
+                for (int i = start; i < end; i++) previous = keys[i] = BinkOrderKey.Between(previous, above);
+            }
+            catch (InvalidOperationException)
+            {
+                // No room between the neighbours' keys: the layer is keyed afresh.
+                return;
+            }
         }
     }
 
