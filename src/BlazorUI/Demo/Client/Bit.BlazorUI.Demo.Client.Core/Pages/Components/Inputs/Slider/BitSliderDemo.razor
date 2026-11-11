@@ -495,6 +495,15 @@
             below asks for a span of at least 20 - drag the thumbs together and the error comes back without
             waiting for another submit.
         </div>
+        <div>
+            <b>ShowValidationMessage</b> shows the messages of the form under the slider, where <b>ErrorMessage</b>
+            goes - those of <b>Value</b>, or of <b>RangeValue</b> for a range - so the form below needs no
+            <b>ValidationMessage</b> component. Every thumb is described by them through <b>aria-describedby</b>, so
+            they are read out when a thumb takes the focus, and an <b>ErrorMessage</b> of the app's own wins the place
+            while it is set. They are not announced as they appear: a submit validates every field at once, and a
+            message from each of them read out in a row would bury the form under its own errors. A <b>BitParams</b>
+            holding a <b>BitSliderParams</b> with <b>ShowValidationMessage</b> turns it on for every slider inside it.
+        </div>
         <br />
         <div class="example-box">
             @if (string.IsNullOrEmpty(SuccessMessage))
@@ -509,8 +518,8 @@
                                Max="7"
                                ShowMarks
                                ShowMarkLabels
+                               ShowValidationMessage
                                @bind-Value="ValidationModel.Days" />
-                    <ValidationMessage For="@(() => ValidationModel.Days)" />
 
                     <br />
 
@@ -518,8 +527,8 @@
                                Label="Budget bracket"
                                Max="100"
                                Step="5"
+                               ShowValidationMessage
                                @bind-RangeValue="ValidationModel.Budget" />
-                    <ValidationMessage For="@(() => ValidationModel.Budget)" />
 
                     <br />
 

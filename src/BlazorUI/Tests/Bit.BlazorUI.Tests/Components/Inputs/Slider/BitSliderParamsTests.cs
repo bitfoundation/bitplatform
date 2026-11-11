@@ -228,6 +228,7 @@ public class BitSliderParamsTests : BunitTestContext
             RestrictToMarks = true,
             ShowMarkLabels = true,
             ShowMarks = true,
+            ShowValidationMessage = true,
             ShowValue = false,
             Size = BitSize.Small,
             SliderBoxHtmlAttributes = boxAttributes,
@@ -273,6 +274,7 @@ public class BitSliderParamsTests : BunitTestContext
         Assert.IsTrue(instance.RestrictToMarks);
         Assert.IsTrue(instance.ShowMarkLabels);
         Assert.IsTrue(instance.ShowMarks);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.IsFalse(instance.ShowValue);
         Assert.AreEqual(BitSize.Small, instance.Size);
         // The cascade hands the component a copy of the dictionary, so an instance never writes into the shared one.
