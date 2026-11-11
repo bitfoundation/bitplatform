@@ -128,7 +128,11 @@ public class GeneratorEdgeCaseTests
         // Two values that differ only in the broken character would have become one on the next open.
         await using var db = await OpenPersistentAsync();
         var rows = db.GetTable(KeywordRow.Table);
-        Assert.ThrowsExactly<BlazeDbException>(() => rows.Insert(new KeywordRow { @int = 1, @class = highAlone }));
+        var refused = Assert.ThrowsExactly<BlazeDbException>(() => rows.Insert(new KeywordRow { @int = 1, @class = highAlone }));
         Assert.AreEqual(0, rows.Count);
+        // The message names the column, as a refused null does, and where in the value the broken character is.
+        StringAssert.Contains(refused.Message, "'class'");
+        StringAssert.Contains(refused.Message, "'keyword_rows'");
+        StringAssert.Contains(refused.Message, "index 1");
     }
 }

@@ -20,6 +20,10 @@ internal static class BlazeDbSourceEmitter
     /// </summary>
     private static string Literal(string value) => SymbolDisplay.FormatLiteral(value, quote: true);
 
+    /// <summary>The <c>"table", "property"</c> pair a generated string write reports a refused value with.</summary>
+    private static string Column(BlazeDbTableModel model, BlazeDbPropModel prop) =>
+        Literal(model.TableName) + ", " + Literal(prop.Name);
+
     private static string Members(params string[] names) =>
         "new string[] { " + string.Join(", ", Array.ConvertAll(names, Literal)) + " }";
 
@@ -160,7 +164,7 @@ internal static class BlazeDbSourceEmitter
         // Key serializers.
         sb.AppendLine($"{indent}    private static void __BlazeWriteKey({Writer} writer, {keyType} key)");
         sb.AppendLine($"{indent}    {{");
-        sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(key.Kind, "writer", "key")};");
+        sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(key.Kind, "writer", "key", Column(model, key))};");
         sb.AppendLine($"{indent}    }}");
         sb.AppendLine();
         sb.AppendLine($"{indent}    private static {keyType} __BlazeReadKey(ref {Reader} reader)");
@@ -236,7 +240,7 @@ internal static class BlazeDbSourceEmitter
             {
                 case BlazeDbPropCategory.Scalar when !BlazeDbTypeMap.IsReferenceScalar(prop.Kind):
                     sb.AppendLine($"{indent}        {tag}");
-                    sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop))};");
+                    sb.AppendLine($"{indent}        {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
                     break;
 
                 case BlazeDbPropCategory.Scalar when prop.RejectsNull:
@@ -251,7 +255,7 @@ internal static class BlazeDbSourceEmitter
                     sb.AppendLine($"{indent}        else");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            {tag}");
-                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop))};");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
                     sb.AppendLine($"{indent}        }}");
                     break;
 
@@ -260,7 +264,7 @@ internal static class BlazeDbSourceEmitter
                     sb.AppendLine($"{indent}        if ({Access("row", prop)} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            {tag}");
-                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop))};");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop), Column(model, prop))};");
                     sb.AppendLine($"{indent}        }}");
                     break;
 
@@ -268,7 +272,7 @@ internal static class BlazeDbSourceEmitter
                     sb.AppendLine($"{indent}        if ({Access("row", prop)} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            {tag}");
-                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop) + ".Value")};");
+                    sb.AppendLine($"{indent}            {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", Access("row", prop) + ".Value", Column(model, prop))};");
                     sb.AppendLine($"{indent}        }}");
                     break;
 
@@ -280,7 +284,7 @@ internal static class BlazeDbSourceEmitter
                     sb.AppendLine($"{indent}            foreach (var __element in {Access("row", prop)})");
                     sb.AppendLine($"{indent}            {{");
                     sb.AppendLine($"{indent}                {tag}");
-                    sb.AppendLine($"{indent}                {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "__element")};");
+                    sb.AppendLine($"{indent}                {BlazeDbTypeMap.WriteExpr(prop.Kind, "writer", "__element", Column(model, prop))};");
                     sb.AppendLine($"{indent}            }}");
                     sb.AppendLine($"{indent}        }}");
                     break;

@@ -73,9 +73,16 @@ function run<T>(db: IDBDatabase, mode: IDBTransactionMode, action: (store: IDBOb
         // Resolve on transaction completion, not on request success: for writes that is the point at
         // which the data is durable (see transaction above), which is what the engine's flush contract promises.
         tx.oncomplete = () => resolve(result ? result.result : undefined);
-        tx.onerror = () => reject(markQuota(tx.error));
-        tx.onabort = () => reject(markQuota(tx.error) ?? new Error('IndexedDB transaction aborted.'));
+        settleOnAbort(tx, reject);
     });
+}
+
+// A failed request's error event bubbles to the transaction before the transaction aborts, and tx.error is
+// only set by that abort: rejecting from onerror would reject with null and drop the QuotaExceededError the
+// storage needs to see. An unhandled request error always aborts the transaction, so the rejection waits for
+// onabort, where tx.error holds the request's error (or the commit's, for a quota hit at commit time).
+function settleOnAbort(tx: IDBTransaction, reject: (reason: unknown) => void): void {
+    tx.onabort = () => reject(markQuota(tx.error) ?? new Error('IndexedDB transaction aborted.'));
 }
 
 export async function readFile(db: IDBDatabase, name: string): Promise<Uint8Array | null> {
@@ -110,8 +117,7 @@ export async function appendFile(db: IDBDatabase, name: string, bytes: Uint8Arra
             store.put(merged, name);
         };
         tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(markQuota(tx.error));
-        tx.onabort = () => reject(markQuota(tx.error) ?? new Error('IndexedDB transaction aborted.'));
+        settleOnAbort(tx, reject);
     });
 }
 

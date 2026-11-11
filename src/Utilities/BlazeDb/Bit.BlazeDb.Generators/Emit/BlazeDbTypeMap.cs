@@ -81,9 +81,17 @@ internal static class BlazeDbTypeMap
         }
     }
 
-    /// <summary>Expression writing a non-null scalar value.</summary>
-    public static string WriteExpr(BlazeDbScalarKind kind, string writer, string value)
+    /// <summary>
+    /// Expression writing a non-null scalar value. <paramref name="column"/>, when given, is the
+    /// <c>"table", "property"</c> literal pair a refused string is reported with (ADR-018).
+    /// </summary>
+    public static string WriteExpr(BlazeDbScalarKind kind, string writer, string value, string? column = null)
     {
+        if (kind == BlazeDbScalarKind.String && column is not null)
+        {
+            return $"{writer}.WriteString({value}, {column})";
+        }
+
         switch (kind)
         {
             case BlazeDbScalarKind.Bool: return $"{writer}.WriteBool({value})";

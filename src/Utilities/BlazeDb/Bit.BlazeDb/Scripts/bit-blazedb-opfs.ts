@@ -159,18 +159,38 @@ if (typeof window !== 'undefined') {
     });
 }
 
+// The check in flight, if any, and whether another restore asked for one while it ran.
+let revalidation: Promise<void> | null = null;
+let revalidateAgain = false;
+
 // Writes are refused synchronously, before the first await, until the locks have been checked; a refused
 // flush is retried on the flusher's next tick, so the commits it carried are only delayed.
-async function beginRevalidation(): Promise<void> {
+//
+// pageshow and resume can both fire for one restore, or a second restore can come while the first check is
+// still waiting on the browser. Checks never overlap - two would re-request the same lock against each other -
+// and the flag stays set until the last one is done: a restore during a check runs the check once more after
+// it, since what the first one saw may already be out of date.
+function beginRevalidation(): Promise<void> {
+    if (revalidation) {
+        revalidateAgain = true;
+        return revalidation;
+    }
     if (heldLocks.size === 0) {
-        return;
+        return Promise.resolve();
     }
     revalidating = true;
-    try {
-        await revalidateLocks();
-    } finally {
-        revalidating = false;
-    }
+    revalidation = (async () => {
+        try {
+            do {
+                revalidateAgain = false;
+                await revalidateLocks();
+            } while (revalidateAgain);
+        } finally {
+            revalidating = false;
+            revalidation = null;
+        }
+    })();
+    return revalidation;
 }
 
 // Whether this context can write OPFS files. createWritable() is the only write API available on

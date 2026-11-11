@@ -24,6 +24,14 @@ public sealed class BlazeDbFileStorage : IBlazeDbEnumerableStorage, IDisposable
     private bool _disposed;
 
     /// <summary>
+    /// Set when the directory could not be flushed after a file in it was created or replaced (see
+    /// <see cref="BlazeDbDirectorySync"/>), until a later flush succeeds. While it is set the new names may
+    /// still be lost to a power loss - the manifest a checkpoint just swapped in, say - so nothing is deleted:
+    /// the previous generation's files are then what the old manifest would come back naming.
+    /// </summary>
+    private bool _directoryUnsynced;
+
+    /// <summary>
     /// Opens <paramref name="directory"/> for writing, creating it when missing, and takes its
     /// writer lock.
     /// </summary>
@@ -118,7 +126,10 @@ public sealed class BlazeDbFileStorage : IBlazeDbEnumerableStorage, IDisposable
         // The new contents are on disk, but on Unix the rename that put them under this name is not until
         // the directory is flushed - and a checkpoint deletes the previous generation's files right after
         // replacing the manifest, so a lost rename could leave a manifest that names files no longer there.
-        BlazeDbDirectorySync.Flush(_directory);
+        // A failed flush does not fail this write: the file is already in place under its name, and a caller
+        // that took the failure to mean otherwise would clean up a file the live manifest may name. It stops
+        // deletes instead (see DeleteAsync), which is what keeps the previous generation on disk.
+        SyncDirectory();
     }
 
     public async ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
@@ -131,23 +142,54 @@ public sealed class BlazeDbFileStorage : IBlazeDbEnumerableStorage, IDisposable
             await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
             stream.Flush(flushToDisk: true);
         }
-        if (created)
+        if (created || _directoryUnsynced)
         {
             // A generation's log is created by its first append; its name has to be as durable as the
-            // records in it, or a power loss could leave the records on disk under no name at all.
-            BlazeDbDirectorySync.Flush(_directory);
+            // records in it, or a power loss could leave the records on disk under no name at all. A flush
+            // that failed before is tried again here.
+            SyncDirectory();
         }
     }
 
     public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
+        if (_directoryUnsynced)
+        {
+            // Throws while the directory still cannot be flushed: the checkpoint that is about to delete its
+            // previous generation fails or keeps those files for the next attempt, rather than leave a
+            // manifest that a power loss could revert to naming files that are gone.
+            try
+            {
+                BlazeDbDirectorySync.Flush(_directory);
+            }
+            catch (IOException ex)
+            {
+                throw new IOException(
+                    $"'{name}' was not deleted: the directory's latest changes could not be made durable, and a power " +
+                    "loss could undo them and leave a manifest that still names this file.", ex);
+            }
+            _directoryUnsynced = false;
+        }
         var path = PathOf(name);
         if (File.Exists(path))
         {
             File.Delete(path);
         }
         return default;
+    }
+
+    private void SyncDirectory()
+    {
+        try
+        {
+            BlazeDbDirectorySync.Flush(_directory);
+            _directoryUnsynced = false;
+        }
+        catch (IOException)
+        {
+            _directoryUnsynced = true;
+        }
     }
 
     public ValueTask<IReadOnlyCollection<string>> ListAsync(CancellationToken cancellationToken = default)

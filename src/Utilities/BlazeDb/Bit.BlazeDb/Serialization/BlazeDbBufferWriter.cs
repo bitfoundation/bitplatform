@@ -30,7 +30,7 @@ public sealed class BlazeDbBufferWriter
 
     /// <summary>
     /// Set on the writers a snapshot or an export encodes rows with. A write refuses a row it could not read back
-    /// as written (see <see cref="WriteString"/> and <see cref="RejectNull"/>), so such a row never reaches the log.
+    /// as written (see <see cref="WriteString(string)"/> and <see cref="RejectNull"/>), so such a row never reaches the log.
     /// A snapshot encodes whatever memory holds, though, and a row changed in place after its write was refused -
     /// an EF Core entity whose save failed is still the table's row object - must not make every later checkpoint
     /// fail, and with it compaction: memory is then stored the way it was before these checks existed.
@@ -159,7 +159,16 @@ public sealed class BlazeDbBufferWriter
     /// The write is refused instead.
     /// </summary>
     /// <exception cref="BlazeDbException">The string holds an unpaired surrogate.</exception>
-    public void WriteString(string value)
+    public void WriteString(string value) => WriteString(value, table: null, property: null);
+
+    /// <summary>
+    /// <see cref="WriteString(string)"/> for <paramref name="property"/> of <paramref name="table"/>: called by
+    /// generated row and key writers, so a refused string is reported with the column it was meant for.
+    /// Not meant to be called by application code.
+    /// </summary>
+    /// <exception cref="BlazeDbException">The string holds an unpaired surrogate.</exception>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void WriteString(string value, string? table, string? property)
     {
         if (Lenient)
         {
@@ -177,8 +186,11 @@ public sealed class BlazeDbBufferWriter
         }
         catch (EncoderFallbackException ex)
         {
+            var subject = property is null
+                ? "A string to be stored"
+                : $"Property '{property}' of table '{table}'";
             throw new BlazeDbException(
-                $"A string to be stored holds an unpaired UTF-16 surrogate at index {ex.Index}, so it is not valid text " +
+                $"{subject} holds an unpaired UTF-16 surrogate at index {ex.Index}, so it is not valid text " +
                 "and could not be read back as written. Repair or drop the broken character before writing it.", ex);
         }
         WriteVarUInt((ulong)byteCount);
