@@ -42,11 +42,89 @@ public sealed class BinkLayer
     private readonly Dictionary<Guid, int> _positions = new();
     private int _indexedUpTo;
 
-    internal BinkLayer(Guid id, BinkLayerProperties properties, IEnumerable<BinkElement>? elements)
+    // Each element's order key and the clock of the move that put it there, parallel to _elements. The elements are
+    // always in key order (ties by id), so the stacking order is a function of the keys alone, and two replicas with
+    // the same keys draw the same order whatever order the moves reached them in.
+    private readonly List<string> _keys;
+    private readonly List<long> _clocks;
+
+    internal BinkLayer(Guid id, BinkLayerProperties properties, IEnumerable<BinkElement>? elements, IReadOnlyList<string>? keys = null, IReadOnlyList<long>? clocks = null)
     {
         Id = id;
         Properties = properties;
         _elements = elements is null ? new List<BinkElement>() : new List<BinkElement>(elements);
+        // Keys that are missing or out of order (a file that does not store them, or a corrupt one) are made afresh
+        // from the order of the elements, which is then what they say.
+        bool keyed = keys is not null && keys.Count == _elements.Count && IsOrdered(keys, _elements);
+        _keys = keyed ? new List<string>(keys!) : new List<string>(BinkOrderKey.Spread(_elements.Count));
+        _clocks = keyed && clocks is not null && clocks.Count == _elements.Count ? new List<long>(clocks) : new List<long>(new long[_elements.Count]);
+    }
+
+    /// <summary>Whether keys are valid and increase with the elements' order, ties broken by id.</summary>
+    internal static bool IsOrdered(IReadOnlyList<string> keys, IReadOnlyList<BinkElement> elements)
+    {
+        for (int i = 0; i < keys.Count; i++)
+        {
+            if (!BinkOrderKey.IsValid(keys[i])) return false;
+            if (i > 0 && Precedes(keys[i], elements[i].Id, keys[i - 1], elements[i - 1].Id)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>Whether (key a, id a) sorts before (key b, id b).</summary>
+    internal static bool Precedes(string keyA, Guid idA, string keyB, Guid idB)
+    {
+        int byKey = string.CompareOrdinal(keyA, keyB);
+        return byKey < 0 || (byKey == 0 && idA.CompareTo(idB) < 0);
+    }
+
+    /// <summary>The order key of the element at an index.</summary>
+    internal string KeyAt(int index) => _keys[index];
+
+    /// <summary>The clock of the move that put the element at an index where it is.</summary>
+    internal long ClockAt(int index) => _clocks[index];
+
+    /// <summary>The keys in stacking order.</summary>
+    internal IReadOnlyList<string> Keys => _keys;
+
+    /// <summary>The clocks in stacking order.</summary>
+    internal IReadOnlyList<long> Clocks => _clocks;
+
+    /// <summary>The order key of an element, or null when it is not in the layer.</summary>
+    public string? OrderKeyOf(Guid elementId)
+    {
+        int index = IndexOf(elementId);
+        return index < 0 ? null : _keys[index];
+    }
+
+    /// <summary>
+    /// The key an element inserted at <paramref name="index"/> (of the elements as they are, the element itself not
+    /// among them) would need. Elements sharing a key, which concurrent insertions can make, are kept together, so the
+    /// new key goes after all of the run below it.
+    /// </summary>
+    internal string KeyForIndex(int index, Guid excluded = default)
+    {
+        string? below = null, above = null;
+        for (int i = index - 1; i >= 0 && below is null; i--) if (_elements[i].Id != excluded) below = _keys[i];
+        for (int i = index; i < _elements.Count && above is null; i++)
+        {
+            if (_elements[i].Id == excluded) continue;
+            if (below is null || string.CompareOrdinal(_keys[i], below) > 0) above = _keys[i];
+        }
+        return BinkOrderKey.Between(below, above);
+    }
+
+    /// <summary>The index an element with a key belongs at.</summary>
+    internal int IndexForKey(string key, Guid elementId)
+    {
+        int low = 0, high = _elements.Count;
+        while (low < high)
+        {
+            int mid = (low + high) / 2;
+            if (Precedes(_keys[mid], _elements[mid].Id, key, elementId)) low = mid + 1;
+            else high = mid;
+        }
+        return low;
     }
 
     /// <summary>Unique identifier.</summary>
@@ -97,27 +175,35 @@ public sealed class BinkLayer
         return _positions.TryGetValue(elementId, out index) ? index : -1;
     }
 
-    /// <summary>Inserts an element at an index (clamped by the caller).</summary>
-    internal void InsertAt(int index, BinkElement element)
+    /// <summary>Inserts an element where its key places it, and returns that index.</summary>
+    internal int Insert(BinkElement element, string key, long clock)
     {
+        int index = IndexForKey(key, element.Id);
+        _keys.Insert(index, key);
+        _clocks.Insert(index, clock);
         if (index == _elements.Count && _indexedUpTo == index)
         {
             // Appending, the common case of drawing, keeps the whole index exact.
             _elements.Add(element);
             _positions[element.Id] = index;
             _indexedUpTo = index + 1;
-            return;
+            return index;
         }
         _elements.Insert(index, element);
         _indexedUpTo = Math.Min(_indexedUpTo, index);
+        return index;
     }
 
-    /// <summary>Removes the element at an index.</summary>
-    internal void RemoveAt(int index)
+    /// <summary>Removes the element at an index and returns its key and clock.</summary>
+    internal (string Key, long Clock) RemoveAt(int index)
     {
+        (string key, long clock) = (_keys[index], _clocks[index]);
         _positions.Remove(_elements[index].Id);
         _elements.RemoveAt(index);
+        _keys.RemoveAt(index);
+        _clocks.RemoveAt(index);
         _indexedUpTo = Math.Min(_indexedUpTo, index);
+        return (key, clock);
     }
 
     /// <summary>Replaces the element at an index with another version of the same element.</summary>

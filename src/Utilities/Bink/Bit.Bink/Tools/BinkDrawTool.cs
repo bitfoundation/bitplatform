@@ -1,6 +1,22 @@
 ﻿
 namespace Bit.Bink;
 
+/// <summary>When <see cref="BinkDrawTool"/> turns a stroke into a clean shape.</summary>
+public enum BinkShapeRecognitionMode : byte
+{
+    /// <summary>Strokes stay ink. The default.</summary>
+    Off = 0,
+
+    /// <summary>
+    /// A stroke becomes a shape when the pen rests at its end for <see cref="BinkDrawTool.ShapeHoldDuration"/> before
+    /// lifting, so ink and shapes can be drawn with the same tool.
+    /// </summary>
+    OnHold = 1,
+
+    /// <summary>Every stroke that is close enough to a shape becomes one.</summary>
+    Always = 2,
+}
+
 /// <summary>
 /// The freehand drawing tool. Captures pointer input into a live stroke, draws it on the overlay while the pen is
 /// down, and commits it to the document as one undoable operation when the pointer lifts.
@@ -19,6 +35,9 @@ public class BinkDrawTool : BinkToolBase
     private BinkRect _liveBounds = BinkRect.Empty;
     // Where the browser predicts the pointer is going, in view coordinates, since the last real sample.
     private readonly List<System.Numerics.Vector2> _prediction = new(4);
+    // Where, in view coordinates, and since when the pointer has stayed within a few pixels: the hold that asks for a shape.
+    private System.Numerics.Vector2 _restingAt;
+    private double _restingSince;
 
     /// <inheritdoc />
     public override string Id => "draw";
@@ -44,8 +63,45 @@ public class BinkDrawTool : BinkToolBase
     /// </summary>
     public float SimplifyPressureTolerance { get; set; } = 0.04f;
 
+    /// <summary>
+    /// The length, in CSS pixels, of the string a stabilizer pulls the ink along by: the ink follows the pointer only
+    /// once it is farther away than this, so tremor smaller than the string never reaches it. Zero, the default, turns
+    /// the stabilizer off. Measured on screen, so it feels the same at every zoom.
+    /// </summary>
+    /// <remarks>
+    /// Sixteen to forty pixels suits slow, deliberate work: lettering, tracing, signatures on a trackpad. The ink
+    /// trails the pointer by up to the string's length while drawing and is finished to where the pen lifts. Pointer
+    /// prediction is not drawn while it is on, since predicting ahead of a deliberately trailing line defeats it. See
+    /// <see cref="BinkStrokeBuilder.StabilizerRadius"/>.
+    /// </remarks>
+    public float Stabilization { get; set; }
+
     /// <summary>Whether a pen's eraser button switches this tool to erasing for the duration of the stroke.</summary>
     public bool HonorPenEraserButton { get; set; } = true;
+
+    /// <summary>
+    /// Whether a stroke is turned into the clean shape it resembles (a line, an arrow, a rectangle, an ellipse, a
+    /// triangle, a diamond or a polygon) when the pen lifts. Off by default.
+    /// </summary>
+    /// <remarks>
+    /// The stroke is committed first and replaced by the shape in a second step, so one undo brings the ink back.
+    /// The shape takes the brush's colour, opacity and blend mode, and the width the stroke was drawn at on average.
+    /// Strokes of a pixel eraser are never recognized. <see cref="ShapeRecognitionOptions"/> sets what may be
+    /// recognized and how closely a stroke has to match.
+    /// </remarks>
+    public BinkShapeRecognitionMode ShapeRecognition { get; set; }
+
+    /// <summary>What <see cref="ShapeRecognition"/> recognizes and how strictly.</summary>
+    public BinkShapeRecognizerOptions ShapeRecognitionOptions { get; set; } = BinkShapeRecognizerOptions.Default;
+
+    /// <summary>
+    /// How long the pen has to rest, within a few pixels, at the end of a stroke before lifting for
+    /// <see cref="BinkShapeRecognitionMode.OnHold"/> to turn it into a shape. Default half a second.
+    /// </summary>
+    public TimeSpan ShapeHoldDuration { get; set; } = TimeSpan.FromMilliseconds(500);
+
+    /// <summary>How far, in CSS pixels, the pointer may drift while it rests for <see cref="ShapeHoldDuration"/>.</summary>
+    private const float RestRadius = 4f;
 
     /// <summary>The brush used for the current stroke (the context brush, or the eraser when the pen is flipped).</summary>
     protected BinkBrush? ActiveBrush { get; private set; }
@@ -60,11 +116,15 @@ public class BinkDrawTool : BinkToolBase
         BinkBrush brush = SelectBrush(context, sample);
         ActiveBrush = brush;
         _targetLayerId = context.ActiveLayerId;
+        float zoom = context.Viewport.Zoom;
+        _builder.StabilizerRadius = Stabilization > 0 && float.IsFinite(Stabilization) && zoom > 0 ? Stabilization / zoom : 0f;
         _builder.Begin(sample, brush, context.Viewport.ViewToDocument);
         _liveGeometry = null;
         _lastGeometryCount = -1;
         _prediction.Clear();
         _liveBounds = BinkRect.Empty;
+        _restingAt = sample.Position;
+        _restingSince = sample.Timestamp;
         context.CapturePointer(sample.PointerId);
         context.InvalidateOverlay();
         return true;
@@ -89,13 +149,14 @@ public class BinkDrawTool : BinkToolBase
         {
             // A prediction is drawn, never stored: it extends the live stroke to where the pen probably is by the
             // time the frame reaches the screen, hiding a frame of latency, and the next real sample replaces it.
-            if (!UsePrediction) return;
+            if (!UsePrediction || _builder.StabilizerRadius > 0) return;
             _prediction.Add(sample.Position);
             context.InvalidateOverlay();
             return;
         }
         bool hadPrediction = _prediction.Count > 0;
         _prediction.Clear();
+        TrackRest(sample);
         if (_builder.Add(sample) || hadPrediction) context.InvalidateOverlay();
     }
 
@@ -117,14 +178,113 @@ public class BinkDrawTool : BinkToolBase
         ArgumentNullException.ThrowIfNull(context);
         if (!_builder.IsActive || sample.PointerId != _builder.PointerId) return;
         context.ReleasePointer(sample.PointerId);
+        TrackRest(sample);
+        bool held = sample.Timestamp - _restingSince >= ShapeHoldDuration.TotalMilliseconds;
         BinkStrokePoints points = _builder.End(sample);
         BinkBrush brush = ActiveBrush ?? context.Brush;
         ActiveBrush = null;
         _liveGeometry = null;
         _lastGeometryCount = -1;
         _prediction.Clear();
-        CommitStroke(context, points, brush);
+        bool recognize = ShapeRecognition == BinkShapeRecognitionMode.Always || (ShapeRecognition == BinkShapeRecognitionMode.OnHold && held);
+        if (!recognize) CommitStroke(context, points, brush);
+        else if (CommitWatching(context, points, brush) is { } committed) ReplaceWithShape(context, committed, points, brush);
         context.InvalidateOverlay();
+    }
+
+    /// <summary>
+    /// Runs <see cref="CommitStroke"/> and returns the stroke it added to the document, read from the change it made,
+    /// so an override that adds the stroke itself, without calling the base, still has it recognized as a shape.
+    /// </summary>
+    private BinkStroke? CommitWatching(IBinkToolContext context, BinkStrokePoints points, BinkBrush brush)
+    {
+        BinkDocument document = context.Document;
+        BinkStroke? added = null;
+        void OnChanged(object? sender, BinkDocumentChangedEventArgs e)
+        {
+            if (added is null && e.Origin == BinkChangeOrigin.Local) added = AddedStroke(e.Operation);
+        }
+        document.Changed += OnChanged;
+        try
+        {
+            CommitStroke(context, points, brush);
+        }
+        finally
+        {
+            document.Changed -= OnChanged;
+        }
+        return added;
+    }
+
+    private static BinkStroke? AddedStroke(BinkDrawingOperation operation)
+    {
+        switch (operation)
+        {
+            case BinkAddElementOperation { Element: BinkStroke { IsEraser: false } stroke }:
+                return stroke;
+            case BinkBatchOperation batch:
+                foreach (BinkDrawingOperation inner in batch.Operations)
+                {
+                    if (AddedStroke(inner) is { } found) return found;
+                }
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    private void TrackRest(in BinkInputSample sample)
+    {
+        if (System.Numerics.Vector2.DistanceSquared(sample.Position, _restingAt) <= RestRadius * RestRadius) return;
+        _restingAt = sample.Position;
+        _restingSince = sample.Timestamp;
+    }
+
+    /// <summary>
+    /// Recognizes a committed stroke as a shape and, when it is one, replaces it in a step of its own, so one undo
+    /// returns the ink.
+    /// </summary>
+    private void ReplaceWithShape(IBinkToolContext context, BinkStroke stroke, BinkStrokePoints points, BinkBrush brush)
+    {
+        if (!context.Document.TryGetElement(stroke.Id, out _, out BinkLayer? layer)) return;
+        BinkElement? shape = RecognizeShape(context, points, brush);
+        if (shape is null) return;
+        int index = layer.IndexOf(stroke.Id);
+        Guid layerId = layer.Id;
+        bool replaced = TryApply(context, () => context.Document.Apply(new BinkBatchOperation(
+            [new BinkRemoveElementOperation(stroke.Id), new BinkAddElementOperation(layerId, shape, index)], "Recognize shape")));
+        if (!replaced) return;
+        context.InvalidateDocument(stroke.Bounds.Union(shape.Bounds));
+        context.Announce($"Drawn as {shape.TypeName.ToLowerInvariant()}.");
+    }
+
+    /// <summary>
+    /// Turns stroke points into the shape element that replaces the stroke, or returns null to keep the ink.
+    /// Override to recognize differently or to style the shape.
+    /// </summary>
+    /// <param name="context">The tool context.</param>
+    /// <param name="points">The stroke's points in document units, before simplification.</param>
+    /// <param name="brush">The brush the stroke was drawn with.</param>
+    protected virtual BinkElement? RecognizeShape(IBinkToolContext context, BinkStrokePoints points, BinkBrush brush)
+    {
+        ArgumentNullException.ThrowIfNull(points);
+        ArgumentNullException.ThrowIfNull(brush);
+        if (brush.BlendMode == BinkBlendMode.DestinationOut) return null;
+        BinkShapeRecognition? recognition = BinkShapeRecognizer.Recognize(points, ShapeRecognitionOptions);
+        if (recognition is null) return null;
+        // The width the stroke was drawn at on average, so a shape drawn heavily stays heavy.
+        float factor = 0f;
+        ReadOnlySpan<float> pressure = points.Pressure;
+        foreach (float p in pressure) factor += brush.PressureCurve.Apply(p);
+        factor = pressure.Length > 0 ? factor / pressure.Length : 1f;
+        var style = new BinkShapeStyle
+        {
+            StrokeColor = brush.Color,
+            StrokeWidth = MathF.Max(brush.Width * factor, 0.5f),
+            Opacity = brush.Opacity,
+            BlendMode = brush.BlendMode,
+        };
+        return recognition.CreateElement(style);
     }
 
     /// <summary>Creates and adds the stroke element. Override to attach metadata or post-process points.</summary>

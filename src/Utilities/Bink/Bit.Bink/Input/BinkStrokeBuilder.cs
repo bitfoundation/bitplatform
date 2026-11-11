@@ -25,6 +25,8 @@ public sealed class BinkStrokeBuilder
     private double _startTime;
     private Vector2 _lastRaw;
     private Vector2 _lastStored;
+    // Where the stabilizer's string pulls the ink to: the pointer's position, lagging by up to StabilizerRadius.
+    private Vector2 _pulled;
     private float _lastPressure;
     private double _lastTime;
     private float _speed;
@@ -61,6 +63,20 @@ public sealed class BinkStrokeBuilder
     /// <summary>Whether the active stroke has received real pressure values.</summary>
     public bool HasRealPressure => _hasRealPressure;
 
+    /// <summary>
+    /// The length, in document units, of the "string" the ink is pulled along by; zero, the default, turns it off.
+    /// </summary>
+    /// <remarks>
+    /// With a stabilizer the ink does not follow the pointer itself but a point the pointer pulls behind it on a
+    /// string of this length: it moves only once the pointer is farther away than that, and then only as far as keeps
+    /// the string taut. Wobbles smaller than the string never reach the ink, so slow, careful lines come out smooth
+    /// whatever the hand does, at the cost of the ink trailing the pointer by up to the string's length. When the
+    /// pointer lifts, the stroke is finished to where it lifted. It is applied before <see cref="BinkBrush.Smoothing"/>,
+    /// which still evens out what remains. Set it before <see cref="Begin"/>; a change during a stroke applies from the
+    /// next sample.
+    /// </remarks>
+    public float StabilizerRadius { get; set; }
+
     /// <summary>Starts a stroke.</summary>
     /// <param name="sample">The pointer-down sample (view coordinates).</param>
     /// <param name="brush">The brush.</param>
@@ -83,6 +99,7 @@ public sealed class BinkStrokeBuilder
         Vector2 p = Vector2.Transform(sample.Position, viewToDocument);
         _lastRaw = p;
         _lastStored = p;
+        _pulled = p;
         float pressure = EffectivePressure(sample, 0f);
         _lastPressure = pressure;
         _points.Add(MakePoint(p, pressure, sample));
@@ -105,6 +122,22 @@ public sealed class BinkStrokeBuilder
         if (dt > 0) _lastTime = sample.Timestamp;
 
         float pressure = EffectivePressure(sample, _speed);
+
+        // Stabilizer: the ink follows a point the pointer pulls along on a string, which moves only once the string
+        // is taut. Speed and pressure above still come from the pointer itself.
+        float radius = StabilizerRadius;
+        if (radius > 0 && float.IsFinite(radius))
+        {
+            Vector2 pull = raw - _pulled;
+            float length = pull.Length();
+            if (length > radius) _pulled += pull * ((length - radius) / length);
+            raw = _pulled;
+        }
+        else
+        {
+            // Kept with the pointer, so a stabilizer turned on during the stroke pulls from where it is now.
+            _pulled = raw;
+        }
 
         // Streamline: pull the new point toward the previous stored point.
         float t = 1f - Math.Clamp(_brush.Smoothing, 0f, 0.95f);
@@ -140,7 +173,15 @@ public sealed class BinkStrokeBuilder
         if (!IsActive) return BinkStrokePoints.Empty;
         Vector2 raw = Vector2.Transform(sample.Position, _viewToDocument);
         float pressure = _points.Count > 0 ? _points.Last.Pressure : EffectivePressure(sample, _speed);
-        if (_points.Count > 1)
+        if (StabilizerRadius > 0 && float.IsFinite(StabilizerRadius))
+        {
+            // A stabilized stroke trails the pointer on purpose, so it is finished with a segment to where it lifted;
+            // moving its last point there would bend it. That includes a stroke still within the string, which has
+            // stored only its first point: a short dash or the bar of a t would otherwise be a dot. The spacing that
+            // thins the samples along the way does not apply: the lift is where the stroke ends, however close.
+            if (_points.Count > 0 && Vector2.Distance(raw, _points.Last.Position) > BinkGeometryMath.Epsilon) _points.Add(MakePoint(raw, pressure, sample));
+        }
+        else if (_points.Count > 1)
         {
             BinkPoint last = _points.Last;
             // Only snap when the lift position is reasonably close; a wild final sample would create a spike.
