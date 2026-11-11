@@ -86,8 +86,9 @@
 
     @* The error line sits right under the items, the way it sits right under the control of every other input; the
        description stays where it is, under the label. It carries no live role of its own - the region at the end of
-       the component is what announces it, so it is never read out twice. *@
-    @if (HasErrorMessage)
+       the component is what announces the app's message, so it is never read out twice. The messages of the
+       EditContext (ShowValidationMessage) take the same line while the app has none of its own. *@
+    @if (HasErrorLine)
     {
         <div id="@_errorId" style="@Styles?.ErrorMessageContainer" class="bit-chg-erm @Classes?.ErrorMessageContainer">
             @if (ErrorMessageTemplate is not null)
@@ -96,7 +97,7 @@
             }
             else
             {
-                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@(HasErrorMessage ? ErrorMessage : ShownValidationMessage)</span>
             }
         </div>
     }

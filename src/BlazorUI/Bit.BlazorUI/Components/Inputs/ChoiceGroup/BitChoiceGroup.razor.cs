@@ -115,8 +115,9 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about - a server that refused the choice, a rule spanning
-    /// two fields. A ChoiceGroup inside an <c>EditForm</c> already gets its messages from the cascading EditContext
-    /// through the <c>ValidationMessage</c> component.
+    /// two fields. A ChoiceGroup inside an <c>EditForm</c> already gets its messages from the cascading EditContext,
+    /// which <see cref="ShowValidationMessage"/> shows in this same place - giving way to this message while it is
+    /// set - or the <c>ValidationMessage</c> component shows wherever the page puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -275,6 +276,21 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
+
+    /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations or
+    /// those of any other validator of the form - under the items, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside the group. The group references them
+    /// through its aria-describedby attribute, so they are read out whenever the group is entered.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through the live region of the group: a submit
+    /// validates every field of the form at once, and a message from each of them read out in a row would bury the
+    /// form under its own errors - the group that takes the focus says what is wrong with it. A ChoiceGroup that
+    /// validates nothing (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     /// <summary>
     /// The size of the BitChoiceGroup.
@@ -612,14 +628,17 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
     // The error line joins it the same way, after the description: they are read in the order they sit on the page,
     // the description under the label and the error line under the items. A label stands in for an error template,
-    // which may well be a bare icon with no text to describe the group with at all.
+    // which may well be a bare icon with no text to describe the group with at all. The forced state's label gives
+    // way to a message of the EditContext on screen, which is the text the reader can see.
     private string? GetAriaDescribedBy()
     {
         var describedBy = string.Join(' ', new[]
         {
             GetSplattedAttribute("aria-describedby"),
             HasDescription ? _descriptionId : null,
-            HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
+            HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                : HasErrorLine ? _errorId
+                : null,
         }.Where(id => id.HasValue()));
 
         return describedBy.HasValue() ? describedBy : null;
@@ -629,6 +648,13 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Whether the group carries a visible error message, which is what the error line is rendered for.
     /// </summary>
     private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
+
+    // The messages of the EditContext the error line shows (ShowValidationMessage), which only take it while the app
+    // has no message of its own there. They mark nothing themselves: the EditContext already has.
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    // Whether the error line under the items is rendered, for the app's own message or for the EditContext's.
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
 
     /// <summary>
     /// Whether the app itself has rejected the choice of the group, by the flag or by a message saying why.

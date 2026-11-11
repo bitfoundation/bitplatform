@@ -28,7 +28,7 @@ public abstract class WebOtpTestsBase : AppTestBase
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
         var sms = await mcp.WaitForHangfireJob(phoneNumber, textedBefore, cancellationToken);
-        await Playwright.SendAndroidSms(sms.Argument(1)!, sms.Argument(2)!);
+        await Playwright.SendAndroidSms(sender: "5550100", text: sms.Argument(1)!);
         await Playwright.TapAndroidButton("Allow");
 
         await Expect(page).Not.ToHaveURLAsync(new Regex(Regex.Escape(PageUrls.SignIn), RegexOptions.IgnoreCase));
