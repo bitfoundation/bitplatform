@@ -424,8 +424,13 @@ have taken requests, so a failure from then on leaves the database ahead and und
   follows it. Add one cache rule for the environment's hostnames, next to the zone's existing rules: eligible for
   cache, edge TTL `bypass_by_default` (`respect_origin` follows `Cache-Control` too, but also keeps a response that
   has none), browser TTL `respect_origin` (the zone's default of 4 hours would raise a shorter `max-age`), and Vary,
-  which the free plan has too now, with `accept-encoding`, `origin` and `x-origin` on `normalize` and `bypass` as its
-  default. Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
+  which the free plan has too now, with `accept-encoding` and `x-origin` on `normalize`, and `normalize` as its default
+  too. Not `origin`: Cloudflare refuses it there, and already keys every cached response on the request's `Origin`. And
+  not the `bypass` default Cloudflare suggests: a response whose `Vary` names a header the rule doesn't list is then
+  never cached, and the static files' `Vary: Content-Encoding` and the app's `Vary: Origin` are such headers, so every
+  `_framework` file would come from the server on every visit. Check it with a versioned file under `_framework`
+  requested twice: the second answer is `cf-cache-status: HIT`.
+  Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
   it. Add that one too, for a `User-Agent` containing `Lighthouse`, `Google`, `bingbot` or `BingPreview`: the app gives them a page without its
   scripts, and from the edge they would get the visitors' page instead.
 - Create the Access applications and policies for SSH through the tunnel (section 2), for the dashboard and DbGate
