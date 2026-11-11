@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- A Blazor WebAssembly app that downloads the AI package only when its chat opens, the way the Trimming page's
+         "Lazy-loading the AI package" section tells an app to: Bit.BlazorUI.AI and Bit.BlazorUI.AI.Core are
+         BlazorWebAssemblyLazyLoad assemblies, and so is Bit.BlazorUI.Tests.Trimming.LazyAi.Chat, the library holding the
+         page that renders BitAiChat. Nothing of the AI packages is registered at startup - Program.cs names none of their
+         types, which would load them there - and the page hands the chat its session itself. It runs with the lazy
+         scripts, so no script tag of the packages loads the AI scripts at startup either.
+
+         Bit.BlazorUI.Tests.Trimming publishes it (LazyAiTrimmingTests) and runs it in a browser: nothing of the AI
+         assemblies is requested before the chat opens, and once it does the chat answers, styled, its scripts imported
+         and its glyph font loaded. It also measures what the package costs such an app (TrimmedSizeReportTests). -->
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <LangVersion>14</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <!-- The trim warnings stay hidden, as the Blazor WebAssembly SDK has them by default: the packages' own fail
+             Bit.BlazorUI.Tests.Consumer's publish already, and an app with lazy assemblies is warned of the framework's
+             own (LazyAssemblyLoader.LoadAssembliesAsync is RequiresUnreferencedCode, as ILLink cannot know what an
+             assembly it never saw needs - here it trims the lazy ones along with the app, as it does every reference). -->
+        <BitBlazorUILazyScripts>true</BitBlazorUILazyScripts>
+    </PropertyGroup>
+
+    <!-- The assemblies downloaded only when the chat opens: the components, the core they build on, and the app's own
+         library with the page that renders them. Their file names in the publish are .wasm (webcil). -->
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.Core.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\Bit.BlazorUI.Tests.Trimming.LazyAi.Chat\Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.csproj" />
+    </ItemGroup>
+
+    <!-- The consumer-side targets NuGet imports from the packages, imported by hand since the projects are referenced. -->
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\buildTransitive\Bit.BlazorUI.AI.targets" />
+
+</Project>

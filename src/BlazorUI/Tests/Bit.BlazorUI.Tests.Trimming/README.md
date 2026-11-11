@@ -32,6 +32,15 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
 runs it: every built-in `BitAiEvent` and a request round-trip through the AI package's wire format, with no trim or AOT
 warning from the packages. The native AOT one is inconclusive on a machine without the platform linker.
 
+`LazyAiTrimmingTests` publishes `Bit.BlazorUI.Tests.Trimming.LazyAi`, a trimmed Blazor WebAssembly app with the lazy
+scripts whose chat is lazy-loaded the way the Trimming page's "Lazy-loading the AI package" section sets it up:
+`Bit.BlazorUI.AI`, `Bit.BlazorUI.AI.Core` and `Bit.BlazorUI.Tests.Trimming.LazyAi.Chat` (the library holding the chat's
+page) are `BlazorWebAssemblyLazyLoad` assemblies, and nothing of the AI packages is registered at startup. It checks the
+boot configuration lists them as lazy, that the publish still keeps the chat's stylesheets, modules, boot module,
+initializer and glyph font, and - with `RUN_BROWSER_TESTS=1` - that the app starts without downloading any of the AI
+assemblies, modules or font, and that once the chat opens they come, the chat is styled and answers, and its copy
+button draws its glyph and reaches its script.
+
 `LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
 instead of the bundles, trimmed to what the app can reach, and - with `RUN_BROWSER_TESTS=1` - runs them (the WebAssembly
 one through `wwwroot/index.lazy.html`, the host page without the packages' script tags). It also checks that a bundle-mode
@@ -44,10 +53,13 @@ app, a standalone PWA whose own manifest must be left to the SDK.
 
 `TrimmedSizeReportTests` records what the three apps keep: for every bundle the trimming put together (the line it logs,
 `Bit.BlazorUI: {package}/{bundle} -> {kept} of {all} pieces, {trimmed} of {full} bytes`), the pieces and bytes kept of
-the full bundle's, and the size of the Brotli and gzip copies the publish wrote of it. It writes them, with the commit,
+the full bundle's, and the size of the Brotli and gzip copies the publish wrote of it - and, from `LazyAiTrimmingTests`' publish, what the AI
+package costs an app that lazy-loads it, part by part (`lazyAiPackage`: what it downloads as it starts and once the chat
+opens, the figures the Trimming page states). It writes them, with the commit,
 the SDK and the OS, to `trimmed-bundle-sizes.json` in the run's results directory (`--results-directory`, `TestResults`
 beside the test app otherwise), which CI uploads with the TRX. No size fails it: it is there to follow the sizes from
-one run to the next. It reuses the publishes the other classes make, so it costs a run of the whole suite nothing.
+one run to the next. It reuses the publishes the other classes make, so it costs a run of the whole suite nothing. A change that moves the
+AI package's figures much updates the Trimming page's "What it costs" table.
 
 ## Running
 

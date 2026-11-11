@@ -586,6 +586,193 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                 </DocSection>
             </DocSection>
 
+            <DocSection Id="lazy-ai" Title="Lazy-loading the AI package"
+                        Description="A WebAssembly app whose chat is one page among many can download Bit.BlazorUI.AI only when the chat opens.">
+
+                <BitText Element="p">
+                    Blazor WebAssembly downloads a <code>BlazorWebAssemblyLazyLoad</code> assembly only when the app asks
+                    <code>LazyAssemblyLoader</code> for it. The AI assemblies work that way with nothing of the library to
+                    change, as long as nothing the app starts with names one of their types - so the pages rendering the AI
+                    components go in a Razor class library of their own, lazy-loaded with them, and no AI service is
+                    registered at startup.
+                </BitText>
+
+                <DocSection Level="3" Id="lazy-ai-setup" Title="Setting it up">
+                    <BitText Element="p">
+                        In the project you publish, mark the two AI assemblies and the library holding your chat pages as lazy
+                        (their published names end in <code>.wasm</code>), and turn the lazy scripts on, so no script tag
+                        downloads the AI package's script at startup either:
+                    </BitText>
+                    <CodeBox Language="xml">&lt;PropertyGroup>
+    &lt;BitBlazorUILazyScripts>true&lt;/BitBlazorUILazyScripts>
+&lt;/PropertyGroup>
+
+&lt;ItemGroup>
+    &lt;BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
+    &lt;BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.Core.wasm" />
+    &lt;BlazorWebAssemblyLazyLoad Include="MyApp.Chat.wasm" />
+&lt;/ItemGroup></CodeBox>
+                    <BitText Element="p">
+                        Then load them in the router before it routes to a chat page, and hand it the loaded assemblies to
+                        find the page in:
+                    </BitText>
+                    <CodeBox Language="razor">@@using System.Reflection
+@@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@@inject LazyAssemblyLoader AssemblyLoader
+
+&lt;Router AppAssembly="typeof(App).Assembly"
+        AdditionalAssemblies="_lazyLoaded"
+        OnNavigateAsync="OnNavigateAsync">
+    &lt;Found Context="routeData">&lt;RouteView RouteData="routeData" />&lt;/Found>
+    &lt;Navigating>&lt;p>Loading the chat...&lt;/p>&lt;/Navigating>
+&lt;/Router>
+
+@@code {
+    private readonly List&lt;Assembly> _lazyLoaded = [];
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        if (context.Path.Trim('/') == "chat" &amp;&amp; _lazyLoaded.Count == 0)
+        {
+            _lazyLoaded.AddRange(await AssemblyLoader.LoadAssembliesAsync(
+                ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "MyApp.Chat.wasm"]));
+        }
+    }
+}</CodeBox>
+                    <BitText Element="p">
+                        The publish trims the lazy assemblies with the rest of the app, and the stylesheets and scripts of the
+                        AI package are trimmed off what they keep, as they are for any other reference.
+                    </BitText>
+                </DocSection>
+
+                <DocSection Level="3" Id="lazy-ai-services" Title="No services at startup">
+                    <BitText Element="p">
+                        <code>AddBitBlazorUIAIServices</code> is a method of Bit.BlazorUI.AI, so calling it in
+                        <code>Program.cs</code> loads the assembly as the app starts. Register the core's services alone
+                        (<code>AddBitBlazorUIServices</code>) and give the chat, on its page, what the registration would
+                        have given it - nothing of the package has to be registered for its components to render:
+                    </BitText>
+                    <div class="tr-table-wrap">
+                        <table class="tr-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Registered with</th>
+                                    <th scope="col">On the page instead</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row"><code>UseTransport</code> (and <code>UseSseTransport</code>, <code>UseWebSocketTransport</code>), <code>AddTool</code>, <code>UseApprovalPolicy</code>, <code>ConfigureSessions</code></th>
+                                    <td>The chat's <code>Session</code>: <code>new BitAiChatSession(transport, options: ..., tools: new BitAiToolRegistry([...]), approvalPolicy: ...)</code>, over your transport or a <code>new BitAiSseTransport(http, options)</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>ConfigureUi</code></th>
+                                    <td>The chat's <code>UiOptions</code>, or a <code>BitAiOptionsProvider</code> around it</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>ConfigureRenderers</code></th>
+                                    <td>A <code>CascadingValue</code> of a <code>BitAiRendererRegistry</code> around the chat</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>ConfigureGenerativeUi</code></th>
+                                    <td>A <code>CascadingValue</code> of an <code>IBitAiGenerativeUiRegistry</code> around the chat</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>UseTextToSpeech</code>, <code>UseSpeechToText</code></th>
+                                    <td>The chat's <code>Synthesizer</code> and <code>Transcriber</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>AddModels</code></th>
+                                    <td>The <code>Models</code> or <code>Catalog</code> of a <code>BitAiModelSelector</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <CodeBox Language="razor">@@page "/chat"
+@@implements IAsyncDisposable
+@@inject HttpClient Http
+
+&lt;BitAiChat Session="_session" />
+
+@@code {
+    private BitAiChatSession _session = default!;
+
+    protected override void OnInitialized() =>
+        _session = new(new MyTransport(Http), tools: new BitAiToolRegistry([MyTools.Weather]));
+
+    public ValueTask DisposeAsync() => _session.DisposeAsync();
+}</CodeBox>
+                    <BitText Element="p">
+                        Without a renderer registry, everything renders the built-in way; without a generative UI registry, a
+                        component the model names renders the placeholder of an unregistered one.
+                    </BitText>
+                </DocSection>
+
+                <DocSection Level="3" Id="lazy-ai-assets" Title="Its stylesheet and scripts">
+                    <ul>
+                        <li><b>The stylesheet</b> stays linked in the host page: <code>_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css</code>. It is small, trimmed to the components the app can render, and keeps the chat from drawing unstyled for a moment as it opens. A page that would rather fetch it with the chat links it from a <code>&lt;HeadContent&gt;</code> of its own.</li>
+                        <li><b>The glyph font</b> it points at is fetched by the browser only once something draws one of its glyphs.</li>
+                        <li><b>The JavaScript initializer</b> (<code>Bit.BlazorUI.AI.lib.module.js</code>) is still imported as the app starts, with the AI boot module: Blazor lists it whether the assembly is lazy or not, and it costs well under a kilobyte. Every other AI script is imported the first time the chat calls into it, as with any lazy script.</li>
+                        <li><b>In bundle mode</b> the <code>bit.blazorui.ai.js</code> tag downloads the package's whole script at startup. It still works with the assemblies lazy; the lazy scripts are what leave it to the chat.</li>
+                    </ul>
+                </DocSection>
+
+                <DocSection Level="3" Id="lazy-ai-size" Title="What it costs">
+                    <BitText Element="p">
+                        Measured in the trimming suite's app with a lazy-loaded chat (.NET 11, Release, Brotli as the
+                        publish compresses it); its run records the same figures each time, in
+                        <code>trimmed-bundle-sizes.json</code>:
+                    </BitText>
+                    <div class="tr-table-wrap">
+                        <table class="tr-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Part</th>
+                                    <th scope="col">Downloaded</th>
+                                    <th scope="col">Brotli</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Stylesheet (37 of 41 component pieces)</th>
+                                    <td>At startup</td>
+                                    <td>8.2 KB</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Initializer and boot scripts</th>
+                                    <td>At startup</td>
+                                    <td>1.0 KB</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>Bit.BlazorUI.AI.wasm</code></th>
+                                    <td>When the chat opens</td>
+                                    <td>171.8 KB</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>Bit.BlazorUI.AI.Core.wasm</code></th>
+                                    <td>When the chat opens</td>
+                                    <td>120.8 KB</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Script modules (9 kept)</th>
+                                    <td>On first use</td>
+                                    <td>9.2 KB at most</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Glyph font</th>
+                                    <td>On the first glyph</td>
+                                    <td>2.9 KB</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <BitText Element="p">
+                        So about 9 KB as the app starts, and some 300 KB the first time the chat opens, which an app that
+                        loads the package eagerly downloads before its first page renders.
+                    </BitText>
+                </DocSection>
+            </DocSection>
+
             <DocSection Id="urls" Title="URLs, fingerprints and caching"
                         Description="A trimmed file replaces the full one at the same URL, defined from its own content.">
 

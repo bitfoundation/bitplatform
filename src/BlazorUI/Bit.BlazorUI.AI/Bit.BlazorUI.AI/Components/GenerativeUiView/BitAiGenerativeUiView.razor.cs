@@ -30,9 +30,21 @@ public partial class BitAiGenerativeUiView : BitAiComponentBase
 
 
 
-    [Inject] private IBitAiGenerativeUiRegistry _registry { get; set; } = default!;
+    [Inject] private IServiceProvider _services { get; set; } = default!;
+
+    private IBitAiGenerativeUiRegistry? _registeredRegistry;
 
 
+
+    /// <summary>
+    /// The generative UI registry cascaded to this view (a <c>CascadingValue</c> of an
+    /// <see cref="IBitAiGenerativeUiRegistry"/>), if any - which is used in place of the registered one.
+    /// </summary>
+    /// <remarks>
+    /// For a page that registers its components itself: an app that lazy-loads the package
+    /// (<c>BlazorWebAssemblyLazyLoad</c>) registers none at startup, and cascades a registry of its own around the chat.
+    /// </remarks>
+    [CascadingParameter] public IBitAiGenerativeUiRegistry? CascadedRegistry { get; set; }
 
     /// <summary>
     /// Gets or sets the cascading parameters for the generative UI view component.
@@ -87,11 +99,14 @@ public partial class BitAiGenerativeUiView : BitAiComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    // The cascaded registry, else the registered one, else none: a name nothing registered renders the placeholder.
+    private IBitAiGenerativeUiRegistry? Registry => CascadedRegistry ?? (_registeredRegistry ??= _services.GetService(typeof(IBitAiGenerativeUiRegistry)) as IBitAiGenerativeUiRegistry);
+
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
 
-        _component = _registry.Find(Part.ComponentName);
+        _component = Registry?.Find(Part.ComponentName);
 
         // The props are bound again only when there is something new to bind: another part, another registration, or
         // a change of this part since the last binding - a re-render of the message around it changes none of them.

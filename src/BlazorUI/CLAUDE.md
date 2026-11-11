@@ -226,6 +226,13 @@ its own:
   (`BitAiOptionsProvider`, else the registered `BitAiUiOptions`), their `BitAiStrings`, and `RequestRender()` - a
   re-render coalesced to one per frame interval. A component reacting to streamed changes calls that, never
   `StateHasChanged` per token. Every user-facing word goes through `BitAiStrings`.
+- **Nothing of the package has to be registered for a component to render.** A WebAssembly app may lazy-load the AI
+  assemblies (`BlazorWebAssemblyLazyLoad`), and then cannot call `AddBitBlazorUIAIServices` at startup, which would load
+  them there. So a component resolves what the registration gives it optionally (`GetService`, never a required
+  `[Inject]` of an AI service) and falls back to a page-level form: the chat's `Session` and `UiOptions`, a cascaded
+  `BitAiRendererRegistry` or `IBitAiGenerativeUiRegistry`, else the built-in behaviour. `BitAiUnregisteredServicesTests`
+  renders them with the core's services alone, and `LazyAiTrimmingTests` (in the trimming suite) publishes and runs such
+  an app; the Trimming page's "Lazy-loading the AI package" section is where app authors read it.
 - **Its glyphs outside the core font subset come from its own subset** (`Styles/fabric.mdl2.bit.blazoui.ai.scss` and
   `wwwroot/fonts/FabMDL2.4.66.bit.BlazorUI.AI.woff2`), as Extras' `bit-icon-ex` ones do: a core component is handed
   the name as `IconName` plus `bit-icon-ai bit-icon-ai--Name` as its icon class (merged with the app's own classes

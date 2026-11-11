@@ -95,16 +95,21 @@ public abstract class BitAiComponentBase : BitComponentBase
 
     /// <summary>
     /// The renderers this component uses: the cascaded registry (<see cref="CascadedRenderers"/>), else the one registered
-    /// with <c>AddBitBlazorUIAIServices</c> (<see cref="BitAiBuilderUiExtensions.ConfigureRenderers"/>).
+    /// with <c>AddBitBlazorUIAIServices</c> (<see cref="BitAiBuilderUiExtensions.ConfigureRenderers"/>), else none - the
+    /// built-in rendering of everything.
     /// </summary>
+    /// <remarks>
+    /// Nothing of the package has to be registered for a component to render: an app that lazy-loads the assembly
+    /// (<c>BlazorWebAssemblyLazyLoad</c>) cannot call <c>AddBitBlazorUIAIServices</c> at startup, and hands the chat its
+    /// session, its options and its renderers on the page instead.
+    /// </remarks>
     private protected BitAiRendererRegistry Renderers => CascadedRenderers ?? RegisteredRenderers;
 
     private BitAiUiOptions RegisteredOptions => _registeredOptions ??=
         _serviceProvider?.GetService(typeof(BitAiUiOptions)) as BitAiUiOptions ?? BitAiUiOptions.Default;
 
     private BitAiRendererRegistry RegisteredRenderers => _registeredRenderers ??=
-        _serviceProvider?.GetService(typeof(BitAiRendererRegistry)) as BitAiRendererRegistry
-        ?? throw new InvalidOperationException("No BitAiRendererRegistry is registered: call AddBitBlazorUIAIServices at startup, or cascade a registry to the component.");
+        _serviceProvider?.GetService(typeof(BitAiRendererRegistry)) as BitAiRendererRegistry ?? BitAiRendererRegistry.None;
 
 
 
