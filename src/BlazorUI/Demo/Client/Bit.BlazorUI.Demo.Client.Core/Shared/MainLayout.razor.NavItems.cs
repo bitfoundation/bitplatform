@@ -262,6 +262,7 @@ public partial class MainLayout
                         new() { Text = "Forms", Url = "/ai/scenarios/forms" },
                         new() { Text = "Models and usage", Url = "/ai/scenarios/usage" },
                         new() { Text = "Errors and retry", Url = "/ai/scenarios/errors" },
+                        new() { Text = "Streaming from a server", Url = "/ai/scenarios/server" },
                         new() { Text = "Long conversations", Url = "/ai/scenarios/performance" },
                         new() { Text = "Options & theming", Url = "/ai/scenarios/options-theming" },
                     ]

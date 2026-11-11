@@ -6,9 +6,9 @@
              Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
              build and boot the app as Blazor WebAssembly even in Debug. See AppRenderMode.Current. -->
         <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
-        <!-- The demo pages and the sample code they show are string literals, and together they had filled the
-             user-string heap of the assembly, which the compiler caps at 16 MB (error CS8103). This compiler feature
-             emits the long literals into data sections instead, which leaves the heap with room to grow. -->
+        <!-- The demo pages' prose and code samples are string literals, and together they reached the 16 MB the metadata's
+             user string heap can hold (error CS8103). This feature, the one the compiler names for it, emits the
+             literals into the assembly's data section instead, which has no such limit. -->
         <Features>$(Features);experimental-data-section-string-literals</Features>
     </PropertyGroup>
 
@@ -65,7 +65,7 @@
     <Import Project="MSBuild\DemoSharedEnumDocs.targets" />
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />

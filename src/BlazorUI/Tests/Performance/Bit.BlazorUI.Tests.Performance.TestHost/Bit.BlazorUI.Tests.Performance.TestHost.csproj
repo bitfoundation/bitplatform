@@ -20,7 +20,7 @@
       <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
       <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
       <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
-      <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+      <ProjectReference Include="..\..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
       <!-- The performance pages, rendered on the server or in the browser as each test run asks (see App.razor). -->
       <ProjectReference Include="..\Bit.BlazorUI.Tests.Performance.TestHost.Client\Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj" />
     </ItemGroup>

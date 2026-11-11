@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Extensions;
+using Bit.BlazorUI.Demo.Server.Services.AI;
 using Bit.BlazorUI.Demo.Server.Services.Mcp;
+using Microsoft.Extensions.AI;
 
 namespace Bit.BlazorUI.Demo.Server.Startup;
 
@@ -62,6 +64,8 @@ public class Middlewares
 
         app.MapHub<SignalR.AppHub>("/app-hub", options => options.AllowStatefulReconnects = true);
 
+        MapAiServerScenario(app);
+
         app.MapControllers();
 
         app.MapMcp("/mcp");
@@ -103,6 +107,36 @@ public class Middlewares
             .AddInteractiveWebAssemblyRenderMode()
 #endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+    }
+
+    /// <summary>
+    /// The server end of the "Streaming from a server" AI scenario (/ai/scenarios/server): the SSE and WebSocket endpoints of
+    /// Bit.BlazorUI.AI.Server over
+    /// an <see cref="IChatClient"/> pipeline with a function the server runs. The model is the scripted
+    /// <see cref="DemoServerChatClient"/>, never the site's OpenAI client, so the endpoint costs nothing to call; an app
+    /// streams from its own registered chat client the same way.
+    /// </summary>
+    private static void MapAiServerScenario(WebApplication app)
+    {
+        var chatClient = new ChatClientBuilder(new DemoServerChatClient())
+            .UseFunctionInvocation()
+            .Build();
+
+        var chatOptions = new ChatOptions
+        {
+            // Pinned by the server: a browser's request only fills in what is left unset.
+            ModelId = "demo-server-model",
+            MaxOutputTokens = 512,
+            Tools = [AIFunctionFactory.Create(() => DateTimeOffset.UtcNow.ToString("HH:mm:ss 'UTC'"), DemoServerChatClient.ClockFunctionName, "Reads the server's clock.")],
+        };
+
+        app.MapBitAiSse("/api/ai/chat", (request, http, cancellationToken) =>
+            chatClient.StreamBitAiEventsAsync(request, chatOptions, cancellationToken));
+
+        // The same reply over a WebSocket per turn. The endpoint carries no credential, so it leaves the allowed origins
+        // open; one authenticated by cookie lists its own (BitAiWebSocketEndpointOptions.WebSockets).
+        app.MapBitAiWebSocket("/api/ai/ws", (request, http, cancellationToken) =>
+            chatClient.StreamBitAiEventsAsync(request, chatOptions, cancellationToken));
     }
 
     /// <summary>

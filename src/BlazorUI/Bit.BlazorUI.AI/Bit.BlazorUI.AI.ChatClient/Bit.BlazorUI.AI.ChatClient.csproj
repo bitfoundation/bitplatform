@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    The Microsoft.Extensions.AI adapter of the AI packages: an IChatClient's reply as BitAiEvents, a BitAiRequest as chat
+    messages and options, and a transport over an IChatClient. Apart so Microsoft.Extensions.AI, and its release cadence,
+    reach only the apps that use it. It needs no UI and no ASP.NET Core, so a server (with Bit.BlazorUI.AI.Server) and a
+    Blazor Server or Hybrid app (with Bit.BlazorUI.AI) use the same package.
+    -->
+
+    <Import Project="../../../Bit.Build.props" />
+    <!-- Bit.BlazorUI.PackageValidation.props is not imported yet: package validation compares a pack against the last
+         published package, and this one has never been published. Import it once the first release is out. -->
+    <Import Project="../../Bit.BlazorUI.TrimAnalysis.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <!-- See the note in Bit.BlazorUI.csproj: Debug builds only the TFM the demo and tests run on. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazorUI</RootNamespace>
+        <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Description>The Microsoft.Extensions.AI adapter of bit BlazorUI AI: streams an IChatClient's reply as BitAiEvents (text, reasoning, tool calls and results, files, citations, usage), turns a BitAiRequest into chat messages and options, and runs an IChatClient as a transport.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;AI;LLM;Microsoft.Extensions.AI;IChatClient</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.11.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.AI.Core\Bit.BlazorUI.AI.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>

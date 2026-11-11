@@ -1,0 +1,154 @@
+﻿@page "/ai/scenarios/server"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/server"
+            Title="Streaming an AI reply from the server"
+            Keywords="Blazor AI server streaming, IChatClient Blazor, Microsoft.Extensions.AI Blazor, server-sent events AI, WebSocket AI streaming, SignalR AI streaming, BitAiSseTransport, BitAiWebSocketTransport"
+            Description="Stream a Microsoft.Extensions.AI IChatClient reply from an ASP.NET Core server to BitAiChat over server-sent events, a WebSocket or SignalR, with the wire format, the adapter and the transports of bit BlazorUI AI and no mapping written by hand." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Streaming from a server"
+             Lead="The model runs on the server, behind an IChatClient. The browser streams its reply over server-sent events, a WebSocket or SignalR, and neither side maps a thing by hand."
+             GitHubUrl="AI/Scenarios/Server/AiServerScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Microsoft.Extensions.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Server-sent events" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="WebSocket" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Send anything: the demo's server streams the reply from a chat client that calls a function on the server - its clock - before it answers. Switch the transport: each keeps its own conversation.">
+            <DemoExample Title="An IChatClient on the server, BitAiChat in the browser" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideLabel="Transport">
+                    <Aside>
+                        <BitChoiceGroup Label="Transport" TItem="BitChoiceGroupOption<string>" TValue="string" @bind-Value="_transport">
+                            <BitChoiceGroupOption Text="Server-sent events" Value="@Sse" />
+                            <BitChoiceGroupOption Text="WebSocket" Value="@WebSocket" />
+                        </BitChoiceGroup>
+                    </Aside>
+                    <ChildContent>
+                        @* Keyed by the transport, so switching shows the other session's conversation from its start. *@
+                        <BitAiChat @key="_transport"
+                                   Session="Session"
+                                   EmptyTitle="Ask the server"
+                                   EmptyBody="@EmptyBody"
+                                   Suggestions="_suggestions" />
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The reply crosses the network in the package's wire format: each <code>BitAiEvent</code> is one JSON object
+                told apart by its <code>type</code> (<code>"text.delta"</code>, <code>"tool_call.started"</code>, ...), and
+                the request is the transcript as the same message snapshots a saved conversation holds.
+                <code>BitAiWireSerializer</code> reads and writes both, through metadata generated at compile time, so it is
+                safe to trim and to compile ahead of time on both ends. A reader skips what it does not know - a property, or
+                a whole event of a newer type - so a server can be updated before its clients.
+            </p>
+            <ol>
+                <li>
+                    The browser's session hands each request to a <code>BitAiSseTransport</code>, which posts it to the server
+                    and reads the events from the <code>text/event-stream</code> response as they arrive.
+                </li>
+                <li>
+                    <code>MapBitAiSse</code> maps that endpoint. It reads the request back into live messages and streams
+                    whatever its handler produces - here <code>StreamBitAiEventsAsync</code> of the server's
+                    <code>IChatClient</code>, which turns the chat client's updates into events: text, reasoning, the function
+                    call and its result, the usage, the model id and the finish reason.
+                </li>
+                <li>
+                    The function here runs on the server, in the chat client's <code>FunctionInvokingChatClient</code>, and the
+                    browser shows its call and its result. A tool registered in the browser (<code>BitAiRequest.Tools</code>)
+                    is declared to the model without being invocable on the server, so its call comes back to the session,
+                    which runs it and asks again with the result.
+                </li>
+            </ol>
+            <p>
+                The request comes from the browser, so it never overrides the server: the chat options the server passes win,
+                and the request only fills in what they leave unset. Pin the model and the limits on the server. A system
+                prompt the browser sends is dropped, and so is a tool choice forcing a tool it did not declare: the
+                instructions and the server's functions are the server's alone. The endpoints read a JSON body only, so a
+                page of another site cannot post to them as a user signed in by cookie without passing the app's CORS policy.
+                A failure on the server, or an event the wire format cannot write, ends the stream with a terminal error
+                event and a generic message - the exception is logged, never sent. The model behind this page is scripted, so it costs nothing to call; an app registers its provider's
+                chat client instead, and nothing else changes.
+            </p>
+        </DocSection>
+
+        <DocSection Id="packages" Title="Which package goes where">
+            <p>
+                Each end installs only what it runs, so nothing of the server reaches the browser and nothing of the UI reaches
+                the server:
+            </p>
+            <ul>
+                <li>
+                    <b>The Blazor app</b> installs <code>Bit.BlazorUI.AI</code>, which brings <code>Bit.BlazorUI.AI.Core</code>
+                    with the SSE and WebSocket transports. <code>Bit.BlazorUI.AI.SignalR</code> adds the SignalR transport,
+                    and <code>Bit.BlazorUI.AI.ChatClient</code> an <code>IChatClient</code> called right where the components
+                    run (Blazor Server, Hybrid).
+                </li>
+                <li>
+                    <b>The server</b> installs <code>Bit.BlazorUI.AI.Server</code> - the SSE and WebSocket endpoints, the hub,
+                    the approval broker - and <code>Bit.BlazorUI.AI.ChatClient</code> to stream an <code>IChatClient</code>'s
+                    reply. Neither has a component, a stylesheet or a script.
+                </li>
+            </ul>
+        </DocSection>
+
+        <DocSection Id="websocket" Title="Over a WebSocket">
+            <p>
+                <code>MapBitAiWebSocket</code> maps the same handler on a WebSocket endpoint, and <code>UseWebSocketTransport</code>
+                (or a <code>BitAiWebSocketTransport</code>) opens one socket per reply to it: the request goes up as the first
+                message, the events come down one message each, and the server closes the socket after the last one. Stopping
+                the reply closes the socket, which cancels the handler. The address has to be absolute - the transport takes
+                the app's <code>http</code> or <code>https</code> base address and speaks <code>ws</code> or <code>wss</code>.
+            </p>
+            <p>
+                What it adds is the way back: a decision on a tool call the server holds goes up the very socket the call came
+                down on, so it reaches the server instance holding the call without sticky sessions, and only that client can
+                answer it. A browser sends its cookies with a WebSocket from any page and CORS does not apply, so an endpoint
+                authenticated by cookie lists the origins it serves (<code>BitAiWebSocketEndpointOptions.WebSockets</code>).
+            </p>
+        </DocSection>
+
+        <DocSection Id="signalr" Title="Over SignalR">
+            <p>
+                The same reply streams over a SignalR connection the app already has: derive a hub from
+                <code>BitAiHub</code> and produce the reply in its <code>StreamAsync</code>, then register
+                <code>UseSignalRTransport</code> in the browser with the connection to it. The <b>AiHub.cs</b> tab shows the
+                hub. The request and the events cross the hub as JSON values the package writes itself, so the hub protocol's
+                settings change nothing.
+            </p>
+        </DocSection>
+
+        <DocSection Id="approvals" Title="Approvals the server holds">
+            <p>
+                All three transports implement <code>IBitAiApprovalTransport</code>: when the server streams a
+                <code>BitAiToolApprovalRequestedEvent</code> for a call it runs, the user's decision is sent back - to the
+                endpoint of <code>MapBitAiApprovals</code>, up the WebSocket, or to the hub - and handed to the stream waiting
+                for it through a
+                <code>BitAiApprovalBroker</code> (<code>await approvals.WaitAsync(toolCallId, cancellationToken)</code>), in
+                the same reply. The endpoints and the hub tell the broker about the call before they send its event, so a
+                decision that arrives before the reply gets to <code>WaitAsync</code> is kept for it. The WebSocket and the hub
+                take a decision only on a call their own connection was asked about, and only once.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat surface over the session.</li>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the card of the call the server ran.</li>
+                <li><BitLink Href="/components/ai/reasoningpartview"><code>BitAiReasoningPartView</code></BitLink> - the reasoning the chat client streamed.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

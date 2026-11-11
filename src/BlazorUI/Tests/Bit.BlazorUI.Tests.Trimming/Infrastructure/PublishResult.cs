@@ -43,7 +43,7 @@ public sealed partial class PublishResult(string directory, int exitCode, string
         {
             if (Assets.TryGetValue(package, out var assets)) return assets;
 
-            var folder = Path.Combine(Publisher.Root, package, "obj", "bit-assets");
+            var folder = Path.Combine(Publisher.PackageFolder(package), "obj", "bit-assets");
             Assert.IsTrue(System.IO.Directory.Exists(folder), $"Missing {folder}: the publish should have built {package}.");
             return Assets[package] = PackageAssets.Load(folder);
         }
@@ -126,7 +126,7 @@ public sealed partial class PublishResult(string directory, int exitCode, string
     public AssemblyMetadata ReadTrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Directory, "trimmed", package + ".dll"));
 
     /// <summary>A package's assembly as its Release build wrote it - the one a publish of the source tree trims.</summary>
-    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net11.0", package + ".dll"));
+    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.PackageFolder(package), "bin", "Release", "net11.0", package + ".dll"));
 
     /// <summary>
     /// The JavaScript initializers a Blazor Web App's publish lists for Blazor to import as it starts (its modules manifest),
