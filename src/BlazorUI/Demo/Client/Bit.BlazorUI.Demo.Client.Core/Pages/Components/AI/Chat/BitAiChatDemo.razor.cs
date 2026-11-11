@@ -242,6 +242,13 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "ReadAloudLanguage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The language the replies are read aloud in, as a BCP 47 language tag such as en-US, handed to the IBitAiTextToSpeech service; null leaves it to the service. A Synthesizer reads the language it wants itself. Only used when AllowReadAloud is on.",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",

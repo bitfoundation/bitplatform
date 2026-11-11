@@ -18,6 +18,11 @@ public class BitAiMessageActionsClassStyles
     public BitButtonClassStyles? ReadAloudButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the status of the BitAiMessageActions saying that reading the message aloud failed.
+    /// </summary>
+    public string? ReadAloudStatus { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the regenerate button of the BitAiMessageActions.
     /// </summary>
     public BitButtonClassStyles? RegenerateButton { get; set; }

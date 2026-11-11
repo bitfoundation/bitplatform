@@ -34,10 +34,13 @@ public sealed class BitAiReadAloud : IAsyncDisposable
     private CancellationTokenSource? _cts;
     private BitAiMessage? _message;
     private BitAiMessage? _awaited;
+    private BitAiMessage? _failedMessage;
+    private string? _error;
     private int _handle;
     private int _version;
     private bool _loading;
     private bool _following;
+    private bool _watching;
     private bool _disposed;
 
 
@@ -83,7 +86,8 @@ public sealed class BitAiReadAloud : IAsyncDisposable
 
     /// <summary>
     /// Raised when a reading fails, with the name of what failed: <c>synthesis-failed</c> (the service threw) or
-    /// <c>playback-failed</c> (the browser could not play the audio). The reading is stopped, keep reading with it.
+    /// <c>playback-failed</c> (the browser could not play the audio). The reading is stopped, keep reading with it, and
+    /// the reply it was reading is the <see cref="FailedMessage"/> until another reading starts.
     /// </summary>
     public event Action<string>? Failed;
 
@@ -125,6 +129,18 @@ public sealed class BitAiReadAloud : IAsyncDisposable
     /// <summary>Whether keep reading follows the conversation, reading each reply that finishes.</summary>
     public bool IsFollowing => _following;
 
+    /// <summary>
+    /// The reply whose reading failed last (see <see cref="Failed"/>), until another reading starts or the reading is
+    /// stopped - for the button of that reply to say so.
+    /// </summary>
+    public BitAiMessage? FailedMessage => _failedMessage;
+
+    /// <summary>
+    /// The name of what failed in the reading of the <see cref="FailedMessage"/>: <c>synthesis-failed</c> or
+    /// <c>playback-failed</c>.
+    /// </summary>
+    public string? Error => _error;
+
 
 
     /// <summary>
@@ -133,6 +149,34 @@ public sealed class BitAiReadAloud : IAsyncDisposable
     /// <param name="message">The reply.</param>
     /// <returns>Whether it is the one being read.</returns>
     public bool IsReading(BitAiMessage? message) => message is not null && ReferenceEquals(_message, message);
+
+    /// <summary>
+    /// Whether the reading of the reply is the one that failed last (see <see cref="FailedMessage"/>).
+    /// </summary>
+    /// <param name="message">The reply.</param>
+    /// <returns>Whether its reading failed.</returns>
+    public bool HasFailed(BitAiMessage? message) => message is not null && ReferenceEquals(_failedMessage, message);
+
+    /// <summary>
+    /// Gets the browser ready to play the speech of a reading started from a press: once called, a click of any element
+    /// carrying a <c>data-bit-ai-read-aloud</c> attribute wakes the player in the browser, inside the click itself.
+    /// </summary>
+    /// <remarks>
+    /// A browser plays sound only from a gesture of the user, and mobile Safari only on an element first played inside
+    /// one, while the press reaches .NET - on Blazor Server, a round trip later - only once the gesture is over. So the
+    /// player is woken in the browser as the button is clicked rather than from <see cref="ReadAsync"/>. The actions of a
+    /// reply (<see cref="BitAiMessageActions"/>) carry the attribute and call this as they render; a button of the app's
+    /// own does the same. Only the first call does anything.
+    /// </remarks>
+    /// <returns>A task that completes once the browser listens for the presses.</returns>
+    public async Task PrepareAsync()
+    {
+        if (_watching || _disposed) return;
+
+        _watching = true;
+
+        await SafeAsync(_js.BitAiReadAloudWatch);
+    }
 
     /// <summary>
     /// Stops the reading of the reply when it is the one being read, and reads it otherwise.
@@ -152,8 +196,11 @@ public sealed class BitAiReadAloud : IAsyncDisposable
 
         if (_disposed) return;
 
+        ClearFailure();
+
         // The press asking for the reading is the one moment the browser lets audio start, and the speech arrives a round
-        // trip later: the player is woken here so it can play then.
+        // trip later: the player is woken here so it can play then. Where this call itself arrives after the press (Blazor
+        // Server), a button carrying the attribute PrepareAsync watches for has woken it in the browser already.
         await SafeAsync(_js.BitAiReadAloudPrime);
 
         await StopPlaybackAsync();
@@ -175,7 +222,8 @@ public sealed class BitAiReadAloud : IAsyncDisposable
 
     /// <summary>
     /// Tells the reader that a reply has finished: it is read when it is the one a reading was waiting for, or when keep
-    /// reading follows the conversation.
+    /// reading follows the conversation. Only a reply that finished normally (<see cref="BitAiMessageStatus.Complete"/>)
+    /// is read: one stopped or failed half way is not read out, and a reading waiting for it is over, keep reading with it.
     /// </summary>
     /// <param name="reply">The reply that finished.</param>
     /// <returns>A task that completes once its speech has started playing, or it is clear that nothing will.</returns>
@@ -183,14 +231,29 @@ public sealed class BitAiReadAloud : IAsyncDisposable
     {
         if (_disposed || reply is null || reply.IsBusy || reply.Role != BitAiRole.Assistant) return;
 
+        var complete = reply.Status is BitAiMessageStatus.Complete;
+
         if (ReferenceEquals(_awaited, reply))
         {
             _awaited = null;
-            await PlayAsync(reply);
+
+            if (complete)
+            {
+                await PlayAsync(reply);
+            }
+            else
+            {
+                // The turn the reading waited for was stopped or failed, and the reading goes with it, keep reading
+                // included: nothing of it was read, so nothing would show it as the one to stop.
+                _following = false;
+                _message = null;
+                Notify();
+            }
+
             return;
         }
 
-        if (_following is false || ReferenceEquals(_message, reply)) return;
+        if (_following is false || complete is false || ReferenceEquals(_message, reply)) return;
 
         await StopPlaybackAsync();
 
@@ -208,6 +271,7 @@ public sealed class BitAiReadAloud : IAsyncDisposable
         _following = false;
         _awaited = null;
         _message = null;
+        ClearFailure();
 
         await StopPlaybackAsync();
 
@@ -241,6 +305,8 @@ public sealed class BitAiReadAloud : IAsyncDisposable
     private async Task PlayAsync(BitAiMessage message)
     {
         var version = ++_version;
+
+        ClearFailure();
 
         if (string.IsNullOrWhiteSpace(message.GetText()))
         {
@@ -298,7 +364,7 @@ public sealed class BitAiReadAloud : IAsyncDisposable
                 }
                 else if (handle < 0)
                 {
-                    Fail("playback-failed");
+                    Fail(message, "playback-failed");
                 }
                 else
                 {
@@ -307,11 +373,14 @@ public sealed class BitAiReadAloud : IAsyncDisposable
                 }
             }
         }
-        catch (OperationCanceledException) when (version != _version || cts.IsCancellationRequested) { }
         catch (JSDisconnectedException) { } // the circuit is gone, and the page that would play it with it
-        catch (Exception) when (version == _version && _disposed is false)
+        // A reading superseded, stopped or disposed of is nobody's to fail, whatever its synthesizer threw as its token was
+        // cancelled (an HttpClient may throw an IOException rather than a TaskCanceledException): what is read has moved
+        // on, and the press that started it must not take the exception.
+        catch (Exception) when (version != _version || _disposed || cts.IsCancellationRequested) { }
+        catch (Exception)
         {
-            Fail(synthesized ? "playback-failed" : "synthesis-failed");
+            Fail(message, synthesized ? "playback-failed" : "synthesis-failed");
         }
         finally
         {
@@ -346,13 +415,21 @@ public sealed class BitAiReadAloud : IAsyncDisposable
         if (_following is false) _message = null;
     }
 
-    private void Fail(string error)
+    private void Fail(BitAiMessage message, string error)
     {
         _following = false;
         _awaited = null;
         _message = null;
+        _failedMessage = message;
+        _error = error;
 
         Failed?.Invoke(error);
+    }
+
+    private void ClearFailure()
+    {
+        _failedMessage = null;
+        _error = null;
     }
 
     private void Notify()
@@ -388,6 +465,7 @@ public sealed class BitAiReadAloud : IAsyncDisposable
         _following = false;
         _awaited = null;
         _message = null;
+        ClearFailure();
 
         await StopPlaybackAsync();
 

@@ -20,8 +20,11 @@
 
                 @* Like the dictation button, the name says what a press does next - Read aloud, or Stop reading aloud - and
                    is the one thing announced, so no pressed state is put on top of it. The button stays pressable while the
-                   speech is being synthesized, which is when a user who changed their mind wants to stop it. *@
+                   speech is being synthesized, which is when a user who changed their mind wants to stop it. The
+                   data-bit-ai-read-aloud attribute is what wakes the player in the browser inside the click itself
+                   (BitAiReadAloud.PrepareAsync). *@
                 <BitButton IconName="@(reading ? "StopSolid" : "ReadOutLoud")"
+                           data-bit-ai-read-aloud="true"
                            OnClick="ToggleReadAloudAsync"
                            Disabled="Disabled"
                            Title="@(reading ? Strings.StopReadingAloud : Strings.ReadAloud)"
@@ -79,6 +82,17 @@
                 @ExtraActionsTemplate
             }
         </div>
+
+        @if (_ReadAloud is { } reader)
+        {
+            @* A reading that failed flips the button back, which says nothing of why: the failure is shown, and announced,
+               beside the actions - outside them, since they fade out when the reply is not hovered. The region is on the
+               page from the first render with nothing in it, so the text landing in it is announced. *@
+            <span role="status"
+                  aria-live="polite"
+                  style="@Styles?.ReadAloudStatus"
+                  class="bit-aimac-ras @Classes?.ReadAloudStatus">@(reader.HasFailed(Message) ? Strings.ReadAloudFailed(reader.Error ?? string.Empty) : null)</span>
+        }
     }
 
     @if (Options.ShowModelName && _ModelName is { } model)

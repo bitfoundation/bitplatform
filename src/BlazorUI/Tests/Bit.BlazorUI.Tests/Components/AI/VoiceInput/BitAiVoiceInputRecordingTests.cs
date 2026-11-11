@@ -426,6 +426,62 @@ public class BitAiVoiceInputRecordingTests : BitAiTestBase
     }
 
     [TestMethod]
+    public void DisablingWhileTheMicrophoneIsAskedForThrowsTheRecordingAway()
+    {
+        Context.JSInterop.Setup<bool>(IsRecordingSupported, _ => true).SetResult(true);
+        var start = Context.JSInterop.Setup<int>(StartRecording, _ => true);
+
+        var voice = RenderComponent<BitAiVoiceInput>(p => p.Add(c => c.Transcriber, Transcriber(new())));
+        voice.WaitForElement("button").Click();
+
+        // The permission prompt of the browser is still open: nothing listens yet, so nothing is stopped as it disables.
+        voice.Render(p => p.Add(c => c.Disabled, true));
+        Context.JSInterop.VerifyNotInvoke(StopRecording);
+
+        start.SetResult(7);
+
+        voice.WaitForAssertion(() =>
+        {
+            var stop = Context.JSInterop.VerifyInvoke(StopRecording);
+            Assert.AreEqual(7, (int)stop.Arguments[0]!);
+            Assert.IsFalse((bool)stop.Arguments[1]!);
+        });
+        Assert.IsFalse(voice.Instance.IsListening);
+    }
+
+    [TestMethod]
+    public void TheSpeechApiIsAskedAboutOnceTheTranscriberGoes()
+    {
+        SetUpRecording();
+
+        var voice = RenderComponent<BitAiVoiceInput>(p => p.Add(c => c.Transcriber, Transcriber(new())));
+        voice.WaitForElement("button");
+        Context.JSInterop.VerifyNotInvoke(IsSpeechSupported);
+
+        voice.Render(p => p.Add(c => c.Transcriber, null));
+
+        Context.JSInterop.VerifyInvoke(IsSpeechSupported);
+        voice.WaitForElement("button").Click();
+        Context.JSInterop.VerifyInvoke(StartDictation);
+    }
+
+    [TestMethod]
+    public void TheSpeechApiIsAskedAboutOnceTheModeAsksForIt()
+    {
+        SetUpRecording();
+
+        var voice = RenderComponent<BitAiVoiceInput>(p => p.Add(c => c.Transcriber, Transcriber(new())));
+        voice.WaitForElement("button");
+
+        voice.Render(p => p.Add(c => c.Mode, BitAiDictationMode.Browser));
+
+        Context.JSInterop.VerifyInvoke(IsSpeechSupported);
+        voice.Find("button").Click();
+        Context.JSInterop.VerifyInvoke(StartDictation);
+        Context.JSInterop.VerifyNotInvoke(StartRecording);
+    }
+
+    [TestMethod]
     public async Task DisposingWhileRecordingThrowsTheTakeAway()
     {
         SetUpRecording(handle: 6);

@@ -10,6 +10,20 @@
         private static _owner: DotNetObject | null = null;
         private static _objectUrl: string | null = null;
         private static _listening = false;
+        private static _watching = false;
+
+        // Primes the player inside every click of an element marked data-bit-ai-read-aloud (the Read aloud button of a
+        // reply), in the browser and so inside the gesture itself: the press reaches .NET, which calls prime, only a round
+        // trip later on Blazor Server, by when the browser no longer counts it as the user's.
+        public static watch() {
+            if (AiReadAloud._watching) return;
+
+            AiReadAloud._watching = true;
+            document.addEventListener('click', e => {
+                const target = e.target as Element | null;
+                if (target?.closest?.('[data-bit-ai-read-aloud]')) AiReadAloud.prime();
+            }, true);
+        }
 
         // Wakes the audio element up inside the press that asked for a reading. A browser plays sound only once the user
         // has interacted with the page, and mobile Safari only on an element first played inside a gesture - which the

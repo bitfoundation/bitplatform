@@ -37,6 +37,9 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     // How long before a recording stops on its own the time left is announced, once.
     private static readonly TimeSpan TimeLeftWarning = TimeSpan.FromSeconds(10);
 
+    // The most a recording's buffer is sized for before its bytes arrive: about a minute of Opus.
+    private const int InitialRecordingBuffer = 512 * 1024;
+
     private BitAiIconClassesCache<BitToggleButtonClassStyles> _buttonClasses;
     private int _handle;
     private Engine _engineInUse;
@@ -45,6 +48,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     private bool _transcribing;
     private bool _hasInterim;
     private bool _probed;
+    private bool _speechProbed;
     private bool _speechSupported;
     private bool _recordingProbed;
     private bool _recordingSupported;
@@ -289,8 +293,10 @@ public partial class BitAiVoiceInput : BitAiComponentBase
             try
             {
                 // Read whole before it is handed over, so the transcriber gets a stream it can seek and read at its own
-                // pace, whatever the host streams it from (the circuit, on Blazor Server).
-                using var buffer = new MemoryStream((int)Math.Min(size, int.MaxValue));
+                // pace, whatever the host streams it from (the circuit, on Blazor Server). The size is what the browser
+                // says, which on Blazor Server is the client's word: the buffer grows with the bytes that do arrive
+                // (capped by MaxRecordingSize) rather than being allocated up front from it.
+                using var buffer = new MemoryStream((int)Math.Min(size, InitialRecordingBuffer));
                 await using (var stream = await audio.OpenReadStreamAsync(MaxRecordingSize, cts.Token))
                 {
                     await stream.CopyToAsync(buffer, cts.Token);
@@ -378,10 +384,12 @@ public partial class BitAiVoiceInput : BitAiComponentBase
             await StopAsync();
         }
 
-        // A transcriber supplied after the first render needs to know whether the browser can record.
-        if (_probed && HasTranscriber && _recordingProbed is false && IsDisposing is false)
+        // A transcriber or a mode changed after the first render may need what the browser was not asked about yet: whether
+        // it can record, once there is a transcriber, or whether it has a speech API, once there is none or the mode asks
+        // for it.
+        if (_probed && IsDisposing is false)
         {
-            await ProbeRecordingAsync();
+            await ProbeAsync();
         }
 
         await base.OnParametersSetAsync();
@@ -393,22 +401,7 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
         if (firstRender is false || IsDisposing) return;
 
-        // Only what the mode can use is asked about, so a page dictating through the app's transcriber never loads the
-        // script of the speech API, and one without a transcriber never loads the recorder's.
-        if (HasTranscriber && Mode is not BitAiDictationMode.Browser)
-        {
-            await ProbeRecordingAsync();
-        }
-
-        if (Mode is not BitAiDictationMode.Recording && (CurrentEngine is Engine.None || Mode is BitAiDictationMode.Browser))
-        {
-            _speechSupported = await _js.BitAiVoiceInputIsDictationSupported();
-        }
-
-        if (HasTranscriber && Mode is BitAiDictationMode.Browser && _speechSupported is false)
-        {
-            await ProbeRecordingAsync();
-        }
+        await ProbeAsync();
 
         _probed = true;
 
@@ -442,6 +435,28 @@ public partial class BitAiVoiceInput : BitAiComponentBase
     // has changed since, so it can still be stopped.
     private bool Visible => CurrentEngine is not Engine.None || _listening || _transcribing;
 
+    // Only what the mode can use is asked about, and each once, so a page dictating through the app's transcriber never
+    // loads the script of the speech API, and one without a transcriber never loads the recorder's.
+    private async Task ProbeAsync()
+    {
+        if (HasTranscriber && Mode is not BitAiDictationMode.Browser && _recordingProbed is false)
+        {
+            await ProbeRecordingAsync();
+        }
+
+        if (Mode is not BitAiDictationMode.Recording && _speechProbed is false
+            && (CurrentEngine is Engine.None || Mode is BitAiDictationMode.Browser))
+        {
+            _speechProbed = true;
+            _speechSupported = await _js.BitAiVoiceInputIsDictationSupported();
+        }
+
+        if (HasTranscriber && Mode is BitAiDictationMode.Browser && _speechSupported is false && _recordingProbed is false)
+        {
+            await ProbeRecordingAsync();
+        }
+    }
+
     private async Task ProbeRecordingAsync()
     {
         _recordingProbed = true;
@@ -474,6 +489,15 @@ public partial class BitAiVoiceInput : BitAiComponentBase
             {
                 _handle = await _js.BitAiVoiceInputStartDictation(_dotnetObj, Language, UniqueId);
 
+                // Disabled while the browser asked for the microphone: nothing could stop the dictation now.
+                if (_handle > 0 && Disabled && IsDisposing is false)
+                {
+                    var handle = _handle;
+                    _handle = 0;
+                    await _js.BitAiVoiceInputStopDictation(handle);
+                    return;
+                }
+
                 if (_handle > 0)
                 {
                     _engineInUse = Engine.Speech;
@@ -494,7 +518,9 @@ public partial class BitAiVoiceInput : BitAiComponentBase
 
         var handle = await _js.BitAiVoiceInputStartRecording(_dotnetObj!, max.TotalMilliseconds, silence);
 
-        if (IsDisposing)
+        // Gone, or disabled, while the browser asked for the microphone (OnParametersSetAsync stops only a dictation that
+        // is listening): nothing could stop the recording now, and nothing has been said into it yet, so it is thrown away.
+        if (IsDisposing || Disabled)
         {
             if (handle > 0) await _js.BitAiVoiceInputStopRecording(handle, false);
             return;

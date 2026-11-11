@@ -208,12 +208,28 @@
                 analyser.fftSize = 2048;
                 context.createMediaStreamSource(recording.stream).connect(analyser);
 
+                // A context created outside a gesture of the user - after the await on the microphone, or a round trip
+                // after the press on Blazor Server - starts suspended, and a suspended one reads nothing but silence. The
+                // capture of the microphone is what lets the browser run it (Safari lifts its autoplay rule for a page
+                // capturing), so it is resumed now, and again on a tick that finds it suspended still.
+                const resume = () => {
+                    if (context.state === 'suspended') context.resume().catch(() => { });
+                };
+                resume();
+
                 const frame = new Uint8Array(analyser.fftSize);
                 let heard = false;
                 let quietSince = performance.now();
 
                 recording.audioContext = context;
                 recording.silenceTimer = window.setInterval(() => {
+                    // Nothing is heard while it is not running, so the quiet is not counted either.
+                    if (context.state !== 'running') {
+                        resume();
+                        quietSince = performance.now();
+                        return;
+                    }
+
                     analyser.getByteTimeDomainData(frame);
 
                     let sum = 0;

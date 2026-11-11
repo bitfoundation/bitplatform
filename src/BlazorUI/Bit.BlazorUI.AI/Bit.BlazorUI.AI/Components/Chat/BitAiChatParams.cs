@@ -86,6 +86,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
     public string? Placeholder { get; set; }
 
     /// <summary>
+    /// The language the replies are read aloud in, handed to the text-to-speech service.
+    /// </summary>
+    public string? ReadAloudLanguage { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the chat.
     /// </summary>
     public BitAiChatClassStyles? Styles { get; set; }
@@ -157,6 +162,11 @@ public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
         if (Placeholder.HasValue())
         {
             bitAiChat.TakeFromCascade(nameof(Placeholder), Placeholder, static c => c.Placeholder, static (c, v) => c.Placeholder = v);
+        }
+
+        if (ReadAloudLanguage.HasValue())
+        {
+            bitAiChat.TakeFromCascade(nameof(ReadAloudLanguage), ReadAloudLanguage, static c => c.ReadAloudLanguage, static (c, v) => c.ReadAloudLanguage = v);
         }
 
         if (Styles is not null)

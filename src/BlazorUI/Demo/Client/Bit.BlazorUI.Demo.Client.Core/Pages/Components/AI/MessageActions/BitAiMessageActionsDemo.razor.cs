@@ -96,6 +96,7 @@ public partial class BitAiMessageActionsDemo
         new() { Name = "--bit-AiMessageActions-actions-gap", DefaultValue = "spacing(0.5)", Description = "Room between two action buttons." },
         new() { Name = "--bit-AiMessageActions-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Text of the metadata: the model, the usage and the time." },
         new() { Name = "--bit-AiMessageActions-font-size", DefaultValue = "var(--bit-tpg-fs-xs)", Description = "Size of the metadata." },
+        new() { Name = "--bit-AiMessageActions-error-color", DefaultValue = "var(--bit-clr-err-fg)", Description = "Text saying that reading the reply aloud failed." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -128,6 +129,13 @@ public partial class BitAiMessageActionsDemo
                     Description = "Custom CSS classes/styles for the read aloud button of the BitAiMessageActions.",
                     LinkType = LinkType.Link,
                     Href = "/components/button#button-class-styles"
+                },
+                new()
+                {
+                    Name = "ReadAloudStatus",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the status of the BitAiMessageActions saying that reading the message aloud failed."
                 },
                 new()
                 {
@@ -221,10 +229,38 @@ public partial class BitAiMessageActionsDemo
                 },
                 new()
                 {
+                    Name = "FailedMessage",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The reply whose reading failed last, until another reading starts or the reading is stopped - for its button to say so."
+                },
+                new()
+                {
+                    Name = "Error",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "What failed in the reading of the FailedMessage: synthesis-failed or playback-failed."
+                },
+                new()
+                {
                     Name = "IsReading(message)",
                     Type = "bool",
                     DefaultValue = "",
                     Description = "Whether the reply is the one being read, which its button stops rather than starts."
+                },
+                new()
+                {
+                    Name = "HasFailed(message)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Whether the reading of the reply is the one that failed last."
+                },
+                new()
+                {
+                    Name = "PrepareAsync()",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Has the browser wake the player inside every click of an element carrying data-bit-ai-read-aloud, so the speech may play on Blazor Server, where the press reaches .NET only once the gesture is over. The actions of a reply carry the attribute and call it; a button of the app's own does the same."
                 },
                 new()
                 {
@@ -245,7 +281,7 @@ public partial class BitAiMessageActionsDemo
                     Name = "ReadNextAsync(reply)",
                     Type = "Task",
                     DefaultValue = "",
-                    Description = "Tells the reader a reply has finished: it is read when a reading waits for it, or when keep reading follows the conversation. BitAiChat calls it as each turn ends; a chat assembled by hand calls it itself."
+                    Description = "Tells the reader a reply has finished: it is read when a reading waits for it, or when keep reading follows the conversation - only a reply that finished normally, never one stopped or failed half way. BitAiChat calls it as each turn ends (BitAiChatSession.TurnCompleted); a chat assembled by hand calls it itself."
                 },
                 new()
                 {
@@ -266,7 +302,7 @@ public partial class BitAiMessageActionsDemo
                     Name = "Failed",
                     Type = "event Action<string>",
                     DefaultValue = "",
-                    Description = "Raised when a reading fails: synthesis-failed (the synthesizer threw) or playback-failed (the browser could not play the audio). The reading is stopped."
+                    Description = "Raised when a reading fails: synthesis-failed (the synthesizer threw) or playback-failed (the browser could not play the audio). The reading is stopped, and the actions of the reply show and announce the failure."
                 },
             ]
         },

@@ -24,7 +24,7 @@ public partial class BitAiChat : BitAiComponentBase
     private BitAiChatSession? _renderedSession;
     private bool _renderedGenerating;
     private BitAiReadAloud? _readAloud;
-    private Func<BitAiMessage, CancellationToken, Task<BitAiSpeechAudio?>>? _readAloudSynthesizer;
+    private IBitAiTextToSpeech? _textToSpeech;
 
 
 
@@ -226,6 +226,14 @@ public partial class BitAiChat : BitAiComponentBase
     [Parameter] public string? Placeholder { get; set; }
 
     /// <summary>
+    /// The language the replies are read aloud in, as a BCP 47 language tag such as <c>en-US</c>, handed to the
+    /// <see cref="IBitAiTextToSpeech"/> service; null leaves it to the service (or to the <see cref="BitAiReadAloud.Language"/>
+    /// set on <see cref="ReadAloud"/>). A <see cref="Synthesizer"/> reads the language it wants itself. Only used when
+    /// <see cref="AllowReadAloud"/> is on.
+    /// </summary>
+    [Parameter] public string? ReadAloudLanguage { get; set; }
+
+    /// <summary>
     /// The session to drive. When unset, one is created from the registered transport.
     /// </summary>
     [Parameter] public BitAiChatSession? Session { get; set; }
@@ -333,7 +341,7 @@ public partial class BitAiChat : BitAiComponentBase
 
             if (ReferenceEquals(_attached, stale))
             {
-                stale.StateChanged -= OnSessionStateChanged;
+                Detach(stale);
                 _attached = null;
             }
 
@@ -344,13 +352,14 @@ public partial class BitAiChat : BitAiComponentBase
 
         if (ReferenceEquals(_attached, session)) return;
 
-        if (_attached is not null) _attached.StateChanged -= OnSessionStateChanged;
+        if (_attached is not null) Detach(_attached);
 
         // What was being read belongs to the conversation the chat no longer shows.
         if (_attached is not null && _readAloud is { } reader) _ = reader.StopAsync();
 
         _attached = session;
         _attached.StateChanged += OnSessionStateChanged;
+        _attached.TurnCompleted += OnTurnCompleted;
 
         // The render this attaches it for draws the session as it is now.
         lock (_sessionStateGate)
@@ -400,77 +409,75 @@ public partial class BitAiChat : BitAiComponentBase
         var session = _attached;
         if (session is null) return;
 
-        bool finished;
-
         lock (_sessionStateGate)
         {
             var generating = session.IsGenerating;
 
             if (ReferenceEquals(session, _renderedSession) && generating == _renderedGenerating) return;
 
-            finished = ReferenceEquals(session, _renderedSession) && _renderedGenerating && generating is false;
-
             _renderedSession = session;
             _renderedGenerating = generating;
         }
 
         RequestRender();
-
-        // A turn that has ended has a reply to read, when a reading waits for it or keep reading follows the
-        // conversation. Read on the renderer's dispatcher, where the reader is driven from.
-        if (finished && _readAloud is not null)
-        {
-            _ = InvokeAsync(() => ReadFinishedReplyAsync(session));
-        }
     }
 
-    private async Task ReadFinishedReplyAsync(BitAiChatSession session)
+    // A turn that has ended hands over its reply, which is read when a reading waits for it or keep reading follows the
+    // conversation - the reader reads only a reply that finished normally, not one stopped or failed half way. Raised on
+    // the thread of the turn, and read on the renderer's dispatcher, where the reader is driven from.
+    private void OnTurnCompleted(BitAiMessage reply)
+    {
+        var session = _attached;
+
+        if (session is null || _readAloud is null) return;
+
+        _ = InvokeAsync(() => ReadFinishedReplyAsync(session, reply));
+    }
+
+    private async Task ReadFinishedReplyAsync(BitAiChatSession session, BitAiMessage reply)
     {
         if (IsDisposing || _readAloud is not { } reader || ReferenceEquals(session, _attached) is false) return;
 
-        var messages = session.Conversation.Messages;
-        for (var i = messages.Count - 1; i >= 0; i--)
-        {
-            if (messages[i].Role != BitAiRole.Assistant) continue;
-
-            await reader.ReadNextAsync(messages[i]);
-            return;
-        }
+        await reader.ReadNextAsync(reply);
     }
 
-    // The reader is created once read aloud is on and there is something to synthesize through, and goes when either
-    // goes. Another synthesizer handed to the chat later replaces it, since a reader keeps the one it was made with.
+    private void Detach(BitAiChatSession session)
+    {
+        session.StateChanged -= OnSessionStateChanged;
+        session.TurnCompleted -= OnTurnCompleted;
+    }
+
+    // The reader is created once read aloud is on and there is something to synthesize through, and goes only when
+    // either goes. It synthesizes through whatever the chat is handed at the time of each reading, so a synthesizer that
+    // is a new delegate on every render of the host (a lambda capturing a local) neither stops what plays nor loses what
+    // the app set on the reader (its Language, PlaybackRate, handlers).
     private void UpdateReadAloud()
     {
-        var synthesizer = AllowReadAloud ? Synthesizer : null;
-        var service = AllowReadAloud && synthesizer is null ? _services.GetService(typeof(IBitAiTextToSpeech)) as IBitAiTextToSpeech : null;
+        _textToSpeech = AllowReadAloud && Synthesizer is null ? _services.GetService(typeof(IBitAiTextToSpeech)) as IBitAiTextToSpeech : null;
 
-        if (synthesizer is null && service is null)
+        if (AllowReadAloud is false || (Synthesizer is null && _textToSpeech is null))
         {
             ReleaseReadAloud();
             return;
         }
 
-        // Compared as delegates, not as references: a method group handed over in markup is a new delegate on every
-        // render of the host, for the same method of the same target.
-        if (_readAloud is not null && Equals(_readAloudSynthesizer, synthesizer))
-        {
-            _readAloud.KeepReading = KeepReadingAloud;
-            return;
-        }
-
-        ReleaseReadAloud();
-
-        _readAloudSynthesizer = synthesizer;
-        _readAloud = synthesizer is not null ? new BitAiReadAloud(_js, synthesizer) : new BitAiReadAloud(_js, service!);
+        _readAloud ??= new BitAiReadAloud(_js, SynthesizeAsync);
         _readAloud.KeepReading = KeepReadingAloud;
+    }
+
+    private Task<BitAiSpeechAudio?> SynthesizeAsync(BitAiMessage reply, CancellationToken cancellationToken)
+    {
+        if (Synthesizer is { } synthesizer) return synthesizer(reply, cancellationToken);
+
+        if (_textToSpeech is { } service) return service.SynthesizeAsync(reply.GetText(), ReadAloudLanguage ?? _readAloud?.Language, cancellationToken);
+
+        return Task.FromResult<BitAiSpeechAudio?>(null);
     }
 
     private void ReleaseReadAloud()
     {
         var reader = _readAloud;
         _readAloud = null;
-        _readAloudSynthesizer = null;
 
         if (reader is not null) _ = reader.DisposeAsync().AsTask();
     }
@@ -546,7 +553,7 @@ public partial class BitAiChat : BitAiComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        if (_attached is not null) _attached.StateChanged -= OnSessionStateChanged;
+        if (_attached is not null) Detach(_attached);
 
         _attached = null;
 

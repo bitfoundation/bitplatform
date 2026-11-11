@@ -679,6 +679,16 @@ public class BitAiStrings
     /// <summary>Label of the button while its reply is being read aloud.</summary>
     public virtual string StopReadingAloud => "Stop reading aloud";
 
+    /// <summary>Shown and announced beside the actions of a reply when reading it aloud failed.</summary>
+    /// <param name="error">
+    /// The name of what failed: <c>synthesis-failed</c> (the app's text-to-speech threw) or <c>playback-failed</c> (the
+    /// browser could not play the audio).
+    /// </param>
+    /// <returns>The text.</returns>
+    public virtual string ReadAloudFailed(string error) => error is "playback-failed"
+        ? "The speech could not be played"
+        : "The reply could not be read aloud";
+
     /// <summary>Label of a deprecated model in the picker.</summary>
     /// <param name="name">The model name.</param>
     /// <returns>The label.</returns>

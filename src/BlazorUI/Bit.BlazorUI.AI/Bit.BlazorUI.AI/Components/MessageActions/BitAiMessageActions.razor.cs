@@ -19,6 +19,7 @@ public partial class BitAiMessageActions : BitAiComponentBase
     private BitAiIconClassesCache<BitButtonClassStyles> _regenerateButtonClasses;
     private BitAiReadAloud? _subscribedReadAloud;
     private bool _renderedReading;
+    private bool _renderedFailed;
     private BitAiIconClassesCache<BitButtonClassStyles> _positiveButtonClasses;
     private BitAiIconClassesCache<BitButtonClassStyles> _negativeButtonClasses;
     private TimeZoneInfo? _browserTimeZone;
@@ -132,6 +133,7 @@ public partial class BitAiMessageActions : BitAiComponentBase
         // so it listens to the one in force, and only to that one.
         var readAloud = _ReadAloud;
         _renderedReading = readAloud?.IsReading(Message) is true;
+        _renderedFailed = readAloud?.HasFailed(Message) is true;
 
         if (ReferenceEquals(readAloud, _subscribedReadAloud)) return;
 
@@ -145,6 +147,13 @@ public partial class BitAiMessageActions : BitAiComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // The browser wakes the player inside the press of the button (data-bit-ai-read-aloud) once the reader has asked
+        // it to listen for them, which only the first actions of a reader to render with the button ask.
+        if (_subscribedReadAloud is { } readAloud && Options.ShowMessageActions && IsDisposed is false)
+        {
+            await readAloud.PrepareAsync();
+        }
 
         // The time is first drawn in the zone of the process, and in the browser's once it has answered - which only a
         // rendered component can ask, and only one that shows the time with no zone of the options to show it in needs to.
@@ -217,9 +226,11 @@ public partial class BitAiMessageActions : BitAiComponentBase
     private void OnReadAloudChanged()
     {
         var reading = _ReadAloud?.IsReading(Message) is true;
-        if (reading == _renderedReading) return;
+        var failed = _ReadAloud?.HasFailed(Message) is true;
+        if (reading == _renderedReading && failed == _renderedFailed) return;
 
         _renderedReading = reading;
+        _renderedFailed = failed;
         RequestRender();
     }
 

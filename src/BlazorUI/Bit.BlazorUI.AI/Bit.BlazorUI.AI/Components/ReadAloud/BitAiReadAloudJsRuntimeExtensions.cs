@@ -7,6 +7,11 @@ internal static class BitAiReadAloudJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.AiReadAloud.prime");
     }
 
+    internal static ValueTask BitAiReadAloudWatch(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.AiReadAloud.watch");
+    }
+
     internal static ValueTask<int> BitAiReadAloudPlay(this IJSRuntime jsRuntime,
                                                       DotNetObjectReference<BitAiReadAloud> dotnetObj,
                                                       string? url,
