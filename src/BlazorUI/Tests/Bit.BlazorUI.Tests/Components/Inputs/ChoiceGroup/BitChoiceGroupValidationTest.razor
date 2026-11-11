@@ -11,6 +11,7 @@
                     Items="Items"
                     Required="Required"
                     NoValidate="NoValidate"
+                    ShowValidationMessage="ShowValidationMessage"
                     @bind-Value="@TestModel.Choice" />
 
     <ValidationMessage For="@(() => TestModel.Choice)" />
@@ -20,6 +21,8 @@
     [Parameter] public bool Required { get; set; }
 
     [Parameter] public bool NoValidate { get; set; }
+
+    [Parameter] public bool ShowValidationMessage { get; set; }
 
     [Parameter] public BitChoiceGroupTestModel TestModel { get; set; } = new();
 

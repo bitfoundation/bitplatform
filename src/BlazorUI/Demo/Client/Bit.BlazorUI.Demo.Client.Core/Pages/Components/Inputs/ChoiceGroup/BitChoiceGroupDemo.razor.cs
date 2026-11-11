@@ -78,7 +78,7 @@ public partial class BitChoiceGroupDemo
             Name = "ErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "A line under the items saying why the choice was rejected - by a server, a rule spanning two fields - which marks the group invalid in the same way Invalid does. The group is described by it, and a live region announces it the moment it shows up. A ChoiceGroup inside an EditForm already gets its messages from the cascading EditContext through ValidationMessage."
+            Description = "A line under the items saying why the choice was rejected - by a server, a rule spanning two fields - which marks the group invalid in the same way Invalid does. The group is described by it, and a live region announces it the moment it shows up. A ChoiceGroup inside an EditForm already gets its messages from the cascading EditContext, which ShowValidationMessage shows in this same place or ValidationMessage wherever the page puts it."
         },
         new()
         {
@@ -254,6 +254,13 @@ public partial class BitChoiceGroupDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the ChoiceGroup required and adds the required asterisk to its label."
+        },
+        new()
+        {
+            Name = "ShowValidationMessage",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the messages the cascading EditContext holds for the bound field under the items, where ErrorMessage goes, so an EditForm needs no ValidationMessage component beside the group. The group references them through aria-describedby, so they are read out whenever it is entered; they are not announced as they appear, since a submit validates every field at once. An ErrorMessage or ErrorMessageTemplate of the app's own wins the place while it is set."
         },
         new()
         {
