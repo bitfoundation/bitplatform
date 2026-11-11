@@ -1,0 +1,337 @@
+﻿@page "/examples/node-catalog"
+<PageTitle>Node Catalog · Blow</PageTitle>
+
+<ExampleScaffold Title="Node Catalog"
+                 Summary="Node kinds defined once in a BlowNodeRegistry - name, category, tags, ports, starting data, validation and how they run - and used everywhere: a searchable catalog with favourites and recent picks, nodes dragged in from it, a Switch whose outputs follow its settings, a deprecated kind upgraded in place, and a run through each kind's own handler.">
+    <Toolbar>
+        <button class="btn btn-primary" disabled="@_running" @onclick="Run">▶ Run</button>
+        <button class="btn btn-secondary" disabled="@(!_nodes.Any(n => _registry.Find(n)?.Deprecated is not null))" @onclick="Upgrade">Upgrade deprecated</button>
+        <span class="nc-status" role="status">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <div class="nc">
+            <aside class="nc__catalog" aria-label="Node catalog">
+                <input type="search" placeholder="Search nodes" aria-label="Search nodes" @bind="_query" @bind:event="oninput" />
+                <div class="nc__chips" role="group" aria-label="Category">
+                    <button class="nc__chip @(_category is null ? "on" : "")" aria-pressed="@(_category is null)" @onclick="() => _category = null">All</button>
+                    @foreach (var category in _registry.Categories)
+                    {
+                        <button class="nc__chip @(_category == category ? "on" : "")" aria-pressed="@(_category == category)" @onclick="() => _category = category">@category</button>
+                    }
+                </div>
+                @if (string.IsNullOrWhiteSpace(_query) && _recent.Count > 0)
+                {
+                    <p class="nc__heading">Recent</p>
+                    @foreach (var type in _recent) { @Item(_registry.Find(type)!) }
+                    <p class="nc__heading">All</p>
+                }
+                @foreach (var definition in Offered())
+                {
+                    @Item(definition)
+                }
+            </aside>
+            <div class="nc__canvas" @ondragover:preventDefault="true" @ondrop="OnDrop">
+                <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" AriaLabel="Automation"
+                            RunStates="_states" Validation="_validation"
+                            NodesChanged="_ => Validate()" EdgesChanged="_ => Validate()"
+                            OnSelectionChange="_ => StateHasChanged()">
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                </BlowCanvas>
+            </div>
+            <aside class="nc__inspector" aria-label="Properties">
+                @if (_nodes.Where(n => n.Selected).ToList() is [var selected] && _registry.Find(selected) is { } kind)
+                {
+                    <p class="nc__heading">@kind.DisplayName</p>
+                    <p class="bb-muted">@kind.Description</p>
+                    <label>Label <input value="@selected.Label" @onchange="e => Edit(selected, n => n.Label = e.Value?.ToString())" /></label>
+                    @if (selected.Data is Dictionary<string, string> settings)
+                    {
+                        @foreach (var (key, value) in settings.ToList())
+                        {
+                            <label>@key <input value="@value" @onchange="e => SetSetting(selected, key, e.Value?.ToString())" /></label>
+                        }
+                    }
+                    @if (kind.Deprecated is { } why)
+                    {
+                        <p class="nc__warn">Deprecated: @why</p>
+                    }
+                }
+                else
+                {
+                    <p class="bb-muted">Select one node to see its properties.</p>
+                }
+                <p class="nc__heading">Problems</p>
+                @if (_validation.Issues.Count == 0)
+                {
+                    <p class="bb-muted">None.</p>
+                }
+                <ul class="nc__problems">
+                    @foreach (var issue in _validation.Issues)
+                    {
+                        <li><button class="nc__link" @onclick="() => Focus(issue.NodeId)">@issue.Severity: @issue.Message</button></li>
+                    }
+                </ul>
+            </aside>
+        </div>
+    </ChildContent>
+    <TryIt>
+        <li>Type <strong>api</strong> or <strong>mail</strong> in the search box: kinds are found by name, tag, category and description. Pick a category chip to narrow the list. Hidden and deprecated kinds are never offered.</li>
+        <li><strong>Drag</strong> a kind onto the canvas, or <strong>click</strong> it to add it in the middle: the node gets the kind's label, size, ports and starting settings. What you add appears under <strong>Recent</strong>; <strong>☆</strong> marks a favourite, listed first.</li>
+        <li>Select the <strong>Switch</strong> and change its <strong>cases</strong> to <code>low,mid,high</code>: its outputs follow; remove a case and the edge from it is removed with it.</li>
+        <li><strong>Old webhook</strong> is a deprecated kind - a warning in Problems. Press <strong>Upgrade deprecated</strong> and it becomes an HTTP request, its settings carried over.</li>
+        <li>Clear the <strong>url</strong> of the HTTP request: the kind's own validation reports it. Press <strong>▶ Run</strong> to run the graph through each kind's handler.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>new BlowNodeRegistry().Register(new BlowNodeDefinition { Type, Label, Category, Tags, Description, Icon, Ports, Width, CreateData, Validate, Run, ... })</code> defines each kind once. <code>registry.Create(type, position)</code> makes a node of it, ports and data copied.</li>
+        <li><code>registry.Search(query, category)</code> ranks kinds as <code>BlowGraphSearch</code> ranks nodes; <code>registry.Categories</code> lists the groups. Recent and favourite kinds are the page's own state.</li>
+        <li><code>DynamicPorts = node => ...</code> computes ports from a node's settings; <code>registry.RefreshPorts(node, edges)</code> applies them and returns the edges left without a port.</li>
+        <li><code>Deprecated</code>, <code>ReplacedBy</code> and <code>Migrate</code> retire a kind; <code>registry.Upgrade(nodes)</code> converts its nodes. <code>registry.ValidationRule()</code> reports unknown and deprecated kinds and runs each kind's <code>Validate</code>.</li>
+        <li><code>new BlowRunner().Use(registry)</code> runs every node through its kind's <code>Run</code> handler.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .nc { display: flex; height: 100%; }
+    .nc__catalog, .nc__inspector { width: 210px; padding: 10px; overflow: auto; background: var(--bb-surface-sunken); color: var(--bb-text); font-size: 13px; }
+    .nc__catalog { border-right: 1px solid var(--bb-border); }
+    .nc__inspector { border-left: 1px solid var(--bb-border); }
+    .nc__catalog input[type=search], .nc__inspector input { width: 100%; box-sizing: border-box; margin: 2px 0 8px; }
+    .nc__inspector label { display: block; }
+    .nc__canvas { flex: 1; position: relative; min-width: 0; }
+    .nc__chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+    .nc__chip { font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid var(--bb-border-strong); background: var(--bb-surface); color: var(--bb-text); cursor: pointer; }
+    .nc__chip.on { background: var(--bb-accent, #2563eb); border-color: transparent; color: #fff; }
+    .nc__heading { font-weight: 600; margin: 8px 0 4px; }
+    .nc__item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; margin-bottom: 6px; border: 1px solid var(--bb-border-strong); border-radius: 8px; background: var(--bb-surface); cursor: grab; }
+    .nc__item span { flex: 1; }
+    .nc__item small { display: block; color: var(--bb-text-soft); font-size: 11px; }
+    .nc__star { border: 0; background: none; cursor: pointer; font-size: 14px; color: var(--bb-text); padding: 0 2px; }
+    .nc__warn { color: #b54708; }
+    .nc__problems { padding-left: 16px; margin: 0; }
+    .nc__link { border: 0; background: none; padding: 0; color: var(--bb-text); text-align: left; text-decoration: underline; cursor: pointer; font: inherit; }
+    .nc-status { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
+    @@media (max-width: 760px) {
+        .nc { flex-direction: column; }
+        .nc__catalog, .nc__inspector { width: auto; max-height: 160px; border: 0; border-bottom: 1px solid var(--bb-border); }
+        .nc__canvas { min-height: 320px; }
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly BlowNodeRegistry _registry = new();
+    private BlowRunner _runner = default!;
+    private BlowGraphValidator _validator = default!;
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private BlowRunStates _states = new();
+    private readonly List<string> _recent = [];
+    private readonly HashSet<string> _favourites = new() { "http" };
+    private string? _query;
+    private string? _category;
+    private string? _dragType;
+    private bool _running;
+    private string _status = "Drag kinds from the catalog.";
+
+    private static Dictionary<string, string> Settings(params (string Key, string Value)[] values) => values.ToDictionary(v => v.Key, v => v.Value);
+
+    private static string Setting(BlowNode node, string key) => node.Data is Dictionary<string, string> d ? d.GetValueOrDefault(key, "") : "";
+
+    /// <summary>Stands in for real work: waits, then passes the value on.</summary>
+    private static async Task<BlowNodeResult> After(int ms, BlowNodeRunContext ctx, object? value)
+    {
+        await Task.Delay(ms, ctx.CancellationToken);
+        return BlowNodeResult.Done(value);
+    }
+
+    protected override void OnInitialized()
+    {
+        BlowPort In(string? type = null) => new() { Type = BlowHandleType.Target, DataType = type };
+        BlowPort Out(string? type = null, string? id = null) => new() { Type = BlowHandleType.Source, DataType = type, Id = id, Label = id };
+
+        _registry.Register(
+            new BlowNodeDefinition
+            {
+                Type = "trigger", Label = "Schedule", Category = "Triggers", Icon = "⏰", Tags = ["cron", "timer", "start"],
+                Description = "Starts the automation on a schedule.", Width = 150,
+                Ports = [Out("event")], CreateData = () => Settings(("every", "1h")),
+                Run = ctx => After(300, ctx, DateTime.UtcNow),
+            },
+            new BlowNodeDefinition
+            {
+                Type = "http", Label = "HTTP request", Category = "Integrations", Icon = "🌐", Tags = ["api", "rest", "fetch", "webhook"],
+                Description = "Calls a web service and passes its response on.", Width = 150,
+                Ports = [In(), Out("json")], CreateData = () => Settings(("url", "https://example.com/api")),
+                Validate = n => string.IsNullOrWhiteSpace(Setting(n, "url"))
+                    ? [new BlowValidationIssue("missing-url", BlowValidationSeverity.Error, $"'{n.Label}' needs a url.")]
+                    : [],
+                Run = ctx => After(500, ctx, $"200 OK from {Setting(ctx.Node, "url")}"),
+                RunOptions = new BlowNodeRunOptions { Timeout = TimeSpan.FromSeconds(5), Retry = new BlowRetryPolicy { MaxAttempts = 2 } },
+            },
+            new BlowNodeDefinition
+            {
+                Type = "switch", Label = "Switch", Category = "Logic", Icon = "🔀", Tags = ["branch", "if", "route", "case"],
+                Description = "Sends its input to one output per case.", Width = 150,
+                Ports = [In()], CreateData = () => Settings(("cases", "low,high"), ("pick", "high")),
+                DynamicPorts = n => Setting(n, "cases").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Distinct().Select(c => Out(id: c)),
+                Run = ctx => Task.FromResult(BlowNodeResult.Branch(Setting(ctx.Node, "pick"), ctx.Input)),
+            },
+            new BlowNodeDefinition
+            {
+                Type = "llm", Label = "LLM prompt", Category = "AI", Icon = "✨", Tags = ["ai", "gpt", "claude", "summarize", "agent"],
+                Description = "Asks a language model and passes its answer on.", Width = 150,
+                Ports = [In(), Out("text")], CreateData = () => Settings(("prompt", "Summarize the response.")),
+                Run = ctx => After(700, ctx, "A short summary."),
+            },
+            new BlowNodeDefinition
+            {
+                Type = "email", Label = "Send email", Category = "Integrations", Icon = "✉", Tags = ["mail", "notify", "smtp"],
+                Description = "Emails what reaches it.", Width = 150,
+                Ports = [In()], CreateData = () => Settings(("to", "team@example.com")),
+                Run = ctx => After(300, ctx, null),
+            },
+            new BlowNodeDefinition
+            {
+                Type = "webhook-v1", Label = "Old webhook", Category = "Integrations", Width = 150,
+                Ports = [In(), Out()], CreateData = () => Settings(("endpoint", "https://example.com/hook")),
+                Deprecated = "Use HTTP request.", ReplacedBy = "http",
+                Migrate = n =>
+                {
+                    var old = (Dictionary<string, string>)n.Data!;
+                    n.Data = Settings(("url", old.GetValueOrDefault("endpoint", "")));
+                    n.Label = "HTTP request";
+                },
+            });
+
+        _runner = new BlowRunner().Use(_registry);
+        _validator = BlowGraphValidator.CreateDefault().Add(_registry.ValidationRule()).Add(BlowValidationRules.NoCycles());
+
+        var trigger = _registry.Create("trigger", new(0, 120), "trigger");
+        var hook = _registry.Create("webhook-v1", new(220, 120), "hook");
+        var sw = _registry.Create("switch", new(440, 120), "switch");
+        var llm = _registry.Create("llm", new(680, 40), "llm");
+        var mail = _registry.Create("email", new(680, 200), "mail");
+        foreach (var n in new[] { trigger, hook, sw, llm, mail })
+        {
+            n.SourcePosition = BlowPosition.Right;
+            n.TargetPosition = BlowPosition.Left;
+        }
+        _nodes = [trigger, hook, sw, llm, mail];
+        _edges =
+        [
+            new BlowEdge { Id = "e1", Source = "trigger", Target = "hook" },
+            new BlowEdge { Id = "e2", Source = "hook", Target = "switch" },
+            new BlowEdge { Id = "e3", Source = "switch", SourceHandle = "high", Target = "llm", Label = "high" },
+            new BlowEdge { Id = "e4", Source = "switch", SourceHandle = "low", Target = "mail", Label = "low" },
+        ];
+        Validate();
+    }
+
+    private RenderFragment Item(BlowNodeDefinition definition) => @<div class="nc__item" role="button" tabindex="0" draggable="true"
+                                                                      title="@definition.Description"
+                                                                      @ondragstart="() => _dragType = definition.Type"
+                                                                      @onclick="() => AddAtCentre(definition.Type)"
+                                                                      @onkeydown="e => OnItemKey(e, definition.Type)">
+        <span aria-hidden="true">@definition.Icon</span>
+        <span>@definition.DisplayName<small>@definition.Category</small></span>
+        <button class="nc__star" aria-pressed="@_favourites.Contains(definition.Type)" aria-label="Favourite @definition.DisplayName"
+                @onclick:stopPropagation="true" @onclick="() => ToggleFavourite(definition.Type)">@(_favourites.Contains(definition.Type) ? "★" : "☆")</button>
+    </div>;
+
+    private IEnumerable<BlowNodeDefinition> Offered()
+        => _registry.Search(_query, _category).OrderBy(d => _favourites.Contains(d.Type) ? 0 : 1);
+
+    private void ToggleFavourite(string type)
+    {
+        if (!_favourites.Remove(type)) _favourites.Add(type);
+    }
+
+    private void OnDrop(DragEventArgs e)
+    {
+        if (_flow is null || _dragType is null) return;
+        var at = _flow.ScreenToFlowPosition(e.ClientX, e.ClientY);
+        Add(_dragType, new BlowXYPosition(at.X - 75, at.Y - 20));
+        _dragType = null;
+    }
+
+    private void AddAtCentre(string type)
+    {
+        if (_flow is null) return;
+        var pane = _flow.PaneSize;
+        var centre = _flow.GetViewport().ScreenToFlow(pane.Width / 2, pane.Height / 2);
+        Add(type, new BlowXYPosition(centre.X - 75 + _nodes.Count % 5 * 16, centre.Y - 20 + _nodes.Count % 5 * 16));
+    }
+
+    private void Add(string type, BlowXYPosition position)
+    {
+        var node = _registry.Create(type, position);
+        node.SourcePosition = BlowPosition.Right;
+        node.TargetPosition = BlowPosition.Left;
+        _flow!.AddNodes(node);
+        _recent.Remove(type);
+        _recent.Insert(0, type);
+        if (_recent.Count > 3) _recent.RemoveAt(3);
+        _status = $"Added {node.Label}.";
+        Validate();
+    }
+
+    private void Edit(BlowNode node, Action<BlowNode> edit)
+    {
+        edit(node);
+        Validate();
+    }
+
+    private void OnItemKey(KeyboardEventArgs e, string type)
+    {
+        if (e.Key == "Enter") AddAtCentre(type);
+    }
+
+    private void SetSetting(BlowNode node, string key, string? value)
+    {
+        ((Dictionary<string, string>)node.Data!)[key] = value ?? "";
+        // A switch's outputs follow its cases: the edges from a case that went go with it.
+        var orphaned = _registry.RefreshPorts(node, _edges);
+        if (orphaned.Count > 0) _edges.RemoveAll(orphaned.Contains);
+        _flow?.UpdateNodeInternals(node.Id);
+        _status = orphaned.Count > 0 ? $"Removed {orphaned.Count} edge(s) from outputs that no longer exist." : $"{node.Label}: {key} set.";
+        Validate();
+    }
+
+    private void Upgrade()
+    {
+        var changed = _registry.Upgrade(_nodes);
+        _flow?.UpdateNodeInternals([.. changed.Select(n => n.Id)]);
+        _status = $"Upgraded {changed.Count} node(s).";
+        Validate();
+    }
+
+    private void Validate() => _validation = _validator.Validate(_nodes, _edges);
+
+    private async Task Focus(string? nodeId)
+    {
+        if (_flow is not null && nodeId is not null) await _flow.FocusNodeAsync(nodeId, select: true);
+    }
+
+    private async Task Run()
+    {
+        _running = true;
+        _states = new BlowRunStates();
+        try
+        {
+            var result = await _runner.RunAsync(_nodes, _edges, new BlowRunRequest
+            {
+                Validator = _validator,
+                OnEvent = e => { _states.Apply(e); StateHasChanged(); },
+            });
+            _status = result.Outcome == BlowRunOutcome.Refused ? $"Not run: {result.Problems[0].Message}" : $"Run {result.Outcome.ToString().ToLowerInvariant()}.";
+            _flow?.Announce(_status);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+}

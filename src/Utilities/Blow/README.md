@@ -75,9 +75,18 @@ usable on a server.
   than the graph, edits from a collaborator that local undo never takes back, and **copy and paste** that rewires
   edges and keeps groups intact.
 - **Saving and loading** as a versioned, deterministic JSON document with typed custom data, application
-  migrations, bounded and located import errors, and React Flow interchange; **SVG export** that is safe to embed.
-- **Workflows and validation on the graph**: validation problems and run states (queued, running, succeeded,
-  failed, skipped) marked on nodes, edges and ports by shape as well as colour, and read out with each element.
+  migrations, bounded and located import errors, React Flow interchange, **Mermaid and GraphML** in and out,
+  **Graphviz DOT** out, a **diff** of two versions of a graph that patches one into the other, and **SVG export**
+  that is safe to embed.
+- **A workflow engine with no UI**: `BlowRunner` runs a graph on a server, in a worker or behind the canvas -
+  dependency order, parallel branches, conditional paths and joins, retries with backoff, timeouts, cancellation,
+  pausing, human approval steps, checkpoints to resume from, sub-graphs and loops - and streams events that the
+  canvas shows as run states and that play back afterwards.
+- **Node kinds defined once**: a `BlowNodeRegistry` of definitions (label, category, tags, ports, starting data,
+  validation, how it runs, deprecation) behind a searchable catalog, a node factory, dynamic ports and upgrades.
+- **Workflows and validation on the graph**: validation problems and run states (queued, running, waiting,
+  succeeded, failed, skipped, cancelled) marked on nodes, edges and ports by shape as well as colour, and read out
+  with each element.
 - **Keyboard and screen reader support**: nodes and edges in the tab order, Enter/Space, arrow keys, Escape and
   Delete, connections made from the keyboard, a keyboard-driven minimap, search and "go to" that move focus, each
   element's state in its description, edits announced through a live region, reduced motion and Windows high
@@ -220,6 +229,7 @@ layout and reports what it finds, or, called with no flow, returns a sample one.
 - [The viewport](#the-viewport)
 - [Layout and alignment](#layout-and-alignment)
 - [Graph algorithms and validation](#graph-algorithms-and-validation)
+- [Running a graph](#running-a-graph)
 - [Add-ons](#add-ons)
 - [Saving, undo and clipboard](#saving-undo-and-clipboard)
 - [Theming](#theming)
@@ -691,6 +701,43 @@ order itself: the nodes, with everything nested in them, move to the end or the 
 order among themselves. A child sent to the back goes to the back of its group - just after its parent - since
 before the parent it would be drawn beneath it. That is the order `Basic` and `Manual` mode draw by, and the order among peers in `Auto`
 mode; an explicit `ZIndex` still overrides it. The reorder is one undo step (`order`).
+
+### Node kinds and catalogs
+
+An editor with more than a few kinds of node describes each one once, apart from any node of it, as a
+`BlowNodeDefinition` in a `BlowNodeRegistry`. The nodes stay plain `BlowNode`s tied to their kind by `Type` alone, so
+documents, templates and everything else work as before:
+
+```csharp
+var registry = new BlowNodeRegistry().Register(
+    new BlowNodeDefinition
+    {
+        Type = "http", Label = "HTTP request", Category = "Integrations", Icon = "globe",
+        Tags = ["api", "rest", "fetch"], Description = "Calls a web service.",
+        Width = 160, SourcePosition = BlowPosition.Right, TargetPosition = BlowPosition.Left,
+        Ports = [new() { Type = BlowHandleType.Target, DataType = "request" }, new() { Type = BlowHandleType.Source, DataType = "json" }],
+        CreateData = () => new HttpSettings(),
+        Validate = n => ((HttpSettings)n.Data!).Url is null ? [new("missing-url", BlowValidationSeverity.Error, "No url.")] : [],
+        Run = ctx => CallAsync((HttpSettings)ctx.Node.Data!, ctx.CancellationToken),
+    });
+
+var node = registry.Create("http", position);            // label, size, sides, ports and fresh data
+var found = registry.Search("api", category: null);     // for a catalog's search box, best first
+```
+
+| Member | Does |
+| --- | --- |
+| `Register`, `Unregister`, `Changed` | Add, replace or remove kinds while the editor runs - a plugin loading - and hear about it. |
+| `Create(type, position, id)` | A node of the kind: its label, size, handle sides, ports (copied), `CreateData()` and `Configure`. |
+| `Search(query, category, filter)`, `Categories` | A catalog: kinds ranked by label, type, tags, category and description, case and accents ignored; hidden and deprecated kinds are not offered. |
+| `DynamicPorts`, `RefreshPorts(node, edges)` | Ports computed from a node's own settings (an output per case of a switch); refreshing hands back the edges left without a port. |
+| `Deprecated`, `ReplacedBy`, `Migrate`, `Upgrade(nodes)` | Retire a kind: validation warns about it, and `Upgrade` turns its nodes into the replacement. |
+| `ValidationRule(unknownType)` | For `BlowGraphValidator`: nodes of unknown kinds (`unknown-node-type`), deprecated kinds, and each kind's own `Validate`. |
+| `Run`, `RunOptions` | How the kind runs, for a `BlowRunner` given the registry with `Use(registry)` (see [running a graph](#running-a-graph)). |
+
+`Icon` and `Metadata` are never interpreted - an icon name, a schema for a properties form. Recent and favourite
+kinds are the application's state. Demo: `/examples/node-catalog` (a catalog with search, categories, favourites and
+recent picks, drag to add, a switch with dynamic outputs, a deprecated kind upgraded, validation and a run).
 
 ## Handles and connections
 
@@ -1257,6 +1304,17 @@ changes, so handling it is cheap. `OnSelectionStart` and `OnSelectionEnd` bracke
 everything from code. Setting `Selected` yourself changes what is drawn, but raises no `OnSelectionChange`. Demo:
 `/examples/use-on-selection-change`, `/examples/selection-gestures`.
 
+`BlowSelection` computes what an editor's "select" commands pick, to hand to `SelectAsync`: `Upstream` and
+`Downstream` of some nodes (themselves included or not), `Connected` (their component), `EdgesAmong` and
+`EdgesTouching` a set of nodes, a group's `Members` (one level or all), and `Invert`:
+
+```csharp
+var graph = new BlowGraphIndex(_nodes, _edges);
+var selected = _nodes.Where(n => n.Selected).Select(n => n.Id).ToList();
+var downstream = BlowSelection.Downstream(graph, selected);
+await _flow.SelectAsync(downstream, BlowSelection.EdgesAmong(graph, downstream.Select(n => n.Id)));
+```
+
 ### Dragging nodes
 
 Pressing a node and moving more than `NodeDragThreshold` screen pixels (1) starts a drag. Dragging a node that is
@@ -1790,7 +1848,8 @@ the cancellation token stops a long validation. Messages are English; localize b
 ### Showing a run
 
 A workflow executing, a build, a state machine stepping: hand the canvas each node's `BlowRunState` - a
-`BlowRunStatus` (`Queued`, `Running`, `Succeeded`, `Failed`, `Skipped`, or `Idle` for nothing) and an optional
+`BlowRunStatus` (`Queued`, `Running`, `Waiting`, `Succeeded`, `Failed`, `Skipped`, `Cancelled`, or `Idle` for
+nothing) and an optional
 message - through `RunStates`, keyed by node id, and change it as the run moves on:
 
 ```razor
@@ -1811,10 +1870,11 @@ message - through `RunStates`, keyed by node id, and change it as the run moves 
 
 Each status is a class (`bit-blow-run-running`, ...) and a badge on the node's top-left corner whose glyph and
 shape say the status - a ring while running (turning, unless motion is reduced), a tick, a cross, a dash, an
-ellipsis - so it reads without colour, including in Windows high contrast. A screen reader hears the status and its
-message as part of the node's description ("Failed: The service timed out."); announce milestones yourself with
-`Announce`. The canvas only shows the run: executing it, in `BlowGraphAlgorithms.TopologicalSort` order or any
-other, is the application's. Demo: `/examples/workflow-runner`, `/examples/state-machine`.
+ellipsis, a pause bar while waiting, a square when cancelled - so it reads without colour, including in Windows high
+contrast. A screen reader hears the status and its message as part of the node's description ("Failed: The service
+timed out."); announce milestones yourself with `Announce`. The canvas only shows a run; `BlowRunner` (next section)
+executes one and keeps a `BlowRunStates` to hand to `RunStates`, or the application runs it its own way. Demo:
+`/examples/workflow-runner`, `/examples/state-machine`.
 
 ### Showing problems on the graph
 
@@ -1837,6 +1897,109 @@ high contrast the shapes stay and the colours become the system's. `Info` issues
 screen reader hears the problems, most serious first, as part of the element's description (see
 [what a screen reader hears](#what-a-screen-reader-hears)). Pair it with `FocusNodeAsync` to take the user to a
 problem. Demo: `/examples/typed-ports`.
+
+## Running a graph
+
+`BlowRunner` executes a graph with no UI: every node through the handler for its type, each once everything before
+it has settled, values passed along the edges. It runs the same on a server, in a background worker, in a test or
+behind a canvas - the canvas only shows the run. It is primitives to build a workflow product on, not a scheduler or
+a hosting platform: triggers, persistence and queues are the application's.
+
+### The runner
+
+```csharp
+var runner = new BlowRunner(new BlowRunnerOptions { MaxConcurrency = 4 })
+    .Handle("fetch", async ctx => BlowNodeResult.Done(await http.GetStringAsync(Url(ctx.Node), ctx.CancellationToken)),
+        new BlowNodeRunOptions { Timeout = TimeSpan.FromSeconds(10), Retry = new BlowRetryPolicy { MaxAttempts = 3 } })
+    .Handle("parse", ctx => Parse(ctx.GetInput<string>()))       // a value returned is passed along every edge
+    .Handle("if", ctx => BlowNodeResult.Branch(ctx.GetInput<int>() > 100 ? "big" : "small", ctx.Input));
+
+BlowRunResult result = await runner.RunAsync(_nodes, _edges, new BlowRunRequest { Input = trigger }, token);
+if (result.Succeeded) Use(result.ValueOf<Report>("summary"));
+```
+
+A handler gets a `BlowNodeRunContext` - the `Node`, its `Inputs` (by edge, and `GetInput<T>(handleId)`,
+`GetInputs<T>`), the run's `RunInput`, `Variables` shared by the run's nodes, `Services`, the `Attempt`, an
+`IdempotencyKey` that stays the same across retries and resumes, and a `CancellationToken` - and returns a
+`BlowNodeResult`:
+
+| Result | Edges from the node carry |
+| --- | --- |
+| `Done(value)` (or any value from a handler that finishes at once) | `value`, along every edge. |
+| `Branch(handleId, value)` | `value`, along the edges from that source handle only. |
+| `Outputs(dictionary)` | One value per source handle named in it. |
+| `Stop()` | Nothing. |
+
+An edge that carries nothing leaves its target waiting for nothing: a node no value reaches is **skipped**, and so is
+everything only it reaches - which is how a branch drops the path not taken. A node's `Join` says how its inputs
+combine: `Any` (the default) runs it when at least one incoming edge carried a value, the join after a branch;
+`All` runs it only when every one did, the join after a parallel split. Independent nodes run at once, up to
+`MaxConcurrency`. The graph must be acyclic; a run over a cycle is refused before anything starts.
+
+### Failures, retries and timeouts
+
+A handler that throws fails its node, and everything that depends on it is skipped ("An earlier step failed.")
+while independent branches go on; `StopOnFailure` cancels the whole run instead. With
+`BlowNodeRunOptions.ErrorOutput = "error"`, the edges from the node's `error` handle carry a `BlowRunError` to a
+handler of the failure and the run goes on along them.
+
+`Retry = new BlowRetryPolicy { MaxAttempts, Delay, BackoffFactor, MaxDelay, ShouldRetry }` tries again with
+exponential backoff; a `BlowNodeException` with `IsTransient = false` (bad input, a refusal) is not retried. `Timeout`
+cancels an attempt that takes too long and counts it as a failure; `BlowRunnerOptions.RunTimeout` bounds the run,
+which then ends `TimedOut`. `MaxExecutions` bounds the attempts of a run and its sub-runs together, `MaxDepth` how
+deep sub-runs nest. Timeouts and delays go through `BlowRunnerOptions.TimeProvider`, which a test replaces.
+
+Run messages are shown on the canvas and read out, so the runner never puts an exception's own message in them -
+exception messages carry connection strings, paths and payloads. A `BlowNodeException`'s message is shown; any other
+failure says "Failed." unless `DescribeError` decides otherwise. The exception itself is in the node's record for the
+application to log. Events never carry input or output values. The runner's own messages are `BlowRunMessages`,
+to translate.
+
+### Waiting, pausing and resuming
+
+- `await ctx.WaitAsync(approval.Task, "Waiting for a manager.")` shows the node as `Waiting` until something outside
+  the run - a person, a webhook - completes the task.
+- `BlowRunRequest.Control = new BlowRunControl()`: `Pause()` lets the working nodes finish and starts no more until
+  `Resume()`. The cancellation token stops the run: working nodes are `Cancelled`, the rest skipped.
+- `result.ToCheckpoint()` keeps the results of the nodes that succeeded; `BlowRunRequest.Resume = checkpoint` runs
+  again without repeating them, under the same run id (so idempotency keys match). Saving a checkpoint is the
+  application's, since only it knows its values' types.
+- `StartAt = ["node-id"]` with `Resume` runs a node and what depends on it again, the nodes before it keeping their
+  results - "run from here".
+- `ctx.RunSubgraphAsync(nodes, edges, input)` runs a graph of the node's own with the same handlers - a sub-flow, or
+  a loop's body once per item - and hands back its result.
+
+### Watching a run
+
+`BlowRunRequest.OnEvent` receives every `BlowRunEvent` in order - `RunStarted`, `NodeQueued`, `NodeStarted`,
+`NodeProgress` (from `ctx.Report(message, progress)`), `NodeWaiting`, `NodeRetrying`, `NodeSucceeded`, `NodeFailed`,
+`NodeSkipped`, `NodeCancelled`, `NodeRestored`, `EdgeActivated`, `RunFinished` - with timestamps, attempts and
+messages. The run continues on the context it was started on, so in a component the events update state directly:
+
+```razor
+<BlowCanvas Nodes="_nodes" Edges="_edges" RunStates="_states" />
+
+@code {
+    private readonly BlowRunStates _states = new();
+
+    private Task Run() => _runner.RunAsync(_nodes, _edges, new BlowRunRequest
+    {
+        OnEvent = e => { _states.Apply(e); StateHasChanged(); },
+    });
+}
+```
+
+`BlowRunStates` is the run states to show, kept from the events, with the `ActiveEdges` that carried a value (to
+animate them). Afterwards the `BlowRunResult` holds the `Outcome` (`Succeeded`, `Failed`, `Cancelled`, `TimedOut`,
+`Refused` with its `Problems`), each node's `BlowNodeRunRecord` (status, attempts, start, duration, message, error,
+result, inputs), the `Events`, `ToRunStates()`, and `StatesAt(n)` - the states after the first `n` events, to play
+the run back. `runner.Check(nodes, edges)` says what a run would be refused over, and `BlowRunRequest.Validator`
+refuses a run whose graph has a validation error.
+
+Nodes can also get their handlers from their kind: `runner.Use(registry)` runs each node through its
+`BlowNodeDefinition.Run` (see [node kinds and catalogs](#node-kinds-and-catalogs)). Demo: `/examples/workflow-runner`
+(parallel steps, a branch, an `All` join, retries, an approval, pause, stop, run from a node, replay),
+`/examples/node-catalog`.
 
 ## Add-ons
 
@@ -2108,6 +2271,40 @@ Flow draws an arrowhead only when asked, so an edge without `markerEnd` comes ov
 counterpart, such as a drag-handle selector or a custom edge type, is reported as a warning rather than guessed at.
 
 Demo: `/examples/save-restore` (local storage, file download and upload, a migration, React Flow import and export).
+
+### Mermaid, DOT and GraphML
+
+| Format | Out | In |
+| --- | --- | --- |
+| Mermaid flowchart | `BlowMermaidFormat.Export(document, options)`: nodes (a shape per node), groups as subgraphs, links with labels, dashed for animated edges. | `BlowMermaidFormat.Import(text)`: every bracket shape, quoted and plain text, `&` lists and chains, every arrow kind with a piped label or `-- label -->`, subgraphs as groups. Laid out, as Mermaid has no positions. |
+| Graphviz DOT | `BlowDotFormat.Export(document, options)`: clusters for groups, ports, labels, arrowheads; positions pinned for `neato -n` with `IncludePositions`. | - |
+| GraphML | `BlowGraphMLFormat.Export(document)`: label, type, position, size and JSON data per node, nested graphs for groups, ports, edge labels and data. | `BlowGraphMLFormat.Import(xml)`: that, plain GraphML from other tools, and yEd's geometry and labels; unknown attributes kept in the element's data; laid out when it has no positions. |
+
+Mermaid is the one to paste into Markdown, a pull request or a chat that renders it; DOT feeds Graphviz; GraphML
+goes to and from yEd, Gephi, Cytoscape and NetworkX. Exports escape every id and label for the format, so nothing in
+a label can break out of it. Imports return a `BlowImportResult`, as JSON import does, with issues located by line or
+element; they are bounded by `BlowDiagramImportOptions.Limits` (the same `BlowImportLimits`), and nothing in the input
+is followed: Mermaid's `click` and `style` are reported and skipped, and GraphML never loads a DTD or an external
+entity. `BlowDiagramImportOptions.Layout` (layered, in the direction the diagram asks for) lays out what came without
+positions, each group's children inside it first; null leaves them at the origin.
+
+### Comparing graphs
+
+`BlowGraphDiff.Compare(before, after)` - two documents, or two sets of lists - matches nodes and edges by id and lists
+what was added, removed and changed, naming the properties that changed:
+
+```csharp
+var diff = BlowGraphDiff.Compare(saved, _flow.ToDocument(), new BlowGraphDiffOptions { PositionTolerance = 0.5 });
+foreach (var change in diff.ChangedNodes)
+    Console.WriteLine($"{change.After.Label}: {string.Join(", ", change.Properties)}");   // "Review: Position, Label"
+
+diff.Invert().ApplyTo(_nodes, _edges);   // back to the saved version
+```
+
+Selection is not a change unless `IncludeSelection` says so, and JSON data read from documents is compared by
+content. `Ignore` leaves properties out ("Position" to compare structure only), `DataEquals` compares your own data.
+A diff is also a patch: `ApplyTo` changes only the elements it names, so two diffs touching different elements of a
+graph both apply. Demo: `/examples/diagram-formats`.
 
 ### Graph changes and transactions
 
@@ -3056,6 +3253,7 @@ These are the changes an existing application can notice.
 | A mouse click on a node raises `OnNodeClick`. In Chromium it used to raise `OnPaneClick`, because the press captures the pointer on the pane and the browser fires the click there. | Drop any workaround that treated those pane clicks as node clicks. |
 | Letting go of a drag changes `BlowCascadingNames.GeometryVersion`, not `GraphVersion`, so an add-on that shows which nodes are being dragged takes the geometry version. | Take `GeometryVersion` in such an add-on. |
 | `UpdateNodeInternals(ids)` re-reads the named nodes only; `UpdateNodeInternals()` and `Refresh(remeasure: true)` re-read all of them. | Nothing; name the nodes whose handles moved, or none. |
+| `BlowRunStatus.Waiting` and `BlowRunStatus.Cancelled` are new last members, drawn with their own badges (`bit-blow-run-waiting`, `bit-blow-run-cancelled`). | A `switch` over the enum without a default case gains two values to handle. |
 
 ## Coming from React Flow
 

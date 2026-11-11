@@ -565,13 +565,15 @@
 }
 
 /* Run states (BlowCanvas.RunStates): a badge on the top-left corner whose glyph and shape say the status - a ring
-   for running, a tick, a cross, a dash, an ellipsis - so it reads without colour. Running also rings the node,
+   for running, a tick, a cross, a dash, an ellipsis, a pause bar, a stop square - so it reads without colour. Running also rings the node,
    moving only when motion is welcome. */
 .bit-blow-node.bit-blow-run-queued::before,
 .bit-blow-node.bit-blow-run-running::before,
 .bit-blow-node.bit-blow-run-succeeded::before,
 .bit-blow-node.bit-blow-run-failed::before,
-.bit-blow-node.bit-blow-run-skipped::before {
+.bit-blow-node.bit-blow-run-skipped::before,
+.bit-blow-node.bit-blow-run-waiting::before,
+.bit-blow-node.bit-blow-run-cancelled::before {
     position: absolute;
     top: -9px;
     left: -9px;
@@ -615,6 +617,20 @@
     content: "\2013";
     content: "\2013" / "";
     background: var(--bit-blow-run-muted);
+}
+
+.bit-blow-node.bit-blow-run-waiting::before {
+    content: "\2016";
+    content: "\2016" / "";
+    background: var(--bit-blow-run-active);
+}
+
+/* A square, not the failure's cross: stopped by the run, not by the step. */
+.bit-blow-node.bit-blow-run-cancelled::before {
+    content: "\25A0";
+    content: "\25A0" / "";
+    background: var(--bit-blow-run-failed);
+    border-radius: 3px;
 }
 
 @keyframes bit-blow-spin {
@@ -979,7 +995,9 @@
     .bit-blow-node.bit-blow-run-queued::before,
     .bit-blow-node.bit-blow-run-succeeded::before,
     .bit-blow-node.bit-blow-run-failed::before,
-    .bit-blow-node.bit-blow-run-skipped::before {
+    .bit-blow-node.bit-blow-run-skipped::before,
+    .bit-blow-node.bit-blow-run-waiting::before,
+    .bit-blow-node.bit-blow-run-cancelled::before {
         forced-color-adjust: none;
         background: CanvasText;
         color: Canvas;

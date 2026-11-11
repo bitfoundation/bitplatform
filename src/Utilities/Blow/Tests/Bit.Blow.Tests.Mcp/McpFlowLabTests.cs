@@ -285,6 +285,36 @@ public class McpFlowLabTests
         Assert.Contains("2097152 bytes", report.Error!);
     }
 
+    [TestMethod]
+    public async Task The_report_says_how_a_run_would_go()
+    {
+        var flow = new JsonObject
+        {
+            ["nodes"] = new JsonArray(Node("a"), Node("b"), Node("c"), Node("d")),
+            ["edges"] = new JsonArray(
+                new JsonObject { ["id"] = "ab", ["source"] = "a", ["target"] = "b" },
+                new JsonObject { ["id"] = "ac", ["source"] = "a", ["target"] = "c" },
+                new JsonObject { ["id"] = "bd", ["source"] = "b", ["target"] = "d" },
+                new JsonObject { ["id"] = "cd", ["source"] = "c", ["target"] = "d" }),
+        };
+
+        var execution = (await InspectAsync(flow.ToJsonString())).Execution!;
+
+        Assert.IsTrue(execution.Runnable);
+        Assert.AreEqual("a", execution.Order[0]);
+        Assert.AreEqual(3, execution.Stages);
+        Assert.AreEqual(2, execution.MaxParallel);
+        CollectionAssert.AreEqual(new[] { "a" }, execution.Roots);
+        CollectionAssert.AreEqual(new[] { "d" }, execution.Leaves);
+
+        flow["edges"]!.AsArray().Add(new JsonObject { ["id"] = "da", ["source"] = "d", ["target"] = "a" });
+        var looped = await InspectAsync(flow.ToJsonString());
+
+        Assert.IsFalse(looped.Execution!.Runnable);
+        Assert.AreEqual(BlowValidationCodes.Cycle, looped.Execution.Refusals[0].Code);
+        Assert.IsTrue(looped.Notes.Any(n => n.Contains("RunSubgraphAsync")));
+    }
+
     internal static Task<BlowFlowReportDto> InspectAsync(string? json, string? layout = null)
     {
         var arguments = new Dictionary<string, object?>();
