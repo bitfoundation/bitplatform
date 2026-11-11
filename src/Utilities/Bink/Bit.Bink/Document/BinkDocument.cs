@@ -1033,7 +1033,10 @@ public sealed partial class BinkDocument
             // drew it, one that opened a copy) agree nothing in it has moved yet. Putting back an element that was
             // here is a move to where it was, made now; a collaborator's clock is kept as it is.
             stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _elementGraves.Contains(element.Id) ? Stamp(0, adopt: false) : 0;
-            if (_elementGraves.Remove(element.Id, out Grave grave) && !Wins(stamped, placed, layer.Id, grave.Clock, grave.Key, grave.Layer)
+            // Only a keyed return is weighed against the tombstone: one without a key (a binding to another
+            // collaboration backend, which orders elements itself) goes into the layer it names, or replicas that
+            // removed and re-added it would disagree on where it is.
+            if (_elementGraves.Remove(element.Id, out Grave grave) && keyed && !Wins(stamped, placed, layer.Id, grave.Clock, grave.Key, grave.Layer)
                 && TryGetLayer(grave.Layer, out BinkLayer? graveLayer))
             {
                 // A move it lost while gone beats this return: it comes back where that move put it.
@@ -1192,7 +1195,8 @@ public sealed partial class BinkDocument
             // now, and it is weighed against where the layer last was, which a collaborator may have moved it to
             // while it was gone, so both sides of the race end with it in one place.
             stamped = _keepRemoteVersions ? Observe(clock, adopt: true) : keyed && _layerGraves.Contains(layerId) ? Stamp(0, adopt: false) : 0;
-            if (_layerGraves.Remove(layerId, out Grave grave) && !Wins(stamped, placed, layerId, grave.Clock, grave.Key, layerId))
+            // Only a keyed return is weighed against the tombstone, as for an element.
+            if (_layerGraves.Remove(layerId, out Grave grave) && keyed && !Wins(stamped, placed, layerId, grave.Clock, grave.Key, layerId))
             {
                 placed = grave.Key;
                 stamped = grave.Clock;
