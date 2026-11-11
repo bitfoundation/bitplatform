@@ -1,0 +1,43 @@
+﻿@inherits AppComponentBase
+
+<section class="question" aria-labelledby="@headingId">
+    <div class="question-head">
+        @if (HeadingElement is "h3")
+        {
+            <h3 class="question-title is-small" id="@headingId">@Title</h3>
+        }
+        else
+        {
+            <h2 class="question-title" id="@headingId">@Title</h2>
+        }
+        @if (Topic is not null)
+        {
+            <button type="button" class="help-link" aria-label="@($"Help me choose: {Title}")" @onclick="() => PageState?.OpenHelp(Topic)">Help me choose</button>
+        }
+    </div>
+    @if (Lead is not null)
+    {
+        <p class="question-lead">@Lead</p>
+    }
+    <div class="question-body">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    private static int count;
+
+    private readonly string headingId = $"question-{Interlocked.Increment(ref count)}";
+
+    [CascadingParameter] public CreateProjectState? PageState { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    [Parameter] public string? Lead { get; set; }
+
+    [Parameter] public CreateProjectHelpTopic? Topic { get; set; }
+
+    [Parameter] public string HeadingElement { get; set; } = "h2";
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,85 @@
+﻿@inherits CreateProjectPartBase
+
+@{
+    var answers = Answers;
+    var (from, to) = answers.Minutes;
+}
+
+<div class="cp-summary">
+    @if (ShowsList)
+    {
+        <ul class="cp-summary-list">
+            <li>
+                <BitIcon IconName="Accept" Class="cp-summary-icon" />
+                <span>@(answers.IsTry ? $"{answers.DisplayName}, set up for a quick try, with sample pages" : $"{answers.DisplayName}, set up as a real product with {DatabaseName(answers.Database)}")</span>
+            </li>
+            <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>Sign-up and sign-in with passkeys and two-step verification, roles and settings</span></li>
+            @if (answers.IsMultiTenant)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>Several customer companies, each with its own users and data</span></li>
+            }
+            @if (answers.Start is CreateProjectStart.Admin)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>@(answers.HasLiveDashboard ? "An admin panel with a live dashboard" : "An admin panel with a dashboard")</span></li>
+            }
+            else if (answers.Start is CreateProjectStart.Store)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>An online store</span></li>
+            }
+            @if (answers.HasAssistant)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>An AI assistant for your users, and live updates</span></li>
+            }
+            @if (answers.HasPush)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>Push notifications</span></li>
+            }
+            @if (answers.IsOffline)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>Works without internet, with a copy of its data on each device</span></li>
+            }
+            <li>
+                <BitIcon IconName="Accept" Class="cp-summary-icon" />
+                <span>
+                    @(answers.Errors switch
+                    {
+                        CreateProjectErrors.Sentry => "Errors, logs and the Android and iOS apps' crashes sent to your own Sentry account",
+                        CreateProjectErrors.AppInsights => "Errors and logs sent to your own Application Insights",
+                        _ => "Errors and logs kept on your own server"
+                    })
+                </span>
+            </li>
+            <li>
+                <BitIcon IconName="Accept" Class="cp-summary-icon" />
+                <span>
+                    @(answers.Devices.Count == 0
+                        ? "The web app set up on this computer, and all five apps in the code"
+                        : $"The web app and the {CreateProjectNames.ListOf(answers.Devices)} set up on this computer, and all five apps in the code")
+                </span>
+            </li>
+            <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>Your own landing page, and the Workbench to design pages</span></li>
+            @if (answers.HasGitHubRepo)
+            {
+                <li><BitIcon IconName="Accept" Class="cp-summary-icon" /><span>A private GitHub repository in your own account</span></li>
+            }
+        </ul>
+    }
+
+    <ul class="cp-estimate" aria-label="What the setup takes">
+        <li><span>About @answers.DownloadText GB to download</span></li>
+        <li><span>@from to @to minutes</span></li>
+        <li><span>@answers.DiskGb GB of free space</span></li>
+    </ul>
+</div>
+
+@code {
+    [Parameter] public bool ShowsList { get; set; } = true;
+
+    private static string DatabaseName(CreateProjectDatabase database) => database switch
+    {
+        CreateProjectDatabase.SqlServer => "SQL Server",
+        CreateProjectDatabase.MySql => "MySQL",
+        CreateProjectDatabase.Sqlite => "SQLite",
+        _ => "PostgreSQL"
+    };
+}
