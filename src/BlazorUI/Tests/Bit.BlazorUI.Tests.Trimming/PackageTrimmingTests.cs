@@ -118,9 +118,9 @@ public sealed partial class PackageTrimmingTests
 
         // Built, then packed without building, the way a release is: a pack that builds a multi-targeted package on its own
         // can reach for an inner build's output before it is written.
-        foreach (var package in new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.Icons" })
+        foreach (var package in new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI.Core", "Bit.BlazorUI.AI", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.Icons" })
         {
-            var project = Path.Combine(Publisher.Root, package, $"{package}.csproj");
+            var project = Path.Combine(Publisher.PackageFolder(package), $"{package}.csproj");
 
             var build = Publisher.Run("dotnet", ["build", project, "-c", "Release", "-nologo", "-nodeReuse:false", $"-p:PackageVersion={version}", "-p:GeneratePackageOnBuild=false"], Publisher.Root, TimeSpan.FromMinutes(20));
             Assert.AreEqual(0, build.ExitCode, $"Building {package} failed:\n{Tail(build.Output)}");

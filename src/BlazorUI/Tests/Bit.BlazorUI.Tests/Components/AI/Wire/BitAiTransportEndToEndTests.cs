@@ -23,13 +23,14 @@ namespace Bit.BlazorUI.Tests.Components.AI.Wire;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 /// <summary>
-/// The SSE and SignalR transports against their server ends hosted in memory: a chat client's reply reaches a chat
+/// The SSE and SignalR transports against their server ends hosted in memory (the WebSocket one is
+/// <see cref="BitAiWebSocketTransportTests"/>): a chat client's reply reaches a chat
 /// session with no mapping written by hand, and a decision on a call the server holds gets back to it.
 /// </summary>
 [TestClass]
 public class BitAiTransportEndToEndTests
 {
-    private static BitAiChatSessionOptions Options => new() { Pacing = null, ExecuteTools = false };
+    internal static BitAiChatSessionOptions Options => new() { Pacing = null, ExecuteTools = false };
 
     private static async Task<WebApplication> Host(IChatClient chatClient, Action<WebApplication> map)
     {
@@ -247,7 +248,7 @@ public class BitAiTransportEndToEndTests
         Assert.IsFalse(broker.TrySubmit(new BitAiApprovalResponse("t1", "x", BitAiApprovalDecision.Approved)));
     }
 
-    private static async Task AssertHeldCallIsDecided(IBitAiTransport transport)
+    internal static async Task AssertHeldCallIsDecided(IBitAiTransport transport)
     {
         await using var session = new BitAiChatSession(transport, null, Options);
         // A call the server holds is shown awaiting the decision (ApprovalRequested is for the calls the session runs).
@@ -270,7 +271,7 @@ public class BitAiTransportEndToEndTests
         Assert.AreEqual("Deleted after approved", session.Conversation.Messages[1].FindToolCall("t1")!.Result!.GetDisplayText());
     }
 
-    private static async IAsyncEnumerable<BitAiEvent> HeldCall(BitAiApprovalBroker approvals, [EnumeratorCancellation] CancellationToken cancellationToken)
+    internal static async IAsyncEnumerable<BitAiEvent> HeldCall(BitAiApprovalBroker approvals, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         yield return new BitAiToolCallStartedEvent("t1", "delete_file") { Arguments = System.Text.Json.JsonDocument.Parse("{}").RootElement.Clone() };
         yield return new BitAiToolApprovalRequestedEvent("t1");

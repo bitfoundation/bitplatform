@@ -31,7 +31,7 @@ public sealed class ServerAppTrimmingTests
         // The trimming only ever runs where its switch is on, which a server app turns on itself.
         foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Extras, "styles/bit.blazorui.extras.css"), (AI, "styles/bit.blazorui.ai.css"), (Icons, "styles/bit.blazorui.icons.css") })
         {
-            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, package, "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
+            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
                                       File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
                                       $"{package}/{bundle} was changed by a publish that did not ask for the trimming.");
         }
@@ -272,7 +272,7 @@ public sealed class ServerAppTrimmingTests
 
         foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Icons, "styles/bit.blazorui.icons.css") })
         {
-            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, package, "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
+            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.PackageFolder(package), "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
                                       File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
                                       $"{package}/{bundle} was trimmed off names that say nothing of the app's components.");
         }

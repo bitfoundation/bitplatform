@@ -5,7 +5,7 @@ public partial class AiServerScenarioPage
     private readonly string example1RazorCode = """
 <div style="height: 560px">
     <BitAiChat EmptyTitle="Ask the server"
-               EmptyBody="The reply is generated on the server and streamed here as server-sent events." />
+               EmptyBody="The reply is generated on the server and streamed here." />
 </div>
 """;
 
@@ -14,17 +14,24 @@ public partial class AiServerScenarioPage
 """;
 
     private const string example1ProgramCode = """
-// Program.cs of the browser (WebAssembly, Server or Hybrid): the reply streams from the server's endpoint.
+// The Blazor app (WebAssembly, Server or Hybrid): dotnet add package Bit.BlazorUI.AI
+// Program.cs - the reply streams from the server's endpoint. One transport, either of these:
 builder.Services.AddBitBlazorUIAIServices(ai =>
 {
+    // Server-sent events: a POST per reply, its events read from the response.
     ai.UseSseTransport(sp => sp.GetRequiredService<HttpClient>(), new() { Endpoint = "api/ai/chat" });
+
+    // Or a WebSocket per reply, which also carries the decisions on the tool calls the server holds.
+    // ai.UseWebSocketTransport(sp => new Uri(new Uri(sp.GetRequiredService<NavigationManager>().BaseUri), "api/ai/ws"));
 });
 """;
 
     private const string example1ServerCode = """
+// The server: dotnet add package Bit.BlazorUI.AI.Server
+//             dotnet add package Bit.BlazorUI.AI.ChatClient
 using Microsoft.Extensions.AI;
 
-// Program.cs of the server: the provider's chat client, and the endpoint streaming its replies.
+// Program.cs - the provider's chat client, and the endpoints streaming its replies.
 builder.Services.AddChatClient(sp => new OpenAI.Chat.ChatClient("gpt-5-mini", apiKey).AsIChatClient())
     .UseFunctionInvocation();
 
@@ -41,9 +48,16 @@ var chatOptions = new ChatOptions
 app.MapBitAiSse("/api/ai/chat", (request, http, cancellationToken) =>
         http.RequestServices.GetRequiredService<IChatClient>().StreamBitAiEventsAsync(request, chatOptions, cancellationToken))
    .RequireAuthorization();
+
+// The same handler over a WebSocket. Authenticated by cookie, it lists the origins it serves.
+app.MapBitAiWebSocket("/api/ai/ws", (request, http, cancellationToken) =>
+        http.RequestServices.GetRequiredService<IChatClient>().StreamBitAiEventsAsync(request, chatOptions, cancellationToken),
+        new() { WebSockets = new() { AllowedOrigins = { "https://my.app" } } })
+   .RequireAuthorization();
 """;
 
     private const string example1HubCode = """
+// The server, as above. The browser adds: dotnet add package Bit.BlazorUI.AI.SignalR
 using Microsoft.Extensions.AI;
 
 // The same reply over SignalR: map the hub (app.MapHub<AiHub>("/hubs/ai")) and, in the browser,

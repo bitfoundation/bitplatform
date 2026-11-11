@@ -52,6 +52,26 @@ public static class BlazorUIAssemblies
         "AddBitBlazorUIAIServices(ai => ai.UseTransport<TTransport>())", "bit.blazorui.ai.css", "bit.blazorui.ai.js", Required: false,
         "The components of AI apps - chat, prompt input, streaming Markdown, tool calls and approvals, agent runs, citations, artifacts, structured output and generative UI - over one transport interface an app implements for its model provider.");
 
+    public static BlazorUIPackage AICore { get; } = new(
+        "Bit.BlazorUI.AI.Core", typeof(BitAiChatSession).Assembly,
+        null, null, null, Required: false,
+        "What the AI packages share and the only one of them a server needs: the transport contract, the events and their versioned wire format, the conversation model, the chat session and the SSE and WebSocket client transports. Bit.BlazorUI.AI brings it along.");
+
+    public static BlazorUIPackage AIServer { get; } = new(
+        "Bit.BlazorUI.AI.Server", typeof(BitAiHub).Assembly,
+        null, null, null, Required: false,
+        "The ASP.NET Core ends of the AI transports - MapBitAiSse, MapBitAiWebSocket, BitAiHub - and BitAiApprovalBroker, for the server an app streams its model's replies from. No UI.");
+
+    public static BlazorUIPackage AISignalR { get; } = new(
+        "Bit.BlazorUI.AI.SignalR", typeof(BitAiSignalRTransport).Assembly,
+        "AddBitBlazorUIAIServices(ai => ai.UseSignalRTransport(...))", null, null, Required: false,
+        "The SignalR client transport of the AI components, streaming from a BitAiHub over the app's own connection.");
+
+    public static BlazorUIPackage AIChatClient { get; } = new(
+        "Bit.BlazorUI.AI.ChatClient", typeof(BitAiChatClientTransport).Assembly,
+        "AddBitBlazorUIAIServices(ai => ai.UseChatClient())", null, null, Required: false,
+        "The Microsoft.Extensions.AI adapter: an IChatClient's reply as BitAiEvents (StreamBitAiEventsAsync), on a server or as the transport of a Blazor Server or Hybrid app.");
+
     public static BlazorUIPackage Icons { get; } = new(
         "Bit.BlazorUI.Icons", typeof(BitIconName).Assembly,
         null, "bit.blazorui.icons.css", null, Required: false,
@@ -68,7 +88,7 @@ public static class BlazorUIAssemblies
         "The previous implementations of chart, data grid, the editors and the PDF reader, kept under their own namespace so both generations can live in one app.");
 
     /// <summary>Every package, in the order an app adds them.</summary>
-    public static BlazorUIPackage[] Packages { get; } = [Core, Extras, AI, Icons, Assets, Legacy];
+    public static BlazorUIPackage[] Packages { get; } = [Core, Extras, AI, AICore, AIServer, AISignalR, AIChatClient, Icons, Assets, Legacy];
 
     /// <summary>The assemblies the type and component catalogs read from.</summary>
     public static Assembly[] All { get; } = [.. Packages.Select(p => p.Assembly).Distinct()];

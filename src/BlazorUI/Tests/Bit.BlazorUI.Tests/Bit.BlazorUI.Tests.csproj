@@ -64,8 +64,8 @@
         <PackageReference Include="MSTest" Version="4.5.2" />
     </ItemGroup>
 
-    <!-- The AI package's transports end to end: its SSE endpoint and its hub hosted in memory, read by its SSE and SignalR
-         transports. -->
+    <!-- The AI packages' transports end to end: the SSE and WebSocket endpoints and the hub of Bit.BlazorUI.AI.Server hosted
+         in memory, read by the SSE, WebSocket and SignalR transports. -->
     <ItemGroup>
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.TestHost" Version="10.0.14" />
         <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.TestHost" Version="11.0.0-rc.3.26522.148" />
@@ -86,7 +86,12 @@
     <ItemGroup>
         <!-- The Link and Script asset components ship in their own package; referenced here so the
              duplicate-instance tests render the real components against the real BitAssetVersion. -->
-        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <!-- The AI packages beside the UI one: the server ends, the SignalR transport and the Microsoft.Extensions.AI
+             adapter, which the wire and transport tests drive end to end. -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.Server\Bit.BlazorUI.AI.Server.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.SignalR\Bit.BlazorUI.AI.SignalR.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.ChatClient\Bit.BlazorUI.AI.ChatClient.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />

@@ -3,7 +3,8 @@
     <!--
     A console app that exists to be published trimmed and compiled ahead of time - see AiWireFormatTrimmingTests in
     Bit.BlazorUI.Tests.Trimming, which is the only thing that publishes it - and then run: it round-trips every built-in
-    BitAiEvent and a request through the wire format of Bit.BlazorUI.AI (BitAiWireSerializer), and exits with the number
+    BitAiEvent and a request through the wire format of Bit.BlazorUI.AI.Core (BitAiWireSerializer), the one package a
+    server or a plain .NET client of the AI packages needs,, and exits with the number
     that did not survive. The samples are the unit tests' own (BitAiWireSamples).
 
     Not in the solution: building it on its own proves nothing.
@@ -31,7 +32,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.Core\Bit.BlazorUI.AI.Core.csproj" />
         <Compile Include="..\Bit.BlazorUI.Tests\Components\AI\Wire\BitAiWireSamples.cs" Link="BitAiWireSamples.cs" />
     </ItemGroup>
 

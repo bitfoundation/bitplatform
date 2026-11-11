@@ -529,10 +529,30 @@ jobs:
         dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output ./packages --configuration Release
 
+    - name: Build and pack BlazorUI.AI.Core
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.Core/Bit.BlazorUI.AI.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.Core/Bit.BlazorUI.AI.Core.csproj --output ./packages --configuration Release
+
     - name: Build and pack BlazorUI.AI
       run: |
-        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj --output ./packages --configuration Release
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazorUI.AI.Server
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.Server/Bit.BlazorUI.AI.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.Server/Bit.BlazorUI.AI.Server.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazorUI.AI.SignalR
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.SignalR/Bit.BlazorUI.AI.SignalR.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.SignalR/Bit.BlazorUI.AI.SignalR.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazorUI.AI.ChatClient
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.ChatClient/Bit.BlazorUI.AI.ChatClient.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazorUI/Bit.BlazorUI.AI/Bit.BlazorUI.AI.ChatClient/Bit.BlazorUI.AI.ChatClient.csproj --output ./packages --configuration Release
 
     - name: Build and pack BlazorUI.Assets
       run: |

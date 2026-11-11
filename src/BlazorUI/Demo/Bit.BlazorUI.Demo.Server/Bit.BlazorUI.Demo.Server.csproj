@@ -59,6 +59,12 @@
         <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Core\Bit.BlazorUI.Demo.Client.Core.csproj" />
         <ProjectReference Include="..\Client\Bit.BlazorUI.Demo.Client.Web.Shared\Bit.BlazorUI.Demo.Client.Web.Shared.csproj" />
         <ProjectReference Condition=" '$(IncludeWasm)' == 'true' " Include="..\Client\Bit.BlazorUI.Demo.Client.Web\Bit.BlazorUI.Demo.Client.Web.csproj" />
+        <!-- The server ends of the "Streaming from a server" AI scenario (/ai/scenarios/server): the SSE and WebSocket
+             endpoints, over the Microsoft.Extensions.AI adapter. Referenced by the server alone, so the clients never carry
+             either. The SignalR transport is here only for the MCP server to describe its package (BlazorUIAssemblies). -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.Server\Bit.BlazorUI.AI.Server.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.ChatClient\Bit.BlazorUI.AI.ChatClient.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI.SignalR\Bit.BlazorUI.AI.SignalR.csproj" />
     </ItemGroup>
 
     <ItemGroup>

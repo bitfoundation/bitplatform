@@ -110,7 +110,8 @@ public class Middlewares
     }
 
     /// <summary>
-    /// The server end of the "Streaming from a server" AI scenario (/ai/scenarios/server): the package's SSE endpoint over
+    /// The server end of the "Streaming from a server" AI scenario (/ai/scenarios/server): the SSE and WebSocket endpoints of
+    /// Bit.BlazorUI.AI.Server over
     /// an <see cref="IChatClient"/> pipeline with a function the server runs. The model is the scripted
     /// <see cref="DemoServerChatClient"/>, never the site's OpenAI client, so the endpoint costs nothing to call; an app
     /// streams from its own registered chat client the same way.
@@ -130,6 +131,11 @@ public class Middlewares
         };
 
         app.MapBitAiSse("/api/ai/chat", (request, http, cancellationToken) =>
+            chatClient.StreamBitAiEventsAsync(request, chatOptions, cancellationToken));
+
+        // The same reply over a WebSocket per turn. The endpoint carries no credential, so it leaves the allowed origins
+        // open; one authenticated by cookie lists its own (BitAiWebSocketEndpointOptions.WebSockets).
+        app.MapBitAiWebSocket("/api/ai/ws", (request, http, cancellationToken) =>
             chatClient.StreamBitAiEventsAsync(request, chatOptions, cancellationToken));
     }
 

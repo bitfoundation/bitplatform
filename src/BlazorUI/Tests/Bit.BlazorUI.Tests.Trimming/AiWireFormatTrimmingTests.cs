@@ -3,7 +3,8 @@
 namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
-/// The wire format of Bit.BlazorUI.AI (BitAiWireSerializer) in a trimmed app and in a native AOT one: every built-in
+/// The wire format of Bit.BlazorUI.AI.Core (BitAiWireSerializer) in a trimmed app and in a native AOT one that reference
+/// that package alone, as a server or a plain .NET client does: every built-in
 /// BitAiEvent and a request survive a round trip, and the package raises no trim or AOT warning on the way.
 /// </summary>
 [TestClass]

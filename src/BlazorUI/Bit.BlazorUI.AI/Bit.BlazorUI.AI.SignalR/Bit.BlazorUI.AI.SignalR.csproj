@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    The SignalR client transport of the AI packages, apart so the SignalR client reaches only the apps that use it. It
+    carries no ASP.NET Core server dependency, so it runs in Blazor WebAssembly, Server and Hybrid alike; the hub it talks
+    to (BitAiHub) is in Bit.BlazorUI.AI.Server.
+    -->
+
+    <Import Project="../../../Bit.Build.props" />
+    <!-- Bit.BlazorUI.PackageValidation.props is not imported yet: package validation compares a pack against the last
+         published package, and this one has never been published. Import it once the first release is out. -->
+    <Import Project="../../Bit.BlazorUI.TrimAnalysis.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <!-- See the note in Bit.BlazorUI.csproj: Debug builds only the TFM the demo and tests run on. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazorUI</RootNamespace>
+        <IsTrimmable>true</IsTrimmable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Description>The SignalR client transport of bit BlazorUI AI: streams each reply from a BitAiHub (Bit.BlazorUI.AI.Server) over a SignalR connection the app already has. Runs in Blazor WebAssembly, Server and Hybrid alike.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;AI;LLM;SignalR;Realtime</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Floating low-bound ranges, so an app can pin any patch of its band, as in Bit.Bcrdt.SignalR. Each floor is the
+             first patch of its band whose Microsoft.AspNetCore.SignalR.Common is not affected by CVE-2026-70159
+             (GHSA-334f-vvp4-7g6p). Client.Core rather than Client: the transport takes the app's HubConnection and never
+             builds one, so the HTTP connection machinery is the app's choice to add. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[10.0.13,11.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.AI.Core\Bit.BlazorUI.AI.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Text.Json" />
+    </ItemGroup>
+
+</Project>
