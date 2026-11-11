@@ -84,7 +84,7 @@ public class GeneratorEdgeCaseTests
     }
 
     [TestMethod]
-    public async Task A_Row_Changed_In_Place_Into_What_A_Write_Refuses_Does_Not_Stop_Checkpoints()
+    public async Task A_Row_Changed_In_Place_And_Never_Saved_Neither_Stops_Checkpoints_Nor_Reaches_Them()
     {
         var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
         var options = new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table);
@@ -103,9 +103,11 @@ public class GeneratorEdgeCaseTests
 
         await using var reopened = await BlazeDbDatabase.OpenAsync(
             new BlazeDbDatabaseOptions { Storage = storage, FlushInterval = TimeSpan.FromHours(1) }.AddTable(KeywordRow.Table));
+        // Checkpoints and exports are built from what the log committed, so the edits that were never written are
+        // not in them: the row comes back as it was inserted.
         var stored = reopened.GetTable(KeywordRow.Table).Get(1)!;
-        Assert.AreEqual("", stored.Item1);
-        Assert.AreEqual("b�", stored.Rest);
+        Assert.AreEqual("x", stored.Item1);
+        Assert.AreEqual("", stored.Rest);
     }
 
     [TestMethod]

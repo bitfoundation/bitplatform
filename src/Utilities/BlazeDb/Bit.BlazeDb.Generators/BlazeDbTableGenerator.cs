@@ -25,20 +25,23 @@ public sealed class BlazeDbTableGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // The transform emits the source itself and hands on only strings and detached positions (see
+        // BlazeDbGeneratedOutput), so the step compares by value: an edit that leaves a table's output as it was
+        // goes no further, and no symbol, tree or compilation outlives the run that read it.
         var results = context.SyntaxProvider.ForAttributeWithMetadataName(
             TableAttributeName,
             static (node, _) => node is TypeDeclarationSyntax,
-            static (ctx, ct) => BuildModel(ctx, ct));
+            static (ctx, ct) => BlazeDbGeneratedOutput.From(BuildModel(ctx, ct)));
 
-        context.RegisterSourceOutput(results, static (spc, result) =>
+        context.RegisterSourceOutput(results, static (spc, output) =>
         {
-            foreach (var diagnostic in result.Diagnostics)
+            foreach (var diagnostic in output.Diagnostics)
             {
-                spc.ReportDiagnostic(Diagnostic.Create(diagnostic.Descriptor, diagnostic.Location, diagnostic.Args));
+                spc.ReportDiagnostic(diagnostic);
             }
-            if (result.Model != null)
+            if (output.HintName != null)
             {
-                spc.AddSource(result.Model.HintName, BlazeDbSourceEmitter.Emit(result.Model));
+                spc.AddSource(output.HintName, output.Source!);
             }
         });
     }

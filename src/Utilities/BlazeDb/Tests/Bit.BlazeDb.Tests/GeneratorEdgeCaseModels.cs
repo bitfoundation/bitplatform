@@ -46,3 +46,13 @@ public partial struct StructRow
 
     public string Name { get; set; }
 }
+
+// A key type whose equality ignores part of its encoding: 1.0m == 1.00m.
+[BlazeDbTable("decimal_keys")]
+public partial class DecimalKeyed
+{
+    [BlazeDbKey]
+    public decimal Id { get; set; }
+
+    public string Note { get; set; } = "";
+}

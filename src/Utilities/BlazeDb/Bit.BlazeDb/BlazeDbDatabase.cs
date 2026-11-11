@@ -143,7 +143,7 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(destination);
         CheckDisposed();
-        ReadOnlyMemory<byte> snapshot;
+        ReadOnlyMemory<byte> snapshot = default;
         lock (SyncRoot)
         {
             if (_activeTransaction is not null)
@@ -158,7 +158,19 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
                     "Cannot export: an earlier rollback could not undo a write, so memory may hold one the log never " +
                     "recorded. Reopen the database from storage and export that.", cause);
             }
-            snapshot = BlazeDbWalManager.BuildSnapshot(_tableList, lsn: 0, sizeHint: 64 * 1024);
+            if (_wal is null || IsReadOnly)
+            {
+                // Without storage, memory is the only copy there is. A replica's memory is the generation it last
+                // loaded, while the files on storage are the writer's and move on without it, so it exports what it
+                // has - and nothing can be changed in place on a replica that the log would not have held.
+                snapshot = BlazeDbWalManager.BuildSnapshot(_tableList, lsn: 0, sizeHint: 64 * 1024);
+            }
+        }
+        if (_wal is not null && !IsReadOnly)
+        {
+            // With storage, the export is what the log committed, as a checkpoint's snapshot is - not memory, which can
+            // hold edits made in place and never saved (see BlazeDbWalManager.BuildCommittedSnapshotAsync).
+            snapshot = await _wal.ExportAsync(cancellationToken).ConfigureAwait(false);
         }
         await destination.WriteAsync(snapshot, cancellationToken).ConfigureAwait(false);
     }

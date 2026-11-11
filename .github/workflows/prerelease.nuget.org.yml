@@ -270,6 +270,16 @@ jobs:
     - name: dotnet pack BlazeDb.EntityFrameworkCore
       run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output . --configuration Release
 
+    - name: dotnet build BlazeDb.Blex
+      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb.Blex
+      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj --output . --configuration Release
+
+    - name: dotnet build BlazeDb.Bcrdt
+      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb.Bcrdt
+      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj --output . --configuration Release
+
     - name: dotnet build Blow
       run: dotnet build src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blow

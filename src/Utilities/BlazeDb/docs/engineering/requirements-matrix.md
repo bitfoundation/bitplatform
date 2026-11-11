@@ -110,7 +110,10 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Fewer copies on commit (**new**) | verified | P2 | in-place WAL record encoding | `benchmarks.md` A/B | Time neutral (within noise) |
 | Snapshot without double buffering (**new**) | verified | P1 | presized buffer, no `ToArray` | `PersistenceBenchmarks` (100k: 13.4 MB to 5.6 MB, 6.1 to 4.1 ms) | - |
 | Buffers past 1 GB (**new**) | implemented | P1 | `BlazeDbBufferWriter.Grow` | found by benchmark; code review | Not unit tested (needs > 1 GB) |
-| Checkpoint blocks writers while the snapshot is encoded | implemented (limit) | P2 | - | `PersistenceBenchmarks` (100k rows: 4 ms desktop) | Documented; copy-on-write not justified |
+| Checkpoint blocks writers while the snapshot is encoded | verified (**round 14**: no longer) | P2 | `BuildCommittedSnapshotAsync` outside the write lock | `CommittedSnapshotTests.A_Checkpoint_Keeps_Committed_Writes_Made_While_It_Runs`, `PersistenceBenchmarks` | A checkpoint reads the database back from storage (ADR-021) |
+| Checkpoints and exports hold committed data only (**round 14**) | verified | P0 | `BuildCommittedSnapshotAsync`, `SnapshotMerge` | `CommittedSnapshotTests.An_Unsaved_EF_Core_Edit_*`, `ModelBasedTests` | Before: an unsaved EF Core edit reached the next checkpoint (ADR-021) |
+| Canonical key bytes (**round 14**) | verified | P1 | `BlazeDbKeyCanonical` | `CommittedSnapshotTests.A_Delete_Written_With_Another_Spelling_*`, `Keys_The_Table_Treats_As_Equal_*` | Keys written by earlier engines keep their bytes (ADR-022) |
+| Incremental generator pipeline caches (**round 14**) | verified | P2 | `BlazeDbGeneratedOutput` | MCP `GeneratorCachingTests` | ADR-023 |
 | Memory estimates / diagnostics | missing | P3 | - | - | - |
 
 ## H. Persistence and recovery
@@ -188,6 +191,8 @@ valuable, P3 nice to have. **New** marks work done in this pass; everything else
 | Diagnostics without data exposure | verified | P1 | `Explain` omits values | `IndexQueryTests.Explain_*` | Exception messages name keys (as before) |
 | Actionable exceptions | verified | P1 | `BlazeDbException` family | `Errors` demo page, tests | - |
 | Background failure surfaced | verified | P1 | `LastBackgroundError` | `QuotaTests` | - |
+| Blex stores persisted in BlazeDb (**round 15**) | verified | P2 | `Bit.BlazeDb.Blex`: `BlazeDbBlexStorage`, `AddBitBlexBlazeDbPersistence`, `AddBlexState` | `Tests/Bit.BlazeDb.Tests.Integrations` `BlexPersistenceTests` (a store restored through Blex's persistor, saves durable on completion, replica reload as an external change) | A replica tab cannot save (ADR-024) |
+| Bcrdt documents stored in BlazeDb (**round 15**) | verified | P2 | `Bit.BlazeDb.Bcrdt`: `BlazeDbBcrdtDocumentStore`, `AddBcrdtDocuments` | `BcrdtDocumentStoreTests` (document survives a reopen, compaction exact and one transaction, concurrent appends) | Updates held in memory as rows |
 | Persistence and commit metrics, OpenTelemetry-compatible (**round 13**) | verified | P2 | `BlazeDbDiagnostics` (meter `Bit.BlazeDb`) | `DiagnosticsTests` | No content in any tag (ADR-017) |
 | Timing/slow-query listeners | out of scope | - | - | - | Reads are method calls on memory; timing them costs more than they do (ADR-017) |
 

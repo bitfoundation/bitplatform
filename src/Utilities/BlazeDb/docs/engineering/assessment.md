@@ -101,6 +101,8 @@ Hypotheses rejected by measurement: `SortedSet` views being O(k) (ADR-003).
 | 10 | Hardening | Independent review of the engine diff (fresh reviewer); its six findings fixed: committed EF saves reported as failed when a handler threw (`BlazeDbChangeHandlerException`), an atomic unit keeping writes after rolling back past its start (clamped unit marks), the metadata table leaking into `Changed`, `required` constructor-bound members not compiling, indexed get-only auto-properties silently unstored (BLZ017, BLZ018), and a failed undo leaving unjournaled writes for a checkpoint (database refuses writes until reopened); full verification, final benchmarks, documentation audit | `ReviewRegressionTests`; section 5 |
 | 11 | Second review | A code review of the committed pass; its fifteen findings fixed: notifications delivered on another thread than the commit's and able to deadlock (per-thread queues), bulk writes fed by a query over their own table (input buffered), a pooled EF context losing a handler's error (per-save subscription), a commit undone after it was journaled (changes collected first), exports after a failed undo, the body's exception replaced by the undo's, a live query missing a commit while it started and a database subscriber handed part of a commit (subscription under the write lock), EF saves interleaving units with another thread (saves run under the lock), a write journaled after the final flush on dispose (checks under the lock), an in-memory database locked for good by a failed undo, a stream's bare enumerator error, two extra copies on import, an eager `Explain` string, and the MCP inspector's constructor matching. A fresh reviewer of those fixes then found three more, also fixed: a transaction could commit what a failed unit could not take back (it now refuses and rolls back), a rollback stopped at the first write it could not undo (it now undoes every write it can), and an EF save resolving its tables under the write lock could deadlock against the engine cache (tables resolved first) | `ReviewFollowUpTests`, MCP inspector tests; section 5 |
 | 13 | Second-pass audit (November 2026) | Independent audits of the browser layer and of the generator and serializer, each finding confirmed against the code (most by a probe build) before fixing. Data integrity: a null in a non-nullable `string`/`byte[]` read back as `""` and a string with an unpaired surrogate as U+FFFD - both now refused at write (ADR-018); an inherited `{ get; protected set; }` property silently dropped (now BLZ012) and a get-only auto-property silently not stored (new warning BLZ020). Generated code that did not compile or crashed the generator: keyword property names, a namespace part that is a keyword, explicit interface implementations, compound-index members named like tuple members. Durability: directory entries not flushed on Unix (`BlazeDbDirectorySync`), IndexedDB writes committed with the relaxed durability Chromium defaults to (now strict), files of a replaced generation leaked after a crash (swept at open, ADR-020; both browser backends now enumerable). Browser: a real `QuotaExceededError` bypassed compaction and `OnQuotaPressure` (ADR-019), a failed module import could never be retried (the runtime caches the rejection; a fetch probe now fails first), a replica read could fail on a file the writer replaced mid-read (retried), writes could slip in while a page restored from the back/forward cache rechecked its lock, and a stolen lock went unnoticed; a replica missed a checkpoint made between its open and `CreateReplicaAsync`. Observability: metrics on the `Bit.BlazeDb` meter (ADR-017) | `PersistenceHardeningTests`, `DiagnosticsTests`, `GeneratorEdgeCaseTests` (+ `GeneratorEdgeCaseModels.cs` compiling), MCP suite (BLZ020 catalog sample), E2E |
+| 15 | Integrations | `Bit.BlazeDb.Blex` and `Bit.BlazeDb.Bcrdt` adapter packages (ADR-024), packed by the release workflows and tested by `bit.ci.BlazeDb.yml` | `Tests/Bit.BlazeDb.Tests.Integrations` (14 tests, both target frameworks); Release build with the trim analyzers clean; packages carry only the engine and the adapted library as dependencies |
+| 14 | Known risks closed | Checkpoints and exports built from committed bytes - the previous snapshot rolled forward through the log, untouched tables copied as they stand - instead of from memory, which also takes the encoding out of the write lock (ADR-021); canonical key bytes (ADR-022); a value-comparable generator pipeline (ADR-023) | `CommittedSnapshotTests` (an unsaved EF Core edit kept out of a checkpoint and an export, commits made while a checkpoint runs, a delete under another spelling of a decimal key replayed through an opaque table - fails without canonical keys, a first-format snapshot checkpointed into the current one), MCP `GeneratorCachingTests` (fails when the output never compares equal), the whole suite including `ModelBasedTests`; `PersistenceBenchmarks` |
 | 12 | Cross-browser demo review | Every page of the demo driven in Chromium, Firefox and WebKit - every button, every input pushed through edge values - against the build output and the published (trimmed) client. Fixed: the EF Core page's failing-save scenario brought up the error UI (EF Core's identity map refused the duplicate before the engine saw it, and the catch expected the engine's exception where the provider throws `DbUpdateException`), and its no-tracking scenario printed four tracked entries under "the tracker is empty"; in the published client every `AsNoTracking` and `Include` threw a `TypeInitializationException`, because Bit.Minifier strips the parameter names of EF Core's internal methods and EF Core finds them by those names (the client goes without the minifier, as the Boilerplate's client-side EF Core does); the errors page expected an exception the engine no longer raises for a dropped table - it keeps the rows - and printed resource keys instead of messages; the durability page's self-checkpoint scenario waited out its timeout and reported no snapshot (it counted snapshot files, and a checkpoint replaces the one before), and its tear and corrupt scenarios dead-ended on a log with no records yet; the CreatedAt ranges of the queries and indexes pages opened on a window no row fell into; every EF Core scenario left its throwaway engine behind. The E2E suite now runs in any engine and, in CI, against the published demo | `DemoScenarioTests` (all five fail on the old demo); section 5 |
 
 ## 5. Final verification
@@ -118,26 +120,25 @@ Run after the last change, from `src` (benchmarks in [benchmarks.md](benchmarks.
 
 ## 6. Remaining risks and follow-up
 
-Found in round 13 and not fixed (each needs more than a local change):
+Round 13 first left three risks open; round 14 closed them:
 
-- **EF Core and checkpoints.** A query hands back the live row, so an unsaved edit to a tracked entity is
-  already in memory; a checkpoint or export taken before `SaveChanges` (or after the context was discarded
-  without saving) writes that edit to storage. Only snapshots are affected - the log holds committed writes
-  only - and the README's "What follows from memory-first" says memory holds the edit; restoring tracked rows
-  to their original values on discard would close it, and changes what an application sees.
-- **Opaque tables and non-canonical keys.** A table opened without its descriptor matches keys by their bytes,
-  while the engine writes the caller's key: for key types whose equality ignores part of their encoding
-  (`decimal` scale, `DateTime` kind, `DateTimeOffset` offset, `-0.0`), a delete replayed into the opaque table
-  can miss and the row come back when the descriptor returns.
-- **Incremental generator caching.** The generator's models are classes holding `Location`s, so no step
-  compares equal and every edit re-emits every table; an IDE cost, not a correctness one.
+- **EF Core and checkpoints** - an unsaved edit to a tracked entity (memory holds it, since a query hands back
+  the live row) was written into the next checkpoint or export. Checkpoints and exports are now rolled forward
+  from the committed bytes instead of encoded from memory (ADR-021).
+- **Opaque tables and non-canonical keys** - a delete replayed into a table carried without its descriptor could
+  miss a row stored under another spelling of an equal key. Keys are now written canonical, and a checkpoint
+  matches a registered table's keys by value (ADR-022). Keys an earlier engine wrote keep their bytes, so a
+  table carried without its descriptor matches those by their original spelling only.
+- **Incremental generator caching** - no pipeline step compared equal, so every edit re-emitted every table. The
+  transform now hands on value-comparable output (ADR-023).
 
 - **Concurrent readers** are unsupported by design (ADR-001); a Blazor Server host must serialize access.
 - **Nested objects** are not stored (ADR-010). The next candidate if users ask: generated serializers for
   `[BlazeDbEmbedded]` types plus a deep value comparer in the EF provider.
-- **Checkpoint pause**: a checkpoint encodes the snapshot under the write lock - about 4 ms for 100,000
-  small rows on a desktop, several times that in WebAssembly. Incremental or copy-on-write snapshots would
-  remove it at the cost of write-path overhead.
+- **Checkpoint cost**: since round 14 a checkpoint holds the write lock only to take the log buffer, but it
+  reads the current snapshot and log back from storage, so it costs a read of the database as well as a write,
+  and briefly holds both the old snapshot and the new one in memory. On WebAssembly the merge still runs on the
+  one thread.
 - **Notifications are synchronous** on the committing thread; a slow handler slows the writer. Documented.
 - **Untested at scale**: the > 256 MB commit refusal and the > 1 GB buffer refusal are verified by review
   only; allocating that much in CI is not practical.

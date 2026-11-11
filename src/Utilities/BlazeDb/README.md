@@ -85,6 +85,8 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 | --- | --- |
 | `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. It also carries the Roslyn incremental source generator (binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types) as an analyzer, and - in `Bit.BlazeDb.Browser`, browser-only - the OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
 | `Bit.BlazeDb.EntityFrameworkCore` | The EF Core provider: `UseBlazeDb`, change tracking over live rows, LINQ translated to query plans. |
+| `Bit.BlazeDb.Blex` | Persists [Bit.Blex](../Blex) stores in a BlazeDb database instead of `localStorage` (see [Bit Platform integrations](#bit-platform-integrations)). |
+| `Bit.BlazeDb.Bcrdt` | Keeps [Bit.Bcrdt](../Bcrdt) collaborative documents in a BlazeDb database (see [Bit Platform integrations](#bit-platform-integrations)). |
 
 Everything public is prefixed `BlazeDb` (`BlazeDbDatabase`, `BlazeDbTable<TKey, TRow>`,
 `BlazeDbOpfsStorage`...) and lives under the `Bit.BlazeDb` namespace and its children.
@@ -933,6 +935,53 @@ tab. A tab restored from the back/forward cache re-checks that it still holds th
 writing - the data stays in memory and `db.LastBackgroundError` says why - if another tab has
 taken over in the meantime.
 
+## Bit Platform integrations
+
+Two optional packages let other Bit Platform libraries keep their data in the application's BlazeDb database, so it
+shares one write-ahead log, one backup, one key for encryption at rest and one storage quota with everything else -
+on OPFS or IndexedDB in the browser, in files on the desktop and the server. Each library stays in charge of its own
+semantics; BlazeDb only stores and journals the bytes it is handed. Neither package is a dependency of the engine.
+
+### Blex state
+
+`Bit.BlazeDb.Blex` is an `IBlexStorage` over a `blex_state` table: Blex still decides what is persisted, when, and how
+it is serialized and protected; each persisted store is one row.
+
+```csharp
+// Wherever the database is opened
+var options = new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoItem.Table).AddBlexState();
+
+// Program.cs - instead of AddBitBlexLocalStoragePersistence
+builder.Services.AddBitBlexBlazeDbPersistence(async (sp, _) => await sp.GetRequiredService<AppDatabase>().GetAsync());
+```
+
+A save commits at once and, by default, waits until the write is on storage (`flushOnSave: false` leaves it to the
+flush interval); a value equal to the stored one is not written again. In a read-only replica tab saves fail - the
+writer tab owns the database - and Blex reports them; the replica re-reads every store when it reloads from the
+writer's checkpoints, which Blex hears about as an external change, as it does a write by another instance over the
+same database. The rows belong to the database, not to a user: a browser tab's database is one user's, but on a
+Blazor Server host give each user a database of their own, or keep Blex's per-browser storage there.
+`new BlazeDbBlexStorage(database)` builds one by hand, for a `BlexStatePersistor` you create yourself.
+
+### Bcrdt documents
+
+`Bit.BlazeDb.Bcrdt` is an `IBcrdtDocumentStore` over a `bcrdt_records` table: Bcrdt still owns what an update means,
+how updates merge and when to compact; the store keeps each update as a row.
+
+```csharp
+var options = new BlazeDbDatabaseOptions { Storage = storage }.AddBcrdtDocuments();
+var db = await BlazeDbDatabase.OpenAsync(options);
+
+var store = new BlazeDbBcrdtDocumentStore(db);
+await using var persistence = await BcrdtDocumentPersistence.AttachAsync(document, store, "notes/42");
+```
+
+An append is one insert, committed in memory and journaled within the flush interval - the durability Bcrdt asks of
+a store, since a peer resends a record lost in a crash; call `db.FlushAsync()` where an edit has to be on storage at
+once. A compaction merges a document's records and replaces them in one transaction, and a delete removes them in
+one, so a crash leaves all the records or the merged one, never neither. Updates are rows like any other, held in
+memory; let Bcrdt compact to keep their number down.
+
 ## EF Core
 
 The provider maps entity types onto the same `[BlazeDbTable]` types the engine uses - the descriptor the
@@ -990,9 +1039,9 @@ from anything EF does:
   of that type has unsaved changes in *any* live context on the engine, queries read the rows
   instead of the indexes so both agree. (Contexts on one engine register with it for exactly this
   purpose; the check costs a change-detection pass over the other contexts' trackers, paid only by
-  queries that would otherwise use an index.) The log only ever holds what `SaveChanges` committed, but a
-  checkpoint or an export snapshots memory, so one taken while an edit is unsaved - or after a context was
-  discarded without saving it - writes that edit too. Save or reload (`Entry(e).Reload()`) what you edit.
+  queries that would otherwise use an index.) What reaches storage is only ever what `SaveChanges`
+  committed: the log holds committed writes, and checkpoints and exports are built from it rather than from
+  memory, so an edit that was never saved - or whose context was discarded - is gone after the next open.
 - **`SaveChanges` is a memory operation.** It returns as soon as the transaction commits; the log
   reaches storage on the flush interval, or immediately if you call `context.Database.GetBlazeDb().FlushAsync()`.
   A duplicate key or unique-index violation fails the save with `DbUpdateException` (the engine's
@@ -1136,8 +1185,9 @@ round-trips and wasm execution overhead on every query.
 
 As the table grows, the first page of an ordered index stays flat - 283 ns at 100,000 rows against
 274 ns at 10,000 - and the cost of persistence grows with the data: a checkpoint of 100,000 small rows
-takes about 4 ms and opening that database (decoding the snapshot and rebuilding every index) about 22 ms
-on a desktop CPU; expect several times that in WebAssembly.
+takes about 5 ms - without pausing writers: it is built from what storage holds, outside the write lock - and
+opening that database (decoding the snapshot and rebuilding every index) about 22 ms on a desktop CPU; expect
+several times that in WebAssembly.
 
 Reproduce with the suite in `Tests/Bit.BlazeDb.Benchmarks` (see its README). The demo app also has an
 in-browser micro-benchmark page (`/bench`) that measures the same operations in the WebAssembly

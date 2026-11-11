@@ -97,6 +97,16 @@ jobs:
         dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output ./packages --configuration Release
 
+    - name: Build and pack BlazeDb.Blex
+      run: |
+        dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Blex/Bit.BlazeDb.Blex.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Bcrdt
+      run: |
+        dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Bcrdt/Bit.BlazeDb.Bcrdt.csproj --output ./packages --configuration Release
+
     - name: Build and pack Blow
       run: |
         dotnet build src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
