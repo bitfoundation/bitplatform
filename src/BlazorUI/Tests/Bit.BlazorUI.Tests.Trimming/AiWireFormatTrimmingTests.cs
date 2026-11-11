@@ -43,6 +43,12 @@ public sealed class AiWireFormatTrimmingTests
         var (exitCode, output) = Publisher.Run(app, [], publish.Directory, TimeSpan.FromMinutes(1));
 
         Assert.AreEqual(0, exitCode, output);
-        StringAssert.Contains(output, "34 events round-tripped, 0 failed");
+
+        // The app counts the samples itself (BitAiWireSamples.All, which this project does not reference), so the count is
+        // read rather than pinned: a sample added or removed changes it, and only a failure is one.
+        var summary = System.Text.RegularExpressions.Regex.Match(output, @"(\d+) events round-tripped, (\d+) failed");
+        Assert.IsTrue(summary.Success, output);
+        Assert.IsGreaterThan(0, int.Parse(summary.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), output);
+        Assert.AreEqual("0", summary.Groups[2].Value, output);
     }
 }

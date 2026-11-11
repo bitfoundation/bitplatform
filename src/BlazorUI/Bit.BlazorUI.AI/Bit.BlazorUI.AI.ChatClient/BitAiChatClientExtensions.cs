@@ -161,10 +161,11 @@ public static class BitAiChatClientExtensions
                         break;
 
                     case ErrorContent error:
-                        yield return new BitAiErrorEvent(new BitAiError(error.Message ?? "The model reported an error.")
+                        // The provider's own message and details can hold what the browser must not read (a request id,
+                        // an internal address, a quota of the account); only its code - a stable identifier - goes out.
+                        yield return new BitAiErrorEvent(new BitAiError("The model reported an error.")
                         {
                             Code = error.ErrorCode,
-                            Detail = error.Details,
                             Kind = BitAiErrorKind.Provider,
                         }, isTerminal: false);
                         break;
@@ -432,7 +433,7 @@ public static class BitAiChatClientExtensions
             if (annotation is not CitationAnnotation citation) continue;
 
             var url = citation.Url is { } address ? Address(address) : null;
-            var sourceId = url ?? citation.FileId ?? citation.Title ?? BitAiId.New("src");
+            var sourceId = NonBlank(url) ?? NonBlank(citation.FileId) ?? NonBlank(citation.Title) ?? BitAiId.New("src");
             var source = new BitAiCitationSource(sourceId, citation.Title ?? url ?? citation.FileId ?? string.Empty)
             {
                 Url = url,
@@ -444,6 +445,8 @@ public static class BitAiChatClientExtensions
             yield return new BitAiCitation(BitAiId.New("cite"), source) { Quote = citation.Snippet };
         }
     }
+
+    private static string? NonBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static JsonElement? ToJson(IDictionary<string, object?>? arguments)
     {
@@ -476,7 +479,9 @@ public static class BitAiChatClientExtensions
     {
         if (result.Exception is { } exception)
         {
-            return BitAiToolOutcome.Failure(new BitAiError(exception.Message) { Kind = BitAiErrorKind.Tool, Exception = exception });
+            // The exception's text can hold what the browser must not read (a connection string, a path of the server), and
+            // the outcome is streamed to it; the exception itself stays on the error, which is never serialized.
+            return BitAiToolOutcome.Failure(new BitAiError("The tool failed.") { Code = "tool_error", Kind = BitAiErrorKind.Tool, Exception = exception });
         }
 
         return result.Result switch

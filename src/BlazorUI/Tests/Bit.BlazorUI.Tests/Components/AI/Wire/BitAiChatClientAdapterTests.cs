@@ -197,6 +197,50 @@ public class BitAiChatClientAdapterTests
     }
 
     [TestMethod]
+    public async Task AFailedFunctionSendsNoTextOfItsException()
+    {
+        var thrown = new InvalidOperationException("Server=db;Password=secret");
+        var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new FunctionResultContent("call1", null) { Exception = thrown }));
+
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+
+        var evt = events.OfType<BitAiToolResultEvent>().Single();
+        Assert.AreSame(thrown, evt.Outcome.Error!.Exception, "The exception stays on the error, for the server's logs.");
+        Assert.DoesNotContain("secret", evt.Outcome.Error.Message);
+        Assert.DoesNotContain("secret", BitAiWireSerializer.Serialize(evt));
+    }
+
+    [TestMethod]
+    public async Task AnErrorContentSendsItsCodeButNotTheProvidersText()
+    {
+        var client = new BitAiFakeChatClient(BitAiFakeChatClient.Of(new ErrorContent("quota of org-secret exceeded") { ErrorCode = "rate_limit", Details = "request req-secret" }));
+
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+
+        var evt = events.OfType<BitAiErrorEvent>().Single();
+        Assert.AreEqual("rate_limit", evt.Error.Code);
+        Assert.AreEqual(BitAiErrorKind.Provider, evt.Error.Kind);
+        Assert.DoesNotContain("secret", BitAiWireSerializer.Serialize(evt));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public async Task ACitationWithBlankIdentifiersGetsAnIdOfItsOwn(string blank)
+    {
+        var client = new BitAiFakeChatClient(
+            BitAiFakeChatClient.Of(new TextContent("x") { Annotations = [new CitationAnnotation { FileId = blank, Title = blank }] }),
+            BitAiFakeChatClient.Of(new TextContent("y") { Annotations = [new CitationAnnotation { FileId = blank, Title = "Handbook" }] }));
+
+        var events = await Collect(client.StreamBitAiEventsAsync(Request(User("hi"))));
+
+        var sources = events.OfType<BitAiCitationEvent>().Select(e => e.Citation.Source).ToArray();
+        Assert.HasCount(2, sources);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(sources[0].SourceId));
+        Assert.AreEqual("Handbook", sources[1].SourceId);
+    }
+
+    [TestMethod]
     public async Task TheTranscriptMapsToChatMessages()
     {
         var user = User("Find blazor");
