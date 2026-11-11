@@ -325,6 +325,7 @@ public static class ComponentCatalog
         // Utilities
         ["CascadingValueProvider"] = BitIconName.Share,
         ["Element"] = BitIconName.WebComponents,
+        ["FocusOnInvalidSubmit"] = BitIconName.Focus,
         ["Icon"] = BitIconName.AppIconDefault,
         ["Image"] = BitIconName.FileImage,
         ["Label"] = BitIconName.Label,
@@ -504,6 +505,7 @@ public static class ComponentCatalog
         // Utilities
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
+        ["FocusOnInvalidSubmit"] = "Moves the focus to the first invalid field of an EditForm when its submit fails.",
         ["Icon"] = "Renders a Fabric glyph, or an icon from any other set you point it at.",
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
         ["Label"] = "Gives a name to a control or a group of controls.",

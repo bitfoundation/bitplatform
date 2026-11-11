@@ -145,6 +145,7 @@ public partial class MainLayout
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
+                new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
                 new() { Text = "Icon", Url = "/components/icon", Description = "Glyph, Symbol" },
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
