@@ -99,13 +99,35 @@ internal static class BlowDiagramText
         var children = document.Nodes.Where(n => n.ParentId is not null && byId.ContainsKey(n.ParentId))
             .GroupBy(n => n.ParentId!).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
 
+        // Each edge goes to the groups holding both its ends, sorted once rather than every edge scanned per group.
+        // An id can repeat, so an id maps to every parent a node with it has.
+        var parentsOf = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        foreach (var (parent, members) in children)
+        {
+            foreach (var m in members)
+            {
+                if (!parentsOf.TryGetValue(m.Id, out var parents)) parentsOf[m.Id] = parents = [];
+                if (!parents.Contains(parent, StringComparer.Ordinal)) parents.Add(parent);
+            }
+        }
+        var inner = new Dictionary<string, List<BlowEdge>>(StringComparer.Ordinal);
+        foreach (var edge in document.Edges)
+        {
+            if (!parentsOf.TryGetValue(edge.Source, out var sourceParents) || !parentsOf.TryGetValue(edge.Target, out var targetParents)) continue;
+            foreach (var parent in sourceParents)
+            {
+                if (!targetParents.Contains(parent, StringComparer.Ordinal)) continue;
+                if (!inner.TryGetValue(parent, out var list)) inner[parent] = list = [];
+                list.Add(edge);
+            }
+        }
+
         // Deepest groups first: the walk lists each group's exit after every group inside it.
         var groups = Walk(document.Nodes).Where(s => s.Step == Step.Exit).Select(s => s.Node).ToList();
         foreach (var group in groups)
         {
             var members = children[group.Id];
-            var ids = members.Select(m => m.Id).ToHashSet(StringComparer.Ordinal);
-            layout.Arrange(members, [.. document.Edges.Where(e => ids.Contains(e.Source) && ids.Contains(e.Target))]);
+            layout.Arrange(members, inner.TryGetValue(group.Id, out var edges) ? edges : []);
 
             var minX = members.Min(m => m.Position.X);
             var minY = members.Min(m => m.Position.Y);
