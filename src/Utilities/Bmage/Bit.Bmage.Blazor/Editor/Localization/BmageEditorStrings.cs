@@ -104,6 +104,9 @@ public sealed record BmageEditorStrings
     public string BlackAndWhite { get; init; } = "Black and white";
     public string Duotone { get; init; } = "Duotone";
     public string MotionBlur { get; init; } = "Motion blur";
+    /// <summary>The filter preset that turns a photographed page into clean black text on white.</summary>
+    public string Document { get; init; } = "Document";
+    public string ZoomBlur { get; init; } = "Zoom blur";
     public string Angle { get; init; } = "Angle";
 
     // Transform

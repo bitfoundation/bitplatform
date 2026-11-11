@@ -24,6 +24,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Multi-image import | verified | P1 | `ImageLoader.LoadManyAsync`, batch | `PipelineTests` | - |
 | Import a file as a layer (editor) | verified | P2 | `BmageEditor.AddImageLayerAsync`, Layers tab | E2E `EditingToolTests.TheNewControlsAreNamedForAssistiveTechnology` (control present) | Pixel placement covered by `OverlayAttachmentTests`; no E2E upload of a layer image yet |
 | Animated image editing | deferred | P3 | - | - | First frame decoded; animation editing is a separate problem |
+| ICO decode (largest image, PNG or 1/4/8/24/32-bit bitmap with mask) | verified | P2 | `Codecs/Ico/IcoCodec.cs` | `IcoCodecTests` (bitmap entries, alpha against mask, malformed directories), Pillow cross-check | - |
+| TIFF, HEIF/HEIC decode | deferred | P3 | - | - | Through the browser decoder where the platform has one; see gap analysis 12 |
 
 ## B. Geometry
 
@@ -48,6 +50,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Levels, curves, colour matrix | verified | P1 | `Adjustments.cs`, `CurveOperation.cs`, `ColorMatrix.cs` | `OperationTests` | - |
 | Grayscale, sepia, invert, threshold, posterize | verified | P1 | `Adjustments.cs` | `OperationTests` | - |
 | Auto levels, auto contrast, histograms, statistics | verified | P1 | `Analysis/ImageStatistics.cs` | `AnalysisTests` | - |
+| Sharpness (blur detection) | verified | P1 | `Analysis/ImageSharpness.cs` | `ImageSharpnessTests` (monotonic in blur, resolution independent, regions) | Content dependent: thresholds come from the app's own examples |
+| Document skew estimate | verified | P1 | `Analysis/DocumentSkew.cs` | `DocumentSkewTests` (exact to 0.15 degrees at five tilts, light on dark, regions, confidence), E2E `ScanAndCropperTests` | Up to 45 degrees either way |
 | HSL / per-colour adjustment | verified | P1 | `Operations/Adjustments/ColorAdjustments.cs` (`HslAdjustment`) | `ColorAdjustmentTests` | HSL model, not perceptual (documented) |
 | Channel mixer, black-and-white mixer | verified | P1 | `ChannelMixerAdjustment` | `ColorAdjustmentTests` | - |
 | Gradient map, duotone | verified | P1 | `GradientMapOperation` | `ColorAdjustmentTests` | - |
@@ -57,6 +61,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Colour replacement / selective colour | verified | P2 | `HslAdjustment`; `FillLayer` with `FloodMask` and `BlendMode.Color` | `ColorAdjustmentTests`, demo `/retouch` | - |
 | Histogram and clipping view in the editor | verified | P2 | Adjust tab | E2E `TheHistogramFollowsTheImageAndReportsClipping` | Every fourth pixel of every fourth row is counted |
 | ICC colour management | deferred | P3 | - | - | Profiles read and preserved, pixels treated as sRGB |
+| 3D colour lookup tables (`.cube` read and write, tetrahedral) | verified | P2 | `Operations/Adjustments/ColorLookupTable.cs` | `ColorLutTests` (exact for linear maps, domains, malformed files), `SerializationTests` | One-dimensional `.cube` tables refused (a curve is their equivalent) |
 
 ## D. Filters and effects
 
@@ -68,6 +73,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | High-pass | verified | P2 | `HighPassFilter` | `HighPassTests` | - |
 | Masked / selective application | verified | P1 | `Masks/MaskedOperation.cs` | `MaskTests` | - |
 | Halftone | deferred | P3 | - | - | Niche; a custom operation can do it |
+| Zoom and spin (radial) blur | verified | P2 | `Operations/Filters/RadialBlur.cs`, editor Filters tab | `RadialBlurTests` (directional along wedges and rings, centre sharp, premultiplied, threads, proxy), `SerializationTests` | Passes of four bilinear samples soften a little across the streak; two 16-bit working copies while it runs |
+| Adaptive threshold (Sauvola, mean) | verified | P1 | `Operations/Filters/AdaptiveThreshold.cs`, editor Document look | `AdaptiveThresholdTests` (shadowed page, region, threads, in place), E2E `ScanAndCropperTests` | One byte a pixel of luminance while it runs |
 | Drop shadow, glow, outline as layer effects | deferred | P3 | - | - | Expressible with masks, `MorphedMask.Border`, blur and fill layers |
 
 ## E. Layers, compositing, masks
@@ -140,6 +147,9 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Metadata policies | verified | P1 | `Metadata/Containers.cs` | `MetadataTests` | - |
 | Blob, bytes, stream, download, clipboard | verified | P1 | `ImageExporter` | E2E `EditorTests` | - |
 | JSON document (external image references) | verified | P2 | `Serialization/*` | `SerializationTests` | - |
+| Indexed PNG (`MaxColors`, `Dither`; 1/2/4/8 bits) | verified | P1 | `Codecs/ColorQuantizer.cs`, `Codecs/Png/PngEncoder.cs`, browser encoder delegates | `IndexedPngTests` (exact for few colours, bit depths, dithering), Pillow cross-check | - |
+| GIF encode (one frame, median cut, dithering) | verified | P2 | `Codecs/Gif/GifEncoder.cs` | `GifEncoderTests` (every code width, table resets, transparency), Pillow cross-check | No partial transparency (GIF has none); no animation |
+| ICO encode and favicons | verified | P2 | `IcoEncoder`, `IcoEncoder.CreateFavicon` | `IcoCodecTests`, `GifEncoderTests.TheProcessorEncodesGifAndIcoThroughItsRegistry` | Images up to 256 pixels |
 | Self-contained project file | verified | P2 | `Serialization/BmageProject.cs`, editor Save/Open project | `ProjectTests` (round trip, dedup, ownership, hostile archives, zip bomb, pixel budget, unused images, malformed manifests, damaged entries, leak-free failure), E2E `AProjectSavedAndReopenedIsStillEditable` | Images stored as PNG: large for big photos |
 
 ## K. Performance and memory
@@ -153,6 +163,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Releases wait for full renders already running | verified | P0 | `ImageEditSession.RenderFullAsync`, `WhenIdle` | `ReviewRegressionTests.DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone` (fails without it) | Interactive Server: a replaced preview can be disposed while the circuit thread reads it (one wrong frame) |
 | Memory estimates and budgets | verified | P1 | `ImagePipeline.EstimateMemory`, `Memory/BudgetedPixelAllocator.cs` | `MemoryBudgetTests` | New operations use the generic estimate |
 | Benchmarks of the new tools | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`EditingToolBenchmarks`) | `docs/performance.md#editing-tools` | - |
+| Benchmarks of the document tools, effects and palette encoders | verified | P1 | `Tests/Bit.Bmage.Benchmarks` (`DocumentAndEffectBenchmarks`) | `docs/performance.md#document-tools-effects-and-palettes` | Stopwatch, since BenchmarkDotNet 0.15.8 cannot run on .NET 11; desktop only, not measured on WebAssembly |
 | The new tools measured in WebAssembly, interpreter and AOT | verified | P1 | `/performance` "Run the editing tools", E2E `PerformanceMeasurements` (opt-in) | `docs/performance.md#webassembly-editing-tools` | Headless Chrome 156 on one desktop machine, calibrated against the page's published rows; no phone measured |
 
 ## L. Browser compatibility
@@ -175,6 +186,16 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | Untrusted project archives | verified | P0 | `BmageProject.LoadAsync` | `ProjectTests` (`TheImagesTogetherAreBoundedBeforeTheyAreDecoded`, `TheFilesAreCountedFromTheDirectoryNotFromWhatTheArchiveDeclares`, `AMalformedProjectIsReportedAsOneWhateverIsWrongWithIt`) | ZIP64 refused |
 | URL host allow-list | deferred | P2 | - | - | Fetches run in the user's browser under CORS; an app can validate URLs before calling |
 | Extension points (operations, masks, layers, annotations, codecs, tools) | verified | P1 | see `docs/extending.md` | `SerializationTests` (custom codecs) | `Transform` overridable for custom overlays |
+| Editor tools and panels restricted by the host (`Tools`, `Panels`) | verified | P1 | `BmageEditor.Tools/Panels/OfferedTools`, `EditorPanels`, toolbar and panel | E2E `ScanAndCropperTests.TheEditorReducedToACropperOffersOnlyItsToolsAndNoPanel` | - |
+| Cropper (the editor reduced) and a keyboard-appliable crop frame | verified | P1 | `BmageEditor.BeginCrop`, demo `/editor#a-cropper` | E2E `ScanAndCropperTests` (square frame applied) | A separate component deliberately not built; see gap analysis 12 |
+
+## R. Integrations
+
+| Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
+| --- | --- | --- | --- | --- | --- |
+| Barcodes and QR codes from Bmage images, with preprocessing retries | verified | P1 | `Bit.Bmage.BbScanner` | `Tests/Bit.Bmage.Tests.Integrations/BarcodeTests` (soft QR and Code 128 read only after preprocessing, corners mapped back, image unchanged), E2E `ScanAndCropperTests` | Preprocessing limited to what measurably rescues reads |
+| Bink documents from Bmage images, drawings back as images and layers | verified | P1 | `Bit.Bmage.Bink` | `Tests/Bit.Bmage.Tests.Integrations/BinkTests` (round trip exact, flatten, overlay at 2x, layer equals flatten, size limit, skipped text) | Text drawn only with a `TextRasterizer`, reported otherwise |
+| Borm, Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, Bortable | not applicable as packages | - | `docs/integrations.md` | - | Plain data and documented recipes; see gap analysis 12 |
 
 ## Verification log
 
@@ -209,3 +230,11 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | 2026-10-23 | 11 | E2E full, Chromium | 92 passed, 1 inconclusive (the opt-in measurement), 0 failed (8 min 21 s) |
 | 2026-10-23 | 11 | E2E full, WebKit | 90 passed, 3 inconclusive (the measurement, the worker path without `OffscreenCanvas`), 0 failed |
 | 2026-10-23 | 11 | E2E full, Firefox | 91 passed, 2 inconclusive (the measurement, the synthetic paste), 0 failed |
+| 2026-11-11 | baseline 12 | `Bit.Bmage.Tests` net10.0 | 1307 / 1307 passed |
+| 2026-11-11 | baseline 12 | `Bit.Bmage.Tests.Mcp` | 231 / 234: the tests expected the README's old title, which a pending README change renamed; tests aligned (234 / 234) |
+| 2026-11-11 | 12 | `Bit.Bmage.Tests` net10.0 and net11.0 | 2768 / 2768 passed |
+| 2026-11-11 | 12 | `Bit.Bmage.Tests.Integrations` net10.0 and net11.0 | 24 / 24 passed |
+| 2026-11-11 | 12 | `Bit.Bmage.Tests.Mcp`, `Bit.Bmage.Tests.Hosting` | 234 / 234, 30 / 30 passed |
+| 2026-11-11 | 12 | GIF, indexed PNG and ICO output decoded by Pillow 12.3 | identical to the quantizer's pixels, 1x1 to 640x480, 2 to 256 colours |
+| 2026-11-11 | 12 | E2E, Chromium: demo pages, editor, editing tools, lifecycle, regressions, processing, capabilities, JS contract, scan and cropper | 105 / 105 passed, after a fix: the cropper example first put a second editor on `/editor`, which nine tests that expect one found |
+| 2026-11-11 | 12 | Firefox, WebKit, samples, MAUI, lazy loading E2E | not run this round |

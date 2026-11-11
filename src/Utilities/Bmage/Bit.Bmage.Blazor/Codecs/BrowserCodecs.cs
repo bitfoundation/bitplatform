@@ -308,6 +308,8 @@ public sealed class BrowserImageEncoder : IImageEncoder
             throw new ImageCapabilityException($"The browser encoder is not configured for {options.Format}.");
         // A canvas only writes lossy WebP, so a lossless one, the only lossless choice there is, is the managed encoder's.
         if (options.EncodesLosslessly) return WebP.WebPEncoder.Encode(image, options, cancellationToken);
+        // Nor does it write an indexed PNG.
+        if (options.Format == ImageFormat.Png && options.MaxColors is not null) return Png.PngEncoder.Encode(image, options, cancellationToken);
 
         // Formats without alpha need an explicit backdrop; otherwise browsers composite over black. The browser draws it
         // behind the pixels, which leaves opaque ones untouched, so there is no need to scan for transparency first.

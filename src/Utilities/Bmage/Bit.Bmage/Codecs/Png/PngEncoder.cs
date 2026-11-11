@@ -4,7 +4,10 @@ using Bit.Bmage.Metadata;
 
 namespace Bit.Bmage.Codecs.Png;
 
-/// <summary>Managed PNG encoder producing 8-bit RGB or RGBA images with adaptive per-row filtering.</summary>
+/// <summary>
+/// Managed PNG encoder producing 8-bit RGB or RGBA images with adaptive per-row filtering, or, when
+/// <see cref="ImageExportOptions.MaxColors"/> is set, indexed images of 1, 2, 4 or 8 bits a pixel with a palette.
+/// </summary>
 public sealed class PngEncoder : IImageEncoder
 {
     private static readonly ImageFormat[] SupportedFormats = [ImageFormat.Png];
@@ -17,6 +20,8 @@ public sealed class PngEncoder : IImageEncoder
     {
         ArgumentNullException.ThrowIfNull(image);
         options ??= ImageExportOptions.Png;
+        if (options.MaxColors is { } maxColors)
+            return EncodeIndexed(image, ColorQuantizer.Quantize(image, maxColors, options.Dither, cancellationToken: cancellationToken), options, cancellationToken);
         var hasAlpha = image.HasTransparency();
         var channels = hasAlpha ? 4 : 3;
         var width = image.Width;
@@ -32,26 +37,7 @@ public sealed class PngEncoder : IImageEncoder
         ihdr[8] = 8; ihdr[9] = (byte)(hasAlpha ? 6 : 2); ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
         PngContainer.WriteChunk(ms, "IHDR", ihdr);
 
-        var metadata = image.Metadata?.Apply(options.Metadata, width, height);
-        if (metadata is { IsEmpty: false })
-        {
-            if (!metadata.IccProfile.IsEmpty)
-            {
-                var body = new MemoryStream();
-                body.Write("ICC Profile\0\0"u8);
-                using (var zs = new ZLibStream(body, CompressionLevel.Optimal, leaveOpen: true)) zs.Write(metadata.IccProfile.Span);
-                PngContainer.WriteChunk(ms, "iCCP", body.ToArray());
-            }
-            if (metadata.Exif is { IsEmpty: false } exif) PngContainer.WriteChunk(ms, "eXIf", exif.ToTiff());
-            if (!metadata.Xmp.IsEmpty)
-            {
-                var body = new MemoryStream();
-                body.Write("XML:com.adobe.xmp\0"u8);
-                body.Write([0, 0, 0, 0]);
-                body.Write(metadata.Xmp.Span);
-                PngContainer.WriteChunk(ms, "iTXt", body.ToArray());
-            }
-        }
+        WriteMetadata(ms, image, options);
 
         // Filter and compress straight into IDAT chunks. PNG allows the image data to be split across any number of
         // IDAT chunks, so the compressed bytes never have to be held in one buffer; peak memory stays at the chunk size
@@ -89,6 +75,92 @@ public sealed class PngEncoder : IImageEncoder
                 else { filtered[0] = 0; cur.CopyTo(filtered, 1); }
                 zs.Write(filtered, 0, filtered.Length);
                 (prev, cur) = (cur, prev);
+            }
+        }
+        PngContainer.WriteChunk(ms, "IEND", default);
+        return new EncodedImage(ms.ToArray(), ImageFormat.Png, width, height);
+    }
+
+    private static void WriteMetadata(MemoryStream ms, ImageBuffer image, ImageExportOptions options)
+    {
+        var width = image.Width;
+        var height = image.Height;
+            var metadata = image.Metadata?.Apply(options.Metadata, width, height);
+            if (metadata is { IsEmpty: false })
+            {
+                if (!metadata.IccProfile.IsEmpty)
+                {
+                    var body = new MemoryStream();
+                    body.Write("ICC Profile\0\0"u8);
+                    using (var zs = new ZLibStream(body, CompressionLevel.Optimal, leaveOpen: true)) zs.Write(metadata.IccProfile.Span);
+                    PngContainer.WriteChunk(ms, "iCCP", body.ToArray());
+                }
+                if (metadata.Exif is { IsEmpty: false } exif) PngContainer.WriteChunk(ms, "eXIf", exif.ToTiff());
+                if (!metadata.Xmp.IsEmpty)
+                {
+                    var body = new MemoryStream();
+                    body.Write("XML:com.adobe.xmp\0"u8);
+                    body.Write([0, 0, 0, 0]);
+                    body.Write(metadata.Xmp.Span);
+                    PngContainer.WriteChunk(ms, "iTXt", body.ToArray());
+                }
+            }
+    }
+
+    /// <summary>
+    /// Writes an indexed PNG: a PLTE chunk of the palette, a tRNS chunk of the translucent entries' alpha (they come
+    /// first), and the indices packed at the fewest bits a pixel the palette allows. Rows are left unfiltered, as the
+    /// specification recommends for palette images: neighbouring indices are not neighbouring colours.
+    /// </summary>
+    internal static EncodedImage EncodeIndexed(ImageBuffer image, QuantizedImage quantized, ImageExportOptions options, CancellationToken cancellationToken)
+    {
+        int width = image.Width, height = image.Height;
+        var palette = quantized.Palette;
+        var bits = palette.Length switch { <= 2 => 1, <= 4 => 2, <= 16 => 4, _ => 8 };
+        var level = Math.Clamp(options.PngCompressionLevel, 0, 9);
+
+        var ms = new MemoryStream(Math.Max(1024, image.PixelCount / 4));
+        ms.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+        Span<byte> ihdr = stackalloc byte[13];
+        BinaryPrimitives.WriteInt32BigEndian(ihdr, width);
+        BinaryPrimitives.WriteInt32BigEndian(ihdr[4..], height);
+        ihdr[8] = (byte)bits; ihdr[9] = 3; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+        PngContainer.WriteChunk(ms, "IHDR", ihdr);
+        WriteMetadata(ms, image, options);
+
+        var plte = new byte[palette.Length * 3];
+        for (var i = 0; i < palette.Length; i++)
+        {
+            plte[i * 3] = palette[i].R;
+            plte[i * 3 + 1] = palette[i].G;
+            plte[i * 3 + 2] = palette[i].B;
+        }
+        PngContainer.WriteChunk(ms, "PLTE", plte);
+        var translucent = quantized.TranslucentCount;
+        if (translucent > 0)
+        {
+            var trns = new byte[translucent];
+            for (var i = 0; i < translucent; i++) trns[i] = palette[i].A;
+            PngContainer.WriteChunk(ms, "tRNS", trns);
+        }
+
+        var compression = level switch { 0 => CompressionLevel.NoCompression, <= 3 => CompressionLevel.Fastest, <= 7 => CompressionLevel.Optimal, _ => CompressionLevel.SmallestSize };
+        var stride = (width * bits + 7) / 8;
+        using (var idat = new IdatChunkWriter(ms))
+        using (var zs = new ZLibStream(idat, compression, leaveOpen: true))
+        {
+            var line = new byte[stride + 1];
+            var perByte = 8 / bits;
+            for (var y = 0; y < height; y++)
+            {
+                if ((y & 63) == 0) cancellationToken.ThrowIfCancellationRequested();
+                var indices = quantized.Indices.AsSpan(y * width, width);
+                Array.Clear(line);
+                if (bits == 8) indices.CopyTo(line.AsSpan(1));
+                else
+                    for (var x = 0; x < width; x++)
+                        line[1 + x / perByte] |= (byte)(indices[x] << (8 - bits * (x % perByte + 1)));
+                zs.Write(line, 0, line.Length);
             }
         }
         PngContainer.WriteChunk(ms, "IEND", default);

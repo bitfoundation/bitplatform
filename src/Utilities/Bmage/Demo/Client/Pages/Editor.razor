@@ -115,6 +115,8 @@
                 <tr><th scope="row"><code>AcceptedFileTypes</code></th><td>The file types its own drop zone and file picker offer. Default <code>image/*</code>.</td></tr>
                 <tr><th scope="row"><code>TextRasterizer</code></th><td>What text and step numbers are drawn with. Null uses the <code>FontTextRasterizer</code> from the services, which draws once a font is registered with it - this site registers Noto Sans and Vazirmatn.</td></tr>
                 <tr><th scope="row"><code>ShowToolbar</code>, <code>ShowPanel</code></th><td>Hide the built-in chrome without replacing it.</td></tr>
+                <tr><th scope="row"><code>Tools</code></th><td>The tools offered, or null for all of them. The toolbar shows only these, and <code>SetTool</code> selects no other - see <a href="/editor#a-cropper">a cropper</a>.</td></tr>
+                <tr><th scope="row"><code>Panels</code></th><td>The tabs of the built-in panel: any of <code>Adjust</code>, <code>Filters</code>, <code>Transform</code>, <code>Tools</code>, <code>Layers</code>, <code>History</code> and <code>Export</code>, or <code>EditorPanels.None</code> for no panel.</td></tr>
                 <tr><th scope="row"><code>Toolbar</code>, <code>Panel</code>, <code>Footer</code></th><td>Replace the chrome entirely; each receives a <code>BmageEditorContext</code>.</td></tr>
                 <tr><th scope="row"><code>EmptyState</code></th><td>Replace the "drop an image here" view.</td></tr>
                 <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BitBmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
@@ -124,6 +126,31 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<div class="bb-card" id="a-cropper">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A cropper</h3>
+    <p>
+        The same component with less of it: offer only the crop and pan tools, hide the panel, and fix the
+        aspect ratio, and it is a cropper for an avatar or a product shot - with the same undo, keyboard access
+        and export as the full editor.
+    </p>
+    <div class="bb-toolbar">
+        <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="LoadCropperSample">Load a sample image</button>
+    </div>
+    @* Rendered once asked for, so the page holds one editor until then. *@
+    @if (_showCropper)
+    {
+        <div class="cropper-frame bb-page-wide">
+            <BmageEditor @ref="_cropper"
+                         AriaLabel="Cropper"
+                         Class="@ThemeClass"
+                         Tools="CropperTools"
+                         Panels="EditorPanels.None"
+                         OnImageLoaded="OnCropperImageLoaded" />
+        </div>
+    }
+    <CodeSnippet Code="@CropperSnippet" Language="Razor" />
 </div>
 
 <div class="bb-card">
@@ -298,6 +325,43 @@
 </div>
 
 @code {
+    private BmageEditor? _cropper;
+
+    private static readonly EditorToolKind[] CropperTools = [EditorToolKind.Crop, EditorToolKind.Pan];
+
+    private const string CropperSnippet = """
+        <BmageEditor @ref="cropper"
+                     Tools="[EditorToolKind.Crop, EditorToolKind.Pan]"
+                     Panels="EditorPanels.None"
+                     OnImageLoaded="OnImageLoaded" />
+
+        @code {
+            private BmageEditor cropper = default!;
+
+            // The largest square in the middle, ready to move, resize and apply.
+            private void OnImageLoaded(ImageBuffer image) => cropper.BeginCrop(AspectRatio.Square);
+        }
+        """;
+
+    private bool _showCropper;
+    private bool _loadCropperSample;
+
+    private void LoadCropperSample()
+    {
+        _showCropper = true;
+        _loadCropperSample = true;
+    }
+
+    // The cropper exists from the render that showed it on.
+    private async Task LoadCropperSampleOnceShownAsync()
+    {
+        if (!_loadCropperSample || _cropper is null) return;
+        _loadCropperSample = false;
+        await _cropper.LoadImageAsync(SampleImages.Landscape(1200, 800));
+    }
+
+    private void OnCropperImageLoaded(ImageBuffer image) => _cropper?.BeginCrop(AspectRatio.Square);
+
     private BmageEditor? _editor;
     private ImageDocument? _document;
     private string _theme = "site";
@@ -307,6 +371,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await LoadCropperSampleOnceShownAsync();
         if (!firstRender || RendererInfo.IsInteractive is false) return;
         try
         {

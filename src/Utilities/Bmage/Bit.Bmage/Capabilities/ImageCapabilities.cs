@@ -17,10 +17,10 @@ public sealed record ImageCapabilities
     // Declared before Managed, which static initialisation order makes them ready for.
 
     /// <summary>What the managed decoders read, in any environment.</summary>
-    internal static IReadOnlySet<ImageFormat> ManagedDecodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif };
+    internal static IReadOnlySet<ImageFormat> ManagedDecodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Ico };
 
     /// <summary>What the managed encoders write, in any environment.</summary>
-    internal static IReadOnlySet<ImageFormat> ManagedEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP };
+    internal static IReadOnlySet<ImageFormat> ManagedEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP, ImageFormat.Gif, ImageFormat.Ico };
 
     /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP and WebP, and GIF and AVIF decoding.</summary>
     public static ImageCapabilities Managed { get; } = new()

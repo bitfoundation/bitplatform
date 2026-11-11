@@ -82,11 +82,13 @@ public sealed class BrowserCapabilityProvider : IImageCapabilityProvider
         // encoding, and, where they run on a server, WebP on a browser that cannot write it, such as Safari. In WebAssembly
         // they would run on the UI thread, many times slower than the canvas, so a format only they write is not offered
         // there, and a choice such as EncodeWithFallbackAsync's falls to one the canvas writes. Asked for anyway, it works.
+        // BMP, GIF and ICO are offered all the same: no canvas writes GIF or ICO, so the managed encoders are the only
+        // way to them, and BMP and ICO cost next to nothing to write.
         var environment = OperatingSystem.IsBrowser() ? ImageEnvironment.BrowserWebAssembly : ImageEnvironment.BrowserServer;
         var nativeDecodable = decodable.ToHashSet();
         var nativeEncodable = encodable.ToHashSet();
         decodable.UnionWith(ImageCapabilities.ManagedDecodableFormats);
-        if (environment == ImageEnvironment.BrowserWebAssembly) encodable.Add(ImageFormat.Bmp);
+        if (environment == ImageEnvironment.BrowserWebAssembly) encodable.UnionWith([ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.Ico]);
         else encodable.UnionWith(ImageCapabilities.ManagedEncodableFormats);
 
         var maxDimension = report.MaxCanvasDimension > 0 ? report.MaxCanvasDimension : 4096;

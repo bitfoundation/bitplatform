@@ -15,7 +15,7 @@ public class McpControllerTests
     {
         var overview = _controller.GetBmageOverview();
 
-        StringAssert.StartsWith(overview, "# bit Bmage");
+        StringAssert.StartsWith(overview, "# Bit.Bmage");
         StringAssert.Contains(overview, BmageServerInstructions.BmageVersion);
         StringAssert.Contains(overview, "## Packages");
         StringAssert.Contains(overview, "## Installation");
@@ -89,7 +89,7 @@ public class McpControllerTests
     {
         StringAssert.StartsWith(_controller.GetBmageDocument("docs/pipelines.md"), "# Pipelines");
         StringAssert.StartsWith(_controller.GetBmageDocument("Pipelines"), "# Pipelines");
-        StringAssert.StartsWith(_controller.GetBmageDocument("overview"), "# bit Bmage");
+        StringAssert.StartsWith(_controller.GetBmageDocument("overview"), "# Bit.Bmage");
 
         var section = _controller.GetBmageDocument("pipelines", "the OPTIMISER");
 
