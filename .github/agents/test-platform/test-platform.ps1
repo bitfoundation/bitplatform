@@ -304,21 +304,27 @@ function Initialize-AndroidDevice {
         throw "No Android device is connected and $emulator lists no AVD to boot."
     }
 
-    Write-Host "Booting the $avd emulator..."
-    Start-Process $emulator -ArgumentList '-avd', $avd | Out-Null
+    foreach ($arguments in @(@('-avd', $avd), @('-avd', $avd, '-no-snapshot-load'))) {
+        Write-Host ($arguments -contains '-no-snapshot-load' ? "It didn't boot from its quick boot snapshot within 5 minutes. Booting it cold..." : "Booting the $avd emulator...")
+        $process = Start-Process $emulator -ArgumentList $arguments -PassThru
+        $deadline = (Get-Date).AddMinutes(5)
 
-    $deadline = (Get-Date).AddMinutes(5)
+        while ((Get-Date) -lt $deadline) {
+            if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
+                Disable-AndroidSystemSheets
+                return
+            }
 
-    while ((Get-Date) -lt $deadline) {
-        if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
-            Disable-AndroidSystemSheets
-            return
+            Start-Sleep -Seconds 3
         }
 
+        Get-CimInstance Win32_Process -Filter "ParentProcessId = $($process.Id)" | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 3
+        Remove-Item (Join-Path $env:USERPROFILE ".android\avd\$avd.avd\hardware-qemu.ini.lock") -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    throw "The $avd emulator did not finish booting within 5 minutes."
+    throw "The $avd emulator did not finish booting within 5 minutes, from its quick boot snapshot or cold."
 }
 
 function Get-AndroidVersion([string] $package) {
@@ -933,6 +939,48 @@ function Write-BitSteps([string] $log, [string] $after) {
         ForEach-Object { Write-Host $_.TrimEnd() }
 }
 
+function Invoke-DevContainerUp([string] $cli, [string] $folder, [string[]] $mount, [string] $log) {
+    $job = Start-ThreadJob -ArgumentList $cli, $folder, $mount, $log -ScriptBlock {
+        param($cli, $folder, $mount, $log)
+        npx.cmd -y '@devcontainers/cli' up --docker-path $cli --workspace-folder $folder @mount *> $log
+    }
+
+    $length = -1
+    $quietSince = [DateTimeOffset]::Now
+
+    while (-not (Wait-Job $job -Timeout 15)) {
+        $text = Get-Content $log -Raw -Encoding utf8 -ErrorAction SilentlyContinue
+
+        if ("$text".Length -ne $length) {
+            $length = "$text".Length
+            $quietSince = [DateTimeOffset]::Now
+            continue
+        }
+
+        if ($text -notmatch 'Container started' -or $text -match 'Running the onCreateCommand' -or ([DateTimeOffset]::Now - $quietSince).TotalMinutes -lt 2) {
+            continue
+        }
+
+        if (-not (Get-DevContainerIds $folder | Where-Object { (docker inspect $_ --format '{{.State.Running}}') -eq 'true' })) {
+            continue
+        }
+
+        Write-Host "The devcontainers CLI missed the container's start. Running up again at $(Get-Date -Format 'HH:mm:ss')."
+        $processes = Get-CimInstance Win32_Process
+        $stuck = @($processes | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($folder) -and $_.CommandLine -match 'devcontainer.*\sup\s' })
+        $stuck += $processes | Where-Object { $_.ParentProcessId -in $stuck.ProcessId }
+        $stuck | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+        Wait-Job $job -Timeout 60 | Out-Null
+
+        $log = [IO.Path]::ChangeExtension($log, '.again.log')
+        npx.cmd -y '@devcontainers/cli' up --docker-path $cli --workspace-folder $folder @mount *> $log
+        break
+    }
+
+    Remove-Job $job -Force
+    $log
+}
+
 function Assert-DockerLinux {
     $cli = 'docker'
 
@@ -1124,7 +1172,7 @@ function Invoke-DevContainerTest {
         $upLog = Join-Path $lab 'up.log'
         Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
         $started = [DateTimeOffset]::Now
-        npx -y '@devcontainers/cli' up --docker-path $containerCli --workspace-folder $project @mount *> $upLog
+        $upLog = Invoke-DevContainerUp $containerCli $project $mount $upLog
         $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Write-BitSteps $upLog 'Running the onCreateCommand'
