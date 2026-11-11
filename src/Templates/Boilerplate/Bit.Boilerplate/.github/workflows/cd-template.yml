@@ -314,12 +314,6 @@ jobs:
             exit 1
           fi
           while IFS=$'\t' read -r kind name value; do
-            # The settings used to be KEY=value lines in one secret per app, which nothing reads now: stop rather than deploy
-            # without them.
-            if [[ "$kind" == secret && "$name" == *_SETTINGS ]]; then
-              echo "::error::The secret $name is no longer read. Give each of its lines a variable or a secret of its own, named <SERVICE>__<the line's key> (.docs/16), then delete $name."
-              exit 1
-            fi
             prefix="${name%%__*}"
             file=""
             if [[ -n "$prefix" && -n "${name#*__}" ]]; then
@@ -332,7 +326,7 @@ jobs:
             setting "$file" "${name#*__}" "$(printf '%s' "$value" | base64 -d)" "the $kind $name"
           done < <(
             jq -r 'to_entries[] | select(.key | contains("__")) | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
-            jq -r 'to_entries[] | select((.key | contains("__")) or (.key | endswith("_SETTINGS"))) | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
+            jq -r 'to_entries[] | select(.key | contains("__")) | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
           )
           #if (cloudflare != true)
 

@@ -228,12 +228,6 @@ break. It reads them with `jq`, which the server needs installed.
 The api's `Cloudflare` token and zone come from `CLOUDFLARE_TOKEN` and `CLOUDFLARE_ZONE`, so they need no secret of
 their own.
 <!--#endif-->
-
-Projects created before this held these settings in one secret per app, such as `SERVERWEB_SETTINGS`, one
-`Section__Key=value` line each. The deployment stops while one of those still exists: give each of its lines a secret
-or a variable of its own, as above, then delete it. GitHub never shows a secret's value, and the last deployment's copy is on the
-server, in `~/deployments/<project>/<app>.env` of the runner's user, where the first lines are the ones the deployment
-writes itself.
 <!--#endif-->
 
 ---
