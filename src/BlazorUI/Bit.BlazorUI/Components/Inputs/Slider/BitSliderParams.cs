@@ -193,6 +193,13 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
     public bool? ShowMarks { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the slider, where
+    /// <see cref="ErrorMessage"/> goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it.
+    /// An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Whether to show the value beside the slider.
     /// </summary>
     public bool? ShowValue { get; set; }
@@ -395,6 +402,11 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
         if (ShowMarks.HasValue)
         {
             bitSlider.TakeFromCascade(nameof(ShowMarks), ShowMarks.Value, static s => s.ShowMarks, static (s, v) => s.ShowMarks = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitSlider.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static s => s.ShowValidationMessage, static (s, v) => s.ShowValidationMessage = v);
         }
 
         if (ShowValue.HasValue)
