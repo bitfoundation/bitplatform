@@ -82,18 +82,19 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Deterministic destination index | PD `getReorderDestinationIndex` | Missing (P1) | Verified | `BdndList.InsertionIndex`/`ReorderIndex`/`Move`/`Reorder`. |
 | Empty-list drops | All | Verified | Verified | A list is a drop target. |
 | Clone vs move | SJ `pull: clone`; RD drop effects | Verified | Verified | `DropEffect` + `OnEnd`. |
-| Multi-item drag | SJ MultiDrag; dk app-defined | Partial | Verified | A collection as the item (`ItemFactory`, `IsDraggingOverride`); round 8 demo with checkboxes, mouse and keyboard (E2E). |
+| Multi-item drag | SJ MultiDrag; dk app-defined | Partial | Verified | A collection as the item (`ItemFactory`, `IsDraggingOverride`); round 8 demo with checkboxes, mouse and keyboard (E2E). Round 14: the selection reorders together, in its order (`BdndList.PlanMove` with several indexes; unit, E2E with mouse and keyboard). |
+| Moves worked out before they are made | PD `reorder` + app; dk `arrayMove` | Missing (P2) | Verified | Round 14: `BdndListMove<T>` - items, source indexes, finish index; `Apply`, `Revert`, refused once the lists changed under it (unit). |
 | Swap sorting, FLIP animation, thresholds | SJ | Excluded | Excluded | Bit.Bortable implements SortableJS. |
 | Grids / wrapping layouts | dk `rectSortingStrategy`; SJ | Partial | Verified | Round 6: grid demo; pointer drops across rows; keyboard Up/Down go a row (E2E). |
 | Capacity limits, duplicate prevention | app-defined everywhere | Verified | Verified | `CanDropPredicate`. |
-| Undo/redo integration | app-defined | Partial | Verified | Drop results + `OnDragEnd`/`DragEnded` with `DidDrop` and the result (README recipe, unit, drag events demo). |
+| Undo/redo integration | app-defined | Partial | Verified | Drop results + `OnDragEnd`/`DragEnded` with `DidDrop` and the result (README recipe, unit, drag events demo). Round 14: `BdndListMove<T>.Revert` and `Apply` (redo); Undo on the multi-select and tree demos (E2E). |
 
 ## E. Complex interfaces
 
 | Capability | Baseline | Status | Plan / notes |
 | --- | --- | --- | --- |
 | Kanban boards | Partial | Verified | Keyboard kanban and two-list indicators demos (E2E). |
-| Trees and outlines | Partial | Verified | Round 4 tree demo with edges, own-subtree refusal and keyboard (E2E); README recipe. |
+| Trees and outlines | Partial | Verified | Round 4 tree demo with edges, own-subtree refusal and keyboard (E2E); README recipe. Round 14: `BdndTree.Contains`/`ParentOf`/`PlanMove`, without recursion (unit; the tree demo uses them, with undo). |
 | Dashboards, page builders, palettes | Partial | Verified | Round 10 page builder demo: palette copies at insertion edges, moves, a bin refusing palette blocks, keyboard (E2E on all engines). |
 | Free positioning (canvas) | Verified | Verified | Drag-around demos. |
 | Virtualized lists | Untested | Verified | Round 6: 1,000-row `Virtualize` demo; pointer drag with auto-scroll past the source's removal (E2E). Round 10: a keyboard move that finds nothing further rendered scrolls the list on and asks again, so keys at full speed walk the list (E2E on all engines). |

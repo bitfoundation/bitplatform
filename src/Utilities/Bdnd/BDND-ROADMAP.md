@@ -70,6 +70,7 @@ adversarially review, update this plan and the matrix, decide whether to continu
 | 8 | Interactive content, previews, selections (revised) | Fields and no-drag regions inside draggables, `PreviewAxis` and offset helpers, a multi-select demo; the round 6/7 review's fixes (row breaks, the copy's styling and visibility, own targets by the DOM). |
 | 9 | Cross-browser validation and release readiness | Full E2E on Chromium, Firefox and WebKit; the remaining failures fixed or recorded; documentation, MCP catalogue and file hygiene; the release recommendation. |
 | 10 | What remained | Blazor Hybrid under E2E (a WinForms BlazorWebView harness), folder drops, a release outside the window, touch on every engine, screen-reader semantics in the accessibility tree, forced colors, native edge scrolling, the virtualized keyboard walk, a page builder demo; a checklist for what only people and devices can check. |
+| 14 | The improvement plan of November 2026 | A gap analysis of that plan against the code (below); moves worked out before they are made - one item or a selection, applied and reverted for undo (`BdndList.PlanMove`, `BdndListMove<T>`); tree moves that refuse cycles (`BdndTree`); the boundaries with the other bit utilities, documented. |
 
 The scope of later rounds is revised at the end of every round from what the round found.
 
@@ -82,3 +83,54 @@ checklist in the E2E README and a place to record the outcome in the log:
   accessibility tree too); hearing NVDA, JAWS, VoiceOver and TalkBack read it is a listening pass.
 - **Real touch devices and pens**: the touch path runs on all three engines from pointer events and in Chromium from
   synthesized touches; a finger on an iPhone, an iPad, an Android phone and a Windows touch screen is a hands-on pass.
+
+## Round 14 - the improvement plan of November 2026, against the code
+
+A plan arrived asking for, among much else, sensors, collision strategies, movement modifiers, transactional sorting,
+multi-drag and integrations with Bortable, Blow, Bink, Bmotion, Blex, Bcrdt, BlazeDb and BevTools. Each of its
+requests was read against the code, the tests and this file, and put in one of four classes.
+
+**Already implemented and tested** (nothing to do): one terminal state per drag (a drag that begins while another is in
+progress ends it; `OnEnd` waits for async drops); exceptions from callbacks reach the renderer; sources and targets
+removed, re-parented or re-keyed mid-drag; nested targets and isolated or shared providers; mouse, touch, pen,
+keyboard and native input with a distance threshold, a press-and-hold delay, no-drag regions and form fields;
+cancellation by Escape, blur, a hidden page and a release outside the window; auto-scrolling of nested containers and
+the page; drag layers filtered by type; axis, grid and bounds constraints (`PreviewAxis`, `KeepTo`, `SnapTo`, `Clamp`);
+insertion edges, grids, trees and virtualized lists; announcements and instructions, translatable; forced colours;
+file streams, size and count limits, MIME filtering and folders; circuit traffic measured on Blazor Server; the trim
+and AOT gate; lazy loading; Hybrid under E2E; an MCP catalogue reflected from the assembly.
+
+**Implemented but incomplete** (done this round):
+
+- A selection could be dragged to a bin but not reordered: `BdndList.PlanMove` takes several indexes and moves the
+  items together, keeping their order, within a list or to another.
+- Undo was written by hand on every page that had it: a `BdndListMove<T>` is worked out before it is made, checked,
+  applied and reverted - the integration point for an undo history or a state container's actions.
+- Trees needed the app's own walk to refuse a node's own subtree: `BdndTree.Contains`, `ParentOf` and `PlanMove`,
+  without recursion.
+- Nothing said where Bdnd stops and the other utilities begin: the README's "Bdnd and the other bit utilities".
+
+**Missing, appropriate, not done yet** (candidates for the next round, in order):
+
+1. Announcements of a drag that carries several items speak the grabbed source's label ("Picked up Charlie."); a
+   count ("Picked up 2 items.") needs the announcement to see the item - a field on `BdndAnnouncement`.
+2. Keyboard bindings are WAI-ARIA's and fixed; remapping them has no practical request behind it yet.
+3. Micro-benchmarks of the C# side (registration, hover chains with thousands of targets) beside the E2E frame and
+   circuit measurements.
+
+**Not appropriate for Bdnd** (and why):
+
+- *Rebuilding Bortable, Blow, Bink or Bmotion on Bdnd's engine.* Each has its own browser module tuned to its
+  interaction - Bortable's swap thresholds and FLIP, Blow's pointer capture on a transformed canvas, Bink's pressure
+  sampling, Bmotion's gestures - and a shared engine would tie their releases together for no behaviour a user would
+  notice. Bdnd works beside them (dragging onto a canvas, a palette, a layer list); the boundaries are documented.
+- *Adapter packages for Blex, Bcrdt and BlazeDb.* The integration is plain C#: a drop handler calls the app's store,
+  and a `BdndListMove<T>` is the reversible move a store keeps. A package would wrap one method call.
+- *Collision strategies (closest centre, closest corner, rectangle overlap) and a public sensor interface.* The native
+  backend decides the target from the element under the pointer and the pointer backend keeps the same rule, so a drop
+  means the same whichever input made it; sensors run in the browser so that pointer moves do not cross the circuit.
+  Gaps between items are covered by making the list a target too, and insertion edges cover before and after.
+- *Drag-to-resize, drag-to-select, drag-to-connect, freehand drawing and pen pressure.* Gestures inside a surface, owned
+  by Blow and Bink; Bdnd moves things between places.
+- *Sorting animations.* Bmotion's `Layout` animates a list whose order a drop changed; Bdnd animates nothing.
+

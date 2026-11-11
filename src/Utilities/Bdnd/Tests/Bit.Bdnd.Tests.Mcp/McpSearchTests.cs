@@ -33,6 +33,10 @@ public partial class McpSearchTests
         ("monitor offsets", "The monitor"),
         ("stylesheet", "Setup checklist"),
         ("OnDrop", "BdndDropTarget.OnDrop"),
+        ("undo a move", "Moves you can check, apply and undo"),
+        ("move several selected items", "Moves you can check, apply and undo"),
+        ("prevent dropping a node into its own children", "Trees"),
+        ("bortable or bdnd", "Bdnd and the other bit utilities"),
     ];
 
     [TestMethod]

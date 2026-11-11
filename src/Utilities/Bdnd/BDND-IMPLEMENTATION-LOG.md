@@ -751,3 +751,33 @@ the rest went into notes under the samples, and the pointer page's controls unde
 | MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 101 passed. |
 | E2E Chromium | `dotnet test` in `Tests/Bit.Bdnd.Tests.E2E` (all but the hybrid and perf classes) | 156 passed, the 15 new tests included. |
 | E2E Firefox | `BDND_E2E_BROWSER=firefox dotnet test`, the classes of the pages this round changed | 134 passed, 5 skipped (Chromium-only). |
+
+## Round 14 - the improvement plan of November 2026
+
+An improvement plan asked for a long list of capabilities; [the roadmap](BDND-ROADMAP.md#round-14---the-improvement-plan-of-november-2026-against-the-code)
+records how each was classified against the code. Most were in place and tested; this round took the ones that were
+there in part, and wrote down why the rest of the plan's requests belong elsewhere.
+
+| Gap | Change | Tests |
+| --- | --- | --- |
+| A selection could be archived but not reordered: moving several items to one place, keeping their order, was index arithmetic every app had to get right (the items before the insertion index shift it). | `BdndList.PlanMove(source, sourceIndexes, destination, insertionIndex)` (and a one-index overload) answers a `BdndListMove<T>`: the items, their source indexes, the insertion and finish indexes; null when an index is out of range or nothing would change. | `BdndListMoveTests` (selections to the start, the end, between, onto one of their own; across lists; repeated indexes; out of range; nothing to do); E2E: a selection dropped above a card, with the mouse and with the keyboard. |
+| Undo was written by hand on every page that had it, against the lists as they were after the drop. | `BdndListMove<T>.Apply` and `Revert` (and `Apply` again: redo). Both check that the items are where the move expects them - and that every index they insert at exists - before changing anything, and answer false otherwise: a move kept past other changes cannot half happen. | Revert restores both lists, same list and across; a history undone in reverse order restores everything; stale and shrunk lists refused with nothing changed. E2E: Undo on the multi-select and tree demos. |
+| A tree's own-subtree refusal and its parent lookup were the demo's recursive helpers, which a deep tree would overflow. | `BdndTree.Contains`, `ParentOf` and `PlanMove` (refusing cycles, moving a node with its subtree, revertible), walking with a stack. | `BdndTreeTests`, a 100,000-deep chain included; the tree demo uses them (existing tree E2E, plus Undo). |
+| Nothing said where Bdnd stops and Bortable, Blow, Bink, Bmotion, Blex, Bcrdt, BlazeDb and BevTools begin. | README: "Bdnd and the other bit utilities"; the gap analysis in the roadmap. | MCP search finds the new sections. |
+
+The multi-select demo's rows became drop targets with `Edges`, so a keyboard drag of the selection now visits the
+places among the cards before the archive: the existing keyboard test goes to the archive with End.
+
+### Validation
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Unit | `dotnet test --project Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj` | 438 passed on each of net10.0 and net11.0 (876). |
+| MCP | `dotnet test --project Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj` | 161 passed (4 new search questions). |
+| E2E Chromium | `dotnet test --filter` multi-select, tree and every demo page | 45 passed. |
+| E2E Firefox | the same classes, multi-select and tree | 10 of 10 after the first run, in which `An_unticked_card_drags_alone` timed out once on a cold browser; the multi-select class then passed five runs in a row. |
+| E2E WebKit | the same classes | 10 passed. |
+
+The full E2E suite, the hybrid harness and the trim gate were not run this round: the library change is C# that
+crosses no interop boundary, and the demo pages it touched were run on all three engines.
+

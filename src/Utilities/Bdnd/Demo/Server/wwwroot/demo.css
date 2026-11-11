@@ -1134,9 +1134,36 @@ html.bdnd-framed .bb-demo {
 }
 
 .multi-row {
+    position: relative;
     display: flex;
     align-items: center;
     gap: .75rem;
+}
+
+/* Where a dropped selection lands among the cards: a line in the gap above or below the row. */
+.multi-row[data-bit-bdnd-edge]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--bb-primary);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.multi-row[data-bit-bdnd-edge="top"]::after {
+    top: -5.5px;
+}
+
+.multi-row[data-bit-bdnd-edge="bottom"]::after {
+    bottom: -5.5px;
+}
+
+@media (forced-colors: active) {
+    .multi-row[data-bit-bdnd-edge]::after {
+        background: Highlight;
+    }
 }
 
 .multi-card {

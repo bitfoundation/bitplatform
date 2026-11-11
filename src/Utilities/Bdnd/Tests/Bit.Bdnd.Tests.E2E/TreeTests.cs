@@ -29,6 +29,10 @@ public sealed class TreeTests : BdndTest
             () => Expect(Row(page, "Documents")).ToHaveAttributeAsync("data-bit-bdnd-edge", "top"));
 
         await Expect(Outline(page)).ToHaveTextAsync("Letters, Documents (Invoices), Photos (2025, 2026), Music");
+
+        // the move was kept: Undo puts Letters back under Documents
+        await page.GetByRole(AriaRole.Button, new() { Name = "Undo" }).ClickAsync();
+        await Expect(Outline(page)).ToHaveTextAsync("Documents (Invoices, Letters), Photos (2025, 2026), Music");
     }
 
     [TestMethod]
