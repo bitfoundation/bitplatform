@@ -75,6 +75,10 @@ public sealed class BlexPreferencesStorage : IBlexStorage, IBlexStorageSuspensio
     /// it writes the debounced save it still holds before the OS may stop the process. Writes complete synchronously,
     /// so they are done when this returns.
     /// </summary>
+    /// <exception cref="AggregateException">
+    /// One or more <see cref="Suspending"/> handlers threw. Every handler of every storage is still called first, so
+    /// one failing does not keep the others from writing.
+    /// </exception>
     /// <example><code>
     /// public partial class App : Application
     /// {
@@ -94,7 +98,26 @@ public sealed class BlexPreferencesStorage : IBlexStorage, IBlexStorageSuspensio
             }
         }
 
+        List<Exception>? failures = null;
         foreach (var storage in live)
-            storage.Suspending?.Invoke();
+        {
+            if (storage.Suspending is not { } suspending)
+                continue;
+
+            foreach (var handler in suspending.GetInvocationList())
+            {
+                try
+                {
+                    ((Action)handler)();
+                }
+                catch (Exception ex)
+                {
+                    (failures ??= []).Add(ex);
+                }
+            }
+        }
+
+        if (failures is not null)
+            throw new AggregateException("One or more handlers failed while the app was going to the background.", failures);
     }
 }

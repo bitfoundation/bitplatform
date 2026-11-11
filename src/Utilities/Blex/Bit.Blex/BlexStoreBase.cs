@@ -1025,10 +1025,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// Records that a throttled effect's run is starting, which opens its next throttle window: called once the
     /// invocation has passed the middleware, so a vetoed invocation never delays the next one, and -- under
     /// <see cref="BlexEffectConcurrency.Queue"/> -- once the run's turn has come, so the window counts from when
-    /// it actually runs.
+    /// it actually runs. Not while recorded actions are being replayed.
     /// </summary>
     protected void MarkEffectStarted(ref (TimeProvider Clock, long Timestamp)? lastStarted)
     {
+        // A replay is never throttled (IsEffectThrottled), and must not open a window for the live invocation after it.
+        if (_manager is { IsReplaying: true })
+            return;
+
         var clock = TimeProvider;
         lastStarted = (clock, clock.GetTimestamp());
     }

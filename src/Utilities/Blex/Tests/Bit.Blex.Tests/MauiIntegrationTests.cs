@@ -136,6 +136,41 @@ public class MauiIntegrationTests
     }
 
     [TestMethod]
+    public async Task GoingToTheBackground_AThrowingHandlerDoesNotKeepTheOthersFromWriting()
+    {
+        // Watched first, so its handlers are called first.
+        var failing = new BlexPreferencesStorage(new FakePreferences());
+        await failing.StartWatchingSuspensionAsync();
+        var later = 0;
+        Action boom = () => throw new InvalidOperationException("boom");
+        Action after = () => later++;
+        failing.Suspending += boom;
+        failing.Suspending += after;
+        try
+        {
+            var preferences = new FakePreferences();
+            var manager = new BlexManager { TimeProvider = new Microsoft.Extensions.Time.Testing.FakeTimeProvider() };
+            var settings = new SettingsStore();
+            manager.Register(settings);
+            var persistor = new BlexStatePersistor(manager, new BlexPreferencesStorage(preferences),
+                new BlexPersistenceOptions { DebounceInterval = TimeSpan.FromHours(1) });
+            await persistor.StartAsync();
+            settings.SetTheme("dark");
+
+            var thrown = Assert.ThrowsExactly<AggregateException>(BlexPreferencesStorage.NotifySuspending);
+
+            Assert.AreEqual("boom", thrown.InnerExceptions.Single().Message);
+            Assert.AreEqual(1, later, "the next handler of the same storage still ran");
+            StringAssert.Contains((string)preferences.Data["blex:settings"]!, "dark");
+        }
+        finally
+        {
+            failing.Suspending -= boom;
+            failing.Suspending -= after;
+        }
+    }
+
+    [TestMethod]
     public async Task PreferencesStorage_RoundTrips()
     {
         var storage = new BlexPreferencesStorage(new FakePreferences());

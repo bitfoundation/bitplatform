@@ -837,6 +837,11 @@ public sealed class BlexQueryClient : IDisposable
 
             lock (Gate)
             {
+                // A handoff of the same key still unclaimed, as new as this one or newer, stays -- invalidated or not --
+                // as cached data newer than the prerender's does.
+                if (_hydration.TryGetValue(key, out var unclaimed) && unclaimed.UpdatedAt >= updatedAt)
+                    continue;
+
                 _hydration[key] = (data, updatedAt, false);
                 pending.Add(key);
             }

@@ -302,7 +302,7 @@ public class DiagnosticTests
     }
 
     [TestMethod]
-    [DataRow("nameof(Missing)", DisplayName = "no such member")]
+    [DataRow("\"Missing\"", DisplayName = "no such member")]
     [DataRow("nameof(Wrong)", DisplayName = "a comparer of another type")]
     [DataRow("nameof(NotAComparer)", DisplayName = "not a comparer at all")]
     [DataRow("nameof(Compare)", DisplayName = "a method")]
@@ -339,6 +339,25 @@ public class DiagnosticTests
             """);
         Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
         Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+    }
+
+    [TestMethod]
+    [DataRow("private static readonly IEqualityComparer<string> value = System.StringComparer.OrdinalIgnoreCase;", "global::S.value", DisplayName = "static")]
+    [DataRow("private IEqualityComparer<string> value { get; } = System.StringComparer.OrdinalIgnoreCase;", "this.value", DisplayName = "instance")]
+    public void AStateComparerNamedValue_IsNotTheSettersParameter(string member, string access)
+    {
+        // Unqualified, "value" would bind to the setter's own parameter -- a string, not a comparer.
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            using System.Collections.Generic;
+            [BlexStoreAttribute] public partial class S
+            {
+                {{member}}
+                [BlexStateAttribute(Comparer = "value")] private string _title = "";
+            }
+            """);
+        Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+        Assert.Contains($"value, {access}, \"Title\")", result.SingleGenerated);
     }
 
     [TestMethod]

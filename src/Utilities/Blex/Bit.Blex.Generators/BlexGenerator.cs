@@ -466,7 +466,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     // [BlexState(Comparer = nameof(X))]: X must hold an IEqualityComparer<FieldType>, or the generated
                     // setter would fail to compile in code the user never wrote.
                     var comparer = stateAttr.NamedArguments.FirstOrDefault(a => a.Key == "Comparer").Value.Value as string;
-                    if (comparer is not null && !IsStateComparer(symbol, field.Type, comparer, ctx.SemanticModel.Compilation))
+                    var comparerIsStatic = false;
+                    if (comparer is not null && !IsStateComparer(symbol, field.Type, comparer, ctx.SemanticModel.Compilation, out comparerIsStatic))
                     {
                         Report(BadStateComparer, NamedArgumentLocation(stateAttr, "Comparer") ?? field.Locations.FirstOrDefault(), field.Name, comparer, field.Type.ToDisplayString());
                         break;
@@ -477,7 +478,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
                         propertyName,
                         field.Type.ToDisplayString(TypeFormat),
                         persistField,
-                        comparer));
+                        comparer,
+                        comparerIsStatic));
                     break;
                 }
 
@@ -781,8 +783,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
     /// Whether the store declares a field or readable property named <paramref name="member"/> whose type converts
     /// implicitly to <c>IEqualityComparer&lt;<paramref name="stateType"/>&gt;</c> -- what the generated setter passes on.
     /// </summary>
-    private static bool IsStateComparer(INamedTypeSymbol store, ITypeSymbol stateType, string member, Compilation compilation)
+    private static bool IsStateComparer(INamedTypeSymbol store, ITypeSymbol stateType, string member, Compilation compilation, out bool isStatic)
     {
+        isStatic = false;
         if (compilation.GetTypeByMetadataName("System.Collections.Generic.IEqualityComparer`1") is not { } comparerType)
         {
             return false;
@@ -800,6 +803,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
             if (type is not null && compilation.ClassifyCommonConversion(type, target).IsImplicit)
             {
+                isStatic = candidate.IsStatic;
                 return true;
             }
         }
@@ -1671,8 +1675,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
             }
             else
             {
-                // [BlexState(Comparer = ...)]: the store's comparer decides what counts as a change.
-                sb.AppendLine($"{body}    {setter} => SetState<{s.TypeFqn}>(ref {field}, value, {Id(s.Comparer)}, \"{Escape(s.PropertyName)}\");");
+                // [BlexState(Comparer = ...)]: the store's comparer decides what counts as a change. Qualified, so a
+                // comparer named like the setter's own parameter ("value") does not bind to it.
+                var comparer = s.ComparerIsStatic
+                    ? $"{(m.Namespace is null ? $"global::{m.ClassName}" : $"global::{m.Namespace}.{m.ClassName}")}.{Id(s.Comparer)}"
+                    : $"this.{Id(s.Comparer)}";
+                sb.AppendLine($"{body}    {setter} => SetState<{s.TypeFqn}>(ref {field}, value, {comparer}, \"{Escape(s.PropertyName)}\");");
             }
             sb.AppendLine($"{body}}}");
             sb.AppendLine();

@@ -90,7 +90,8 @@
     private const string SuppressLocal = """
         #pragma warning disable BLEX009
         [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
-        private async Task OnRefresh() => Items = await _api.GetItemsAsync();
+        // Writes no state, so a superseded run finishing is harmless; one assigning state would overwrite the newer run's.
+        private async Task OnTrackView(string page) => await _analytics.TrackPageViewAsync(page);
         #pragma warning restore BLEX009
         """;
 }

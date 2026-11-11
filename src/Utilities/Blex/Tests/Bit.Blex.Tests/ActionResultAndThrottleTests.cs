@@ -272,4 +272,18 @@ public class ActionResultAndThrottleTests
 
         Assert.AreEqual(2, replica.Store.Refreshes);
     }
+
+    [TestMethod]
+    public async Task A_replay_opens_no_window_for_the_live_invocation_after_it()
+    {
+        using var original = BlexTestHarness.For<InvoiceStore>();
+        await original.Store.Refresh();
+
+        using var replica = BlexTestHarness.For<InvoiceStore>();
+        replica.TimeProvider = new FakeTimeProvider();
+        await replica.Manager.ReplayAsync(original.Log.Actions);
+        await replica.Store.Refresh();   // the clock has not moved: a window the replay opened would drop it
+
+        Assert.AreEqual(2, replica.Store.Refreshes);
+    }
 }

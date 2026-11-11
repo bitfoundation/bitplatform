@@ -976,7 +976,9 @@ public sealed class BlexManager
     /// finds its saved state. When omitted, a key unique within this manager is assigned -- and since
     /// nothing could ever find state saved under it again (the next session, or another tab, counts its
     /// keys from the start too), an instance keyed that way is never persisted, whatever its store says.
+    /// Assigned keys start with <c>#</c>, which a key given here therefore must not.
     /// </param>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is empty, or starts with <c>#</c>.</exception>
     /// <remarks>
     /// Stores are otherwise one per DI scope, keyed by their generated name, so a second instance --
     /// the form inside one of two open dialogs, one of several editor tabs -- would collide with the
@@ -994,6 +996,11 @@ public sealed class BlexManager
         ArgumentNullException.ThrowIfNull(store);
         if (key is not null && string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("An instance key must not be empty.", nameof(key));
+
+        // Reserved for the keys assigned below: a given "#1" would share one name -- one slice, one DevTools entry --
+        // with the instance the manager keys "#1".
+        if (key is not null && key.StartsWith('#'))
+            throw new ArgumentException("An instance key must not start with '#': the manager assigns those.", nameof(key));
 
         var generated = key is null;
         // "#n" rather than "n": keys given are usually ids, and a generated "1" next to document 1's would make two

@@ -18,6 +18,9 @@ public class PersistenceRegressionTests
 
         public Dictionary<string, TaskCompletionSource> ReadGates { get; } = [];
 
+        /// <summary>Keys whose next read fails, as storage that is not ready yet does (prerendering).</summary>
+        public HashSet<string> FailNextRead { get; } = [];
+
         public TaskCompletionSource? WriteGate { get; set; }
 
         public int Writes { get; private set; }
@@ -28,6 +31,9 @@ public class PersistenceRegressionTests
         {
             if (ReadGates.TryGetValue(key, out var gate))
                 await gate.Task;
+
+            if (FailNextRead.Remove(key))
+                throw new InvalidOperationException("storage is not ready");
 
             return Data.TryGetValue(key, out var value) ? value : null;
         }
@@ -306,5 +312,92 @@ public class PersistenceRegressionTests
         var writes = storage.Writes;
         time.Advance(TimeSpan.FromHours(1));
         Assert.AreEqual(writes, storage.Writes, "no timer was left to write later");
+    }
+
+    [TestMethod]
+    public async Task A_startup_read_failing_partway_keeps_saving_the_stores_it_read_and_holds_the_rest()
+    {
+        var manager = new BlexManager { OnError = _ => { } };
+        var settings = new SettingsStore();
+        var drafts = new DraftsStore();
+        manager.Register(settings);
+        manager.Register(drafts);
+        var storage = new SlowStorage();
+        storage.Data["blex:drafts"] = """{"Text":"stored"}""";
+        storage.FailNextRead.Add("blex:drafts");
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => persistor.StartAsync());
+
+        // Settings was read: its edit is saved. Drafts was not: its defaults must not overwrite what storage holds.
+        settings.SetTheme("dark");
+        drafts.Write("typed before the retry");
+        var layout = new LayoutStore();
+        manager.Register(layout);   // after the failure, before the retry
+        layout.SetView("list");
+        await persistor.FlushAsync();
+
+        Assert.AreEqual("dark", ThemeIn(storage, "blex:settings"));
+        StringAssert.Contains(storage.Data["blex:drafts"], "stored");
+        Assert.IsFalse(storage.Data.ContainsKey("blex:layout"), "a store that registered before the retry was saved unread");
+
+        await persistor.StartAsync();
+        await persistor.FlushAsync();
+
+        Assert.IsTrue(persistor.HasHydrated);
+        Assert.AreEqual("stored", drafts.Text, "the retry restores what the failed read could not");
+        Assert.AreEqual("dark", settings.Theme);
+        StringAssert.Contains(storage.Data["blex:layout"], "list", "nothing was stored for it: its held change is written");
+    }
+
+    [TestMethod]
+    public async Task A_rehydration_overlapping_a_failing_startup_read_reads_the_store_that_read_could_not()
+    {
+        var manager = new BlexManager { OnError = _ => { } };
+        var settings = new SettingsStore();
+        manager.Register(settings);
+        var storage = new SlowStorage();
+        storage.Data["blex:settings"] = """{"Theme":"dark","FontSize":14}""";
+        var gate = Gate();
+        storage.ReadGates["blex:settings"] = gate;
+        storage.FailNextRead.Add("blex:settings");
+        var persistor = new BlexStatePersistor(manager, storage);
+        var announcedOver = new List<string>();
+        persistor.Hydrated += () => announcedOver.Add(settings.Theme);
+
+        var start = persistor.StartAsync();
+        var rehydration = persistor.RehydrateAsync();   // leaves settings to the startup read under way
+        storage.ReadGates.Remove("blex:settings");
+        gate.SetResult();
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => start);
+        await rehydration;
+
+        Assert.AreEqual("dark", settings.Theme);
+        Assert.IsTrue(persistor.HasHydrated);
+        Assert.AreSequenceEqual(["dark"], announcedOver, "hydration was announced over the store's defaults");
+    }
+
+    [TestMethod]
+    public async Task A_flush_waits_for_a_store_read_under_way_and_the_save_it_releases()
+    {
+        var manager = new BlexManager();
+        var settings = new SettingsStore();
+        manager.Register(settings);
+        var storage = new SlowStorage();
+        var gate = Gate();
+        storage.ReadGates["blex:settings"] = gate;
+        var persistor = new BlexStatePersistor(manager, storage);
+
+        var start = persistor.StartAsync();
+        settings.SetTheme("dark");   // held: settings has not been read yet
+        var flush = persistor.FlushAsync();
+        Assert.IsFalse(flush.IsCompleted, "the flush returned while storage was still being read");
+
+        gate.SetResult();   // nothing stored: the held change is the store's state
+        await flush;
+
+        Assert.AreEqual("dark", ThemeIn(storage, "blex:settings"));
+        await start;
     }
 }

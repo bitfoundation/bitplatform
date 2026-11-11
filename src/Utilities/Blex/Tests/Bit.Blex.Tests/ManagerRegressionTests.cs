@@ -173,22 +173,42 @@ public class ManagerRegressionTests
     [TestMethod]
     public async Task Two_actions_failing_with_one_exception_instance_are_both_reported()
     {
+        // One thread, as on a renderer's dispatcher: the two effects' continuations never touch the manager, or the
+        // failure list, at once.
+        using var context = new SingleThreadContext();
+        await context.RunAsync(async () =>
+        {
+            var manager = new BlexManager();
+            var store = new SharedFailureStore();
+            manager.Register(store);
+            var failures = new List<BlexActionErrorContext>();
+            manager.ActionFailed += failures.Add;
+
+            var shared = new TaskCompletionSource();
+            store.Shared = shared.Task;
+            var prices = store.LoadPrices();
+            var catalog = store.LoadCatalog();
+            shared.SetException(new InvalidOperationException("down"));
+            await prices;
+            await catalog;
+
+            // In whichever order the continuations ran.
+            CollectionAssert.AreEquivalent(new[] { "shared/LoadPrices", "shared/LoadCatalog" }, failures.Select(f => f.QualifiedName).ToList());
+            Assert.AreSame(failures[0].Exception, failures[1].Exception);
+        });
+    }
+
+    [TestMethod]
+    public void A_key_given_in_the_syntax_of_a_generated_one_is_rejected_before_anything_registers()
+    {
         var manager = new BlexManager();
-        var store = new SharedFailureStore();
-        manager.Register(store);
-        var failures = new List<BlexActionErrorContext>();
-        manager.ActionFailed += failures.Add;
+        using var draft = manager.CreateScope(new CounterStore());
+        var store = new CounterStore();
 
-        var shared = new TaskCompletionSource();
-        store.Shared = shared.Task;
-        var prices = store.LoadPrices();
-        var catalog = store.LoadCatalog();
-        shared.SetException(new InvalidOperationException("down"));
-        await prices;
-        await catalog;
+        Assert.ThrowsExactly<ArgumentException>(() => manager.CreateScope(store, "#1"));
 
-        Assert.AreSequenceEqual(["shared/LoadPrices", "shared/LoadCatalog"], failures.Select(f => f.QualifiedName).ToList());
-        Assert.AreSame(failures[0].Exception, failures[1].Exception);
+        Assert.HasCount(1, manager.Stores);
+        Assert.IsNull(store.InstanceKey);
     }
 
     [TestMethod]

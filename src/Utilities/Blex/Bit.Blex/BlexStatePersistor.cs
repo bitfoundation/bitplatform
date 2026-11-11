@@ -75,6 +75,9 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     private bool _watchingSuspension;
     private bool _disposed;
 
+    // A startup read failed, and no hydration has completed since: a store that registers meanwhile is held until one reads it.
+    private bool _startFailed;
+
     // The stores whose stored state is being applied right now. Their restore is not written straight back to the
     // storage it was just read from (or, from another tab, bounced back to it). Per store and only for the apply:
     // an action anything dispatches meanwhile -- to another store, or to this one from a restore subscriber -- is a
@@ -179,6 +182,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             return;
         }
 
+        _startFailed = false;
         HasHydrated = true;
         ReleaseHydrationWaiters();
         _manager.InvokeIsolated<object?>(Hydrated, null, "persistence", "hydrated handler");
@@ -250,10 +254,11 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             }
             catch when (!HasHydrated)
             {
-                // Storage is not ready (prerendering): nothing saves until a retry has read it. A store held by this
-                // read keeps holding, but one that registers before the retry is no hydration's yet, and its first
-                // action would write its declared defaults over the state storage holds for it.
-                StopSaving();
+                // Storage is not ready (prerendering). A store this read got through saves as usual -- its edits must not
+                // be lost -- and one it did not get to keeps holding its saves until a retry reads it. So does one that
+                // registers before the retry: it is no hydration's yet, and its first action would otherwise write its
+                // declared defaults over the state storage holds for it.
+                _startFailed = true;
                 throw;
             }
 
@@ -588,6 +593,9 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         // here as well could have the older read land last, over changes made in between.
         var stores = _manager.Stores;
         var reading = new List<(IBlexStore Store, BlexStoreBase Instance, HydrationHold Hold, bool WasHydrated)>();
+
+        // Left to another hydration reading them: one that fails before getting to them leaves them to this one.
+        var leftToOthers = new List<(IBlexStore Store, BlexStoreBase Instance)>();
         var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Task overlapping;
 
@@ -616,7 +624,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                 if (_hydrating.TryGetValue(store.Name, out var hold) && ReferenceEquals(hold.Store, store))
                 {
                     if (hold.InFlight)
+                    {
+                        leftToOthers.Add((store, sb));
                         continue;
+                    }
 
                     hold.InFlight = true;   // held since a read that failed: this one is its next attempt
                 }
@@ -636,13 +647,75 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         try
         {
             await writes.ConfigureAwait(true);
+            if (!await ReadAsync().ConfigureAwait(true))
+                return;
 
+            // The stores an overlapping hydration is still reading were left to it: this one is not done before them.
+            await overlapping.ConfigureAwait(true);
+
+            // One it could not read -- storage failed, the read was cancelled -- still holds its declared defaults, and this
+            // hydration must not be announced over them: read here. (One whose late hydration is still running is left
+            // to it; the hydration waits for that before it is announced.)
+            lock (_saveGate)
+            {
+                foreach (var (store, sb) in leftToOthers)
+                {
+                    if (_hydrating.TryGetValue(store.Name, out var hold) && ReferenceEquals(hold.Store, store) && !hold.InFlight
+                        && _manager.Stores.Contains(store))
+                    {
+                        hold.InFlight = true;
+                        reading.Add((store, sb, hold, _hydrated.Contains(store)));
+                    }
+                }
+            }
+
+            await ReadAsync().ConfigureAwait(true);
+        }
+        finally
+        {
+            try
+            {
+                // A store this read did not get to -- storage failed, the read was cancelled -- keeps holding its saves
+                // until a later read gets through: writing its declared defaults over the state it could not read would
+                // turn a failure to read into data loss. One that was read before holds its stored state already, and the
+                // user's edits since: its hold is lifted, and a save it collected meanwhile is written, as it was not held.
+                lock (_saveGate)
+                {
+                    for (var i = 0; i < reading.Count; i++)
+                    {
+                        var (store, _, ours, wasHydrated) = reading[i];
+                        if (!_hydrating.TryGetValue(store.Name, out var hold) || !ReferenceEquals(hold, ours))
+                            continue;
+
+                        if (wasHydrated)
+                        {
+                            _hydrating.Remove(store.Name);
+                            if (hold.SaveRequested && _manager.Stores.Contains(store))
+                                Schedule(store.Name);
+                        }
+                        else if (i >= next)
+                        {
+                            hold.InFlight = false;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // Only now: an overlapping hydration waiting on this one reads what it could not get to, which it can
+                // only tell once those holds say so.
+                done.TrySetResult();
+            }
+        }
+
+        // Reads the stores from `next` on; false once the persistor is torn down, with nothing left to restore for.
+        async Task<bool> ReadAsync()
+        {
             for (; next < reading.Count; next++)
             {
-                // Torn down meanwhile: there is nothing left to restore for.
                 if (_disposed)
                 {
-                    return;
+                    return false;
                 }
 
                 var (store, sb, _, _) = reading[next];
@@ -652,37 +725,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                     await HydrateStoreAsync(store, sb, cancellationToken).ConfigureAwait(true);
             }
 
-            // The stores an overlapping hydration is still reading were left to it: this one is not done before them.
-            await overlapping.ConfigureAwait(true);
-        }
-        finally
-        {
-            done.TrySetResult();
-
-            // A store this read did not get to -- storage failed, the read was cancelled -- keeps holding its saves
-            // until a later read gets through: writing its declared defaults over the state it could not read would
-            // turn a failure to read into data loss. One that was read before holds its stored state already, and the
-            // user's edits since: its hold is lifted, and a save it collected meanwhile is written, as it was not held.
-            lock (_saveGate)
-            {
-                for (var i = 0; i < reading.Count; i++)
-                {
-                    var (store, _, ours, wasHydrated) = reading[i];
-                    if (!_hydrating.TryGetValue(store.Name, out var hold) || !ReferenceEquals(hold, ours))
-                        continue;
-
-                    if (wasHydrated)
-                    {
-                        _hydrating.Remove(store.Name);
-                        if (hold.SaveRequested && _manager.Stores.Contains(store))
-                            Schedule(store.Name);
-                    }
-                    else if (i >= next)
-                    {
-                        hold.InFlight = false;
-                    }
-                }
-            }
+            return true;
         }
     }
 
@@ -825,12 +868,29 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     /// </summary>
     private void OnStoreRegistered(IBlexStore store)
     {
-        if ((!HasHydrated && Volatile.Read(ref _hydrationsRunning) == 0) || !Persists(store) || store is not BlexStoreBase)
+        if (!Persists(store) || store is not BlexStoreBase)
         {
             return;
         }
 
-        ScheduleLateHydration(store);
+        if (HasHydrated || Volatile.Read(ref _hydrationsRunning) > 0)
+        {
+            ScheduleLateHydration(store);
+            return;
+        }
+
+        // The startup read failed before it: held like the stores it did not get to, for the retry to read.
+        if (_startFailed)
+        {
+            lock (_saveGate)
+            {
+                if (!_hydrated.Contains(store)
+                    && !(_hydrating.TryGetValue(store.Name, out var held) && ReferenceEquals(held.Store, store)))
+                {
+                    _hydrating[store.Name] = new HydrationHold(store) { InFlight = false };
+                }
+            }
+        }
     }
 
     private void ScheduleLateHydration(IBlexStore store)
@@ -1335,11 +1395,16 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             Task writes;
             Task external;
             Task late;
+            Task reads;
             lock (_saveGate)
             {
                 CancelDebounceLocked();
                 SavePendingLocked();
                 writes = _writeChain;
+
+                // A hydration still reading storage lifts each store's hold as it gets to it, writing what the hold
+                // collected: waited for, and the writes it releases with the next round.
+                reads = _storeReads;
 
                 // Incoming cross-tab changes are part of "settle everything in flight" too: without
                 // this, a test (or a page about to navigate away) could observe a change that has been
@@ -1348,13 +1413,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                 late = _lateChain;
             }
 
-            if (writes.IsCompletedSuccessfully && external.IsCompletedSuccessfully && late.IsCompletedSuccessfully)
+            if (writes.IsCompletedSuccessfully && external.IsCompletedSuccessfully && late.IsCompletedSuccessfully && reads.IsCompletedSuccessfully)
                 return;
 
             // Not ConfigureAwait(false): the next round serializes stores, which belongs on the dispatcher.
-            await Task.WhenAll(writes, external, late).ConfigureAwait(true);
+            await Task.WhenAll(writes, external, late, reads).ConfigureAwait(true);
 
-            // Round again: a late store that finished hydrating may have released a save it held back.
+            // Round again: a store that finished hydrating may have released a save it held back.
         }
     }
 
