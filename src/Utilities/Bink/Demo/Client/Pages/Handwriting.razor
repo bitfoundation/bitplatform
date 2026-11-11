@@ -50,6 +50,11 @@
             <input type="range" min="0" max="0.9" step="0.05" value="@_smoothing" aria-label="Smoothing" @onchange="OnSmoothingChanged" />
             <span class="bink-field-value">@_smoothing.ToString("0.00")</span>
         </label>
+        <label class="bink-field" title="The ink follows the pointer on a string this many pixels long, so wobbles shorter than it never reach the ink. 0 is off">
+            Stabilizer
+            <input type="range" min="0" max="48" step="4" value="@_stabilization" aria-label="Stabilizer" @onchange="OnStabilizationChanged" />
+            <span class="bink-field-value">@_stabilization</span>
+        </label>
         <label class="bink-field" title="How pressure becomes width. The pen and the pencil follow pressure; the other instruments do not.">
             Pressure
             <select value="@_curve" @onchange="OnCurveChanged" aria-label="Pressure response" disabled="@(!FollowsPressure)">
@@ -154,6 +159,7 @@
     </p>
     <ul class="bb-detail-list">
         <li><strong>Smoothing</strong> (<code>Brush.Smoothing</code>) pulls each point toward the previous one, an exponential filter that removes hand tremor without adding lag on straight sections. 0 keeps every wobble; 0.9 is very smooth and starts to round fast corners.</li>
+        <li><strong>Stabilizer</strong> (<code>BinkDrawTool.Stabilization</code>): the ink follows a point the pointer pulls along on a string this many CSS pixels long, which moves only once the string is taut, so wobbles shorter than the string never reach the ink while corners stay sharp. The ink trails the pointer while drawing and is finished to where the pen lifts. 0, the default, is off; 16 to 40 suits slow lettering and signing on a trackpad.</li>
         <li><strong>Pressure</strong> (<code>Brush.PressureCurve</code>) maps pressure from 0 to 1 onto a width factor. <code>BinkPressureCurve.Pen</code> is an S-curve that puts a normal touch at about 60% of the width; <code>Linear</code>, <code>EaseIn</code> (light touches stay thin), <code>EaseOut</code> and <code>Constant</code> (ignores pressure) are the others, and <code>FromSamples</code> builds any response from a table.</li>
         <li><strong>Pressure from speed</strong> (<code>SimulatePressure</code>): a mouse reports a constant 0.5 while a button is down, as most touch screens do. With this on, slower movement draws heavier and quick flicks thin out, which reads as natural even without a stylus. Turn it off and a mouse draws at one width.</li>
         <li><strong>Predict ink</strong> (<code>PredictInk</code>): in browsers that offer predicted pointer events, the live stroke reaches where the pen is about to be, hiding about a frame of latency. Predictions are drawn on the overlay only, held to a few stroke widths, and replaced by the next measured sample; the committed stroke holds measured points alone. On by default in WebAssembly and off elsewhere; <code>BinkDrawTool.UsePrediction</code> turns it off for one tool.</li>
@@ -224,6 +230,7 @@
 
     // How the ink responds: brush properties and canvas parameters the second row changes.
     private float _smoothing = 0.35f;
+    private int _stabilization;
     private string _curve = "default";
     private bool _simulatePressure = true;
     private float _nibAngle = 45f;
@@ -294,7 +301,16 @@
             if (CurveFor(_curve) is { } curve) brush = brush with { PressureCurve = curve };
         }
         _brush = brush;
-        _tool = new BinkDrawTool { SimplifyTolerance = 0.08f };
+        _tool = new BinkDrawTool { SimplifyTolerance = 0.08f, Stabilization = _stabilization };
+    }
+
+    private void OnStabilizationChanged(ChangeEventArgs e)
+    {
+        if (TryParse(e, out float value))
+        {
+            _stabilization = (int)value;
+            SetInstrument(_instrument);
+        }
     }
 
     /// <summary>The pressure response a choice names, or null to keep the brush's own.</summary>

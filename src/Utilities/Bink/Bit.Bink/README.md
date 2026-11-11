@@ -53,9 +53,11 @@ Pick what pointer input does with `Tool` (`BinkDrawTool`, `BinkEraserTool`, `Bin
 - Copy, cut and paste through the system clipboard (images and text included), duplicate, Alt-drag copies and
   bring-to-front, each with its usual shortcut and one undo step.
 - Shapes, arrows, highlights, callouts, text with a real HTML editor, and images.
+- Shape recognition: a sketched line, arrow, box, ellipse, triangle, diamond or polygon becomes a clean shape.
 - Undo and redo built on inverse operations, never snapshots, with long drags compacted to one step per element.
 - A versioned, compact JSON format with binary stroke points, hardened against untrusted input.
-- SVG, PNG, JPEG and WebP export that match the screen, including a pure .NET PNG path for servers and tests.
+- SVG, PNG, JPEG, WebP and PDF export that match the screen, including pure .NET PNG and vector PDF paths for servers
+  and tests.
 - Ink measurements (length, stroke count, duration) for validating signatures.
 - Real-time collaboration over any transport, with presence and offline queueing.
 - Palm rejection, pinch zoom, mouse wheel and trackpad pan and zoom, coalesced samples, high-DPI canvases and an
