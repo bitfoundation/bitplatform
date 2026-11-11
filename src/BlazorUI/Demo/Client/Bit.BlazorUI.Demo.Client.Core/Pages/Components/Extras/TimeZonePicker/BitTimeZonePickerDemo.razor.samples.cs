@@ -114,8 +114,8 @@ private static string LocalTime(BitTimeZone zone) => zone.TimeZoneInfo is { } ti
     <BitTimeZonePicker Label=""Time zone""
                        Required
                        Placeholder=""Select a time zone""
+                       ShowValidationMessage
                        @bind-Value=""validationModel.TimeZoneId"" />
-    <ValidationMessage For=""() => validationModel.TimeZoneId"" />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
 
