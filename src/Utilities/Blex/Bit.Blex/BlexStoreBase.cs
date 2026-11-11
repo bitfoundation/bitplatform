@@ -895,10 +895,20 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <see cref="BeginAction"/>. Records the action when it completes, unless it runs inside another
     /// action of this flow, which records it.
     /// </summary>
-    protected async Task DispatchApprovedAsync(string actionName, Func<Task> mutation, BlexActionArg[]? args)
+    protected Task DispatchApprovedAsync(string actionName, Func<Task> mutation, BlexActionArg[]? args)
     {
         ArgumentNullException.ThrowIfNull(mutation);
+        return RunApprovedAsync<bool>(actionName, mutation, null, args);
+    }
 
+    /// <summary>
+    /// The one lifecycle of an approved asynchronous action -- frame, in-place check, telemetry, error report and
+    /// record -- for a body that returns nothing (<paramref name="mutation"/>) or a value (<paramref name="valued"/>;
+    /// exactly one of the two is set). Shared so the two kinds of action cannot drift apart, and taking either body
+    /// directly so neither pays for an adapter delegate.
+    /// </summary>
+    private async Task<T> RunApprovedAsync<T>(string actionName, Func<Task>? mutation, Func<Task<T>>? valued, BlexActionArg[]? args)
+    {
         // Entered here, before the first await, so the body -- invoked below -- runs in the frame; the
         // assignment reaches only this method's own context, never its caller's.
         var frame = EnterAction(out var began);
@@ -907,8 +917,14 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
         var body = _manager?.EnterActionBody() ?? default;
         try
         {
-            await mutation().ConfigureAwait(true);
+            var result = default(T)!;
+            if (valued is not null)
+                result = await valued().ConfigureAwait(true);
+            else
+                await mutation!().ConfigureAwait(true);
+
             EndInPlaceCheck(inPlace, actionName);
+            return result;
         }
         catch (Exception ex)
         {
@@ -939,6 +955,11 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// The value <paramref name="mutation"/> returned, or <c>default</c> when a middleware vetoed the action and the
     /// body never ran.
     /// </returns>
+    /// <remarks>
+    /// An expression lambda that has a value -- <c>Dispatch(name, () =&gt; Count = 5, args)</c>, an assignment included --
+    /// binds to this overload rather than the <see cref="Action"/> one. It runs and records exactly the same; the
+    /// value is only handed back, and a caller that ignores it sees no difference.
+    /// </remarks>
     protected T Dispatch<T>(string actionName, Func<T> mutation, BlexActionArg[]? args)
     {
         ArgumentNullException.ThrowIfNull(mutation);
@@ -970,62 +991,47 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <see cref="DispatchApprovedAsync(string, Func{Task}, BlexActionArg[])"/> for a body that returns a value: the
     /// veto decision has already been taken by <see cref="BeginAction"/>, and the task completes with the body's result.
     /// </summary>
-    protected async Task<T> DispatchApprovedAsync<T>(string actionName, Func<Task<T>> mutation, BlexActionArg[]? args)
+    protected Task<T> DispatchApprovedAsync<T>(string actionName, Func<Task<T>> mutation, BlexActionArg[]? args)
     {
         ArgumentNullException.ThrowIfNull(mutation);
-
-        // The same frame handling as the non-generic overload; kept apart so neither pays for an adapter delegate.
-        var frame = EnterAction(out var began);
-        var inPlace = began && _manager is { DetectInPlaceMutations: true } ? BeginInPlaceCheck() : default;
-        var telemetry = BlexDiagnostics.StartAction(this, actionName);
-        var body = _manager?.EnterActionBody() ?? default;
-        try
-        {
-            var result = await mutation().ConfigureAwait(true);
-            EndInPlaceCheck(inPlace, actionName);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            telemetry.Fail(ex);
-            _manager?.RecordActionError(this, actionName, args, ex);
-            throw;
-        }
-        finally
-        {
-            body.Exit();
-            var recorded = false;
-            if (ExitAction(frame, began))
-            {
-                _manager?.RecordAction(this, actionName, args);
-                recorded = true;
-            }
-
-            SettleDeferredAnnouncement(recorded);
-            telemetry.Stop();
-        }
+        return RunApprovedAsync(actionName, null, mutation, args);
     }
 
     /// <summary>
     /// Whether an effect with <c>ThrottleMilliseconds</c> must drop an invocation because its last run started less
-    /// than <paramref name="milliseconds"/> ago on <see cref="TimeProvider"/>. Never throttles while recorded actions
-    /// are being replayed. Used by generated effect wrappers, together with <see cref="MarkEffectStarted"/>.
+    /// than <paramref name="milliseconds"/> ago. Never throttles while recorded actions are being replayed. Used by
+    /// generated effect wrappers, together with <see cref="MarkEffectStarted"/>.
     /// </summary>
-    /// <param name="lastStarted">When the effect's last run started (a <see cref="System.TimeProvider.GetTimestamp"/> value), or <c>null</c>.</param>
+    /// <param name="lastStarted">
+    /// When the effect's last run started -- a <see cref="System.TimeProvider.GetTimestamp"/> value, with the clock it
+    /// was read from -- or <c>null</c>. A start read from another clock than <see cref="TimeProvider"/> is now (the
+    /// store registered with a manager, or moved to another, since) cannot be compared with it and holds nothing back.
+    /// </param>
     /// <param name="milliseconds">The throttle window.</param>
-    protected bool IsEffectThrottled(long? lastStarted, int milliseconds)
+    protected bool IsEffectThrottled((TimeProvider Clock, long Timestamp)? lastStarted, int milliseconds)
     {
         if (lastStarted is not { } started || _manager is { IsReplaying: true })
             return false;
 
-        return TimeProvider.GetElapsedTime(started) < TimeSpan.FromMilliseconds(milliseconds);
+        var clock = TimeProvider;
+        if (!ReferenceEquals(started.Clock, clock))
+            return false;
+
+        var elapsed = clock.GetElapsedTime(started.Timestamp);
+        return elapsed >= TimeSpan.Zero && elapsed < TimeSpan.FromMilliseconds(milliseconds);
     }
 
     /// <summary>
-    /// Records that a throttled effect's run is starting, which opens its next throttle window. Called once the
-    /// invocation has passed the middleware, so a vetoed invocation never delays the next one.
+    /// Records that a throttled effect's run is starting, which opens its next throttle window: called once the
+    /// invocation has passed the middleware, so a vetoed invocation never delays the next one, and -- under
+    /// <see cref="BlexEffectConcurrency.Queue"/> -- once the run's turn has come, so the window counts from when
+    /// it actually runs.
     /// </summary>
-    protected void MarkEffectStarted(ref long? lastStarted) => lastStarted = TimeProvider.GetTimestamp();
+    protected void MarkEffectStarted(ref (TimeProvider Clock, long Timestamp)? lastStarted)
+    {
+        var clock = TimeProvider;
+        lastStarted = (clock, clock.GetTimestamp());
+    }
 
     /// <summary>
     /// Applies a snapshot produced by <see cref="SerializeState"/> without recording an action,

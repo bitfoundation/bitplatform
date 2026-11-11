@@ -35,6 +35,22 @@ public partial class SharedFailureStore
     }
 }
 
+/// <summary>A store whose action calls into a store that may live on another manager.</summary>
+[BlexStoreAttribute(Name = "caller")]
+public partial class CrossManagerCallerStore
+{
+    [BlexStateAttribute] private int _calls;
+
+    public SharedFailureStore? Target { get; set; }
+
+    [BlexActionAttribute]
+    private void OnCallTarget()
+    {
+        Calls++;
+        Target!.InnerThrows();
+    }
+}
+
 /// <summary>
 /// Regressions found auditing the manager: generated scope keys, undo steps of reactor follow-ups, DevTools bridges
 /// of several providers, failure reports of one exception instance, and subscriptions disposed mid-dispatch.
@@ -188,6 +204,61 @@ public class ManagerRegressionTests
         Assert.ThrowsExactly<InvalidOperationException>(store.Outer);
 
         Assert.AreSequenceEqual(["shared/InnerThrows", "shared/InnerThrows"], failures.Select(f => f.QualifiedName).ToList());
+    }
+
+    [TestMethod]
+    public void A_failure_passing_through_another_managers_action_is_reported_by_both_managers()
+    {
+        var inner = new BlexManager();
+        var target = new SharedFailureStore();
+        inner.Register(target);
+        var outer = new BlexManager();
+        var caller = new CrossManagerCallerStore { Target = target };
+        outer.Register(caller);
+        var innerFailures = new List<string>();
+        var outerFailures = new List<string>();
+        inner.ActionFailed += f => innerFailures.Add(f.QualifiedName);
+        outer.ActionFailed += f => outerFailures.Add(f.QualifiedName);
+
+        Assert.ThrowsExactly<InvalidOperationException>(caller.CallTarget);
+
+        Assert.AreSequenceEqual(["shared/InnerThrows"], innerFailures);
+        Assert.AreSequenceEqual(["caller/CallTarget"], outerFailures, "the outer manager's middleware hears of it too");
+    }
+
+    [TestMethod]
+    public async Task A_connector_disposed_while_a_connect_the_teardown_cancels_is_pending_still_releases_the_module()
+    {
+        var js = new FakeJsRuntime();
+        var connect = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        js.Module.Returns["connect"] = connect.Task;
+        var manager = new BlexManager();
+
+        var connector = new BlexReduxDevToolsConnector(js);
+        var connecting = connector.ConnectAsync(manager, "Blex");
+        await connector.DisposeAsync();
+        connect.SetCanceled();
+        await connecting;   // a teardown cancellation is not the app's failure
+
+        Assert.IsTrue(js.Module.Disposed);
+        Assert.AreEqual(0, js.Module.CountOf("disconnect"), "no handle was ever handed out");
+    }
+
+    [TestMethod]
+    public async Task A_connector_disposed_while_a_connect_fails_unexpectedly_releases_the_module_and_surfaces_the_failure()
+    {
+        var js = new FakeJsRuntime();
+        var connect = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        js.Module.Returns["connect"] = connect.Task;
+        var manager = new BlexManager();
+
+        var connector = new BlexReduxDevToolsConnector(js);
+        var connecting = connector.ConnectAsync(manager, "Blex");
+        await connector.DisposeAsync();
+        connect.SetException(new InvalidCastException("unexpected"));
+
+        await Assert.ThrowsExactlyAsync<InvalidCastException>(() => connecting);
+        Assert.IsTrue(js.Module.Disposed);
     }
 
     [TestMethod]

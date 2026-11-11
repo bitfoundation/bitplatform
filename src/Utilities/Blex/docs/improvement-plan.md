@@ -61,7 +61,7 @@ concrete failure and reproduced by a test before it was fixed.
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| Typed action results | **done** | `[BlexAction]` methods may return `T`, `Task<T>` or `ValueTask<T>`; the wrapper returns it (the plan's "typed success outcome" in its C#-native form: a return value). A vetoed action returns `default`. BLEX011 ("return value is discarded") is retired. |
+| Typed action results | **done** | `[BlexAction]` methods may return `T`, `Task<T>` or `ValueTask<T>`; the wrapper returns it (the plan's "typed success outcome" in its C#-native form: a return value). A vetoed action returns `default`. BLEX011 ("return value is discarded") now only warns for a ref struct or pointer result, which the wrapper cannot hand back (it returns `void` for those). The wrapper returning `T` is source-breaking for code that converted its method group to `Action` or an event handler; the README says so. |
 | Custom equality per state | **done** | `[BlexState(Comparer = nameof(member))]`; BLEX029 validates the member at compile time. Makes polling free when the data is unchanged. |
 | Effect throttle | **done** | `[BlexEffect(ThrottleMilliseconds = n)]`, leading edge, dropped invocations leave no trace, replay never throttles; BLEX027/BLEX028. |
 
@@ -91,9 +91,9 @@ concrete failure and reproduced by a test before it was fixed.
 
 | Check | Result |
 | --- | --- |
-| `Tests/Bit.Blex.Tests` (net11.0 and net10.0) | 824 passed each (36 new) |
-| `Tests/Bit.Blex.Tests.Generators` (net11.0) | 111 passed (7 new) |
-| `Tests/Bit.Blex.Tests.Mcp` (net11.0) | 127 passed (catalog and generator agree on BLEX027-029, BLEX011 retired) |
+| `Tests/Bit.Blex.Tests` (net11.0 and net10.0) | 830 passed each (42 new) |
+| `Tests/Bit.Blex.Tests.Generators` (net11.0) | 112 passed (8 new) |
+| `Tests/Bit.Blex.Tests.Mcp` (net11.0) | 127 passed (catalog and generator agree on BLEX027-029, BLEX011 narrowed) |
 | BlazeDb Blex integration / BevTools Blex tests | 8 / 6 passed |
 | `Samples/MAUI` | not built here (no MAUI workloads installed); the change is an `Application.OnSleep` override |
 
@@ -117,3 +117,28 @@ overflow) before the fix:
 
 A sixth point was confirmed as intended: a scoped store closed while its read is pending drops the edits it held,
 because whether storage had state for it is exactly what never got found out.
+
+### Second review of the round's own changes
+
+A second review found six more defects and four cleanups, all resolved. Each defect got a test that failed on
+the unfixed code:
+
+- A `RehydrateAsync` that failed partway kept holding the saves of every store it had not reached, including
+  stores already read at startup, whose edits then never reached storage. A store read before now resumes
+  saving (and writes what its hold collected); only one never read keeps holding.
+- A DevTools connector disposed while `connect` was pending leaked its module and object reference when the
+  teardown failed that call with a cancellation or an `ObjectDisposedException`; it releases them on every path.
+- The nested-failure dedupe marked the outer frame even when it was another manager's, so that manager's
+  middleware and `ActionFailed` never heard of the failure; only a frame of the same manager is marked now.
+- A sync action returning a ref struct (`Span<T>`, `ReadOnlySpan<char>`) or a pointer generated code that did not
+  compile (CS8175). Its wrapper returns `void` again and BLEX011 warns that the value is discarded.
+- The throttle compared a timestamp read from the system clock (before the store registered) with the manager's
+  clock. The start now carries its clock, and a start from another clock holds nothing back. Under `Queue` the
+  window opened when an invocation was accepted rather than when it ran; it now opens when the run starts, and an
+  invocation made while an accepted run still waits is dropped.
+- Cleanups: the two `DispatchApprovedAsync` overloads share one lifecycle, generated sync value wrappers go
+  through `Dispatch<T>`, `Unsubscribe` calls `StopSaving`, `InvalidateHandoffs` does no work once every handoff
+  is claimed, and the `RehydrateAsync` remarks describe the per-store holds.
+
+A wrapper returning `T` instead of `void` is source-breaking for code that converted its method group to `Action`
+or an event handler (`@onclick="store.AddItem"`); the README says so, with the lambda to write instead.

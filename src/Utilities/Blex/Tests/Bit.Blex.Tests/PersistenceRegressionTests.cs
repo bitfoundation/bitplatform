@@ -182,6 +182,34 @@ public class PersistenceRegressionTests
     }
 
     [TestMethod]
+    public async Task A_failed_rehydration_does_not_hold_the_saves_of_stores_read_before_it()
+    {
+        var manager = new BlexManager();
+        var settings = new SettingsStore();
+        var drafts = new DraftsStore();
+        manager.Register(settings);
+        manager.Register(drafts);
+        var storage = new SlowStorage();
+        var persistor = new BlexStatePersistor(manager, storage);
+        await persistor.StartAsync();
+
+        var gate = Gate();
+        storage.ReadGates["blex:settings"] = gate;
+        var rehydration = persistor.RehydrateAsync();
+        settings.SetTheme("during");   // held while the read is under way
+        gate.SetException(new InvalidOperationException("storage hiccup"));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => rehydration);
+        storage.ReadGates.Clear();
+
+        // Both were read at startup: what they hold is their stored state and the user's edits, and saves go on.
+        drafts.Write("after");
+        await persistor.FlushAsync();
+
+        Assert.AreEqual("during", ThemeIn(storage, "blex:settings"), "the save the hold collected is written");
+        Assert.AreEqual("after", JsonNode.Parse(storage.Data["blex:drafts"])!["Text"]!.GetValue<string>());
+    }
+
+    [TestMethod]
     public async Task A_store_registered_after_a_failed_start_does_not_save_before_it_is_read()
     {
         var manager = new BlexManager();

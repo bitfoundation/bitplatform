@@ -52,6 +52,34 @@ public partial class InvoiceStore
     }
 }
 
+/// <summary>A clock whose timestamps start near zero: compared with a system timestamp, the time elapsed comes out negative.</summary>
+internal sealed class EarlyClock : TimeProvider
+{
+    public override long GetTimestamp() => 1;
+}
+
+[BlexStoreAttribute(Name = "queued-throttle")]
+public partial class QueuedThrottleStore
+{
+    [BlexStateAttribute] private int _runs;
+
+    /// <summary>When set as a run starts, that run waits for it (and keeps it as <see cref="FirstGate"/>).</summary>
+    public TaskCompletionSource? Gate { get; set; }
+
+    public TaskCompletionSource? FirstGate { get; private set; }
+
+    [BlexEffectAttribute(Concurrency = BlexEffectConcurrency.Queue, ThrottleMilliseconds = 1000)]
+    private async Task OnLoad()
+    {
+        Runs++;
+        if (Gate is { } gate)
+        {
+            FirstGate = gate;
+            await gate.Task;
+        }
+    }
+}
+
 /// <summary>
 /// Value-returning actions (<c>T</c>, <c>Task&lt;T&gt;</c>, <c>ValueTask&lt;T&gt;</c>), <c>[BlexState(Comparer = ...)]</c>
 /// and <c>[BlexEffect(ThrottleMilliseconds = ...)]</c>.
@@ -178,6 +206,52 @@ public class ActionResultAndThrottleTests
         await harness.Store.Refresh();
 
         Assert.AreEqual(1, harness.Store.Refreshes);
+    }
+
+    [TestMethod]
+    public async Task A_window_opened_before_the_store_registered_does_not_throttle_on_the_managers_clock()
+    {
+        var store = new InvoiceStore();
+        await store.Refresh();   // unregistered: the system clock
+
+        using var harness = BlexTestHarness.For<InvoiceStore>();
+        harness.TimeProvider = new EarlyClock();   // its timestamps sit far below the system clock's
+        harness.Manager.Unregister(harness.Store);
+        harness.Manager.Register(store);
+        await store.Refresh();
+
+        Assert.AreEqual(2, store.Refreshes, "a start read from another clock cannot be compared with this one");
+    }
+
+    [TestMethod]
+    public async Task A_queued_throttled_run_opens_its_window_when_it_starts_and_one_waiting_drops_the_next()
+    {
+        var time = new FakeTimeProvider();
+        using var harness = BlexTestHarness.For<QueuedThrottleStore>();
+        harness.TimeProvider = time;
+        var store = harness.Store;
+
+        store.Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = store.Load();                          // runs at 0 and waits
+        store.Gate = null;
+        time.Advance(TimeSpan.FromMilliseconds(1000));
+        var second = store.Load();                         // a window after the first started: queued behind it
+        var third = store.Load();                          // the second still waits its turn: dropped
+        Assert.IsTrue(third.IsCompleted);
+
+        time.Advance(TimeSpan.FromMilliseconds(4000));
+        store.FirstGate!.SetResult();
+        await first;
+        await second;                                      // starts now, at 5000, and opens its window there
+        Assert.AreEqual(2, store.Runs);
+
+        time.Advance(TimeSpan.FromMilliseconds(999));
+        await store.Load();                                // 999 ms after the second started: dropped
+        Assert.AreEqual(2, store.Runs);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        await store.Load();
+        Assert.AreEqual(3, store.Runs);
     }
 
     [TestMethod]

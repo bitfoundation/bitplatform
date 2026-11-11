@@ -513,17 +513,37 @@ public sealed class BlexQueryClient : IDisposable
     /// </summary>
     private void InvalidateHandoffs(string keyText, bool exact)
     {
-        var prefix = keyText[..^1] + ",";
         lock (Gate)
         {
+            // The steady state once every handoff is claimed: nothing to build or copy.
             if (_hydration.Count == 0)
                 return;
 
-            foreach (var pending in _hydration.Keys.ToArray())
+            if (exact)
             {
-                if (pending == keyText || (!exact && pending.StartsWith(prefix, StringComparison.Ordinal)))
-                    _hydration[pending] = _hydration[pending] with { Invalidated = true };
+                if (_hydration.TryGetValue(keyText, out var only))
+                    _hydration[keyText] = only with { Invalidated = true };
+
+                return;
             }
+
+            // A key covers its own text and every key starting with it at a part boundary: "[a]" covers "[a,…]".
+            var prefix = keyText.AsSpan(0, keyText.Length - 1);
+            List<string>? covered = null;
+            foreach (var pending in _hydration.Keys)
+            {
+                if (pending == keyText
+                    || (pending.Length > prefix.Length && pending[prefix.Length] == ',' && pending.AsSpan().StartsWith(prefix, StringComparison.Ordinal)))
+                {
+                    (covered ??= []).Add(pending);
+                }
+            }
+
+            if (covered is null)
+                return;
+
+            foreach (var pending in covered)
+                _hydration[pending] = _hydration[pending] with { Invalidated = true };
         }
     }
 

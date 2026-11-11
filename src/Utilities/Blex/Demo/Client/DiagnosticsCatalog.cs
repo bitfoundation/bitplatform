@@ -196,6 +196,20 @@ public static class DiagnosticsCatalog
             private async Task OnSave() => await _api.SaveAsync();
             """),
 
+        new("BLEX011", "Action return value is discarded", false,
+            "An action's wrapper returns what the method returns, but a ref struct (<code>Span&lt;T&gt;</code>, <code>ReadOnlySpan&lt;char&gt;</code>) or a pointer cannot be held across the dispatch: that wrapper returns <code>void</code> and the value is dropped.",
+            """
+            [BlexAction]
+            private ReadOnlySpan<char> OnTrim() => Name.AsSpan().Trim();   // BLEX011 (warning) -- the caller never sees it
+            """,
+            """
+            [BlexAction]
+            private string OnTrim() => Name.Trim();
+
+            // The wrapper hands the result back:
+            var trimmed = store.Trim();
+            """),
+
         new("BLEX012", "State field name equals generated property name", true,
             "The property is derived by trimming a leading underscore and capitalizing. A field already in that form would collide with its own property.",
             """

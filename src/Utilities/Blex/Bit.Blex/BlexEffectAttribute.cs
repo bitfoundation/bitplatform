@@ -110,7 +110,10 @@ public sealed class BlexEffectAttribute : Attribute
     /// action. Only an invocation that passes the middleware opens a window, so a vetoed one never delays the next.
     /// The window is measured on the manager's <see cref="System.TimeProvider"/>, so a test advances a fake clock
     /// instead of waiting, and a replay of recorded actions never throttles. It composes with
-    /// <see cref="Concurrency"/>, which still governs the invocations that get through.
+    /// <see cref="Concurrency"/>, which still governs the invocations that get through. Under
+    /// <see cref="BlexEffectConcurrency.Queue"/> the window opens when a queued run actually starts, after its
+    /// predecessor, and an invocation made while an accepted run still waits its turn is dropped: it would
+    /// otherwise start right behind that run.
     /// </para>
     /// </remarks>
     /// <example><code>

@@ -236,7 +236,7 @@ public class DiagnosticTests
     [TestMethod]
     public void ValueReturningActions_AreSupported_WithoutDiagnostics()
     {
-        // The wrapper returns the value now; the old "discarded return value" warning (BLEX011) is gone.
+        // The wrapper returns the value now; BLEX011 ("return value is discarded") is left for what it cannot return.
         var result = GeneratorTestHelper.Run(Usings + """
             [BlexStoreAttribute] public partial class S
             {
@@ -252,6 +252,26 @@ public class DiagnosticTests
             }
             """);
         Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+    }
+
+    [TestMethod]
+    public void RefStructReturningAction_ReportsBLEX011_AndStillCompiles()
+    {
+        // A ref struct cannot be held in the local a dispatch lambda assigns (CS8175): the wrapper returns void.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private string _label = " ada ";
+                [BlexActionAttribute] private System.ReadOnlySpan<char> OnTrim() => System.MemoryExtensions.Trim(System.MemoryExtensions.AsSpan(_label));
+            }
+
+            public static class Use
+            {
+                public static void Run(S s) => s.Trim();
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX011"));
         Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
     }
 

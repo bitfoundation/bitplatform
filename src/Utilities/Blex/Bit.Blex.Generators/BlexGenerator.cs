@@ -133,6 +133,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor ActionReturnsValue = new(
+        "BLEX011",
+        "Action return value is discarded",
+        "Action method '{0}' returns '{1}', which the generated wrapper cannot hand back (a ref struct or pointer cannot be held across the dispatch); the wrapper returns void and the value is discarded",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor StateFieldNameConflict = new(
         "BLEX012",
         "State field name equals generated property name",
@@ -559,7 +567,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
                     }
                     else if (!am.ReturnsVoid)
                     {
-                        resultType = am.ReturnType.ToDisplayString(TypeFormat);
+                        // A ref struct (Span<T>, ReadOnlySpan<char>) or a pointer cannot be stored in the local the
+                        // dispatch lambda assigns (CS8175), so such a value is discarded as before results existed.
+                        if (am.ReturnType.IsRefLikeType || am.ReturnType.TypeKind is TypeKind.Pointer or TypeKind.FunctionPointer)
+                            Report(ActionReturnsValue, am.Locations.FirstOrDefault(), am.Name, am.ReturnType.ToDisplayString());
+                        else
+                            resultType = am.ReturnType.ToDisplayString(TypeFormat);
                     }
 
                     // The label is for display (DevTools / time-travel) and may contain spaces;
@@ -1164,6 +1177,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 Check($"__{e.WrapperName}Debounce");
             if (e.ThrottleMilliseconds > 0)
                 Check($"__{e.WrapperName}Throttle");
+            if (e.ThrottleMilliseconds > 0 && e.Concurrency == 3)
+                Check($"__{e.WrapperName}ThrottleQueued");
         }
 
         // Private plumbing behind DescribeActions and TransientStateKeys.
@@ -1715,14 +1730,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 }
                 else
                 {
-                    // A block-bodied lambda converts to Action only, so this is the plain Dispatch: one closure, shared
-                    // by the arguments and the result.
+                    // Through the base class's Dispatch<T>, as a hand-written value-returning action goes: one path for
+                    // both, and the type argument is explicit so the overload never depends on inference.
                     sb.AppendLine($"{body}public {result} {a.WrapperName}({paramList})");
-                    sb.AppendLine($"{body}{{");
-                    sb.AppendLine($"{body}    {result} __blexResult = default!;");
-                    sb.AppendLine($"{body}    Dispatch(\"{label}\", () => {{ __blexResult = {a.ImplName}({argList}); }}{trailing});");
-                    sb.AppendLine($"{body}    return __blexResult;");
-                    sb.AppendLine($"{body}}}");
+                    sb.AppendLine($"{body}    => Dispatch<{result}>(\"{label}\", () => {a.ImplName}({argList}), {argsExpr ?? "null"});");
                 }
 
                 sb.AppendLine();
@@ -1780,6 +1791,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var debounceField = $"__{e.WrapperName}Debounce";
             var isDebounced = e.DebounceMilliseconds > 0;
             var throttleField = $"__{e.WrapperName}Throttle";
+            var throttleQueuedField = $"__{e.WrapperName}ThrottleQueued";
             var isThrottled = e.ThrottleMilliseconds > 0;
 
             var cancellationNote = e.HasCancellationToken
@@ -1827,7 +1839,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}private global::System.Threading.CancellationTokenSource? {debounceField};");
 
             if (isThrottled)
-                sb.AppendLine($"{body}private long? {throttleField};");
+                sb.AppendLine($"{body}private (global::System.TimeProvider Clock, long Timestamp)? {throttleField};");
+
+            // Under Queue an accepted run may wait for its predecessor, and its window opens only once it runs: until
+            // then, an invocation would be measured against the run before it. One still waiting is the next window's.
+            if (isThrottled && isQueue)
+                sb.AppendLine($"{body}private int {throttleQueuedField};");
 
             var debounceNote = isDebounced
                 ? $" Waits for a quiet period of {e.DebounceMilliseconds} ms first; a newer invocation supersedes this one, which then returns without running."
@@ -1884,7 +1901,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
             // Throttle: dropped like a Drop invocation -- before the middleware, so it leaves no trace.
             if (isThrottled)
             {
-                sb.AppendLine($"{body}    if (base.IsEffectThrottled({throttleField}, {e.ThrottleMilliseconds}))");
+                var waiting = isQueue ? $"{throttleQueuedField} > 0 || " : "";
+                sb.AppendLine($"{body}    if ({waiting}base.IsEffectThrottled({throttleField}, {e.ThrottleMilliseconds}))");
                 sb.AppendLine($"{body}        return;");
             }
 
@@ -1898,7 +1916,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}        return;");
 
             // Only an approved invocation opens the next window: a vetoed one must not hold back the one after it.
-            if (isThrottled)
+            if (isThrottled && !isQueue)
                 sb.AppendLine($"{body}    base.MarkEffectStarted(ref {throttleField});");
 
             if (isLatest) // stale runs must not clobber the newest run's error state
@@ -1918,6 +1936,11 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 sb.AppendLine($"{body}    var __blexPrevious = {queueField};");
                 sb.AppendLine($"{body}    var __blexGate = new global::System.Threading.Tasks.TaskCompletionSource(global::System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);");
                 sb.AppendLine($"{body}    {queueField} = __blexGate.Task;");
+                if (isThrottled)
+                {
+                    sb.AppendLine($"{body}    {throttleQueuedField}++;");
+                    sb.AppendLine($"{body}    var __blexThrottleWaiting = true;");
+                }
             }
 
             sb.AppendLine($"{body}    try");
@@ -1930,6 +1953,13 @@ public sealed class BlexGenerator : IIncrementalGenerator
                 // Wait for the predecessor BEFORE clearing the error: clearing first would let a
                 // failed predecessor overwrite this (successful) run's cleared state out of order.
                 sb.AppendLine($"{body}        await __blexPrevious.ConfigureAwait(true);");
+                if (isThrottled)
+                {
+                    // Its turn has come: the window opens now, not when it was accepted.
+                    sb.AppendLine($"{body}        {throttleQueuedField}--;");
+                    sb.AppendLine($"{body}        __blexThrottleWaiting = false;");
+                    sb.AppendLine($"{body}        base.MarkEffectStarted(ref {throttleField});");
+                }
             }
 
             sb.AppendLine($"{body}        SetEffectState(ref {errorField}, null);");
@@ -1963,6 +1993,11 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine($"{body}    {{");
             if (isQueue)
                 sb.AppendLine($"{body}        __blexGate.SetResult();");
+            if (isQueue && isThrottled)
+            {
+                sb.AppendLine($"{body}        if (__blexThrottleWaiting)");
+                sb.AppendLine($"{body}            {throttleQueuedField}--;");
+            }
             if (e.HasCancellationToken)
             {
                 sb.AppendLine($"{body}        if (object.ReferenceEquals({ctsField}, __blexCts))");

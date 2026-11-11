@@ -57,6 +57,19 @@ public sealed class BlexReduxDevToolsConnector : IBlexDevTools, IAsyncDisposable
             {
                 handle = await _module.InvokeAsync<int>("connect", _selfRef, name);
             }
+            catch (Exception ex) when (_disposed && ex is not (JSDisconnectedException or JSException))
+            {
+                // Disposed while connecting, and the teardown failed the call some other way (cancelled, disposed
+                // runtime): disposal left the cleanup to this method, so the module and reference are released here
+                // (the two handled below release theirs in their own catch). A teardown failure is expected; anything
+                // else still surfaces, once nothing is left behind.
+                _connecting = false;
+                await ReleaseAsync(0);
+                if (ex is OperationCanceledException or ObjectDisposedException)
+                    return;
+
+                throw;
+            }
             finally
             {
                 _connecting = false;

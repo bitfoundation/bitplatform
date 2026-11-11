@@ -124,6 +124,10 @@ base type.
 - **Results**: an action may return a value - `T`, `Task<T>` or `ValueTask<T>` - and its wrapper hands it back
   once the action is recorded (`var id = store.Create(draft);`, `var saved = await store.Save(order);`). A
   middleware that vetoes the action stops it before the body runs, and the wrapper returns `default`.
+  Because the wrapper now returns `T` instead of `void`, its method group no longer converts to `Action` or an
+  event handler: write `@onclick="() => store.AddItem()"` (or `Action a = () => store.AddItem();`) for an
+  action whose method returns a value. A ref struct (`Span<T>`, `ReadOnlySpan<char>`) or pointer result cannot be
+  handed back; its wrapper returns `void` and `BLEX011` warns that the value is discarded.
 - Directly assigning a generated property (e.g. `store.Count = 5`) is recorded as a `Set Count` action.
 - **Batching from outside**: `store.Batch("Apply preset", () => { store.Count = 10; store.Step = 5; })`
   groups ad-hoc mutations into one named action with a single re-render (the `$patch`/`runInAction`
@@ -510,7 +514,8 @@ effect, not per argument.
 A debounce runs the *last* invocation of a burst; `ThrottleMilliseconds` runs the *first* one at once and
 drops every invocation made within that window after a run started - the shape for a refresh button pressed
 repeatedly, or a list that loads more as it is scrolled. A dropped invocation leaves no trace, like one `Drop`
-ignores, and only one the middleware lets through opens a window. The window runs on the manager's
+ignores, and only one the middleware lets through opens a window (under `Queue`, once the run starts after
+its predecessor; an invocation made while an accepted run still waits is dropped). The window runs on the manager's
 `TimeProvider`, a replay never throttles, and the two settings are exclusive (`BLEX028`):
 
 ```csharp
@@ -1341,7 +1346,8 @@ code: `BLEX001` store not partial · `BLEX002/003` underivable action/computed n
 `BLEX004` computed with parameters · `BLEX005` generated-member collisions (including against
 your own members and `BlexStoreBase`) · `BLEX006` nested/generic/static stores · `BLEX007` non-async
 effects · `BLEX008` static/readonly members · `BLEX009` `Latest` effect without a
-`CancellationToken` (warning) · `BLEX010` `async void` actions · `BLEX012` state field/property name conflicts · `BLEX013` by-ref
+`CancellationToken` (warning) · `BLEX010` `async void` actions · `BLEX011` an action returning a ref struct
+or pointer, whose value the wrapper discards (warning) · `BLEX012` state field/property name conflicts · `BLEX013` by-ref
 parameters · `BLEX014` generic action/effect methods · `BLEX015` record stores ·
 `BLEX016` conflicting base class · `BLEX017` `void` computed methods · `BLEX018` a Blex member
 attribute used outside a `[BlexStore]` class (warning) - the one mistake that otherwise

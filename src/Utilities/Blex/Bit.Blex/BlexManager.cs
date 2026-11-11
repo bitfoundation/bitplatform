@@ -1344,13 +1344,24 @@ public sealed class BlexManager
         // exception passes through several dispatch frames on its way out. Report the innermost
         // one, which names the action that actually threw, and let the outer frames re-throw
         // silently. A reporter that fired once per frame would multiply every nested failure. The frame of the
-        // action reporting is the flow's current one (its body is still entered); the action around it learns of it.
+        // action reporting is the flow's current one (its body is still entered); the action around it of this same
+        // manager learns of it. Frames are shared by every manager in the flow, but each reports to its own
+        // middleware and ActionFailed: a failure that passes through another manager's action is reported there too.
         var frame = RunningActions.Value;
-        if (frame?.Outer is { } outer)
-            outer.ReportedError = exception;
+        if (frame is not null && ReferenceEquals(frame.Manager, this))
+        {
+            for (var outer = frame.Outer; outer is not null; outer = outer.Outer)
+            {
+                if (ReferenceEquals(outer.Manager, this))
+                {
+                    outer.ReportedError = exception;
+                    break;
+                }
+            }
 
-        if (frame is not null && ReferenceEquals(frame.ReportedError, exception))
-            return;
+            if (ReferenceEquals(frame.ReportedError, exception))
+                return;
+        }
 
         if (_middleware.Count == 0 && ActionFailed is null)
             return;

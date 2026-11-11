@@ -14,6 +14,7 @@ BLEX007 | Bit.Blex.Generators | Error | Effect method must return Task or ValueT
 BLEX008 | Bit.Blex.Generators | Error | Blex member must be a writable instance member
 BLEX009 | Bit.Blex.Generators | Warning | Latest effect cannot cancel without a CancellationToken
 BLEX010 | Bit.Blex.Generators | Error | Action must not be 'async void'
+BLEX011 | Bit.Blex.Generators | Warning | Action return value is discarded
 BLEX012 | Bit.Blex.Generators | Error | State field name equals generated property name
 BLEX013 | Bit.Blex.Generators | Error | Unsupported parameter modifier
 BLEX014 | Bit.Blex.Generators | Error | Generic action/effect/computed methods are not supported
