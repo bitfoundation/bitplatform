@@ -47,6 +47,15 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     private bool _isDrawer;
     private bool _isFocused;
     private bool _screenChecked;
+    // Whether the content of the panel has been rendered once (see _RendersContent), after which it stays.
+    private bool _contentRendered;
+    // Whether a method of the panel that acts on the nav has asked for the content of a drawer never opened (see GetNav).
+    private bool _contentRequested;
+    // Completed by the render that renders the content a method asked for, which that method waits for (see GetNavAsync).
+    private TaskCompletionSource? _contentRendering;
+    // Whether the browser has said, before the first render, that the screen is one the panel is a drawer on (see
+    // IsDrawerAtStart). Only read until the media query reports the shape for itself.
+    private bool _drawerAtStart;
     private int _focusOutToken;
     private bool _scrollLocked;
     private bool _focusTrapped;
@@ -74,6 +83,11 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     // which in a shell is the region the shell scrolls rather than the document.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    // The theme of an enclosing BitThemeProvider, whose breakpoints win over the stylesheet's ones: the media query the
+    // panel renders reads them off it too, so the shape asked for before the first render is asked of the same scale.
+    [CascadingParameter]
+    private BitTheme? CascadingTheme { get; set; }
 
     /// <summary>
     /// Gets or sets the cascading parameters for the nav panel component.
@@ -360,6 +374,31 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public bool NoFocusTrap { get; set; }
 
     /// <summary>
+    /// Renders the content of the drawer of a small screen while it is still closed, rather than the first time
+    /// it opens.
+    /// </summary>
+    /// <remarks>
+    /// Below <see cref="DrawerBreakpoint"/> the panel is a drawer nobody sees until it is opened, so by default the
+    /// content of a drawer that has never been opened - the header, the search box, the nav and the footer - is left
+    /// out until the drawer first opens, and kept from then on, so the start of the app does not build what is not on
+    /// screen. That takes knowing the shape of the panel before its first render, which only a WebAssembly app can ask
+    /// the browser synchronously (from the start with the bundled scripts, once the media query script is loaded with
+    /// the lazy ones). Everywhere else - Server, Hybrid, the first page of a lazy-scripts app - the first render cannot
+    /// tell a drawer from a column, and the content is rendered as before, since a column must never be drawn empty.
+    /// A prerender and a static SSR page always render it, so the links are in the HTML that is sent.
+    /// <br />
+    /// The content is rendered at once, as if this were set, while the app listens to the selection the automatic
+    /// <see cref="NavMode"/> reads off the current URL (<see cref="SelectedItemChanged"/>, <c>@bind-SelectedItem</c>,
+    /// <see cref="OnSelectItem"/>), so it hears it as the app starts. A method that acts on the nav
+    /// (<see cref="SelectItem"/>, <see cref="ExpandItem"/>, <see cref="IsItemExpanded"/>, ...) renders it the moment
+    /// it is called.
+    /// <br />
+    /// Set it to <c>true</c> when the app reads any other navigation state before the drawer has ever been opened,
+    /// such as the side effects of a template: a nav that is not rendered calls no template.
+    /// </remarks>
+    [Parameter] public bool NoLazyDrawer { get; set; }
+
+    /// <summary>
     /// Removes the overlay that is rendered behind the open nav panel in small screens.
     /// Without it the drawer no longer covers the page: it stops holding the focus and the page behind it
     /// keeps scrolling.
@@ -602,27 +641,54 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Collapses all items of the nav.
     /// </summary>
-    public void CollapseAll() => _bitNavRef?.CollapseAll();
+    public void CollapseAll()
+    {
+        if (GetNav() is { } nav)
+        {
+            nav.CollapseAll();
+            return;
+        }
+
+        _ = WithNavAsync(static nav => nav.CollapseAll());
+    }
 
     /// <summary>
     /// Collapses an item of the nav, and does nothing when it is already collapsed.
     /// </summary>
-    public Task CollapseItem(TItem item) => _bitNavRef?.CollapseItem(item) ?? Task.CompletedTask;
+    public async Task CollapseItem(TItem item)
+    {
+        if (await GetNavAsync() is { } nav) await nav.CollapseItem(item);
+    }
 
     /// <summary>
     /// Expands all items of the nav in non-SingleExpand mode.
     /// </summary>
-    public void ExpandAll() => _bitNavRef?.ExpandAll();
+    public void ExpandAll()
+    {
+        if (GetNav() is { } nav)
+        {
+            nav.ExpandAll();
+            return;
+        }
+
+        _ = WithNavAsync(static nav => nav.ExpandAll());
+    }
 
     /// <summary>
     /// Expands an item of the nav, and does nothing when it is already expanded.
     /// </summary>
-    public Task ExpandItem(TItem item) => _bitNavRef?.ExpandItem(item) ?? Task.CompletedTask;
+    public async Task ExpandItem(TItem item)
+    {
+        if (await GetNavAsync() is { } nav) await nav.ExpandItem(item);
+    }
 
     /// <summary>
     /// Moves the focus to an item of the nav, opening the branches it is nested in when it is not rendered yet.
     /// </summary>
-    public ValueTask FocusItem(TItem item) => _bitNavRef?.FocusItem(item) ?? ValueTask.CompletedTask;
+    public async ValueTask FocusItem(TItem item)
+    {
+        if (await GetNavAsync() is { } nav) await nav.FocusItem(item);
+    }
 
     /// <summary>
     /// Moves the focus to the search box of the nav panel, opening the panel out of its toggled state first
@@ -649,7 +715,12 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Whether an item of the nav is currently expanded.
     /// </summary>
-    public bool IsItemExpanded(TItem item) => _bitNavRef?.IsItemExpanded(item) is true;
+    /// <remarks>
+    /// The nav of a drawer never opened is rendered by this call (see <see cref="NoLazyDrawer"/>), which answers at
+    /// once unless the panel is in the middle of a render - called from the markup of a page, say - where it is false
+    /// until that render is over.
+    /// </remarks>
+    public bool IsItemExpanded(TItem item) => GetNav()?.IsItemExpanded(item) is true;
 
     /// <summary>
     /// Opens the nav panel.
@@ -662,7 +733,10 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Selects an item of the nav programmatically, exactly like a click on that item would in the manual mode.
     /// </summary>
-    public Task SelectItem(TItem? item) => _bitNavRef?.SelectItem(item) ?? Task.CompletedTask;
+    public async Task SelectItem(TItem? item)
+    {
+        if (await GetNavAsync() is { } nav) await nav.SelectItem(item);
+    }
 
     /// <summary>
     /// Toggles the nav panel if possible.
@@ -675,7 +749,10 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Toggles an item of the nav.
     /// </summary>
-    public Task ToggleItem(TItem item) => _bitNavRef?.ToggleItem(item) ?? Task.CompletedTask;
+    public async Task ToggleItem(TItem item)
+    {
+        if (await GetNavAsync() is { } nav) await nav.ToggleItem(item);
+    }
 
 
 
@@ -789,6 +866,12 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
             _screenChecked = true;
         }
 
+        // Asked before the first render, which is the one it decides (see _RendersContent).
+        if (IsRendered is false)
+        {
+            _drawerAtStart = IsDrawerAtStart();
+        }
+
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) reaches
         // the filtered list a search is showing as well.
@@ -802,6 +885,13 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The content a method of the panel asked for is in place, and with it the nav that method acts on.
+        if (_contentRendered && _contentRendering is { } contentRendering)
+        {
+            _contentRendering = null;
+            contentRendering.TrySetResult();
+        }
+
         // Everything the drawer of a small screen holds while it covers the page - the page it stops from
         // scrolling, the focus it keeps inside itself - is taken and handed back here rather than at the
         // moment a single parameter changes: whether the panel covers the page at all is decided by three
@@ -1298,6 +1388,102 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
         _ => BitScreenQuery.LtMd,
     };
 
+    // Whether the content of the panel is rendered. A drawer nobody has opened yet is off the screen, so the content is
+    // left out until the drawer first opens (see NoLazyDrawer), and kept from then on: its open and close transitions
+    // play on the root, which is always there, and the parts of the content keep their state. Until the browser has
+    // reported the shape, the content is left out only when it said before the first render that the screen is a
+    // drawer's, so a column is never rendered empty while the answer is on its way.
+    private bool _RendersContent
+    {
+        get
+        {
+            if (_contentRendered || _contentRequested || IsOpen || _LeavesDrawerContentOut is false) return true;
+
+            // What a prerender or a static SSR page sends is all there is of it until the page is interactive (and all
+            // a search engine reads), so it holds the links whatever the screen.
+            if (IsStaticRender(_js)) return true;
+
+            return _screenChecked ? _isDrawer is false : _drawerAtStart is false;
+        }
+    }
+
+    // Whether the content of a drawer never opened may be left out. Not with NoLazyDrawer, and not while the app listens
+    // to the selection the automatic mode reads off the current URL: the nav reports it as it first renders, which the
+    // app hears as it starts rather than in the middle of the first opening of the drawer.
+    private bool _LeavesDrawerContentOut => NoLazyDrawer is false
+        && (NavMode is not BitNavMode.Automatic || (SelectedItemChanged.HasDelegate is false && OnSelectItem.HasDelegate is false));
+
+    // The breakpoints the stylesheet lays the panel out at until the browser has reported its shape (see _ShapeClass):
+    // the defaults of media-queries.scss, every one of them, so a query built off them reads no token of the page.
+    private static readonly Dictionary<string, string> StylesheetBreakpoints = new()
+    {
+        ["xs"] = "0",
+        ["sm"] = "600px",
+        ["md"] = "960px",
+        ["lg"] = "1280px",
+        ["xl"] = "1920px",
+        ["xxl"] = "2560px",
+    };
+
+    // Whether the screen is one the panel is a drawer on, asked before the first render - which the media query only
+    // answers after - so a phone's start does not render the content of a drawer it does not show. It is asked the way
+    // BitMediaQuery asks it before its own first render (BitMediaQuery.MatchNow), which only a WebAssembly app with the
+    // script in the page can do; everywhere else the answer is no, and the first render keeps the content.
+    // It is a drawer only when both shapes it has until the media query reports agree: the one the media query is about
+    // to report (off the live breakpoints, those of an enclosing BitThemeProvider first) and the one the stylesheet
+    // draws meanwhile (off the default breakpoints, see _ShapeClass) - a column either of them shows is never rendered
+    // empty. The stylesheet's is asked first, since it needs no token of the page read and is no on every wide screen.
+    // The answer is only ever a hint: a column reported as a drawer keeps the content it rendered, and a drawer reported
+    // as a column gets its content as the media query reports it.
+    private bool IsDrawerAtStart()
+    {
+        if (_LeavesDrawerContentOut is false || _ScreenQuery is not { } screenQuery || IsStaticRender(_js)) return false;
+
+        var query = screenQuery.ToString();
+
+        return BitMediaQuery.MatchNow(_js, null, query, StylesheetBreakpoints) is true
+            && BitMediaQuery.MatchNow(_js, null, query, BitMediaQuery.ToScriptBreakpoints(CascadingTheme)) is true;
+    }
+
+    // The nav the methods of the panel act on. A drawer never opened has none (see _RendersContent), so a call that needs
+    // it asks for the content to be rendered: at once when the panel is free to render, which hands the nav over before
+    // this returns, else with the render under way (a call from the markup of a page, from an after-render callback).
+    private BitNav<TItem>? GetNav()
+    {
+        if (_bitNavRef is null && _contentRendered is false && _contentRequested is false && IsDisposed is false)
+        {
+            _contentRequested = true;
+
+            StateHasChanged();
+        }
+
+        return _bitNavRef;
+    }
+
+    // The same, for a call that can wait for the render the content is in when the nav is not there at once.
+    private async Task<BitNav<TItem>?> GetNavAsync()
+    {
+        if (GetNav() is { } nav || _contentRendered || IsDisposed) return _bitNavRef;
+
+        await (_contentRendering ??= new(TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+
+        return _bitNavRef;
+    }
+
+    // Runs what a method that returns nothing does to the nav once the nav is there. A failure is handed to Blazor's error
+    // handling, since nothing awaits this to see it.
+    private async Task WithNavAsync(Action<BitNav<TItem>> action)
+    {
+        try
+        {
+            if (await GetNavAsync() is { } nav) action(nav);
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
     // The panel is a modal drawer while it covers the page: only on a small screen, only while it is open,
     // and only with the overlay that is what makes it cover anything at all.
     private bool _IsModalDrawer => _isDrawer && IsOpen && NoOverlay is false && Disabled is false;
@@ -1460,6 +1646,10 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // Disposed even when it never started, so a first render still on its way does not start it afterwards.
         await EscapeWatch.DisposeAsync();
+
+        // A method waiting for content that will now never be rendered goes on, and finds no nav.
+        _contentRendering?.TrySetResult();
+        _contentRendering = null;
 
         await base.DisposeAsync(disposing);
     }

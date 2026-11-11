@@ -214,6 +214,42 @@
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 
+        // Moves the focus to the first field that reports itself invalid (aria-invalid="true"), in document order, of
+        // the form around the marker element - BitFocusOnInvalidSubmit's, which renders it inside the EditForm - or of
+        // the whole page for a marker in no form. An element that cannot take the focus itself hands it to the first
+        // element inside it that can: a group carrying the state for its items (a radiogroup, whose radios carry it
+        // too) passes it on, and a hidden input a value travels through, with nothing inside it, is passed over. A
+        // radio is replaced by the checked one of its group when there is one, the radio the Tab key lands on.
+        // Returns whether the focus was moved.
+        export function focusFirstInvalid(marker: HTMLElement | null) {
+            try {
+                if (!marker) return false;
+
+                const scope: ParentNode = marker.closest('form') ?? document;
+                const invalid = scope.querySelectorAll<HTMLElement>('[aria-invalid="true"]');
+
+                for (let i = 0; i < invalid.length; i++) {
+                    let target = Utils.isFocusableElement(invalid[i]) ? invalid[i] : Utils.firstFocusable(invalid[i]);
+                    if (!target) continue;
+
+                    if (target instanceof HTMLInputElement && target.type === 'radio' && target.checked === false && target.name) {
+                        const name = target.name;
+                        const checked = Array.from(scope.querySelectorAll<HTMLInputElement>('input[type="radio"]:checked'))
+                                             .find(radio => radio.name === name);
+
+                        if (checked && Utils.isFocusableElement(checked)) {
+                            target = checked;
+                        }
+                    }
+
+                    target.focus();
+                    return true;
+                }
+            } catch (e) { console.error("BitBlazorUI.Utils.focusFirstInvalid:", e); }
+
+            return false;
+        }
+
         // Moves the focus to the trigger inside the given container - its first focusable element - unless the
         // focus is somewhere inside the container already. A click focuses the button it lands on in most engines
         // but not in WebKit, which leaves the focus where it was, and a popup whose trigger never took the focus

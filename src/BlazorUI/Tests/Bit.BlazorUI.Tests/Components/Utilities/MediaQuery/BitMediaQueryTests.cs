@@ -85,6 +85,90 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMediaQueryShouldRenderWhatTheBrowserSaysBeforeItsFirstRender()
+    {
+        // A WebAssembly app asks the browser synchronously, so the first render is already the right one.
+        Context.JSInterop.Setup<bool?>("BitBlazorUI.MediaQuery.matchNow", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
+            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+        });
+
+        Assert.HasCount(1, component.FindAll(".matched"));
+        Assert.IsTrue(component.Instance.IsMatched);
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.matchNow");
+        Assert.IsNull(invocation.Arguments[0]);
+        Assert.AreEqual("LtMd", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldLetTheBrowserWinOverDefaultMatchedBeforeItsFirstRender()
+    {
+        Context.JSInterop.Setup<bool?>("BitBlazorUI.MediaQuery.matchNow", _ => true).SetResult(false);
+
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "@media (max-width: 600px)");
+            parameters.Add(p => p.DefaultMatched, true);
+            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+            parameters.Add(p => p.NotMatched, Markup("<div class=\"notmatched\">NotMatched</div>"));
+        });
+
+        Assert.HasCount(1, component.FindAll(".notmatched"));
+        Assert.IsFalse(component.Instance.IsMatched);
+
+        // The custom query is asked as setup asks it: normalized, and ahead of any ScreenQuery.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.MediaQuery.matchNow");
+        Assert.AreEqual("(max-width: 600px)", invocation.Arguments[0]);
+        Assert.IsNull(invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldKeepDefaultMatchedWhenTheBrowserCannotAnswerBeforeItsFirstRender()
+    {
+        Context.JSInterop.Setup<bool?>("BitBlazorUI.MediaQuery.matchNow", _ => true).SetException(new InvalidOperationException("not ready"));
+
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
+            parameters.Add(p => p.DefaultMatched, true);
+            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+        });
+
+        Assert.HasCount(1, component.FindAll(".matched"));
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldNotAskTheBrowserBeforeItsFirstRenderWithNothingToRender()
+    {
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
+            parameters.Add(p => p.OnChange, (bool _) => { });
+        });
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.MediaQuery.matchNow");
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldNotAskTheBrowserBeforeItsFirstRenderOnAStaticRender()
+    {
+        Context.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+        RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.ScreenQuery, BitScreenQuery.LtMd);
+            parameters.Add(p => p.Matched, Markup("<div class=\"matched\">Matched</div>"));
+        });
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.MediaQuery.matchNow");
+    }
+
+    [TestMethod]
     public void BitMediaQueryShouldSwitchContentOnMatchChange()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>
