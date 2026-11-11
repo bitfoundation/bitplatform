@@ -125,7 +125,8 @@
 /* A link inside a sentence of a page's explanation is underlined: colour alone does not tell it from the words
    around it (WCAG 1.4.1). */
 .bb-card-desc a:not(.btn),
-.bb-note a:not(.btn) {
+.bb-note a:not(.btn),
+td a:not(.btn) {
     text-decoration: underline;
     text-underline-offset: .18em;
 }

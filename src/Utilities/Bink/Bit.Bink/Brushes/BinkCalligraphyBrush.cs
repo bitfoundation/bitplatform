@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink;
 
@@ -42,9 +42,44 @@ public sealed record BinkCalligraphyBrush : BinkBrush
     /// </summary>
     public float NibThickness { get; init; } = 0.15f;
 
+    /// <summary>
+    /// Whether the nib turns with the pen, as a real one turns in the hand. With a pen that reports barrel rotation
+    /// (twist), the nib turns by it. Otherwise, with one that reports tilt, it turns by how far the direction the pen
+    /// leans is from <see cref="PenLean"/>: leaning that way, the nib is at <see cref="NibAngle"/>. As the pen is
+    /// raised upright its lean loses its direction, and the nib eases back to <see cref="NibAngle"/>, which it reaches
+    /// when the pen is straight up. Without tilt or twist, a mouse or a finger, the nib stays at <see cref="NibAngle"/>.
+    /// Off by default.
+    /// </summary>
+    /// <remarks>
+    /// Each point's angle depends on that point alone, so a stroke cut in two by an eraser keeps the same ink in both
+    /// parts.
+    /// </remarks>
+    public bool FollowPen { get; init; }
+
+    /// <summary>
+    /// The direction, in degrees clockwise from the right, that the pen leans when the nib is at <see cref="NibAngle"/>,
+    /// for <see cref="FollowPen"/>. 45, the default, is a right hand's: the pen leaning toward the lower right of the
+    /// page. 135 suits a left hand.
+    /// </summary>
+    public float PenLean { get; init; } = 45f;
+
+    /// <summary>
+    /// Tilt in degrees below which the direction the pen leans is too uncertain to turn the nib all the way: below it the
+    /// turn shrinks with the tilt, to none when the pen is upright.
+    /// </summary>
+    private const float MinFollowTilt = 10f;
+
     /// <inheritdoc />
     public override IReadOnlyDictionary<string, float> GetParameters()
-        => new Dictionary<string, float>(StringComparer.Ordinal) { ["nibAngle"] = NibAngle, ["nibThickness"] = NibThickness };
+        => new Dictionary<string, float>(StringComparer.Ordinal)
+        {
+            ["nibAngle"] = NibAngle,
+            ["nibThickness"] = NibThickness,
+            // Written whether on or off, so a reader whose own default differs still reads what was drawn; a build
+            // that predates them ignores both.
+            ["followPen"] = FollowPen ? 1f : 0f,
+            ["penLean"] = PenLean,
+        };
 
     /// <inheritdoc />
     public override BinkBrush WithParameters(IReadOnlyDictionary<string, float> parameters)
@@ -54,6 +89,8 @@ public sealed record BinkCalligraphyBrush : BinkBrush
         {
             NibAngle = parameters.TryGetValue("nibAngle", out float angle) && float.IsFinite(angle) ? angle % 360f : NibAngle,
             NibThickness = parameters.TryGetValue("nibThickness", out float thickness) && float.IsFinite(thickness) ? Math.Clamp(thickness, 0.01f, 1f) : NibThickness,
+            FollowPen = parameters.TryGetValue("followPen", out float follow) ? follow >= 0.5f : FollowPen,
+            PenLean = parameters.TryGetValue("penLean", out float lean) && float.IsFinite(lean) ? lean % 360f : PenLean,
         };
     }
 
@@ -74,16 +111,16 @@ public sealed record BinkCalligraphyBrush : BinkBrush
         if (n == 0) return BinkStrokeGeometry.Empty;
 
         float radians = NibAngle * MathF.PI / 180f;
-        var along = new Vector2(MathF.Cos(radians), MathF.Sin(radians));
-        Vector2 across = BinkGeometryMath.Perpendicular(along);
         float thickness = Math.Clamp(float.IsFinite(NibThickness) ? NibThickness : 0.15f, 0.01f, 1f);
         BinkPressureCurve curve = PressureCurve ?? BinkPressureCurve.Linear;
+        float lean = (float.IsFinite(PenLean) ? PenLean : 45f) * MathF.PI / 180f;
+        var follow = new PenFollower(FollowPen, points, radians, lean);
 
         Span<Vector2> corners = stackalloc Vector2[8];
         Span<Vector2> sorted = stackalloc Vector2[8];
         // The monotone chain can hold up to twice the points while it builds the hull.
         Span<Vector2> hull = stackalloc Vector2[17];
-        Nib(points, 0, along, across, thickness, curve, corners[..4]);
+        Nib(points, 0, follow.AngleAt(points, 0), thickness, curve, corners[..4]);
         if (n == 1)
         {
             builder.AddPolygon(corners[..4]);
@@ -93,7 +130,7 @@ public sealed record BinkCalligraphyBrush : BinkBrush
         {
             // The nib at the start of the segment is the one at the end of the last; only the far end is new.
             if (i > 1) corners[4..].CopyTo(corners);
-            Nib(points, i, along, across, thickness, curve, corners[4..]);
+            Nib(points, i, follow.AngleAt(points, i), thickness, curve, corners[4..]);
             // Sorted in a copy: the corners at this end are the next segment's start.
             corners.CopyTo(sorted);
             int count = ConvexHull(sorted, hull);
@@ -105,9 +142,62 @@ public sealed record BinkCalligraphyBrush : BinkBrush
     private BinkStrokeGeometry Finish(BinkPathBuilder builder)
         => builder.IsEmpty ? BinkStrokeGeometry.Empty : new BinkStrokeGeometry(builder.ToGeometry(), BinkStrokeGeometryMode.Fill, 0f, BinkLineCap.Butt, BinkLineJoin.Miter, builder.Bounds.Inflate(1f));
 
-    /// <summary>The four corners of the nib at a point, its length scaled by the pressure there.</summary>
-    private void Nib(BinkStrokePointsView points, int index, Vector2 along, Vector2 across, float thickness, BinkPressureCurve curve, Span<Vector2> corners)
+    /// <summary>
+    /// The nib's angle point by point: <see cref="NibAngle"/>, turned by the pen's twist or by how far its lean is from
+    /// <see cref="PenLean"/>, when <see cref="FollowPen"/> is on and the device reports them. Each angle is read from its
+    /// own point: one carried over from earlier points would make the part of a stroke an eraser leaves start afresh at
+    /// <see cref="NibAngle"/> and draw differently from the same points in the whole stroke.
+    /// </summary>
+    private readonly struct PenFollower
     {
+        private readonly bool _twist;
+        private readonly bool _tilt;
+        private readonly float _base;
+        private readonly float _lean;
+
+        public PenFollower(bool enabled, BinkStrokePointsView points, float baseRadians, float leanRadians)
+        {
+            _base = baseRadians;
+            _lean = leanRadians;
+            _twist = enabled && HasAny(points.Twist);
+            _tilt = enabled && !_twist && (HasAny(points.TiltX) || HasAny(points.TiltY));
+        }
+
+        public float AngleAt(BinkStrokePointsView points, int index)
+        {
+            if (_twist)
+            {
+                float twist = points.Twist[index];
+                return float.IsFinite(twist) ? _base + twist * MathF.PI / 180f : _base;
+            }
+            if (!_tilt) return _base;
+            float tx = points.TiltX[index], ty = points.TiltY[index];
+            if (!float.IsFinite(tx) || !float.IsFinite(ty)) return _base;
+            float tilt = MathF.Max(MathF.Abs(tx), MathF.Abs(ty));
+            if (tilt == 0f) return _base;
+            // The direction the pen leans, from its tilt in the two planes.
+            float azimuth = MathF.Atan2(MathF.Tan(Math.Clamp(ty, -89f, 89f) * MathF.PI / 180f), MathF.Tan(Math.Clamp(tx, -89f, 89f) * MathF.PI / 180f));
+            float turn = azimuth - _lean;
+            if (tilt >= MinFollowTilt) return _base + turn;
+            // Nearly upright the direction is uncertain, so it counts for less the more upright the pen is. A nib turned
+            // half a turn is the same nib, so the turn is taken the short way round, within a quarter turn either side,
+            // before it is scaled.
+            turn -= MathF.PI * MathF.Round(turn / MathF.PI);
+            return _base + turn * (tilt / MinFollowTilt);
+        }
+
+        private static bool HasAny(ReadOnlySpan<float> values)
+        {
+            foreach (float v in values) if (v != 0f) return true;
+            return false;
+        }
+    }
+
+    /// <summary>The four corners of the nib at a point, held at <paramref name="radians"/>, its length scaled by the pressure there.</summary>
+    private void Nib(BinkStrokePointsView points, int index, float radians, float thickness, BinkPressureCurve curve, Span<Vector2> corners)
+    {
+        var along = new Vector2(MathF.Cos(radians), MathF.Sin(radians));
+        Vector2 across = BinkGeometryMath.Perpendicular(along);
         float pressure = index < points.Pressure.Length ? points.Pressure[index] : 0.5f;
         float half = Width / 2f * MathF.Max(curve.Apply(Math.Clamp(float.IsFinite(pressure) ? pressure : 0.5f, 0f, 1f)), 0.05f);
         Vector2 p = points.PositionAt(index);

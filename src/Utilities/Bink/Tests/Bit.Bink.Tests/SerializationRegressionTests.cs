@@ -191,6 +191,35 @@ public class SerializationRegressionTests(TestContext output)
     }
 
     [TestMethod]
+    public void Compressed_data_asking_for_a_preset_dictionary_is_a_malformed_png()
+    {
+        // A zlib header with its preset-dictionary flag makes the inflater stop with an error .NET reports as a
+        // ZLibException rather than an InvalidDataException; it escaped the decoder until both were treated alike.
+        byte[] png = TestData.CreatePng(4, 4, (_, _) => BinkColor.Black);
+        int idat = png.AsSpan().IndexOf("IDAT"u8);
+        Assert.IsGreaterThan(0, idat);
+        png[idat + 4] = 0x78;
+        png[idat + 5] = 0x20; // (0x78 * 256 + 0x20) % 31 == 0, and 0x20 is FDICT
+
+        Assert.ThrowsExactly<FormatException>(() => BinkPngCodec.Decode(png));
+    }
+
+    [TestMethod]
+    public void Compressed_data_with_an_invalid_block_is_a_malformed_png()
+    {
+        // A valid zlib header, then a final deflate block of the reserved type 3: inflating reports it as an
+        // InvalidDataException, which is not an IOException and so needs catching on its own.
+        byte[] png = TestData.CreatePng(4, 4, (_, _) => BinkColor.Black);
+        int idat = png.AsSpan().IndexOf("IDAT"u8);
+        Assert.IsGreaterThan(0, idat);
+        png[idat + 4] = 0x78;
+        png[idat + 5] = 0x9C;
+        png[idat + 6] = 0x07; // BFINAL = 1, BTYPE = 11
+
+        Assert.ThrowsExactly<FormatException>(() => BinkPngCodec.Decode(png));
+    }
+
+    [TestMethod]
     public void A_fuzzed_png_never_escapes_the_decoder_as_an_unexpected_exception()
     {
         // The decoder runs on embedded data: URIs, which arrive inside untrusted documents.
