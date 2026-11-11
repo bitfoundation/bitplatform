@@ -5,7 +5,7 @@
     gap: 0.125rem;
     display: flex;
     padding: 0.875rem 1rem;
-    border-radius: 12px;
+    border-radius: $bit-shape-radius-surface;
     flex-direction: column;
     border: 1px solid $bit-color-border-tertiary;
     background-color: $bit-color-background-secondary;
@@ -65,7 +65,7 @@
 .scroll-box {
     min-width: 0;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: $bit-shape-radius-surface;
     border: 1px solid $bit-color-border-tertiary;
 
     ::deep .orders-feed {
@@ -80,7 +80,7 @@
 .map-box {
     height: 18rem;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: $bit-shape-radius-surface;
     border: 1px solid $bit-color-border-tertiary;
 
     ::deep .stores-map {
@@ -99,7 +99,7 @@
     height: 20rem;
     min-width: 0;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: $bit-shape-radius-surface;
     border: 1px solid $bit-color-border-tertiary;
 }
 
@@ -108,7 +108,7 @@
     display: flex;
     height: 20rem;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: $bit-shape-radius-surface;
     border: 1px solid $bit-color-border-tertiary;
 
     ::deep .menu-panel {
