@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Bit.BlazorUI.Tests.Components.AI.Core;
 using Bunit;
@@ -12,8 +14,9 @@ namespace Bit.BlazorUI.Tests.Components.AI;
 /// <summary>
 /// The components with nothing of the AI packages registered - only the core's services, as an app that lazy-loads
 /// Bit.BlazorUI.AI (BlazorWebAssemblyLazyLoad) has them, since calling AddBitBlazorUIAIServices at startup would load the
-/// assembly there. Everything the registration gives them is handed over on the page instead: the session, the options,
-/// the renderers and the generative UI registry.
+/// assembly there. Everything the registration gives them is handed over on the page instead: a session or a
+/// BitAiServices (the transport, the tools, the renderers, the generative UI registry, the model catalog), and the
+/// UI options.
 /// </summary>
 [TestClass]
 public class BitAiUnregisteredServicesTests : BunitTestContext
@@ -37,6 +40,11 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
         }
     }
 
+    private sealed class LazyStrings : BitAiStrings
+    {
+        public override string EmptyTitle => "Ask the lazy chat";
+    }
+
     private static BitAiGenerativeUiPart CompletedPart(string name, string props)
     {
         using var document = JsonDocument.Parse(props);
@@ -45,6 +53,10 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
         part.Complete();
         return part;
     }
+
+    private static BitAiToolRegistry WeatherTools() => new([BitAiTool.Create(
+        new BitAiToolDefinition("get_weather") { Title = "Weather", Icon = "Cloud" },
+        (_, _) => ValueTask.FromResult(BitAiToolOutcome.FromText("12 degrees")))]);
 
     [TestMethod]
     public async Task AChatHandedItsSessionShouldAnswerWithNoAiServiceRegistered()
@@ -68,15 +80,40 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void AChatShouldTakeItsUiOptionsWithNoAiServiceRegistered()
+    public async Task AChatHandedATransportShouldOwnASessionThatFollowsItsUiOptions()
     {
-        var session = new BitAiChatSession(new BitAiFakeTransport());
+        var transport = new BitAiFakeTransport(
+            new BitAiMessageStartedEvent(),
+            new BitAiTextDeltaEvent("Hello **there**"),
+            new BitAiMessageCompletedEvent());
+        var strings = new LazyStrings();
 
         var chat = RenderComponent<BitAiChat>(p => p
-            .Add(c => c.Session, session)
-            .Add(c => c.EmptyTitle, "Ask the lazy chat"));
+            .Add(c => c.Services, new BitAiServices { Transport = transport, Tools = WeatherTools() })
+            .Add(c => c.UiOptions, BitAiUiOptions.Default with { Strings = strings, SmoothStreaming = false }));
 
+        // The UI reads the options: the empty state is titled by their strings.
         StringAssert.Contains(chat.Find(".bit-aiems").TextContent, "Ask the lazy chat");
+
+        // The session the chat created over the page's transport writes its errors in the same words, takes the text
+        // unpaced, and offers the model the page's tools.
+        var session = chat.Instance.ActiveSession;
+        Assert.AreSame(strings, session.Strings);
+        Assert.IsNull(session.Options.Pacing);
+
+        await chat.InvokeAsync(() => session.SubmitAsync("hello"));
+
+        chat.WaitForAssertion(() => Assert.AreEqual("there", chat.Find(".bit-aimsl strong").TextContent));
+        Assert.HasCount(1, transport.Requests);
+        Assert.IsTrue(transport.Requests[0].Tools.Any(t => t.Name == "get_weather"), "The page's tools were not offered to the model.");
+    }
+
+    [TestMethod]
+    public void AChatHandedNeitherASessionNorATransportShouldSaySo()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => RenderComponent<BitAiChat>());
+
+        StringAssert.Contains(exception.Message, "Services with a Transport");
     }
 
     [TestMethod]
@@ -93,6 +130,19 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void TheRenderersOfCascadedServicesShouldBeUsed()
+    {
+        var renderers = new BitAiRendererRegistry();
+        renderers.RegisterCodeLanguage("mermaid", _ => builder => builder.AddMarkupContent(0, "<div class=\"diagram\">drawn</div>"));
+
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { Renderers = renderers })
+            .AddChildContent<BitAiMarkdownView>(c => c.Add(x => x.Document, BitAiMarkdownParser.Parse("```mermaid\ngraph TD\n```"))));
+
+        Assert.AreEqual("drawn", view.Find(".diagram").TextContent);
+    }
+
+    [TestMethod]
     public void AGenerativeUiViewShouldRenderThePlaceholderWithNoRegistry()
     {
         var view = RenderComponent<BitAiGenerativeUiView>(p => p.Add(c => c.Part, CompletedPart("forecast_card", """{"city":"Oslo"}""")));
@@ -101,13 +151,13 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void AGenerativeUiViewShouldUseACascadedRegistry()
+    public void AGenerativeUiViewShouldUseTheRegistryOfCascadedServices()
     {
         var registry = new BitAiGenerativeUiRegistry();
         registry.Register<ForecastCard>("forecast_card");
 
-        var view = Context.Render<CascadingValue<IBitAiGenerativeUiRegistry>>(p => p
-            .Add(c => c.Value, registry)
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { GenerativeUi = registry })
             .AddChildContent<BitAiGenerativeUiView>(c => c.Add(x => x.Part, CompletedPart("forecast_card", """{"city":"Oslo"}"""))));
 
         Assert.AreEqual("Oslo", view.Find(".forecast").TextContent);
@@ -115,18 +165,89 @@ public class BitAiUnregisteredServicesTests : BunitTestContext
     }
 
     [TestMethod]
-    public void ACascadedGenerativeUiRegistryShouldWinOverTheRegisteredOne()
+    public void TheRegistryOfCascadedServicesShouldWinOverTheRegisteredOne()
     {
         Context.Services.AddBitBlazorUIAIServices(ai => ai.ConfigureGenerativeUi(r => r.Register<ForecastCard>("registered_card")));
 
         var registry = new BitAiGenerativeUiRegistry();
         registry.Register<ForecastCard>("cascaded_card");
 
-        var view = Context.Render<CascadingValue<IBitAiGenerativeUiRegistry>>(p => p
-            .Add(c => c.Value, registry)
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { GenerativeUi = registry })
             .AddChildContent<BitAiGenerativeUiView>(c => c.Add(x => x.Part, CompletedPart("registered_card", """{"city":"Oslo"}"""))));
 
         Assert.IsEmpty(view.FindAll(".forecast"));
         StringAssert.Contains(view.Find(".bit-aiguv-unr").TextContent, "registered_card");
+    }
+
+    [TestMethod]
+    public void AGenerativeUiViewShouldLetGoOfServicesNoLongerCascaded()
+    {
+        var registry = new BitAiGenerativeUiRegistry();
+        registry.Register<ForecastCard>("forecast_card");
+        var part = CompletedPart("forecast_card", """{"city":"Oslo"}""");
+
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { GenerativeUi = registry })
+            .AddChildContent<BitAiGenerativeUiView>(c => c.Add(x => x.Part, part)));
+
+        Assert.AreEqual("Oslo", view.Find(".forecast").TextContent);
+
+        view.Render(p => p
+            .Add(c => c.Value, new BitAiServices())
+            .AddChildContent<BitAiGenerativeUiView>(c => c.Add(x => x.Part, part)));
+
+        Assert.IsEmpty(view.FindAll(".forecast"));
+        StringAssert.Contains(view.Find(".bit-aiguv-unr").TextContent, "forecast_card");
+    }
+
+    [TestMethod]
+    public void AToolCallShouldBeNamedByTheToolsOfItsSession()
+    {
+        var session = new BitAiChatSession(new BitAiFakeTransport(), tools: WeatherTools());
+        var call = new BitAiToolCallPart("c1", "get_weather");
+
+        var card = RenderComponent<BitAiToolCallView>(p => p.Add(c => c.Call, call).Add(c => c.Session, session));
+
+        Assert.AreEqual("Calling Weather", card.Find(".bit-aitcv-ttl").TextContent);
+        Assert.IsTrue(card.Find("i.bit-aitcv-ico").ClassList.Contains("bit-icon--Cloud"));
+    }
+
+    [TestMethod]
+    public void AToolCallShouldBeNamedByTheToolsOfCascadedServices()
+    {
+        var call = new BitAiToolCallPart("c1", "get_weather");
+
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { Tools = WeatherTools() })
+            .AddChildContent<BitAiToolCallView>(c => c.Add(x => x.Call, call)));
+
+        Assert.AreEqual("Calling Weather", view.Find(".bit-aitcv-ttl").TextContent);
+    }
+
+    [TestMethod]
+    public void AReplyShouldNameItsModelByTheCatalogOfCascadedServices()
+    {
+        var message = new BitAiMessage(BitAiRole.Assistant);
+        message.AddPart(new BitAiTextPart("answer"));
+        message.MergeMetadata(new BitAiGenerationMetadata { ModelId = "gpt-test" });
+
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { ModelCatalog = new BitAiModelCatalog([new BitAiModel("gpt-test", "GPT Test")]) })
+            .AddChildContent<BitAiMessageActions>(c => c
+                .Add(x => x.Message, message)
+                .Add(x => x.CascadedOptions, BitAiUiOptions.Default with { ShowModelName = true })));
+
+        Assert.AreEqual("GPT Test", view.Find(".bit-aimac-mdl").TextContent);
+    }
+
+    [TestMethod]
+    public void AModelSelectorShouldOfferTheCatalogOfCascadedServices()
+    {
+        var view = Context.Render<CascadingValue<BitAiServices>>(p => p
+            .Add(c => c.Value, new BitAiServices { ModelCatalog = new BitAiModelCatalog([new BitAiModel("gpt-test", "GPT Test")]) })
+            .AddChildContent<BitAiModelSelector>());
+
+        StringAssert.Contains(view.Markup, "GPT Test");
     }
 }

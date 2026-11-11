@@ -228,9 +228,12 @@ its own:
   `StateHasChanged` per token. Every user-facing word goes through `BitAiStrings`.
 - **Nothing of the package has to be registered for a component to render.** A WebAssembly app may lazy-load the AI
   assemblies (`BlazorWebAssemblyLazyLoad`), and then cannot call `AddBitBlazorUIAIServices` at startup, which would load
-  them there. So a component resolves what the registration gives it optionally (`GetService`, never a required
-  `[Inject]` of an AI service) and falls back to a page-level form: the chat's `Session` and `UiOptions`, a cascaded
-  `BitAiRendererRegistry` or `IBitAiGenerativeUiRegistry`, else the built-in behaviour. `BitAiUnregisteredServicesTests`
+  them there. So a component reads every AI service through `BitAiComponentBase.GetAiService<T>()` - never an
+  `[Inject]` or a `GetService` of its own - which takes the one the cascaded `BitAiServices` sets (a `CascadingValue`
+  of it, or the chat's `Services`), else the registered one, else none and the built-in behaviour. A new optional
+  service is a property of `BitAiServices` (and a type in its `Find`), never a cascade or parameter of the one
+  component that reads it. A chat handed no `Session` creates its own over `BitAiServices.Transport`, so it follows
+  its `UiOptions`; a tool card reads the tools of its session first. `BitAiUnregisteredServicesTests`
   renders them with the core's services alone, and `LazyAiTrimmingTests` (in the trimming suite) publishes and runs such
   an app; the Trimming page's "Lazy-loading the AI package" section is where app authors read it.
 - **Its glyphs outside the core font subset come from its own subset** (`Styles/fabric.mdl2.bit.blazoui.ai.scss` and

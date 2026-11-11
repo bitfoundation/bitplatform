@@ -23,7 +23,12 @@
 
     private async Task OnNavigateAsync(NavigationContext context)
     {
-        if (context.Path.Trim('/') == "chat" && _lazyLoaded.Count == 0)
+        // The path is the one navigated to, its query and fragment included: /chat?conversation=42 and /chat/history
+        // open the chat as well.
+        var path = context.Path.Split('?', '#')[0].Trim('/');
+
+        if ((path.Equals("chat", StringComparison.OrdinalIgnoreCase) || path.StartsWith("chat/", StringComparison.OrdinalIgnoreCase))
+            && _lazyLoaded.Count == 0)
         {
             var assemblies = await AssemblyLoader.LoadAssembliesAsync(
                 ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "Bit.BlazorUI.Tests.Trimming.LazyAi.Chat.wasm"]);

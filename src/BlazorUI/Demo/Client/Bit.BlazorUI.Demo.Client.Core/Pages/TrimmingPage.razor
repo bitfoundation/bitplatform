@@ -632,7 +632,11 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
 
     private async Task OnNavigateAsync(NavigationContext context)
     {
-        if (context.Path.Trim('/') == "chat" &amp;&amp; _lazyLoaded.Count == 0)
+        // The path comes with its query and fragment: /chat?id=42 and /chat/history open the chat too.
+        var path = context.Path.Split('?', '#')[0].Trim('/');
+
+        if ((path.Equals("chat", StringComparison.OrdinalIgnoreCase) || path.StartsWith("chat/", StringComparison.OrdinalIgnoreCase))
+            &amp;&amp; _lazyLoaded.Count == 0)
         {
             _lazyLoaded.AddRange(await AssemblyLoader.LoadAssembliesAsync(
                 ["Bit.BlazorUI.AI.Core.wasm", "Bit.BlazorUI.AI.wasm", "MyApp.Chat.wasm"]));
@@ -650,7 +654,11 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         <code>AddBitBlazorUIAIServices</code> is a method of Bit.BlazorUI.AI, so calling it in
                         <code>Program.cs</code> loads the assembly as the app starts. Register the core's services alone
                         (<code>AddBitBlazorUIServices</code>) and give the chat, on its page, what the registration would
-                        have given it - nothing of the package has to be registered for its components to render:
+                        have given it - nothing of the package has to be registered for its components to render. A
+                        <code>BitAiServices</code> carries it: the chat's <code>Services</code> parameter hands it to
+                        everything inside the chat, and a <code>CascadingValue</code> of it to AI components outside one
+                        (a <code>BitAiModelSelector</code> beside the chat). Each service it sets is read ahead of a
+                        registered one, and each it leaves unset falls back to the built-in behaviour:
                     </BitText>
                     <div class="tr-table-wrap">
                         <table class="tr-table">
@@ -662,49 +670,63 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <th scope="row"><code>UseTransport</code> (and <code>UseSseTransport</code>, <code>UseWebSocketTransport</code>), <code>AddTool</code>, <code>UseApprovalPolicy</code>, <code>ConfigureSessions</code></th>
-                                    <td>The chat's <code>Session</code>: <code>new BitAiChatSession(transport, options: ..., tools: new BitAiToolRegistry([...]), approvalPolicy: ...)</code>, over your transport or a <code>new BitAiSseTransport(http, options)</code></td>
+                                    <th scope="row"><code>UseTransport</code> (and <code>UseSseTransport</code>, <code>UseWebSocketTransport</code>)</th>
+                                    <td><code>Transport</code>, your transport or a <code>new BitAiSseTransport(http, options)</code>: the chat creates its session over it</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>AddTool</code>, <code>UseApprovalPolicy</code></th>
+                                    <td><code>Tools</code> (<code>new BitAiToolRegistry([...])</code>), <code>ApprovalPolicy</code>: the session runs the tools, and a tool call's card is headed by their title and icon</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><code>ConfigureSessions</code></th>
+                                    <td>The chat's <code>SessionOptions</code></td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><code>ConfigureUi</code></th>
-                                    <td>The chat's <code>UiOptions</code>, or a <code>BitAiOptionsProvider</code> around it</td>
+                                    <td>The chat's <code>UiOptions</code>, or a <code>BitAiOptionsProvider</code> around it - a session the chat creates writes its errors in their strings, and takes its text unpaced where they turn <code>SmoothStreaming</code> off</td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><code>ConfigureRenderers</code></th>
-                                    <td>A <code>CascadingValue</code> of a <code>BitAiRendererRegistry</code> around the chat</td>
+                                    <td><code>Renderers</code></td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><code>ConfigureGenerativeUi</code></th>
-                                    <td>A <code>CascadingValue</code> of an <code>IBitAiGenerativeUiRegistry</code> around the chat</td>
+                                    <td><code>GenerativeUi</code></td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><code>UseTextToSpeech</code>, <code>UseSpeechToText</code></th>
-                                    <td>The chat's <code>Synthesizer</code> and <code>Transcriber</code></td>
+                                    <td><code>TextToSpeech</code>, <code>SpeechToText</code> (or the chat's <code>Synthesizer</code> and <code>Transcriber</code>)</td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><code>AddModels</code></th>
-                                    <td>The <code>Models</code> or <code>Catalog</code> of a <code>BitAiModelSelector</code></td>
+                                    <td><code>ModelCatalog</code>: what a <code>BitAiModelSelector</code> offers, and the names the replies show their model by</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <CodeBox Language="razor">@@page "/chat"
-@@implements IAsyncDisposable
 @@inject HttpClient Http
 
-&lt;BitAiChat Session="_session" />
+&lt;BitAiChat Services="_services" UiOptions="_uiOptions" />
 
 @@code {
-    private BitAiChatSession _session = default!;
+    private BitAiServices _services = default!;
+    private readonly BitAiUiOptions _uiOptions = BitAiUiOptions.Default with { SmoothStreaming = false };
 
-    protected override void OnInitialized() =>
-        _session = new(new MyTransport(Http), tools: new BitAiToolRegistry([MyTools.Weather]));
-
-    public ValueTask DisposeAsync() => _session.DisposeAsync();
+    protected override void OnInitialized() => _services = new()
+    {
+        Transport = new MyTransport(Http),
+        Tools = new BitAiToolRegistry([MyTools.Weather]),
+    };
 }</CodeBox>
                     <BitText Element="p">
-                        Without a renderer registry, everything renders the built-in way; without a generative UI registry, a
-                        component the model names renders the placeholder of an unregistered one.
+                        A page that creates its session itself hands it over as the chat's <code>Session</code> instead,
+                        still with a <code>Services</code> for the rest - and then gives the session its tools
+                        (<code>new BitAiChatSession(transport, tools: ...)</code>, which the tool cards read too) and its
+                        <code>Strings</code> and <code>Pacing</code> in its own options, since the chat's
+                        <code>UiOptions</code> only reach a session the chat creates. Without a renderer registry,
+                        everything renders the built-in way; without a generative UI registry, a component the model names
+                        renders the placeholder of an unregistered one.
                     </BitText>
                 </DocSection>
 

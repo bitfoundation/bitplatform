@@ -94,6 +94,9 @@ public sealed class BitAiChatSession : IAsyncDisposable
     /// <summary>The text of the errors the session writes itself (<see cref="BitAiChatSessionOptions.Strings"/>).</summary>
     public BitAiStrings Strings => Options.Strings ?? BitAiStrings.Default;
 
+    /// <summary>The tools the session was created with, if any - which a tool call's card reads the definition of.</summary>
+    internal IBitAiToolRegistry? Tools => _tools;
+
     /// <summary><see langword="true"/> while a turn is in flight.</summary>
     public bool IsGenerating => Volatile.Read(ref _turn) is not null;
 

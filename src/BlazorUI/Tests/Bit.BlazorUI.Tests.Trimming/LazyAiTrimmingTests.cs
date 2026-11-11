@@ -33,7 +33,7 @@ public sealed class LazyAiTrimmingTests
         {
             CollectionAssert.Contains(lazy, assembly + ".wasm", $"{assembly} is not a lazy assembly of the publish: {string.Join(", ", lazy)}");
             CollectionAssert.DoesNotContain(eager, assembly + ".wasm", $"{assembly} is loaded as the app starts.");
-            Assert.IsNotNull(Published.FindFrameworkAssembly(assembly), $"The publish has no {assembly}.");
+            RequireFrameworkAssembly(Published, assembly);
         }
 
         // The core is what the app starts with.
@@ -96,7 +96,7 @@ public sealed class LazyAiTrimmingTests
 
         foreach (var assembly in new[] { "Bit.BlazorUI.AI", "Bit.BlazorUI.AI.Core" })
         {
-            var file = "/_framework/" + Path.GetFileName(Published.FindFrameworkAssembly(assembly));
+            var file = "/_framework/" + Path.GetFileName(RequireFrameworkAssembly(Published, assembly));
             Assert.IsTrue(requested.Any(r => r.Contains(file, StringComparison.Ordinal)), $"{assembly} was not downloaded when the chat opened.");
         }
 
@@ -109,6 +109,29 @@ public sealed class LazyAiTrimmingTests
         await session.AssertAiCopyButtonWorksAsync();
 
         session.AssertNoErrors($"The lazy-loaded AI app in {engine}");
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(BrowserSession.Engines), typeof(BrowserSession))]
+    public async Task ADeepLinkToTheChatShouldLoadTheAiPackage(string engine)
+    {
+        Published.AssertSucceeded();
+
+        await using var server = await AppServer.StartStaticAsync(Published.WebRoot);
+
+        // The router's OnNavigateAsync is handed the path with its query and fragment: a link to a conversation, or to a
+        // page under the chat's, still loads the lazy assemblies before routing. Each link is opened by a browser of its
+        // own, as a link followed from outside the app is: Firefox reports a script import the next page load cuts short
+        // as a failed one.
+        foreach (var path in new[] { "chat?conversation=42", "Chat#latest" })
+        {
+            await using var session = await BrowserSession.OpenAsync(engine);
+
+            await session.Page.GotoAsync(server.Url.TrimEnd('/') + "/" + path);
+            await session.WaitForAsync("() => !!document.querySelector('#chat-ready .bit-aicht')", $"The chat did not open at /{path}");
+
+            session.AssertNoErrors($"The lazy AI app deep-linked at /{path} in {engine}");
+        }
     }
 
     /// <summary>
@@ -143,11 +166,20 @@ public sealed class LazyAiTrimmingTests
         [
             Part("stylesheet", "startup", [Asset("styles/bit.blazorui.ai.css")]),
             Part("initializer and boot scripts", "startup", boot),
-            Part("Bit.BlazorUI.AI assembly", "chat", [publish.FindFrameworkAssembly("Bit.BlazorUI.AI")!]),
-            Part("Bit.BlazorUI.AI.Core assembly", "chat", [publish.FindFrameworkAssembly("Bit.BlazorUI.AI.Core")!]),
+            Part("Bit.BlazorUI.AI assembly", "chat", [RequireFrameworkAssembly(publish, "Bit.BlazorUI.AI")]),
+            Part("Bit.BlazorUI.AI.Core assembly", "chat", [RequireFrameworkAssembly(publish, "Bit.BlazorUI.AI.Core")]),
             Part("script modules", "chat", onDemand),
             Part("glyph font", "chat", [Asset(Font)]),
         ];
+    }
+
+    // The published file of an assembly, failing the test where there is none - rather than handing on a null that
+    // turns "/_framework/" + its name into a prefix every framework request matches.
+    private static string RequireFrameworkAssembly(PublishResult publish, string assembly)
+    {
+        var path = publish.FindFrameworkAssembly(assembly);
+        Assert.IsNotNull(path, $"The publish has no {assembly}.wasm in _framework.");
+        return path;
     }
 
     public sealed record AiPackagePart(string Part, string When, List<string> Files, long Bytes, long BrotliBytes);

@@ -4,7 +4,8 @@
          "Lazy-loading the AI package" section tells an app to: Bit.BlazorUI.AI and Bit.BlazorUI.AI.Core are
          BlazorWebAssemblyLazyLoad assemblies, and so is Bit.BlazorUI.Tests.Trimming.LazyAi.Chat, the library holding the
          page that renders BitAiChat. Nothing of the AI packages is registered at startup - Program.cs names none of their
-         types, which would load them there - and the page hands the chat its session itself. It runs with the lazy
+         types, which would load them there - and the page hands the chat what the registration would have
+         (BitAiServices: its transport here). It runs with the lazy
          scripts, so no script tag of the packages loads the AI scripts at startup either.
 
          Bit.BlazorUI.Tests.Trimming publishes it (LazyAiTrimmingTests) and runs it in a browser: nothing of the AI

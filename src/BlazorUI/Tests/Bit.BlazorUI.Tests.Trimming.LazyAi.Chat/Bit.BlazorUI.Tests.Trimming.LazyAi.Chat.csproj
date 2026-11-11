@@ -19,4 +19,10 @@
         <ProjectReference Include="..\..\Bit.BlazorUI.AI\Bit.BlazorUI.AI\Bit.BlazorUI.AI.csproj" />
     </ItemGroup>
 
+    <!-- The consumer app's transport, shared rather than copied, so the replies both apps' browser tests expect are written
+         once. -->
+    <ItemGroup>
+        <Compile Include="..\Bit.BlazorUI.Tests.Consumer\EchoTransport.cs" Link="EchoTransport.cs" />
+    </ItemGroup>
+
 </Project>
