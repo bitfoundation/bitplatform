@@ -24,7 +24,6 @@ public partial class BitToggle : BitInputBase<bool>
     private string? _stateText;
     private string? _stateTextId;
     private string? _labelledById;
-    private string? _describedById;
     private string? _descriptionId;
     private string? _ariaDescriptionId;
     private ElementReference _buttonRef;
@@ -156,7 +155,9 @@ public partial class BitToggle : BitInputBase<bool>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about - a server that refused to save the new state,
     /// a rule spanning two controls. A toggle inside an <c>EditForm</c> already gets its messages from the
-    /// cascading EditContext through the <c>ValidationMessage</c> component.
+    /// cascading EditContext, which <see cref="ShowValidationMessage"/> shows in this same place - giving way
+    /// to this message while it is set - or the <c>ValidationMessage</c> component shows wherever the page
+    /// puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -373,6 +374,22 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? Role { get; set; } = "switch";
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field - the ones of its data annotations, or
+    /// of any other validator of the form - under the toggle, where <see cref="ErrorMessage"/> goes, so an
+    /// <c>EditForm</c> needs no <c>ValidationMessage</c> component beside it. The switch references them through its
+    /// aria-describedby attribute, so they are read out whenever it takes the focus.
+    /// </summary>
+    /// <remarks>
+    /// An <see cref="ErrorMessage"/> or <see cref="ErrorMessageTemplate"/> of the app's own wins the place while it is
+    /// set. Unlike an ErrorMessage, the messages are not announced through a live region: a submit validates every
+    /// field of the form at once, and a message from each of them read out in a row would bury the form under its own
+    /// errors - the switch that takes the focus says what is wrong with it. A toggle that validates nothing
+    /// (<see cref="BitInputBase{TValue}.NoValidate"/>) or is bound to nothing shows none.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the toggle.
     /// </summary>
     /// <remarks>
@@ -462,7 +479,8 @@ public partial class BitToggle : BitInputBase<bool>
 
         // An error message asks for the same extra line, and for the same reason, so it turns the same
         // wrapping on through a class of its own rather than by widening what the description class means.
-        ClassBuilder.Register(() => HasErrorMessage ? "bit-tgl-her" : string.Empty);
+        // The messages of the EditContext take the error line as well (ShowValidationMessage).
+        ClassBuilder.Register(() => HasErrorLine ? "bit-tgl-her" : string.Empty);
 
         ClassBuilder.Register(() => Disabled is false && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
@@ -589,6 +607,20 @@ public partial class BitToggle : BitInputBase<bool>
     private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();
 
     /// <summary>
+    /// The messages of the EditContext the error line shows (<see cref="ShowValidationMessage"/>), which only take it
+    /// while the app has no message of its own there.
+    /// </summary>
+    /// <remarks>
+    /// They mark nothing themselves: the EditContext already has.
+    /// </remarks>
+    private string? ShownValidationMessage => ShowValidationMessage && HasErrorMessage is false ? FieldValidationMessage : null;
+
+    /// <summary>
+    /// Whether the error line under the toggle is rendered, for the app's own message or for the EditContext's.
+    /// </summary>
+    private bool HasErrorLine => HasErrorMessage || ShownValidationMessage is not null;
+
+    /// <summary>
     /// Whether the app itself has rejected the state of the toggle, by the flag or by a message saying why.
     /// </summary>
     /// <remarks>
@@ -620,6 +652,38 @@ public partial class BitToggle : BitInputBase<bool>
                                 : ErrorMessageTemplate is not null ? BitStrings.Current.InvalidInput
                                 : ErrorMessage.HasValue() ? ErrorMessage
                                 : null;
+
+    /// <summary>
+    /// The ids the switch points aria-describedby at, in the order they are read.
+    /// </summary>
+    /// <remarks>
+    /// What is not part of the name becomes a description instead, so a custom state text is still announced - after
+    /// the name, where a changing value belongs. The visible description comes before the screen-reader-only one, in
+    /// the order the two are read on the page. It is read on every render rather than with the state text, since the
+    /// messages of the EditContext (<see cref="ShowValidationMessage"/>) come and go without a parameter or the value
+    /// changing.
+    /// </remarks>
+    private string? DescribedBy
+    {
+        get
+        {
+            var ids = string.Join(' ', new[]
+            {
+                _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
+                // A label stands in for the template on focus as well, which may well be a bare icon with no
+                // text to describe the switch with at all. The forced state's label gives way to a message of
+                // the EditContext on screen, which is the text the reader can see.
+                HasErrorAriaLabel && (HasErrorMessage || ShownValidationMessage is null) ? _errorLabelId
+                    : HasErrorLine ? _errorId
+                    : null,
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null,
+                AriaDescribedby.HasValue() ? AriaDescribedby : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
+        }
+    }
 
     /// <summary>
     /// Whether the toggle is busy, from the <see cref="Loading"/> parameter or from
@@ -815,20 +879,6 @@ public partial class BitToggle : BitInputBase<bool>
                         : HasLabel
                           ? _labelId
                           : (_stateText.HasValue() && string.Equals(onText, offText, StringComparison.Ordinal)) ? _stateTextId : null;
-
-        // What is not part of the name becomes a description instead, so a custom state text is still
-        // announced - after the name, where a changing value belongs. The visible description comes before
-        // the screen-reader-only one, in the order the two are read on the page.
-        _describedById = string.Join(' ', new[]
-        {
-            _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
-            // A label stands in for the template on focus as well, which may well be a bare icon with no
-            // text to describe the switch with at all.
-            HasErrorAriaLabel ? _errorLabelId : HasErrorMessage ? _errorId : null,
-            HasDescription ? _descriptionId : null,
-            AriaDescription.HasValue() ? _ariaDescriptionId : null,
-            AriaDescribedby.HasValue() ? AriaDescribedby : null
-        }.Where(id => id.HasValue()));
     }
 
 

@@ -190,6 +190,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             Label = "Cascaded label",
             LabelPlacement = BitPlacement.Start,
             NoCircle = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             StretchItemLabel = true,
             Variant = BitVariant.Fill,
@@ -220,6 +221,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
         Assert.IsTrue(instance.NoCircle);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.StretchItemLabel);
         Assert.AreEqual(BitVariant.Fill, instance.Variant);

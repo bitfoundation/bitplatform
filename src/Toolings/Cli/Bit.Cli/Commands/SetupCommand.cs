@@ -79,6 +79,7 @@ public static class SetupCommand
             var administrator = await AdministratorNeeds.FindAsync(cli, tools, needs, parseResult.GetValue(shared.NoWorkloads) is false, cancellationToken);
             NewWorkflow.WriteAdministratorNote(cli, tools, administrator);
             cli.Console.Out.WriteLine();
+            NewWorkflow.ShowAgentIdeas(cli);
 
             var stopwatch = Stopwatch.StartNew();
             var steps = new StepRunner(cli);

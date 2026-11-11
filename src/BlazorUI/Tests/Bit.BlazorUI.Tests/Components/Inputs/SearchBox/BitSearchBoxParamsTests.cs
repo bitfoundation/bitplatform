@@ -308,6 +308,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
             SelectTextOnFocus = true,
             ShowSearchButton = true,
             ShowSuggestItemsOnFocus = true,
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             SpellCheck = false,
             Styles = new BitSearchBoxClassStyles { Root = "color: red;" },
@@ -374,6 +375,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         Assert.IsTrue(instance.SelectTextOnFocus);
         Assert.IsTrue(instance.ShowSearchButton);
         Assert.IsTrue(instance.ShowSuggestItemsOnFocus);
+        Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreEqual((bool?)false, instance.SpellCheck);
         Assert.AreSame(@params.Styles, instance.Styles);

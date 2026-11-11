@@ -498,6 +498,9 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(spinner).ToHaveAttributeAsync("aria-label", "Fetching countries");
         await Expect(spinner).ToHaveClassAsync(HasClass("bit-tgi-spn"));
 
+        // The fetch lasts until it is finished here, so the indicator above is seen whatever the load of the machine. The
+        // click is dispatched rather than made with the mouse, so the focus stays in the input as the suggestions come.
+        await Page.Locator("#btn-async-release").DispatchEventAsync("click");
         await Expect(spinner).ToHaveCountAsync(0);
         await Expect(Root("tgi-async").Locator("datalist option")).ToHaveCountAsync(1);
         await Expect(Root("tgi-async").Locator("datalist option").First).ToHaveAttributeAsync("value", "Germany");

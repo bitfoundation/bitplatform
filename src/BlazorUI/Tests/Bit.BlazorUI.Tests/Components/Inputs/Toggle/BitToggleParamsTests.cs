@@ -59,6 +59,7 @@ public class BitToggleParamsTests : BunitTestContext
             OnText = "Cascaded on",
             Reversed = true,
             Role = "checkbox",
+            ShowValidationMessage = true,
             Size = BitSize.Small,
             StopPropagation = true,
             Text = "Cascaded text",
@@ -81,6 +82,7 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.AreEqual("Cascaded on", instance.OnText);
         Assert.AreEqual("Cascaded text", instance.Text);
         Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
+        Assert.IsTrue(instance.ShowValidationMessage);
 
         // ... and the ones the markup shows are checked where they land.
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-wrn"));

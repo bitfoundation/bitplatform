@@ -318,7 +318,7 @@ While you develop, you do **NOT** need to run `dotnet ef database update` or `Up
 bit migration add Initial
 ```
 
-`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, formats the new migration with `dotnet format`, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version 11.0.0-pre-17`, or run it without installing it: `dnx Bit.Cli --version 11.0.0-pre-17 -- migration add Initial`.
+`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, formats the new migration with `dotnet format`, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version 11.0.0-pre-18`, or run it without installing it: `dnx Bit.Cli --version 11.0.0-pre-18 -- migration add Initial`.
 
 ### Adding Future Migrations
 
@@ -336,7 +336,7 @@ If the model changes without a migration, `MigrateAsync()` stops the app with a 
 ### Applying Migrations to a Deployed Database
 
 <!--#if (aspire == true)-->
-The CD pipeline applies them. Before each deployment starts the new version, a one-shot `migrations` container runs the api's own image with `MigrateDatabaseAndExit=true` on the server, against the database that deployment uses. A deployment that fails before any new container starts runs the `Down` of the migrations it applied. Once one has started it may have taken requests, so a failure from then on leaves the running version on the newer schema, which each migration has to keep working for it, and undoing the migrations to a person. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the deployment. To apply them by hand, use a migrations bundle as described below.
+The CD pipeline applies them. Before each deployment starts the new version, a one-shot `migrations` container runs the api's own image with `MigrateDatabaseAndExit=true` on the server, against the database that deployment uses. A deployment that fails before any new container starts runs the `Down` of the migrations it applied. Once one has started it may have taken requests, so a failure from then on leaves the running version on the newer schema, which each migration has to keep working for it, and undoing the migrations to a person. Deploying an older commit, or another branch to Test, runs the `Down` of the applied migrations it doesn't have, with the image that was running, back to the last migration both know. EF Core runs the `Down` of the migrations after the one it goes back to and of none before it, in the order of their ids, which is the order they were added in and not always the one they reached `main` in. So a migration that only one of the two images has before the one they go back to stays applied, for a deployment that failed as for an older commit, and the deployment names it in a warning: on Production when two branches reach `main` in another order than they added their migrations, and on Test also when two branches each add one and then merge a newer `main`. `DeploymentMigrations` has an example. [Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md) describes the deployment. To apply them by hand, use a migrations bundle as described below.
 <!--#else-->
 Nothing in this project applies them to a deployed database, so apply them before each deployment of the api, for example with a migrations bundle as described below.
 <!--#endif-->

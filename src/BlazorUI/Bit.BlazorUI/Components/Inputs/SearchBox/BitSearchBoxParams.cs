@@ -291,6 +291,12 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
     public bool? ShowSuggestItemsOnFocus { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the search box, where its
+    /// ErrorMessage goes, so the fields of an <c>EditForm</c> need no <c>ValidationMessage</c> component beside them.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// The size of the search box.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -601,6 +607,11 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
         if (ShowSuggestItemsOnFocus.HasValue)
         {
             bitSearchBox.TakeFromCascade(nameof(ShowSuggestItemsOnFocus), ShowSuggestItemsOnFocus.Value, static s => s.ShowSuggestItemsOnFocus, static (s, v) => s.ShowSuggestItemsOnFocus = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitSearchBox.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static s => s.ShowValidationMessage, static (s, v) => s.ShowValidationMessage = v);
         }
 
         if (Size.HasValue)

@@ -375,20 +375,11 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
 ];";
 
     private readonly string example9RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
 <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
     
     <BitChoiceGroup Label=""Pick one"" Required Items=""basicItems"" @bind-Value=""validationModel.Value""
-                    aria-describedby=""pick-one-error"" />
-    <div id=""pick-one-error"">
-        <ValidationMessage For=""@(() => validationModel.Value)"" />
-    </div>
+                    ShowValidationMessage />
     
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>

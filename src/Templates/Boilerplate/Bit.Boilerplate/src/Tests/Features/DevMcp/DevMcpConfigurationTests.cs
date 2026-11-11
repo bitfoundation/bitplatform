@@ -43,7 +43,7 @@ public class DevMcpConfigurationTests
         Assert.DoesNotContain("z8gyymezgeuvcdmqru", payload);
 
         Assert.IsTrue(json["capabilities"]!["smtp"]!.GetValue<bool>());
-        Assert.IsFalse(json["capabilities"]!["twilioSms"]!.GetValue<bool>());
+        Assert.IsFalse(json["capabilities"]!["sms"]!.GetValue<bool>());
     }
 
     [TestMethod]

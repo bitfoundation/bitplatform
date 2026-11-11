@@ -1,11 +1,11 @@
 {
     "name": "Boilerplate",
-    "image": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+    "image": "mcr.microsoft.com/dotnet/sdk:11.0.100",
     "hostRequirements": {
         "cpus": 4
     },
     "waitFor": "onCreateCommand",
-    "onCreateCommand": "dotnet tool install --global Bit.Cli --version 11.0.0-pre-17 && /root/.dotnet/tools/bit setup --yes",
+    "onCreateCommand": "dotnet tool install --global Bit.Cli --version 11.0.0-pre-18 && /root/.dotnet/tools/bit setup --yes",
     "customizations": {
         "codespaces": {
             "openFiles": [

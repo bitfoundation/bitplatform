@@ -24,13 +24,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Belemetry" Version="11.0.0-pre-17" />
-		<PackageReference Include="Bit.BlazorES2019" Version="11.0.0-pre-17" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-17">
+		<PackageReference Include="Bit.Belemetry" Version="11.0.0-pre-18" />
+		<PackageReference Include="Bit.BlazorES2019" Version="11.0.0-pre-18" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-18">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-17">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-18">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -43,7 +43,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
     </ItemGroup>

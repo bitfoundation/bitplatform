@@ -434,8 +434,8 @@ jobs:
         cd MyCompany.TestProject
         git log --oneline --decorate --all
         git status --short
-        test "$(git branch --show-current)" = develop
-        git rev-parse --verify --quiet main
+        test "$(git branch --show-current)" = main
+        test -z "$(git branch --list develop)"
         test -z "$(git status --porcelain)"
         cd ..
         rm -r "MyCompany.TestProject"

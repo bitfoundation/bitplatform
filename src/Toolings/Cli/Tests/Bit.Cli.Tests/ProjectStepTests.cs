@@ -95,7 +95,7 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task Git_Should_CreateDevelopAndMainWithTheFirstCommit()
+    public async Task Git_Should_CreateMainOnlyWithTheFirstCommit()
     {
         if (await GitAvailableAsync() is false)
             return;
@@ -115,8 +115,8 @@ public class ProjectStepTests
         var head = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--abbrev-ref", "HEAD"], WorkingDirectory = project.Directory });
         var log = await runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["log", "--format=%s"], WorkingDirectory = project.Directory });
 
-        CollectionAssert.AreEquivalent(new[] { "develop", "main" }, branches.OutputLines.ToArray());
-        Assert.AreEqual("develop", head.Output.Trim());
+        CollectionAssert.AreEquivalent(new[] { "main" }, branches.OutputLines.ToArray());
+        Assert.AreEqual("main", head.Output.Trim());
         Assert.AreEqual("Create Contoso with bit new", log.Output.Trim());
     }
 
@@ -135,7 +135,7 @@ public class ProjectStepTests
         var result = await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
-        Assert.AreEqual("develop and main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
+        Assert.AreEqual("main, committed as Jane Doe <Jane.Doe@git.com>", result.Detail);
         Assert.IsTrue(project.GitReady);
         var configs = host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "config" && c.Arguments[1] is not "--global").Select(c => string.Join(' ', c.Arguments)).ToArray();
         CollectionAssert.AreEqual(new[] { "config user.name Jane Doe", "config user.email Jane.Doe@git.com" }, configs);
@@ -1299,13 +1299,14 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task TheGitHubRepo_Should_BePrivateWithDevelopAndMain()
+    public async Task TheGitHubRepo_Should_BePrivateWithMainAsItsDefaultBranch()
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
         project.GitReady = true;
         host.Runner.Executables["gh"] = "/usr/bin/gh";
         host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
@@ -1314,13 +1315,87 @@ public class ProjectStepTests
 
         var calls = host.Runner.Calls.Select(c => c.CommandLine).ToList();
         var create = calls.IndexOf("gh repo create Contoso --private --source . --remote origin");
-        var pushDevelop = calls.IndexOf("git push -u origin develop");
+        var lockDown = calls.IndexOf("gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent");
+        var alerts = calls.IndexOf("gh api -X PUT repos/contoso-dev/Contoso/vulnerability-alerts --silent");
         var pushMain = calls.IndexOf("git push -u origin main");
-        var defaultBranch = calls.IndexOf("gh repo edit --default-branch develop");
-        var remoteHead = calls.IndexOf("git remote set-head origin develop");
+        var defaultBranch = calls.IndexOf("gh repo edit --default-branch main");
+        var remoteHead = calls.IndexOf("git remote set-head origin main");
 
-        Assert.IsTrue(create >= 0 && create < pushDevelop && pushDevelop < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
+        Assert.IsTrue(create >= 0 && create < lockDown && create < alerts && lockDown < pushMain && alerts < pushMain && pushMain < defaultBranch && defaultBranch < remoteHead, string.Join(Environment.NewLine, calls));
+        Assert.AreEqual(1, calls.Count(c => c.StartsWith("git push", StringComparison.Ordinal)), string.Join(Environment.NewLine, calls));
         Assert.IsTrue(host.Runner.Calls.All(c => c.WorkingDirectory == project.Directory));
+    }
+
+    [TestMethod]
+    public async Task TheGitHubRepo_Should_BeLockedDownEvenWhenThePushFails()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("git", "push", 1, "rejected");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreNotEqual(StepStatus.Succeeded, result.Status);
+        CollectionAssert.Contains(host.Runner.Calls.Select(c => c.CommandLine).ToList(), "gh api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent");
+    }
+
+    [TestMethod]
+    public async Task AFailedPushAndLockDown_Should_ReportBoth()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("gh", "api repos/contoso-dev/Contoso -X PATCH", 1, "HTTP 403");
+        host.Runner.On("git", "push", 1, "rejected");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Failed, result.Status);
+        StringAssert.Contains(result.Title, "lock down");
+        StringAssert.Contains(result.FollowUp, "git push -u origin main");
+        StringAssert.EndsWith(result.FollowUp, "&& bit pipeline");
+    }
+
+    [TestMethod]
+    public async Task GhRepo_Should_NotRedirectTheLockDown()
+    {
+        using var host = new TestHost(variables: new Dictionary<string, string> { ["GH_REPO"] = "contoso/unrelated" });
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+
+        await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        var api = host.Runner.Calls.Where(c => c.FileName is "gh" && c.Arguments is ["api", _, ..] && c.Arguments[1] is not "user").Select(c => string.Join(' ', c.Arguments)).ToList();
+        CollectionAssert.AreEqual(new[]
+        {
+            "api repos/contoso-dev/Contoso -X PATCH -f pull_request_creation_policy=collaborators_only --silent",
+            "api -X PUT repos/contoso-dev/Contoso/vulnerability-alerts --silent"
+        }, api, string.Join(Environment.NewLine, api));
+    }
+
+    [TestMethod]
+    public async Task ARepoThatCouldNotBeLockedDown_Should_WarnAndPointAtBitPipeline()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        project.GitReady = true;
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        host.Runner.On("gh", "repo view", 0, "https://github.com/contoso-dev/Contoso\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
+        host.Runner.On("gh", "api repos/contoso-dev/Contoso -X PATCH", 1, "HTTP 403");
+
+        var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status, result.Title);
+        StringAssert.Contains(result.FollowUp, "bit pipeline");
     }
 
     [TestMethod]
@@ -1342,17 +1417,17 @@ public class ProjectStepTests
         var project = CreateFakeProject(host, "Contoso");
         project.GitReady = true;
         host.Runner.Executables["gh"] = "/usr/bin/gh";
-        host.Runner.On("git", "push -u origin develop", 128, "fatal: unable to access 'https://github.com/contoso-dev/Contoso.git/': Could not resolve host: github.com");
+        host.Runner.On("git", "push -u origin main", 128, "fatal: unable to access 'https://github.com/contoso-dev/Contoso.git/': Could not resolve host: github.com");
 
         await new StepRunner(host.Services).RunAsync("github-repo", "Creating a private GitHub repo", new ProjectSteps(host.Services, project).GitHubRepositoryAsync, CancellationToken.None);
 
-        var attempt = $"bit ran this in {project.Directory}: git push -u origin develop";
+        var attempt = $"bit ran this in {project.Directory}: git push -u origin main";
         StringAssert.Contains(host.Output, attempt);
         Assert.IsLessThan(host.Output.IndexOf("fatal: unable to access", StringComparison.Ordinal), host.Output.IndexOf(attempt, StringComparison.Ordinal), host.Output);
     }
 
     [TestMethod]
-    public async Task TheGitHubRepo_Should_SayWhenDevelopIsntItsDefaultBranch()
+    public async Task TheGitHubRepo_Should_SayWhenMainIsntItsDefaultBranch()
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
@@ -1360,34 +1435,35 @@ public class ProjectStepTests
         host.Runner.Executables["gh"] = "/usr/bin/gh";
         host.Runner.On("gh", "repo edit", 1, "HTTP 403: Resource not accessible by integration");
         host.Runner.On("gh", "repo view --json url", 0, "https://github.com/contoso-dev/Contoso\n");
-        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "develop\n");
+        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "main\n");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var steps = new ProjectSteps(host.Services, project);
 
         Assert.AreEqual(StepStatus.Succeeded, (await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None)).Status);
 
-        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "main\n");
+        host.Runner.On("gh", "repo view --json defaultBranchRef", 0, "master\n");
         var result = await steps.GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("github.com/contoso-dev/Contoso", result.Detail);
-        StringAssert.EndsWith(result.FollowUp, "gh repo edit --default-branch develop");
+        StringAssert.EndsWith(result.FollowUp, "gh repo edit --default-branch main");
     }
 
     [TestMethod]
-    public async Task TheGitHubRepo_Should_PushMainOnlyAfterDevelop()
+    public async Task TheGitHubRepo_Should_LeaveTheDefaultBranchAloneWhenThePushFails()
     {
         using var host = new TestHost();
         var project = CreateFakeProject(host, "Contoso");
         project.GitReady = true;
         host.Runner.Executables["gh"] = "/usr/bin/gh";
-        host.Runner.On("git", "push -u origin develop", 1, "fatal: unable to access");
+        host.Runner.On("git", "push -u origin main", 1, "fatal: unable to access");
+        host.Runner.On("gh", "api user", 0, "contoso-dev\n");
 
         var result = await new ProjectSteps(host.Services, project).GitHubRepositoryAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Failed, result.Status);
-        StringAssert.EndsWith(result.FollowUp, "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop");
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["push", "-u", "origin", "main"]));
+        StringAssert.EndsWith(result.FollowUp, "git push -u origin main && gh repo edit --default-branch main");
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["repo", "edit", ..]));
     }
 

@@ -97,7 +97,7 @@ jobs:
     # The Xcode the .NET 11 iOS and Mac Catalyst workloads build against, as the release workflows select it.
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '27.0'
+        xcode-version: '27.2'
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:

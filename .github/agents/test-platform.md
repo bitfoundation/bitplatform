@@ -289,6 +289,13 @@ refresh of those demos fails with a 500 whose Application log line names the mis
 CD's commit for migration changes since the last one; applying them to that database changes the machine, so ask
 first.
 
+**Nor are the demos' settings.** The CD leaves out the template's `appsettings.json`, so each Boilerplate backend runs
+on the server-owned one in its `C:\inetpub\<site>`. When the template renames or reshapes a section there, the demos
+keep the old keys: the feature behind it goes quiet, and whatever validates that section's options answers with a 500
+whose Application log line is an `OptionsValidationException`. Check the CD's commit for changes to the Server.Api
+and Server.Web `appsettings.json` since the last one; moving those values changes the machine, so ask first, keep a
+copy of each file, and never print the values.
+
 **A deploy job that finds no app pool of its name** deploys a demo whose IIS site was never made on this machine,
 usually a library demo added since the host was set up. Creating it changes the machine, so ask first; then add it
 the way the other library demos are set up, with its site's folder at the `site-path` its CD deploys to, and add it
@@ -296,7 +303,9 @@ to the README's exports. Re-running the deploy job, or that demo's own CD, deliv
 
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
 adds another, so the helper tells them apart by package and takes the newest of each. The device is the AVD with the
-newest Android, `pixel_7_-_api_36_0`, which the helper boots when no device is up. `adb` is not on `PATH`:
+newest Android, `pixel_7_-_api_36_0`, which the helper boots when no device is up. An emulator killed in the middle
+of a run, as a session that ends does, leaves its quick boot snapshot half written, and the next boot from it hangs
+with no device in `adb devices`: the helper then stops it and boots cold. `adb` is not on `PATH`:
 platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
 where the helper finds it. It is a Google Play image, so after a cold boot it updates Android System WebView on its
 own; note the version (`adb shell dumpsys webviewupdate`) in the report, since a jump explains Android failures that no
@@ -533,8 +542,9 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   3 GB of free memory.
 - On Podman, the devcontainers CLI can miss the container's start and wait for it forever, with nothing in its log
   after the container's first lines: it listens for the start event only from when it starts the container, and
-  Podman's event stream takes about half a second to connect. Once `podman ps` shows the container running, stop
-  the CLI and run its `up` again with the same arguments, which skips that wait on a running container.
+  Podman's event stream takes about half a second to connect. The helper watches for that: once the container runs
+  and the CLI has logged nothing past its start for two minutes, it stops the CLI and runs `up` again with the same
+  arguments, which skips that wait on a running container, and logs the second try next to the first.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
   and the Aspire check below passes. `bit doctor`'s memory warning describes the container engine's VM, not this machine,
   and is expected. So is a `bit setup` warning that the web app didn't get healthy, when the machine was busy: Aspire

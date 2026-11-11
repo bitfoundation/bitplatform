@@ -106,6 +106,7 @@ public sealed partial class NewWorkflow(CliServices cli)
             return CliApp.ExitOk;
 
         cli.Console.Out.WriteLine();
+        ShowAgentIdeas(cli);
 
         var stopwatch = Stopwatch.StartNew();
         var steps = new StepRunner(cli);
@@ -208,6 +209,14 @@ public sealed partial class NewWorkflow(CliServices cli)
         await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage, cancellationToken);
 
         return exitCode;
+    }
+
+    public static void ShowAgentIdeas(CliServices cli)
+    {
+        if (cli.HasTerminal && cli.Environment.CodingAgent is null)
+        {
+            cli.Console.Ideas = new AgentIdeas();
+        }
     }
 
     public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, ProjectRunMode runMode, CancellationToken cancellationToken)
@@ -561,7 +570,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         var stepsList = new List<string> { "create" };
         if (request.NoCertificate is false) stepsList.Add("unique app certificate and web push keys");
-        if (request.NoGit is false) stepsList.Add("git with develop and main");
+        if (request.NoGit is false) stepsList.Add("git with main");
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
         if (request.NoBuild is false) stepsList.Add(runMode is ProjectRunMode.UntilClosed ? "build and open the Workbench" : "build the Workbench");

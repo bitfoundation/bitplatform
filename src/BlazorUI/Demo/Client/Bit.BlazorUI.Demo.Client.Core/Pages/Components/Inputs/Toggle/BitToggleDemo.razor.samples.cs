@@ -270,17 +270,10 @@ private void LogOnBlur()
 </BitToggle>";
 
     private readonly string example11RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitToggle Label=""Terms and conditions"" Text=""I agree."" @bind-Value=""validationModel.TermsAgreement"" />
-    <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
+    <BitToggle Label=""Terms and conditions"" Text=""I agree."" @bind-Value=""validationModel.TermsAgreement"" ShowValidationMessage />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>

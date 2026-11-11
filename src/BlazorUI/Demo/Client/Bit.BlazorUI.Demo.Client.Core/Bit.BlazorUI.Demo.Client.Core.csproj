@@ -20,19 +20,19 @@
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
 
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-17">
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-18">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-17">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-18">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0-rc.3.26522.148" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-rc.3.26522.148" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

@@ -79,9 +79,12 @@ The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a con
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
-**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
+**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin. Its lower bound is the band's
+floor, so once a new major ships, a range that starts at its preview or release candidate moves to its `.0`: a dotted
+prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
+EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-17`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-18`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -111,7 +114,12 @@ Boilerplate project uses. For .NET 11, MAUI can't stay behind: a MAUI built for 
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
 follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
 can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
-too. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
+too. The SDK waits for MAUI the same way: on the day a major ships, MAUI and the first workload set of the new band
+can come hours or days after the SDK, and until that workload set is on NuGet a GA SDK's `dotnet workload restore`
+installs the stale preview workloads bundled in the SDK. The set itself can appear before the packs it names, so
+check that each manifest and pack it points at downloads too. A feature band's patch SDK waits for its own workload
+set the same way: SDK 10.0.404 without one left `wasm-tools` unusable (NETSDK1147). So the SDK, the major's `.0` packages and the `global.json` files move together once it is
+out. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
 `<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
 
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
@@ -123,7 +131,7 @@ the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logg
 on import order, and the build fails with CS0757. So do the `CommunityToolkit.Datasync.*` packages: from 10.2.0 the
 client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and the restore fails with NU1107, so the
 .NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both. The few literals that differ per framework are switch
-symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
+symbols in `template.json` (the SDK, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace. A template line written with the .NET 10 value
 of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
 .NET 11 one.
@@ -265,9 +273,10 @@ major changed.
 Feature *options* take a major too, never `latest` — `"helm": "3"`, not `"helm": "latest"`. The
 install scripts resolve a partial version through `find_version_from_git_tags`.
 
-The `image` follows the newest .NET SDK: `curl -s
-https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json` → `.latest-sdk`. Both
-devcontainers must agree.
+The `image` follows the newest SDK of the major `src/global.json` uses: `curl -s
+https://builds.dotnet.microsoft.com/dotnet/release-metadata/<major>.0/releases.json` → `.latest-sdk`. Both
+devcontainers must agree, and `template.json`'s .NET 10 image takes the newest 10.0 SDK. MCR publishes an SDK's image
+hours after the SDK itself, so ask `https://mcr.microsoft.com/v2/dotnet/sdk/manifests/<tag>` before moving to it.
 
 ### dnx tool versions and global.json
 
@@ -281,10 +290,11 @@ EF Core package version of the project it runs on: the .NET 11 one in the templa
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
-candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
-move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
-11.0.x on a consumer's machine. A .NET 10 project gets `10.0.100` + `latestFeature` from `template.json`.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template `global.json` files pin
+`11.0.100` + `latestFeature`, so they accept any 11.0.x on a consumer's machine, and a .NET 10 project gets
+`10.0.100` + `latestFeature` from `template.json`. While the next major is a preview or release candidate, the
+template files pin the same SDK as `src/global.json`, also `rollForward: disable`, with a `template.json` switch
+for the `rollForward` too, and go back to `<major>.0.100` + `latestFeature` once it ships.
 
 ### Container images
 

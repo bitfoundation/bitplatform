@@ -432,18 +432,10 @@ private int closeCount;";
 <BitDatePicker Label=""Try the keyboard (month picker)"" Mode=""BitDatePickerMode.MonthPicker"" />";
 
     private readonly string example19RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
-    <BitDatePicker Label=""Required date"" @bind-Value=""validationModel.Date"" />
-    <ValidationMessage For=""@(() => validationModel.Date)"" />
+    <BitDatePicker Label=""Required date"" @bind-Value=""validationModel.Date"" ShowValidationMessage />
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
