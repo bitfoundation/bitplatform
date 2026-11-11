@@ -121,8 +121,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - Analytics and monitoring go through bit Belemetry to Azure Monitor, with the connection string in the client's
   `appsettings.json`, and only after the visitor agrees in the consent banner. Errors are the exception: they are sent
   from the first moment, whatever the visitor chooses, and the privacy page says so.
-- The deployment reads these as `LANDINGPAGE_SETTINGS` lines; the **deploy** skill (`.github/agents/deploy.agent.md`)
-  covers its domain and its secrets.
+- The deployment reads each of these from a secret of its own, such as `LANDINGPAGE__CONNECTIONSTRINGS__SMTP`, or a
+  variable for what isn't secret; the **deploy** skill (`.github/agents/deploy.agent.md`) covers its domain and its
+  secrets.
 
 ## Done means
 

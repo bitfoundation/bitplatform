@@ -35,8 +35,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private static readonly string[] apple = [AppleIssuerId, AppleKeyId, ApplePrivateKey, AppleCertificateFile, AppleCertificatePassword];
 
     /// <summary>
-    /// The retired certificate, and the settings of a service: the CD reads <c>&lt;SERVICE&gt;_SETTINGS</c> for each service the Compose
-    /// project has, whatever it is called, and an empty one is fine.
+    /// The retired certificate, and the settings of a service: the CD of a project made from an older template reads
+    /// <c>&lt;SERVICE&gt;_SETTINGS</c> for each service the Compose project has, whatever it is called, and an empty one is fine.
+    /// A newer one reads a secret per setting through <c>toJSON(secrets)</c>, which the workflow scan doesn't list.
     /// </summary>
     private static bool IsOptional(string name) => name is RetiredAppCertificate || name.EndsWith("_SETTINGS", StringComparison.OrdinalIgnoreCase);
 

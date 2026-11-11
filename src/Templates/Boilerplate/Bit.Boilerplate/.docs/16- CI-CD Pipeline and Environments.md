@@ -145,12 +145,12 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
 | `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
 | `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
-| `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
-| `LANDINGPAGE_SETTINGS` | secret, optional | The landing page's settings, such as `ConnectionStrings__smtp` and `AI__OpenAI__ChatApiKey`, the same way |
-| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (api == "Standalone")-->
-| `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
+| `SERVERAPI__<Section>__<Key>`, `SERVERWEB__<Section>__<Key>`, `LANDINGPAGE__<Section>__<Key>` | secret or variable, optional | Any other setting of the api, the web app or the landing page, one each: `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` is the api's `Sms:Providers:Twilio:AuthToken`. A secret for a key, a variable for what isn't secret. See below |
+<!--#else-->
+| `SERVERWEB__<Section>__<Key>`, `LANDINGPAGE__<Section>__<Key>` | secret or variable, optional | Any other setting of the app or the landing page, one each: `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` is the app's `Sms:Providers:Twilio:AuthToken`. A secret for a key, a variable for what isn't secret. See below |
 <!--#endif-->
+| `LANDING_PAGE_ADDRESS` | variable | The landing page's public address, which the deployment checks answers and adds to its `TrustedOrigins` |
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
 | `DATABASE_PASSWORD` | secret | The database server's password |
 <!--#elif (database == "Other")-->
@@ -166,7 +166,7 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 <!--#endif-->
 <!--#if (cloudflare == true)-->
 | `CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |
-| `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache |
+| `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache. The deployment purges it with them, and gives them to the api, which purges by cache tag |
 <!--#endif-->
 <!--#if (notification == true)-->
 | `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
@@ -177,6 +177,64 @@ app's signing. It asks for the rest, and an empty answer skips one. `bit pipelin
 | `CODE_SIGNING_*`, `WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
 
 `cd-template.yml` is the final word on what each job reads.
+<!--#if (aspire == true)-->
+
+### One secret or variable per setting
+
+A setting no variable or secret above carries - an AI key, an external sign-in, the SMS provider, a model name, a
+feature flag - is a secret or a variable of its own, named after the app it goes to and the setting's key in
+`appsettings.json`, with `__` between the parts. The deployment writes each one into that app's settings file on the
+server, so changing one setting changes it and nothing else:
+
+| Setting in `appsettings.json` | Name | Kind |
+| --- | --- | --- |
+<!--#if (api == "Standalone")-->
+| The api's `Sms:Providers:Twilio:AuthToken` | `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` | secret |
+| The api's `Authentication:Google:ClientSecret` | `SERVERAPI__AUTHENTICATION__GOOGLE__CLIENTSECRET` | secret |
+| The api's `AI:OpenAI:ChatApiKey` | `SERVERAPI__AI__OPENAI__CHATAPIKEY` | secret |
+| The api's `AI:OpenAI:ChatModel` | `SERVERAPI__AI__OPENAI__CHATMODEL` | variable |
+| The web app's `WebAppRender:PrerenderEnabled` | `SERVERWEB__WEBAPPRENDER__PRERENDERENABLED` | variable |
+| The second item of the api's `TrustedOrigins` array | `SERVERAPI__TRUSTEDORIGINS__1` | variable |
+<!--#else-->
+| `Sms:Providers:Twilio:AuthToken` | `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` | secret |
+| `Authentication:Google:ClientSecret` | `SERVERWEB__AUTHENTICATION__GOOGLE__CLIENTSECRET` | secret |
+| `AI:OpenAI:ChatApiKey` | `SERVERWEB__AI__OPENAI__CHATAPIKEY` | secret |
+| `AI:OpenAI:ChatModel` | `SERVERWEB__AI__OPENAI__CHATMODEL` | variable |
+| `WebAppRender:PrerenderEnabled` | `SERVERWEB__WEBAPPRENDER__PRERENDERENABLED` | variable |
+| The second item of the `TrustedOrigins` array | `SERVERWEB__TRUSTEDORIGINS__1` | variable |
+<!--#endif-->
+| The landing page's `ConnectionStrings:smtp` | `LANDINGPAGE__CONNECTIONSTRINGS__SMTP` | secret |
+
+```bash
+gh secret set LANDINGPAGE__CONNECTIONSTRINGS__SMTP --env Production   # asks for the value
+gh variable set SERVERWEB__WEBAPPRENDER__PRERENDERENABLED --env Production --body true
+```
+
+<!--#if (api == "Standalone")-->
+The api's settings are in `Boilerplate.Server.Api`'s `appsettings.json` and the web app's in `Boilerplate.Server.Web`'s,
+and a setting goes to the app whose file has it.
+<!--#else-->
+The api runs inside the web app, so its settings are `SERVERWEB__` secrets too. A `SERVERAPI__` secret goes there as
+well, rather than nowhere.
+<!--#endif-->
+A key or a password is a secret. Anything else is a variable: GitHub blanks a secret's value out of every log of the
+repository's workflows, so a secret holding `true` or a short name hides that word wherever it appears, and a variable
+can be read back in the repository's settings. GitHub keeps both names in upper case, which .NET's configuration
+doesn't mind. An environment holds up to 100 secrets and 100 variables. The deployment stops, saying which one and why,
+when one names no app (`SERVERWB__...`), when two set the same setting - a secret and a variable included - or one sets
+what the deployment writes itself (such as `TrustedOrigins__100`), and when a value holds a single quote or a line
+break. It reads them with `jq`, which the server needs installed.
+<!--#if (cloudflare == true)-->
+The api's `Cloudflare` token and zone come from `CLOUDFLARE_TOKEN` and `CLOUDFLARE_ZONE`, so they need no secret of
+their own.
+<!--#endif-->
+
+Projects created before this held these settings in one secret per app, such as `SERVERWEB_SETTINGS`, one
+`Section__Key=value` line each. The deployment stops while one of those still exists: give each of its lines a secret
+or a variable of its own, as above, then delete it. GitHub never shows a secret's value, and the last deployment's copy is on the
+server, in `~/deployments/<project>/<app>.env` of the runner's user, where the first lines are the ones the deployment
+writes itself.
+<!--#endif-->
 
 ---
 
