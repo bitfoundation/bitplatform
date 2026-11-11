@@ -393,8 +393,8 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// (<see cref="SelectItem"/>, <see cref="ExpandItem"/>, <see cref="IsItemExpanded"/>, ...) renders it the moment
     /// it is called.
     /// <br />
-    /// Set it when the app reads something else of the nav while the drawer has never been opened, such as the side
-    /// effects of a template: a nav that is not rendered calls no template.
+    /// Set it to <c>true</c> when the app reads any other navigation state before the drawer has ever been opened,
+    /// such as the side effects of a template: a nav that is not rendered calls no template.
     /// </remarks>
     [Parameter] public bool NoLazyDrawer { get; set; }
 
