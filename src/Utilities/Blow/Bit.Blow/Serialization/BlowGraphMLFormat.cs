@@ -195,7 +195,8 @@ public static class BlowGraphMLFormat
         private readonly HashSet<string> _ids = new(StringComparer.Ordinal);
         private readonly HashSet<string> _edgeIds = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _keyNames = new(StringComparer.Ordinal);
-        private bool _anyPosition;
+        private readonly HashSet<string> _placed = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, BlowXYPosition> _absolute = new(StringComparer.Ordinal);
 
         public BlowImportResult Read(XmlElement root, BlowDiagramImportOptions options)
         {
@@ -222,7 +223,7 @@ public static class BlowGraphMLFormat
                 }
             }
             var document = new BlowDocument { Nodes = _nodes, Edges = _edges };
-            if (!_anyPosition) BlowDiagramText.Arrange(document, options.Layout, options.GroupPadding);
+            ArrangeUnplaced(document, options);
             return new BlowImportResult(document, _issues.Issues, 0);
         }
 
@@ -261,6 +262,7 @@ public static class BlowGraphMLFormat
 
             var node = new BlowNode { Id = id, ParentId = parentId };
             double? x = null, y = null;
+            var absolute = false;
             var extra = new JsonObject();
             foreach (var data in element.ChildNodes.OfType<XmlElement>().Where(e => e.LocalName == "data"))
             {
@@ -270,6 +272,7 @@ public static class BlowGraphMLFormat
                 {
                     x = Double(geometry.GetAttribute("x")) ?? x;
                     y = Double(geometry.GetAttribute("y")) ?? y;
+                    absolute = true;
                     node.Width = Double(geometry.GetAttribute("width")) ?? node.Width;
                     node.Height = Double(geometry.GetAttribute("height")) ?? node.Height;
                     var yLabel = data.GetElementsByTagName("NodeLabel", YNs).OfType<XmlElement>().FirstOrDefault();
@@ -293,7 +296,15 @@ public static class BlowGraphMLFormat
             if (x is not null || y is not null)
             {
                 node.Position = new BlowXYPosition(x ?? 0, y ?? 0);
-                _anyPosition = true;
+                _placed.Add(id);
+
+                // yEd's geometry is in world coordinates, while a Blow child is placed relative to its parent.
+                if (absolute)
+                {
+                    _absolute[id] = node.Position;
+                    if (parentId is not null && _absolute.TryGetValue(parentId, out var origin))
+                        node.Position = new BlowXYPosition(node.Position.X - origin.X, node.Position.Y - origin.Y);
+                }
             }
 
             // Each name becomes two ports, a source and a target, so half the limit of names.
@@ -317,6 +328,72 @@ public static class BlowGraphMLFormat
             {
                 if (node.Type == "default") node.Type = "group";
                 ReadGraph(nested, id, depth + 1, directed);
+            }
+        }
+
+        /// <summary>
+        /// Lays out the nodes the file gave no position: all of them when none had one; in a file that places only some,
+        /// the rest among themselves, per parent, set below the placed nodes beside them.
+        /// </summary>
+        private void ArrangeUnplaced(BlowDocument document, BlowDiagramImportOptions options)
+        {
+            if (_placed.Count == _nodes.Count) return;
+            if (_placed.Count == 0)
+            {
+                BlowDiagramText.Arrange(document, options.Layout, options.GroupPadding);
+                return;
+            }
+            if (options.Layout is null) return;
+
+            var byId = _nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
+            bool Unplaced(string? id) => id is not null && byId.ContainsKey(id) && !_placed.Contains(id);
+
+            // Each unplaced node joins the tree of its topmost unplaced ancestor; trees are laid out per placed parent.
+            var trees = new Dictionary<string, List<BlowNode>>(StringComparer.Ordinal);
+            var roots = new Dictionary<string, List<BlowNode>>(StringComparer.Ordinal);
+            foreach (var node in _nodes.Where(n => !_placed.Contains(n.Id)))
+            {
+                var root = node;
+                while (Unplaced(root.ParentId) && root.ParentId != node.Id) root = byId[root.ParentId!];
+                var anchor = root.ParentId ?? "";
+                if (!trees.TryGetValue(anchor, out var members)) trees[anchor] = members = [];
+                members.Add(node);
+                if (root == node)
+                {
+                    if (!roots.TryGetValue(anchor, out var tops)) roots[anchor] = tops = [];
+                    tops.Add(node);
+                }
+            }
+
+            foreach (var (anchor, members) in trees)
+            {
+                var tops = roots[anchor];
+                var parents = tops.ToDictionary(n => n, n => n.ParentId);
+                foreach (var top in tops) top.ParentId = null;
+                var ids = members.Select(m => m.Id).ToHashSet(StringComparer.Ordinal);
+                BlowDiagramText.Arrange(new BlowDocument
+                {
+                    Nodes = members,
+                    Edges = [.. _edges.Where(e => ids.Contains(e.Source) && ids.Contains(e.Target))],
+                }, options.Layout, options.GroupPadding);
+                foreach (var (top, parent) in parents) top.ParentId = parent;
+
+                var placed = _nodes.Where(n => _placed.Contains(n.Id) && (n.ParentId ?? "") == anchor).ToList();
+                var minX = tops.Min(n => n.Position.X);
+                var minY = tops.Min(n => n.Position.Y);
+                double dx, dy;
+                if (placed.Count > 0)
+                {
+                    dx = placed.Min(n => n.Position.X) - minX;
+                    dy = placed.Max(n => n.Position.Y + n.EffectiveSize.Height) + options.GroupPadding * 2 - minY;
+                }
+                else if (anchor.Length > 0)
+                {
+                    dx = options.GroupPadding - minX;
+                    dy = options.GroupPadding * 1.5 - minY;
+                }
+                else continue;
+                foreach (var top in tops) top.Position = new BlowXYPosition(top.Position.X + dx, top.Position.Y + dy);
             }
         }
 

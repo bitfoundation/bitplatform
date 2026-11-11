@@ -62,21 +62,21 @@ public sealed class BlowNodeRunContext
     public object? Input => Inputs.Count > 0 ? Inputs[0].Value : null;
 
     /// <summary>True when a value reached the given target handle (null or empty for the unnamed one).</summary>
-    public bool HasInput(string? handleId = null) => Inputs.Any(i => SameHandle(i.TargetHandle, handleId));
+    public bool HasInput(string? handleId = null) => Inputs.Any(i => BlowGraphIndex.SameHandle(i.TargetHandle, handleId));
 
     /// <summary>The first value that reached the given target handle, as a <typeparamref name="T"/>; the default when none did or it is not one.</summary>
     public T? GetInput<T>(string? handleId = null)
     {
         foreach (var input in Inputs)
         {
-            if (SameHandle(input.TargetHandle, handleId) && input.Value is T value) return value;
+            if (BlowGraphIndex.SameHandle(input.TargetHandle, handleId) && input.Value is T value) return value;
         }
         return default;
     }
 
     /// <summary>Every value that reached the given target handle that is a <typeparamref name="T"/> - what several edges into one input carried.</summary>
     public IReadOnlyList<T> GetInputs<T>(string? handleId = null)
-        => [.. Inputs.Where(i => SameHandle(i.TargetHandle, handleId) && i.Value is T).Select(i => (T)i.Value!)];
+        => [.. Inputs.Where(i => BlowGraphIndex.SameHandle(i.TargetHandle, handleId) && i.Value is T).Select(i => (T)i.Value!)];
 
     /// <summary>
     /// Says how the node is going: the message becomes its run state's (shown and read out with the node), the progress
@@ -153,6 +153,4 @@ public sealed class BlowNodeRunContext
     public Task<BlowRunResult> RunSubgraphAsync(IEnumerable<BlowNode> nodes, IEnumerable<BlowEdge> edges,
         object? input = null, BlowRunRequest? request = null)
         => _execution.RunSubgraphAsync(Node.Id, Interlocked.Increment(ref _subRuns), nodes, edges, input, request, CancellationToken);
-
-    private static bool SameHandle(string? a, string? b) => string.IsNullOrEmpty(a) ? string.IsNullOrEmpty(b) : a == b;
 }

@@ -134,6 +134,8 @@ public static partial class BlowMermaidFormat
                 '&' => "#amp;",
                 '|' => "#124;",
                 '`' => "#96;",
+                // "%%" starts a comment.
+                '%' => "#37;",
                 '\r' or '\n' or '\t' => " ",
                 _ => c.ToString(),
             });
@@ -219,7 +221,7 @@ public static partial class BlowMermaidFormat
                 _line++;
                 if (_stopped) break;
                 var raw = rawLine.TrimEnd('\r');
-                var comment = raw.IndexOf("%%", StringComparison.Ordinal);
+                var comment = CommentStart(raw);
                 if (comment >= 0) raw = raw[..comment];
                 foreach (var part in SplitStatements(raw))
                 {
@@ -356,13 +358,22 @@ public static partial class BlowMermaidFormat
                 id = rest[..bracket].Trim();
                 title = Text(rest[(bracket + 1)..^1]);
             }
+            else if (rest.IndexOfAny([' ', '\t']) >= 0)
+            {
+                // Title words: the whole text is the title, and the id is made up, as Mermaid does.
+                id = "";
+                title = Text(rest);
+            }
             else
             {
-                var space = rest.IndexOfAny([' ', '\t']);
-                id = space < 0 ? rest : rest[..space];
-                title = space < 0 ? id : rest[(space + 1)..].Trim();
+                id = rest;
+                title = rest;
             }
-            if (id.Length == 0) id = $"subgraph{Nodes.Count}";
+            if (id.Length == 0)
+            {
+                var number = Nodes.Count;
+                do id = $"subgraph{number++}"; while (_byId.ContainsKey(id));
+            }
 
             var group = Node(id, title);
             if (group is null) return;
@@ -460,6 +471,18 @@ public static partial class BlowMermaidFormat
             => issues.Add(new BlowImportIssue(code, severity, $"line {_line}", message));
 
         private static string Truncate(string s) => s.Length > 80 ? s[..80] + "..." : s;
+
+        /// <summary>Where a <c>%%</c> comment starts on the line, outside quotes; -1 when it has none.</summary>
+        private static int CommentStart(string line)
+        {
+            var quoted = false;
+            for (var i = 0; i < line.Length; i++)
+            {
+                if (line[i] == '"') quoted = !quoted;
+                else if (!quoted && line[i] == '%' && i + 1 < line.Length && line[i + 1] == '%') return i;
+            }
+            return -1;
+        }
 
         /// <summary>Splits a line at semicolons outside quotes and brackets.</summary>
         private static IEnumerable<string> SplitStatements(string line)

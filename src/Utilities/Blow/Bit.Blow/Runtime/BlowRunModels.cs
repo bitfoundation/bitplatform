@@ -39,7 +39,7 @@ public enum BlowRunOutcome
     /// <summary>Every node that ran succeeded. Nodes a branch passed by are skipped, which is not a failure.</summary>
     Succeeded,
 
-    /// <summary>At least one node failed.</summary>
+    /// <summary>At least one node failed, other than a failure its <see cref="BlowNodeRunOptions.ErrorOutput"/> carried on.</summary>
     Failed,
 
     /// <summary>The run was cancelled through its <see cref="CancellationToken"/> before it finished.</summary>
@@ -178,7 +178,8 @@ public sealed record BlowNodeRunOptions
 
     /// <summary>
     /// The longest one attempt may take, or null for no limit. A slower attempt is cancelled and counts as a failure,
-    /// whether or not its handler heeds the token. Longer than a timer can wait (about 49 days) is no limit.
+    /// whether or not its handler heeds the token. <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>, or longer
+    /// than a timer can wait (about 49 days), is no limit.
     /// </summary>
     public TimeSpan? Timeout { get; init; }
 
@@ -204,7 +205,7 @@ public sealed class BlowRunnerOptions
 
     /// <summary>
     /// The longest a run may take, or null for no limit. A slower run ends as <see cref="BlowRunOutcome.TimedOut"/>.
-    /// Longer than a timer can wait (about 49 days) is no limit.
+    /// <see cref="Timeout.InfiniteTimeSpan"/>, or longer than a timer can wait (about 49 days), is no limit.
     /// </summary>
     public TimeSpan? RunTimeout { get; set; }
 
@@ -452,6 +453,12 @@ public sealed class BlowNodeRunRecord
 
     /// <summary>What its handler produced, when it succeeded.</summary>
     public BlowNodeResult? Result { get; internal set; }
+
+    /// <summary>
+    /// True when it failed and its <see cref="BlowNodeRunOptions.ErrorOutput"/> carried the failure on to the nodes
+    /// after it. Such a failure was dealt with, so it does not make the run <see cref="BlowRunOutcome.Failed"/>.
+    /// </summary>
+    public bool Handled { get; internal set; }
 
     /// <summary>True when its result came from the checkpoint the run resumed from.</summary>
     public bool Restored { get; internal set; }

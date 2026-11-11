@@ -133,11 +133,14 @@ public sealed class BlowRunner
         return Options.ResolveHandler?.Invoke(node) is { } resolved ? (resolved, null) : null;
     }
 
-    /// <summary>A wait a timer can take: negative is none, longer than a timer takes is null (no limit).</summary>
+    /// <summary>
+    /// A wait a timer can take: <see cref="Timeout.InfiniteTimeSpan"/> and anything longer than a timer takes are null
+    /// (no limit), any other negative wait is none.
+    /// </summary>
     internal static TimeSpan? Timer(TimeSpan? wait) => wait switch
     {
         null => null,
-        { } w when w > MaxTimer => null,
+        { } w when w == Timeout.InfiniteTimeSpan || w > MaxTimer => null,
         { } w when w < TimeSpan.Zero => TimeSpan.Zero,
         var w => w,
     };
@@ -403,7 +406,8 @@ public sealed class BlowRunner
             interrupted |= _records.Values.Any(r => r.Status == BlowRunStatus.Cancelled);
 
             // A cancellation that came after every node had settled stopped nothing: the run is judged by its nodes.
-            var failed = _records.Values.Any(r => r.Status is BlowRunStatus.Failed or BlowRunStatus.Cancelled);
+            // A failure its error output carried on to the nodes after it was dealt with, so it does not fail the run.
+            var failed = _records.Values.Any(r => r.Status is BlowRunStatus.Failed && !r.Handled || r.Status is BlowRunStatus.Cancelled);
             var outcome = interrupted && cancellationToken.IsCancellationRequested ? BlowRunOutcome.Cancelled
                 : interrupted && timeout?.IsCancellationRequested == true ? BlowRunOutcome.TimedOut
                 : failed ? BlowRunOutcome.Failed
@@ -433,6 +437,7 @@ public sealed class BlowRunner
             record.Error = outcome.Error;
             record.Result = outcome.Result;
             record.Message = outcome.Message;
+            record.Handled = outcome.ErrorOutput is not null;
 
             var kind = outcome.Status switch
             {
@@ -464,6 +469,9 @@ public sealed class BlowRunner
                 // A node skipped because something before it failed fails its own dependants the same way, so the
                 // reason reaches the end of the chain rather than turning into "no input" one step on.
                 var failedUpstream = status == BlowRunStatus.Skipped && _pending.TryGetValue(id, out var own) && own.Failed > 0;
+                // A node the stopping run cancelled decides nothing after it: those nodes stay queued and are reported
+                // as stopped by the run when it ends, not as skipped for want of an input.
+                if (status == BlowRunStatus.Cancelled) continue;
 
                 foreach (var edge in Graph.Outgoing(id))
                 {
@@ -473,7 +481,7 @@ public sealed class BlowRunner
                     {
                         Activate(edge, target, value);
                     }
-                    else if (status == BlowRunStatus.Failed && failure is not null && SameHandle(edge.SourceHandle, errorOutput))
+                    else if (status == BlowRunStatus.Failed && failure is not null && BlowGraphIndex.SameHandle(edge.SourceHandle, errorOutput))
                     {
                         Activate(edge, target, failure);
                     }
@@ -667,7 +675,7 @@ public sealed class BlowRunner
         /// </summary>
         private Outcome Failed(BlowNode node, BlowNodeRunOptions options, Exception error, string message)
         {
-            var routed = options.ErrorOutput is { } output && Graph.Outgoing(node.Id).Any(e => SameHandle(e.SourceHandle, output));
+            var routed = options.ErrorOutput is { } output && Graph.Outgoing(node.Id).Any(e => BlowGraphIndex.SameHandle(e.SourceHandle, output));
             return new(BlowRunStatus.Failed, null, error, message, routed ? new BlowRunError(node.Id, message, error) : null);
         }
 
@@ -760,8 +768,6 @@ public sealed class BlowRunner
         }
 
         private string Name(BlowNode node) => string.IsNullOrWhiteSpace(node.Label) ? node.Id : node.Label!;
-
-        private static bool SameHandle(string? a, string? b) => string.IsNullOrEmpty(a) ? string.IsNullOrEmpty(b) : a == b;
 
         private sealed class Pending(int remaining)
         {

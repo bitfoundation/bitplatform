@@ -218,7 +218,7 @@ public record BlowCountDto
     public required int Count { get; init; }
 }
 
-/// <summary>One problem BlowCanvas raised through its OnError callback while it rendered the flow.</summary>
+/// <summary>How the flow would run: whether BlowRunner accepts it, the order and stages it runs in, and what the validator finds.</summary>
 public record BlowFlowExecutionDto
 {
     /// <summary>True when BlowRunner.Check finds nothing to refuse the run over (a cycle is the usual reason).</summary>
@@ -245,6 +245,7 @@ public record BlowFlowExecutionDto
     public required BlowFlowIssueDto[] Validation { get; init; }
 }
 
+/// <summary>One issue BlowRunner.Check or BlowGraphValidator found in the flow.</summary>
 public record BlowFlowIssueDto
 {
     public required string Code { get; init; }
@@ -258,6 +259,7 @@ public record BlowFlowIssueDto
     public required string Message { get; init; }
 }
 
+/// <summary>One problem BlowCanvas raised through its OnError callback while it rendered the flow.</summary>
 public record BlowFlowProblemDto
 {
     /// <summary>The BlowErrorCode value, e.g. "missing-edge-endpoint".</summary>

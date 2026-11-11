@@ -184,10 +184,11 @@ public sealed class BlowNodeRegistry
         var changed = new List<BlowNode>();
         foreach (var node in nodes)
         {
-            var seen = new HashSet<string>(StringComparer.Ordinal);
+            // The types the node has had: a replacement back to one of them is a loop, and the node stays where it is.
+            var seen = new HashSet<string>(StringComparer.Ordinal) { node.Type };
             var upgraded = false;
             var before = node.Ports?.Select(p => (p.Type, p.Id ?? "")).ToHashSet() ?? [];
-            while (Find(node) is { Deprecated: not null, ReplacedBy: { } next } old && Contains(next) && seen.Add(node.Type))
+            while (Find(node) is { Deprecated: not null, ReplacedBy: { } next } old && Contains(next) && seen.Add(next))
             {
                 node.Type = next;
                 old.Migrate?.Invoke(node);
