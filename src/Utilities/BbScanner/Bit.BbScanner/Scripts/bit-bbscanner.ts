@@ -733,7 +733,8 @@ export async function start(sessionId: string, videoElementId: string, deviceId:
 }
 
 async function open(sessionId: string, videoElementId: string, deviceId: string | null, requestedWidth: number,
-                    requestedHeight: number, facingMode: string | null, watchdogMs: number): Promise<string> {
+                    requestedHeight: number, facingMode: string | null, watchdogMs: number,
+                    awaitFocus = true): Promise<string> {
     const session = getSession(sessionId);
     releaseStream(session);
     const generation = session.generation;
@@ -822,10 +823,25 @@ async function open(sessionId: string, videoElementId: string, deviceId: string 
     scheduleFrameCallback(session);
     observeViewSize(session, video);
     startWatchdog(session, watchdogMs);
+    if (!awaitFocus) {
+        // A reopen after the watchdog: the focus is set without being waited for, so the watchdog cannot close this
+        // camera again before the start returns.
+        void preferContinuousFocus(track);
+        return JSON.stringify(describeTrack(track, video));
+    }
+
     await preferContinuousFocus(track);
     if (superseded()) {
-        // Released or restarted while the focus was being set: the stream is already closed by then.
         stopTracks(stream);
+
+        // The watchdog's own releaseStream is the only one that leaves the session released, one generation on, and the
+        // map still holding it: the camera was closed because the start itself took longer than the watchdog allows -
+        // the managed side has nothing to poll until it returns - not because anyone gave up on it. Open it again.
+        if (session.released && session.generation === generation + 1 && state.sessions.get(sessionId) === session) {
+            return open(sessionId, videoElementId, deviceId, requestedWidth, requestedHeight, facingMode, watchdogMs, false);
+        }
+
+        // Released or restarted while the focus was being set: the stream is already closed by then.
         throw new Error('AbortError: the camera request was superseded.');
     }
 
