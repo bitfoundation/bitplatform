@@ -627,9 +627,57 @@ public class BitAiStrings
     public virtual string DictationStopped => "Dictation stopped";
 
     /// <summary>Announced when dictation fails.</summary>
-    /// <param name="error">The error name the browser reported, such as <c>not-allowed</c>.</param>
+    /// <param name="error">
+    /// The error name the browser reported, such as <c>not-allowed</c> (the microphone was refused) or
+    /// <c>audio-capture</c> (there is no microphone to open) - or, where the app transcribes the recording itself,
+    /// <c>recording-failed</c>, <c>too-large</c> or <c>transcription-failed</c>.
+    /// </param>
     /// <returns>The announcement.</returns>
     public virtual string DictationFailed(string error) => $"Dictation failed: {error}";
+
+    /// <summary>Announced when the microphone starts recording a take the app transcribes.</summary>
+    /// <param name="remaining">How long the take may last.</param>
+    /// <returns>The announcement.</returns>
+    public virtual string RecordingStarted(TimeSpan remaining) => $"Recording, {RecordingDuration(remaining)} left";
+
+    /// <summary>Announced once as a recording nears its maximum length.</summary>
+    /// <param name="remaining">The time left before the recording stops on its own.</param>
+    /// <returns>The announcement.</returns>
+    public virtual string RecordingTimeLeft(TimeSpan remaining) => $"{RecordingDuration(remaining)} left";
+
+    /// <summary>The countdown shown beside the dictation button while it records, such as <c>0:42</c>.</summary>
+    /// <param name="remaining">The time left before the recording stops on its own.</param>
+    /// <returns>The countdown.</returns>
+    public virtual string RecordingCountdown(TimeSpan remaining)
+    {
+        var seconds = (int)Math.Ceiling(Math.Max(0, remaining.TotalSeconds));
+
+        return $"{seconds / 60}:{(seconds % 60).ToString("00", CultureInfo.CurrentCulture)}";
+    }
+
+    /// <summary>A length of time as a reader is told it, such as <c>1 minute</c> or <c>10 seconds</c>.</summary>
+    /// <param name="duration">The length of time.</param>
+    /// <returns>The text.</returns>
+    public virtual string RecordingDuration(TimeSpan duration)
+    {
+        var seconds = (int)Math.Ceiling(Math.Max(0, duration.TotalSeconds));
+        var minutes = seconds / 60;
+        var rest = seconds % 60;
+
+        var minutePart = minutes == 1 ? "1 minute" : $"{minutes:N0} minutes";
+        var secondPart = rest == 1 ? "1 second" : $"{rest} seconds";
+
+        return minutes == 0 ? secondPart : rest == 0 ? minutePart : $"{minutePart} {secondPart}";
+    }
+
+    /// <summary>Announced while a recording is being turned into text.</summary>
+    public virtual string Transcribing => "Transcribing";
+
+    /// <summary>Label of the button that reads a reply aloud.</summary>
+    public virtual string ReadAloud => "Read aloud";
+
+    /// <summary>Label of the button while its reply is being read aloud.</summary>
+    public virtual string StopReadingAloud => "Stop reading aloud";
 
     /// <summary>Label of a deprecated model in the picker.</summary>
     /// <param name="name">The model name.</param>

@@ -10,7 +10,27 @@
     @if (Options.ShowMessageActions)
     {
         <div style="@Styles?.Actions" class="bit-aimac-act @Classes?.Actions">
-            <BitAiCopyButton Content="@Message.GetText()" Disabled="Disabled" />
+            @{ var text = Message.GetText(); }
+
+            <BitAiCopyButton Content="@text" Disabled="Disabled" />
+
+            @if (_ReadAloud is { } readAloud && string.IsNullOrWhiteSpace(text) is false)
+            {
+                var reading = readAloud.IsReading(Message);
+
+                @* Like the dictation button, the name says what a press does next - Read aloud, or Stop reading aloud - and
+                   is the one thing announced, so no pressed state is put on top of it. The button stays pressable while the
+                   speech is being synthesized, which is when a user who changed their mind wants to stop it. *@
+                <BitButton IconName="@(reading ? "StopSolid" : "ReadOutLoud")"
+                           OnClick="ToggleReadAloudAsync"
+                           Disabled="Disabled"
+                           Title="@(reading ? Strings.StopReadingAloud : Strings.ReadAloud)"
+                           AriaLabel="@(reading ? Strings.StopReadingAloud : Strings.ReadAloud)"
+                           Variant="BitVariant.Text"
+                           Class="@(reading ? "bit-btn-dft-pri" : "bit-btn-dft-ter")"
+                           Styles="@Styles?.ReadAloudButton"
+                           Classes="_ReadAloudButtonClasses" />
+            }
 
             @if (Session is not null && CanRegenerate)
             {

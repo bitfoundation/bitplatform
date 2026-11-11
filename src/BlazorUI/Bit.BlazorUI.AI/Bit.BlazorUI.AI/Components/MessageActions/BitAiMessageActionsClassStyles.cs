@@ -13,6 +13,11 @@ public class BitAiMessageActionsClassStyles
     public string? Actions { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the read aloud button of the BitAiMessageActions.
+    /// </summary>
+    public BitButtonClassStyles? ReadAloudButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the regenerate button of the BitAiMessageActions.
     /// </summary>
     public BitButtonClassStyles? RegenerateButton { get; set; }

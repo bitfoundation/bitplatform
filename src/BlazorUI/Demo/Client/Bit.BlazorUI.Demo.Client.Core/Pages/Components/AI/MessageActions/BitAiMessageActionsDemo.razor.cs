@@ -56,6 +56,15 @@ public partial class BitAiMessageActionsDemo
         },
         new()
         {
+            Name = "ReadAloud",
+            Type = "BitAiReadAloud?",
+            DefaultValue = "null",
+            Description = "What reads the message aloud, which offers the \"Read aloud\" action. When null, the one cascaded by an ancestor - a BitAiChat with AllowReadAloud on - is used, and with none the action is not offered.",
+            LinkType = LinkType.Link,
+            Href = "#read-aloud",
+        },
+        new()
+        {
             Name = "Session",
             Type = "BitAiChatSession?",
             DefaultValue = "null",
@@ -113,6 +122,15 @@ public partial class BitAiMessageActionsDemo
                 },
                 new()
                 {
+                    Name = "ReadAloudButton",
+                    Type = "BitButtonClassStyles?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the read aloud button of the BitAiMessageActions.",
+                    LinkType = LinkType.Link,
+                    Href = "/components/button#button-class-styles"
+                },
+                new()
+                {
                     Name = "RegenerateButton",
                     Type = "BitButtonClassStyles?",
                     DefaultValue = "null",
@@ -143,6 +161,113 @@ public partial class BitAiMessageActionsDemo
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the time of the BitAiMessageActions."
                 }
+            ]
+        },
+        new()
+        {
+            Id = "read-aloud",
+            Title = "BitAiReadAloud",
+            Description = "Reads replies aloud through the app's own text-to-speech: made with an IBitAiTextToSpeech, or a synthesizer delegate (the reply and a token in, a BitAiSpeechAudio - FromStream, FromBytes or FromUrl - out), it plays the speech in the browser. One instance drives the action of every reply of a chat; a BitAiChat with AllowReadAloud makes one and cascades it. One reading plays at a time on a page, nothing is read while a dictation records, and a dictation starting silences what plays.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "KeepReading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether a reading goes on with each reply that finishes after the one it was started on (ReadNextAsync), until it is stopped. Read as a reading starts."
+                },
+                new()
+                {
+                    Name = "Language",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The language handed to the IBitAiTextToSpeech service, as a BCP 47 language tag; null leaves it to the service."
+                },
+                new()
+                {
+                    Name = "PlaybackRate",
+                    Type = "double",
+                    DefaultValue = "1",
+                    Description = "The speed the speech plays at, 1 being as synthesized; the browser keeps its pitch."
+                },
+                new()
+                {
+                    Name = "Message",
+                    Type = "BitAiMessage?",
+                    DefaultValue = "null",
+                    Description = "The reply being read - loading, playing, waiting to finish arriving, or, while keep reading follows the conversation, the last one it read."
+                },
+                new()
+                {
+                    Name = "IsLoading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the speech of the reply is being synthesized."
+                },
+                new()
+                {
+                    Name = "IsPlaying",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether speech is playing."
+                },
+                new()
+                {
+                    Name = "IsFollowing",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether keep reading follows the conversation."
+                },
+                new()
+                {
+                    Name = "IsReading(message)",
+                    Type = "bool",
+                    DefaultValue = "",
+                    Description = "Whether the reply is the one being read, which its button stops rather than starts."
+                },
+                new()
+                {
+                    Name = "ReadAsync(message)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Reads a reply, in place of whatever is being read. A reply still arriving is read once it has finished."
+                },
+                new()
+                {
+                    Name = "ToggleAsync(message)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Stops the reading of the reply when it is the one being read, and reads it otherwise - what the action's button does."
+                },
+                new()
+                {
+                    Name = "ReadNextAsync(reply)",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Tells the reader a reply has finished: it is read when a reading waits for it, or when keep reading follows the conversation. BitAiChat calls it as each turn ends; a chat assembled by hand calls it itself."
+                },
+                new()
+                {
+                    Name = "StopAsync()",
+                    Type = "Task",
+                    DefaultValue = "",
+                    Description = "Stops the reading, keep reading with it."
+                },
+                new()
+                {
+                    Name = "Changed",
+                    Type = "event Action",
+                    DefaultValue = "",
+                    Description = "Raised whenever what is read, or whether it is loading or playing, changes."
+                },
+                new()
+                {
+                    Name = "Failed",
+                    Type = "event Action<string>",
+                    DefaultValue = "",
+                    Description = "Raised when a reading fails: synthesis-failed (the synthesizer threw) or playback-failed (the browser could not play the audio). The reading is stopped."
+                },
             ]
         },
     ];
@@ -244,12 +369,21 @@ public partial class BitAiMessageActionsDemo
     private readonly BitAiMessage variablesMessage = CreateReply("Restyled by its variables.");
 
 
+    private BitAiReadAloud? readAloud;
+    private readonly BitAiMessage readAloudMessage = CreateReply("A reply to read aloud. Press the speaker under it to hear it, and again to stop.");
+    private readonly BitAiMessage readAloudOtherMessage = CreateReply("Another reply: starting its reading stops the first one.");
+
+
     private readonly BitAiMessage rtlMessage = CreateReply("پاسخی که دکمه‌هایش همیشه نمایش داده می‌شوند.");
 
 
 
     protected override Task OnInitAsync()
     {
+        // A real app hands BitAiReadAloud its text-to-speech service; this stand-in plays a voiceless tone about as long as
+        // the reply.
+        readAloud = new BitAiReadAloud(JSRuntime, (reply, cancellationToken) => AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken));
+
         regenerateSession.Conversation.MessageAdded += OnRegenerateMessageAdded;
         regenerateSession.TurnCompleted += OnRegenerateTurnCompleted;
 
@@ -262,6 +396,8 @@ public partial class BitAiMessageActionsDemo
         regenerateSession.TurnCompleted -= OnRegenerateTurnCompleted;
 
         await regenerateSession.DisposeAsync();
+
+        if (readAloud is not null) await readAloud.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

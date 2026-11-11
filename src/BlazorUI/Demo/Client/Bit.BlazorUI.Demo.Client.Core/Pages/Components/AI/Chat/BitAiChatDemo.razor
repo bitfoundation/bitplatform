@@ -323,7 +323,32 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+        <DemoExample Title="Read aloud" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <b>AllowReadAloud</b> offers a "Read aloud" action under each reply, read through the app's own text-to-speech:
+                the <b>Synthesizer</b> here, or an <b>IBitAiTextToSpeech</b> registered through
+                <b>AddBitBlazorUIAIServices(ai => ai.UseTextToSpeech&lt;T&gt;())</b>. The speech plays in the browser, and the
+                same button stops it. With <b>KeepReadingAloud</b> a reading goes on with every reply that finishes after it,
+                until it is stopped - for a user who listens instead of reading. <b>Transcriber</b> (or an
+                <b>IBitAiSpeechToText</b>) has the composer's dictation go through the app's speech-to-text, from a recording;
+                a reading falls silent the moment the microphone opens, so the recording does not carry it, and keep reading
+                reads the next reply in its turn. The synthesizer here has no voice: it plays a soft tone about as long as the
+                reply, and the transcriber only describes what it was handed.
+            </div>
+            <br />
+            <BitToggle @bind-Value="keepReadingAloud" Text="Keep reading aloud" />
+            <div style="height:460px">
+                <BitAiChat Session="readAloudSession"
+                           AllowReadAloud
+                           KeepReadingAloud="keepReadingAloud"
+                           Synthesizer="SynthesizeAsync"
+                           AllowDictation
+                           Transcriber="DescribeRecordingAsync"
+                           Suggestions="readAloudSuggestions" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the transcript, the
                 empty state and the scroll-to-latest button take the class-styles of their own components). The public
@@ -352,7 +377,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
             <div>Use BitAiChat in right-to-left (RTL).</div>
             <br />
             <div style="height:400px">

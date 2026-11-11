@@ -22,6 +22,15 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "AllowReadAloud",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Offers a \"Read aloud\" action under each reply, which reads it through the app's text-to-speech - the Synthesizer, or an IBitAiTextToSpeech registered through AddBitBlazorUIAIServices(ai => ai.UseTextToSpeech<T>()); with neither, nothing is offered. The speech plays in the browser and the same button stops it; a dictation silences it while the microphone is open. The chat cascades the BitAiReadAloud driving it to everything inside it.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/messageactions#read-aloud",
+        },
+        new()
+        {
             Name = "AttachmentUploader",
             Type = "Func<BitAiAttachment, IProgress<double>, CancellationToken, Task<BitAiAttachment>>?",
             DefaultValue = "null",
@@ -139,6 +148,13 @@ public partial class BitAiChatDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The content at the top of the scroll area, above the first message. Past BitAiUiOptions.VirtualizeThreshold messages it is drawn once the reader has scrolled up to the first message, along with it.",
+        },
+        new()
+        {
+            Name = "KeepReadingAloud",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Goes on reading each reply that finishes after the one a reading was started on, until the reading is stopped. Only used when AllowReadAloud is on.",
         },
         new()
         {
@@ -260,6 +276,22 @@ public partial class BitAiChatDemo
         },
         new()
         {
+            Name = "Synthesizer",
+            Type = "Func<BitAiMessage, CancellationToken, Task<BitAiSpeechAudio?>>?",
+            DefaultValue = "null",
+            Description = "The app's text-to-speech the replies are read aloud through, given the reply - its text (GetText(), Markdown) and whatever else the service needs of it, such as a signature it carries - and a token cancelled when the reading is stopped; it returns the audio to play (BitAiSpeechAudio.FromStream, FromBytes or FromUrl), or null when there is nothing to read. When null, an IBitAiTextToSpeech registered through AddBitBlazorUIAIServices is used, if there is one.",
+        },
+        new()
+        {
+            Name = "Transcriber",
+            Type = "Func<Stream, string, CancellationToken, Task<string?>>?",
+            DefaultValue = "null",
+            Description = "The app's speech-to-text the composer's dictation transcribes a recording of the microphone with, in place of the speech recognition of the browser - which also makes dictation work where the browser has none. When null, an IBitAiSpeechToText registered through AddBitBlazorUIAIServices is used, if there is one. Only used when AllowDictation is on.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/voiceinput#example8",
+        },
+        new()
+        {
             Name = "UiOptions",
             Type = "BitAiUiOptions?",
             DefaultValue = "null",
@@ -288,6 +320,15 @@ public partial class BitAiChatDemo
             Description = "The conversation in use, the one of ActiveSession.",
             LinkType = LinkType.Link,
             Href = "/components/ai/messagelist#conversation",
+        },
+        new()
+        {
+            Name = "ReadAloud",
+            Type = "BitAiReadAloud?",
+            DefaultValue = "null",
+            Description = "What reads the replies aloud, while AllowReadAloud is on and there is a text-to-speech to read through.",
+            LinkType = LinkType.Link,
+            Href = "/components/ai/messageactions#read-aloud",
         },
         new()
         {
@@ -741,6 +782,23 @@ public partial class BitAiChatDemo
             AllowAttachments = false,
         }
     ];
+
+
+    private bool keepReadingAloud;
+    private readonly BitAiChatSession readAloudSession = new(AiDemoTransports.Echo());
+    private readonly string[] readAloudSuggestions = ["Read this sentence aloud to me, please.", "Say something short."];
+
+    // The stand-ins for the app's speech services: a voiceless tone about as long as the reply, and a transcriber that
+    // only says what it was handed.
+    private Task<BitAiSpeechAudio?> SynthesizeAsync(BitAiMessage reply, CancellationToken cancellationToken) =>
+        AiDemoSpeech.SynthesizeAsync(reply.GetText(), cancellationToken);
+
+    private static async Task<string?> DescribeRecordingAsync(Stream audio, string contentType, CancellationToken cancellationToken)
+    {
+        await Task.Delay(600, cancellationToken);
+
+        return $"(a {audio.Length:N0}-byte {contentType} recording, which a real app sends to its speech-to-text)";
+    }
 
 
     private readonly string[] rtlSuggestions = ["این کامپوننت‌ها چه کارهایی می‌کنند؟", "استریم را نشانم بده"];
