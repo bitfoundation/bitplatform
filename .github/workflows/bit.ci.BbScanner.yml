@@ -1,7 +1,7 @@
 name: bit platform CI - BbScanner
 
 # Build, decoder and component tests, and MCP server tests. The browser suite lives in bit.ci.BbScanner.e2e.yml
-# and runs on demand only.
+# and the performance gate in bit.ci.BbScanner.perf.yml; both run on demand only.
 
 on:
   workflow_dispatch:

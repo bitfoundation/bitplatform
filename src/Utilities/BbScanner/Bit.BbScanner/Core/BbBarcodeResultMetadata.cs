@@ -18,14 +18,39 @@ public sealed class BbBarcodeResultMetadata
     /// <summary>ECI assignment number carried by the symbol, when present.</summary>
     public int? Eci { get; init; }
 
-    /// <summary>Index of this symbol within a structured append sequence.</summary>
+    /// <summary>
+    /// Position of this symbol within a structured append sequence, as the symbology's specification numbers it:
+    /// from 0 for QR Code (0 to 15) and PDF417 (the Macro PDF417 segment index, 0 to 99 998), from 1 for Data Matrix
+    /// (1 to 16). <see cref="BbStructuredAppendAssembler"/> puts a sequence back together whichever way it counts.
+    /// </summary>
     public int? StructuredAppendIndex { get; init; }
 
-    /// <summary>Total number of symbols in the structured append sequence.</summary>
+    /// <summary>
+    /// Total number of symbols in the structured append sequence. A Macro PDF417 segment carries it only when its
+    /// encoder wrote the optional segment count field; the last segment is then known by
+    /// <see cref="StructuredAppendIsLast"/>.
+    /// </summary>
     public int? StructuredAppendCount { get; init; }
 
-    /// <summary>Parity or file identifier that groups a structured append sequence.</summary>
+    /// <summary>
+    /// What groups a QR Code or Data Matrix structured append sequence: QR Code's parity byte - the exclusive or of
+    /// every byte of the whole message - or Data Matrix's two byte file identification.
+    /// </summary>
     public int? StructuredAppendParity { get; init; }
+
+    /// <summary>
+    /// The Macro PDF417 file ID that every segment of one file carries, each of its codewords written as the three
+    /// digits it stands for; <see langword="null"/> for the other symbologies, whose sequences are grouped by
+    /// <see cref="StructuredAppendParity"/>.
+    /// </summary>
+    public string? StructuredAppendFileId { get; init; }
+
+    /// <summary>
+    /// <see langword="true"/> when this symbol is the last of its structured append sequence: for Macro PDF417 the
+    /// segment that closes its control block with the terminator, for QR Code and Data Matrix the one whose
+    /// position is the count.
+    /// </summary>
+    public bool? StructuredAppendIsLast { get; init; }
 
     /// <summary>Number of PDF417 rows, or number of rows in the sampled matrix.</summary>
     public int? Rows { get; init; }

@@ -29,7 +29,7 @@ browser, on a server or in a native app.
 
 ## Highlights
 
-- **Eighteen symbologies read to specification**: QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128
+- **Nineteen symbologies read to specification**: QR Code, Micro QR, Data Matrix, PDF417, MicroPDF417, Aztec, MaxiCode, Code 128
   (including GS1-128), Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF, GS1
   DataBar (including its stacked forms), DataBar Limited and DataBar Expanded (including Expanded Stacked) - checked
   against symbols written by an independent encoder, not only against the library's own test encoders.
@@ -266,7 +266,8 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | UPC-A | Supported | Reported as UPC-A rather than as a zero-prefixed EAN-13; add-ons read |
 | UPC-E | Supported | Expanded and check-digit verified against its UPC-A form; add-ons read |
 | ITF | Supported | Configurable accepted lengths |
-| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment numbering, compact (truncated) PDF417; not MicroPDF417 - see [PDF417 status](#pdf417-status) |
+| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment index, count, file ID and last segment, compact (truncated) PDF417 - see [PDF417 status](#pdf417-status) |
+| MicroPDF417 | Supported | All 34 sizes, one to four columns and 4 to 44 rows; PDF417's symbol characters, error correction and text, byte and numeric compaction, ECI and the Macro PDF417 control block, and Code 128 emulation: 903 and 904 make it GS1, 908 to 911 are read as their data. `Metadata.SymbolVersion` is columns by rows, `4x20`. It has no start pattern to find from afar, so it is read where scan lines cross its row address patterns: a live frame reads a symbol held within six degrees of upright, sideways or upside down - upright in every frame, the angles round it within four - and a still image at any angle. Composite symbols' MicroPDF417 part (CC-A, CC-B) - the linked emulation codewords 906, 907, 912, 914, 915 and 920 - is not read, nor is 905, which leaves out the AI 01 it implies |
 | Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1), mirrored symbols, and Aztec Runes, reported as their number from 0 to 255; structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
 | MaxiCode | Supported | Modes 2 to 5: the structured carrier message of modes 2 and 3 - postal code, country and class of service - reported as the carrier writes it, after the `[)>` header; standard and enhanced error correction; the five code sets with their shifts and locks, the numeric shift and ECI. `Metadata.SymbolVersion` is `Mode 2` to `Mode 5`. Found by its bullseye at any angle, the four diameters of its rings giving the grid's shape and their edges, to a fraction of a pixel, its scale; the grid's foreshortening away from the rings is searched for when it does not read flat. Mode 6, which programs a reader, is not read, and structured append is not interpreted |
 | GS1 DataBar | Supported | Omnidirectional, Truncated, Stacked and Stacked Omnidirectional; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set and `Metadata.SymbolVersion` `Stacked` for a symbol read from two rows. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A stacked symbol's rows, and the halves of a short symbol turned further off a line than one line can cross whole, are read on different lines and put together by where they lie - along the symbol's own axis, which the lines' starts trace - and the checksum between them; each half has to be read on two lines and more than twice as often as anything else its place reads as. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. The linear part of a GS1 Composite symbol is not read |
@@ -275,8 +276,8 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 
 `BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
 `AllLinear`, `AllMatrix` and `All` are the composites. The default is `Common` - QR Code, Data Matrix, Code 128,
-Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, Aztec, MaxiCode, Micro QR,
-Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
+Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, MicroPDF417, Aztec, MaxiCode,
+Micro QR, Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
 formats are created, so narrowing `Formats` costs nothing and makes every frame cheaper - and it is the main guard
 against a misread between similar linear symbologies.
 
@@ -378,6 +379,7 @@ public sealed class BbBarcodeResult
     public int FrameWidth { get; }
     public int FrameHeight { get; }
     public BbBarcodeResultMetadata? Metadata { get; }      // version, EC level, corrections, ECI, GS1, structured append
+    public bool TryGetGs1(out BbGs1ElementString? elements); // see GS1 element strings below
 }
 ```
 
@@ -390,6 +392,83 @@ highlight also accounts for a mirrored front camera and for cropping under `Fill
 > Earlier pre-releases reported, for QR codes, the centres of the three finder patterns (and of the bottom-right
 > alignment pattern) instead of the corners, and listed Data Matrix corners counter-clockwise. Code that drew
 > `Corners` or `BoundingBox` now gets the whole symbol, in the documented order.
+
+### GS1 element strings
+
+A GS1 symbol - GS1-128, GS1 DataMatrix, GS1 QR Code, GS1 Aztec, GS1 MicroPDF417 and the GS1 DataBar family, flagged by
+`Metadata.IsGs1` - carries Application Identifiers and their values run together, a variable length value ended by
+a group separator (`U+001D`) where the symbol has FNC1. `Text` keeps that element string as the symbol encodes it;
+`TryGetGs1` splits it into its elements:
+
+```csharp
+if (result.TryGetGs1(out var gs1))
+{
+    var gtin = gs1["01"];                                  // "09521234543213"
+    var lot = gs1["10"];                                   // "ABC123", or null when the symbol has no batch
+    if (gs1.Find("17")?.TryGetDate(out var expiry) == true) { /* 31 December 2026 */ }
+    if (gs1.Find("3103")?.TryGetDecimal(out var kg) == true) { /* 1.25 */ }
+    Console.WriteLine(gs1.ToBracketedString());            // (01)09521234543213(10)ABC123(17)261231
+}
+```
+
+Each element has its `ApplicationIdentifier`, its `Value`, the GS1 data `Title` (`GTIN`, `BATCH/LOT`,
+`NET WEIGHT (kg)`), and for a measure, an amount or a price its `DecimalPlaces` and `CurrencyCode`. `TryGetDate`
+reads the dates - production, packaging, best before, expiry, delivery, harvest, birth - with a day of `00` taken as
+the month's last day and a two digit year placed in its century the way the GS1 General Specifications place it.
+`BbGs1ElementString.TryParse` and `Parse` take an element string from anywhere else - a keyboard wedge scanner, a
+database - in the encoded form, after a symbology identifier such as `]C1` or `]d2` or not, or in the bracketed
+form printed under a symbol.
+
+Parsing is strict: every AI must be one the library knows - more than 500 of them, from the SSCC and GTIN through
+batches, dates, measures, prices, locations, transport, healthcare and coupon AIs to the internal ones, 90 to 99 -
+and every value must have the length, the characters (numeric, character set 82, 39 or 64) and the GS1 modulo 10
+check digit its AI calls for; dates and times must exist, and an AI may only repeat with the same value. A symbology
+identifier other than a GS1 one (`]C0`, `]Q1`) fails the parse. A fixed length element that
+is not among the predefined lengths, such as the country of origin `(422)`, must be ended by FNC1 like a variable
+length one. Anything else fails as a whole - an element string read only partly could put a batch number where an
+expiry date belongs. The GMN and MUDI's two character check, an IBAN's check digits, the range of a latitude and a
+longitude, percent-encoded names and addresses and the GS1 Company Prefix a key such as a GIAI starts with are checked
+too; every AI is checked against BWIPP's GS1 syntax checker, an independent implementation, over thousands of valid
+and broken values. What it does not check: whether AIs that require or exclude each other appear together, country,
+currency, package and media type codes against their lists, and the inner structure of North American coupon codes.
+Those are the application's rules.
+
+### Structured append
+
+A QR Code, Data Matrix or Macro PDF417 message too long for one symbol can be split over several - up to sixteen
+QR Code or Data Matrix symbols, or the segments of a Macro PDF417 (or Macro MicroPDF417) file. Each result reports its place in
+`Metadata`: `StructuredAppendIndex` as its specification numbers it (from 0 for QR Code and PDF417, from 1 for Data
+Matrix), `StructuredAppendCount`, `StructuredAppendIsLast`, and what the sequence shares - QR Code's parity byte or
+Data Matrix's file identification in `StructuredAppendParity`, the Macro PDF417 file ID in `StructuredAppendFileId`.
+`BbStructuredAppendAssembler` puts the message back together in whatever order the symbols are scanned:
+
+```csharp
+private readonly BbStructuredAppendAssembler _assembler = new();
+
+private void HandleScan(BbBarcodeResult result)
+{
+    switch (_assembler.Add(result, out var message))
+    {
+        case BbStructuredAppendStatus.NotStructuredAppend: Use(result.Text); break;
+        case BbStructuredAppendStatus.Completed: Use(message!.Text); break;
+        default: _progress = _assembler.Pending; break;    // e.g. "2 of 3 read, missing 1"
+    }
+}
+```
+
+A sequence is kept apart from every other by its symbology, its count and what its symbols share, a symbol read
+twice counts once - also after its message has been returned, until `Timeout` passes without it, so symbols that
+stay in front of the camera do not return the message again (`Duplicate`) - and two different symbols claiming the
+same place - two files that happen to look alike - are never combined: the older sequence is dropped (`Conflict`).
+A symbol whose header cannot be right - place 5 of 3, a Macro PDF417 segment without a file ID - is `Rejected`, never
+`NotStructuredAppend`: it holds part of a message, not a message. A QR Code message is only returned when its parity, the
+exclusive or of all its bytes, matches. A Macro PDF417 file whose segments do not carry the optional segment count
+is complete once its last segment, the one with the terminator, and every one before it have been read. Memory stays
+bounded: `MaxPendingSequences` sequences of up to `MaxSegments` symbols, each dropped after `Timeout` without a new
+symbol. When every symbol declares UTF-8 (ECI 26), or none declares a character set and each was read in the one guessed
+from its bytes, the message's text is decoded from all of their bytes at once, so a character an encoder split
+between two symbols comes out whole. Aztec and MaxiCode structured append are not
+interpreted; their symbols are reported one by one.
 
 ### Scan region
 
@@ -638,6 +717,19 @@ foreach (var label in decoder.DecodeAll(rgbaPixels, width, height, BbPixelFormat
 ```
 
 `Decode` and `DecodeAll` accept `Rgba32`, `Bgra32`, `Rgb24` and `Gray8` pixels, or a `BbLuminanceView` over a grayscale buffer.
+Rows padded to an alignment - a 24 bit `System.Drawing` bitmap's rows are a multiple of four bytes, WPF's
+`BackBufferStride`, SkiaSharp's `RowBytes`, a camera plane's row stride - or a window into a larger image are read in
+place, without copying the padding out, through the overloads that take the stride between rows:
+
+```csharp
+var data = bitmap.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);   // B, G, R in memory
+var pixels = new ReadOnlySpan<byte>((void*)data.Scan0, (data.Stride * (data.Height - 1)) + (data.Width * 3));
+var result = decoder.Decode(pixels, data.Width, data.Height, data.Stride, BbPixelFormat.Rgb24);
+```
+
+There is no `Bgr24`: a BGR bitmap passed as `Rgb24` only has the luminance weights of red and blue swapped, which
+leaves a dark-on-light symbol as readable as before. A bottom-up bitmap, whose stride is negative, has to be passed
+top row first.
 One instance owns all the scratch state a frame needs and is **not** thread safe; use one per scanning session.
 `BbScannerOptions.ForStillImages()` flips the trade-offs for one-shot decoding: more scan lines, every ten degrees of
 rotation, the exhaustive detector path, and inverted symbols allowed.
@@ -1202,7 +1294,8 @@ single bar, is read the same way: the left row indicators carry everything the s
 read as a full symbol's first, and as a compact symbol's only when they do not make one, so a full symbol whose stop
 pattern a line missed is never taken for a compact one.
 
-**Not read.** MicroPDF417, which is a different symbology.
+**MicroPDF417.** A different symbology, read by a reader of its own (see the table above): it shares PDF417's symbol
+characters and their table, and is turned off with PDF417 when an application registers a table of its own.
 
 **Side by side.** A line along a row of one symbol runs on into the stop pattern of a symbol printed beside it, and
 paired with that the quad comes out sheared. A stop pattern spans the same rows as its own start pattern, give or take
@@ -1222,7 +1315,7 @@ Tests/Bit.BbScanner.TestKit       encoders, image helpers and the sample catalog
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
 Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream, on WebAssembly and on a circuit
-Tests/Bit.BbScanner.Benchmarks    BenchmarkDotNet suites
+Tests/Bit.BbScanner.Benchmarks    BenchmarkDotNet suites, and the performance gate CI runs (--budget, against budgets.json)
 ```
 
 The encoders live in the test kit, not in the library: the library only reads barcodes. They exist so that every

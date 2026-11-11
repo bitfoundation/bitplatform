@@ -87,6 +87,12 @@ public sealed class BbBarcodeDecoder : IDisposable
             _matrixDecoders.Add(new BbPdf417Reader());
         }
 
+        // MicroPDF417's symbol characters are PDF417's, so it reads with the same table, and only with a conformant one.
+        if ((_options.Formats & BbBarcodeFormat.MicroPdf417) != 0 && BbPdf417SymbolTable.Current.IsSpecificationTable)
+        {
+            _matrixDecoders.Add(new BbMicroPdf417Reader());
+        }
+
         if ((_options.Formats & BbBarcodeFormat.Aztec) != 0)
         {
             _matrixDecoders.Add(new BbAztecReader());
@@ -191,9 +197,35 @@ public sealed class BbBarcodeDecoder : IDisposable
         int height,
         BbPixelFormat format,
         bool suppressDuplicates = true)
+        => Decode(pixels, width, height, stride: 0, format, suppressDuplicates);
+
+    /// <summary>
+    /// Decodes a frame whose rows are <paramref name="stride"/> bytes apart: a bitmap padded to a row alignment, or a
+    /// view into a larger image, as <c>System.Drawing.Imaging.BitmapData.Stride</c>, WPF's <c>BackBufferStride</c>,
+    /// SkiaSharp's <c>RowBytes</c> and camera planes' row strides describe them. Nothing is copied to remove the
+    /// padding.
+    /// </summary>
+    /// <param name="pixels">The frame, row major: its first pixel first, each row <paramref name="stride"/> bytes after the one above.</param>
+    /// <param name="width">Frame width in pixels.</param>
+    /// <param name="height">Frame height in pixels.</param>
+    /// <param name="stride">
+    /// Bytes from the start of one row to the start of the next, at least <paramref name="width"/> times the bytes per
+    /// pixel of <paramref name="format"/>; 0 for tightly packed rows. A bottom-up bitmap's negative stride is not taken:
+    /// pass its rows top down.
+    /// </param>
+    /// <param name="format">Layout of <paramref name="pixels"/>.</param>
+    /// <param name="suppressDuplicates">When <see langword="false"/>, the duplicate filter is bypassed.</param>
+    /// <returns>The decoded barcode, or <see langword="null"/>.</returns>
+    public BbBarcodeResult? Decode(
+        ReadOnlySpan<byte> pixels,
+        int width,
+        int height,
+        int stride,
+        BbPixelFormat format,
+        bool suppressDuplicates = true)
     {
         var start = Stopwatch.GetTimestamp();
-        var view = Prepare(pixels, width, height, format, out var cropX, out var cropY, out var step);
+        var view = Prepare(pixels, width, height, stride, format, out var cropX, out var cropY, out var step);
         var afterGrayscale = Stopwatch.GetTimestamp();
 
         return DecodeCore(view, cropX, cropY, step, start, afterGrayscale, width, height, suppressDuplicates, maxSymbols: 1, results: null);
@@ -228,11 +260,34 @@ public sealed class BbBarcodeDecoder : IDisposable
         BbPixelFormat format,
         int maxSymbols = 16,
         bool suppressDuplicates = true)
+        => DecodeAll(pixels, width, height, stride: 0, format, maxSymbols, suppressDuplicates);
+
+    /// <summary>
+    /// Decodes every symbol in a frame whose rows are <paramref name="stride"/> bytes apart, up to
+    /// <paramref name="maxSymbols"/>; see <see cref="Decode(ReadOnlySpan{byte}, int, int, int, BbPixelFormat, bool)"/>
+    /// and <see cref="DecodeAll(ReadOnlySpan{byte}, int, int, BbPixelFormat, int, bool)"/>.
+    /// </summary>
+    /// <param name="pixels">The frame, row major: its first pixel first, each row <paramref name="stride"/> bytes after the one above.</param>
+    /// <param name="width">Frame width in pixels.</param>
+    /// <param name="height">Frame height in pixels.</param>
+    /// <param name="stride">Bytes from the start of one row to the start of the next; 0 for tightly packed rows.</param>
+    /// <param name="format">Layout of <paramref name="pixels"/>.</param>
+    /// <param name="maxSymbols">The most symbols to report, at least one.</param>
+    /// <param name="suppressDuplicates">When <see langword="false"/>, the duplicate filter is bypassed.</param>
+    /// <returns>The symbols found, matrix symbols first, in the order they were found; empty when there are none.</returns>
+    public IReadOnlyList<BbBarcodeResult> DecodeAll(
+        ReadOnlySpan<byte> pixels,
+        int width,
+        int height,
+        int stride,
+        BbPixelFormat format,
+        int maxSymbols = 16,
+        bool suppressDuplicates = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
 
         var start = Stopwatch.GetTimestamp();
-        var view = Prepare(pixels, width, height, format, out var cropX, out var cropY, out var step);
+        var view = Prepare(pixels, width, height, stride, format, out var cropX, out var cropY, out var step);
         var afterGrayscale = Stopwatch.GetTimestamp();
 
         var results = new List<BbBarcodeResult>();
@@ -248,6 +303,7 @@ public sealed class BbBarcodeDecoder : IDisposable
         ReadOnlySpan<byte> pixels,
         int width,
         int height,
+        int stride,
         BbPixelFormat format,
         out int cropX,
         out int cropY,
@@ -256,6 +312,7 @@ public sealed class BbBarcodeDecoder : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
+        ArgumentOutOfRangeException.ThrowIfNegative(stride);
 
         if (width < 8 || height < 8)
         {
@@ -270,12 +327,29 @@ public sealed class BbBarcodeDecoder : IDisposable
         // The pixels divided rather than the sizes multiplied: two sizes near the largest int make a product that fits in
         // 64 bits, but not that product again three or four times over, which wraps round to one that passes.
         var bpp = BbPixelConverter.BytesPerPixel(format);
-        if (pixels.Length / bpp < (long)width * height)
+        if (stride == 0)
         {
-            throw new ArgumentException("The pixels are fewer than the frame holds.", nameof(pixels));
+            if (pixels.Length / bpp < (long)width * height)
+            {
+                throw new ArgumentException("The pixels are fewer than the frame holds.", nameof(pixels));
+            }
+
+            stride = width * bpp;
+        }
+        else
+        {
+            if (stride / bpp < width)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stride), stride, "A row is wider than the stride between rows.");
+            }
+
+            // The last row needs only its own pixels, not the padding after them. Each product fits in 64 bits.
+            if (pixels.Length < ((long)stride * (height - 1)) + ((long)width * bpp))
+            {
+                throw new ArgumentException("The pixels are fewer than the frame holds.", nameof(pixels));
+            }
         }
 
-        var stride = width * bpp;
         return PrepareRegion(pixels[((cropY * stride) + (cropX * bpp))..], cropWidth, cropHeight, stride, format, out step);
     }
 

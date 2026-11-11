@@ -20,6 +20,9 @@
         <!-- Symbols written by an independent encoder; Reference/generate-reference-symbols.mjs regenerates them. -->
         <EmbeddedResource Include="Reference\ReferenceSymbols.json" LogicalName="ReferenceSymbols.json" />
         <None Remove="Reference\ReferenceSymbols.json" />
+        <!-- GS1 element strings with BWIPP's verdict on each; Reference/generate-gs1-cases.mjs regenerates them. -->
+        <EmbeddedResource Include="Reference\Gs1Cases.json" LogicalName="Gs1Cases.json" />
+        <None Remove="Reference\Gs1Cases.json" />
     </ItemGroup>
 
     <ItemGroup>

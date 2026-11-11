@@ -31,6 +31,21 @@ public class McpDecodeLabTests
     }
 
     [TestMethod]
+    public async Task A_gs1_symbol_reports_its_parsed_element_string()
+    {
+        var report = await InspectAsync(new() { ["format"] = "DataBarExpanded", ["text"] = "010952123454321310ABC123" });
+
+        foreach (var attempt in report.Attempts!)
+        {
+            Assert.IsTrue(attempt.Decoded, attempt.Options);
+            Assert.AreEqual("(01)09521234543213(10)ABC123", attempt.Gs1, attempt.Options);
+        }
+
+        var qr = await InspectAsync(new() { ["format"] = "QrCode", ["text"] = "010952123454321310ABC123" });
+        Assert.IsNull(qr.Attempts![0].Gs1, "A QR code without FNC1 is not a GS1 symbol.");
+    }
+
+    [TestMethod]
     public async Task Every_symbology_the_pipeline_reads_round_trips_its_sample()
     {
         foreach (var format in BbScannerFormatCatalog.Formats.Where(format => format.Active))

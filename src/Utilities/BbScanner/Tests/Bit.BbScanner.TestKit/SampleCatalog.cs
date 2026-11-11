@@ -131,6 +131,10 @@ public static class SampleCatalog
         // Micro QR: one finder pattern, for a short value in a small space.
         new(BbBarcodeFormat.MicroQrCode, "Micro QR", "MICRO QR 42",
             MicroQrEncoder.Encode("MICRO QR 42"), null),
+
+        // MicroPDF417: PDF417's narrow sibling, told row from row by its row address patterns.
+        new(BbBarcodeFormat.MicroPdf417, "MicroPDF417", "MICRO PDF FOUR ONE SEVEN",
+            MicroPdf417Encoder.Encode("MICRO PDF FOUR ONE SEVEN", columns: 2), null),
     ];
 
     private static string Ean13Value { get; } = Complete("400638133393");

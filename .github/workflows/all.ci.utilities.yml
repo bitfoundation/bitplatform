@@ -275,6 +275,10 @@ jobs:
     if: ${{ inputs.e2e }}
     uses: ./.github/workflows/bit.ci.BbScanner.e2e.yml
 
+  bbscanner_perf:
+    name: bbscanner perf
+    uses: ./.github/workflows/bit.ci.BbScanner.perf.yml
+
   blazedb:
     name: blazedb
     uses: ./.github/workflows/bit.ci.BlazeDb.yml

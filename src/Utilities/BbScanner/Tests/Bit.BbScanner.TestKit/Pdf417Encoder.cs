@@ -23,8 +23,17 @@ public static class Pdf417Encoder
     /// <param name="errorCorrectionLevel">Security level, 0 to 8.</param>
     /// <param name="rowHeightModules">Height of each symbol row in modules.</param>
     /// <param name="quietZoneModules">Light margin on each side, as a real symbol carries.</param>
+    /// <param name="macro">
+    /// Writes a Macro PDF417 control block after the data: the segment index, the file ID codewords, the optional
+    /// segment count field when <c>SegmentCount</c> is set, and the terminator when <c>Last</c> is.
+    /// </param>
     public static BbBitMatrix Encode(
-        string content, int columns = 4, int errorCorrectionLevel = 2, int rowHeightModules = 3, int quietZoneModules = 2)
+        string content,
+        int columns = 4,
+        int errorCorrectionLevel = 2,
+        int rowHeightModules = 3,
+        int quietZoneModules = 2,
+        (int SegmentIndex, int[] FileId, int? SegmentCount, bool Last)? macro = null)
     {
         ArgumentNullException.ThrowIfNull(content);
         ArgumentOutOfRangeException.ThrowIfLessThan(columns, 1);
@@ -32,6 +41,10 @@ public static class Pdf417Encoder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rowHeightModules);
 
         var data = BuildDataCodewords(content);
+        if (macro is { } block)
+        {
+            AppendMacro(data, block);
+        }
 
         var numEc = BbPdf417ErrorCorrection.GetErrorCorrectionCodewordCount(errorCorrectionLevel);
         var rows = (int)Math.Ceiling((data.Count + numEc) / (double)columns);
@@ -67,7 +80,29 @@ public static class Pdf417Encoder
         return Render(all, rows, columns, errorCorrectionLevel, rowHeightModules, quietZoneModules);
     }
 
-    private static List<int> BuildDataCodewords(string content)
+    /// <summary>Appends a Macro PDF417 control block, which MicroPDF417 shares.</summary>
+    internal static void AppendMacro(List<int> data, (int SegmentIndex, int[] FileId, int? SegmentCount, bool Last) block)
+    {
+        // Numbers in the control block are two codewords of base 900 holding the value with a leading 1.
+        static IEnumerable<int> Number(int value) => [(100000 + value) / 900, (100000 + value) % 900];
+
+        data.Add(928);
+        data.AddRange(Number(block.SegmentIndex));
+        data.AddRange(block.FileId);
+        if (block.SegmentCount is { } count)
+        {
+            data.Add(923);
+            data.Add(1);
+            data.AddRange(Number(count));
+        }
+
+        if (block.Last)
+        {
+            data.Add(922);
+        }
+    }
+
+    internal static List<int> BuildDataCodewords(string content)
     {
         var codewords = new List<int> { 0 };
 
@@ -142,7 +177,7 @@ public static class Pdf417Encoder
     /// Computes the error correction codewords as the negated remainder of the data polynomial
     /// divided by the generator, which is what makes every syndrome vanish.
     /// </summary>
-    private static int[] GenerateErrorCorrection(List<int> data, int numEc)
+    internal static int[] GenerateErrorCorrection(List<int> data, int numEc)
     {
         var field = BbModulusGF.Pdf417;
 

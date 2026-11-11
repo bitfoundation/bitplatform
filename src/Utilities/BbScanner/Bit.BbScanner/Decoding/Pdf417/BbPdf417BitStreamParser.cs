@@ -35,6 +35,17 @@ public static class BbPdf417BitStreamParser
     private const int EciCharset = 927;
     private const int MacroControlBlock = 928;
 
+    // MicroPDF417's Code 128 emulation (ISO/IEC 24728): in the first data position these say how the payload is to be
+    // transmitted - with a leading FNC1 in first position (]C1, GS1), in second position (]C2, an application
+    // indicator follows) or with no FNC1 at all (]C0) - and imply a latch, to text compaction's Mixed sub-mode or to
+    // numeric compaction.
+    private const int EmulationFnc1FirstText = 903;
+    private const int EmulationFnc1FirstNumeric = 904;
+    private const int EmulationFnc1SecondText = 908;
+    private const int EmulationFnc1SecondNumeric = 909;
+    private const int EmulationText = 910;
+    private const int EmulationNumeric = 911;
+
     private static readonly char[] PunctuationChars =
     [
         ';', '<', '>', '@', '[', '\\', ']', '_', '`', '~', '!', '\r', '\t', ',', ':',
@@ -124,7 +135,44 @@ public static class BbPdf417BitStreamParser
     /// <param name="errorsCorrected">Number of codewords the error correction stage repaired.</param>
     /// <returns>The payload, or <see langword="null"/> when the codeword stream is malformed.</returns>
     public static BbDecoderResult? Decode(
-        int[] codewords, int rows, int columns, int errorCorrectionLevel, int errorsCorrected)
+        int[] codewords, int rows, int columns, int errorCorrectionLevel, int errorsCorrected) =>
+        Decode(
+            codewords,
+            rows,
+            columns,
+            errorCorrectionLevel.ToString(CultureInfo.InvariantCulture),
+            string.Create(CultureInfo.InvariantCulture, $"{rows}x{columns}"),
+            errorsCorrected,
+            microPdf417: false);
+
+    /// <summary>Decodes the payload of a MicroPDF417 symbol.</summary>
+    /// <remarks>
+    /// The codewords are PDF417's, but a MicroPDF417 symbol may start with one of the Code 128 emulation codewords:
+    /// 903 and 904 make it a GS1 symbol (<see cref="BbDecoderResult.IsGs1"/>), and 908 to 911 transmit it with
+    /// FNC1 in second position or none. Each implies a latch - 903, 908 and 910 to text compaction's Mixed
+    /// sub-mode, 904, 909 and 911 to numeric compaction. The rest are not read: 905, which leaves out the AI 01 it
+    /// implies, and the linked ones - 906, 907, 912, 914, 915 and the composite flag 920 - which carry the
+    /// two-dimensional part of a composite symbol, a payload of its own compaction. MicroPDF417 has no security
+    /// level, so <see cref="BbDecoderResult.ErrorCorrectionLevel"/> is not set, and
+    /// <see cref="BbDecoderResult.SymbolVersion"/> is columns by rows, <c>4x20</c>.
+    /// </remarks>
+    /// <param name="codewords">Corrected codewords; index 0 is the symbol length descriptor.</param>
+    /// <param name="rows">Number of symbol rows, reported back in the result.</param>
+    /// <param name="columns">Number of data columns, reported back in the result.</param>
+    /// <param name="errorsCorrected">Number of codewords the error correction stage repaired.</param>
+    /// <returns>The payload, or <see langword="null"/> when the codeword stream is malformed.</returns>
+    public static BbDecoderResult? DecodeMicroPdf417(int[] codewords, int rows, int columns, int errorsCorrected) =>
+        Decode(
+            codewords,
+            rows,
+            columns,
+            errorCorrectionLevel: null,
+            string.Create(CultureInfo.InvariantCulture, $"{columns}x{rows}"),
+            errorsCorrected,
+            microPdf417: true);
+
+    private static BbDecoderResult? Decode(
+        int[] codewords, int rows, int columns, string? errorCorrectionLevel, string symbolVersion, int errorsCorrected, bool microPdf417)
     {
         ArgumentNullException.ThrowIfNull(codewords);
 
@@ -143,8 +191,27 @@ public static class BbPdf417BitStreamParser
 
         int? segmentIndex = null;
         int? segmentCount = null;
+        string? fileId = null;
+        var lastSegment = false;
+        var isGs1 = false;
 
         var index = 1;
+        if (microPdf417 && index < length && codewords[index] is
+            EmulationFnc1FirstText or EmulationFnc1FirstNumeric or
+            EmulationFnc1SecondText or EmulationFnc1SecondNumeric or
+            EmulationText or EmulationNumeric)
+        {
+            var flag = codewords[index++];
+            isGs1 = flag is EmulationFnc1FirstText or EmulationFnc1FirstNumeric;
+            index = flag is EmulationFnc1FirstText or EmulationFnc1SecondText or EmulationText
+                ? DecodeText(codewords, index, length, output, TextMode.Mixed)
+                : DecodeNumeric(codewords, index, length, output);
+            if (index < 0)
+            {
+                return null;
+            }
+        }
+
         while (index < length)
         {
             var codeword = codewords[index++];
@@ -181,7 +248,7 @@ public static class BbPdf417BitStreamParser
                     break;
 
                 case MacroControlBlock:
-                    index = DecodeMacro(codewords, index, length, ref segmentIndex, ref segmentCount);
+                    index = DecodeMacro(codewords, index, length, ref segmentIndex, ref segmentCount, ref fileId, ref lastSegment);
                     break;
 
                 case MacroOptionalField:
@@ -212,14 +279,17 @@ public static class BbPdf417BitStreamParser
 
         return new BbDecoderResult([.. output.Raw], output.Text)
         {
-            ErrorCorrectionLevel = errorCorrectionLevel.ToString(CultureInfo.InvariantCulture),
-            SymbolVersion = $"{rows}x{columns}",
+            ErrorCorrectionLevel = errorCorrectionLevel,
+            SymbolVersion = symbolVersion,
             ErrorsCorrected = errorsCorrected,
             Rows = rows,
             Columns = columns,
             Eci = output.Eci,
             StructuredAppendIndex = segmentIndex,
             StructuredAppendCount = segmentCount,
+            StructuredAppendFileId = fileId,
+            StructuredAppendIsLast = segmentIndex is null ? null : lastSegment,
+            IsGs1 = isGs1,
         };
     }
 
@@ -271,10 +341,10 @@ public static class BbPdf417BitStreamParser
     /// the sub-mode to Alpha, and the ECI changes only the character set. Any other mode codeword
     /// ends the run.
     /// </remarks>
-    private static int DecodeText(int[] codewords, int index, int length, Output output)
+    private static int DecodeText(int[] codewords, int index, int length, Output output, TextMode start = TextMode.Alpha)
     {
-        var mode = TextMode.Alpha;
-        var priorToShift = TextMode.Alpha;
+        var mode = start;
+        var priorToShift = start;
 
         Span<int> values = stackalloc int[2];
 
@@ -585,7 +655,8 @@ public static class BbPdf417BitStreamParser
     /// and count are numeric compaction values, so their digits carry the leading 1 that keeps
     /// zeros intact.
     /// </remarks>
-    private static int DecodeMacro(int[] codewords, int index, int length, ref int? segmentIndex, ref int? segmentCount)
+    private static int DecodeMacro(
+        int[] codewords, int index, int length, ref int? segmentIndex, ref int? segmentCount, ref string? fileId, ref bool lastSegment)
     {
         if (index + 2 > length)
         {
@@ -600,12 +671,23 @@ public static class BbPdf417BitStreamParser
         segmentIndex = parsedIndex;
         index += 2;
 
-        // The file identifier: text compaction codewords up to the first optional field or the
-        // terminator. It names the file, not the payload, so it is skipped.
+        // The file identifier: the codewords up to the first optional field or the terminator, which every
+        // segment of one file shares. It names the file rather than being part of its payload, so it is
+        // reported apart from it, each codeword as the three digits it stands for.
+        var fileIdStart = index;
         while (index < length && codewords[index] < TextCompaction)
         {
             index++;
         }
+
+        var id = new StringBuilder((index - fileIdStart) * 3);
+        for (var i = fileIdStart; i < index; i++)
+        {
+            id.Append(codewords[i].ToString("D3", CultureInfo.InvariantCulture));
+        }
+
+        // Every segment of a file carries its ID; one without any cannot be told apart from another file's.
+        fileId = id.Length == 0 ? null : id.ToString();
 
         while (index < length && codewords[index] == MacroOptionalField)
         {
@@ -615,9 +697,11 @@ public static class BbPdf417BitStreamParser
                 return length;
             }
 
+            // A field runs to the next field or the terminator: a text field may latch and shift between compaction
+            // modes on the way, so a codeword of 900 or over does not end it.
             var designator = codewords[index++];
             var fieldStart = index;
-            while (index < length && codewords[index] < TextCompaction)
+            while (index < length && codewords[index] is not (MacroOptionalField or MacroTerminator))
             {
                 index++;
             }
@@ -631,9 +715,11 @@ public static class BbPdf417BitStreamParser
             }
         }
 
+        // The terminator closes the control block of the last segment of a file, and of no other.
         if (index < length && codewords[index] == MacroTerminator)
         {
             index++;
+            lastSegment = true;
         }
 
         return index;

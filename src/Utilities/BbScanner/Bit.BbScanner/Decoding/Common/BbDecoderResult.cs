@@ -33,7 +33,10 @@ public sealed class BbDecoderResult
     /// <summary>ECI assignment number carried by the symbol.</summary>
     public int? Eci { get; init; }
 
-    /// <summary>Index of this symbol within a structured append sequence.</summary>
+    /// <summary>
+    /// Position of this symbol within a structured append sequence, as the symbology numbers it: from 0 for QR Code
+    /// and PDF417, from 1 for Data Matrix.
+    /// </summary>
     public int? StructuredAppendIndex { get; init; }
 
     /// <summary>Total number of symbols in the structured append sequence.</summary>
@@ -41,6 +44,12 @@ public sealed class BbDecoderResult
 
     /// <summary>Parity or file identifier that groups a structured append sequence.</summary>
     public int? StructuredAppendParity { get; init; }
+
+    /// <summary>The Macro PDF417 file ID shared by every segment of one file, each codeword as three digits.</summary>
+    public string? StructuredAppendFileId { get; init; }
+
+    /// <summary>Whether this symbol is the last of its structured append sequence.</summary>
+    public bool? StructuredAppendIsLast { get; init; }
 
     /// <summary>Number of rows, when the symbology reports one.</summary>
     public int? Rows { get; init; }
@@ -79,6 +88,8 @@ public sealed class BbDecoderResult
             StructuredAppendIndex = StructuredAppendIndex,
             StructuredAppendCount = StructuredAppendCount,
             StructuredAppendParity = StructuredAppendParity,
+            StructuredAppendFileId = StructuredAppendFileId,
+            StructuredAppendIsLast = StructuredAppendIsLast,
             Rows = Rows,
             Columns = Columns,
             IsGs1 = IsGs1 ? true : null,
