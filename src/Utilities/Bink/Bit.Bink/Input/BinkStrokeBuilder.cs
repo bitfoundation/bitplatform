@@ -133,6 +133,11 @@ public sealed class BinkStrokeBuilder
             if (length > radius) _pulled += pull * ((length - radius) / length);
             raw = _pulled;
         }
+        else
+        {
+            // Kept with the pointer, so a stabilizer turned on during the stroke pulls from where it is now.
+            _pulled = raw;
+        }
 
         // Streamline: pull the new point toward the previous stored point.
         float t = 1f - Math.Clamp(_brush.Smoothing, 0f, 0.95f);
@@ -172,8 +177,9 @@ public sealed class BinkStrokeBuilder
         {
             // A stabilized stroke trails the pointer on purpose, so it is finished with a segment to where it lifted;
             // moving its last point there would bend it. That includes a stroke still within the string, which has
-            // stored only its first point: a short dash or the bar of a t would otherwise be a dot.
-            if (_points.Count > 0 && Vector2.Distance(raw, _points.Last.Position) > MathF.Max(_brush.Spacing * _brush.Width, 0.35f)) _points.Add(MakePoint(raw, pressure, sample));
+            // stored only its first point: a short dash or the bar of a t would otherwise be a dot. The spacing that
+            // thins the samples along the way does not apply: the lift is where the stroke ends, however close.
+            if (_points.Count > 0 && Vector2.Distance(raw, _points.Last.Position) > BinkGeometryMath.Epsilon) _points.Add(MakePoint(raw, pressure, sample));
         }
         else if (_points.Count > 1)
         {

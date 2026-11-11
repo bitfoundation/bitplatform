@@ -258,10 +258,12 @@ public sealed partial class PdfExportTests
     }
 
     /// <summary>
-    /// The smallest JPEG header the exporter reads: start of image, an optional Exif segment with an orientation, then
-    /// a baseline frame header.
+    /// The smallest whole JPEG: start of image, an optional Exif segment with an orientation, a quantization table, a
+    /// baseline frame header, Huffman tables of one code each, and a scan in which every block is a flat mid grey (a
+    /// zero DC difference, then the end of the block), so a decoder reads it as a picture. Without
+    /// <paramref name="scan"/> it stops after the frame header.
     /// </summary>
-    private static byte[] Jpeg(int width, int height, int components, int orientation = 0, bool littleEndian = false)
+    private static byte[] Jpeg(int width, int height, int components, int orientation = 0, bool littleEndian = false, bool scan = true)
     {
         var bytes = new List<byte> { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x04, 0x00, 0x00 };
         if (orientation > 0)
@@ -283,8 +285,27 @@ public sealed partial class PdfExportTests
             bytes.AddRange([0xFF, 0xE1, (byte)((exif.Count + 2) >> 8), (byte)(exif.Count + 2)]);
             bytes.AddRange(exif);
         }
+        bytes.AddRange([0xFF, 0xDB, 0x00, 67, 0x00]);
+        bytes.AddRange(Enumerable.Repeat((byte)1, 64));
         bytes.AddRange([0xFF, 0xC0, 0x00, (byte)(8 + components * 3), 8, (byte)(height >> 8), (byte)height, (byte)(width >> 8), (byte)width, (byte)components]);
         for (int i = 0; i < components; i++) bytes.AddRange([(byte)(i + 1), 0x11, 0]);
+        if (scan)
+        {
+            // One DC code, '0' for a difference of nothing, and one AC code, '0' for the end of the block.
+            foreach (byte table in (byte[])[0x00, 0x10])
+            {
+                bytes.AddRange([0xFF, 0xC4, 0x00, 20, table, 1]);
+                bytes.AddRange(new byte[15]);
+                bytes.Add(0x00);
+            }
+            bytes.AddRange([0xFF, 0xDA, 0x00, (byte)(6 + components * 2), (byte)components]);
+            for (int i = 0; i < components; i++) bytes.AddRange([(byte)(i + 1), 0x00]);
+            bytes.AddRange([0, 63, 0]);
+            // Two bits a block, all zero, padded with ones to a whole byte.
+            long bits = (long)((width + 7) / 8) * ((height + 7) / 8) * components * 2;
+            bytes.AddRange(new byte[bits / 8]);
+            if (bits % 8 != 0) bytes.Add((byte)(0xFF >> (int)(bits % 8)));
+        }
         bytes.AddRange([0xFF, 0xD9]);
         return [.. bytes];
     }
@@ -308,6 +329,19 @@ public sealed partial class PdfExportTests
         StringAssert.Contains(image, $"/Length {jpeg.Length}");
         Assert.AreEqual(3, result.SkippedImages, "CMYK, remote and WebP pictures are reported, not drawn wrongly.");
         Assert.IsFalse(result.IsComplete);
+    }
+
+    [TestMethod]
+    public void A_jpeg_header_with_no_scan_behind_it_is_skipped()
+    {
+        // A frame header alone has no picture to decode; copied in, it would leave a viewer an image it cannot draw.
+        BinkDocument document = Page();
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(Jpeg(300, 200, 3, scan: false), "image/jpeg", 300, 200), new BinkRect(0, 0, 150, 100)), document.Layers[0].Id);
+
+        BinkPdfExportResult result = BinkPdfExporter.ExportWithDetails(document);
+
+        Assert.AreEqual(1, result.SkippedImages);
+        Assert.IsFalse(new Pdf(result.Bytes).Find("/Subtype /Image").Any());
     }
 
     [TestMethod]
@@ -377,6 +411,28 @@ public sealed partial class PdfExportTests
         Assert.IsTrue(pdf.Find("/BaseFont /Helvetica-Bold").Any());
         Assert.IsTrue(pdf.Find("/BaseFont /Courier ").Any());
         Assert.IsTrue(pdf.Find("/BaseFont /Times-Italic").Any());
+    }
+
+    [TestMethod]
+    public void Letters_beyond_ascii_are_measured_with_their_own_widths()
+    {
+        // Æ is a full em wide in Helvetica; measured as a lower-case a, it would be 0.556 of one.
+        BinkDocument document = Page();
+        document.AddElement(new BinkTextElement(new Vector2(100, 20), "ÆÆ") { Style = BinkTextStyle.Default with { FontFamily = "Helvetica", FontSize = 30, Align = BinkTextAlign.Right } }, document.Layers[0].Id);
+
+        string content = new Pdf(BinkPdfExporter.Export(document, new BinkPdfExportOptions { Compress = false })).AllContent;
+
+        StringAssert.Contains(content, "1 0 0 -1 40 44.6 Tm", "Right-aligned: two ems at 30 units end at the origin.");
+    }
+
+    [TestMethod]
+    public void A_scale_too_small_to_write_the_page_size_is_refused()
+    {
+        // A page side under a thousandth of a point would be written as zero, a page no viewer opens.
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BinkPdfExporter.Export(Page(), new BinkPdfExportOptions { Scale = 1e-6f }));
+
+        var pdf = new Pdf(BinkPdfExporter.Export(Page(), new BinkPdfExportOptions { Scale = 0.01f }));
+        StringAssert.Contains(pdf.Find("/Type /Page ").Single().Value, "/MediaBox [0 0 4 3]");
     }
 
     [TestMethod]

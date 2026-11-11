@@ -139,24 +139,28 @@ internal sealed class BinkPdfResources
             }
             (width, height) = (decoded.Width, decoded.Height);
             int pixels = width * height;
-            byte[] rgb = new byte[pixels * 3];
-            byte[] alpha = new byte[pixels];
+            byte[] rgba = decoded.Rgba;
+            // The decoded pixels are split in place rather than copied: the colour is packed into the front of the
+            // same buffer (each pixel is written at or before where it was read), and only the alpha, a quarter of
+            // the size, gets a buffer of its own, and only when the picture is translucent. Peak memory is the decoded
+            // image plus at most a quarter of it, however well the PNG compressed.
             bool translucent = false;
+            for (int i = 3; i < rgba.Length && !translucent; i += 4) translucent = rgba[i] != 255;
+            byte[]? alpha = translucent ? new byte[pixels] : null;
             for (int i = 0; i < pixels; i++)
             {
-                rgb[i * 3] = decoded.Rgba[i * 4];
-                rgb[i * 3 + 1] = decoded.Rgba[i * 4 + 1];
-                rgb[i * 3 + 2] = decoded.Rgba[i * 4 + 2];
-                alpha[i] = decoded.Rgba[i * 4 + 3];
-                translucent |= alpha[i] != 255;
+                if (alpha is not null) alpha[i] = rgba[i * 4 + 3];
+                rgba[i * 3] = rgba[i * 4];
+                rgba[i * 3 + 1] = rgba[i * 4 + 1];
+                rgba[i * 3 + 2] = rgba[i * 4 + 2];
             }
             string mask = "";
-            if (translucent)
+            if (alpha is not null)
             {
                 int maskId = _file.AddStream($"/Type /XObject /Subtype /Image /Width {width} /Height {height} /ColorSpace /DeviceGray /BitsPerComponent 8", alpha);
                 mask = $" /SMask {maskId} 0 R";
             }
-            id = _file.AddStream($"/Type /XObject /Subtype /Image /Width {width} /Height {height} /ColorSpace /DeviceRGB /BitsPerComponent 8{mask}", rgb);
+            id = _file.AddStream($"/Type /XObject /Subtype /Image /Width {width} /Height {height} /ColorSpace /DeviceRGB /BitsPerComponent 8{mask}", rgba.AsSpan(0, pixels * 3));
         }
         else
         {
@@ -169,14 +173,15 @@ internal sealed class BinkPdfResources
 
     /// <summary>
     /// Reads a baseline or progressive JPEG's stored size and colour components from its frame header, and its EXIF
-    /// orientation (1 when it has none) from an APP1 segment before it.
+    /// orientation (1 when it has none) from an APP1 segment before it. False unless a scan follows the frame and the
+    /// image ends after it, so a header with no picture behind it is not copied into the file.
     /// </summary>
     private static bool TryReadJpeg(ReadOnlySpan<byte> data, out int width, out int height, out int components, out int orientation)
     {
         width = height = components = 0;
         orientation = 1;
         if (data.Length < 4 || data[0] != 0xFF || data[1] != 0xD8) return false;
-        bool sawExif = false;
+        bool sawExif = false, sawFrame = false;
         int i = 2;
         while (i + 4 <= data.Length)
         {
@@ -184,18 +189,27 @@ internal sealed class BinkPdfResources
             byte marker = data[i + 1];
             if (marker == 0xFF) { i++; continue; }
             if (marker is 0x01 or (>= 0xD0 and <= 0xD7)) { i += 2; continue; }
+            if (marker == 0xD9) return false;
             int length = (data[i + 2] << 8) | data[i + 3];
             if (length < 2 || i + 2 + length > data.Length) return false;
             // Start of frame: baseline, extended or progressive Huffman coding, which PDF's DCT filter reads.
             if (marker is 0xC0 or 0xC1 or 0xC2)
             {
-                if (length < 8 || data[i + 4] != 8) return false;
+                if (sawFrame || length < 8 || data[i + 4] != 8) return false;
                 height = (data[i + 5] << 8) | data[i + 6];
                 width = (data[i + 7] << 8) | data[i + 8];
                 components = data[i + 9];
-                return width > 0 && height > 0;
+                if (width <= 0 || height <= 0) return false;
+                sawFrame = true;
             }
-            if (marker is 0xD9 or 0xDA) return false;
+            if (marker == 0xDA)
+            {
+                // A frame is only a picture once a scan follows it: a scan header, coded data, and the end of the
+                // image after it. Coded data never holds 0xFF 0xD9, a 0xFF in it being followed by 0x00 or a restart.
+                if (!sawFrame || length < 6) return false;
+                int scan = i + 2 + length;
+                return scan < data.Length && data[scan..].IndexOf((ReadOnlySpan<byte>)[0xFF, 0xD9]) > 0;
+            }
             // The first Exif segment decides, as browsers read it; a later one (an XMP packet shares the marker) does not.
             if (marker == 0xE1 && !sawExif && data.Slice(i + 4, length - 2).StartsWith("Exif\0\0"u8))
             {

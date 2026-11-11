@@ -132,12 +132,17 @@ public static class BinkPdfExporter
                 IncludeHiddenLayers = options.IncludeHiddenLayers,
                 ElementFilter = options.SelectedIds is { Count: > 0 } ? options.SelectedIds : null,
             });
+            // The page size is written to a thousandth of a point; a side that would round to nothing makes a page no
+            // viewer can show, so such a scale is refused rather than written.
+            string width = BinkPdfFile.Number(region.Width * pageScale), height = BinkPdfFile.Number(region.Height * pageScale);
+            if (width == "0" || height == "0")
+                throw new ArgumentOutOfRangeException(nameof(options), "The export scale makes a page side smaller than a thousandth of a point.");
+
             byte[] content = context.Finish(pageScale);
             skippedText += context.SkippedText;
 
             int contentId = file.AddStream("", content);
-            float width = region.Width * pageScale, height = region.Height * pageScale;
-            int pageId = file.Add($"<< /Type /Page /Parent {pagesId} 0 R /MediaBox [0 0 {BinkPdfFile.Number(width)} {BinkPdfFile.Number(height)}] /Resources {resources.Id} 0 R /Contents {contentId} 0 R >>");
+            int pageId = file.Add($"<< /Type /Page /Parent {pagesId} 0 R /MediaBox [0 0 {width} {height}] /Resources {resources.Id} 0 R /Contents {contentId} 0 R >>");
             pageIds.Add(pageId);
         }
         if (pageIds.Count == 0) throw new ArgumentException("There is no document to export.", nameof(documents));

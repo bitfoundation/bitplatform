@@ -276,11 +276,11 @@ public static class BinkPngCodec
                 (previous, current) = (current, previous);
             }
         }
-        catch (IOException ex)
+        catch (Exception ex) when (ex is IOException or InvalidDataException)
         {
             // Corrupt compressed data must look like any other malformed image to callers. Inflating reports it as an
-            // InvalidDataException, or for some corruptions as the zlib wrapper's own ZLibException; both are
-            // IOExceptions, and with the data in memory nothing else can raise one.
+            // InvalidDataException, which is not an IOException, or for some corruptions as the zlib wrapper's own
+            // ZLibException, which is; with the data in memory nothing else can raise either.
             throw new FormatException("PNG pixel data is not valid compressed data.", ex);
         }
         return new DecodedImage(width, height, pixels);

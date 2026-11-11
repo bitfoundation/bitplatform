@@ -438,6 +438,43 @@ internal static class BinkPdfFont
         500, 500, 333, 389, 278, 500, 500, 722, 500, 500, 444, 480, 200, 480, 541,
     ];
 
+    // The same metrics for WinAnsiEncoding's bytes 0x80 to 0xFF; zero where the encoding has no character.
+    private static readonly short[] HelveticaHigh =
+    [
+        556, 0, 222, 556, 333, 1000, 556, 556, 333, 1000, 667, 333, 1000, 0, 611, 0,
+        0, 222, 222, 333, 333, 350, 556, 1000, 333, 1000, 500, 333, 944, 0, 500, 667,
+        278, 333, 556, 556, 556, 556, 260, 556, 333, 737, 370, 556, 584, 333, 737, 333,
+        400, 584, 333, 333, 333, 556, 537, 278, 333, 333, 365, 556, 834, 834, 834, 611,
+        667, 667, 667, 667, 667, 667, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278,
+        722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611,
+        556, 556, 556, 556, 556, 556, 889, 500, 556, 556, 556, 556, 278, 278, 278, 278,
+        556, 556, 556, 556, 556, 556, 556, 584, 611, 556, 556, 556, 556, 500, 556, 500,
+    ];
+
+    private static readonly short[] HelveticaBoldHigh =
+    [
+        556, 0, 278, 556, 500, 1000, 556, 556, 333, 1000, 667, 333, 1000, 0, 611, 0,
+        0, 278, 278, 500, 500, 350, 556, 1000, 333, 1000, 556, 333, 944, 0, 500, 667,
+        278, 333, 556, 556, 556, 556, 280, 556, 333, 737, 370, 556, 584, 333, 737, 333,
+        400, 584, 333, 333, 333, 611, 556, 278, 333, 333, 365, 556, 834, 834, 834, 611,
+        722, 722, 722, 722, 722, 722, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278,
+        722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611,
+        556, 556, 556, 556, 556, 556, 889, 556, 556, 556, 556, 556, 278, 278, 278, 278,
+        611, 611, 611, 611, 611, 611, 611, 584, 611, 611, 611, 611, 611, 556, 611, 556,
+    ];
+
+    private static readonly short[] TimesHigh =
+    [
+        500, 0, 333, 500, 444, 1000, 500, 500, 333, 1000, 556, 333, 889, 0, 611, 0,
+        0, 333, 333, 444, 444, 350, 500, 1000, 333, 980, 389, 333, 722, 0, 444, 722,
+        250, 333, 500, 500, 500, 500, 200, 500, 333, 760, 276, 500, 564, 333, 760, 333,
+        400, 564, 300, 300, 333, 500, 453, 250, 333, 300, 310, 500, 750, 750, 750, 444,
+        722, 722, 722, 722, 722, 722, 889, 667, 611, 611, 611, 611, 333, 333, 333, 333,
+        722, 722, 722, 722, 722, 722, 722, 564, 722, 722, 722, 722, 722, 722, 556, 500,
+        444, 444, 444, 444, 444, 444, 667, 444, 444, 444, 444, 444, 278, 278, 278, 278,
+        500, 500, 500, 500, 500, 500, 500, 564, 500, 500, 500, 500, 500, 500, 500, 500,
+    ];
+
     // WinAnsiEncoding's bytes 0x80..0x9F, which are not Latin-1: the character each stands for, 0 where none.
     private static readonly char[] WinAnsiHigh =
     [
@@ -480,8 +517,19 @@ internal static class BinkPdfFont
     {
         if (face == BinkPdfFace.Courier) return text.Length * 0.6f;
         short[] widths = face == BinkPdfFace.Times ? Times : bold ? HelveticaBold : Helvetica;
+        short[] high = face == BinkPdfFace.Times ? TimesHigh : bold ? HelveticaBoldHigh : HelveticaHigh;
         int total = 0;
-        foreach (byte b in text) total += b is >= 32 and <= 126 ? widths[b - 32] : widths['a' - 32];
+        foreach (byte b in text)
+        {
+            int width = b switch
+            {
+                >= 32 and <= 126 => widths[b - 32],
+                >= 0x80 => high[b - 0x80],
+                _ => 0,
+            };
+            // A byte the encoding has no character for is measured as a lower-case letter.
+            total += width > 0 ? width : widths['a' - 32];
+        }
         // Times bold is a little wider than Times; its own metrics are not carried, so it is estimated.
         return total / 1000f * (face == BinkPdfFace.Times && bold ? 1.04f : 1f);
     }

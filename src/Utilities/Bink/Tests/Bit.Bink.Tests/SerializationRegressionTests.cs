@@ -205,6 +205,21 @@ public class SerializationRegressionTests(TestContext output)
     }
 
     [TestMethod]
+    public void Compressed_data_with_an_invalid_block_is_a_malformed_png()
+    {
+        // A valid zlib header, then a final deflate block of the reserved type 3: inflating reports it as an
+        // InvalidDataException, which is not an IOException and so needs catching on its own.
+        byte[] png = TestData.CreatePng(4, 4, (_, _) => BinkColor.Black);
+        int idat = png.AsSpan().IndexOf("IDAT"u8);
+        Assert.IsGreaterThan(0, idat);
+        png[idat + 4] = 0x78;
+        png[idat + 5] = 0x9C;
+        png[idat + 6] = 0x07; // BFINAL = 1, BTYPE = 11
+
+        Assert.ThrowsExactly<FormatException>(() => BinkPngCodec.Decode(png));
+    }
+
+    [TestMethod]
     public void A_fuzzed_png_never_escapes_the_decoder_as_an_unexpected_exception()
     {
         // The decoder runs on embedded data: URIs, which arrive inside untrusted documents.

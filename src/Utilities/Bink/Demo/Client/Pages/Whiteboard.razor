@@ -689,8 +689,10 @@ _document.MarkSaved(revision);   <span class="c">// what changed while it was be
     private int _starPoints = 5;
     private string _eraserMode = "Stroke";
     private string _shapeKind = "rect";
-    private BinkShapeRecognitionMode _recognition = BinkShapeRecognitionMode.OnHold;
-    private IBinkTool _tool = new BinkDrawTool();
+    private const BinkShapeRecognitionMode InitialRecognition = BinkShapeRecognitionMode.OnHold;
+    private BinkShapeRecognitionMode _recognition = InitialRecognition;
+    // The pen the board opens with recognizes shapes as the selector beside the tools says it does.
+    private IBinkTool _tool = new BinkDrawTool { ShapeRecognition = InitialRecognition };
     private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
     private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#111827"), StrokeWidth = 3f };
     private string? _message;

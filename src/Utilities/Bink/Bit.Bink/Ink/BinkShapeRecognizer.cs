@@ -142,7 +142,40 @@ public static class BinkShapeRecognizer
 
         int closeAt = FindClosure(resampled, diagonal);
         if (closeAt < 0) return RecognizeOpen(resampled, diagonal, tolerance, options);
-        return RecognizeClosed(resampled.AsSpan(0, closeAt + 1), diagonal, tolerance, options);
+        BinkShapeRecognition? closed = RecognizeClosed(resampled.AsSpan(0, closeAt + 1), diagonal, tolerance, options);
+        // What runs on past the closure has to stay on the outline: a short overshoot does, but a tail drawn off it
+        // (a loop with a line out of it, a lollipop) is part of the drawing that the shape would silently drop.
+        return closed is not null && FollowsOutline(closed, resampled.AsSpan(closeAt + 1), diagonal, tolerance) ? closed : null;
+    }
+
+    /// <summary>Whether every point stays near the outline of a recognized closed shape.</summary>
+    private static bool FollowsOutline(BinkShapeRecognition shape, ReadOnlySpan<Vector2> tail, float diagonal, float tolerance)
+    {
+        if (tail.IsEmpty) return true;
+        float limit = diagonal * MathF.Max(tolerance * 2f, 0.05f);
+        if (shape.Kind == BinkShapeKind.Ellipse)
+        {
+            BinkRect frame = shape.Frame;
+            float rx = frame.Width / 2f, ry = frame.Height / 2f;
+            if (!(rx > BinkGeometryMath.Epsilon) || !(ry > BinkGeometryMath.Epsilon)) return false;
+            float cos = MathF.Cos(shape.Rotation), sin = MathF.Sin(shape.Rotation);
+            foreach (Vector2 p in tail)
+            {
+                Vector2 d = p - frame.Center;
+                float u = d.X * cos + d.Y * sin;
+                float v = -d.X * sin + d.Y * cos;
+                float k = MathF.Sqrt(u * u / (rx * rx) + v * v / (ry * ry));
+                float distance = k > BinkGeometryMath.Epsilon ? MathF.Abs(1f - 1f / k) * d.Length() : MathF.Min(rx, ry);
+                if (distance > limit) return false;
+            }
+            return true;
+        }
+        Vector2[] vertices = [.. shape.Points];
+        foreach (Vector2 p in tail)
+        {
+            if (DistanceToPolygonSquared(p, vertices) > limit * limit) return false;
+        }
+        return true;
     }
 
     private static BinkShapeRecognition? RecognizeOpen(Vector2[] r, float diagonal, float tolerance, BinkShapeRecognizerOptions options)
@@ -562,8 +595,11 @@ public static class BinkShapeRecognizer
 
     private static float SignedArea(ReadOnlySpan<Vector2> ring)
     {
+        // Relative to the first point, so a shape far from the origin does not lose its area to rounding: the cross
+        // products of large coordinates are huge and almost cancel.
         float area = 0f;
-        for (int i = 0; i < ring.Length; i++) area += BinkGeometryMath.Cross(ring[i], ring[(i + 1) % ring.Length]);
+        Vector2 origin = ring[0];
+        for (int i = 0; i < ring.Length; i++) area += BinkGeometryMath.Cross(ring[i] - origin, ring[(i + 1) % ring.Length] - origin);
         return area / 2f;
     }
 

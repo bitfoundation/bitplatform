@@ -141,6 +141,27 @@ public sealed class ShapeRecognitionTests
     }
 
     [TestMethod]
+    public void A_loop_with_a_tail_drawn_off_it_stays_ink()
+    {
+        // A lollipop: the loop closes, then the stroke runs on away from it. The shape would drop the stick.
+        Vector2[] loop = Ellipse(new(100, 100), 60, 40);
+        Vector2[] stick = [.. Enumerable.Range(1, 30).Select(i => loop[^1] + new Vector2(i * 3f, 0))];
+
+        Assert.IsNull(BinkShapeRecognizer.Recognize([.. loop, .. stick]));
+    }
+
+    [TestMethod]
+    public void A_shape_far_from_the_origin_is_recognized_as_it_is_near_it()
+    {
+        // The enclosed area is measured from the stroke's own first point, so huge coordinates do not round it away.
+        Vector2 far = new(3_000_000f, 3_000_000f);
+        Vector2[] box = [.. Box.Select(p => p + far)];
+
+        Assert.AreEqual(BinkShapeKind.Rectangle, BinkShapeRecognizer.Recognize(Box)?.Kind);
+        Assert.AreEqual(BinkShapeKind.Rectangle, BinkShapeRecognizer.Recognize(box)?.Kind);
+    }
+
+    [TestMethod]
     public void Three_corners_are_a_triangle_and_corners_at_the_middles_of_the_sides_a_diamond()
     {
         BinkShapeRecognition? triangle = BinkShapeRecognizer.Recognize(Trace([new(100, 20), new(180, 160), new(20, 160)], closed: true));
