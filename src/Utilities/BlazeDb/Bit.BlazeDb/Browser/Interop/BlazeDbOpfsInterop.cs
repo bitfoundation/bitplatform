@@ -46,6 +46,9 @@ internal static partial class BlazeDbOpfsInterop
     [JSImport("deleteFile", ModuleName)]
     public static partial Task DeleteFile(JSObject directory, string name);
 
+    [JSImport("listFiles", ModuleName)]
+    public static partial Task<string> ListFiles(JSObject directory);
+
     [JSImport("storageEstimate", ModuleName)]
     public static partial Task<JSObject?> StorageEstimate();
 

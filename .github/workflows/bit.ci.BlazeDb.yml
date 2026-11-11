@@ -1,7 +1,7 @@
 name: bit platform CI - BlazeDb
 
-# Build, engine and EF Core provider tests, and MCP server tests. The browser suite lives in bit.ci.BlazeDb.e2e.yml
-# and runs on demand only.
+# Build, engine and EF Core provider tests, the Blex and Bcrdt adapter tests, and MCP server tests. The browser suite
+# lives in bit.ci.BlazeDb.e2e.yml and runs on demand only.
 
 on:
   workflow_dispatch:
@@ -11,6 +11,11 @@ on:
     - 'src/Utilities/BlazeDb/**'
     # The MCP server's search ranking, linked in from there.
     - 'src/Utilities/Shared/Mcp/**'
+    # The libraries the Bit.BlazeDb.Blex and Bit.BlazeDb.Bcrdt adapters build on.
+    - 'src/Utilities/Blex/Bit.Blex/**'
+    - 'src/Utilities/Blex/Bit.Blex.Generators/**'
+    - 'src/Utilities/Bcrdt/Bit.Bcrdt/**'
+    - 'src/Utilities/Bcrdt/Bit.Bcrdt.Testing/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -61,6 +66,9 @@ jobs:
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
       run: cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests && dotnet test --no-build
+
+    - name: dotnet test (Blex and Bcrdt adapters, net10.0/net11.0)
+      run: cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Integrations && dotnet test --no-build
 
     - name: dotnet test (MCP server)
       run: cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp && dotnet test --no-build

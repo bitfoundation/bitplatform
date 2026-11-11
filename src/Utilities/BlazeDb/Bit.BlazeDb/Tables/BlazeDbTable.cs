@@ -877,11 +877,62 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             // The key goes in front of the row, as in a WAL record, so a database opened without
             // this table's descriptor can still carry the rows along (see BlazeDbOpaqueTable).
             scratch.Reset();
-            Descriptor.KeyWriter(scratch, key);
+            Descriptor.KeyWriter(scratch, BlazeDbKeyCanonical.Of(key));
             writer.WriteBytes(scratch.WrittenSpan);
             scratch.Reset();
             Descriptor.RowWriter(scratch, entry.Row);
             writer.WriteBytes(scratch.WrittenSpan);
+        }
+    }
+
+    BlazeDbRowMerger IBlazeDbTableInternal.CreateMerger() => new RowMerger(Descriptor);
+
+    /// <summary>
+    /// The log's changes to this table keyed by their decoded keys, so two encodings of one key - a decimal written
+    /// with a different scale, a <c>DateTime</c> of another kind - are the one row they are in memory, and a snapshot
+    /// row is superseded by a write to an equal key however it was spelled. Keys are written back canonical.
+    /// </summary>
+    private sealed class RowMerger(BlazeDbTableDescriptor<TKey, TRow> descriptor) : BlazeDbRowMerger
+    {
+        // The last write per key; null for a delete.
+        private readonly Dictionary<TKey, ReadOnlyMemory<byte>?> _changes = new();
+
+        public override bool HasChanges => _changes.Count > 0;
+
+        public override void Set(ReadOnlyMemory<byte> key, ReadOnlyMemory<byte> row) => _changes[Decode(key.Span)] = row;
+
+        public override void Delete(ReadOnlySpan<byte> key) => _changes[Decode(key)] = null;
+
+        public override bool Supersedes(ReadOnlySpan<byte> key) => _changes.Count > 0 && _changes.ContainsKey(Decode(key));
+
+        public override void KeyOfRow(ReadOnlySpan<byte> row, BlazeDbBufferWriter scratch)
+        {
+            var reader = new BlazeDbBufferReader(row);
+            scratch.Reset();
+            descriptor.KeyWriter(scratch, BlazeDbKeyCanonical.Of(descriptor.KeySelector(descriptor.RowReader(ref reader))));
+        }
+
+        public override int WriteRows(BlazeDbBufferWriter writer, BlazeDbBufferWriter scratch)
+        {
+            var count = 0;
+            foreach (var (key, row) in _changes)
+            {
+                if (row is { } bytes)
+                {
+                    scratch.Reset();
+                    descriptor.KeyWriter(scratch, BlazeDbKeyCanonical.Of(key));
+                    writer.WriteBytes(scratch.WrittenSpan);
+                    writer.WriteBytes(bytes.Span);
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        private TKey Decode(ReadOnlySpan<byte> key)
+        {
+            var reader = new BlazeDbBufferReader(key);
+            return descriptor.KeyReader(ref reader);
         }
     }
 
@@ -962,7 +1013,7 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             payload.WriteByte(BlazeDbWalOp.Set);
             payload.WriteString(_table.Name);
             scratch.Reset();
-            _table.Descriptor.KeyWriter(scratch, _key);
+            _table.Descriptor.KeyWriter(scratch, BlazeDbKeyCanonical.Of(_key));
             payload.WriteBytes(scratch.WrittenSpan);
             scratch.Reset();
             _table.Descriptor.RowWriter(scratch, _row);
@@ -1003,7 +1054,7 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             payload.WriteByte(BlazeDbWalOp.Delete);
             payload.WriteString(_table.Name);
             scratch.Reset();
-            _table.Descriptor.KeyWriter(scratch, _key);
+            _table.Descriptor.KeyWriter(scratch, BlazeDbKeyCanonical.Of(_key));
             payload.WriteBytes(scratch.WrittenSpan);
         }
     }

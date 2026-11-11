@@ -213,3 +213,123 @@ Undo can only fail when an index selector or comparer throws. When it does, memo
 never recorded, and the next checkpoint would make it durable. The database records the failure and refuses
 further writes and checkpoints with an exception that says to reopen; committed records already buffered are
 still flushed, and disposal still closes the log before rethrowing the undo's exception.
+
+## ADR-017 - Metrics on System.Diagnostics.Metrics, for the write and durability path only
+
+**Decision.** One static meter, `Bit.BlazeDb` (`BlazeDbDiagnostics`), with counters and histograms for commits,
+rollbacks, log flushes, checkpoints, recovery, storage failures and quota refusals - the Bcrdt convention.
+No database name, table name, key or value in any tag; a failure is tagged with the operation and the
+exception's type, never its message.
+
+**Why.** Whether data is safe, and how far durability lags a commit, is what production needs to see, and the
+standard API reaches OpenTelemetry, Belemetry and `dotnet-counters` with no dependency. An instrument nobody
+listens to costs one field read, so the commit counter can sit on the write path.
+
+**Rejected.** Read and query timing: a point read is about a nanosecond, so measuring it would cost more than
+the read. An `ActivitySource` per flush: a span every 100 ms is noise; the histograms carry the same facts.
+
+## ADR-018 - Refuse what cannot be read back as written
+
+**Decision.** The generated writer throws for a null in a `string` or `byte[]` declared non-nullable (nullable
+context enabled), and `WriteString` throws for text with an unpaired surrogate. Either fails the write that
+would persist it - an autocommit write is undone, a transaction's commit rolls back - with a message naming
+the property, never the value.
+
+**Why.** Both used to be stored as something else: a null as an absent field that reads back as `""` or an
+empty array, a broken surrogate as U+FFFD. The row then matched different queries after a restart than
+before, and two keys differing only in the broken character became one, losing a row. Nullable-oblivious
+code keeps storing null as empty, since its annotations say nothing, and so do struct tables: a struct's
+string is null whenever a row is built without it, and the compiler does not warn.
+
+The checks guard writes only. Snapshots and exports encode with a lenient writer
+(`BlazeDbBufferWriter.Lenient`): a row changed in place after its write was refused - an EF Core entity whose
+save failed is still the table's row object - would otherwise fail every checkpoint from then on, and the
+quota path's compaction with it. Generated writers call `writer.RejectNull(...)`, which throws on a write and
+leaves the field out in a snapshot.
+
+**Rejected.** Preserving the null: an absent field is also what a row written before the property existed
+holds, and reading those as null would put nulls into non-nullable properties everywhere. WTF-8 for lone
+surrogates: a second string encoding to keep in step with every reader, for input no application means.
+
+## ADR-019 - The storage's own quota refusal is the engine's quota refusal
+
+**Decision.** The browser modules mark a `QuotaExceededError` (only the message survives into a
+`JSException`), the storages rethrow it as `BlazeDbStorageQuotaExceededException`, and a flush that meets one
+compacts once - a completed checkpoint has made every buffered commit durable - before calling
+`OnQuotaPressure` (once per episode) and rethrowing.
+
+**Why.** The estimate the engine checks covers the whole origin and can be stale or missing, so the real limit
+can be reached anyway. Before, that surfaced as a raw `JSException`, skipped the compaction that might have
+fixed it (the flusher loop's checkpoint never ran after a failed flush) and never told the application.
+
+## ADR-020 - The writer reclaims unreferenced generations when it opens
+
+**Decision.** On open, a writer whose storage can list its files deletes every `snapshot-*.blz` and `wal-*.blz`
+the manifest does not name. The OPFS and IndexedDB backends implement `IBlazeDbEnumerableStorage`.
+
+**Why.** A checkpoint deletes the generation it replaced after publishing the new manifest, and remembers the
+files it could not delete in memory only; a tab or process that ended in between leaked them, which in the
+browser counts against the origin's quota. Only the writer sweeps, never the current generation, and only names
+the engine writes; a replica reading a generation that disappears sees the manifest moved and starts over, as
+after any checkpoint.
+
+## ADR-021 - Checkpoints and exports are rolled forward from committed bytes, not encoded from memory
+
+**Context.** Memory is not always what was committed: the EF Core provider hands out the table's own row objects,
+so an entity edited and not saved - or whose context was discarded - has already changed the row. A snapshot
+encoded from memory made that edit durable although the log never held it, and a later open brought back a state
+that was never committed. Encoding from memory also held the write lock for the whole snapshot.
+
+**Decision.** A checkpoint (and, with storage, an export) takes the log buffer and the table list under the lock,
+then - outside it, under the I/O lock - reads the current snapshot and log, gathers the log's last write per key,
+and writes the new snapshot: a table no record touched is copied as it stands, a touched one row by row, leaving
+out the rows the log superseded and adding the ones it wrote. Registered tables match keys by decoded value, so two
+spellings of one key are one row. The records replayed must end exactly at the LSN memory has reached, or the
+checkpoint falls back to a snapshot of memory, which holds every commit - as checkpoints were built before, and the
+way a log damaged after the open gets replaced rather than left to grow. A database without storage exports from
+memory, its only copy, and so does a read-only replica: the files are the writer's and move on past the generation it
+loaded, and nothing on a replica can be changed in place that the log would not have held.
+
+**Cost.** A checkpoint reads the database back as well as writing it, and briefly holds the old and the new
+snapshot: 4.9 ms and 8.3 MB for 100,000 rows against 4.1 ms and 5.6 MB before, in-process (benchmarks.md) - but
+writers no longer wait for it.
+
+**Rejected.** Restoring tracked entities to their original values when a context is discarded: it changes objects
+the application holds, and still leaves a window while the context is alive. Asking the EF provider for originals
+at checkpoint time: it reads change trackers from the flusher's thread and cannot tell which of two contexts'
+originals is current.
+
+## ADR-022 - Primary keys are encoded canonical
+
+`decimal`, `DateTime`, `DateTimeOffset`, `double`, `float` and `Half` keys are put in one form before they are
+encoded - no trailing decimal zeros, no kind, a zero offset, no negative zero, one NaN - so keys the table treats as
+equal are the same bytes in every log record and snapshot. The row bytes keep the key as the application set it.
+Without it a table carried without its descriptor, which can only compare bytes, missed a delete written with
+another spelling (`1.00m` for `1.0m`) and the row came back with the descriptor.
+
+## ADR-024 - Integrations are adapter packages that store bytes, beside the engine
+
+**Decision.** `Bit.BlazeDb.Blex` (an `IBlexStorage`) and `Bit.BlazeDb.Bcrdt` (an `IBcrdtDocumentStore`) live in this
+folder and reference the engine and the one library they adapt; the engine references neither, and neither library
+references BlazeDb. Each keeps its data in a table of its own (`blex_state`, `bcrdt_records`) that the application
+registers on its database (`AddBlexState`, `AddBcrdtDocuments`), so the data shares the database's log, backups,
+encryption and quota. The adapters store what they are handed and nothing more: Blex keeps deciding what to persist
+and how to serialize it, Bcrdt what an update means and how updates merge.
+
+**Why here.** Both contracts are small and stable, the engine is the side that changes how storage behaves, and its
+CI already builds against the two libraries (their paths trigger it).
+
+**Choices inside.** A Blex save waits for the flush by default - Blex debounces, and reports a save done; Bcrdt
+appends do not, because its contract tolerates losing the last record. A Bcrdt compaction and a delete are one
+transaction each, so a crash never leaves a document with neither its records nor the merged one. Appends number
+their records under the write lock, so two threads never take one number.
+
+**Rejected for now.** BevTools, Belemetry and the other integrations the plan lists: Belemetry gets the engine's
+metrics through the standard meter (ADR-017) with no package; the rest have no storage contract to implement yet.
+
+## ADR-023 - The generator hands value-comparable output to its pipeline
+
+The transform emits the source itself and returns `BlazeDbGeneratedOutput` - hint name, source text and diagnostics,
+equal when they say the same thing at the same place - instead of the reference-comparing models, so an edit that
+leaves a table's output unchanged stops at that step. Diagnostics keep their source locations, so the IDE still
+underlines the declaration at fault.
