@@ -429,9 +429,7 @@ have taken requests, so a failure from then on leaves the database ahead and und
   not the `bypass` default Cloudflare suggests: a response whose `Vary` names a header the rule doesn't list is then
   never cached, and the static files' `Vary: Content-Encoding` and the app's `Vary: Origin` are such headers, so every
   `_framework` file would come from the server on every visit. Check it with a versioned file under `_framework`
-  requested twice: the second answer is `cf-cache-status: HIT`. Request it with `Accept-Encoding: identity` too, before
-  and after a request with `br`: it comes without `Content-Encoding` and starts with the bytes `\0asm`, so a client that
-  can't decode Brotli gets a file it can read, from a miss and from a hit alike.
+  requested twice: the second answer is `cf-cache-status: HIT`.
   Cloudflare applies every rule that matches and the last one wins, so a rule that turns caching off goes after
   it. Add that one too, for a `User-Agent` containing `Lighthouse`, `Google`, `bingbot` or `BingPreview`: the app gives them a page without its
   scripts, and from the edge they would get the visitors' page instead.
