@@ -152,6 +152,13 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
     public bool? ShowToolbar { get; set; }
 
     /// <summary>
+    /// Shows the messages the cascading EditContext holds for the bound field under the editor, where the
+    /// <c>ErrorMessage</c> of the editor goes, so an <c>EditForm</c> needs no <c>ValidationMessage</c> component beside
+    /// it. An error message of the app's own wins the place while it is set.
+    /// </summary>
+    public bool? ShowValidationMessage { get; set; }
+
+    /// <summary>
     /// Replaces common text patterns with their typographic characters as they are typed.
     /// </summary>
     public bool? SmartTypography { get; set; }
@@ -313,6 +320,11 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
         if (ShowToolbar.HasValue)
         {
             bitRichTextEditor.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static r => r.ShowToolbar, static (r, v) => r.ShowToolbar = v);
+        }
+
+        if (ShowValidationMessage.HasValue)
+        {
+            bitRichTextEditor.TakeFromCascade(nameof(ShowValidationMessage), ShowValidationMessage.Value, static r => r.ShowValidationMessage, static (r, v) => r.ShowValidationMessage = v);
         }
 
         if (SmartTypography.HasValue)
