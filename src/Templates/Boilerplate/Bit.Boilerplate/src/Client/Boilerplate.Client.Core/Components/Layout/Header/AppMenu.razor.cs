@@ -69,6 +69,13 @@ public partial class AppMenu
         : Localizer[nameof(AppStrings.SwitchToLightThemeTitle)];
 
 
+    /// <summary>
+    /// MainLayout cascades CurrentUser, so each of its renders would re-render this menu as well.
+    /// </summary>
+    protected override object? GetParametersRenderKey()
+        => (CurrentDir, CurrentTheme, IsOnline, AuthenticationStateTask,
+            CurrentUser?.Id, CurrentUser?.DisplayName, CurrentUser?.Email, CurrentUser?.PhoneNumber, CurrentUser?.HasProfilePicture, CurrentUser?.Version);
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();

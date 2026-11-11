@@ -12,7 +12,7 @@ public partial class MainLayout
 
     private async Task SetNavPanelItems(ClaimsPrincipal authUser)
     {
-        navPanelItems =
+        List<BitNavItem> items =
         [
             new()
             {
@@ -46,7 +46,7 @@ public partial class MainLayout
                 ChildItems = []
             };
 
-            navPanelItems.Add(adminPanelItem);
+            items.Add(adminPanelItem);
 
             if (dashboard)
             {
@@ -83,14 +83,14 @@ public partial class MainLayout
         if (await authorizationService.IsAuthorized(authUser!, AppFeatures.Todo.Todo_Manage_Self))
         {
             //#if (offlineDb == true)
-            navPanelItems.Add(new()
+            items.Add(new()
             {
                 Text = localizer[nameof(AppStrings.OfflineTodoTitle)],
                 IconName = BitIconName.ToDoLogoOutline,
                 Url = PageUrls.OfflineTodo,
             });
             //#elseif (sample == true)
-            navPanelItems.Add(new()
+            items.Add(new()
             {
                 Text = localizer[nameof(AppStrings.Todo)],
                 IconName = BitIconName.ToDoLogoInverse,
@@ -100,14 +100,14 @@ public partial class MainLayout
         }
         //#endif
 
-        navPanelItems.Add(new()
+        items.Add(new()
         {
             Text = localizer[nameof(AppStrings.Terms)],
             IconName = BitIconName.EntityExtraction,
             Url = PageUrls.Terms,
         });
 
-        navPanelItems.Add(new()
+        items.Add(new()
         {
             Text = localizer[nameof(AppStrings.About)],
             IconName = BitIconName.Info,
@@ -154,7 +154,7 @@ public partial class MainLayout
                 ChildItems = []
             };
 
-            navPanelItems.Add(managementItem);
+            items.Add(managementItem);
 
             if (manageRoles)
             {
@@ -223,7 +223,7 @@ public partial class MainLayout
 
         if (authUser.IsAuthenticated())
         {
-            navPanelItems.Add(new()
+            items.Add(new()
             {
                 Text = localizer[nameof(AppStrings.Settings)],
                 IconName = BitIconName.Equalizer,
@@ -232,7 +232,11 @@ public partial class MainLayout
             });
         }
 
-        AddCultureUrls(navPanelItems);
+        AddCultureUrls(items);
+
+        // Assigned once it is complete: a render can happen at any of the awaits above, and AppShell compares the list by
+        // reference (See AppShell.GetParametersRenderKey), so a list filled in after it was assigned would stay half shown.
+        navPanelItems = items;
     }
 
     /// <summary>

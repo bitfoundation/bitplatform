@@ -89,7 +89,7 @@ public partial class ChromeShell
     {
         var authUser = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
 
-        navPanelItems =
+        List<BitNavItem> items =
         [
             new()
             {
@@ -100,7 +100,7 @@ public partial class ChromeShell
         ];
 
         // The showcases, which the app doesn't have, get a group of their own, without the ones a signed-out visitor can't open.
-        navPanelItems.Add(new()
+        items.Add(new()
         {
             Text = Localizer[nameof(WorkbenchStrings.NavShowcases)],
             IconName = BitIconName.Tiles,
@@ -137,7 +137,7 @@ public partial class ChromeShell
                 ChildItems = []
             };
 
-            navPanelItems.Add(adminPanelItem);
+            items.Add(adminPanelItem);
 
             if (dashboard)
             {
@@ -159,15 +159,15 @@ public partial class ChromeShell
         if (await AuthorizationService.IsAuthorized(authUser, AppFeatures.Todo.Todo_Manage_Self))
         {
             //#if (offlineDb == true)
-            navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.OfflineTodoTitle)], IconName = BitIconName.ToDoLogoOutline, Url = "#offline-todo" });
+            items.Add(new() { Text = AppLocalizer[nameof(AppStrings.OfflineTodoTitle)], IconName = BitIconName.ToDoLogoOutline, Url = "#offline-todo" });
             //#elseif (sample == true)
-            navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.Todo)], IconName = BitIconName.ToDoLogoInverse, Url = "#todo" });
+            items.Add(new() { Text = AppLocalizer[nameof(AppStrings.Todo)], IconName = BitIconName.ToDoLogoInverse, Url = "#todo" });
             //#endif
         }
         //#endif
 
-        navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.Terms)], IconName = BitIconName.EntityExtraction, Url = "#terms" });
-        navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.About)], IconName = BitIconName.Info, Url = "#about" });
+        items.Add(new() { Text = AppLocalizer[nameof(AppStrings.Terms)], IconName = BitIconName.EntityExtraction, Url = "#terms" });
+        items.Add(new() { Text = AppLocalizer[nameof(AppStrings.About)], IconName = BitIconName.Info, Url = "#about" });
 
         var manageRoles = await AuthorizationService.IsAuthorized(authUser, AppFeatures.Management.Roles_Manage);
         var manageUsers = await AuthorizationService.IsAuthorized(authUser, AppFeatures.Management.Users_Manage);
@@ -206,7 +206,7 @@ public partial class ChromeShell
                 ChildItems = []
             };
 
-            navPanelItems.Add(managementItem);
+            items.Add(managementItem);
 
             if (manageRoles)
             {
@@ -245,8 +245,11 @@ public partial class ChromeShell
 
         if (authUser.IsAuthenticated())
         {
-            navPanelItems.Add(new() { Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Equalizer, Url = PageUrl("settings", "#settings") });
+            items.Add(new() { Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Equalizer, Url = PageUrl("settings", "#settings") });
         }
+
+        // Assigned once it is complete, the way MainLayout does it.
+        navPanelItems = items;
     }
 
     public override async ValueTask DisposeAsync()

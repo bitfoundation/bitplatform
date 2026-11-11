@@ -991,6 +991,8 @@
                         "src/Tests/Features/Identity/TwoFactorSharedKeyExposureTests.cs",
                         "src/Tests/Features/Identity/AccountSectionDeepLinkTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
+                        "src/Tests/Features/Identity/ReturningUserUITests.cs",
+                        "src/Tests/Infrastructure/Services/RequestGate.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",

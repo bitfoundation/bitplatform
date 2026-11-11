@@ -12,6 +12,7 @@
 
                         <AppHeadCoordinator />
 
+                        @* Only @Body goes inside: AppShell skips the renders whose parameters didn't change (See AppShell.GetParametersRenderKey). *@
                         <AppShell NavPanelItems="navPanelItems" IsIdentityPage="isIdentityPage">
                             @Body
                         </AppShell>

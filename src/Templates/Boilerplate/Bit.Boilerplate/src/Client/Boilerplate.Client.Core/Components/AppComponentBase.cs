@@ -141,6 +141,64 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
     }
 
 
+    private bool isSettingParameters;
+    private object? renderedParametersKey;
+
+    /// <summary>
+    /// Opt-in, for the heavy components that stay on screen from the app's start: what this component renders from
+    /// its parameters and cascading values. A parameter update that leaves it as it was at the last render doesn't
+    /// re-render the component. That matters because Blazor can't tell whether an instance of a class changed, so it
+    /// re-renders every component a class instance (UserDto, TenantDto, a list, a RenderFragment) is passed or cascaded
+    /// to, each time its parent renders.
+    /// Return a value tuple. Use enums, strings and primitives as they are. For a class, use the members the markup shows
+    /// rather than the instance, since a page can change the instance in place and cascade it again (See ChangeEmailTab).
+    /// Renders the component asks for itself (StateHasChanged, its own event handlers) are never skipped.
+    /// Null, the default, keeps Blazor's behavior of rendering on every parameter update.
+    /// </summary>
+    protected virtual object? GetParametersRenderKey() => null;
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        if (renderedParametersKey is null)
+        {
+            // Opted out, or the first update, whose render ShouldRender isn't asked about. That render is queued by the
+            // time base.SetParametersAsync returns, so this is the key it renders with.
+            var task = base.SetParametersAsync(parameters);
+            renderedParametersKey = GetParametersRenderKey();
+            return task;
+        }
+
+        // ComponentBase asks for the render a parameter update causes before SetParametersAsync returns, so whatever asks
+        // for a render after that point is the component itself.
+        isSettingParameters = true;
+        try
+        {
+            return base.SetParametersAsync(parameters);
+        }
+        finally
+        {
+            isSettingParameters = false;
+        }
+    }
+
+    protected override bool ShouldRender()
+    {
+        var key = GetParametersRenderKey();
+
+        if (isSettingParameters)
+        {
+            // At most one render per update is skipped: if OnParamsSetAsync asked for one first, the update's own render still runs.
+            isSettingParameters = false;
+
+            if (key is not null && Equals(key, renderedParametersKey))
+                return false;
+        }
+
+        renderedParametersKey = key;
+        return true;
+    }
+
+
     /// <summary>
     /// Executes passed action that catches and handles all exceptions internally, preventing them from triggering the application's error boundary.
     /// </summary>

@@ -28,6 +28,21 @@ public partial class AppShell
     private readonly List<Action> unsubscribers = [];
 
 
+    /// <summary>
+    /// MainLayout passes ChildContent and NavPanelItems and cascades CurrentTenant, all class instances, so each of its
+    /// renders would re-render the shell, the nav panel and its items as well.
+    /// NavPanelItems is compared by reference, which holds because MainLayout assigns a fully built list and never changes it
+    /// afterwards. ChildContent is a new delegate on every MainLayout render, but delegates compare equal by their target and
+    /// method; what it renders is MainLayout's Body, which stays the same for a MainLayout's whole life (a soft restart
+    /// creates a new one), so ChildContent must not show anything that depends on MainLayout's state.
+    /// </summary>
+    protected override object? GetParametersRenderKey()
+        => (
+            //#if (multitenant == true)
+            CurrentTenant?.Title, CurrentTenant?.Name,
+            //#endif
+            IsIdentityPage, ChildContent, NavPanelItems, AuthenticationStateTask);
+
     protected override async Task OnInitAsync()
     {
         await base.OnInitAsync();

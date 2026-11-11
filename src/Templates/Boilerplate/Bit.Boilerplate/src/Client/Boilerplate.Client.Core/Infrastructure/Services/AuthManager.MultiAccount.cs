@@ -1,4 +1,8 @@
 //+:cnd:noEmit
+using System.Text.Json.Serialization.Metadata;
+//#if (multitenant == true)
+using Boilerplate.Shared.Features.Tenants.Dtos;
+//#endif
 
 namespace Boilerplate.Client.Core.Infrastructure.Services;
 
@@ -70,6 +74,101 @@ public partial class AuthManager
     public void SetActiveAccountProfile(UserDto user)
     {
         activeAccountProfile = user;
+    }
+
+    private const string ActiveAccountProfileKey = "active_account_profile";
+    //#if (multitenant == true)
+    private const string ActiveAccountTenantKey = "active_account_tenant";
+    //#endif
+
+    /// <summary>
+    /// What this device last had of <paramref name="authUser"/>'s profile, for the app to show at start until the server
+    /// answers who the user is (See <see cref="StoreActiveAccount"/>). Another user's profile never comes back.
+    /// </summary>
+    public async Task<UserDto?> GetStoredActiveAccountProfile(ClaimsPrincipal authUser)
+    {
+        if (GetUserId(authUser) is not Guid userId)
+            return null;
+
+        // A switch to another account of this device has its profile already (See SwitchAccount).
+        var user = activeAccountProfile?.Id == userId
+            ? activeAccountProfile
+            : await ReadStored(ActiveAccountProfileKey, IdentityJsonContext.Default.UserDto);
+
+        return user?.Id == userId ? user : null;
+    }
+
+    //#if (multitenant == true)
+    /// <summary>
+    /// What this device last had of the tenant <paramref name="authUser"/> is signed into, next to
+    /// <see cref="GetStoredActiveAccountProfile"/>. Another tenant's never comes back.
+    /// </summary>
+    public async Task<TenantDto?> GetStoredActiveAccountTenant(ClaimsPrincipal authUser)
+    {
+        var tenant = await ReadStored(ActiveAccountTenantKey, AppJsonContext.Default.TenantDto);
+
+        return tenant is not null && tenant.Id == authUser.GetTenantId() ? tenant : null;
+    }
+    //#endif
+
+    /// <summary>
+    /// Keeps the active account's profile and tenant next to its tokens, with the persistence the tokens have, so the
+    /// next start can show them before the server answers. <see cref="ClearTokens"/> removes them with the tokens.
+    /// </summary>
+    public async Task StoreActiveAccount(UserDto user
+                                         //#if (multitenant == true)
+                                         , TenantDto? tenant
+                                         //#endif
+                                         )
+    {
+        activeAccountProfile = user;
+
+        // An answer that arrives after its account was signed out of, or switched away from, must not bring it back.
+        if (GetUserId(await storageService.GetItem("access_token")) != user.Id)
+            return;
+
+        var persistent = await storageService.IsPersistent("refresh_token");
+
+        await storageService.SetItem(ActiveAccountProfileKey, JsonSerializer.Serialize(user, IdentityJsonContext.Default.UserDto), persistent);
+
+        //#if (multitenant == true)
+        if (tenant is null)
+        {
+            await storageService.RemoveItem(ActiveAccountTenantKey);
+        }
+        else
+        {
+            await storageService.SetItem(ActiveAccountTenantKey, JsonSerializer.Serialize(tenant, AppJsonContext.Default.TenantDto), persistent);
+        }
+        //#endif
+    }
+
+    private async Task RemoveStoredActiveAccount()
+    {
+        await storageService.RemoveItem(ActiveAccountProfileKey);
+        //#if (multitenant == true)
+        await storageService.RemoveItem(ActiveAccountTenantKey);
+        //#endif
+    }
+
+    private async Task<T?> ReadStored<T>(string key, JsonTypeInfo<T> typeInfo)
+        where T : class
+    {
+        var json = await storageService.GetItem(key);
+
+        if (string.IsNullOrWhiteSpace(json))
+            return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize(json, typeInfo);
+        }
+        catch (JsonException exp)
+        {
+            // Written by an older version of the app, perhaps. The server's answer replaces it anyway.
+            authLogger.LogWarning(exp, "The stored {Key} could not be read.", key);
+            return null;
+        }
     }
 
     private static Guid? GetUserId(string? accessToken)

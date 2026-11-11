@@ -46,6 +46,33 @@ public partial class MainLayout : IAsyncDisposable
     private List<Action> unsubscribers = [];
     private CancellationTokenSource getCurrentUserCts = new();
 
+    /// <summary>
+    /// Bumped by <see cref="ClientAppMessages.PROFILE_UPDATED"/>, whose payload can be the same <see cref="currentUser"/>
+    /// instance changed in place (See ProfileSection), so a reference comparison wouldn't see the change.
+    /// </summary>
+    private int currentUserVersion;
+    private object? renderedState;
+
+
+    /// <summary>
+    /// Compares everything this layout renders or cascades with what it last rendered. Each render of the layout offers new
+    /// parameters to AppShell, AppMenu and AppAiChatPanel, so a render that would only repeat what is on screen is skipped.
+    /// </summary>
+    protected override bool ShouldRender()
+    {
+        object state = (
+            //#if (multitenant == true)
+            currentTenant,
+            //#endif
+            Body, currentDir, currentUser, currentUserVersion, currentTheme, currentRouteData, IsOnline, isIdentityPage, navPanelItems);
+
+        if (Equals(state, renderedState))
+            return false;
+
+        renderedState = state;
+        return true;
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,7 +131,12 @@ public partial class MainLayout : IAsyncDisposable
                 if (updatedUser.Id != currentUser?.Id) return;
 
                 currentUser = updatedUser;
-                authManager.SetActiveAccountProfile(updatedUser);
+                currentUserVersion++;
+                await authManager.StoreActiveAccount(updatedUser
+                                                     //#if (multitenant == true)
+                                                     , currentTenant
+                                                     //#endif
+                                                     );
 
                 await InvokeAsync(StateHasChanged);
             }));
@@ -189,23 +221,43 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
+            var showsStoredAccount = false;
+
+            // What this device kept of the account is shown until the server answers below, rather than nobody, and the
+            // server's answer always replaces it.
+            if (currentUser is null && await authManager.GetStoredActiveAccountProfile(authUser) is { } storedUser)
+            {
+                currentUser = storedUser;
+                //#if (multitenant == true)
+                currentTenant = await authManager.GetStoredActiveAccountTenant(authUser);
+                //#endif
+                showsStoredAccount = true;
+                await InvokeAsync(StateHasChanged);
+            }
+
             Task[] loads =
             [
-                LoadCurrentUser(authUser, getCurrentUserCts.Token),
+                LoadCurrentUser(authUser, showsStoredAccount, getCurrentUserCts.Token),
                 //#if (multitenant == true)
-                SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token),
+                SetCurrentTenantIfNeeded(authUser.GetTenantId(), showsStoredAccount, getCurrentUserCts.Token),
                 //#endif
             ];
 
             await Task.WhenAll(loads);
+
+            await authManager.StoreActiveAccount(currentUser!
+                                                 //#if (multitenant == true)
+                                                 , currentTenant
+                                                 //#endif
+                                                 );
         }
 
         lastAuthUser = authUser;
     }
 
-    private async Task LoadCurrentUser(ClaimsPrincipal authUser, CancellationToken cancellationToken)
+    private async Task LoadCurrentUser(ClaimsPrincipal authUser, bool showsStoredAccount, CancellationToken cancellationToken)
     {
-        if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
+        if (currentUser is null || showsStoredAccount || authUser.IsTheSame(lastAuthUser) is false)
         {
             currentUser = await userController.GetCurrentUser(cancellationToken);
             authManager.SetActiveAccountProfile(currentUser);
@@ -217,7 +269,7 @@ public partial class MainLayout : IAsyncDisposable
     /// Resolves the tenant the user is currently signed into (shown next to the app version in AppShell).
     /// Switching, signing in/out and leaving a tenant all change the tenant claim, so re-resolving here keeps the display in sync.
     /// </summary>
-    private async Task SetCurrentTenantIfNeeded(Guid? tenantId, CancellationToken cancellationToken)
+    private async Task SetCurrentTenantIfNeeded(Guid? tenantId, bool showsStoredAccount, CancellationToken cancellationToken)
     {
         if (tenantId is null)
         {
@@ -225,7 +277,7 @@ public partial class MainLayout : IAsyncDisposable
             return;
         }
 
-        if (currentTenant?.Id == tenantId) return;
+        if (currentTenant?.Id == tenantId && showsStoredAccount is false) return;
 
         currentTenant = await tenantController.GetCurrentTenant(cancellationToken);
     }

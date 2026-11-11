@@ -359,6 +359,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     {
         var nextAccount = activateNextAccount ? (await GetOtherAccounts()).FirstOrDefault() : null;
 
+        await RemoveStoredActiveAccount();
+
         if (nextAccount is null)
         {
             await storageService.RemoveItem("refresh_token");

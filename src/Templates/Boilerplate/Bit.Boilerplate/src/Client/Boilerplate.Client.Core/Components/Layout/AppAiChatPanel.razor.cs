@@ -217,6 +217,14 @@ public partial class AppAiChatPanel : IAiChatCardHost
         await base.OnAfterFirstRenderAsync();
     }
 
+    /// <summary>
+    /// MainLayout cascades CurrentUser, so each of its renders would re-render the whole conversation as well. Of the
+    /// user's details the panel shows only the name, in the greeting; a different user (or a sign in or out) renders
+    /// too, for SyncHistoryOwner.
+    /// </summary>
+    protected override object? GetParametersRenderKey()
+        => (CurrentDir, CurrentTheme, AuthenticationStateTask, CurrentUser?.Id, CurrentUser?.DisplayName);
+
     protected override async Task OnParamsSetAsync()
     {
         // The greeting is written on the first render, which on a fresh load comes before MainLayout has the user's
