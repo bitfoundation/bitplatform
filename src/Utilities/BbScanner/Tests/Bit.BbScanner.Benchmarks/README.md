@@ -27,6 +27,30 @@ dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmar
 dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks -- --filter "*StageBenchmarks*" --job dry --inProcess
 ```
 
+## The performance gate
+
+`--budget` is a check quick enough for every pull request, and `bit.ci.BbScanner.yml` runs it: each standard frame - and the
+empty frame under the live and the still image defaults, and the still image ones with every symbology - is decoded the
+way a live scanner decodes it, four frames to a sample so that work done every few frames is counted, and its time and
+allocations are compared with the baseline in `budgets.json`. Time is measured as a multiple of a fixed piece of work
+timed in the same run, so a slower machine moves both alike; but the baseline comes from a developer's machine and other
+processors keep slightly different ratios, so a case is reported at twice its baseline and fails at three times, after
+two more attempts. Allocations do not depend on the machine and are held to a quarter over the baseline plus a
+kilobyte. It takes a few seconds and exits with 1 on a regression.
+
+```bash
+# From the repository's src folder.
+dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks -- --budget
+
+# After a change meant to move the numbers: measure (best of three rounds) and rewrite budgets.json.
+dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks -- --update-budgets
+```
+
+It catches a stage that became several times slower or a frame that started allocating, not a few percent: for those,
+compare BenchmarkDotNet runs.
+
+## Verification
+
 Before measuring anything the harness decodes every frame once and fails when one of them no longer decodes
 (`Verification.cs`): a benchmark that silently stops finding the symbol measures the failure path instead. Results
 (Markdown, CSV and HTML reports) are written to `BenchmarkDotNet.Artifacts` in the current directory.

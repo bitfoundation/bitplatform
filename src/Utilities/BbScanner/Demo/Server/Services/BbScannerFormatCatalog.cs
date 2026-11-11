@@ -56,6 +56,7 @@ public static class BbScannerFormatCatalog
         [BbBarcodeFormat.Aztec] = new("Aztec Code", "M1BITPLATFORM/AZTEC EABC123 AMSJFKKL 0641", _matrix),
         [BbBarcodeFormat.MaxiCode] = new("MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951", _matrix),
         [BbBarcodeFormat.MicroQrCode] = new("Micro QR", "MICRO QR 42", _matrix),
+        [BbBarcodeFormat.MicroPdf417] = new("MicroPDF417", "MICRO PDF FOUR ONE SEVEN", _matrix),
         [BbBarcodeFormat.Code128] = new("Code 128", "BIT-BBSCANNER-128", _linear),
         [BbBarcodeFormat.Code39] = new("Code 39", "CODE39 DEMO",
         [
@@ -106,6 +107,7 @@ public static class BbScannerFormatCatalog
                   ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBar))
               : key is "rsslimited" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarLimited))
               : key is "microqr" or "mqr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroQrCode))
+              : key is "micropdf" or "mpdf417" or "mpdf" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroPdf417))
               : key is "rssexpanded" or "databarexpandedstacked" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarExpanded))
               : null);
     }
@@ -205,7 +207,7 @@ public static class BbScannerFormatCatalog
                     Status = row.Status,
                     Notes = row.Notes,
                     EnabledByDefault = (defaults.Formats & format) != 0,
-                    Active = format != BbBarcodeFormat.Pdf417 || BbPdf417SymbolTable.Current.IsSpecificationTable,
+                    Active = format is not (BbBarcodeFormat.Pdf417 or BbBarcodeFormat.MicroPdf417) || BbPdf417SymbolTable.Current.IsSpecificationTable,
                     Options = [.. (known?.Options ?? _shared).Select(option => Option(defaults, option.Option, option.Effect))],
                     SampleText = known?.SampleText ?? "SAMPLE"
                 };

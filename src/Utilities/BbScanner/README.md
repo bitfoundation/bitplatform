@@ -29,7 +29,7 @@ browser, on a server or in a native app.
 
 ## Highlights
 
-- **Eighteen symbologies read to specification**: QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode, Code 128
+- **Nineteen symbologies read to specification**: QR Code, Micro QR, Data Matrix, PDF417, MicroPDF417, Aztec, MaxiCode, Code 128
   (including GS1-128), Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with EAN-2 and EAN-5 add-ons), ITF, GS1
   DataBar (including its stacked forms), DataBar Limited and DataBar Expanded (including Expanded Stacked) - checked
   against symbols written by an independent encoder, not only against the library's own test encoders.
@@ -266,7 +266,8 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 | UPC-A | Supported | Reported as UPC-A rather than as a zero-prefixed EAN-13; add-ons read |
 | UPC-E | Supported | Expanded and check-digit verified against its UPC-A form; add-ons read |
 | ITF | Supported | Configurable accepted lengths |
-| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment index, count, file ID and last segment, compact (truncated) PDF417; not MicroPDF417 - see [PDF417 status](#pdf417-status) |
+| PDF417 | Supported | Any orientation, 1-30 columns and 3-90 rows, security levels 0-8, text / byte / numeric compaction, ECI, Macro PDF417 segment index, count, file ID and last segment, compact (truncated) PDF417 - see [PDF417 status](#pdf417-status) |
+| MicroPDF417 | Supported | All 34 sizes, one to four columns and 4 to 44 rows; PDF417's symbol characters, error correction and text, byte and numeric compaction, ECI and the Macro PDF417 control block. `Metadata.SymbolVersion` is columns by rows, `4x20`. It has no start pattern to find from afar, so it is read where scan lines cross its row address patterns: a live frame reads a symbol held within six degrees of upright, sideways or upside down - upright in every frame, the angles round it within four - and a still image at any angle. Composite symbols' MicroPDF417 part (CC-A, CC-B) is not read |
 | Aztec Code | Supported | Compact (1-4 layers) and full range (1-32 layers), any orientation, every character mode, ECI, GS1 (FNC1), mirrored symbols, and Aztec Runes, reported as their number from 0 to 255; structured append is not interpreted. A symbol written at an encoder's lowest error correction level - three check codewords - is only read undamaged: so few cannot tell a repaired block from a wrong one |
 | MaxiCode | Supported | Modes 2 to 5: the structured carrier message of modes 2 and 3 - postal code, country and class of service - reported as the carrier writes it, after the `[)>` header; standard and enhanced error correction; the five code sets with their shifts and locks, the numeric shift and ECI. `Metadata.SymbolVersion` is `Mode 2` to `Mode 5`. Found by its bullseye at any angle, the four diameters of its rings giving the grid's shape and their edges, to a fraction of a pixel, its scale; the grid's foreshortening away from the rings is searched for when it does not read flat. Mode 6, which programs a reader, is not read, and structured append is not interpreted |
 | GS1 DataBar | Supported | Omnidirectional, Truncated, Stacked and Stacked Omnidirectional; the GTIN-14 reported as the GS1 element string `01` followed by its fourteen digits, check digit included, with `Metadata.IsGs1` set and `Metadata.SymbolVersion` `Stacked` for a symbol read from two rows. The modulo 79 checksum is verified, and as it is the only check, every read is confirmed on a second scan line; bars printed wider or narrower than their modules are measured on the guards and finder patterns and corrected for. A stacked symbol's rows, and the halves of a short symbol turned further off a line than one line can cross whole, are read on different lines and put together by where they lie - along the symbol's own axis, which the lines' starts trace - and the checksum between them; each half has to be read on two lines and more than twice as often as anything else its place reads as. A module and a half of light is wanted beyond each guard bar, although DataBar itself needs no quiet zone: a symbol printed right up against other ink is missed rather than risked. The linear part of a GS1 Composite symbol is not read |
@@ -275,8 +276,8 @@ Narrow `Formats` to the symbologies you need - it is the single most effective s
 
 `BbBarcodeFormat` is a flags enum, so a set of symbologies is one value: `BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13`.
 `AllLinear`, `AllMatrix` and `All` are the composites. The default is `Common` - QR Code, Data Matrix, Code 128,
-Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, Aztec, MaxiCode, Micro QR,
-Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
+Code 39, EAN, UPC and ITF, the symbologies on most products, tickets and labels; PDF417, MicroPDF417, Aztec, MaxiCode,
+Micro QR, Codabar, Code 93 and the GS1 DataBar family are asked for by name, or with `All`. Only the readers of the requested
 formats are created, so narrowing `Formats` costs nothing and makes every frame cheaper - and it is the main guard
 against a misread between similar linear symbologies.
 
@@ -425,9 +426,12 @@ check digit its AI calls for; dates and times must exist, and an AI may only rep
 identifier other than a GS1 one (`]C0`, `]Q1`) fails the parse. A fixed length element that
 is not among the predefined lengths, such as the country of origin `(422)`, must be ended by FNC1 like a variable
 length one. Anything else fails as a whole - an element string read only partly could put a batch number where an
-expiry date belongs. What it does not check: whether AIs that require or exclude each other appear together, country and
-currency codes against the ISO lists, the two character check of a GMN `(8013)` or MUDI `(8014)`, IBAN check digits,
-coordinate ranges and percent-encoded values. Those are the application's rules.
+expiry date belongs. The GMN and MUDI's two character check, an IBAN's check digits, the range of a latitude and a
+longitude, percent-encoded names and addresses and the GS1 Company Prefix a key such as a GIAI starts with are checked
+too; every AI is checked against BWIPP's GS1 syntax checker, an independent implementation, over thousands of valid
+and broken values. What it does not check: whether AIs that require or exclude each other appear together, country,
+currency, package and media type codes against their lists, and the inner structure of North American coupon codes.
+Those are the application's rules.
 
 ### Structured append
 
@@ -1290,7 +1294,8 @@ single bar, is read the same way: the left row indicators carry everything the s
 read as a full symbol's first, and as a compact symbol's only when they do not make one, so a full symbol whose stop
 pattern a line missed is never taken for a compact one.
 
-**Not read.** MicroPDF417, which is a different symbology.
+**MicroPDF417.** A different symbology, read by a reader of its own (see the table above): it shares PDF417's symbol
+characters and their table, and is turned off with PDF417 when an application registers a table of its own.
 
 **Side by side.** A line along a row of one symbol runs on into the stop pattern of a symbol printed beside it, and
 paired with that the quad comes out sheared. A stop pattern spans the same rows as its own start pattern, give or take
@@ -1310,7 +1315,7 @@ Tests/Bit.BbScanner.TestKit       encoders, image helpers and the sample catalog
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
 Tests/Bit.BbScanner.Tests.E2E     browser tests: a real page, a real camera stream, on WebAssembly and on a circuit
-Tests/Bit.BbScanner.Benchmarks    BenchmarkDotNet suites
+Tests/Bit.BbScanner.Benchmarks    BenchmarkDotNet suites, and the performance gate CI runs (--budget, against budgets.json)
 ```
 
 The encoders live in the test kit, not in the library: the library only reads barcodes. They exist so that every

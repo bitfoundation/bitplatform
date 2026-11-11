@@ -50,10 +50,16 @@ internal static class BbGs1Validator
                 return false;
             }
 
-            if (component.Check is not null && !Check(component.Check, part))
+            if (component.Check is not null)
             {
-                error = $"'{value}' fails its {CheckName(component.Check)} check.";
-                return false;
+                foreach (var check in component.Check.Split(','))
+                {
+                    if (!Check(check, part))
+                    {
+                        error = $"'{value}' fails its {CheckName(check)} check.";
+                        return false;
+                    }
+                }
             }
 
             position += length;
@@ -133,6 +139,11 @@ internal static class BbGs1Validator
     private static string CheckName(string check) => check switch
     {
         "csum" => "check digit",
+        "csumalpha" => "check character pair",
+        "iban" => "IBAN",
+        "pcenc" => "percent-encoding",
+        "latitude" or "longitude" => "coordinate range",
+        "gcppos1" => "GS1 Company Prefix",
         "yymmd0" or "yymmdd" or "yyyymmdd" => "date",
         "yymmddhh" or "yymmddhhmi" or "yyyymmddhhmi" or "hhmi" or "mmoptss" => "date and time",
         _ => check,
@@ -155,8 +166,22 @@ internal static class BbGs1Validator
         "iso5218" => part is "0" or "1" or "2" or "9",
         "nozeroprefix" => part.Length == 1 || part[0] != '0',
         "zero" => part is "0",
+        "nonzero" => part.ContainsAnyExcept('0'),
+        // A key that starts with a GS1 Company Prefix starts with at least two digits.
+        "gcppos1" => part.Length >= 2 && char.IsAsciiDigit(part[0]) && char.IsAsciiDigit(part[1]),
+        // Winding direction: face out, face in, undefined.
+        "winding" => part is "0" or "1" or "9",
+        "csumalpha" => IsValidCheckCharacterPair(part),
+        "iban" => IsValidIban(part),
+        "pcenc" => IsValidPercentEncoding(part),
+        // Degrees plus 90 and 180, in ten millionths: latitude up to 180, longitude up to 360.
+        "latitude" => Number64(part) <= 1_800_000_000,
+        "longitude" => Number64(part) <= 3_600_000_000,
         "hyphen" => part is "-",
         "slash" => part is "/",
+        // A birth sequence: the position, a slash and the number of births, the position from 1 up to that number.
+        "posinseqslash" => part.Length == 3 && part[1] == '/' && part[0] is >= '1' and <= '9' && part[2] is >= '1' and <= '9' && part[0] <= part[2],
+        "hasnondigit" => part.ContainsAnyExcept("0123456789"),
         "iso3166alpha2" => char.IsAsciiLetterUpper(part[0]) && char.IsAsciiLetterUpper(part[1]),
         "iso3166list" => part.Length % 3 == 0,
         // A piece number and the total: 01 to 99, the piece no more than the total.
@@ -177,6 +202,77 @@ internal static class BbGs1Validator
         }
 
         return (10 - (sum % 10)) % 10 == digits[^1] - '0';
+    }
+
+    // GS1 General Specifications 7.9.5: the alphanumeric check character pair of a GMN or MUDI. Each character but the
+    // last two is weighted, right to left, by the primes from 2 up; the sum modulo 1021 is written as two characters of
+    // character set 32, its high five bits first.
+    private const string Cset82 = "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+    private const string Cset32 = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+    private static readonly int[] Primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83];
+
+    internal static bool IsValidCheckCharacterPair(ReadOnlySpan<char> value)
+    {
+        var data = value.Length - 2;
+        if (data < 0 || data > Primes.Length)
+        {
+            return false;
+        }
+
+        var sum = 0;
+        for (var i = 0; i < data; i++)
+        {
+            sum += Cset82.IndexOf(value[i], StringComparison.Ordinal) * Primes[data - 1 - i];
+        }
+
+        sum %= 1021;
+        return value[data] == Cset32[sum >> 5] && value[data + 1] == Cset32[sum & 31];
+    }
+
+    // ISO 13616: two capitals for the country, two check digits, and up to thirty letters and digits; moved to the
+    // end and read with letters as 10 to 35, the whole is 1 modulo 97.
+    internal static bool IsValidIban(ReadOnlySpan<char> value)
+    {
+        if (value.Length < 5 ||
+            !char.IsAsciiLetterUpper(value[0]) || !char.IsAsciiLetterUpper(value[1]) ||
+            !char.IsAsciiDigit(value[2]) || !char.IsAsciiDigit(value[3]))
+        {
+            return false;
+        }
+
+        var remainder = 0;
+        for (var i = 0; i < value.Length; i++)
+        {
+            var character = value[(i + 4) % value.Length];
+            if (char.IsAsciiDigit(character))
+            {
+                remainder = ((remainder * 10) + (character - '0')) % 97;
+            }
+            else if (char.IsAsciiLetterUpper(character))
+            {
+                remainder = ((remainder * 100) + (character - 'A' + 10)) % 97;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return remainder == 1;
+    }
+
+    // A percent sign starts an escape of exactly two hexadecimal digits.
+    private static bool IsValidPercentEncoding(ReadOnlySpan<char> value)
+    {
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (value[i] == '%' && (i + 2 >= value.Length || !char.IsAsciiHexDigit(value[i + 1]) || !char.IsAsciiHexDigit(value[i + 2])))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsDate(ReadOnlySpan<char> part, bool fourDigitYear, bool dayZeroAllowed)
@@ -209,6 +305,17 @@ internal static class BbGs1Validator
     {
         var value = Number(digits);
         return value >= min && value <= max;
+    }
+
+    private static long Number64(ReadOnlySpan<char> digits)
+    {
+        var value = 0L;
+        foreach (var digit in digits)
+        {
+            value = (value * 10) + (digit - '0');
+        }
+
+        return value;
     }
 
     private static int Number(ReadOnlySpan<char> digits)

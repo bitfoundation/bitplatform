@@ -162,6 +162,7 @@ public static class BbScannerDecodeLab
         BbBarcodeFormat.Aztec => (AztecEncoder.Encode(payload), null),
         BbBarcodeFormat.MaxiCode => (MaxiCodeEncoder.Encode(payload), null),
         BbBarcodeFormat.MicroQrCode => (MicroQrEncoder.Encode(payload), null),
+        BbBarcodeFormat.MicroPdf417 => (MicroPdf417Encoder.Encode(payload), null),
         BbBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
         BbBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
         BbBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),

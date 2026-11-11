@@ -11,14 +11,17 @@ namespace Bit.BbScanner;
 /// notation of the GS1 Barcode Syntax Dictionary: a field is one or more components, each a character set - <c>N</c>
 /// digits, <c>X</c> GS1 AI encodable character set 82, <c>Y</c> character set 39, <c>Z</c> character set 64 - and a
 /// length, fixed (<c>N6</c>) or variable up to a maximum (<c>X..20</c>), optionally followed by a check
-/// (<c>N14,csum</c>). A component in brackets may be left off the end of the field.
+/// (<c>N14,csum</c>), or more than one (<c>X..25,gcppos1,csumalpha</c>). A component in brackets may be left off the
+/// end of the field.
 /// </para>
 /// <para>
 /// The checks applied are the ones that need no external list: GS1 modulo 10 check digits, the calendar
 /// (<c>yymmdd</c>, <c>yymmd0</c>, where a day of 00 means the month's last day), times of day, and a handful of fixed
-/// values. Not applied: country and currency codes against ISO 3166 and ISO 4217 (they are checked to be digits or
-/// capitals only), the alphanumeric check character pair of AIs 8013 and 8014, IBAN check digits, coordinate ranges,
-/// importer indices, package and media type lists, and percent-encoding.
+/// values, the alphanumeric check character pair of a GMN or MUDI, an IBAN's check digits, the ranges of a latitude
+/// and a longitude, the percent-encoding of names and addresses, and the two digits a GS1 Company Prefix starts
+/// keys such as a GIAI or a GMN with. Not applied: country and currency codes against
+/// ISO 3166 and ISO 4217 (they are checked to be digits or capitals only), importer indices, and the package and media
+/// type lists.
 /// </para>
 /// </remarks>
 internal static class BbGs1Dictionary
@@ -142,7 +145,7 @@ internal static class BbGs1Dictionary
 
         // Orders, consignments, shipments and locations.
         Add("400", "ORDER NUMBER", "X..30");
-        Add("401", "GINC", "X..30");
+        Add("401", "GINC", "X..30,gcppos1");
         Add("402", "GSIN", "N17,csum");
         Add("403", "ROUTE", "X..30");
         Add("410", "SHIP TO LOC", "N13,csum");
@@ -163,27 +166,27 @@ internal static class BbGs1Dictionary
         Add("427", "ORIGIN SUBDIVISION", "X..3");
 
         // Transport process information: addresses, phone numbers, delivery windows and temperatures.
-        Add("4300", "SHIP TO COMP", "X..35");
-        Add("4301", "SHIP TO NAME", "X..35");
-        Add("4302", "SHIP TO ADD1", "X..70");
-        Add("4303", "SHIP TO ADD2", "X..70");
-        Add("4304", "SHIP TO SUB", "X..70");
-        Add("4305", "SHIP TO LOC", "X..70");
-        Add("4306", "SHIP TO REG", "X..70");
+        Add("4300", "SHIP TO COMP", "X..35,pcenc");
+        Add("4301", "SHIP TO NAME", "X..35,pcenc");
+        Add("4302", "SHIP TO ADD1", "X..70,pcenc");
+        Add("4303", "SHIP TO ADD2", "X..70,pcenc");
+        Add("4304", "SHIP TO SUB", "X..70,pcenc");
+        Add("4305", "SHIP TO LOC", "X..70,pcenc");
+        Add("4306", "SHIP TO REG", "X..70,pcenc");
         Add("4307", "SHIP TO COUNTRY", "X2,iso3166alpha2");
         Add("4308", "SHIP TO PHONE", "X..30");
-        Add("4309", "SHIP TO GEO", "N20");
-        Add("4310", "RTN TO COMP", "X..35");
-        Add("4311", "RTN TO NAME", "X..35");
-        Add("4312", "RTN TO ADD1", "X..70");
-        Add("4313", "RTN TO ADD2", "X..70");
-        Add("4314", "RTN TO SUB", "X..70");
-        Add("4315", "RTN TO LOC", "X..70");
-        Add("4316", "RTN TO REG", "X..70");
+        Add("4309", "SHIP TO GEO", "N10,latitude N10,longitude");
+        Add("4310", "RTN TO COMP", "X..35,pcenc");
+        Add("4311", "RTN TO NAME", "X..35,pcenc");
+        Add("4312", "RTN TO ADD1", "X..70,pcenc");
+        Add("4313", "RTN TO ADD2", "X..70,pcenc");
+        Add("4314", "RTN TO SUB", "X..70,pcenc");
+        Add("4315", "RTN TO LOC", "X..70,pcenc");
+        Add("4316", "RTN TO REG", "X..70,pcenc");
         Add("4317", "RTN TO COUNTRY", "X2,iso3166alpha2");
         Add("4318", "RTN TO POST", "X..20");
         Add("4319", "RTN TO PHONE", "X..30");
-        Add("4320", "SRV DESCRIPTION", "X..35");
+        Add("4320", "SRV DESCRIPTION", "X..35,pcenc");
         Add("4321", "DANGEROUS GOODS", "N1,yesno");
         Add("4322", "AUTH LEAVE", "N1,yesno");
         Add("4323", "SIG REQUIRED", "N1,yesno");
@@ -210,7 +213,7 @@ internal static class BbGs1Dictionary
         Add("7020", "REFURB LOT", "X..20");
         Add("7021", "FUNC STAT", "X..20");
         Add("7022", "REV STAT", "X..20");
-        Add("7023", "GIAI - ASSEMBLY", "X..30");
+        Add("7023", "GIAI - ASSEMBLY", "X..30,gcppos1");
         AddRange("7030", "7039", "PROCESSOR # s", "N3,iso3166 X..27");
         Add("7040", "UIC+EXT", "N1 X1 X1 X1");
         Add("7041", "UFRGT UNIT TYPE", "X..4");
@@ -229,29 +232,29 @@ internal static class BbGs1Dictionary
         Add("7250", "DOB", "N8,yyyymmdd", BbGs1ValueKind.Date);
         Add("7251", "DOB TIME", "N12,yyyymmddhhmi", BbGs1ValueKind.Date);
         Add("7252", "BIO SEX", "N1,iso5218");
-        Add("7253", "FAMILY NAME", "X..40");
-        Add("7254", "GIVEN NAME", "X..40");
+        Add("7253", "FAMILY NAME", "X..40,pcenc");
+        Add("7254", "GIVEN NAME", "X..40,pcenc");
         Add("7255", "SUFFIX", "X..10");
-        Add("7256", "FULL NAME", "X..90");
-        Add("7257", "PERSON ADDR", "X..70");
-        Add("7258", "BIRTH SEQUENCE", "N1 X1,slash N1");
-        Add("7259", "BABY", "X..40");
+        Add("7256", "FULL NAME", "X..90,pcenc");
+        Add("7257", "PERSON ADDR", "X..70,pcenc");
+        Add("7258", "BIRTH SEQUENCE", "X3,posinseqslash");
+        Add("7259", "BABY", "X..40,pcenc");
 
         // Identification of assets, services, components and coupons.
-        Add("8001", "DIMENSIONS", "N14");
+        Add("8001", "DIMENSIONS", "N4,nonzero N5,nonzero N3,nonzero N1,winding N1");
         Add("8002", "CMT No.", "X..20");
         Add("8003", "GRAI", "N1,zero N13,csum [X..16]");
-        Add("8004", "GIAI", "X..30");
+        Add("8004", "GIAI", "X..30,gcppos1");
         Add("8005", "PRICE PER UNIT", "N6");
         Add("8006", "ITIP", "N14,csum N4,pieceoftotal");
-        Add("8007", "IBAN", "X..34");
+        Add("8007", "IBAN", "X..34,iban");
         Add("8008", "PROD TIME", "N8,yymmddhh [N..4,mmoptss]", BbGs1ValueKind.Date);
         Add("8009", "OPTSEN", "X..50");
-        Add("8010", "CPID", "Y..30");
+        Add("8010", "CPID", "Y..30,gcppos1");
         Add("8011", "CPID SERIAL", "N..12,nozeroprefix");
         Add("8012", "VERSION", "X..20");
-        Add("8013", "GMN", "X..25");
-        Add("8014", "MUDI", "X..25");
+        Add("8013", "GMN", "X..25,gcppos1,csumalpha");
+        Add("8014", "MUDI", "X..25,gcppos1,csumalpha,hasnondigit");
         Add("8017", "GSRN - PROVIDER", "N18,csum");
         Add("8018", "GSRN - RECIPIENT", "N18,csum");
         Add("8019", "SRIN", "N..10");

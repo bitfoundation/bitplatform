@@ -87,6 +87,12 @@ public sealed class BbBarcodeDecoder : IDisposable
             _matrixDecoders.Add(new BbPdf417Reader());
         }
 
+        // MicroPDF417's symbol characters are PDF417's, so it reads with the same table, and only with a conformant one.
+        if ((_options.Formats & BbBarcodeFormat.MicroPdf417) != 0 && BbPdf417SymbolTable.Current.IsSpecificationTable)
+        {
+            _matrixDecoders.Add(new BbMicroPdf417Reader());
+        }
+
         if ((_options.Formats & BbBarcodeFormat.Aztec) != 0)
         {
             _matrixDecoders.Add(new BbAztecReader());

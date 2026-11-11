@@ -101,6 +101,13 @@ public class Gs1ElementStringTests
     [DataRow("(010)9521234543213", DisplayName = "A bracketed AI with a digit of its value inside")]
     [DataRow("72523", DisplayName = "A sex code ISO/IEC 5218 does not have")]
     [DataRow("80110123", DisplayName = "A coupon serial with a leading zero")]
+    [DataRow("80131987654Ad4X4bL5ttr2310c2L", DisplayName = "A GMN with a wrong check character")]
+    [DataRow("8013AB87654Ad4X4bL5ttr2310c2K", DisplayName = "A GMN that does not start with a GS1 Company Prefix")]
+    [DataRow("8007GB83WEST12345698765432", DisplayName = "An IBAN with wrong check digits")]
+    [DataRow("4301John%2", DisplayName = "A percent sign without two hexadecimal digits")]
+    [DataRow("43091800000001" + "0000000000", DisplayName = "A latitude beyond 90 degrees")]
+    [DataRow("800100001234500101", DisplayName = "A roll of no width")]
+    [DataRow("72582/1", DisplayName = "The second of a single birth")]
     [DataRow("]C00109521234543213", DisplayName = "A symbology identifier that says the data is not GS1")]
     [DataRow("]Q10109521234543213", DisplayName = "A plain QR code's symbology identifier")]
     public void RejectsWhatTheSpecificationDoesNotAllow(string text)
@@ -115,7 +122,7 @@ public class Gs1ElementStringTests
     [DataRow("43211")]
     [DataRow("0109521234543213" + "17240229", DisplayName = "29 February in a year that is a multiple of four")]
     [DataRow("0109521234543213" + "17261200", DisplayName = "Day 00 where the AI allows it")]
-    [DataRow("8010AB-12/#", DisplayName = "Character set 39")]
+    [DataRow("801012AB-/#", DisplayName = "Character set 39")]
     [DataRow("8030AbC-_=", DisplayName = "Character set 64")]
     [DataRow("10!\"%&'()*+,-./:;<=>?_", DisplayName = "Every punctuation mark of character set 82")]
     [DataRow("2539521234543213", DisplayName = "A GDTI without its serial component")]
@@ -125,6 +132,10 @@ public class Gs1ElementStringTests
     [DataRow("717ABC123", DisplayName = "AI 717, NHRN SRN")]
     [DataRow("8040490154203237518", DisplayName = "AI 8040, an IMEI")]
     [DataRow("72529", DisplayName = "Sex not applicable")]
+    [DataRow("80131987654Ad4X4bL5ttr2310c2K", DisplayName = "The GMN of the GS1 General Specifications' example")]
+    [DataRow("8007GB82WEST12345698765432", DisplayName = "An IBAN")]
+    [DataRow("4301John%20Smith", DisplayName = "A percent-encoded name")]
+    [DataRow("43090262718281" + "2061415926", DisplayName = "A latitude and a longitude")]
     [DataRow("80110", DisplayName = "A coupon serial of zero")]
     public void AcceptsWhatTheSpecificationAllows(string text)
     {

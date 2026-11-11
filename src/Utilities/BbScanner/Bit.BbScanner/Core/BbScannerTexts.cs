@@ -144,6 +144,7 @@ public sealed class BbScannerTexts
         BbBarcodeFormat.DataBarExpanded => "GS1 DataBar Expanded",
         BbBarcodeFormat.MaxiCode => "MaxiCode",
         BbBarcodeFormat.MicroQrCode => "Micro QR",
+        BbBarcodeFormat.MicroPdf417 => "MicroPDF417",
         _ => format.ToString(),
     };
 }

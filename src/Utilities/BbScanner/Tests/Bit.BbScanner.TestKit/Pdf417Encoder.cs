@@ -96,7 +96,7 @@ public static class Pdf417Encoder
         return Render(all, rows, columns, errorCorrectionLevel, rowHeightModules, quietZoneModules);
     }
 
-    private static List<int> BuildDataCodewords(string content)
+    internal static List<int> BuildDataCodewords(string content)
     {
         var codewords = new List<int> { 0 };
 
@@ -171,7 +171,7 @@ public static class Pdf417Encoder
     /// Computes the error correction codewords as the negated remainder of the data polynomial
     /// divided by the generator, which is what makes every syndrome vanish.
     /// </summary>
-    private static int[] GenerateErrorCorrection(List<int> data, int numEc)
+    internal static int[] GenerateErrorCorrection(List<int> data, int numEc)
     {
         var field = BbModulusGF.Pdf417;
 
