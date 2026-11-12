@@ -104,6 +104,65 @@ public class StartPolicyTests
     }
 
     [TestMethod]
+    public async Task An_Automatic_Start_Of_A_Snoozed_Tour_Does_Not_Ask_Its_CanStart()
+    {
+        await using var harness = new BonboardingHarness();
+
+        var session = await harness.Service.StartAsync(Tour());
+        await session.SnoozeAsync(TimeSpan.FromHours(1));
+
+        var asked = 0;
+        var tour = Tour(canStart: _ =>
+        {
+            asked++;
+            return ValueTask.FromResult(true);
+        });
+
+        await Assert.ThrowsExactlyAsync<BonboardingException>(() => harness.Service.StartAsync(tour, Automatic));
+        Assert.AreEqual(0, asked, "The snooze already says no; CanStart may be expensive application code.");
+    }
+
+    [TestMethod]
+    public async Task A_CanAutoStart_That_Throws_Holds_The_Tour_Back_Rather_Than_Escaping()
+    {
+        await using var harness = new BonboardingHarness(options => options.CanAutoStart = _ => throw new InvalidOperationException("no service"));
+
+        Assert.IsNull(await harness.Service.StartOnceAsync(Tour()));
+
+        var refused = await Assert.ThrowsExactlyAsync<BonboardingException>(() => harness.Service.StartAsync(Tour(), Automatic));
+        StringAssert.Contains(refused.Message, "CanAutoStart");
+    }
+
+    [TestMethod]
+    public async Task An_Automatic_Start_Reads_The_Users_Record_No_More_Than_A_Start_The_User_Asks_For()
+    {
+        var store = new CountingInMemoryStore();
+        await using var harness = new BonboardingHarness(configureServices: services => services.AddScoped<IBonboardingStore>(_ => store));
+
+        var first = await harness.Service.StartAsync(Tour());
+        await first.NextAsync();
+        await first.CancelAsync();
+
+        store.Reads = 0;
+        var asked = await harness.Service.StartAsync(Tour());
+        var readsWhenAsked = store.Reads;
+        Assert.AreEqual("tips-2", asked.CurrentStep?.Id);
+        await asked.CancelAsync();
+
+        // The snooze check reads the record, and the start resumes from that read rather than reading it again.
+        store.Reads = 0;
+        var automatic = await harness.Service.StartAsync(Tour(), Automatic);
+        Assert.AreEqual("tips-2", automatic.CurrentStep?.Id, "It still resumes where the user left off.");
+        Assert.AreEqual(readsWhenAsked, store.Reads);
+        await automatic.CancelAsync();
+
+        store.Reads = 0;
+        var once = await harness.Service.StartOnceAsync(Tour());
+        Assert.AreEqual("tips-2", once?.CurrentStep?.Id);
+        Assert.AreEqual(readsWhenAsked, store.Reads);
+    }
+
+    [TestMethod]
     [DataRow(false, DisplayName = "Muted")]
     [DataRow(true, DisplayName = "Allowed")]
     public async Task A_Declarative_AutoStart_Always_Honours_The_Gate(bool allowed)
@@ -189,6 +248,36 @@ public class StartPolicyTests
         await Task.Delay(50);
 
         Assert.AreEqual(BonboardingTourStatus.Running, preview.Status);
+    }
+
+    [TestMethod]
+    public async Task A_Queued_Previews_First_Event_Is_Marked_As_A_Preview()
+    {
+        await using var harness = new BonboardingHarness();
+
+        await harness.Service.StartAsync(Tour("running"));
+        await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Preview = true, WhenBusy = BonboardingBusyBehavior.Queue });
+
+        Assert.IsTrue(harness.Events.Events.Single(e => e.Kind == BonboardingEventKind.TourQueued).IsPreview);
+    }
+
+    private sealed class CountingInMemoryStore : IBonboardingStore
+    {
+        private readonly BonboardingInMemoryStore _inner = new();
+
+        public int Reads { get; set; }
+
+        public ValueTask<BonboardingRecord?> GetAsync(string tourId, CancellationToken cancellationToken = default)
+        {
+            Reads++;
+            return _inner.GetAsync(tourId, cancellationToken);
+        }
+
+        public ValueTask SetAsync(BonboardingRecord record, CancellationToken cancellationToken = default) => _inner.SetAsync(record, cancellationToken);
+
+        public ValueTask RemoveAsync(string tourId, CancellationToken cancellationToken = default) => _inner.RemoveAsync(tourId, cancellationToken);
+
+        public ValueTask ClearAsync(CancellationToken cancellationToken = default) => _inner.ClearAsync(cancellationToken);
     }
 
     private sealed class ObservableInMemoryStore : IBonboardingStore, IBonboardingStoreEvents

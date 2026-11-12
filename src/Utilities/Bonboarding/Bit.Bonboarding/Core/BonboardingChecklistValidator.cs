@@ -2,8 +2,8 @@
 
 /// <summary>
 /// Finds the mistakes in a checklist definition that would otherwise show as a checklist quietly misbehaving: two items
-/// sharing an id (so a tick, stored by id, ticks both), a prerequisite that does not exist (so the item stays locked
-/// for good), items waiting for each other in a circle.
+/// sharing an id (so a tick, stored by id, ticks both), a prerequisite that names no other item (so it is ignored and
+/// the item does not wait for what was meant), items waiting for each other in a circle (so they stay locked for good).
 /// </summary>
 internal static class BonboardingChecklistValidator
 {
@@ -40,13 +40,14 @@ internal static class BonboardingChecklistValidator
         {
             foreach (var dependency in item.DependsOn ?? [])
             {
+                // The checklist skips both when it works out what an item waits for, so the item is not held up at all.
                 if (dependency == item.Id)
                 {
-                    issues.Add(Error("item-depends-on-itself", $"Item '{item.Id}' of checklist '{name}' depends on itself, so it can never be started.", item.Id));
+                    issues.Add(Error("item-depends-on-itself", $"Item '{item.Id}' of checklist '{name}' depends on itself; that prerequisite is ignored, so the item does not wait for anything it names.", item.Id));
                 }
-                else if (!ids.Contains(dependency))
+                else if (string.IsNullOrWhiteSpace(dependency) || !ids.Contains(dependency))
                 {
-                    issues.Add(Error("unknown-dependency", $"Item '{item.Id}' of checklist '{name}' depends on '{dependency}', which is not an item of the checklist, so it stays locked.", item.Id));
+                    issues.Add(Error("unknown-dependency", $"Item '{item.Id}' of checklist '{name}' depends on '{dependency}', which is not an item of the checklist; that prerequisite is ignored, so the item does not wait for it.", item.Id));
                 }
             }
         }
@@ -94,7 +95,7 @@ internal static class BonboardingChecklistValidator
             foreach (var dependency in byId[id].DependsOn ?? [])
             {
                 // Self-dependencies and unknown ids are reported on their own.
-                if (dependency != id && byId.ContainsKey(dependency)) Visit(dependency);
+                if (dependency is not null && dependency != id && byId.ContainsKey(dependency)) Visit(dependency);
             }
 
             path.RemoveAt(path.Count - 1);

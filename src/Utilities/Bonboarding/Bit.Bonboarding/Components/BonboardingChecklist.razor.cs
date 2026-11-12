@@ -79,15 +79,15 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
 
     private BonboardingLabels Labels => Localizer.GetLabels(null);
 
-    /// <summary>The items the progress counts: the required ones, or every one when all of them are optional.</summary>
-    private IEnumerable<BonboardingChecklistItemState> Counted
-        => _items is not { } items ? [] : items.Exists(state => !state.IsOptional) ? items.Where(state => !state.IsOptional) : items;
+    // The items the progress counts and how many of them are done, worked out once per refresh rather than per render.
+    private int _countedTotal;
+    private int _doneCount;
 
-    private int CountedTotal => Counted.Count();
+    private int CountedTotal => _countedTotal;
 
-    private int DoneCount => Counted.Count(state => state.IsDone);
+    private int DoneCount => _doneCount;
 
-    private bool AllDone => CountedTotal > 0 && Counted.All(state => state.IsDone);
+    private bool AllDone => _countedTotal > 0 && _doneCount == _countedTotal;
 
     private string ProgressText => BonboardingLabels.Format(
         Labels.ChecklistProgressFormat, BonboardingLabels.DefaultChecklistProgressFormat, DoneCount, CountedTotal);
@@ -130,6 +130,7 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
             if (_registered.Id != Checklist.Id)
             {
                 _items = null;
+                (_countedTotal, _doneCount) = (0, 0);
                 _dismissed = false;
                 _wasComplete = false;
             }
@@ -213,6 +214,7 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
 
             var hadState = _items is not null;
             _items = states;
+            (_countedTotal, _doneCount) = Count(states);
             _dismissed = dismissed;
 
             var complete = AllDone;
@@ -242,6 +244,21 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
         }
 
         return item.TourId is { } tourId && await BonboardingService.IsCompletedAsync(tourId);
+    }
+
+    /// <summary>The items the progress counts - the required ones, or every one when all of them are optional - and how many are done.</summary>
+    private static (int Total, int Done) Count(List<BonboardingChecklistItemState> states)
+    {
+        int required = 0, requiredDone = 0, done = 0;
+        foreach (var state in states)
+        {
+            if (state.IsDone) done++;
+            if (state.IsOptional) continue;
+            required++;
+            if (state.IsDone) requiredDone++;
+        }
+
+        return required > 0 ? (required, requiredDone) : (states.Count, done);
     }
 
     private static bool IsActionable(BonboardingChecklistItem item)

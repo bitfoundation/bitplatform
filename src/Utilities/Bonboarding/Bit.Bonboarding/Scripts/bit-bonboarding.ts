@@ -251,12 +251,20 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     // The step may have been replaced or the session detached while the smooth scroll settled.
     if (session.disposed || session.spec !== spec) return emptyGeometry(spec.activation);
 
+    // A Blazor re-render during the scroll may have replaced the target with a new node: bind that one rather
+    // than measure the old node and report a target that is right there as missing.
+    if (elements.length > 0 && !session.targets.some(isRendered)) {
+        const recovered = resolveAll(spec);
+        if (recovered.length > 0) session.targets = recovered;
+    }
+
     observe(session);
     attachKeyboard(session, spec);
     attachAdvanceTrigger(session, spec);
 
     const geometry = measureSession(session);
     geometry.invalidSelector = invalid;
+    if (!geometry.found && wantsTarget(spec)) geometry.targetIssue = targetIssueOf(spec);
     session.lastFrame = geometry;
     return geometry;
 }
@@ -283,6 +291,7 @@ export function measure(sessionId: string): StepGeometry {
     }
 
     const geometry = measureSession(session);
+    if (!geometry.found && session.spec && wantsTarget(session.spec)) geometry.targetIssue = targetIssueOf(session.spec);
 
     // This reply reports the loss, so the targets go as they do when a frame finds them gone: otherwise the next
     // frame would find them missing too and report the same loss a second time. As there, a target the user just
@@ -378,9 +387,9 @@ function isRendered(element: Element): boolean {
 }
 
 /**
- * Why a step's (primary) target is not found, so .NET can say what to fix: an element matches but is not shown
- * ('hidden'), or nothing matches at all ('not-found'). Only asked once the target has been found missing, so the
- * extra lookup costs nothing while the target is there.
+ * Why a step's (primary) target is not found, so .NET can say what to fix: elements match but none of them is
+ * shown ('hidden'), or nothing matches at all ('not-found'). Asked only by the replies and callbacks that report a
+ * missing target to .NET, never on every frame, so the extra lookup is paid once per report.
  */
 function targetIssueOf(spec: StepActivation): TargetIssue {
     const descriptor = spec.target;
@@ -388,11 +397,19 @@ function targetIssueOf(spec: StepActivation): TargetIssue {
     try {
         if (descriptor && descriptor.kind === 'Element') {
             const element = descriptor.element;
-            return element instanceof Element && element.isConnected ? 'hidden' : 'not-found';
+            return element instanceof Element && element.isConnected && !isRendered(element) ? 'hidden' : 'not-found';
         }
 
         if (descriptor && descriptor.kind === 'Selector' && descriptor.selector) {
-            return document.querySelector(descriptor.selector) ? 'hidden' : 'not-found';
+            // Hidden only when every match is: one that is shown means the target is there, not hidden.
+            const all = document.querySelectorAll(descriptor.selector);
+            if (all.length === 0) return 'not-found';
+
+            for (let i = 0; i < all.length; i++) {
+                if (isRendered(all[i])) return 'not-found';
+            }
+
+            return 'hidden';
         }
     } catch {
         // An invalid selector is reported on its own, as invalidSelector.
@@ -504,7 +521,8 @@ function startWaiting(session: Session, spec: StepActivation) {
             if (settled || session.disposed) return;
             settled = true;
             stopWaiting(session);
-            invoke(session, 'OnWaitTimedOut', spec.activation);
+            // Why the target is still missing now, at the end of the wait: it may have rendered hidden since the start.
+            invoke(session, 'OnWaitTimedOut', spec.activation, targetIssueOf(spec));
         }, spec.waitTimeoutMs);
     }
 
@@ -725,8 +743,7 @@ function measureSession(session: Session): StepGeometry {
             targetVisible: false,
             sequence: ++sequence,
             activation,
-            popoverRadius,
-            targetIssue: session.spec && wantsTarget(session.spec) ? targetIssueOf(session.spec) : null
+            popoverRadius
         };
     }
 

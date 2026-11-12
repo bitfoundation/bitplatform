@@ -316,9 +316,9 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
             : ValueTask.CompletedTask;
 
     [JSInvokable]
-    public ValueTask OnWaitTimedOut(string sessionId, long activation)
+    public ValueTask OnWaitTimedOut(string sessionId, long activation, string? issue)
         => IsCurrent(sessionId, activation)
-            ? Dispatch(sessionId, callbacks => callbacks.OnWaitTimedOutAsync())
+            ? Dispatch(sessionId, callbacks => callbacks.OnWaitTimedOutAsync(BonboardingStepGeometryIssues.Parse(issue)))
             : ValueTask.CompletedTask;
 
     private bool IsCurrent(string sessionId, long activation)

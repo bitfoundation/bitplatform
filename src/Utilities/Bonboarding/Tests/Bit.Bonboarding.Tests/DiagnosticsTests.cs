@@ -64,6 +64,23 @@ public class DiagnosticsTests
     }
 
     [TestMethod]
+    public async Task A_Wait_That_Times_Out_Reports_Why_The_Target_Is_Missing_Then_Not_At_Activation()
+    {
+        await using var harness = new BonboardingHarness();
+
+        var tour = Targeted("#panel", BonboardingMissingTargetBehavior.Wait);
+        tour.Steps[0].WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Center;
+
+        var session = await harness.Service.StartAsync(tour);
+        Assert.AreEqual(BonboardingTargetIssue.NotFound, session.TargetIssue, "Nothing matched when the step began waiting.");
+
+        // The panel rendered while the step waited, but hidden, which does not end the wait.
+        await harness.Interop.TimeOutWaitAsync(session.Id, BonboardingTargetIssue.Hidden);
+
+        Assert.AreEqual(BonboardingTargetIssue.Hidden, session.TargetIssue, "The issue is the one at the timeout, not the stale one.");
+    }
+
+    [TestMethod]
     public async Task The_Issue_Clears_When_The_Target_Turns_Up_And_On_The_Next_Step()
     {
         await using var harness = new BonboardingHarness();

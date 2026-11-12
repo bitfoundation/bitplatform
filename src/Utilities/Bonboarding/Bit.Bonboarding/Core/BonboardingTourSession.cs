@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Bonboarding;
@@ -180,6 +181,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     public bool IsPreview { get; internal set; }
 
+    /// <summary>The tour's record as the service read it just before this start, so the start does not read it again.</summary>
+    private StrongBox<BonboardingRecord?>? _storedRecord;
+
+    /// <summary>Hands the start the record the service has just read; used once, by the start that follows.</summary>
+    internal void UseStoredRecord(BonboardingRecord? record) => _storedRecord = new(record);
+
     public BonboardingTargetIssue TargetIssue { get; private set; }
 
     /// <summary>True while the tour has stopped for good.</summary>
@@ -260,6 +267,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// <summary>Picks the first step, and reports whether that means resuming saved progress.</summary>
     private async Task<(int Index, bool Resumed)> DetermineStartIndexAsync(BonboardingStartOptions options, CancellationToken cancellationToken)
     {
+        var stored = _storedRecord;
+        _storedRecord = null;
+
         if (options.StartAtStepId is { } stepId)
         {
             var explicitStep = Tour.IndexOf(stepId);
@@ -274,7 +284,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (!options.Resume || !ShouldPersist) return (0, false);
 
         // A record of another version is resumed only as the tour's MigrateRecord maps it.
-        var record = BonboardingRecordMigration.Apply(Tour, await SafeGetRecordAsync(cancellationToken), _logger);
+        var record = BonboardingRecordMigration.Apply(Tour, stored is not null ? stored.Value : await SafeGetRecordAsync(cancellationToken), _logger);
         if (record is null || record.IsClosed) return (0, false);
 
         // Prefer the id: indices shift as soon as a step is inserted.
@@ -1315,7 +1325,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         return advanced;
     }
 
-    public async ValueTask OnWaitTimedOutAsync()
+    public ValueTask OnWaitTimedOutAsync() => OnWaitTimedOutAsync(BonboardingTargetIssue.None);
+
+    public async ValueTask OnWaitTimedOutAsync(BonboardingTargetIssue issue)
     {
         if (_disposed || CurrentStep is null || Status != BonboardingTourStatus.Waiting) return;
 
@@ -1331,6 +1343,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             if (generation != _generation || !ReferenceEquals(CurrentStep, step)) return;
             if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
+
+            // What was found at activation may no longer hold: a target that did not exist then may have rendered
+            // hidden since. The browser says how it stands now, and that is what the log and the root report.
+            if (issue is not BonboardingTargetIssue.None && issue != TargetIssue)
+            {
+                TargetIssue = issue;
+                Notify(BonboardingTourSessionChange.Step);
+            }
 
             // The moment a missing target becomes something to fix: the user was shown no step for it.
             _logger.LogWarning(

@@ -26,4 +26,10 @@ public interface IBonboardingInteropCallbacks
 
     /// <summary>Waiting for the target timed out.</summary>
     ValueTask OnWaitTimedOutAsync();
+
+    /// <summary>
+    /// Waiting for the target timed out; <paramref name="issue"/> says why it is still missing at that moment (it may
+    /// have rendered hidden since the wait began). Calls <see cref="OnWaitTimedOutAsync()"/> unless implemented.
+    /// </summary>
+    ValueTask OnWaitTimedOutAsync(BonboardingTargetIssue issue) => OnWaitTimedOutAsync();
 }

@@ -228,9 +228,11 @@ internal sealed class FakeInterop : IBonboardingInterop
         if (_callbacks.TryGetValue(sessionId, out var callbacks)) await callbacks.OnAdvanceTriggeredAsync();
     }
 
-    public async Task TimeOutWaitAsync(string sessionId)
+    public async Task TimeOutWaitAsync(string sessionId, BonboardingTargetIssue? issue = null)
     {
-        if (_callbacks.TryGetValue(sessionId, out var callbacks)) await callbacks.OnWaitTimedOutAsync();
+        if (!_callbacks.TryGetValue(sessionId, out var callbacks)) return;
+
+        await (issue is { } why ? callbacks.OnWaitTimedOutAsync(why) : callbacks.OnWaitTimedOutAsync());
     }
 
     public async Task ClickOverlayAsync(string sessionId)

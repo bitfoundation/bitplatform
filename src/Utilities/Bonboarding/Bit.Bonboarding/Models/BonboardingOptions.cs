@@ -51,7 +51,8 @@ public sealed class BonboardingOptions : BonboardingStepOptions
     /// <see cref="BonboardingTourDefinition.CanStart"/>: false holds the tour back. The place for rules about guidance as
     /// a whole rather than about one tour - the user turned tips off, the screen is too small, a dialog of the
     /// application is open. Starts the user asks for are not asked, so a help menu keeps working for a user who muted
-    /// the tips. <see langword="null"/> (the default) lets every automatic start through.
+    /// the tips. <see langword="null"/> (the default) lets every automatic start through. One that throws holds the tour
+    /// back, and the exception is logged.
     /// </summary>
     /// <example>
     /// <code>

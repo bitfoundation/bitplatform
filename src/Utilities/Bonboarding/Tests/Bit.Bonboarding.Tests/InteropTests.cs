@@ -41,7 +41,7 @@ public class InteropTests : BunitContext
         // skip a step the user never saw, a late frame would place the card against the old target.
         await interop.OnAdvanceTriggered("s", first);
         await interop.OnTargetLost("s", first, "not-found");
-        await interop.OnWaitTimedOut("s", first);
+        await interop.OnWaitTimedOut("s", first, "not-found");
         await interop.OnGeometryChanged("s", new BonboardingStepGeometry { Activation = first, Sequence = 99 });
 
         Assert.AreEqual(0, callbacks.Count);

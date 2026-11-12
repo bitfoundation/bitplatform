@@ -1403,8 +1403,9 @@ should go next, so `OnDismissed` runs once the checklist has gone, to move it th
 #### Checking the definition
 
 `BonboardingChecklistDefinition.Validate()` reports, as errors, blank or duplicate item ids (a tick is stored by
-id), a `DependsOn` naming no item or the item itself (it would stay locked for good), and items waiting for each
-other in a circle (`a -> b -> a`); and, as a warning, a checklist of optional items only. The checklist logs what it
+id), a `DependsOn` naming no item or the item itself (the checklist ignores it, so the item does not wait for what
+was meant), and items waiting for each other in a circle (`a -> b -> a`, which stay locked for good); and, as a
+warning, a checklist of optional items only. The checklist logs what it
 finds the first time it renders a definition; call it from a unit test to catch it first.
 
 ### Tour lists

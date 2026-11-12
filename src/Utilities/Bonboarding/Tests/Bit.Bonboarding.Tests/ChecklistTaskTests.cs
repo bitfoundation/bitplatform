@@ -162,6 +162,17 @@ public class ChecklistTaskTests : BunitContext
     }
 
     [TestMethod]
+    public void Validate_Reports_A_Null_Prerequisite_Rather_Than_Throwing()
+    {
+        var issues = Checklist(
+            new BonboardingChecklistItem { Id = "a", Title = "A" },
+            new BonboardingChecklistItem { Id = "b", Title = "B", DependsOn = ["a", null!] }).Validate();
+
+        Assert.AreEqual("unknown-dependency", issues.Single().Code);
+        StringAssert.Contains(issues.Single().Message, "ignored", "It says what the checklist does with it: nothing waits for it.");
+    }
+
+    [TestMethod]
     public void Validate_Passes_A_Sound_Checklist_And_Warns_About_One_Of_Optional_Items_Only()
     {
         Assert.IsEmpty(Checklist(

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -221,41 +222,61 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         var startOptions = options ?? new BonboardingStartOptions();
 
+        // The record an automatic start read for the snooze, handed on so starting does not read it a second time.
+        StrongBox<BonboardingRecord?>? stored = null;
+
         if (!Bypasses(startOptions))
         {
+            // The snooze first: it is the cheapest answer, and a snoozed tour is not worth asking CanStart about.
+            if (startOptions.Automatic)
+            {
+                stored = new(await ReadRecordAsync(tour.Id, cancellationToken));
+                if (IsSnoozed(tour, stored.Value))
+                {
+                    throw new BonboardingException($"Tour '{tour.Id}' was not started automatically: the user snoozed it.") { TourId = tour.Id };
+                }
+            }
+
             if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services)))
             {
                 throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
             }
 
-            if (startOptions.Automatic && await HeldBackAsync(tour, cancellationToken) is { } why)
+            if (startOptions.Automatic && !await AllowsAutoStartAsync(tour))
             {
-                throw new BonboardingException($"Tour '{tour.Id}' was not started automatically: {why}.") { TourId = tour.Id };
+                throw new BonboardingException($"Tour '{tour.Id}' was not started automatically: CanAutoStart held it back.") { TourId = tour.Id };
             }
         }
 
-        return await StartCoreAsync(tour, startOptions, once: false, cancellationToken)
+        return await StartCoreAsync(tour, startOptions, once: false, stored, cancellationToken)
             ?? throw new BonboardingException($"Tour '{tour.Id}' was not started: another tour is running and the start asked to skip.") { TourId = tour.Id };
     }
 
     /// <summary>A forced start and a preview are not asked whether the tour may run: someone wants to see it.</summary>
     private static bool Bypasses(BonboardingStartOptions options) => options.Force || options.Preview;
 
+    /// <summary>True when the user snoozed the tour, as its stored record (of this version, or one it migrates) says.</summary>
+    private bool IsSnoozed(BonboardingTourDefinition tour, BonboardingRecord? stored)
+        => BonboardingRecordMigration.Apply(tour, stored, _logger) is { } record && record.IsSnoozedAt(_time.GetUtcNow());
+
     /// <summary>
-    /// Why an automatic start does not run, or <see langword="null"/> when it does: the user snoozed the tour, or
-    /// <see cref="BonboardingOptions.CanAutoStart"/> says no. Asked after the tour's own <c>CanStart</c>.
+    /// What <see cref="BonboardingOptions.CanAutoStart"/> says; true when it is not set. It is application code, and
+    /// one that throws holds the tour back rather than escaping an automatic start that has no caller to catch it.
     /// </summary>
-    private async Task<string?> HeldBackAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken)
-    {
-        var record = BonboardingRecordMigration.Apply(tour, await ReadRecordAsync(tour.Id, cancellationToken), _logger);
-        if (record is not null && record.IsSnoozedAt(_time.GetUtcNow())) return "the user snoozed it";
-
-        return await AllowsAutoStartAsync(tour) ? null : "CanAutoStart said no";
-    }
-
-    /// <summary>What <see cref="BonboardingOptions.CanAutoStart"/> says; true when it is not set.</summary>
     private async ValueTask<bool> AllowsAutoStartAsync(BonboardingTourDefinition tour)
-        => _options.CanAutoStart is not { } gate || await gate(new BonboardingTourContext(tour, _services));
+    {
+        if (_options.CanAutoStart is not { } gate) return true;
+
+        try
+        {
+            return await gate(new BonboardingTourContext(tour, _services));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "BonboardingOptions.CanAutoStart threw for tour {TourId}; the tour is held back.", tour.Id);
+            return false;
+        }
+    }
 
     private void ThrowIfUnstartable(BonboardingTourDefinition tour)
     {
@@ -272,10 +293,12 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     /// <summary>
     /// Creates the session and either starts it, replacing whatever runs, or queues it behind the running tour,
     /// as <see cref="BonboardingStartOptions.WhenBusy"/> asks. <see langword="null"/> when it was skipped. The caller
-    /// has validated the definition and asked <c>CanStart</c> (or was told not to).
+    /// has validated the definition and asked <c>CanStart</c> (or was told not to). <paramref name="stored"/> is the
+    /// tour's record when the caller has just read it, so the session does not read it again to pick its first step.
     /// </summary>
     private async Task<IBonboardingTourSession?> StartCoreAsync(
-        BonboardingTourDefinition tour, BonboardingStartOptions startOptions, bool once, CancellationToken cancellationToken)
+        BonboardingTourDefinition tour, BonboardingStartOptions startOptions, bool once,
+        StrongBox<BonboardingRecord?>? stored, CancellationToken cancellationToken)
     {
         // Starting does not register the tour: a definition built on the fly (one per user, say)
         // would otherwise stay in RegisteredTours for the lifetime of the scope. Register it
@@ -314,6 +337,13 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
                     : startOptions.StopOthers || s.Tour.Id == tour.Id))
                 .ToArray();
 
+            // Handed on only while it is still what the store holds: a queued start reads it again when its turn
+            // comes, and a running session of the same tour that is replaced saves its progress on the way out.
+            if (stored is not null && !queued && !superseded.Any(s => s.Tour.Id == tour.Id))
+            {
+                session.UseStoredRecord(stored.Value);
+            }
+
             session.Changed += OnSessionChanged;
             _sessions.Add(session);
 
@@ -338,7 +368,13 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         if (queued)
         {
-            await PublishAsync(new BonboardingEvent { Kind = BonboardingEventKind.TourQueued, Session = session, Timestamp = _time.GetUtcNow() });
+            await PublishAsync(new BonboardingEvent
+            {
+                Kind = BonboardingEventKind.TourQueued,
+                Session = session,
+                IsPreview = session.IsPreview,
+                Timestamp = _time.GetUtcNow(),
+            });
 
             // The running tour may have ended while this start was being queued.
             StartNextQueued();
@@ -394,17 +430,23 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         {
             // Asked again now: while it waited the user may have finished it elsewhere, snoozed it, or moved on to
             // where it no longer applies. A start that no longer qualifies is cancelled, never thrown at anyone.
-            var eligible = Bypasses(entry.Options)
-                || ((!entry.Once || await IsDueOnceAsync(tour, CancellationToken.None))
+            // The record is read once, for the snooze and for the step the start resumes at.
+            var bypasses = Bypasses(entry.Options);
+            var automatic = entry.Once || entry.Options.Automatic;
+            var stored = !bypasses && automatic ? await ReadRecordAsync(tour.Id, CancellationToken.None) : null;
+
+            var eligible = bypasses
+                || ((entry.Once ? IsDueOnce(tour, stored) : !entry.Options.Automatic || !IsSnoozed(tour, stored))
                     && (tour.CanStart is null || await tour.CanStart(new BonboardingTourContext(tour, _services)))
-                    && (entry.Once ? await AllowsAutoStartAsync(tour)
-                        : !entry.Options.Automatic || await HeldBackAsync(tour, CancellationToken.None) is null));
+                    && (!automatic || await AllowsAutoStartAsync(tour)));
 
             if (!eligible)
             {
                 await entry.Session.CancelAsync(CancellationToken.None);
                 return;
             }
+
+            if (!bypasses && automatic) entry.Session.UseStoredRecord(stored);
 
             await entry.Session.StartAsync(entry.Options, CancellationToken.None);
         }
@@ -419,10 +461,10 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     /// True when a once-only start should run: the user has neither finished with the tour (in this version, or one
     /// it migrates) nor snoozed it.
     /// </summary>
-    private async Task<bool> IsDueOnceAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken)
+    private bool IsDueOnce(BonboardingTourDefinition tour, BonboardingRecord? stored)
     {
         // Compare against this definition rather than the registry, which may not hold it yet.
-        var record = BonboardingRecordMigration.Apply(tour, await ReadRecordAsync(tour.Id, cancellationToken), _logger);
+        var record = BonboardingRecordMigration.Apply(tour, stored, _logger);
 
         return record is null || (!record.IsClosed && !record.IsSnoozedAt(_time.GetUtcNow()));
     }
@@ -637,17 +679,21 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         var startOptions = options ?? new BonboardingStartOptions();
 
+        // Read once, for whether the start is due and for the step it resumes at.
+        StrongBox<BonboardingRecord?>? stored = null;
+
         if (!Bypasses(startOptions))
         {
-            if (!await IsDueOnceAsync(tour, cancellationToken)) return null;
+            stored = new(await ReadRecordAsync(tour.Id, cancellationToken));
+            if (!IsDueOnce(tour, stored.Value)) return null;
 
             if (tour.CanStart is not null && !await tour.CanStart(new BonboardingTourContext(tour, _services))) return null;
 
-            // A once-only start is never one the user asked for. IsDueOnceAsync has already passed over a snooze.
+            // A once-only start is never one the user asked for. IsDueOnce has already passed over a snooze.
             if (!await AllowsAutoStartAsync(tour)) return null;
         }
 
-        return await StartCoreAsync(tour, startOptions, once: true, cancellationToken);
+        return await StartCoreAsync(tour, startOptions, once: true, stored, cancellationToken);
     }
 
     public async Task<IBonboardingTourSession> RestartAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken = default)
@@ -660,7 +706,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         await ResetAsync(tour.Id, cancellationToken);
 
         // Forced, so CanStart has no say, and replacing whatever runs, so it is never skipped.
-        return (await StartCoreAsync(tour, new BonboardingStartOptions { Resume = false, Force = true }, once: false, cancellationToken))!;
+        return (await StartCoreAsync(tour, new BonboardingStartOptions { Resume = false, Force = true }, once: false, stored: null, cancellationToken))!;
     }
 
     // ---- Stopping and querying --------------------------------------------
