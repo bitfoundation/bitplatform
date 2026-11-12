@@ -63,7 +63,11 @@ interface StepGeometry {
     popoverRadius: number | null;
     // A target selector the browser cannot parse. Reported at once rather than waited on.
     invalidSelector?: string | null;
+    // Why a wanted target was not found: 'not-found' or 'hidden'. Only worked out when it was not found.
+    targetIssue?: TargetIssue | null;
 }
+
+type TargetIssue = 'not-found' | 'hidden';
 
 interface BrowserEnvironment {
     reducedMotion: boolean;
@@ -233,7 +237,9 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
         session.trapFocus = false;
         attachKeyboard(session, { ...spec, interaction: 'free', trapFocus: false });
         startWaiting(session, spec);
-        return emptyGeometry(spec.activation);
+        const waiting = emptyGeometry(spec.activation);
+        waiting.targetIssue = targetIssueOf(spec);
+        return waiting;
     }
 
     session.targets = elements;
@@ -369,6 +375,30 @@ function isRendered(element: Element): boolean {
     } catch {
         return true;
     }
+}
+
+/**
+ * Why a step's (primary) target is not found, so .NET can say what to fix: an element matches but is not shown
+ * ('hidden'), or nothing matches at all ('not-found'). Only asked once the target has been found missing, so the
+ * extra lookup costs nothing while the target is there.
+ */
+function targetIssueOf(spec: StepActivation): TargetIssue {
+    const descriptor = spec.target;
+
+    try {
+        if (descriptor && descriptor.kind === 'Element') {
+            const element = descriptor.element;
+            return element instanceof Element && element.isConnected ? 'hidden' : 'not-found';
+        }
+
+        if (descriptor && descriptor.kind === 'Selector' && descriptor.selector) {
+            return document.querySelector(descriptor.selector) ? 'hidden' : 'not-found';
+        }
+    } catch {
+        // An invalid selector is reported on its own, as invalidSelector.
+    }
+
+    return 'not-found';
 }
 
 /** The first target selector of a step that the browser cannot parse, or null when every one is valid. */
@@ -627,7 +657,7 @@ function scheduleFrame(session: Session) {
                 return;
             } else {
                 session.targets = [];
-                invoke(session, 'OnTargetLost', activationOf(session));
+                invoke(session, 'OnTargetLost', activationOf(session), session.spec ? targetIssueOf(session.spec) : 'not-found');
                 return;
             }
         }
@@ -643,13 +673,11 @@ function push(session: Session, geometry: StepGeometry) {
     invoke(session, 'OnGeometryChanged', geometry);
 }
 
-function invoke(session: Session, method: string, arg?: unknown) {
+function invoke(session: Session, method: string, ...args: unknown[]) {
     if (session.disposed || !session.ref) return;
 
     try {
-        const promise = arg === undefined
-            ? session.ref.invokeMethodAsync(method, session.id)
-            : session.ref.invokeMethodAsync(method, session.id, arg);
+        const promise = session.ref.invokeMethodAsync(method, session.id, ...args);
 
         if (promise && typeof promise.catch === 'function') {
             // The circuit can go away between scheduling and delivery; that is not an error.
@@ -697,7 +725,8 @@ function measureSession(session: Session): StepGeometry {
             targetVisible: false,
             sequence: ++sequence,
             activation,
-            popoverRadius
+            popoverRadius,
+            targetIssue: session.spec && wantsTarget(session.spec) ? targetIssueOf(session.spec) : null
         };
     }
 

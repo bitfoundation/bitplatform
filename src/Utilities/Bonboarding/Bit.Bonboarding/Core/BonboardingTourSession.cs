@@ -178,6 +178,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     public string? ValidationMessage { get; private set; }
 
+    public bool IsPreview { get; internal set; }
+
+    public BonboardingTargetIssue TargetIssue { get; private set; }
+
     /// <summary>True while the tour has stopped for good.</summary>
     public bool IsFinished => Status
         is BonboardingTourStatus.Completed or BonboardingTourStatus.Dismissed or BonboardingTourStatus.Skipped
@@ -389,7 +393,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         // A step already showing without its target (centred after a loss) just keeps being measured.
         if (!geometry.Found && !_resolvedTarget.IsNone && _geometry is { Found: true })
         {
-            await LoseTargetAsync(step, generation, cancellationToken);
+            await LoseTargetAsync(step, generation, geometry.Issue, cancellationToken);
             return;
         }
 
@@ -611,7 +615,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             // Only a step that was actually on screen can report how long it was there.
             if (previousShown)
             {
-                await PublishAsync(BonboardingEventKind.StepLeft, previousStep, duration: DateTimeOffset.UtcNow - _stepShownAt);
+                await PublishAsync(BonboardingEventKind.StepLeft, previousStep, duration: _time.GetUtcNow() - _stepShownAt);
             }
         }
 
@@ -694,6 +698,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         _geometry = null;
         _lastSequence = -1;
         Placement = null;
+        TargetIssue = BonboardingTargetIssue.None;
 
         if (_history.Count == 0 || _history[^1] != step.Id) _history.Add(step.Id);
 
@@ -724,7 +729,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         if (wantsTarget && geometry is { Found: false })
         {
-            await PublishAsync(BonboardingEventKind.TargetMissing, step);
+            TargetIssue = geometry.Issue;
+            _logger.LogInformation(
+                "BonboardingService step {StepId} of tour {TourId} could not find its target {Target} ({Issue}).",
+                step.Id, Tour.Id, _resolvedTarget, TargetIssue);
+
+            await PublishAsync(BonboardingEventKind.TargetMissing, step, targetIssue: TargetIssue);
 
             var behavior = options.MissingTarget;
 
@@ -763,7 +773,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }
 
         Status = BonboardingTourStatus.Running;
-        _stepShownAt = DateTimeOffset.UtcNow;
+        _stepShownAt = _time.GetUtcNow();
 
         Notify(BonboardingTourSessionChange.Step);
 
@@ -778,7 +788,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         _stepShown = true;
 
         await PersistAsync(stepToken);
-        await PublishAsync(BonboardingEventKind.StepShown, step);
+        await PublishAsync(BonboardingEventKind.StepShown, step, changeReason: reason);
 
         if (Tour.OnStepChanged is { } onStepChanged)
         {
@@ -1050,7 +1060,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         // Only a step that was actually on screen can report how long it was there.
         if (lastStep is not null && _stepShown)
         {
-            await PublishAsync(BonboardingEventKind.StepLeft, lastStep, duration: DateTimeOffset.UtcNow - _stepShownAt);
+            await PublishAsync(BonboardingEventKind.StepLeft, lastStep, duration: _time.GetUtcNow() - _stepShownAt);
         }
 
         Status = reason switch
@@ -1137,7 +1147,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
 
             Status = BonboardingTourStatus.Running;
-            _stepShownAt = DateTimeOffset.UtcNow;
+            TargetIssue = BonboardingTargetIssue.None;
+            _stepShownAt = _time.GetUtcNow();
             Notify(BonboardingTourSessionChange.Step);
 
             var stepToken = _stepCts?.Token ?? CancellationToken.None;
@@ -1150,18 +1161,20 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken);
         }, CancellationToken.None);
 
-    public async ValueTask OnTargetLostAsync()
+    public ValueTask OnTargetLostAsync() => OnTargetLostAsync(BonboardingTargetIssue.NotFound);
+
+    public async ValueTask OnTargetLostAsync(BonboardingTargetIssue issue)
     {
         if (_disposed || CurrentStep is null || Status != BonboardingTourStatus.Running) return;
 
         var step = CurrentStep;
         var generation = _generation;
 
-        await RunGuardedAsync(ct => LoseTargetAsync(step, generation, ct), CancellationToken.None);
+        await RunGuardedAsync(ct => LoseTargetAsync(step, generation, issue, ct), CancellationToken.None);
     }
 
     /// <summary>Applies the step's missing-target behaviour to a target that left while it was shown.</summary>
-    private async Task LoseTargetAsync(BonboardingStepDefinition step, int generation, CancellationToken ct)
+    private async Task LoseTargetAsync(BonboardingStepDefinition step, int generation, BonboardingTargetIssue issue, CancellationToken ct)
     {
         // Another transition got here first; the lost target belonged to a step that is gone.
         if (generation != _generation || !ReferenceEquals(CurrentStep, step) || Status != BonboardingTourStatus.Running) return;
@@ -1173,7 +1186,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         var options = CurrentOptions!;
         var stepToken = _stepCts?.Token ?? CancellationToken.None;
 
-        await PublishAsync(BonboardingEventKind.TargetMissing, step);
+        TargetIssue = issue is BonboardingTargetIssue.None ? BonboardingTargetIssue.NotFound : issue;
+        _logger.LogInformation(
+            "BonboardingService step {StepId} of tour {TourId} lost its target {Target} ({Issue}).", step.Id, Tour.Id, _resolvedTarget, TargetIssue);
+
+        await PublishAsync(BonboardingEventKind.TargetMissing, step, targetIssue: TargetIssue);
 
         // The old rectangle no longer points at anything; drawing the spotlight there would lie.
         _geometry = null;
@@ -1205,6 +1222,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                 {
                     ApplyGeometryIfNewer(geometry);
                     Status = BonboardingTourStatus.Running;
+                    TargetIssue = BonboardingTargetIssue.None;
                     await PublishAsync(BonboardingEventKind.TargetResolved, step);
                     Notify(BonboardingTourSessionChange.Step);
                 }
@@ -1304,6 +1322,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         var step = CurrentStep;
         var generation = _generation;
         var behavior = CurrentOptions!.WaitTimeoutBehavior;
+        var waited = CurrentOptions.WaitTimeout;
 
         // Waiting again after a wait expired would spin forever.
         if (behavior == BonboardingMissingTargetBehavior.Wait) behavior = BonboardingMissingTargetBehavior.Skip;
@@ -1312,6 +1331,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             if (generation != _generation || !ReferenceEquals(CurrentStep, step)) return;
             if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
+
+            // The moment a missing target becomes something to fix: the user was shown no step for it.
+            _logger.LogWarning(
+                "BonboardingService step {StepId} of tour {TourId} waited {Timeout} for its target {Target} ({Issue}) and gives up: {Behavior}.",
+                step.Id, Tour.Id, waited, _resolvedTarget, TargetIssue is BonboardingTargetIssue.None ? BonboardingTargetIssue.NotFound : TargetIssue, behavior);
 
             if (behavior == BonboardingMissingTargetBehavior.Center)
             {
@@ -1340,7 +1364,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (geometry is not null) ApplyGeometryIfNewer(geometry);
 
         Status = BonboardingTourStatus.Running;
-        _stepShownAt = DateTimeOffset.UtcNow;
+        _stepShownAt = _time.GetUtcNow();
         Notify(BonboardingTourSessionChange.Step);
 
         if (_stepShown) return;
@@ -1529,7 +1553,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     // ---- Persistence -------------------------------------------------------
 
-    private bool ShouldPersist => Tour.Persist ?? _globalOptions.Persist;
+    /// <summary>A preview leaves the user's progress alone: it neither resumes it nor writes it.</summary>
+    private bool ShouldPersist => !IsPreview && (Tour.Persist ?? _globalOptions.Persist);
 
     private async Task PersistAsync(CancellationToken cancellationToken)
     {
@@ -1796,9 +1821,15 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         BonboardingStepDefinition? step = null,
         BonboardingStepAction? action = null,
         BonboardingTourEndReason? reason = null,
-        TimeSpan? duration = null)
+        TimeSpan? duration = null,
+        BonboardingStepChangeReason? changeReason = null,
+        BonboardingTargetIssue targetIssue = BonboardingTargetIssue.None)
     {
         var target = step ?? CurrentStep;
+        var now = _time.GetUtcNow();
+
+        // The event that ends the tour says how long it ran, for completion-time analytics.
+        if (reason is not null && duration is null && StartedAt != DateTimeOffset.MaxValue) duration = now - StartedAt;
 
         var onboardingEvent = new BonboardingEvent
         {
@@ -1810,6 +1841,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             Reason = reason,
             Error = kind == BonboardingEventKind.TourFailed ? Error : null,
             Duration = duration,
+            ChangeReason = changeReason,
+            TargetIssue = targetIssue,
+            IsPreview = IsPreview,
+            Timestamp = now,
         };
 
         // Observers and EventRaised handlers are application code like any other hook, and may

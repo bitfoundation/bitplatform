@@ -64,6 +64,13 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     /// <summary>Raised when the last task gets done while the checklist is on screen.</summary>
     [Parameter] public EventCallback OnCompleted { get; set; }
 
+    /// <summary>
+    /// Raised after the user dismissed the checklist with its button. The checklist, and the button that had focus, are
+    /// gone by then: move focus somewhere that makes sense in your layout (the button that reopens it, the heading of
+    /// the section), or a keyboard user is left on the page body.
+    /// </summary>
+    [Parameter] public EventCallback OnDismissed { get; set; }
+
     /// <summary>The tasks as they stand, or <see langword="null"/> before progress has been read.</summary>
     public IReadOnlyList<BonboardingChecklistItemState>? Items => _items;
 
@@ -72,15 +79,28 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
 
     private BonboardingLabels Labels => Localizer.GetLabels(null);
 
-    private int DoneCount => _items?.Count(state => state.IsDone) ?? 0;
+    /// <summary>The items the progress counts: the required ones, or every one when all of them are optional.</summary>
+    private IEnumerable<BonboardingChecklistItemState> Counted
+        => _items is not { } items ? [] : items.Exists(state => !state.IsOptional) ? items.Where(state => !state.IsOptional) : items;
 
-    private bool AllDone => _items is { Count: > 0 } items && items.All(state => state.IsDone);
+    private int CountedTotal => Counted.Count();
+
+    private int DoneCount => Counted.Count(state => state.IsDone);
+
+    private bool AllDone => CountedTotal > 0 && Counted.All(state => state.IsDone);
 
     private string ProgressText => BonboardingLabels.Format(
-        Labels.ChecklistProgressFormat, BonboardingLabels.DefaultChecklistProgressFormat, DoneCount, _items?.Count ?? 0);
+        Labels.ChecklistProgressFormat, BonboardingLabels.DefaultChecklistProgressFormat, DoneCount, CountedTotal);
 
     private string FillStyle
-        => "width:" + BonboardingCss.Number(_items is { Count: > 0 } items ? DoneCount * 100d / items.Count : 0) + "%";
+        => "width:" + BonboardingCss.Number(CountedTotal > 0 ? DoneCount * 100d / CountedTotal : 0) + "%";
+
+    private string StateName(BonboardingChecklistItemState state)
+        => state.IsDone ? "done" : state.IsLocked ? "locked" : "todo";
+
+    private string LockedText(BonboardingChecklistItemState state) => BonboardingLabels.Format(
+        Labels.ChecklistItemLockedFormat, BonboardingLabels.DefaultChecklistItemLockedFormat,
+        string.Join(Labels.ChecklistListSeparator, state.BlockedBy.Select(item => Localizer.Localize(item.Title))));
 
     private string ThemeAttribute => BonboardingCss.Theme(Theme);
 
@@ -122,6 +142,13 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
         // Signals tick items off only for checklists on screen, so this one tells the service it is.
         Guidance.RegisterChecklist(Checklist);
         _registered = Checklist;
+
+        // Once per definition: a checklist re-renders often, and its definition is the application's to fix.
+        foreach (var issue in Checklist.Validate())
+        {
+            Logger.Log(issue.Severity == BonboardingValidationSeverity.Error ? LogLevel.Error : LogLevel.Warning,
+                "BonboardingChecklist {ChecklistId}: {Problem} ({Code})", Checklist.Id, issue.Message, issue.Code);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -151,7 +178,7 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
             var dismissed = await BonboardingService.IsChecklistDismissedAsync(checklist.Id);
             var ticked = new HashSet<string>(await BonboardingService.GetCompletedChecklistItemsAsync(checklist.Id), StringComparer.Ordinal);
 
-            var states = new List<BonboardingChecklistItemState>(checklist.Items.Count);
+            var listed = new List<(BonboardingChecklistItem Item, bool Done)>(checklist.Items.Count);
             foreach (var item in checklist.Items)
             {
                 var context = new BonboardingChecklistItemContext(checklist, item, Services);
@@ -162,7 +189,21 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
                     || await IsTourCompletedAsync(item)
                     || (item.IsComplete is { } isComplete && await isComplete(context));
 
-                states.Add(new BonboardingChecklistItemState(item, done, IsActionable(item))
+                listed.Add((item, done));
+            }
+
+            // An item waits for the listed items it depends on that are not done yet. One that is not listed (its When
+            // said no) holds nothing up, and neither does an id that names no item, which Validate reports.
+            var todo = listed.Where(entry => !entry.Done).Select(entry => entry.Item).ToArray();
+
+            var states = new List<BonboardingChecklistItemState>(listed.Count);
+            foreach (var (item, done) in listed)
+            {
+                var blockedBy = item.DependsOn is { Count: > 0 } dependsOn
+                    ? todo.Where(other => other != item && dependsOn.Contains(other.Id, StringComparer.Ordinal)).ToArray()
+                    : null;
+
+                states.Add(new BonboardingChecklistItemState(item, done, IsActionable(item), blockedBy)
                 {
                     ActivateAsync = () => ActivateAsync(item),
                 });
@@ -208,6 +249,9 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
 
     private async Task ActivateAsync(BonboardingChecklistItem item)
     {
+        // A custom item template may still call it for an item that waits for others.
+        if (_items?.Find(state => state.Item == item) is { IsLocked: true }) return;
+
         try
         {
             if (item.OnClick is { } onClick)
@@ -240,6 +284,15 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     {
         await BonboardingService.DismissChecklistAsync(Checklist.Id);
         _dismissed = true;
+
+        if (OnDismissed.HasDelegate)
+        {
+            // Rendered away first, so the callback can move focus to an element that is there to stay: yielding hands the
+            // renderer the turn to apply the render queued here.
+            StateHasChanged();
+            await Task.Yield();
+            await OnDismissed.InvokeAsync();
+        }
     }
 
     private void OnTourEvent(object? sender, BonboardingEvent e)

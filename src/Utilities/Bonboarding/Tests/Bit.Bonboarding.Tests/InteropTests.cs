@@ -40,7 +40,7 @@ public class InteropTests : BunitContext
         // Still in flight from the first step when the second replaced it: a late advance would
         // skip a step the user never saw, a late frame would place the card against the old target.
         await interop.OnAdvanceTriggered("s", first);
-        await interop.OnTargetLost("s", first);
+        await interop.OnTargetLost("s", first, "not-found");
         await interop.OnWaitTimedOut("s", first);
         await interop.OnGeometryChanged("s", new BonboardingStepGeometry { Activation = first, Sequence = 99 });
 

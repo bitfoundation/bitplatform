@@ -299,9 +299,9 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
             : ValueTask.CompletedTask;
 
     [JSInvokable]
-    public ValueTask OnTargetLost(string sessionId, long activation)
+    public ValueTask OnTargetLost(string sessionId, long activation, string? issue)
         => IsCurrent(sessionId, activation)
-            ? Dispatch(sessionId, callbacks => callbacks.OnTargetLostAsync())
+            ? Dispatch(sessionId, callbacks => callbacks.OnTargetLostAsync(BonboardingStepGeometryIssues.Parse(issue)))
             : ValueTask.CompletedTask;
 
     [JSInvokable]

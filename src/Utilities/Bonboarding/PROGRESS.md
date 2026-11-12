@@ -121,6 +121,7 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 | Popover with spotlight, centred modal, templates, actions, progress | P1 | Done | ComponentTests, E2E TourTests |
 | Hints and beacons | P1 | Done (round 4) | `BonboardingBeacon`; GuidanceComponentTests, E2E GuidanceTests |
 | Checklists | P1 | Done (round 4) | `BonboardingChecklist`; GuidanceComponentTests, E2E |
+| Optional and prerequisite tasks, checklist validation, focus after dismissal | P1 | Done (round 13) | `Optional`, `DependsOn`, `Validate()`, `OnDismissed`; ChecklistTaskTests, E2E `A_task_waits_for_the_one_before_it_and_focus_follows_a_dismissal` |
 | Resource centre / launcher | P2 | Done (round 4) | `BonboardingTourList` (the launcher's content; the drawer around it is the application's) |
 | Banners, NPS/surveys | P3 | N/A | outside an onboarding library; an announcement is a one-step centred tour |
 
@@ -169,6 +170,8 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 | Cross-tab consistency | P1 | Done (round 6) | StorageTests, E2E CrossTabTests |
 | Server-backed stores | P1 | Done | `IBonboardingStore`, `IBonboardingStoreEvents` |
 | Scheduling and expiry windows | P3 | Partial | `CanStart` covers it; no dedicated members (documented) |
+| A global rule for automatic starts ("turn tips off"), starts the user asks for unaffected | P1 | Done (round 13) | `BonboardingOptions.CanAutoStart`, `BonboardingStartOptions.Automatic`; StartPolicyTests |
+| Preview without touching progress or analytics | P2 | Done (round 13) | `BonboardingStartOptions.Preview`, `IsPreview`; StartPolicyTests |
 | Persisted global throttle | P3 | Deferred | see round 2-3 notes |
 
 ### I-L. Developer experience, accessibility, theming, localisation
@@ -191,6 +194,9 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 | No polling, one measurement per frame, no interop when idle | P0 | Done | design; round 7 removed per-frame re-renders of the card |
 | Errors in hooks, stores, browser; disposal; races | P0 | Done | ResilienceTests, TourSessionTests |
 | Structured logging of invalid definitions, invalid selectors, store failures | P1 | Done | `ILogger`; no telemetry is collected |
+| Why a target is missing (absent, hidden, invalid selector), in events, on the session and in the markup | P1 | Done (round 13) | `BonboardingTargetIssue`; DiagnosticsTests, E2E ResilienceTests |
+| Tour duration, step change reason, clock-consistent timestamps | P1 | Done (round 13) | `BonboardingEvent.Duration`/`ChangeReason`/`Timestamp`; DiagnosticsTests |
+| Randomised placement invariants | P1 | Done (round 13) | PlacementInvariantTests: 4000 generated layouts per seed |
 
 ## Iteration log
 
@@ -211,6 +217,35 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 | 10 | Final adversarial audit | Found and fixed: the "no way forward" warning ignored a step's own `Body`; checklist items and tour lists ignored a version bump of a tour that was not registered; a beacon hint forced `Persist = true` over a global `false`; focus rings (drawn with `box-shadow`) were invisible in forced colors, a pre-existing WCAG 2.4.7 failure; element ids built from user ids broke `aria-labelledby` when an id held a space; the one pre-existing build warning. +3 unit tests, +1 browser test |
 | 11 | Demo review in three engines | Every demo page driven by hand-written Playwright scripts in Chromium (installed Chrome 156), Firefox and WebKit, at 1280 and 390 pixels wide: every step's geometry (in the viewport, framing its target, not covering it, the target actually shown by its panes), focus, announcements and console. Found and fixed: a target hidden in a pane left scrolled was never scrolled to; a target scrolled wholly out of its pane was spotlit at its own box, over the content beside the pane; Tab escaped the trap of a `TargetOnly` step instead of reaching its target; completing a tour with Next reported `StepLeft` twice; the Flows page's feature flag could never be switched on (a `bool` bound to a `<select>`); the Workspace page told the reader to use the docs navigation that the step's blocker covers; the usage beacon on `/guidance` could not be brought back; the welcome tour invited a shortcut that opens the site's palette beneath its blocker. The accessibility tests now let a fade-in finish before axe reads colours (the waiting card failed contrast intermittently in Firefox, measured mid-fade). +1 engine test, +6 browser tests (new `FlowTests`) |
 | 12 | Demo completeness | Every page checked against the README's feature list: about fifty public features had no sample anywhere (among them `AdditionalTargets`, `AdvanceOnSignal`, custom `AdvanceOn` triggers, `CanStart`, `WhenBusy`/`Priority`, snooze, pause/resume, hooks, `Validate()`, step `Header`/`Footer`, `OverlayTemplate`/`WaitingTemplate`, the overlay options, checklist `When`/`Route`/`OnCompleted`, beacon `OnClick`, `HideCompleted`). New page `/lifecycle`; samples, option tables and code added to every other page. Wrong descriptions fixed: the theming page said `System` is always light (it follows a dark OS since round 1) and its snippet set `--bit-bonboarding-duration`, which the engine writes inline; the dynamic sample's code did not match the code that ran; the headless page's second host, rendered with no session, was an ambient host that drew the page's other tours twice (the README's "Several hosts" snippet had the same trap). +14 browser tests (`LifecycleTests`, `SampleTests`), +1 page in the accessibility sweep |
+| 13 | Second improvement plan, reviewed against the code | A new, wider plan (help centre, adaptive onboarding, JSON definitions, a visual editor, integration packages, ten more rounds) was checked item by item against the source: most of it was already built and tested by rounds 1-12. What was missing and fits the product was built: why a target is missing (`BonboardingTargetIssue`, from the browser layer through `TargetMissing`, `IBonboardingTourSession.TargetIssue`, `data-bonboarding-target-issue` and the log, with a `Warning` when a wait runs out); events carrying the tour's run time, how the user reached each step, `IsPreview`, and timestamps and durations from the registered `TimeProvider` (they used `DateTimeOffset.UtcNow`, so a fake clock gave wrong numbers); preview starts; a global gate for automatic starts with an explicit `Automatic` start option (a declarative `AutoStart = Always` now goes through it, instead of re-implementing the snooze check); checklist tasks that are optional or wait for others, `Validate()` for checklists (duplicate ids, unknown or self prerequisites, circles), `OnDismissed` (the round 11 decision about focus after a dismissal). Randomised placement invariants over 4000 layouts per seed. +35 unit and component tests (377), +1 browser test and 3 browser assertions. Demo: a second checklist on `/guidance`, a preview button and the new event fields on `/events`, a "turn automatic tips off" switch on `/lifecycle` |
+
+### Round 13 review notes
+
+- Not built, on purpose, with the reason:
+  - Separate integration packages (Brouter, Blex, Borm, Bmotion, BlazeDb, Bcrdt, Balette, BevTools). Every one of
+    them meets Bonboarding at an application event or a store, and both already have a decoupled seam:
+    `SignalAsync` / `AdvanceOnSignal` / `CompleteOnSignal` for "the form was submitted", "the item was dropped",
+    "the state changed", and `IBonboardingStore` (+ `IBonboardingStoreEvents`) for persistence and sync. A package per
+    library would be a few lines of glue each, versioned and shipped forever; a README recipe is the better form.
+    Revisit when a recipe turns out to need more than that.
+  - JSON definitions with an expression language. Definitions are plain C# objects, so configuration, a database or
+    a CMS can already build them; a restricted expression model is a security surface to own for a need nobody has
+    shown. Revisit with a concrete use.
+  - A visual authoring tool and a fluent builder (round 2 already found the builder adds nothing over initialisers).
+  - Auto-advancing steps on a timer: WCAG 2.2.1 (timing adjustable) argues against them, and `AdvanceOnSignal` covers
+    "advance when the operation finished", which is what a timer usually approximates.
+  - "Ambiguous" as a target issue. A selector matching several rendered elements is the responsive case the engine
+    supports on purpose (first rendered match); reporting it would be noise.
+- The first placement invariant ("an overflow of 0 never covers the target") failed on generated layouts. Not an
+  engine defect: when nothing fits, the engine pushes the least-bad candidate on screen and then reports the overflow
+  left after that push, which is 0. The invariant now works out independently whether any side has room, and only
+  then demands the target stays uncovered. `Overflow`'s meaning is unchanged.
+- The second checklist on `/guidance` made `.bit-bonboarding-checklist` match twice, which Playwright's strict mode
+  rejects; the existing browser tests now locate checklists by `data-bonboarding-checklist`.
+- `OnDismissed` yields once before it runs so the render that removes the checklist is applied first; otherwise a
+  callback moving focus would run while the dismissed checklist (and its focused button) were still in the DOM.
+- 13 build warnings (BL0012, BL0016) are reported by analyzers of the .NET 11 SDK on demo files this round did not
+  touch (site kit, `Dynamic.razor`, `Headless.razor`); left for a pass over the shared site kit.
 
 ### Round 12 verification
 

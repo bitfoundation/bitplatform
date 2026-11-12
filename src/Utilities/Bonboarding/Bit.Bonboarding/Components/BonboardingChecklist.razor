@@ -37,7 +37,7 @@
         <div class="bit-bonboarding-progress-bar bit-bonboarding-checklist-progress"
              role="progressbar"
              aria-valuemin="0"
-             aria-valuemax="@_items.Count"
+             aria-valuemax="@CountedTotal"
              aria-valuenow="@DoneCount"
              aria-valuetext="@ProgressText"
              aria-label="@(_title ?? Labels.ProgressLabel)">
@@ -57,7 +57,8 @@
 
                 <li class="bit-bonboarding-checklist-item"
                     data-bonboarding-item="@state.Item.Id"
-                    data-bonboarding-state="@(state.IsDone ? "done" : "todo")">
+                    data-bonboarding-state="@StateName(state)"
+                    data-bonboarding-optional="@(state.IsOptional ? "true" : null)">
                     @if (ItemTemplate is not null)
                     {
                         @ItemTemplate(state)
@@ -73,18 +74,19 @@
                                     class="bit-bonboarding-checklist-action"
                                     aria-describedby="@descriptionId"
                                     @onclick="state.ActivateAsync">
-                                <span class="bit-bonboarding-checklist-check" aria-hidden="true"></span>
-                                <span class="bit-bonboarding-checklist-item-title">@Localizer.Localize(state.Item.Title)</span>
-                                <span class="bit-bonboarding-sr-only">, @(state.IsDone ? Labels.ChecklistItemDone : Labels.ChecklistItemTodo)</span>
+                                @ItemContent(state)
                             </button>
                         }
                         else
                         {
                             <div class="bit-bonboarding-checklist-action">
-                                <span class="bit-bonboarding-checklist-check" aria-hidden="true"></span>
-                                <span class="bit-bonboarding-checklist-item-title">@Localizer.Localize(state.Item.Title)</span>
-                                <span class="bit-bonboarding-sr-only">, @(state.IsDone ? Labels.ChecklistItemDone : Labels.ChecklistItemTodo)</span>
+                                @ItemContent(state)
                             </div>
+                        }
+
+                        @if (state.IsLocked)
+                        {
+                            <p class="bit-bonboarding-checklist-item-locked">@LockedText(state)</p>
                         }
 
                         @if (descriptionId is not null)
@@ -96,4 +98,18 @@
             }
         </ul>
     </section>
+}
+
+@code {
+    // The tick box, the title, the optional tag and what a screen reader hears about the item's state: the same for an
+    // item that can be pressed and one that cannot.
+    private RenderFragment ItemContent(BonboardingChecklistItemState state) => @<text>
+        <span class="bit-bonboarding-checklist-check" aria-hidden="true"></span>
+        <span class="bit-bonboarding-checklist-item-title">@Localizer.Localize(state.Item.Title)</span>
+        @if (state.IsOptional)
+        {
+            <span class="bit-bonboarding-checklist-tag">@Labels.ChecklistItemOptional</span>
+        }
+        <span class="bit-bonboarding-sr-only">, @(state.IsDone ? Labels.ChecklistItemDone : Labels.ChecklistItemTodo)</span>
+    </text>;
 }

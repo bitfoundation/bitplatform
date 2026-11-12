@@ -1,4 +1,4 @@
-using Bit.Bonboarding.Tests.E2E.Infrastructure;
+﻿using Bit.Bonboarding.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.Bonboarding.Tests.E2E;
@@ -133,7 +133,7 @@ public sealed class SampleTests : BonboardingTest
     public async Task An_administrators_task_is_listed_for_administrators_and_ticked_off_from_another_page()
     {
         var page = await OpenAsync("/guidance");
-        var checklist = page.Locator(".bit-bonboarding-checklist");
+        var checklist = page.Locator("[data-bonboarding-checklist='demo-getting-started']");
         var administrator = page.GetByRole(AriaRole.Checkbox, new() { Name = "Show the administrator's task" });
 
         await Assertions.Expect(checklist.Locator(".bit-bonboarding-checklist-count")).ToHaveTextAsync("0 of 3 done");
