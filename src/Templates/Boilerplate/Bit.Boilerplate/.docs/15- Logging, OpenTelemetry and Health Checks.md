@@ -320,7 +320,10 @@ The project includes **health check endpoints** to monitor application health.
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
-   format and adds each check's failure status, timeout and full exception, plus the time of the report. It needs the
+   format and adds each check's failure status, timeout, category and full exception, plus the time of the report. It also says
+   which build answered and since when: `applicationVersion` (the informational version, which ends with the commit
+   in a Release build), `instanceName` (the machine name) and `startedAt` (when the process started, in UTC), so a
+   monitor that polls it can mark deployments and restarts, instance by instance. It needs the
    `AppFeatures.System.Operations_View` feature, which only global admins have. Like `/health`, it answers 503 when a
    check reports Unhealthy, so a monitor can go by the status code, and the report is in the body either way.
 
@@ -329,8 +332,12 @@ The project includes **health check endpoints** to monitor application health.
 mapped everywhere too, but behind its feature and never cached. It is also an **OAuth resource** (`OAuthResources`), so
 an external monitor can read it with a token of its own instead of a user's session, minted through the same consent
 page as `/dev-mcp`. Granting one takes more than reading the page does: the feature **and** a session that signed in
-with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended, exceptions and
-connection strings and all. Adding health check endpoints to a non-development
+with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended. A token gets
+the report without the exceptions, which can carry a server name or a connection string, nor the description a check
+that throws takes from its exception's message; only the app's own session, which the Operations page uses, reads them. The resource's metadata document
+(`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists the `healthz` scope and carries
+`bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
+before it asks for a token. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
 expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a
@@ -356,7 +363,8 @@ caching, prerendering, forwarded headers, the telemetry exporters or a force-upd
 check already covers is deliberately absent from it, and no credential is ever in it - each one is a boolean saying
 whether it is set, which `DeploymentConfigurationTests` asserts against the deployment's own connection strings.
 Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
-a new check there to give it the same treatment.
+a new check there to give it the same treatment. A check it doesn't know goes to the group its category names, or to
+**Other**.
 
 With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks
 under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). If that report can't be read, a
@@ -378,6 +386,16 @@ It also adds checks for remote dependencies. Each one has a timeout and reports 
 provider outage does not take an otherwise healthy instance out of the load balancer:
 - **`userProfileImages`**: the blob storage.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
+- **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
+  needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
+  or without one DMARC record with a policy at `_dmarc.<domain>` or at its organizational domain (two of them, or one
+  without `p`, and receivers apply none), Gmail, Outlook and Yahoo put the app's mail, sign-in codes and magic links
+  included, in spam or drop it, so the check reports Degraded. DKIM's selector is the sending service's choice, so DKIM
+  is only looked up at the selectors Google Workspace, Microsoft 365, SendGrid, Mailjet, Mandrill and Resend use for
+  every customer, and reported in the entry's data without changing its status, even when the lookup fails. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
+  (`privaterelay.appleid.com`) only arrives once the domain is registered with Apple, which no API can confirm. The
+  check is left out where mail is caught rather than delivered: the shared ethereal.email mailbox, or a loopback SMTP
+  server such as Mailpit in development.
 - **`sms`**: fetches the Twilio account and requires it to be active.
 - **`keycloakIdentity`**: reads Keycloak's discovery document.
 <!--#if (cloudflare == true)-->
@@ -423,12 +441,13 @@ Google, GitHub, Twitter and Facebook sign-in can't be verified without a user si
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
 missing, reporting Degraded the same way.
 
-`smtp`, `firebase`, `apns`,
+`smtp`, `emailDelivery`, `firebase`, `apns`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`). Probes that arrive together share one run. A
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 minutes for
+`emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins.
 
@@ -438,6 +457,11 @@ memory without it. `redis-persistent` is registered only where `Server.Api` runs
 standalone API, `Server.Web` has only `redis-cache` and also checks the API's `/alive` endpoint (`serverApi`, Degraded).
 
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
+
+Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`) as a tag,
+which `/healthz` reports as the entry's `category`, so the Operations page and a monitor can group a check they don't know
+by name. Tag yours too, e.g. `tags: [HealthCheckCategories.Integrations]` for a payment gateway, a map or a CRM; a
+category of your own, `category:<Name>`, works as well.
 
 ---
 

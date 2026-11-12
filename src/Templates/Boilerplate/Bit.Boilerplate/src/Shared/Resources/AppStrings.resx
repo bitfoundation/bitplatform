@@ -1928,7 +1928,7 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <value>Read diagnostic information about this deployment.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>Read the detailed health report of this deployment, including the error details of anything that is failing.</value>
+    <value>Read the detailed health report of this deployment, without the error details of what is failing.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Read the health report.</value>

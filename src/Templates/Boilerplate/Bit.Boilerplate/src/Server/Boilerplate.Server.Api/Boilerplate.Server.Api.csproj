@@ -19,6 +19,17 @@
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     </PropertyGroup>
 
+    <!--/-:msbuild-conditional:noEmit -->
+    <!-- The template version bit.json records, served as bit_template_version in the OAuth protected resource metadata (See OAuthProtectedResource). -->
+    <PropertyGroup Condition="'$(BitTemplateVersion)' == '' AND Exists('$(MSBuildThisFileDirectory)../../../bit.json')">
+        <BitTemplateVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../../../bit.json')), '"version"\s*:\s*"([^"]+)"').Groups[1].Value)</BitTemplateVersion>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(BitTemplateVersion)' != ''">
+        <AssemblyMetadata Include="BitTemplateVersion" Value="$(BitTemplateVersion)" />
+    </ItemGroup>
+    <!--/+:msbuild-conditional:noEmit -->
+
     <ItemGroup>
         <Using Include="System.Text" />
         <Using Include="Microsoft.Extensions.Options" />
@@ -71,6 +82,7 @@
         <PackageReference Include="QRCoder" />
         <PackageReference Include="Bit.Bmage" />
         <PackageReference Include="FluentEmail.Smtp" />
+        <PackageReference Include="DnsClient" />
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="FluentStorage.AWS" />

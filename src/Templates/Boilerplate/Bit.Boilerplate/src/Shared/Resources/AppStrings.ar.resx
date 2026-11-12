@@ -1928,7 +1928,7 @@
     <value>قراءة معلومات تشخيصية عن هذا النشر.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>قراءة تقرير الحالة التفصيلي لهذا النشر، بما في ذلك تفاصيل أخطاء كل ما هو معطّل.</value>
+    <value>قراءة تقرير الحالة التفصيلي لهذا النشر، دون تفاصيل أخطاء ما هو معطّل.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>قراءة تقرير الحالة.</value>

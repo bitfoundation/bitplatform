@@ -1928,7 +1928,7 @@
     <value>इस डिप्लॉयमेंट की डायग्नोस्टिक जानकारी पढ़ना।</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>इस डिप्लॉयमेंट की विस्तृत हेल्थ रिपोर्ट पढ़ना, जिसमें विफल हो रही हर चीज़ के एरर विवरण शामिल हैं।</value>
+    <value>इस डिप्लॉयमेंट की विस्तृत हेल्थ रिपोर्ट पढ़ना, विफल हो रही चीज़ों के एरर विवरण के बिना।</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>हेल्थ रिपोर्ट पढ़ना।</value>

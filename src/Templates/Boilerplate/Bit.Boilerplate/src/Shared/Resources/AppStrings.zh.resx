@@ -1928,7 +1928,7 @@
     <value>读取此部署的诊断信息。</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>读取此部署的详细健康报告，包括所有故障项的错误详情。</value>
+    <value>读取此部署的详细健康报告，不含故障项的错误详情。</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>读取健康报告。</value>

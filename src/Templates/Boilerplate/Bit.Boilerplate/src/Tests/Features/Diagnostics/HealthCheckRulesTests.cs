@@ -8,7 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Boilerplate.Tests.Features.Diagnostics;
 
 /// <summary>
-/// <see cref="CachedHealthCheck"/>, <see cref="AppCertificateHealthCheck"/> and <see cref="SmtpHealthCheck"/> without a server.
+/// <see cref="CachedHealthCheck"/>, <see cref="AppCertificateHealthCheck"/>, <see cref="SmtpHealthCheck"/> and <see cref="EmailDeliveryHealthCheck"/> without a server.
 /// </summary>
 [TestClass, TestCategory("UnitTest")]
 public partial class HealthCheckRulesTests
@@ -135,6 +135,230 @@ public partial class HealthCheckRulesTests
         var result = await Check(new SmtpHealthCheck(new SmtpSettings("127.0.0.1", port, "user", "secret", EnableSsl: false)));
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
+    }
+
+    private const string Spf = "v=spf1 include:_spf.google.com ~all";
+    private const string Dmarc = "v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com";
+
+    /// <summary>
+    /// <c>emailDelivery</c>, from records handed to it instead of a DNS server. Missing SPF or DMARC sends sign-in codes
+    /// to spam, so it is Degraded, never Unhealthy: the app itself works.
+    /// </summary>
+    [TestMethod]
+    [DataRow(Spf, Dmarc, HealthStatus.Healthy, DisplayName = "SPF and DMARC")]
+    [DataRow(null, Dmarc, HealthStatus.Degraded, DisplayName = "No SPF")]
+    [DataRow("v=spf1 +all", Dmarc, HealthStatus.Degraded, DisplayName = "An SPF that lets every server send")]
+    [DataRow("v=spf1 a mx all", Dmarc, HealthStatus.Degraded, DisplayName = "A bare all, which is +all")]
+    [DataRow("v=spf1; -all", Dmarc, HealthStatus.Degraded, DisplayName = "No SPF: a semicolon doesn't end its version (RFC 7208 §4.5)")]
+    [DataRow(Spf, null, HealthStatus.Degraded, DisplayName = "No DMARC")]
+    [DataRow(null, null, HealthStatus.Degraded, DisplayName = "Neither")]
+    public async Task EmailDeliveryHealthCheck_Should_NeedSpfAndDmarc(string? spf, string? dmarc, HealthStatus expectedStatus)
+    {
+        Dictionary<string, string[]> records = new()
+        {
+            // Another TXT record at the domain must not pass for SPF.
+            ["example.com"] = spf is null ? ["google-site-verification=abc"] : ["google-site-verification=abc", spf]
+        };
+
+        if (dmarc is not null)
+        {
+            records["_dmarc.example.com"] = [dmarc];
+        }
+
+        var result = await CheckEmailDelivery(new("example.com", "smtp.example.net", AppleSignIn: false), records);
+
+        Assert.AreEqual(expectedStatus, result.Status, result.Description);
+        Assert.AreEqual("example.com", result.Data["Domain"]);
+    }
+
+    /// <summary>Two SPF records are a permanent error to receivers (RFC 7208 §4.5), the same as none.</summary>
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_ReportDegraded_ForTwoSpfRecords()
+    {
+        var result = await CheckEmailDelivery(new("example.com", "smtp.example.net", AppleSignIn: false), new()
+        {
+            ["example.com"] = [Spf, "v=spf1 include:sendgrid.net ~all"],
+            ["_dmarc.example.com"] = [Dmarc]
+        });
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.Contains("2 SPF records", result.Description!);
+    }
+
+    /// <summary>
+    /// Two DMARC records at a name, or one without a valid policy, and receivers apply no DMARC at all (RFC 7489 §6.6.3),
+    /// without falling back to the organizational domain. A record without <c>p</c> but with a reporting address counts
+    /// as <c>p=none</c>.
+    /// </summary>
+    [TestMethod]
+    [DataRow(new[] { "v=DMARC1; p=reject" }, HealthStatus.Healthy, null, DisplayName = "One record with a policy")]
+    [DataRow(new[] { "v=DMARC1;p=none" }, HealthStatus.Healthy, null, DisplayName = "No space after the version")]
+    [DataRow(new[] { "v=DMARC1; rua=mailto:dmarc@example.com" }, HealthStatus.Healthy, null, DisplayName = "No policy, but a reporting address: p=none")]
+    [DataRow(new[] { "v=DMARC1; p=quarantine", "v=DMARC1; p=reject" }, HealthStatus.Degraded, "2 DMARC records", DisplayName = "Two records")]
+    [DataRow(new[] { "v=DMARC1" }, HealthStatus.Degraded, "no valid policy", DisplayName = "No policy")]
+    [DataRow(new[] { "v=DMARC1; p=strict" }, HealthStatus.Degraded, "no valid policy", DisplayName = "A policy that isn't one")]
+    public async Task EmailDeliveryHealthCheck_Should_NeedOneDmarcRecord_WithAPolicy(string[] dmarc, HealthStatus expectedStatus, string? expectedProblem)
+    {
+        var result = await CheckEmailDelivery(new("mail.example.com", "smtp.example.net", AppleSignIn: false), new()
+        {
+            ["mail.example.com"] = [Spf],
+            ["_dmarc.mail.example.com"] = dmarc,
+            // Not reached: a receiver stops at the records it found.
+            ["_dmarc.example.com"] = [Dmarc]
+        });
+
+        Assert.AreEqual(expectedStatus, result.Status, result.Description);
+        Assert.Contains("_dmarc.mail.example.com", (string)result.Data["Dmarc"]);
+        if (expectedProblem is not null)
+        {
+            Assert.Contains(expectedProblem, result.Description!);
+        }
+    }
+
+    /// <summary>A receiver falls back to the organizational domain's DMARC record (RFC 7489 §6.6.3), and so does the check.</summary>
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_AcceptTheOrganizationalDomainsDmarc()
+    {
+        var result = await CheckEmailDelivery(new("mail.example.com", "smtp.example.net", AppleSignIn: false), new()
+        {
+            ["mail.example.com"] = [Spf],
+            ["_dmarc.example.com"] = [Dmarc]
+        });
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.Contains("_dmarc.example.com", (string)result.Data["Dmarc"]);
+    }
+
+    /// <summary>
+    /// DKIM is looked up only at the selectors the SMTP host's service uses for everyone, and only reported: a missing
+    /// one leaves a healthy domain healthy, as the app can't know a selector the service chose.
+    /// </summary>
+    [TestMethod]
+    [DataRow("smtp.gmail.com", "google", true, DisplayName = "Google Workspace, signed")]
+    [DataRow("smtp.office365.com", "selector1", false, DisplayName = "Microsoft 365, not signed")]
+    [DataRow("smtp.sendgrid.net", "s1", true, DisplayName = "SendGrid, signed")]
+    public async Task EmailDeliveryHealthCheck_Should_OnlyReportDkim_AtTheServicesSelectors(string smtpHost, string selector, bool signed)
+    {
+        Dictionary<string, string[]> records = new()
+        {
+            ["example.com"] = [Spf],
+            ["_dmarc.example.com"] = [Dmarc]
+        };
+
+        if (signed)
+        {
+            records[$"{selector}._domainkey.example.com"] = ["v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A"];
+        }
+
+        var result = await CheckEmailDelivery(new("example.com", smtpHost, AppleSignIn: false), records);
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.Contains($"{(signed ? "found" : "none")} at {selector}._domainkey.example.com", (string)result.Data["Dkim"]);
+    }
+
+    /// <summary>
+    /// A DKIM name usually points at the sending service's own DNS, so its lookup can fail while SPF and DMARC answer. It
+    /// is reported, and the status stays what SPF and DMARC make it.
+    /// </summary>
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_KeepTheStatus_WhenADkimLookupFails()
+    {
+        var result = await Check(new EmailDeliveryHealthCheck(new("example.com", "smtp.office365.com", AppleSignIn: false), (name, _) => name switch
+        {
+            "example.com" => Task.FromResult<string[]>([Spf]),
+            "_dmarc.example.com" => Task.FromResult<string[]>([Dmarc]),
+            "selector1._domainkey.example.com" => Task.FromException<string[]>(new InvalidOperationException("SERVFAIL")),
+            _ => Task.FromResult<string[]>([])
+        }));
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.IsNull(result.Exception);
+        Assert.Contains("couldn't be read at selector1._domainkey.example.com", (string)result.Data["Dkim"]);
+        Assert.Contains("none at selector2._domainkey.example.com", (string)result.Data["Dkim"]);
+    }
+
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_NotGuessDkimSelectors_ForAServiceThatGivesEachDomainItsOwn()
+    {
+        List<string> lookedUp = [];
+
+        var result = await CheckEmailDelivery(new("example.com", "email-smtp.eu-west-1.amazonaws.com", AppleSignIn: false), new()
+        {
+            ["example.com"] = [Spf],
+            ["_dmarc.example.com"] = [Dmarc]
+        }, lookedUp);
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.DoesNotContain(name => name.Contains("._domainkey.", StringComparison.Ordinal), lookedUp);
+        Assert.Contains("Not looked up", (string)result.Data["Dkim"]);
+    }
+
+    /// <summary>Apple's private relay only takes mail from a domain registered with Apple, which no API can confirm.</summary>
+    [TestMethod]
+    [DataRow(true, DisplayName = "Sign in with Apple configured")]
+    [DataRow(false, DisplayName = "Not configured")]
+    public async Task EmailDeliveryHealthCheck_Should_NoteApplesPrivateRelay_OnlyWithSignInWithApple(bool appleSignIn)
+    {
+        var result = await CheckEmailDelivery(new("example.com", "smtp.example.net", appleSignIn), new()
+        {
+            ["example.com"] = [Spf],
+            ["_dmarc.example.com"] = [Dmarc]
+        });
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, "A note, not a finding.");
+        Assert.AreEqual(appleSignIn, result.Data.ContainsKey("AppleRelay"));
+        if (appleSignIn)
+        {
+            Assert.Contains("privaterelay.appleid.com", (string)result.Data["AppleRelay"]);
+        }
+    }
+
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_ReportTheRegisteredFailureStatus_WhenDnsFails()
+    {
+        var result = await Check(new EmailDeliveryHealthCheck(new("example.com", "smtp.example.net", AppleSignIn: false),
+            (_, _) => Task.FromException<string[]>(new InvalidOperationException("SERVFAIL"))));
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.IsNotNull(result.Exception);
+    }
+
+    /// <summary>
+    /// Nothing to check where mail is caught rather than delivered, or where there is no sender address to take a
+    /// domain from.
+    /// </summary>
+    [TestMethod]
+    [DataRow("DoNotReply@example.com", "smtp.ethereal.email", false, false, DisplayName = "The shared ethereal.email test mailbox")]
+    [DataRow("DoNotReply@example.com", "localhost", true, false, DisplayName = "Mailpit in development")]
+    [DataRow("DoNotReply@example.com", "127.0.0.1", true, false, DisplayName = "A loopback catcher in development")]
+    [DataRow("DoNotReply@example.com", "localhost", false, true, DisplayName = "A local relay outside development")]
+    [DataRow("", "smtp.example.net", false, false, DisplayName = "No sender address")]
+    [DataRow("DoNotReply@Example.COM", "smtp.example.net", false, true, DisplayName = "A real sender and SMTP server")]
+    public void EmailDeliverySettings_Should_OnlyExist_WhereMailIsDelivered(string defaultFromEmail, string smtpHost, bool isDevelopment, bool expected)
+    {
+        var settings = EmailDeliverySettings.For(defaultFromEmail, smtpHost, appleSignIn: false, isDevelopment);
+
+        Assert.AreEqual(expected, settings is not null);
+        if (settings is not null)
+        {
+            Assert.AreEqual("example.com", settings.SenderDomain);
+        }
+    }
+
+    private async Task<HealthCheckResult> CheckEmailDelivery(EmailDeliverySettings settings, Dictionary<string, string[]> records, List<string>? lookedUp = null)
+    {
+        return await Check(new EmailDeliveryHealthCheck(settings, (name, _) =>
+        {
+            if (lookedUp is not null)
+            {
+                lock (lookedUp)
+                {
+                    lookedUp.Add(name);
+                }
+            }
+
+            return Task.FromResult(records.GetValueOrDefault(name) ?? []);
+        }));
     }
 
     /// <summary>

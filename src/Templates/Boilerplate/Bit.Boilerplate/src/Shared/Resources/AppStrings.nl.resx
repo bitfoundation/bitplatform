@@ -1928,7 +1928,7 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <value>Diagnostische informatie over deze deployment lezen.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>Het gedetailleerde statusrapport van deze deployment lezen, inclusief de foutdetails van alles wat faalt.</value>
+    <value>Het gedetailleerde statusrapport van deze deployment lezen, zonder de foutdetails van wat faalt.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Het statusrapport lezen.</value>

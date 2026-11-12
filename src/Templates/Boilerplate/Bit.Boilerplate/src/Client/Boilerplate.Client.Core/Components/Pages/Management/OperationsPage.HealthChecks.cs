@@ -6,7 +6,8 @@ namespace Boilerplate.Client.Core.Components.Pages.Management;
 public partial class OperationsPage
 {
     /// <summary>
-    /// The groups the page shows checks in, in this order. A check the catalog below doesn't know lands in "Other".
+    /// The groups the page shows checks in, in this order. A check the catalog below doesn't know lands in the group its
+    /// report names (See HealthCheckCategories), and in "Other" when it names none of these.
     /// </summary>
     private static readonly (string Name, string IconName, string About)[] categories =
     [
@@ -14,6 +15,7 @@ public partial class OperationsPage
         ("Messaging", BitIconName.Message, "How the app reaches people: email, SMS, push and realtime."),
         ("Identity", BitIconName.Permissions, "External sign in providers and bot protection."),
         ("AI", BitIconName.Robot, "The models behind the chatbot, search and voice calls."),
+        ("Integrations", BitIconName.PlugConnected, "The other services the app calls, such as a payment gateway or a map."),
         //#if (api == "Standalone")
         ("Web server", BitIconName.Website, "Server.Web, which renders the pages in front of the standalone API."),
         //#endif
@@ -44,6 +46,7 @@ public partial class OperationsPage
         //#endif
 
         ["smtp"] = ("Email", "Messaging", BitIconName.Mail, "Signs in to the SMTP server without sending anything."),
+        ["emailDelivery"] = ("Email sender domain", "Messaging", BitIconName.MailCheck, "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam."),
         ["sms"] = ("SMS", "Messaging", BitIconName.CellPhone, "The Twilio account is active."),
         ["firebase"] = ("Android push", "Messaging", BitIconName.Ringer, "Firebase Cloud Messaging accepts the credentials."),
         ["apns"] = ("Apple push", "Messaging", BitIconName.Ringer, "APNs accepts the credentials."),
@@ -103,8 +106,11 @@ public partial class OperationsPage
 
     private sealed class CheckView(string name, HealthReportEntryDto entry)
     {
+        // A check the catalog doesn't know, such as one of your own, takes the group and icon of its category.
         private readonly (string Title, string Category, string IconName, string About) info =
-            catalog.GetValueOrDefault(name, (name, "Other", BitIconName.Diagnostic, ""));
+            catalog.TryGetValue(name, out var known) ? known
+            : categories.FirstOrDefault(category => category.Name == entry.Category) is { Name: not null } group ? (name, group.Name, group.IconName, "")
+            : (name, "Other", BitIconName.Diagnostic, "");
 
         public string Name => name;
 

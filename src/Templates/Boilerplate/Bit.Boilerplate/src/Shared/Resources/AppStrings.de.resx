@@ -1928,7 +1928,7 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
     <value>Diagnoseinformationen dieser Bereitstellung lesen.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>Den ausführlichen Zustandsbericht dieser Bereitstellung lesen, samt Fehlerdetails von allem, was gerade ausfällt.</value>
+    <value>Den ausführlichen Zustandsbericht dieser Bereitstellung lesen, ohne die Fehlerdetails von allem, was gerade ausfällt.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Den Zustandsbericht lesen.</value>

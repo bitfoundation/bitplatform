@@ -1928,7 +1928,7 @@
     <value>خواندن اطلاعات تشخیصی این استقرار.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>خواندن گزارش تفصیلی سلامت این استقرار، از جمله جزئیات خطای هر چیزی که از کار افتاده است.</value>
+    <value>خواندن گزارش تفصیلی سلامت این استقرار، بدون جزئیات خطای چیزهایی که از کار افتاده‌اند.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>خواندن گزارش سلامت.</value>

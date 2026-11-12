@@ -8,6 +8,7 @@ using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
 using Boilerplate.Server.Api.Features.Identity.OAuth.Services;
 using Boilerplate.Server.Api.Features.Diagnostic;
+using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Server.Api.Features.Attachments;
 using Boilerplate.Server.Api.Features.PersonalData;
 //#if (notification == true)
@@ -87,6 +88,9 @@ public static partial class Program
         //#if (redis == true)
         // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
         builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
+        // Aspire registers its health check without tags, so its category is added here (See HealthCheckCategories).
+        services.PostConfigure<HealthCheckServiceOptions>(options =>
+            options.Registrations.SingleOrDefault(r => r.Name is "StackExchange.Redis_redis-persistent")?.Tags.Add(HealthCheckCategories.Platform));
 
         //#endif
         builder.AddServerApiHealthChecks();
@@ -981,83 +985,102 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
+        // Every check carries one of HealthCheckCategories as a tag, which /healthz reports as the entry's category: the
+        // Operations page and a monitor group a check they don't know by it. Give a check of your own one too.
         var healthChecksBuilder = builder.AddDefaultHealthChecks()
-            .AddDbContextCheck<AppDbContext>()
-            .AddHangfire(setup => setup.MinimumAvailableServers = 1)
-            .AddCheck<AppCertificateHealthCheck>("appCertificate")
+            .AddDbContextCheck<AppDbContext>(tags: [HealthCheckCategories.Platform])
+            .AddHangfire(setup => setup.MinimumAvailableServers = 1, tags: [HealthCheckCategories.Platform])
+            .AddCheck<AppCertificateHealthCheck>("appCertificate", tags: [HealthCheckCategories.Platform])
             // Remote dependencies from here on are bounded and report Degraded, which keeps `/health` at 200 (See
             // MapAppHealthChecks): a provider outage must not drain an otherwise healthy instance.
-            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<UserProfileImagesStorageHealthCheck>("userProfileImages", failureStatus: HealthStatus.Degraded, tags: [HealthCheckCategories.Platform], timeout: TimeSpan.FromSeconds(5))
             // Cached, as signing in on every probe can trip the mail provider's brute force protection.
-            .AddCachedCheck("smtp", _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+            .AddCachedCheck("smtp", HealthCheckCategories.Messaging, _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+
+        // Whether the mail reaches inboxes: SPF and DMARC of the sender's domain, read from DNS with no setting of its own.
+        // Left out where mail is caught rather than delivered (See EmailDeliverySettings.For).
+        var smtpConnectionString = configuration.GetConnectionString("smtp");
+        var smtpHost = string.IsNullOrWhiteSpace(smtpConnectionString)
+                       || Uri.TryCreate(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"), UriKind.Absolute, out var smtpEndpoint) is false
+            ? null
+            : smtpEndpoint.Host;
+        var appleSignIn = string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false;
+
+        if (EmailDeliverySettings.For(appSettings.Email?.DefaultFromEmail, smtpHost, appleSignIn, builder.Environment.IsDevelopment()) is { } emailDelivery)
+        {
+            // DNS records rarely change. A failing result is never reused, and the lookups keep each answer for its TTL.
+            healthChecksBuilder.AddCachedCheck("emailDelivery", HealthCheckCategories.Messaging, _ => new EmailDeliveryHealthCheck(emailDelivery, EmailDeliveryHealthCheck.LookupTxtWithDnsClient),
+                cacheDuration: TimeSpan.FromMinutes(30), timeout: TimeSpan.FromSeconds(10));
+        }
 
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;
-        void AddCheckIfConfigured(string name, bool configured, string settings, Action addCheck)
+        // addCheck gets the tags to register the check with, so it carries the same category as its stand-in.
+        void AddCheckIfConfigured(string name, string category, bool configured, string settings, Action<string[]> addCheck)
         {
             if (configured)
             {
-                addCheck();
+                addCheck([category]);
             }
             else if (reportNotConfigured)
             {
-                healthChecksBuilder.AddNotConfiguredCheck(name, settings);
+                healthChecksBuilder.AddNotConfiguredCheck(name, category, settings);
             }
         }
 
         // For checks whose request costs money, a token or a sign in: once per cache period rather than per probe.
-        void AddCachedCheckIfConfigured(string name, bool configured, string settings, Func<IServiceProvider, IHealthCheck> factory, TimeSpan cacheDuration, TimeSpan timeout)
-            => AddCheckIfConfigured(name, configured, settings, () => healthChecksBuilder.AddCachedCheck(name, factory, cacheDuration, timeout));
+        void AddCachedCheckIfConfigured(string name, string category, bool configured, string settings, Func<IServiceProvider, IHealthCheck> factory, TimeSpan cacheDuration, TimeSpan timeout)
+            => AddCheckIfConfigured(name, category, configured, settings, _ => healthChecksBuilder.AddCachedCheck(name, category, factory, cacheDuration, timeout));
 
-        AddCheckIfConfigured("sms", appSettings.Sms?.Configured is true, "Sms", () =>
-            healthChecksBuilder.AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, timeout: TimeSpan.FromSeconds(5)));
+        AddCheckIfConfigured("sms", HealthCheckCategories.Messaging, appSettings.Sms?.Configured is true, "Sms", tags =>
+            healthChecksBuilder.AddCheck<TwilioHealthCheck>("sms", failureStatus: HealthStatus.Degraded, tags: tags, timeout: TimeSpan.FromSeconds(5)));
 
         //#if (cloudflare == true)
-        AddCachedCheckIfConfigured("cloudflare", appSettings.Cloudflare?.Configured is true, "Cloudflare",
+        AddCachedCheckIfConfigured("cloudflare", HealthCheckCategories.Platform, appSettings.Cloudflare?.Configured is true, "Cloudflare",
             sp => ActivatorUtilities.CreateInstance<CloudflareHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         var keycloakBaseUrl = configuration["KEYCLOAK_HTTP"] ?? configuration["Authentication:Keycloak:KeycloakUrl"];
-        AddCheckIfConfigured("keycloakIdentity", string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", () =>
+        AddCheckIfConfigured("keycloakIdentity", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(keycloakBaseUrl) is false, "Authentication:Keycloak", tags =>
         {
             var realm = configuration["Authentication:Keycloak:Realm"] ?? "dev";
             healthChecksBuilder.AddUrlGroup(
                 new Uri($"{keycloakBaseUrl!.TrimEnd('/')}/realms/{realm}/.well-known/openid-configuration"),
                 name: "keycloakIdentity",
                 failureStatus: HealthStatus.Degraded,
-                tags: [],
+                tags: tags,
                 timeout: TimeSpan.FromSeconds(10),
                 configureClient: (_, client) => client.Timeout = TimeSpan.FromSeconds(10));
         });
 
         // These can't be verified without a user signing in, so they only report a missing configuration.
-        AddCheckIfConfigured("googleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", () => { });
-        AddCheckIfConfigured("gitHubSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", () => { });
-        AddCheckIfConfigured("twitterSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", () => { });
-        AddCheckIfConfigured("facebookSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", () => { });
+        AddCheckIfConfigured("googleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) is false, "Authentication:Google", _ => { });
+        AddCheckIfConfigured("gitHubSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:GitHub:ClientId"]) is false, "Authentication:GitHub", _ => { });
+        AddCheckIfConfigured("twitterSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Twitter:ConsumerKey"]) is false, "Authentication:Twitter", _ => { });
+        AddCheckIfConfigured("facebookSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Facebook:AppId"]) is false, "Authentication:Facebook", _ => { });
 
-        AddCachedCheckIfConfigured("entraId", string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
+        AddCachedCheckIfConfigured("entraId", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:AzureAD:ClientId"]) is false, "Authentication:AzureAD",
             sp => ActivatorUtilities.CreateInstance<EntraIdHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
-        AddCachedCheckIfConfigured("appleSignIn", string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false, "Authentication:Apple",
+        AddCachedCheckIfConfigured("appleSignIn", HealthCheckCategories.Identity, string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false, "Authentication:Apple",
             sp => ActivatorUtilities.CreateInstance<AppleSignInHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
         //#if (captcha == "reCaptcha")
-        healthChecksBuilder.AddCachedCheck("reCaptcha", sp => ActivatorUtilities.CreateInstance<GoogleRecaptchaHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
+        healthChecksBuilder.AddCachedCheck("reCaptcha", HealthCheckCategories.Identity, sp => ActivatorUtilities.CreateInstance<GoogleRecaptchaHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         //#if (signalR == true)
-        AddCachedCheckIfConfigured("azureSignalR", string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
+        AddCachedCheckIfConfigured("azureSignalR", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(configuration["Azure:SignalR:ConnectionString"]) is false, "Azure:SignalR:ConnectionString",
             sp => ActivatorUtilities.CreateInstance<Infrastructure.SignalR.AzureSignalRHealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(1), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
         //#if (notification == true)
         // Web Push (VAPID) signs locally, so it has nothing to check.
-        AddCachedCheckIfConfigured("firebase", string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
+        AddCachedCheckIfConfigured("firebase", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushFirebase?.PrivateKey) is false, "AdsPushFirebase",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Android), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
-        AddCachedCheckIfConfigured("apns", string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
+        AddCachedCheckIfConfigured("apns", HealthCheckCategories.Messaging, string.IsNullOrWhiteSpace(appSettings.AdsPushAPNS?.P8PrivateKey) is false, "AdsPushAPNS",
             sp => ActivatorUtilities.CreateInstance<PushNotificationHealthCheck>(sp, AdsPushTarget.Ios), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
         //#endif
 
@@ -1065,7 +1088,7 @@ public static partial class Program
         // Each sends a real, minimal request through the client its feature uses.
         var ai = appSettings.AI;
         void AddAICheck<THealthCheck>(string name, bool configured, string settings) where THealthCheck : IHealthCheck
-            => AddCachedCheckIfConfigured(name, configured, settings, sp => ActivatorUtilities.CreateInstance<THealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(20));
+            => AddCachedCheckIfConfigured(name, HealthCheckCategories.AI, configured, settings, sp => ActivatorUtilities.CreateInstance<THealthCheck>(sp), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(20));
 
         AddAICheck<AIChatAgentHealthCheck>("aiChat", string.IsNullOrWhiteSpace(ai?.OpenAI?.ChatApiKey) is false, "AI:OpenAI:ChatApiKey");
         AddAICheck<AIEmbeddingHealthCheck>("aiEmbedding", string.IsNullOrWhiteSpace(ai?.OpenAI?.EmbeddingApiKey) is false || string.IsNullOrWhiteSpace(ai?.HuggingFace?.EmbeddingEndpoint) is false, "AI:OpenAI:EmbeddingApiKey or AI:HuggingFace:EmbeddingEndpoint");

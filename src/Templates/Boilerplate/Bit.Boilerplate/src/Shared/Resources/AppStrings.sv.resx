@@ -1928,7 +1928,7 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <value>Läsa diagnostikinformation om den här driftsättningen.</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>Läsa den detaljerade hälsorapporten för den här driftsättningen, inklusive feldetaljer för allt som inte fungerar.</value>
+    <value>Läsa den detaljerade hälsorapporten för den här driftsättningen, utan feldetaljerna för det som inte fungerar.</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>Läsa hälsorapporten.</value>
