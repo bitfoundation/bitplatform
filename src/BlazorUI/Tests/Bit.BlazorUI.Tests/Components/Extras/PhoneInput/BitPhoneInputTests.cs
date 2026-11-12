@@ -788,6 +788,27 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldNotSpendADigitSlotOnASeparatorTypedIntoIt()
+    {
+        string? number = null;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+            parameters.Add(p => p.Mask, "##0#");
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.NumberChanged, n => number = n);
+        });
+
+        // The '/' sits where the pattern wants a digit: it is dropped, and the slot still takes the '2'. Spending the slot
+        // on it would read the '0' that follows as a digit of the number rather than the pattern's own literal.
+        component.Find("input.bit-phi-inp").Input("1/207");
+
+        Assert.AreEqual("1207", number);
+    }
+
+    [TestMethod]
     public void BitPhoneInputShouldLayAnExternalValueOutOverThePatternOfTheCountryItNames()
     {
         string? number = null;
