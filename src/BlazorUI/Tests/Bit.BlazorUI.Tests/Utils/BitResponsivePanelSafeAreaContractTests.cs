@@ -16,8 +16,9 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// moving everything placed against the top of the box it borders, and left alone by any padding a consumer gives it -
 /// and hands the bottom one to Callouts.position, which ends its list above it (or the panel itself, when it has no list
 /// of its own: one coming down from the top edge reaches the bottom one once its content grows it that far), in a
-/// registered length no other callout inherits. A sheet coming up from the bottom edge (a Responsive BitMenuButton) lies
-/// against that edge whatever height it is given, so it draws the bottom one as a transparent bottom border instead.
+/// registered length no other callout inherits. A sheet coming up from the bottom edge (a Responsive BitMenuButton, or
+/// the overflow menu of a Responsive BitBreadcrumb) lies against that edge whatever height it is given, so it draws the
+/// bottom one as a transparent bottom border instead.
 /// </summary>
 /// <remarks>
 /// A panel pinned to the top edge with <c>top: 0</c> alone put the month header and the close buttons under an app
@@ -49,6 +50,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
     public static IEnumerable<object[]> BottomSheets =>
     [
         ["Bit.BlazorUI", "Buttons/MenuButton/BitMenuButton.scss", "mnb", ""],
+        ["Bit.BlazorUI", "Navs/Breadcrumb/BitBreadcrumb.scss", "brc", ""],
     ];
 
     // The panels that hold the consumer's own content, which the consumer pads through the public padding variable
