@@ -4,8 +4,8 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 
 /// <summary>
 /// Recurring events of BitFullCalendar (/e2e/full-calendar/recurrence): the rules expanding into their occurrences, the
-/// repeat summary of the details dialog, the scope prompt asking whether a delete or an edit means one occurrence or the
-/// series, the repeat fields of the add/edit dialog with their validation, and dragging an occurrence out of its series.
+/// repeat summary of the details dialog, the scope prompt asking whether a delete or an edit means one occurrence, it and
+/// the following ones, or the series, the repeat fields of the add/edit dialog with their validation, and dragging an occurrence out of its series.
 /// </summary>
 public partial class BitFullCalendarE2ETests
 {
@@ -170,6 +170,49 @@ public partial class BitFullCalendarE2ETests
         await Expect(Page.Locator("#changes li").Last).ToHaveTextAsync(new Regex(@"^Edit\|Dialog\|Team Sync\|2025-07-16 09:00\|2025-07-16 09:15\|Weekly/1/"));
         await Expect(Occurrence("standup", "20250716")).ToContainTextAsync("Team Sync");
         await Expect(Occurrence("standup", "20250731")).ToContainTextAsync("Team Sync");
+    }
+
+    [TestMethod]
+    public async Task Recurrence_DeletingThisAndFollowing_EndsTheSeriesBeforeTheOccurrence()
+    {
+        await OpenAsync(RecurrencePage);
+        await Occurrence("standup", "20250723").ClickAsync();
+        await Dialog(RecCal).GetByRole(AriaRole.Button, new() { Name = "Delete" }).ClickAsync();
+
+        await Expect(ScopeDialog.GetByLabel("This and following events")).Not.ToBeCheckedAsync();
+        await ScopeDialog.GetByLabel("This and following events").CheckAsync();
+        await ScopeDialog.GetByRole(AriaRole.Button, new() { Name = "OK" }).ClickAsync();
+
+        await Expect(Page.Locator("#change-count")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#changes li").Last).ToHaveTextAsync(new Regex(@"^Edit\|Dialog\|Daily Standup\|2025-07-16 09:00\|.*/2025-07-22/skip:2025-07-21/add:$"));
+        await Expect(Occurrence("standup", "20250722")).ToBeVisibleAsync();
+        await Expect(Occurrence("standup", "20250723")).ToHaveCountAsync(0);
+        await Expect(Occurrence("standup", "20250731")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Recurrence_EditingThisAndFollowing_StartsANewSeriesFromTheOccurrence()
+    {
+        await OpenAsync(RecurrencePage);
+        await Occurrence("standup", "20250723").ClickAsync();
+        await Dialog(RecCal).GetByRole(AriaRole.Button, new() { Name = "Edit" }).ClickAsync();
+        await ScopeDialog.GetByLabel("This and following events").CheckAsync();
+        await ScopeDialog.GetByRole(AriaRole.Button, new() { Name = "OK" }).ClickAsync();
+
+        // The form opens on the occurrence, with the series' rule to change from there on.
+        var edit = EditDialog(RecCal);
+        await Expect(edit.GetByLabel("Repeat", new() { Exact = true })).ToHaveValueAsync("Weekly");
+        await Expect(edit.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(await DayNamesAsync("en-US", DayOfWeek.Monday, 5, ["Mo", "Tu", "We", "Th", "Fr"]));
+        await edit.GetByPlaceholder("Event title").FillAsync("Team Sync");
+        await edit.GetByRole(AriaRole.Button, new() { Name = "Save Changes" }).ClickAsync();
+
+        await Expect(Page.Locator("#change-count")).ToHaveTextAsync("2");
+        await Expect(Page.Locator("#changes li").Nth(0)).ToHaveTextAsync(new Regex(@"^Edit\|Dialog\|Daily Standup\|2025-07-16 09:00\|.*/2025-07-22/skip:2025-07-21/add:$"));
+        await Expect(Page.Locator("#changes li").Nth(1)).ToHaveTextAsync(new Regex(@"^Add\|Dialog\|Team Sync\|2025-07-23 09:00\|2025-07-23 09:15\|Weekly/1/Monday,Tuesday,Wednesday,Thursday,Friday///"));
+        await Expect(Occurrence("standup", "20250722")).ToContainTextAsync("Daily Standup");
+        await Expect(Occurrence("standup", "20250723")).ToHaveCountAsync(0);
+        await Expect(MonthCell(RecCal, "Wednesday, July 23, 2025").Locator(".bit-bfc-event-badge-title", new() { HasText = "Team Sync" })).ToBeVisibleAsync();
+        await Expect(MonthCell(RecCal, "Thursday, July 31, 2025").Locator(".bit-bfc-event-badge-title", new() { HasText = "Team Sync" })).ToBeVisibleAsync();
     }
 
     [TestMethod]
