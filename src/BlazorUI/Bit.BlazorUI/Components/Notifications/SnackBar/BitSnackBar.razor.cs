@@ -433,6 +433,9 @@ public partial class BitSnackBar : BitComponentBase
     /// service instead of being handed this snack bar's reference. The service needs the bit BlazorUI services to be
     /// registered (<c>AddBitBlazorUIServices</c>). While several hosts are marked, the one rendered most recently
     /// takes the notifications.
+    /// <br />
+    /// What a service host shows - through the service or through its own <c>Show</c> and <c>Track</c> - is recorded
+    /// in <see cref="BitSnackBarService.History"/> once <see cref="BitSnackBarService.HistoryLimit"/> is set.
     /// </remarks>
     [Parameter] public bool ServiceHost { get; set; }
 
@@ -639,6 +642,8 @@ public partial class BitSnackBar : BitComponentBase
                         StateHasChanged();
                     }
 
+                    _service?.RecordChange(duplicate);
+
                     return;
                 }
             }
@@ -654,6 +659,7 @@ public partial class BitSnackBar : BitComponentBase
                         item.DuplicateCount = 0;
                         item._owner = this;
                         _queue.Add(item);
+                        _service?.Record(item);
                         return;
 
                     case BitSnackBarOverflowBehavior.Skip:
@@ -856,7 +862,14 @@ public partial class BitSnackBar : BitComponentBase
     {
         // An item whose exit animation is playing is past being updated: giving it a countdown it will never spend
         // and announcing text nobody will see would only be noise.
-        if (item is null || item._dismissing || _items.Contains(item) is false) return;
+        if (item is null || item._dismissing) return;
+
+        if (_items.Contains(item) is false)
+        {
+            // A queued item arrives with whatever it holds by then, but its record already shows what it says now.
+            if (_queue.Contains(item)) _service?.RecordChange(item);
+            return;
+        }
 
         StartCountdown(item);
 
@@ -865,6 +878,8 @@ public partial class BitSnackBar : BitComponentBase
         Announce(item);
 
         StateHasChanged();
+
+        _service?.RecordChange(item);
     });
 
     /// <summary>
@@ -1492,6 +1507,7 @@ public partial class BitSnackBar : BitComponentBase
     {
         item.DismissReason = null;
         item.DuplicateCount = 0;
+        item.ShownAt = DateTimeOffset.UtcNow;
         item._owner = this;
 
         if (NewestOnTop)
@@ -1508,6 +1524,10 @@ public partial class BitSnackBar : BitComponentBase
         Announce(item);
 
         StateHasChanged();
+
+        // A service host keeps the record a notification center lists - a queued item moving in included, which goes
+        // to the end of it as it arrives.
+        _service?.Record(item);
 
         await OnShow.InvokeAsync(item);
     }
@@ -1615,6 +1635,8 @@ public partial class BitSnackBar : BitComponentBase
 
     private async Task ReportDismissed(BitSnackBarItem item)
     {
+        _service?.RecordChange(item);
+
         if (item.OnDismiss is not null) await item.OnDismiss(item);
 
         await OnDismiss.InvokeAsync(item);
