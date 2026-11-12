@@ -6,7 +6,7 @@ description: Test one build of bitplatform end to end on the demo host - fix wha
 # Test the platform
 
 Take one build of the repo from its CI run to what users get, and hand back a report the maintainer can act on
-without opening a log.
+without opening a log. The maintainer follows the run, and reads that report, on the Workbench's Progress page.
 
 This runs on the **demo host** only. It serves every demo backend from IIS (`C:\inetpub\<site>`), its self-hosted
 runner (`D:\Runner`) is what the CD workflows deploy through, and the Android emulator, the installed Windows apps and
@@ -23,7 +23,7 @@ Four rules for working on it:
   calls `podman` wherever no `docker` is installed.
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
-  local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
+  local app or `dotnet watch` other than the Workbench the run reports on. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
   Podman's VM (`vmmemWSL`) keeps the page cache of every image it built and every container it ran, often several
   GB, and doesn't give it back on its own: `wsl -d podman-machine-default -u root sh -c "sync; echo 1 > /proc/sys/vm/drop_caches"`
   does, and is safe while containers run.
@@ -85,7 +85,7 @@ answer, and repeat the plan back before starting:
    libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
-until the report. Then go in this order:
+until the report. Start the run's task on the Workbench (next section), then go in this order:
 
 1. The prerelease run, when asked for:
    `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
@@ -106,6 +106,29 @@ Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows 
 `<APP_VERSION>+<sha>` in the ProductVersion of the IIS assemblies and the Windows executables, as `versionName` on
 Android, and in the nav panel of every Boilerplate app. The jobs read the variable when they run, so if it changed
 after the CD run started, expect a mismatch and ask which version is meant.
+
+## The run on the Workbench
+
+The run is a task on the Progress page of the Workbench of this checkout's template,
+`src/Templates/Boilerplate/Bit.Boilerplate/src/Workbench`, the way that template's workbench skill
+(`src/Templates/Boilerplate/Bit.Boilerplate/.github/agents/workbench.agent.md`) says: its section 1 for finding the
+running one or running it under `dotnet watch`, on another port when the usual one stays down, and its section 9 for the
+task. Open the task's page in this machine's browser once, and leave the Workbench running after the run, for the report.
+
+- One task per run. Its title names the branch, the commit under test and, with a CD, `APP_VERSION`; its summary says
+  what runs now and what comes next. Its steps are the plan the answers settled - the prerelease run, then each chosen
+  step - with their counts and runs in `detail` as each one goes, and a fix that only a later CD can prove is a step
+  `blocked` until then.
+- `links` hold the CI, CD and prerelease runs, the branch's pull request and every issue or pull request the run opens.
+  `notes` hold what the maintainer must not miss - a finding, a decision taken for them, a library defect - as a
+  `warning` or an `error` while it is open and a `success` once fixed and proved.
+- A `log` line goes with each milestone and each finding, with its `logKind`: `success` for a stage that passed,
+  `warning` for a finding being fixed, `error` for a failure, `decision` for a choice made. Write the task in the
+  maintainer's language, with every run, issue and commit as a link or `code`.
+- Ask nothing there: the questions were all asked up front, in the chat. Never put a secret or the list of the repo's
+  variables there either.
+- Building the Workbench's own projects in this checkout, as fixing one of its tests does, fails on the files the
+  running one holds: stop it first and start it again after. Its task waits in its review.
 
 ## The helper
 
@@ -658,6 +681,11 @@ a request. `agents` checks that the way a user meets them, with an agent that kn
   first tools in the transcript too. A check that fails once and passes on the next run or with the other model is
   variance; one that fails twice is a finding. A run whose session started with the bit platform MCP server failed,
   because the platform website was down, counts for neither: run it again.
+- A scenario that builds a feature also checks the Workbench, the project's desk for every chat: that the agent read the
+  workbench skill, showed its task on the Workbench's Progress page and pointed the user to that page. The scripted user
+  answers in the chat, never on the page, so an agent that asked there has to take the answer from the chat, as the
+  workbench skill says. Such a scenario runs the Workbench, so it is a heavy one, and the Workbench keeps each copy's
+  review and tasks under `bit-workbench` in the local application data, which the helper removes with the folders.
 - `-Model sonnet,opus` runs every scenario with both, and their habits differ: Sonnet tends to write the plan before
   its questions are answered, Opus asks first. `-Long` also lets `crud-feature` build the whole feature after the
   approval, which takes up to an hour. The two baselines run only when named: the same requests in the same project
@@ -680,12 +708,12 @@ scenario as it is while fixing, so the two runs compare.
 
 ## 9. Report
 
-The report is one self-contained HTML file saved on this machine, in the Downloads folder, and opened in its browser.
-It is never uploaded or published anywhere; the chat gets the verdict in a few lines and the file's path.
+The report is the run's task's `report`, written in Markdown once the run is over, when the task ends `done`, or
+`failed` when a failure stands. It stays on this machine; the chat gets the verdict in a few lines and the task's page.
 
 Lead with the verdict, then:
 
-1. **Deployment**: the `versions` table, where the Bit packages came from, and whatever had to be rolled out.
+1. **Deployment**: the `versions` table, as a Markdown table, where the Bit packages came from, and whatever had to be rolled out.
 2. **CI**: per failure, the test, its cause, the fix and its commit, and the local evidence - how many runs, before
    and after.
 3. **E2E**: per stage, the passed, failed and skipped counts; per failure, its kind, its evidence (the assertion, the

@@ -4,12 +4,12 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// The tour of what the home page promises. Each step shows its feature for real in the views, undoes it when it is left, and
-/// the end of the tour brings back the views, mode and tab it started from. Its texts are the home page's own. A phone gets the
+/// the end of the tour brings back the views and mode it started from, on the View tab. Its texts are the home page's own. A phone gets the
 /// same steps in the wider screens' shell, which workbench.scss stacks in one column for the step shown.
 /// </summary>
 public partial class WorkbenchViewPage
 {
-    private const string TourId = "workbench-tour";
+    internal const string TourId = "workbench-tour";
     private const string TourTabletDevice = "galaxy-tab-s9";
     private const string TourStoreDevice = "store-apple-iphone-69";
     private const string TourDataStatesAnchor = "data-states";
@@ -39,7 +39,6 @@ public partial class WorkbenchViewPage
     {
         WorkbenchScenario[] viewsBefore = [.. store.Panes.Select(pane => pane.Scenario)];
         var modeBefore = store.Mode;
-        var columnBefore = store.Column;
         var phone = new WorkbenchScenario();
         // The building sample shows what a flow is; without its page, the list of flows does.
         var hasBuildingsSample = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId);
@@ -48,6 +47,8 @@ public partial class WorkbenchViewPage
         var showsArrowEditor = hasBuildingsSample && reviewSession.CanWrite;
         // Set by the step being left when the next one is on the board too, which it then leaves as it is.
         var staysOnBoard = false;
+        // Set by the Progress step when Next leaves it, as the Flows step goes there from the Progress page by itself.
+        var leavesProgressForward = false;
         var pageBefore = pageInfo!.Key;
         // Another page than the one the tour starts on, for a change; without it, that page.
         var componentsPage = WorkbenchPageCatalog.Find(TourComponentsPage)?.Key ?? pageBefore;
@@ -98,12 +99,13 @@ public partial class WorkbenchViewPage
             OnEnded = async _ =>
             {
                 SetMode(isSmallScreen && IsDesktopOnly(modeBefore) ? WorkbenchModes.Browse : modeBefore);
-                store.ShowColumn(columnBefore);
+                // The tab the user looks at first, whichever one the tour started from.
+                store.ShowColumn(WorkbenchModes.ViewColumn);
                 store.ShowViews(viewsBefore);
 
                 var address = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
-                if (IsOnFlowsPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), address) || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(landingPage), address))
+                if (IsOnFlowsPage || IsOnProgressPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), address) || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(landingPage), address))
                 {
                     ShowPage(pageBefore);
                 }
@@ -218,6 +220,31 @@ public partial class WorkbenchViewPage
                 },
                 new BonboardingStepDefinition
                 {
+                    Id = "progress",
+                    Route = WorkbenchUrls.Progress,
+                    Target = BonboardingStepTarget.Anchor("progress-list"),
+                    Title = nameof(WorkbenchStrings.HomeWhyProgressTitle),
+                    Description = nameof(WorkbenchStrings.TourProgressText),
+                    Placement = BonboardingPlacement.InlineEnd,
+                    OnBeforeShow = _ => ShowInTour(() => leavesProgressForward = false),
+                    ResolveNext = _ =>
+                    {
+                        leavesProgressForward = true;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    // Back goes to the views; Next goes straight on to the Flows page.
+                    OnBeforeLeave = _ => ShowInTour(() =>
+                    {
+                        if (leavesProgressForward is false)
+                        {
+                            ShowPage(pageBefore);
+                        }
+
+                        leavesProgressForward = false;
+                    })
+                },
+                new BonboardingStepDefinition
+                {
                     Id = "flows",
                     Route = flowsUrl,
                     // The building sample's screens, which leaves room beside them for the card; without the sample, the list of flows.
@@ -232,6 +259,13 @@ public partial class WorkbenchViewPage
                     ResolveNext = _ =>
                     {
                         staysOnBoard = showsArrowEditor;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    // Back goes to the Progress page from here, never through the views, whose first render would take a
+                    // tour that waits for a page as the browser's Back and step it back once more.
+                    ResolvePrevious = _ =>
+                    {
+                        staysOnBoard = true;
                         return ValueTask.FromResult<string?>(null);
                     },
                     OnBeforeLeave = _ => ShowInTour(() => LeaveBoard(stayingOn: flowsUrl))
@@ -304,6 +338,8 @@ public partial class WorkbenchViewPage
     }
 
     private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Flows}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+
+    private bool IsOnProgressPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Progress}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
 
     private static ValueTask ShowInTour(Action show)
     {

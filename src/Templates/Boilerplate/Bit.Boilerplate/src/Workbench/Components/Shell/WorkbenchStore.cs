@@ -26,6 +26,8 @@ public partial class WorkbenchStore
     [BlexState] private bool _isNavigatorCollapsed;
     [BlexState] private bool _isInspectorCollapsed;
     [BlexState] private bool _isComponentNoteDismissed;
+    // The language dictation listens for; null follows the Workbench's own.
+    [BlexState] private string? _dictationCulture;
     // The background that turning Background back on brings back.
     [BlexState] private WorkbenchBackdrop _lastBackdrop = WorkbenchBackdrop.Paper;
 
@@ -115,6 +117,8 @@ public partial class WorkbenchStore
     [BlexAction] private void OnToggleInspector() => IsInspectorCollapsed = IsInspectorCollapsed is false;
 
     [BlexAction] private void OnDismissComponentNote() => IsComponentNoteDismissed = true;
+
+    [BlexAction] private void OnSetDictationCulture(string? culture) => DictationCulture = culture;
 
     [BlexAction] private void OnRememberBackdrop(WorkbenchBackdrop backdrop) => LastBackdrop = backdrop;
 

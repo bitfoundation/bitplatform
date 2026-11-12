@@ -1,9 +1,10 @@
 # Workbench
 
-The Workbench is where a page is designed before the app builds it. It runs pages on sample data, with the components,
-the theme and the styles of this project, and shows them on phones, tablets and desktops side by side, in light and
-dark, in every language the app speaks and in every state the data can be in. It also makes the screenshots the App
-Store, Google Play and the Microsoft Store ask for.
+The Workbench is where you and your AI agent build the app together. A page is designed here before the app builds it:
+the Workbench runs pages on sample data, with the components, the theme and the styles of this project, and shows them
+on phones, tablets and desktops side by side, in light and dark, in every language the app speaks and in every state the
+data can be in. It also makes the screenshots the App Store, Google Play and the Microsoft Store ask for, and it is
+where an agent shows how its long tasks, like a first deployment or a new feature, are going and asks you what it needs.
 
 It starts with pages made by the bit platform team, such as a point-of-sale dashboard, a buildings map, an AI assistant
 and a shift planner, next to a copy of this app's own Settings page and of one of the landing page's samples, and fills up with this project's own pages as they
@@ -28,7 +29,15 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
 
 ## What it offers
 
-- **Home page**: the pages, with thumbnails, and why the Workbench exists.
+- **Home page**: the agents' tasks, the pages with thumbnails, and why the Workbench exists.
+- **`/progress`**: every long task your agents run, one per chat, side by side: its steps with the ones only you can
+  take, what the agent does now, its notes and links, its activity and the report it ends with. A question it asks you
+  is answered there with a click, a few words or your voice, a step of yours is marked done with a button, and you can
+  write to it; it gets each one at once. A new question plays a sound, unless the Workbench is muted, and the tab's
+  title counts what waits for you. With no task yet, and for anyone who isn't at this computer, it shows three samples
+  that can be tried.
+- **Dictation**: the microphone next to a comment, a reply, an answer or a message turns speech into text, with the
+  browser's own speech recognition, in the language its menu picks.
 - **`/workbench/<page>`**: one page with its tools. Pick the device, its orientation and frame, the data state
   (live, loading, empty, error, mixed or slow), the signed-in state, the app's navigation, a colored background with a
   caption for store screenshots, the theme and the language. Compare devices, themes, languages, data states or accounts
@@ -79,13 +88,21 @@ first when it plans one. It can also bring one of the app's existing pages in, f
 
 ## Review with your agent
 
-The comments, page statuses and flows live in a bit Bcrdt document the Workbench keeps in `App_Data/Reviews` in its
-project folder. Git ignores that folder, so the review outlives rebuilds and stays on your machine; the review sheet is
-the way to send it around. Every browser that has the page open holds a copy and sees changes as they happen, whether
+The comments, page statuses, flows and the agents' tasks live in a bit Bcrdt document the Workbench keeps in your own
+folder, outside the repository: `bit-workbench` in your local application data, under a folder named after the project
+and shared by every worktree of the same clone. So the review outlives rebuilds, restarts and a move to another worktree
+or branch, and stays on your machine; the review sheet is the way to send it around. A copy outside git, like a published
+one, keeps it in `App_Data/Reviews` next to it instead. One Workbench runs at a time, and every chat working on the project
+uses that one, whichever worktree or window it works in: `GET /api/workbench` tells an agent which working tree and branch
+it shows. Every browser that has the page open holds a copy and sees changes as they happen, whether
 they come from you or from your agent. The agent reaches the same document through the Workbench's HTTP endpoints under
 `/api/review`. Once you ask it to go through the review, it keeps listening: a new comment reaches it as you send it, it
 changes the page, hot reload shows the change in your view, and it replies and ticks the comment. Each reply plays a short sound, and with "Notify me"
 turned on in the Review tab it also shows a notification, on a phone too.
+
+The agents' tasks live in the same document. An agent starts one and keeps it current under `/api/progress`, and waits
+there for your answers. Only this machine, or a browser an invite link was opened in, sees the real tasks and answers
+them; anyone else sees the samples.
 
 Only this machine can talk to the agent, and only in dev mode. The review endpoints answer only those requests, so
 nobody reaches your agent without being at your computer.

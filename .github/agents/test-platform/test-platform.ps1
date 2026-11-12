@@ -1583,6 +1583,17 @@ function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
     git @git commit -q -m $fixture.commit
 }
 
+# Where the Workbench of a project keeps its review and the agents' tasks: named after the clone's folder and a hash of its
+# git folder and of where the Workbench sits in it, the way WorkbenchFolders.Reviews names it.
+function Get-WorkbenchDataFolder([string] $project) {
+    $gitFolder = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath((Join-Path $project '.git')))
+    $key = "$gitFolder|src/Workbench"
+    $bytes = [Text.Encoding]::UTF8.GetBytes($IsWindows ? $key.ToLowerInvariant() : $key)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant().Substring(0, 12)
+
+    Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "bit-workbench\$(Split-Path $project -Leaf)-$hash"
+}
+
 function Set-AgentMemory([string] $folder, $scenario) {
     if ($scenario.memory -eq 'none') {
         return
@@ -1865,6 +1876,7 @@ function Invoke-AgentsTest {
             Get-ChildItem (Join-Path $lab 'runs') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
                 Stop-FolderProcesses $_.FullName
                 Remove-Item (Get-ClaudeProjectFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
+                Remove-Item (Get-WorkbenchDataFolder (Join-Path $_.FullName $scenarios.project)) -Recurse -Force -ErrorAction SilentlyContinue
                 Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
             }
 

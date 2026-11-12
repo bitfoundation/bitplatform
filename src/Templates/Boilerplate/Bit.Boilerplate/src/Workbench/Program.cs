@@ -25,6 +25,9 @@ public static partial class Program
 
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
+        // On another port than its launch settings', it keeps a review of its own (WorkbenchFolders.Reviews).
+        WorkbenchFolders.Port = WorkbenchFolders.PortOf(builder.Configuration["urls"]);
+
         // The appsettings embedded in Shared, Client.Core and this project, read the way the app's clients read them.
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Workbench");
 
