@@ -123,11 +123,12 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             }));
         });
 
-        component.InvokeAsync(() => editContext.ValidateAsync()).Wait();
+        Validate(component, editContext);
 
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
 
+#if NET11_0_OR_GREATER
     [TestMethod]
     public void BitFocusOnInvalidSubmitShouldWaitForAnAsyncValidatorToFinish()
     {
@@ -179,6 +180,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         Assert.AreEqual(1, marker.RenderCount);
         Assert.AreEqual(0, FocusCalls());
     }
+#endif
 
     [TestMethod]
     public void BitFocusOnInvalidSubmitShouldFollowANewEditContext()
@@ -210,13 +212,13 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         var marker = component.FindComponent<BitFocusOnInvalidSubmit>();
         var renders = marker.RenderCount;
 
-        component.InvokeAsync(() => first.ValidateAsync()).Wait();
+        Validate(component, first);
 
         // The old one is no longer listened to: nothing is even looked at.
         Assert.AreEqual(renders, marker.RenderCount);
         Assert.AreEqual(0, FocusCalls());
 
-        component.InvokeAsync(() => second.ValidateAsync()).Wait();
+        Validate(component, second);
 
         component.WaitForAssertion(() => Assert.AreEqual(1, FocusCalls()));
     }
@@ -243,7 +245,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             parameters.Add(p => p.ChildContent, (RenderFragment)(_ => { }));
         });
 
-        component.InvokeAsync(() => editContext.ValidateAsync()).Wait();
+        Validate(component, editContext);
 
         Assert.AreEqual(0, component.FindComponents<BitFocusOnInvalidSubmit>().Count);
         Assert.AreEqual(0, FocusCalls());
@@ -303,6 +305,16 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
         });
     }
 
+    private static void Validate(IRenderedComponent<CascadingValue<EditContext>> component, EditContext editContext)
+    {
+#if NET11_0_OR_GREATER
+        component.InvokeAsync(() => editContext.ValidateAsync()).Wait();
+#else
+        component.InvokeAsync(() => editContext.Validate()).Wait();
+#endif
+    }
+
+#if NET11_0_OR_GREATER
     // A validator that answers the request by registering work that only finishes once the gate opens - a server asked
     // whether a name is taken - and reports the message it found then.
     private static void AddAsyncValidator(EditContext editContext, Task gate, string message)
@@ -316,6 +328,7 @@ public class BitFocusOnInvalidSubmitTests : BunitTestContext
             editContext.NotifyValidationStateChanged();
         });
     }
+#endif
 
     private int FocusCalls() => Context.JSInterop.Invocations.Count(i => i.Identifier == FocusFirstInvalid);
 
