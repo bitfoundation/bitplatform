@@ -234,13 +234,130 @@ public class DiagnosticTests
     }
 
     [TestMethod]
-    public void ValueReturningAction_ReportsBLEX011Warning()
+    public void ValueReturningActions_AreSupported_WithoutDiagnostics()
     {
+        // The wrapper returns the value now; BLEX011 ("return value is discarded") is left for what it cannot return.
         var result = GeneratorTestHelper.Run(Usings + """
-            [BlexStoreAttribute] public partial class S { [BlexActionAttribute] private int OnCalc() => 42; }
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexActionAttribute] private int OnCalc() => 42;
+                [BlexActionAttribute] private Task<string?> OnLabel() => Task.FromResult<string?>(null);
+                [BlexActionAttribute] private ValueTask<int> OnCount() => new(_x);
+            }
+
+            public static class Use
+            {
+                public static async Task<int> Run(S s) => s.Calc() + (await s.Label())!.Length + await s.Count();
+            }
+            """);
+        Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+    }
+
+    [TestMethod]
+    public void RefStructReturningAction_ReportsBLEX011_AndStillCompiles()
+    {
+        // A ref struct cannot be held in the local a dispatch lambda assigns (CS8175): the wrapper returns void.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private string _label = " ada ";
+                [BlexActionAttribute] private System.ReadOnlySpan<char> OnTrim() => System.MemoryExtensions.Trim(System.MemoryExtensions.AsSpan(_label));
+            }
+
+            public static class Use
+            {
+                public static void Run(S s) => s.Trim();
+            }
             """);
         Assert.IsTrue(result.HasDiagnostic("BLEX011"));
-        Assert.IsFalse(result.HasGeneratorError);
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+    }
+
+    [TestMethod]
+    public void NegativeThrottle_ReportsBLEX027()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(ThrottleMilliseconds = -5)] private Task OnLoad() => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX027"));
+    }
+
+    [TestMethod]
+    public void ThrottleAndDebounceTogether_ReportBLEX028()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexEffectAttribute(ThrottleMilliseconds = 100, DebounceMilliseconds = 100)] private Task OnLoad() => Task.CompletedTask;
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX028"));
+    }
+
+    [TestMethod]
+    [DataRow("\"Missing\"", DisplayName = "no such member")]
+    [DataRow("nameof(Wrong)", DisplayName = "a comparer of another type")]
+    [DataRow("nameof(NotAComparer)", DisplayName = "not a comparer at all")]
+    [DataRow("nameof(Compare)", DisplayName = "a method")]
+    public void AStateComparerThatIsNotOne_ReportsBLEX029_OnTheArgument(string comparer)
+    {
+        var source = Usings + $$"""
+            using System.Collections.Generic;
+            [BlexStoreAttribute] public partial class S
+            {
+                private static readonly IEqualityComparer<string> Wrong = System.StringComparer.Ordinal;
+                private static readonly int NotAComparer = 1;
+                private static bool Compare(int[] a, int[] b) => true;
+                [BlexStateAttribute(Comparer = {{comparer}})] private int[] _ids = [];
+            }
+            """;
+        var result = GeneratorTestHelper.Run(source);
+
+        var diagnostic = result.GeneratorDiagnostics.Single(d => d.Id == "BLEX029");
+        Assert.AreEqual($"Comparer = {comparer}", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+    }
+
+    [TestMethod]
+    public void AStateComparer_MayBeStaticOrInstance_FieldOrProperty_AndContravariant()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            using System.Collections.Generic;
+            [BlexStoreAttribute] public partial class S
+            {
+                private static readonly IEqualityComparer<IEnumerable<int>?> Sequence = BlexComparers.Sequence<int>();
+                private IEqualityComparer<string> Instance { get; } = System.StringComparer.OrdinalIgnoreCase;
+                [BlexStateAttribute(Comparer = nameof(Sequence))] private int[] _ids = [];
+                [BlexStateAttribute(Comparer = nameof(Instance))] private string _title = "";
+            }
+            """);
+        Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+    }
+
+    [TestMethod]
+    [DataRow("private static readonly IEqualityComparer<string> value = System.StringComparer.OrdinalIgnoreCase;", "global::S.value", DisplayName = "static")]
+    [DataRow("private IEqualityComparer<string> value { get; } = System.StringComparer.OrdinalIgnoreCase;", "this.value", DisplayName = "instance")]
+    public void AStateComparerNamedValue_IsNotTheSettersParameter(string member, string access)
+    {
+        // Unqualified, "value" would bind to the setter's own parameter -- a string, not a comparer.
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            using System.Collections.Generic;
+            [BlexStoreAttribute] public partial class S
+            {
+                {{member}}
+                [BlexStateAttribute(Comparer = "value")] private string _title = "";
+            }
+            """);
+        Assert.AreEqual("", string.Join("; ", result.GeneratorDiagnostics));
+        Assert.AreEqual("", string.Join("; ", result.CompileErrors()));
+        Assert.Contains($"value, {access}, \"Title\")", result.SingleGenerated);
     }
 
     [TestMethod]

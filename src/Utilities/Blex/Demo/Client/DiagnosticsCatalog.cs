@@ -197,18 +197,17 @@ public static class DiagnosticsCatalog
             """),
 
         new("BLEX011", "Action return value is discarded", false,
-            "The generated wrapper returns <code>void</code> (or <code>Task</code>), so any value the implementation returns is silently dropped.",
+            "An action's wrapper returns what the method returns, but a ref struct (<code>Span&lt;T&gt;</code>, <code>ReadOnlySpan&lt;char&gt;</code>) or a pointer cannot be held across the dispatch: that wrapper returns <code>void</code> and the value is dropped.",
             """
             [BlexAction]
-            private int OnIncrement() => ++Count;   // BLEX011 (warning) -- the caller never sees it
+            private ReadOnlySpan<char> OnTrim() => Name.AsSpan().Trim();   // BLEX011 (warning) -- the caller never sees it
             """,
             """
             [BlexAction]
-            private void OnIncrement() => Count++;
+            private string OnTrim() => Name.Trim();
 
-            // Callers read the result from state:
-            store.Increment();
-            var current = store.Count;
+            // The wrapper hands the result back:
+            var trimmed = store.Trim();
             """),
 
         new("BLEX012", "State field name equals generated property name", true,
@@ -474,6 +473,41 @@ public static class DiagnosticsCatalog
             {
                 [BlexState] private string _view = "grid";
             }
+            """),
+
+        new("BLEX027", "Effect throttle cannot be negative", true,
+            "<code>ThrottleMilliseconds</code> is the window after a run starts during which further invocations are dropped. A negative window has no meaning; <code>0</code> turns throttling off.",
+            """
+            [BlexEffect(ThrottleMilliseconds = -1)]                      // BLEX027
+            private async Task OnRefresh(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """,
+            """
+            [BlexEffect(ThrottleMilliseconds = 2000)]
+            private async Task OnRefresh(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
+            """),
+
+        new("BLEX028", "Effect cannot both debounce and throttle", true,
+            "A debounce waits for a burst of invocations to end and runs the <em>last</em> one; a throttle runs the <em>first</em> one at once and drops the rest of the burst. Together they contradict each other, so pick the one that matches what the effect is for: debounce a search box, throttle a refresh button.",
+            """
+            [BlexEffect(DebounceMilliseconds = 300, ThrottleMilliseconds = 300)]   // BLEX028
+            private async Task OnSearch(string query, CancellationToken ct) => Results = await _api.SearchAsync(query, ct);
+            """,
+            """
+            [BlexEffect(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
+            private async Task OnSearch(string query, CancellationToken ct) => Results = await _api.SearchAsync(query, ct);
+            """),
+
+        new("BLEX029", "State comparer is not an equality comparer of the state's type", true,
+            "<code>[BlexState(Comparer = nameof(X))]</code> names a field or property of the store holding the <code>IEqualityComparer&lt;T&gt;</code> the generated setter passes on. When the store has no such member, or it holds something else - a comparer of another type, a method - the setter could not compile.",
+            """
+            private static readonly IEqualityComparer<string> Ordinal = StringComparer.Ordinal;
+
+            [BlexState(Comparer = nameof(Ordinal))] private int[] _ids = [];     // BLEX029
+            """,
+            """
+            private static readonly IEqualityComparer<int[]> SameIds = BlexComparers.Sequence<int>();
+
+            [BlexState(Comparer = nameof(SameIds))] private int[] _ids = [];
             """),
     ];
 
