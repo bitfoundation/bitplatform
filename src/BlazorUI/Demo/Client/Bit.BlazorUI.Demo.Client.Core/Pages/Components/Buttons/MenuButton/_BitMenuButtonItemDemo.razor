@@ -454,7 +454,21 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+<DemoExample Title="Responsive" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20"
+             PreventRenderForMcpClient>
+    <div>
+        With Responsive, the menu becomes a sheet on screens narrower than 600px: it slides up from the bottom edge,
+        runs the full width of the screen, scrolls the items that do not fit, and closes with an item, a tap outside
+        it or Escape. A submenu still opens beside its item. Narrow the window to try it.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitMenuButton Text="Share" IconName="@BitIconName.Share" Items="responsiveItems" Responsive />
+        <BitMenuButton Text="Share" Items="responsiveItems" Responsive Split />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21"
              PreventRenderForMcpClient>
     <div>
         The Color parameter applies the general theme colors of bit BlazorUI (Primary being the default) to the menu
@@ -1041,7 +1055,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+<DemoExample Title="External Icons" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
     <div>
         Icons from external libraries, like Font Awesome, can be used with the Icon parameter of both the menu button
         and its items, either as a plain CSS class string or a BitIconInfo instance. The ChevronDownIcon parameter
@@ -1080,7 +1094,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22"
+<DemoExample Title="Size" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23"
              PreventRenderForMcpClient>
     <div>The Size parameter adjusts the size of the menu button among Small, Medium (default), and Large.</div>
     <br />
@@ -1103,7 +1117,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+<DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
     <div>
         Customize the look of the menu button at any level: the Style and Class parameters of the root element, the
         Style and Class of each item, the Styles and Classes parameters targeting the internal parts of the
@@ -1168,7 +1182,7 @@
                    Variant="BitVariant.Outline" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24"
+<DemoExample Title="RTL" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25"
              PreventRenderForMcpClient>
     <div>Use the Dir parameter to render the menu button in right-to-left (RTL) direction.</div>
     <br />

@@ -18,7 +18,9 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// Background, MaxHeight, CloseOnItemClick, ButtonType and FormId, the accessibility attributes, FocusAsync and
 /// AutoFocus, the disabled contract, BitParams, Style/Class/Styles/Classes, the CSS variables and their variant
 /// twins, RTL, Visibility, re-rendering, Escape inside a modal, DropDirection, reduced motion, forced colors and
-/// prerendering - are the same for every API and run against the Items page.
+/// prerendering - are the same for every API and run against the Items page. Responsive has a page of its own
+/// (/e2e/menu-button/responsive): its callout on a wide screen is covered here, its sheet on a phone by
+/// BitMenuButtonMobileE2ETests.
 /// </summary>
 [TestClass]
 public class BitMenuButtonE2ETests : E2ETestBase
@@ -1005,6 +1007,29 @@ public class BitMenuButtonE2ETests : E2ETestBase
         menu = await OpenMenuAsync("mnb-stays-open");
         await ItemsOf(menu).First.ClickAsync();
         await Expect(menu).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAWideScreen_TheMenuIsTheCalloutUnderTheButton()
+    {
+        await OpenAsync("/e2e/menu-button/responsive");
+
+        var menu = await OpenMenuAsync("mnb-responsive");
+        var callout = CalloutOf(menu);
+        await SettledAsync(callout);
+
+        // The sheet is only what a phone gets (BitMenuButtonMobileE2ETests): here the menu is placed against the button.
+        await Expect(callout).ToHaveClassAsync(HasClass("bit-mnb-res"));
+        var button = await Root("mnb-responsive").BoxAsync();
+        var box = await callout.BoxAsync();
+        ButtonsE2EHelpers.AreClose(button.Y + button.Height, box.Y, 2, "the menu opens under the button");
+        ButtonsE2EHelpers.AreClose(button.X, box.X, 2, "the menu is aligned with the button");
+        Assert.IsTrue(box.Width < await Page.EvaluateAsync<double>("() => window.innerWidth") / 2, $"The menu is as wide as its items ({box.Width}px).");
+        await Expect(callout).ToHaveCSSAsync("box-shadow", new Regex(".+"));
+
+        await ItemsOf(menu).Nth(1).ClickAsync();
+        await Expect(Text("responsive-clicked")).ToHaveTextAsync("edit");
+        await Expect(menu).ToBeHiddenAsync();
     }
 
     [TestMethod]

@@ -16,7 +16,8 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// moving everything placed against the top of the box it borders, and left alone by any padding a consumer gives it -
 /// and hands the bottom one to Callouts.position, which ends its list above it (or the panel itself, when it has no list
 /// of its own: one coming down from the top edge reaches the bottom one once its content grows it that far), in a
-/// registered length no other callout inherits.
+/// registered length no other callout inherits. A sheet coming up from the bottom edge (a Responsive BitMenuButton) lies
+/// against that edge whatever height it is given, so it draws the bottom one as a transparent bottom border instead.
 /// </summary>
 /// <remarks>
 /// A panel pinned to the top edge with <c>top: 0</c> alone put the month header and the close buttons under an app
@@ -39,6 +40,15 @@ public sealed class BitResponsivePanelSafeAreaContractTests
         ["Bit.BlazorUI.Extras", "TimeZonePicker/BitTimeZonePicker.scss", "tzp", ""],
         ["Bit.BlazorUI.Extras", "CountryPicker/BitCountryPicker.scss", "cnp", ""],
         ["Bit.BlazorUI.Extras", "PhoneInput/BitPhoneInput.scss", "phi", ""],
+    ];
+
+    // Every sheet whose content the component lays out itself that comes up from the bottom edge and is as tall as its
+    // content, in the shape of Panels with no band: the package, the stylesheet under its Components folder and the class
+    // prefix. A short one never reaches the top edge, so a band drawn there would only push its content down from its
+    // own top; what it lies against is the bottom edge.
+    public static IEnumerable<object[]> BottomSheets =>
+    [
+        ["Bit.BlazorUI", "Buttons/MenuButton/BitMenuButton.scss", "mnb", ""],
     ];
 
     // The panels that hold the consumer's own content, which the consumer pads through the public padding variable
@@ -104,6 +114,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
 
     [TestMethod]
     [DynamicData(nameof(Panels))]
+    [DynamicData(nameof(BottomSheets))]
     public void APanelShouldNameTheSafeAreasOfTheScreenThroughTheMixin(string project, string path, string prefix, string band)
     {
         var panel = GetPanel(GetRules(project, path), prefix);
@@ -145,6 +156,31 @@ public sealed class BitResponsivePanelSafeAreaContractTests
                           .ToArray();
 
         Assert.AreEqual(0, padded.Length, $"{path} pads its panel by a safe area: {string.Join("; ", padded)}");
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(BottomSheets))]
+    public void ABottomSheetShouldDrawTheBottomSafeAreaAsATransparentBorderOfItsSurface(string project, string path, string prefix, string band)
+    {
+        var rules = GetRules(project, path);
+        var declarations = GetPanel(rules, prefix).Declarations.Select(Normalize).ToList();
+
+        Assert.AreEqual(string.Empty, band, $"{path} is a bottom sheet with a band at its top.");
+
+        // A sheet that lies against the bottom edge is not moved off it by the shorter height Callouts.position gives it
+        // there, so it keeps its last item above the safe area itself - as a border, for the reasons the band of the
+        // other panels is one.
+        CollectionAssert.Contains(declarations, "bottom: 0", $"{path} does not lie its sheet against the bottom edge.");
+        CollectionAssert.Contains(declarations, "border-bottom: var(--bit-callout-sa-bottom) solid transparent",
+            $"{path} does not draw the safe area at the bottom as the border of its sheet.");
+
+        var padded = rules.Where(r => r.Ancestors.Take(2).SequenceEqual([$".bit-{prefix}-res", "@include lt-sm"]))
+                          .SelectMany(r => r.Declarations)
+                          .Concat(declarations)
+                          .Where(d => d.StartsWith("padding", StringComparison.Ordinal) && d.Contains("-sa-", StringComparison.Ordinal))
+                          .ToArray();
+
+        Assert.AreEqual(0, padded.Length, $"{path} pads its sheet by a safe area: {string.Join("; ", padded)}");
     }
 
     [TestMethod]
@@ -192,7 +228,7 @@ public sealed class BitResponsivePanelSafeAreaContractTests
     {
         // Keyed by the package and the path under its Components folder, so a stylesheet that only shares the name of a
         // covered one is still caught.
-        var covered = Panels.Select(p => Key((string)p[0], (string)p[1]))
+        var covered = Panels.Concat(BottomSheets).Select(p => Key((string)p[0], (string)p[1]))
                             .Concat(ConsumerContentPanels.Select(p => Key(p.Project, p.Path)))
                             .ToHashSet(StringComparer.Ordinal);
 

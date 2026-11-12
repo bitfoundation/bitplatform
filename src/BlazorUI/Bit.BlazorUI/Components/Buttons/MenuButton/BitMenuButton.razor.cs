@@ -390,6 +390,19 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     [Parameter] public string? RadioIconName { get; set; }
 
     /// <summary>
+    /// Shows the menu as a sheet that slides up from the bottom edge of the screen on small screens (an action
+    /// sheet), instead of the callout under the button.
+    /// </summary>
+    /// <remarks>
+    /// The sheet is shown below the small breakpoint (600px wide): it runs the full width of the screen and grows
+    /// with its items up to the height of the screen, where the items that do not fit scroll inside it, so
+    /// <see cref="MaxHeight"/> does not cap it. It closes the ways the callout does: an item, a tap outside it,
+    /// Escape. On wider screens the menu is the callout it always is. A submenu still opens beside the item it
+    /// belongs to.
+    /// </remarks>
+    [Parameter] public bool Responsive { get; set; }
+
+    /// <summary>
     /// Enables re-clicking the header button while the menu button is in the loading state.
     /// By default its click is ignored while the loading lasts, which is what protects against a double submission.
     /// </summary>
@@ -1815,7 +1828,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             callout: null,
             overlayId: _overlayId,
             isCalloutOpen: IsOpen,
-            responsiveMode: BitResponsiveMode.None,
+            // A sheet coming up from the bottom edge, the way an action sheet does, rather than a side panel: a menu
+            // is a short list of actions within reach of the thumb.
+            responsiveMode: Responsive ? BitResponsiveMode.Bottom : BitResponsiveMode.None,
             dropDirection: DropDirection,
             isRtl: ExplicitRtl,
             // With nothing else named as the scrollable part, the callout itself takes that role, so that a menu
@@ -1881,6 +1896,12 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private string? GetCalloutCss()
     {
         var css = GetMenuCalloutCss(IsOpen);
+
+        // Only the menu the button opens becomes the sheet; a submenu stays a callout beside its item.
+        if (Responsive)
+        {
+            css = $"bit-mnb-res {css}";
+        }
 
         // Only the menu the button opens is capped by MaxHeight; a submenu fits itself to the viewport.
         return MaxHeight.HasValue() ? $"bit-mnb-mxh {css}" : css;

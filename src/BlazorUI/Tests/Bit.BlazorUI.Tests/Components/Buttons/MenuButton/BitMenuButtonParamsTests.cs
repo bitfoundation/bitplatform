@@ -204,6 +204,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
             RadioIcon = radioIcon,
             RadioIconName = "RadioBtnOn",
             Reclickable = true,
+            Responsive = true,
             Size = BitSize.Small,
             Split = true,
             Sticky = true,
@@ -257,6 +258,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreSame(radioIcon, instance.RadioIcon);
         Assert.AreEqual("RadioBtnOn", instance.RadioIconName);
         Assert.IsTrue(instance.Reclickable);
+        Assert.IsTrue(instance.Responsive);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.IsTrue(instance.Split);
         Assert.IsTrue(instance.Sticky);

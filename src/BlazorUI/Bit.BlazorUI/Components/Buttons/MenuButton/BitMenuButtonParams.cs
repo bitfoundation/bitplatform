@@ -224,6 +224,12 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     public bool? Reclickable { get; set; }
 
     /// <summary>
+    /// Shows the menu as a sheet that slides up from the bottom edge of the screen on small screens (an action
+    /// sheet), instead of the callout under the button.
+    /// </summary>
+    public bool? Responsive { get; set; }
+
+    /// <summary>
     /// The size of the menu button.
     /// </summary>
     public BitSize? Size { get; set; }
@@ -467,6 +473,11 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
         if (Reclickable.HasValue)
         {
             bitMenuButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static m => m.Reclickable, static (m, v) => m.Reclickable = v);
+        }
+
+        if (Responsive.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(Responsive), Responsive.Value, static m => m.Responsive, static (m, v) => m.Responsive = v);
         }
 
         if (Size.HasValue)
