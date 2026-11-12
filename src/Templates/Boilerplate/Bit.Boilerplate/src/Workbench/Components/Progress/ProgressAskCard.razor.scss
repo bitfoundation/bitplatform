@@ -1,0 +1,69 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.ask {
+    gap: 0.75rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.ask-head {
+    gap: 0.625rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.ask-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: $bit-shape-radius-full;
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, #{$bit-color-background-primary});
+}
+
+.ask-question {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.75rem;
+}
+
+// Markdown from the agent, in the color and size of the text around it.
+.ask-detail {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+    color: $bit-color-foreground-secondary;
+    --bit-MarkdownViewer-color: currentColor;
+    --bit-MarkdownViewer-line-height: 1.5;
+
+    ::deep :is(a, code) {
+        unicode-bidi: plaintext;
+    }
+}
+
+.checks {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.ask-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// The microphone sits at the far end of the answer's buttons.
+.ask-actions ::deep .ask-dictation {
+    margin-inline-start: auto;
+}

@@ -30,6 +30,7 @@
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Enter(4)">
                 <ul class="facts">
+                    <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactAgent)]</li>
                     <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactNoServer)]</li>
                     <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactThemes)]</li>
                     <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactStores)]</li>
@@ -72,6 +73,45 @@
                     </span>
                 </Bmotion>
             }
+        </div>
+    </section>
+
+    @* The agents' long tasks as the Progress page lists them, or its samples until one starts. *@
+    <section id="progress" class="section agents">
+        <div class="agents-grid">
+            <div class="agents-text">
+                <h2>@Localizer[nameof(WorkbenchStrings.ProgressTitle)]</h2>
+                <p>@Localizer[nameof(WorkbenchStrings.HomeProgressSubtitle)]</p>
+                <ul class="agents-points">
+                    <li><span class="point-icon"><BitIcon IconName="@BitIconName.TaskList" Size="BitSize.Small" /></span>@Localizer[nameof(WorkbenchStrings.HomeProgressPointSteps)]</li>
+                    <li><span class="point-icon"><BitIcon IconName="@BitIconName.Microphone" Size="BitSize.Small" /></span>@Localizer[nameof(WorkbenchStrings.HomeProgressPointAnswer)]</li>
+                    <li><span class="point-icon"><BitIcon IconName="@BitIconName.Ringer" Size="BitSize.Small" /></span>@Localizer[nameof(WorkbenchStrings.HomeProgressPointSound)]</li>
+                </ul>
+                <div class="agents-actions">
+                    <BitButton IconName="@BitIconName.TaskList" Href="@WorkbenchUrls.Progress">@Localizer[nameof(WorkbenchStrings.HomeProgressOpen)]</BitButton>
+                    @if (reviewSession.NeedsYouCount is > 0 and var waiting)
+                    {
+                        <span class="waiting"><BitIcon IconName="@BitIconName.Ringer" Size="BitSize.Small" Color="BitColor.Warning" /> @Localizer[nameof(WorkbenchStrings.ProgressNeedsYouCount), waiting]</span>
+                    }
+                </div>
+            </div>
+            @* Who may see the real tasks waits for them, so the samples never flash by first. *@
+            <div class="agents-tasks">
+                @if (reviewSession.IsOpen is false && reviewSession.CanSeeTasks)
+                {
+                    <BitRingLoading />
+                }
+                else if (reviewSession.ShowsSampleTasks)
+                {
+                    <span class="samples-badge"><BitIcon IconName="@BitIconName.Lightbulb" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.ProgressSamplesTitle)]</span>
+                }
+                @foreach (var task in reviewSession.IsOpen || reviewSession.CanSeeTasks is false ? reviewSession.ShownTasks.OrderByDescending(t => t.NeedsYouCount > 0).ThenBy(t => t.IsFinished).ThenByDescending(t => t.UpdatedAt).Take(3) : [])
+                {
+                    <Bmotion @key="task.Id" Preset="BmPresets.Reveal(distance: 24)">
+                        <div class="agents-card"><ProgressTaskCard ProgressTask="task" /></div>
+                    </Bmotion>
+                }
+            </div>
         </div>
     </section>
 
@@ -227,6 +267,8 @@
                 {
                     <a href="@WorkbenchUrls.Workbench(entry.Key)">@Localizer[entry.TitleKey]</a>
                 }
+                <a href="@WorkbenchUrls.Progress">@Localizer[nameof(WorkbenchStrings.Progress)]</a>
+                <a href="@WorkbenchUrls.Flows">@Localizer[nameof(WorkbenchStrings.Flows)]</a>
             </nav>
             <nav class="footer-links" aria-label="@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]">
                 <h3>@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]</h3>

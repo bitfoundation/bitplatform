@@ -9,7 +9,7 @@ namespace Boilerplate.Workbench.Components.Pages;
 /// </summary>
 public partial class WorkbenchViewPage
 {
-    private const string TourId = "workbench-tour";
+    internal const string TourId = "workbench-tour";
     private const string TourTabletDevice = "galaxy-tab-s9";
     private const string TourStoreDevice = "store-apple-iphone-69";
     private const string TourDataStatesAnchor = "data-states";
@@ -48,6 +48,8 @@ public partial class WorkbenchViewPage
         var showsArrowEditor = hasBuildingsSample && reviewSession.CanWrite;
         // Set by the step being left when the next one is on the board too, which it then leaves as it is.
         var staysOnBoard = false;
+        // Set by the Progress step when Next leaves it, as the Flows step goes there from the Progress page by itself.
+        var leavesProgressForward = false;
         var pageBefore = pageInfo!.Key;
         // Another page than the one the tour starts on, for a change; without it, that page.
         var componentsPage = WorkbenchPageCatalog.Find(TourComponentsPage)?.Key ?? pageBefore;
@@ -103,7 +105,7 @@ public partial class WorkbenchViewPage
 
                 var address = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
-                if (IsOnFlowsPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), address) || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(landingPage), address))
+                if (IsOnFlowsPage || IsOnProgressPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), address) || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(landingPage), address))
                 {
                     ShowPage(pageBefore);
                 }
@@ -218,6 +220,31 @@ public partial class WorkbenchViewPage
                 },
                 new BonboardingStepDefinition
                 {
+                    Id = "progress",
+                    Route = WorkbenchUrls.Progress,
+                    Target = BonboardingStepTarget.Anchor("progress-list"),
+                    Title = nameof(WorkbenchStrings.HomeWhyProgressTitle),
+                    Description = nameof(WorkbenchStrings.TourProgressText),
+                    Placement = BonboardingPlacement.InlineEnd,
+                    OnBeforeShow = _ => ShowInTour(() => leavesProgressForward = false),
+                    ResolveNext = _ =>
+                    {
+                        leavesProgressForward = true;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    // Back goes to the views; Next goes straight on to the Flows page.
+                    OnBeforeLeave = _ => ShowInTour(() =>
+                    {
+                        if (leavesProgressForward is false)
+                        {
+                            ShowPage(pageBefore);
+                        }
+
+                        leavesProgressForward = false;
+                    })
+                },
+                new BonboardingStepDefinition
+                {
                     Id = "flows",
                     Route = flowsUrl,
                     // The building sample's screens, which leaves room beside them for the card; without the sample, the list of flows.
@@ -232,6 +259,13 @@ public partial class WorkbenchViewPage
                     ResolveNext = _ =>
                     {
                         staysOnBoard = showsArrowEditor;
+                        return ValueTask.FromResult<string?>(null);
+                    },
+                    // Back goes to the Progress page from here, never through the views, whose first render would take a
+                    // tour that waits for a page as the browser's Back and step it back once more.
+                    ResolvePrevious = _ =>
+                    {
+                        staysOnBoard = true;
                         return ValueTask.FromResult<string?>(null);
                     },
                     OnBeforeLeave = _ => ShowInTour(() => LeaveBoard(stayingOn: flowsUrl))
@@ -304,6 +338,8 @@ public partial class WorkbenchViewPage
     }
 
     private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Flows}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+
+    private bool IsOnProgressPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Progress}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
 
     private static ValueTask ShowInTour(Action show)
     {

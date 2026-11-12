@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>تبديل منضدة العمل بين الوضع الفاتح والداكن</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>لغة منضدة العمل</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>كل الفروع</value>
     </data>
@@ -814,16 +817,16 @@
         <value>ليمبورخ</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>منضدة العمل · تصميم كل صفحة ومراجعتها والتقاطها</value>
+        <value>منضدة العمل · حيث تبني التطبيق مع وكيل الذكاء الاصطناعي</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>جزء من مشروعك</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>أنهِ التصميم قبل أن توجد الواجهة الخلفية.</value>
+        <value>حيث تبني التطبيق مع وكيل الذكاء الاصطناعي.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>تشغّل منضدة العمل صفحات تطبيقك ببيانات نموذجية، لتتمكن من تصميم كل حالة ومعاينتها على كل جهاز وتصدير لقطات شاشة جاهزة للمتاجر، بنفس المكونات والمظهر اللذين يأتي بهما تطبيقك.</value>
+        <value>صمّم كل صفحة على بيانات تجريبية بكل حالاتها وعلى كل جهاز، وراجعها بتعليقات يجيب عنها وكيلك أثناء كتابتك، وتابع مهامه الطويلة مثل النشر أو ميزة جديدة مجيبًا عمّا يسأله بنقرة أو بصوتك. كل ذلك داخل مشروعك، بالمكوّنات والسمة التي يأتي بها تطبيقك.</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>ابدأ من هنا</value>
@@ -856,13 +859,13 @@
         <value>لماذا يضم مشروعك منضدة عمل</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>أداة تصميم ومنصة اختبار واستوديو تصوير لصفحاتك، داخل المشروع نفسه.</value>
+        <value>أداة تصميم ومنصة اختبار واستوديو تصوير وغرفة تحكم لوكيلك، داخل المشروع نفسه.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>صمّم مع أي وكيل ذكاء اصطناعي</value>
+        <value>اعمل مع أي وكيل ذكاء اصطناعي</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>لا تحتاج إلى Claude Design أو Figma. سواء كنت تستخدم Codex أو Copilot أو Claude Code، يستطيع وكيلك تصميم الصفحات هنا ومعاينتها في متصفح حقيقي وتحسينها.</value>
+        <value>Claude Code أو Codex أو Copilot أو Gemini أو Junie أو Cursor: يصمّم وكيلك الصفحات هنا ويراها في متصفح حقيقي، ويُريك سير مهامه الطويلة ويسألك عمّا يحتاجه. لا تحتاج إلى Claude Design أو Figma.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>مكونات حقيقية، لا نماذج تصميمية</value>
@@ -907,7 +910,7 @@
         <value>اطلبها من الذكاء الاصطناعي</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>اطلب الصفحة من Claude أو Codex أو GitHub Copilot أو Gemini أو Junie، فيبنيها هنا ببيانات نموذجية تُحمَّل مثل البيانات الحقيقية.</value>
+        <value>اطلب من Claude أو Codex أو GitHub Copilot أو Gemini أو Junie صفحة أو ميزة أو نشرًا. تُبنى الصفحات هنا على بيانات تجريبية تُحمَّل كالحقيقية.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>راجع كل حالة</value>
@@ -2458,10 +2461,10 @@
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>ثبّت تعليقًا على أي موضع في الصفحة. على حاسوبك، يتلقاه وكيل البرمجة الخاص بك أثناء كتابتك، فيغيّر الصفحة ويردّ على التعليق ويضع عليه علامة الإنجاز. يعمل مع Claude Code و Codex و Copilot و Gemini و Junie و Cursor.</value>
+        <value>ثبّت تعليقًا على أي موضع في الصفحة، كتابةً أو صوتًا. على حاسوبك، يتلقاه وكيل البرمجة أثناء كتابتك، فيغيّر الصفحة ويرد على التعليق ويعلّمه منجزًا. يعمل مع Claude Code وCodex وCopilot وGemini وJunie وCursor.</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>ثبّت تعليقًا على أي موضع في الصفحة. على حاسوبك، يتلقاه وكيل البرمجة الخاص بك أثناء كتابتك، فيغيّر الصفحة ويردّ على التعليق ويضع عليه علامة الإنجاز. يعمل مع Claude Code و Codex و Copilot و Gemini و Junie و Cursor. جرّب الآن: اكتب تعليقك وأرسله.</value>
+        <value>ثبّت تعليقًا على أي موضع في الصفحة، كتابةً أو صوتًا: يحوّل الميكروفون بجانب زر الإرسال صوتك إلى نص. على حاسوبك، يتلقاه وكيل البرمجة أثناء كتابتك، فيغيّر الصفحة ويرد على التعليق ويعلّمه منجزًا. يعمل مع Claude Code وCodex وCopilot وGemini وJunie وCursor. جرّب الآن: اكتب تعليقك وأرسله.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>مراجعة مباشرة مع الذكاء الاصطناعي</value>
@@ -4811,5 +4814,496 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>لم تُترجَم كل نصوص المكونات في هذه الصفحة إلى كل اللغات. وهذا لا يعني غياب هذه الميزة: فكل مكوّن هنا قابل للتعريب، لكن ترجمة كل نصوصه لم تكن تضيف الكثير إلى الغرض من هذه الصفحة. اطلب من وكيل الذكاء الاصطناعي لديك إكمال الترجمات متى احتجت إليها.</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>التقدّم</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>وكلاؤك أثناء العمل</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>كل مهمة طويلة يشغّلها وكلاء الذكاء الاصطناعي، واحدة لكل محادثة: ما أنجزته، وما تعمل عليه الآن، وما تبقى منها، وما تحتاجه منك.</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>المهام</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>هذه أمثلة</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>تظهر مهام وكلائك هنا فور بدء إحداها. حتى ذلك الحين جرّب هذه: أجب عن سؤال، أو أنهِ خطوة، أو اكتب إلى الوكيل.</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>لا تظهر مهام الوكلاء الذين يعملون على منضدة العمل هذه إلا على الحاسوب الذي تعمل عليه. توضّح هذه الأمثلة ما ستراه هناك.</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>بحاجة إليك</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>قيد التنفيذ</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>منتهية</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>كل المهام</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>بحاجة إليك</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>يعمل</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>تمّت</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>فشلت</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>متوقفة</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} بانتظارك</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0} من {1} خطوات</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>نشط الآن</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>آخر ظهور {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>بدأت {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>حُدّثت {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>مثال</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>دورك</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>يتابع {0} فور ردّك.</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>فتح</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>أنجزتها</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>لا شيء يحتاجك الآن. سيناديك {0} هنا عند الحاجة.</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>الخطوات</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>لم يُدرج الوكيل خطواته بعد.</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>أنت</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>لم تبدأ</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>قيد التنفيذ</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>تمّت</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>متوقفة</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>تم تخطيها</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>تذكّر</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>ملاحظة</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>تحذير</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>قرار</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>تم</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>مشكلة</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>روابط</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>النشاط</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>اكتب إلى {0}</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>حذف هذه المهمة</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>حذفها نهائيًا؟</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>اختر مهمة لترى أين وصلت.</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>هذه المهمة لم تعد موجودة. ربما أنهاها وكيلها وحذفها.</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>أضف ملاحظة</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>إجابتك</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>هل من إضافة؟ (اختياري)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>نعم</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>لا</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>إرسال الإجابة</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>تمت الإجابة عن هذا السؤال أو سُحب في الأثناء.</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>أُرسلت إلى {0}.</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>هذا مثال</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>في مهمة حقيقية، يتلقى {0} هذا فورًا ويتابع.</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>تم: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} بحاجة إليك</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>أنهى {0} مهمة</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>أوقف {0} مهمة</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>كل المحادثات في قائمة واحدة</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>كل محادثة ذكاء اصطناعي تنفّذ مهمة طويلة، مثل أول نشر أو ميزة جديدة، تعرض تقدّمها هنا بجانب الأخرى. وما يحتاجك يأتي أولًا.</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>دورك</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>أجب عن أسئلة الوكيل بنقرة أو ببضع كلمات أو بصوتك، وأخبره عندما تنجز دورك. يتابع فور إرسالك.</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>ما تم وما تبقى</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>كل خطوة أنجزها الوكيل، والخطوة التي يعمل عليها، وما ينتظره بعد. الخطوات التي لا يقوم بها إلا أنت مُعلّمة.</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>تحدّث إلى الوكيل</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>اكتب للوكيل أو قل له أي شيء هنا، واقرأ ما فعله ومتى. يقرأ رسالتك في المرة التالية التي يتفقّد فيها.</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>يناديك عندما يحتاجك</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>يُسمع صوت عندما يسألك وكيل عن شيء، ما لم تكن منضدة العمل صامتة، ويعدّ عنوان التبويب ما ينتظرك. فعّل الإشعارات في تبويب المراجعة لأي صفحة لتصلك حتى وأنت في تطبيق آخر.</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>الإملاء الصوتي</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>تحدّث بدل الكتابة ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>إيقاف الاستماع</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>لغة الإملاء الصوتي</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>يستمع…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>حظر المتصفح الميكروفون. اسمح به لهذا الموقع من شريط العنوان ثم حاول مجددًا.</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>يحتاج الإملاء الصوتي إلى اتصال بالإنترنت في هذا المتصفح.</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>لا يدعم هذا المتصفح الإملاء الصوتي بـ{0}.</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>لم يبدأ الإملاء الصوتي. حاول مجددًا أو اكتب بدلًا من ذلك.</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>الآن</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>قبل {0} د</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>قبل {0} س</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>النشر إلى بيئتي الاختبار والإنتاج</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>تجهيز بيئتي الاختبار والإنتاج على خادمك الخاص، مع تشغيل التطبيق على نطاقك.</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>تحديد الخدمات الخارجية التي يحتاجها التطبيق ومفاتيحها</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>إنشاء بيئتي الاختبار والإنتاج على GitHub</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>الحصول على خادم Linux ومشاركة عنوانه</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>إنشاء رمز API في Cloudflare</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>في لوحة Cloudflare افتح My Profile ثم API Tokens، وأنشئ رمزًا يمكنه تعديل DNS وCloudflare Tunnel. الصقه في الملف الذي فتحته في محررك، لا في أي محادثة.</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>تثبيت Docker ومشغّل GitHub Actions على الخادم</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>تقديم التطبيق على نطاقك عبر Cloudflare Tunnel</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>النشر إلى بيئة الاختبار ثم الإنتاج</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>ما الخدمة التي ترسل رسائل التطبيق الإلكترونية؟</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>يرسل التطبيق رموز تسجيل الدخول وإعادة تعيين كلمات المرور بالبريد. يمكنك تغيير هذا لاحقًا.</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>حساب مجاني لدى خدمة بريد إلكتروني</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>خادم بريد شركتنا</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>لا شيء الآن: أظهر الرسائل في السجلات</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>هل أغلق منفذ SSH على الخادم بعد أن يعمل النفق؟</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>ستظل تصل إلى الخادم عبر النفق وعبر لوحة الويب لدى مزوّدك.</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>لا توضع المفاتيح وكلمات المرور في هذه الصفحة ولا في أي محادثة. تذهب مباشرة إلى أسرار GitHub.</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>خادم واحد للبيئتين، لتقليل التكلفة.</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>لوحة Cloudflare</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>يستخدم التطبيق 6 خدمات خارجية، 3 منها تحتاج مفاتيح من حساباتك الخاصة.</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>الخادم جاهز على 203.0.113.24.</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>سجّلت الدخول إلى الخادم بالمفتاح الذي أضفته، وأوقفت تسجيل الدخول بكلمة المرور.</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>بانتظار رمز Cloudflare لإعداد النفق.</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>ميزة جديدة: نقاط الولاء</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>يكسب العملاء نقاطًا مع كل طلب وينفقونها عند الدفع. أبنيها الآن بعد أن وافقت على التصميم.</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>حسم المتطلبات وكتابتها في المواصفات</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>تخطيط العمل في 6 مهام</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>الموافقة على التصميم في منضدة العمل</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>بناء سجل النقاط وواجهته البرمجية</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>إنفاق النقاط عند الدفع</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>اختبارات على الهواتف وأجهزة سطح المكتب</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>التجربة على بيئة الاختبار</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>كم تساوي النقطة عند الدفع؟</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>سيُحفظ في الإعدادات، لتتمكن من تغييره لاحقًا.</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>مثلًا: 100 نقطة = 1 دولار</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>ما الطلبات التي تكسب نقاطًا؟</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>الطلبات عبر الإنترنت</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>الطلبات في المتجر</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>الطلبات المدفوعة ببطاقة هدية</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>تنتهي صلاحية النقاط بعد 12 شهرًا من كسبها.</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>كل ما تقرر حتى الآن موجود في مواصفات الميزة، مع الأسئلة التي ما زالت مفتوحة.</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>التصميم المعتمد</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>كتبت المتطلبات في المواصفات؛ بقيت 3 أسئلة لك.</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>يبدو جيدًا. صغّر شارة النقاط قليلًا.</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>صغّرت الشارة وبدأت البناء.</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>تمت إضافة السجل وترحيل قاعدة بياناته. أكتب واجهته البرمجية الآن.</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>إصلاح: المبالغ المستردة مفقودة من تقرير المبيعات اليومي</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>كانت المبالغ المستردة بعد منتصف الليل تُحسب في اليوم الخطأ. تم الإصلاح والتجربة على بيئة الاختبار والدمج.</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>إيجاد السبب في سجلات الإنتاج</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>كتابة اختبار يفشل دون الإصلاح</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>حساب المبالغ المستردة بتوقيت المتجر نفسه</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>الدمج، ما يحدّث بيئة الإنتاج</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>هل أدمجه في main؟ هذا يحدّث بيئة الإنتاج.</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>تعمل بيئة الإنتاج بالإصلاح. ويمنع الاختبار عودة الخطأ.</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>طلب الدمج</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>بيئة الاختبار</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>وجدته: كان التقرير يستخدم توقيت الخادم لا توقيت المتجر.</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>على بيئة الاختبار الآن. جرّب استردادًا بعد منتصف الليل.</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>تم الدمج. بيئة الإنتاج محدّثة.</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>تابع المهام الطويلة وأجب بنقرة</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>يحتاج النشر أو ميزة جديدة إلى خطوات كثيرة، وبعضها لا يقوم به إلا أنت. تعرض هنا كل محادثة مع وكيل ما أنجزته وما تبقى وما تحتاجه منك، فلا يضيع شيء في محادثة طويلة.</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>تحدّث بدل الكتابة</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>اضغط على الميكروفون بجانب تعليق أو رد أو إجابة وقلها. يحوّل المتصفح صوتك إلى نص باللغة التي تختارها.</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>يحتاج النشر أو ميزة جديدة إلى خطوات كثيرة، وبعضها لا يقوم به إلا أنت. تعرض هنا كل محادثة مع وكيل ما أنجزته وما تبقى وما تحتاجه منك. أجب بنقرة أو ببضع كلمات أو بصوتك، فيتابع فورًا. جرّب ذلك على الأمثلة.</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>تقدّم وكلائك وأسئلتهم في مكان واحد</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>تابعه وأجب</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>تابع تقدّمه، وأجب عمّا يسأله بنقرة أو بصوتك، وثبّت تعليقات على الصفحة يجيب عنها أثناء كتابتك.</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>تُبلغ المهام الطويلة، مثل أول نشر أو ميزة جديدة، عن تقدّمها هنا أولًا بأول، جنبًا إلى جنب، مهما كان عدد المحادثات.</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>كل خطوة، والخطوة الحالية، وما تبقى</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>أسئلة تجيب عنها بنقرة أو بصوتك</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>صوت ورقم على التبويب عندما يحتاجك</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>فتح التقدّم</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>تعرض منضدة العمل هذه شيفرة {0}</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>التقرير</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**السبب:** كان التقرير يجمع المبيعات حسب يوم الخادم الذي يعمل بتوقيت UTC، فكان الاسترداد الذي يتم بعد منتصف الليل في المتجر يُحسب في اليوم السابق.
+
+**الإصلاح:** تُحسب المبالغ المستردة الآن بالمنطقة الزمنية للمتجر نفسه، واختبار جديد ينفّذ استردادًا في الساعة 00:30 بتوقيت المتجر ويتحقق من اليوم الذي يظهر فيه.
+
+| الفحص | النتيجة |
+| --- | --- |
+| كل الاختبارات | نجحت |
+| استرداد بعد منتصف الليل على Test | في اليوم الصحيح |
+| Production بعد الدمج | محدَّث |</value>
     </data>
 </root>

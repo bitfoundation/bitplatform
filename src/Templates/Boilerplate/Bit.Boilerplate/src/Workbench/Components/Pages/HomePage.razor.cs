@@ -1,7 +1,8 @@
 namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
-/// The Workbench's landing page: why it exists, how to use it, the catalog of pages with their review status, and the flows.
+/// The Workbench's landing page: why it exists, the agents' long tasks, how to use it, the catalog of pages with their review
+/// status, and the flows.
 /// </summary>
 public partial class HomePage
 {
@@ -19,6 +20,8 @@ public partial class HomePage
     [
         (BitIconName.Robot, nameof(WorkbenchStrings.HomeWhyAgentsTitle), nameof(WorkbenchStrings.HomeWhyAgentsText)),
         (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeWhyLiveTitle), nameof(WorkbenchStrings.HomeWhyLiveText)),
+        (BitIconName.TaskList, nameof(WorkbenchStrings.HomeWhyProgressTitle), nameof(WorkbenchStrings.HomeWhyProgressText)),
+        (BitIconName.Microphone, nameof(WorkbenchStrings.HomeWhyVoiceTitle), nameof(WorkbenchStrings.HomeWhyVoiceText)),
         (BitIconName.Code, nameof(WorkbenchStrings.HomeWhyRealTitle), nameof(WorkbenchStrings.HomeWhyRealText)),
         (BitIconName.Split, nameof(WorkbenchStrings.HomeWhyStatesTitle), nameof(WorkbenchStrings.HomeWhyStatesText)),
         (BitIconName.Devices2, nameof(WorkbenchStrings.HomeWhyDevicesTitle), nameof(WorkbenchStrings.HomeWhyDevicesText)),
@@ -32,6 +35,7 @@ public partial class HomePage
     private static readonly (string TitleKey, string TextKey)[] steps =
     [
         (nameof(WorkbenchStrings.HomeHowStep1Title), nameof(WorkbenchStrings.HomeHowStep1Text)),
+        (nameof(WorkbenchStrings.HomeHowStepAnswerTitle), nameof(WorkbenchStrings.HomeHowStepAnswerText)),
         (nameof(WorkbenchStrings.HomeHowStep2Title), nameof(WorkbenchStrings.HomeHowStep2Text)),
         (nameof(WorkbenchStrings.HomeHowStep3Title), nameof(WorkbenchStrings.HomeHowStep3Text))
     ];

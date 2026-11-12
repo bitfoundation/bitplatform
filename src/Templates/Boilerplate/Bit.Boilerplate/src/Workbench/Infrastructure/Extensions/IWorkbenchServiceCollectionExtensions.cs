@@ -73,8 +73,9 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<IComponentActivator, WorkbenchComponentActivator>();
             services.AddSingleton<WorkbenchComponentEdits>();
 
-            // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over HTTP.
+            // The review: a Bcrdt document kept in WorkbenchFolders.Reviews, synced to every circuit through the relay and served to the agent over HTTP.
             services.AddSingleton<WorkbenchReviewAgent>();
+            services.AddSingleton<WorkbenchProgressAgent>();
             services.AddSingleton<WorkbenchReviewAttachments>();
             services.AddSingleton<WorkbenchReviewRelay>();
             services.AddScoped<WorkbenchReviewSession>();
@@ -84,8 +85,9 @@ public static class IWorkbenchServiceCollectionExtensions
                 Store = WorkbenchFolders.Project is null ? new BcrdtInMemoryDocumentStore() : new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
                 ValidateUpdate = context =>
                 {
-                    // Wakes an agent waiting for comments; only the review document is accepted.
+                    // Wakes an agent waiting for comments or for an answer on its task; only the review document is accepted.
                     sp.GetRequiredService<WorkbenchReviewAgent>().Pulse();
+                    sp.GetRequiredService<WorkbenchProgressAgent>().Pulse();
                     return ValueTask.FromResult(context.DocumentId == WorkbenchReviewDocument.Id);
                 }
             });

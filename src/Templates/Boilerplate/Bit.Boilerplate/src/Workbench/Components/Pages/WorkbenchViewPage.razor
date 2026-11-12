@@ -42,11 +42,16 @@ else if (isSmallScreen && IsTouring is false)
 
         <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Placement="BitPlacement.End" Class="tools-panel">
             <Header>
-                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
+                <BitStack Horizontal Gap="0.25rem" VerticalAlign="BitAlignment.Center" Class="tools-header">
                     <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]" width="24" height="24" />
                     <BitSpacer />
+                    <BitBadge Content="@(reviewSession.NeedsYouCount)" Hidden="reviewSession.NeedsYouCount == 0" Color="BitColor.Warning" Overlap Size="BitSize.Small">
+                        <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.TaskList" Href="@WorkbenchUrls.Progress"
+                                   Title="@Localizer[nameof(WorkbenchStrings.Progress)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Progress)]" />
+                    </BitBadge>
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Help" OnClick="StartTour"
                                Title="@Localizer[nameof(WorkbenchStrings.TourStart)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]" />
+                    <LanguageMenu />
                     <SoundToggle />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Contrast" OnClick="ToggleShellTheme"
                                Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" />
@@ -139,11 +144,21 @@ else
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
                        OnClick="CopyLink" />
 
+            <BitBadge Content="@(reviewSession.NeedsYouCount)" Hidden="reviewSession.NeedsYouCount == 0" Color="BitColor.Warning" Overlap Size="BitSize.Small" data-bonboarding-anchor="progress-button">
+                <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
+                           IconName="@BitIconName.TaskList"
+                           Href="@WorkbenchUrls.Progress"
+                           Title="@Localizer[nameof(WorkbenchStrings.Progress)]"
+                           AriaLabel="@Localizer[nameof(WorkbenchStrings.Progress)]" />
+            </BitBadge>
+
             <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
                        IconName="@BitIconName.Help"
                        Title="@Localizer[nameof(WorkbenchStrings.TourStart)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]"
                        OnClick="StartTour" />
+
+            <LanguageMenu Size="BitSize.Small" />
 
             <SoundToggle Size="BitSize.Small" />
 

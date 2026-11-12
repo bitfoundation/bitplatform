@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>جابه‌جایی میز کار بین روشن و تیره</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>زبان میز کار</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>همه شعبه‌ها</value>
     </data>
@@ -814,16 +817,16 @@
         <value>لیمبورخ</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>میز کار · طراحی، بازبینی و ثبت هر صفحه</value>
+        <value>میز کار · جایی که شما و عامل هوش مصنوعی‌تان برنامه را می‌سازید</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>بخشی از پروژه شما</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>طراحی را قبل از ساخت بک‌اند تمام کنید.</value>
+        <value>جایی که شما و عامل هوش مصنوعی‌تان برنامه را می‌سازید.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>میز کار صفحه‌های برنامه شما را با داده نمونه اجرا می‌کند تا هر حالتی را طراحی کنید، روی هر دستگاهی ببینید و اسکرین‌شات آماده فروشگاه بگیرید، با همان کامپوننت‌ها و پوسته‌ای که برنامه‌تان دارد.</value>
+        <value>هر صفحه را روی داده نمونه، در همه حالت‌ها و روی همه دستگاه‌ها طراحی کنید، با نظرهایی که عامل‌تان همان‌طور که می‌نویسید جواب می‌دهد بازبینی‌اش کنید، و کارهای طولانی‌اش مثل استقرار یا یک قابلیت جدید را دنبال کنید و سؤال‌هایش را با یک کلیک یا صدایتان جواب بدهید. همه داخل پروژه خودتان، با همان کامپوننت‌ها و تمی که برنامه‌تان دارد.</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>از اینجا شروع کنید</value>
@@ -856,13 +859,13 @@
         <value>چرا پروژه شما میز کار دارد</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>ابزار طراحی، میز آزمایش و آتلیه عکاسی صفحه‌هایتان، داخل خود پروژه.</value>
+        <value>ابزار طراحی، میز آزمایش، استودیوی عکاسی و اتاق فرمان عامل‌تان، داخل خود پروژه.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>طراحی با هر عامل هوش مصنوعی</value>
+        <value>با هر عامل هوش مصنوعی کار کنید</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>به Claude Design یا Figma نیازی ندارید. چه با Codex کار کنید، چه Copilot یا Claude Code، عامل شما می‌تواند این‌جا صفحه طراحی کند، آن را در مرورگر واقعی ببیند و بهترش کند.</value>
+        <value>Claude Code، Codex، Copilot، Gemini، Junie یا Cursor: عامل‌تان اینجا صفحه طراحی می‌کند و آن را در یک مرورگر واقعی می‌بیند، روند کارهای طولانی‌اش را نشانتان می‌دهد و هر چه لازم دارد از شما می‌پرسد. به Claude Design یا Figma نیازی ندارید.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>کامپوننت واقعی، نه ماکت</value>
@@ -907,7 +910,7 @@
         <value>از هوش مصنوعی بخواهید</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>صفحه را از Claude، Codex، GitHub Copilot، Gemini یا Junie بخواهید تا آن را این‌جا با داده نمونه‌ای بسازد که مثل داده واقعی بارگذاری می‌شود.</value>
+        <value>از Claude، Codex، GitHub Copilot، Gemini یا Junie یک صفحه، یک قابلیت یا یک استقرار بخواهید. صفحه‌ها اینجا روی داده نمونه‌ای ساخته می‌شوند که مثل داده واقعی بارگذاری می‌شود.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>همه حالت‌ها را بازبینی کنید</value>
@@ -2458,10 +2461,10 @@
         <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند.</value>
+        <value>روی هر نقطه از صفحه یک نظر بگذارید، تایپی یا صوتی. روی کامپیوتر خودتان، عامل برنامه‌نویسی‌تان همان‌طور که می‌نویسید آن را می‌گیرد، صفحه را تغییر می‌دهد، روی نظر جواب می‌دهد و تیکش را می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند.</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>روی هر نقطه‌ای از صفحه نظری سنجاق کنید. روی سیستم خودتان، عامل کدنویسی‌تان همان وقتی که می‌نویسید آن را دریافت می‌کند، صفحه را تغییر می‌دهد، روی همان نظر جواب می‌دهد و آن را انجام‌شده علامت می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند. همین حالا امتحان کنید: نظرتان را بنویسید و بفرستید.</value>
+        <value>روی هر نقطه از صفحه یک نظر بگذارید، تایپی یا صوتی: میکروفون کنار دکمه ارسال صدایتان را به متن تبدیل می‌کند. روی کامپیوتر خودتان، عامل برنامه‌نویسی‌تان همان‌طور که می‌نویسید آن را می‌گیرد، صفحه را تغییر می‌دهد، روی نظر جواب می‌دهد و تیکش را می‌زند. با Claude Code، Codex، Copilot، Gemini، Junie و Cursor کار می‌کند. همین الان امتحان کنید: نظرتان را بنویسید و بفرستید.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>بازبینی زنده با هوش مصنوعی</value>
@@ -4811,5 +4814,496 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>همهٔ متن‌های کامپوننت‌های این صفحه به همهٔ زبان‌ها ترجمه نشده‌اند. این به معنای نبودِ این قابلیت نیست: همهٔ کامپوننت‌های این‌جا Localize می‌شوند، ولی ترجمهٔ همهٔ متن‌هایشان برای کاری که این صفحه برایش ساخته شده ارزش چندانی نداشت. هر وقت لازم شد، از عامل هوش مصنوعی خودتان بخواهید ترجمه‌ها را کامل کند.</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>پیشرفت کارها</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>عامل‌های شما سر کار</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>هر کار طولانی که عامل‌های هوش مصنوعی‌تان انجام می‌دهند، هر گفتگو یک کار: چه کرده، الان مشغول چیست، چه مانده و چه چیزی از شما لازم دارد.</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>کارها</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>این‌ها نمونه هستند</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>کارهای عامل‌هایتان به‌محض شروع اینجا می‌آیند. تا آن موقع با این‌ها امتحان کنید: به یک سؤال جواب بدهید، یک مرحله را تمام کنید یا برای عامل بنویسید.</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>کارهای عامل‌های این میز کار فقط روی همان کامپیوتری دیده می‌شوند که میز کار روی آن اجرا شده. این نمونه‌ها نشان می‌دهند آنجا چه می‌بینید.</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>منتظر شما</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>در حال انجام</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>تمام‌شده</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>همه کارها</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>منتظر شما</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>در حال کار</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>تمام شد</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>ناموفق</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>متوقف شد</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} مورد منتظر شما</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0} از {1} مرحله</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>همین الان فعال</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>آخرین خبر {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>شروع: {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>به‌روزشده: {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>نمونه</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>نوبت شماست</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>{0} به‌محض جواب شما ادامه می‌دهد.</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>باز کردن</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>انجامش دادم</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>فعلاً کاری با شما نیست. هر وقت لازم شود، {0} شما را اینجا صدا می‌زند.</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>مراحل</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>عامل هنوز مراحلش را نگفته.</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>شما</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>مانده</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>در حال انجام</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>انجام شد</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>گیر کرده</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>رد شد</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>حواستان باشد</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>نکته</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>هشدار</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>تصمیم</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>انجام شد</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>مشکل</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>پیوندها</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>رویدادها</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>برای {0} بنویسید</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>حذف این کار</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>برای همیشه حذف شود؟</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>یک کار را انتخاب کنید تا ببینید به کجا رسیده.</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>این کار دیگر نیست. شاید عاملش تمامش کرده و برداشته.</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>افزودن توضیح</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>جواب شما</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>چیزی برای اضافه کردن؟ (اختیاری)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>بله</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>خیر</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>ارسال جواب</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>این سؤال در این فاصله جواب داده یا پس گرفته شده.</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>برای {0} فرستاده شد.</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>این یک نمونه است</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>در یک کار واقعی، {0} همین لحظه این را می‌گیرد و ادامه می‌دهد.</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>انجام شد: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} به شما نیاز دارد</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} یک کار را تمام کرد</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} یک کار را متوقف کرد</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>همه گفتگوها در یک فهرست</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>هر گفتگوی هوش مصنوعی که کار طولانی‌ای دارد، مثل اولین استقرار یا یک قابلیت جدید، پیشرفتش را اینجا کنار بقیه نشان می‌دهد. چیزی که منتظر شماست اول می‌آید.</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>نوبت شماست</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>به سؤال‌های عامل با یک کلیک، چند کلمه یا صدای خودتان جواب بدهید و وقتی سهم خودتان را انجام دادید خبرش کنید. به‌محض ارسال ادامه می‌دهد.</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>چه شده و چه مانده</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>هر مرحله‌ای که عامل انجام داده، مرحله‌ای که الان رویش است و آنچه هنوز مانده. مرحله‌هایی که فقط از دست شما برمی‌آید علامت دارند.</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>با عامل حرف بزنید</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>هر چه می‌خواهید اینجا برای عامل بنویسید یا بگویید، و بخوانید چه کرده و کی. دفعه بعد که سر می‌زند پیامتان را می‌خواند.</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>هر وقت لازم باشد صدایتان می‌زند</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>وقتی عاملی از شما چیزی بپرسد صدایی پخش می‌شود، مگر اینکه میز کار بی‌صدا باشد، و عنوان زبانه تعداد چیزهای منتظر شما را نشان می‌دهد. اعلان‌ها را در زبانه بازبینی یک صفحه روشن کنید تا وقتی در برنامه دیگری هستید هم خبردار شوید.</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>تایپ با صدا</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>به‌جای تایپ، بگویید ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>توقف گوش دادن</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>زبان تایپ با صدا</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>در حال شنیدن…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>مرورگر میکروفون را مسدود کرده. از نوار آدرس اجازه‌اش را برای این سایت بدهید و دوباره امتحان کنید.</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>تایپ با صدا در این مرورگر به اینترنت نیاز دارد.</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>این مرورگر تایپ با صدا به زبان {0} را پشتیبانی نمی‌کند.</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>تایپ با صدا شروع نشد. دوباره امتحان کنید یا تایپ کنید.</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>همین الان</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>{0} دقیقه پیش</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>{0} ساعت پیش</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>استقرار روی محیط‌های Test و Production</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>راه‌اندازی محیط‌های Test و Production روی سرور خودتان، با برنامه روی دامنه شما.</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>پیدا کردن سرویس‌های بیرونی برنامه و کلیدهایشان</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>ساختن محیط‌های Test و Production در GitHub</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>گرفتن یک سرور لینوکس و دادن آدرسش</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>ساختن یک توکن API در Cloudflare</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>در داشبورد Cloudflare به My Profile و بعد API Tokens بروید و توکنی بسازید که بتواند DNS و Cloudflare Tunnel را ویرایش کند. آن را در فایلی بچسبانید که در ویرایشگرتان باز کردم، نه در گفتگو.</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>نصب Docker و GitHub Actions runner روی سرور</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>رساندن برنامه به دامنه‌تان از طریق Cloudflare Tunnel</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>استقرار روی Test و بعد Production</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>ایمیل‌های برنامه با کدام سرویس فرستاده شوند؟</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>برنامه کدهای ورود و بازیابی رمز را ایمیل می‌کند. بعداً هم می‌توانید عوضش کنید.</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>یک حساب رایگان در یک سرویس ایمیل</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>سرور ایمیل شرکت خودمان</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>فعلاً هیچ‌کدام: ایمیل‌ها در لاگ‌ها دیده شوند</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>بعد از راه افتادن تونل، پورت SSH سرور بسته شود؟</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>همچنان از طریق تونل و کنسول وب ارائه‌دهنده‌تان به سرور دسترسی دارید.</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>کلیدها و رمزها هیچ‌وقت در این صفحه یا در گفتگو نمی‌آیند. مستقیم به Secretهای GitHub می‌روند.</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>یک سرور برای هر دو محیط، تا هزینه پایین بماند.</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>داشبورد Cloudflare</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>برنامه از ۶ سرویس بیرونی استفاده می‌کند؛ ۳ تا از آن‌ها کلیدی از حساب‌های خودتان لازم دارند.</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>سرور روی 203.0.113.24 آماده است.</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>با کلیدی که اضافه کردید وارد سرور شدم و ورود با رمز را خاموش کردم.</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>منتظر توکن Cloudflare هستم تا تونل را راه بیندازم.</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>قابلیت جدید: امتیاز وفاداری</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>مشتری‌ها با هر سفارش امتیاز می‌گیرند و موقع پرداخت خرجش می‌کنند. حالا که طراحی را تأیید کردید، در حال ساختش هستم.</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>قطعی کردن نیازمندی‌ها و نوشتنشان در spec</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>برنامه‌ریزی کار در ۶ بخش</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>تأیید طراحی در میز کار</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>ساختن دفتر امتیازها و API آن</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>خرج کردن امتیاز موقع پرداخت</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>تست روی گوشی و دسکتاپ</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>امتحانش روی محیط Test</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>هر امتیاز موقع پرداخت چقدر می‌ارزد؟</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>در تنظیمات می‌رود تا بعداً بتوانید عوضش کنید.</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>مثلاً: ۱۰۰ امتیاز = ۱۰ هزار تومان</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>کدام سفارش‌ها امتیاز دارند؟</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>سفارش‌های آنلاین</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>سفارش‌های حضوری</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>سفارش‌هایی که با کارت هدیه پرداخت شده‌اند</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>امتیازها ۱۲ ماه بعد از گرفتن منقضی می‌شوند.</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>هر چه تا الان تصمیم گرفته شده، همراه سؤال‌های باز، در spec این قابلیت است.</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>طراحی تأییدشده</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>نیازمندی‌ها را در spec نوشتم؛ ۳ سؤال برای شما مانده.</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>خوب است. نشان امتیاز را کمی کوچک‌تر کن.</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>نشان را کوچک‌تر کردم و ساخت را شروع کردم.</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>دفتر امتیاز و migration دیتابیسش اضافه شد. الان دارم API‌اش را می‌نویسم.</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>رفع اشکال: بازپرداخت‌ها در گزارش فروش روزانه نیستند</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>بازپرداخت‌های بعد از نیمه‌شب در روز اشتباه حساب می‌شدند. رفع شد، روی Test امتحان شد و merge شد.</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>پیدا کردن علت در لاگ‌های Production</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>نوشتن تستی که بدون رفع اشکال شکست بخورد</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>حساب کردن بازپرداخت‌ها با منطقه زمانی خود فروشگاه</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>merge کردن، که Production را به‌روز می‌کند</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>در main ادغامش کنم؟ این کار Production را به‌روز می‌کند.</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>Production با این رفع اشکال اجرا می‌شود. تست نمی‌گذارد اشکال برگردد.</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>Pull request</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>محیط Test</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>پیدایش کردم: گزارش از منطقه زمانی سرور استفاده می‌کرد، نه فروشگاه.</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>الان روی Test است. یک بازپرداخت بعد از نیمه‌شب امتحان کنید.</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>merge شد. Production به‌روز است.</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>کارهای طولانی را دنبال کنید، با یک کلیک جواب بدهید</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>یک استقرار یا قابلیت جدید مرحله‌های زیادی دارد و بعضی‌هایش فقط از دست شما برمی‌آید. هر گفتگو با عامل اینجا نشان می‌دهد چه کرده، چه مانده و چه چیزی از شما لازم دارد، تا چیزی وسط یک گفتگوی طولانی گم نشود.</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>به‌جای تایپ، حرف بزنید</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>میکروفون کنار یک نظر، پاسخ یا جواب را بزنید و بگویید. مرورگر صدایتان را به زبانی که انتخاب می‌کنید به متن تبدیل می‌کند.</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>یک استقرار یا قابلیت جدید مرحله‌های زیادی دارد و بعضی‌هایش فقط از دست شما برمی‌آید. هر گفتگو با عامل اینجا نشان می‌دهد چه کرده، چه مانده و چه چیزی از شما لازم دارد. با یک کلیک، چند کلمه یا صدای خودتان جواب بدهید تا همان لحظه ادامه دهد. روی نمونه‌ها امتحانش کنید.</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>پیشرفت و سؤال‌های عامل‌هایتان در یک جا</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>دنبالش کنید و جواب بدهید</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>پیشرفتش را ببینید، به سؤال‌هایش با یک کلیک یا صدایتان جواب بدهید و روی صفحه نظر بگذارید تا همان‌طور که می‌نویسید جواب بدهد.</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>کارهای طولانی مثل اولین استقرار یا یک قابلیت جدید، همان‌طور که پیش می‌روند اینجا کنار هم گزارش می‌دهند، هر چند گفتگو که داشته باشید.</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>همه مرحله‌ها، مرحله فعلی و آنچه مانده</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>سؤال‌هایی که با یک کلیک یا صدایتان جواب می‌دهید</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>یک صدا و یک شمارنده روی زبانه وقتی به شما نیاز دارد</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>باز کردن پیشرفت کارها</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>این میز کار کدِ {0} را نشان می‌دهد</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>گزارش</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**علت:** گزارش، فروش‌ها را بر اساس روزِ سرور دسته می‌کرد که با UTC کار می‌کند، پس بازپرداختی که بعد از نیمه‌شب در فروشگاه انجام می‌شد به روز قبل می‌رفت.
+
+**اصلاح:** بازپرداخت‌ها حالا با منطقه زمانی خود فروشگاه شمرده می‌شوند، و یک تست تازه ساعت ۰۰:۳۰ به وقت فروشگاه بازپرداخت می‌کند و روزی را که در آن ثبت می‌شود بررسی می‌کند.
+
+| بررسی | نتیجه |
+| --- | --- |
+| همه تست‌ها | موفق |
+| بازپرداخت بعد از نیمه‌شب روی Test | در روز درست |
+| Production بعد از merge | به‌روز شد |</value>
     </data>
 </root>

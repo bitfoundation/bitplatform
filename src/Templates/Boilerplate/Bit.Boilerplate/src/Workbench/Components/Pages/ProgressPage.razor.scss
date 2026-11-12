@@ -1,0 +1,759 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+// On wider screens the list and the task scroll on their own under a fixed bar; a phone scrolls the page.
+.progress-page {
+    height: 100dvh;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    background-color: $bit-color-background-secondary;
+
+    @include lt-md {
+        height: auto;
+        overflow: visible;
+        min-height: 100dvh;
+    }
+}
+
+.topbar {
+    top: 0;
+    z-index: 5;
+    gap: 0.5rem;
+    display: flex;
+    flex-shrink: 0;
+    min-height: 52px;
+    position: sticky;
+    padding: 0.375rem 0.75rem;
+    align-items: center;
+    background-color: $bit-color-background-primary;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.brand {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 15px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    color: $bit-color-foreground-primary;
+
+    @include lt-sm {
+        span {
+            display: none;
+        }
+    }
+}
+
+.crumb {
+    text-decoration: none;
+    color: $bit-color-foreground-secondary;
+}
+
+.crumb-separator {
+    color: $bit-color-foreground-tertiary;
+}
+
+// The task's title shrinks into the line rather than wrapping the bar.
+::deep .crumb-title {
+    min-width: 0;
+    flex: 0 1 auto;
+    color: $bit-color-foreground-secondary;
+}
+
+// The Workbench's own words keep their language's direction in a task written in another.
+.overall-text,
+.meta-item,
+.agent-state,
+.turn-hint,
+.nothing-for-you span,
+.entry-meta time {
+    unicode-bidi: plaintext;
+}
+
+.loading {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.layout {
+    min-height: 0;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+
+    @include lt-md {
+        display: block;
+    }
+}
+
+// The list of tasks.
+.task-list {
+    gap: 1.25rem;
+    display: flex;
+    overflow-y: auto;
+    padding: 1.25rem 1rem 2rem;
+    flex-direction: column;
+    background-color: $bit-color-background-primary;
+    border-inline-end: 1px solid $bit-color-border-tertiary;
+
+    @include lt-md {
+        border-inline-end: none;
+        min-height: calc(100dvh - 52px);
+    }
+}
+
+.list-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.list-lead {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0.375rem 0 0;
+    color: $bit-color-foreground-secondary;
+}
+
+.running-from {
+    gap: 0.375rem;
+    display: flex;
+    font-size: 12px;
+    align-items: center;
+    margin: 0.625rem 0 0;
+    color: $bit-color-foreground-tertiary;
+}
+
+.samples-note {
+    gap: 0.75rem;
+    display: flex;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 0.875rem 1rem;
+    align-items: flex-start;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px dashed color-mix(in srgb, #{$bit-color-primary} 45%, transparent);
+    background-color: color-mix(in srgb, #{$bit-color-primary} 7%, #{$bit-color-background-primary});
+
+    div {
+        gap: 0.125rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    span {
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.group-title {
+    gap: 0.5rem;
+    margin: 0 0 0.625rem;
+    display: flex;
+    font-size: 12px;
+    font-weight: 700;
+    align-items: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $bit-color-foreground-secondary;
+}
+
+.group-count {
+    padding: 0 0.375rem;
+    font-size: 11px;
+    border-radius: $bit-shape-radius-full;
+    background-color: $bit-color-background-tertiary;
+}
+
+.cards {
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style: none;
+    flex-direction: column;
+}
+
+// The selected task.
+.task-detail {
+    min-width: 0;
+    overflow-y: auto;
+    padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 3rem;
+}
+
+.back {
+    gap: 0.375rem;
+    display: none;
+    font-size: 14px;
+    align-items: center;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: $bit-color-primary;
+}
+
+// A phone shows the list or a task, never both.
+@include lt-md {
+    .showing-list .task-detail {
+        display: none;
+    }
+
+    .showing-task .task-list {
+        display: none;
+    }
+
+    .showing-task .back {
+        display: inline-flex;
+    }
+
+    .task-detail {
+        overflow: visible;
+        padding: 1rem;
+    }
+}
+
+.task {
+    gap: 1.5rem;
+    margin: 0 auto;
+    display: flex;
+    max-width: 1180px;
+    flex-direction: column;
+}
+
+.task-head {
+    gap: 0.75rem;
+    display: flex;
+    padding: 1.5rem;
+    flex-direction: column;
+    box-shadow: $bit-box-shadow-card;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.title-row {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task-title {
+    margin: 0;
+    font-size: clamp(20px, 2.4vw, 26px);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+.task-summary {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: $bit-color-foreground-secondary;
+}
+
+.task-meta {
+    gap: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    align-items: center;
+    color: $bit-color-foreground-secondary;
+}
+
+.agent {
+    gap: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    color: $bit-color-foreground-primary;
+}
+
+.agent-state {
+    font-weight: 400;
+    color: $bit-color-foreground-secondary;
+}
+
+.agent-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $bit-color-foreground-tertiary;
+}
+
+// A live agent's dot pulses, so it reads as someone at work.
+.agent.active .agent-dot {
+    background-color: $bit-color-success;
+    animation: wb-alive 2s $bit-motion-easing infinite;
+}
+
+.overall {
+    gap: 0.75rem;
+    display: flex;
+    align-items: center;
+
+    ::deep .overall-bar {
+        flex-grow: 1;
+    }
+}
+
+.overall-text {
+    font-size: 13px;
+    white-space: nowrap;
+    color: $bit-color-foreground-secondary;
+}
+
+.columns {
+    gap: 1.5rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+
+    @media screen and (max-width: 1180px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.main-column,
+.side-column {
+    gap: 1.5rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title {
+    gap: 0.5rem;
+    margin: 0;
+    display: flex;
+    font-size: 16px;
+    font-weight: 700;
+    align-items: center;
+}
+
+.steps,
+.notes,
+.links,
+.report,
+.activity {
+    gap: 0.875rem;
+    display: flex;
+    padding: 1.25rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+// What waits for the user stands out: the warning color around a lighter tint of it.
+.your-turn {
+    gap: 0.875rem;
+    display: flex;
+    padding: 1.25rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid color-mix(in srgb, #{$bit-color-warning} 55%, transparent);
+    background-color: color-mix(in srgb, #{$bit-color-warning} 9%, #{$bit-color-background-primary});
+    box-shadow: 0 0 0 4px color-mix(in srgb, #{$bit-color-warning} 10%, transparent);
+}
+
+.turn-count {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.375rem;
+    font-size: 12px;
+    line-height: 1.5rem;
+    text-align: center;
+    border-radius: $bit-shape-radius-full;
+    color: $bit-color-warning-text;
+    background-color: $bit-color-warning;
+}
+
+.turn-hint {
+    margin: 0;
+    font-size: 13px;
+    color: $bit-color-foreground-secondary;
+}
+
+.todo {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-surface;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.todo-head {
+    gap: 0.625rem;
+    display: flex;
+    align-items: center;
+}
+
+.todo-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: $bit-shape-radius-full;
+    color: $bit-color-warning-text;
+    background-color: $bit-color-warning;
+}
+
+.todo-text {
+    font-size: 16px;
+}
+
+// The agent's texts are Markdown, drawn in the color and size of the text around them.
+.todo-detail,
+.step-detail,
+.note-text,
+.entry-text,
+.report-body {
+    --bit-MarkdownViewer-color: currentColor;
+    --bit-MarkdownViewer-line-height: 1.5;
+
+    // A link or a commit's hash keeps its own direction among words of another, as in a Persian line.
+    ::deep :is(a, code) {
+        unicode-bidi: plaintext;
+    }
+}
+
+.todo-detail {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-line;
+    color: $bit-color-foreground-secondary;
+}
+
+.todo-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.nothing-for-you {
+    gap: 0.625rem;
+    display: flex;
+    font-size: 14px;
+    padding: 0.875rem 1rem;
+    align-items: center;
+    border-radius: $bit-shape-radius-surface;
+    color: $bit-color-foreground-secondary;
+    background-color: color-mix(in srgb, #{$bit-color-success} 8%, #{$bit-color-background-primary});
+}
+
+// The steps as a timeline: a marker per step on a line that runs between them.
+.step-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    gap: 0.875rem;
+    display: flex;
+    position: relative;
+    padding-bottom: 1rem;
+
+    &:not(:last-child)::before {
+        content: "";
+        width: 2px;
+        top: 1.75rem;
+        bottom: 0.125rem;
+        position: absolute;
+        inset-inline-start: calc(0.875rem - 1px);
+        background-color: $bit-color-border-tertiary;
+    }
+
+    &.status-done:not(:last-child)::before {
+        background-color: color-mix(in srgb, #{$bit-color-success} 55%, transparent);
+    }
+}
+
+.step-marker {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: $bit-shape-radius-full;
+    color: $bit-color-foreground-tertiary;
+    background-color: $bit-color-background-secondary;
+}
+
+.status-done .step-marker {
+    color: $bit-color-success;
+    background-color: color-mix(in srgb, #{$bit-color-success} 12%, #{$bit-color-background-primary});
+}
+
+.status-doing .step-marker {
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, #{$bit-color-background-primary});
+}
+
+.status-doing.yours .step-marker {
+    color: $bit-color-warning-text;
+    background-color: $bit-color-warning;
+}
+
+.status-blocked .step-marker {
+    color: $bit-color-error;
+    background-color: color-mix(in srgb, #{$bit-color-error} 12%, #{$bit-color-background-primary});
+}
+
+.spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, #{$bit-color-primary} 25%, transparent);
+    border-top-color: $bit-color-primary;
+    animation: wb-spin 0.9s linear infinite;
+}
+
+.step-body {
+    gap: 0.25rem;
+    min-width: 0;
+    display: flex;
+    padding-top: 0.25rem;
+    flex-direction: column;
+}
+
+.step-line {
+    gap: 0.375rem 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
+.step-text {
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.status-doing .step-text {
+    font-weight: 600;
+}
+
+.status-todo .step-text {
+    color: $bit-color-foreground-secondary;
+}
+
+.status-skipped .step-text {
+    text-decoration: line-through;
+    color: $bit-color-foreground-tertiary;
+}
+
+.owner {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0.0625rem 0.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: $bit-shape-radius-full;
+    color: $bit-color-warning-text;
+    background-color: $bit-color-warning;
+}
+
+.step-state {
+    font-size: 12px;
+    color: $bit-color-foreground-tertiary;
+}
+
+.step-detail {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-line;
+    color: $bit-color-foreground-secondary;
+}
+
+.step-link {
+    gap: 0.25rem;
+    display: inline-flex;
+    font-size: 13px;
+    align-items: center;
+    color: $bit-color-primary;
+}
+
+.empty {
+    margin: 0;
+    font-size: 14px;
+    color: $bit-color-foreground-secondary;
+}
+
+.note-kind {
+    margin-inline-end: 0.375rem;
+}
+
+.report-body {
+    min-width: 0;
+    font-size: 14px;
+    --bit-MarkdownViewer-line-height: 1.6;
+
+    // Its headings sit under the section's own, so they come out small: sized here as a document's.
+    ::deep :is(h4, h5, h6) {
+        font-weight: 700;
+    }
+
+    ::deep h4 {
+        font-size: 18px;
+    }
+
+    ::deep h5 {
+        font-size: 16px;
+    }
+
+    ::deep h6 {
+        font-size: 14px;
+    }
+}
+
+.link-list {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.composer {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.composer-actions {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    ::deep .composer-dictation {
+        margin-inline-start: auto;
+    }
+}
+
+// The activity, newest first, the agent's lines and the user's told apart by their edge.
+.feed {
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    overflow-y: auto;
+    list-style: none;
+    max-height: 32rem;
+    flex-direction: column;
+}
+
+.entry {
+    gap: 0.25rem;
+    display: flex;
+    padding: 0.625rem 0.75rem;
+    flex-direction: column;
+    border-radius: $bit-shape-radius-md;
+    border-inline-start: 3px solid $bit-color-border-secondary;
+    background-color: $bit-color-background-secondary;
+
+    &.from-you {
+        border-inline-start-color: $bit-color-primary;
+        background-color: color-mix(in srgb, #{$bit-color-primary} 7%, #{$bit-color-background-primary});
+    }
+
+    &.kind-answer,
+    &.kind-step {
+        border-inline-start-color: $bit-color-success;
+    }
+
+    // An agent's update marked as news of a kind, in the colors of the notes of that kind.
+    @each $tone, $color in (info: $bit-color-info, decision: $bit-color-primary, success: $bit-color-success, warning: $bit-color-warning, error: $bit-color-error) {
+        &.tone-#{$tone} {
+            border-inline-start-color: $color;
+
+            .tone-dot {
+                background-color: $color;
+            }
+        }
+    }
+}
+
+.tone-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    margin-inline-end: 0.375rem;
+}
+
+.entry-meta {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 12px;
+    justify-content: space-between;
+    color: $bit-color-foreground-tertiary;
+}
+
+.entry-author {
+    font-weight: 600;
+    color: $bit-color-foreground-secondary;
+}
+
+.entry-question {
+    font-size: 12px;
+    color: $bit-color-foreground-secondary;
+}
+
+.entry-text {
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.danger {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.gone {
+    gap: 0.75rem;
+    display: flex;
+    padding: 4rem 1rem;
+    align-items: center;
+    flex-direction: column;
+    color: $bit-color-foreground-secondary;
+}
+
+@keyframes wb-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes wb-alive {
+    0%, 100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, #{$bit-color-success} 45%, transparent);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px color-mix(in srgb, #{$bit-color-success} 0%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner,
+    .agent.active .agent-dot {
+        animation: none;
+    }
+}

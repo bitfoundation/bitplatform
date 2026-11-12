@@ -1,0 +1,64 @@
+@inherits WorkbenchComponentBase
+
+<div class="ask kind-@Ask.Kind.ToString().ToLowerInvariant()" data-ask-id="@Ask.Id" role="group" aria-labelledby="@HeadingId">
+    <div class="ask-head">
+        <span class="ask-icon" aria-hidden="true"><BitIcon IconName="@KindIcon" Size="BitSize.Small" /></span>
+        <h3 id="@HeadingId" class="ask-question" dir="auto">@Ask.Question</h3>
+    </div>
+    @if (string.IsNullOrWhiteSpace(Ask.Detail) is false)
+    {
+        <div class="ask-detail" dir="auto"><BitMarkdownViewer Markdown="@Ask.Detail" Pipeline="BitMarkdownPipelines.GitHub" Inline /></div>
+    }
+
+    @switch (Ask.Kind)
+    {
+        case WorkbenchProgressAskKind.Choice:
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string"
+                            Items="choiceItems"
+                            Value="@picked.FirstOrDefault()"
+                            ValueChanged="(string? value) => Pick(value)"
+                            AriaLabelledBy="@HeadingId"
+                            Disabled="CanAnswer is false"
+                            Class="ask-options" />
+            break;
+
+        case WorkbenchProgressAskKind.Choices:
+            <div class="ask-options checks">
+                @foreach (var option in Ask.Options)
+                {
+                    <BitCheckbox Label="@option"
+                                 Value="picked.Contains(option)"
+                                 ValueChanged="(bool on) => Toggle(option, on)"
+                                 Disabled="CanAnswer is false" />
+                }
+            </div>
+            break;
+    }
+
+    @if (CanAnswer)
+    {
+        <div class="ask-text">
+            <BitTextField @bind-Value="text"
+                          Immediate
+                          Multiline="Ask.Kind is WorkbenchProgressAskKind.Text"
+                          Rows="3"
+                          OnKeyDown="SendOnCtrlEnter"
+                          Placeholder="@Placeholder"
+                          AriaLabel="@(Ask.Kind is WorkbenchProgressAskKind.Text ? Ask.Question : Localizer[nameof(WorkbenchStrings.ProgressAddNote)].Value)"
+                          MaxLength="WorkbenchProgressDocument.MaxTextLength" />
+        </div>
+
+        <div class="ask-actions">
+            @if (Ask.Kind is WorkbenchProgressAskKind.Confirm)
+            {
+                <BitButton IconName="@BitIconName.CheckMark" Disabled="isSending" OnClick="() => Send([WorkbenchProgressDocument.Yes])">@Localizer[nameof(WorkbenchStrings.ProgressYes)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Cancel" Disabled="isSending" OnClick="() => Send([WorkbenchProgressDocument.No])">@Localizer[nameof(WorkbenchStrings.ProgressNo)]</BitButton>
+            }
+            else
+            {
+                <BitButton IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="CanSend is false" OnClick="() => Send(picked)">@Localizer[nameof(WorkbenchStrings.ProgressSendAnswer)]</BitButton>
+            }
+            <DictationButton Value="@text" ValueChanged="(string? heard) => text = heard" Class="ask-dictation" />
+        </div>
+    }
+</div>

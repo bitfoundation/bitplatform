@@ -313,6 +313,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
         Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));
 
+        RefreshTasks();
         WatchAgent();
     }
 
@@ -329,6 +330,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         visitorComments.Dispose();
+        samples?.Dispose();
 
         if (document is null)
             return;

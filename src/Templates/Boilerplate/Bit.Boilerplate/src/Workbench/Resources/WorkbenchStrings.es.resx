@@ -312,6 +312,9 @@
     <data name="ToggleWorkbenchTheme" xml:space="preserve">
         <value>Cambiar el banco de trabajo entre claro y oscuro</value>
     </data>
+    <data name="WorkbenchLanguage" xml:space="preserve">
+        <value>Idioma del banco de trabajo</value>
+    </data>
     <data name="PosStoreAll" xml:space="preserve">
         <value>Todas las sucursales</value>
     </data>
@@ -814,16 +817,16 @@
         <value>Limburgo</value>
     </data>
     <data name="HomePageTitle" xml:space="preserve">
-        <value>Banco de trabajo · Diseña, revisa y captura cada página</value>
+        <value>Banco de trabajo · Donde tú y tu agente de IA construís la aplicación</value>
     </data>
     <data name="HomeEyebrow" xml:space="preserve">
         <value>Parte de tu proyecto</value>
     </data>
     <data name="HomeHeadline" xml:space="preserve">
-        <value>Termina el diseño antes de que exista el backend.</value>
+        <value>Donde tú y tu agente de IA construís la aplicación.</value>
     </data>
     <data name="HomeLead" xml:space="preserve">
-        <value>El banco de trabajo ejecuta las páginas de tu app con datos de ejemplo para que puedas diseñar cada estado, verlo en cada dispositivo y exportar capturas listas para las tiendas, con los mismos componentes y el mismo tema que tu app.</value>
+        <value>Diseña cada página con datos de ejemplo, en cada estado y en cada dispositivo, revísala con comentarios que tu agente responde mientras escribes y sigue sus tareas largas, como un despliegue o una función nueva, respondiendo lo que pregunta con un clic o tu voz. Todo dentro de tu proyecto, con los componentes y el tema de tu aplicación.</value>
     </data>
     <data name="HomeStartHere" xml:space="preserve">
         <value>Empieza aquí</value>
@@ -856,13 +859,13 @@
         <value>Por qué tu proyecto tiene un banco de trabajo</value>
     </data>
     <data name="HomeWhySubtitle" xml:space="preserve">
-        <value>Una herramienta de diseño, un banco de pruebas y un estudio fotográfico para tus páginas, dentro del propio proyecto.</value>
+        <value>Una herramienta de diseño, un banco de pruebas, un estudio de fotos y la sala de control de tu agente, dentro del propio proyecto.</value>
     </data>
     <data name="HomeWhyAgentsTitle" xml:space="preserve">
-        <value>Diseña con cualquier agente de IA</value>
+        <value>Trabaja con cualquier agente de IA</value>
     </data>
     <data name="HomeWhyAgentsText" xml:space="preserve">
-        <value>No necesitas Claude Design ni Figma. Ya uses Codex, Copilot o Claude Code, tu agente puede diseñar páginas aquí, verlas en un navegador real y pulirlas.</value>
+        <value>Claude Code, Codex, Copilot, Gemini, Junie o Cursor: tu agente diseña páginas aquí y las ve en un navegador real, te muestra cómo van sus tareas largas y te pregunta lo que necesita. No necesitas Claude Design ni Figma.</value>
     </data>
     <data name="HomeWhyRealTitle" xml:space="preserve">
         <value>Componentes reales, no maquetas</value>
@@ -907,7 +910,7 @@
         <value>Pídesela a tu IA</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Pide la página a Claude, Codex, GitHub Copilot, Gemini o Junie, y la creará aquí con datos de ejemplo que cargan como los reales.</value>
+        <value>Pide a Claude, Codex, GitHub Copilot, Gemini o Junie una página, una función o un despliegue. Las páginas se construyen aquí con datos de ejemplo que cargan como los reales.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Revisa cada estado</value>
@@ -2458,10 +2461,10 @@
         <value>Revisa en vivo con tu agente de IA</value>
     </data>
     <data name="HomeWhyLiveText" xml:space="preserve">
-        <value>Fija un comentario en cualquier punto de una página. En tu propio equipo, tu agente de programación lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor.</value>
+        <value>Fija un comentario en cualquier punto de una página, escrito o dictado. En tu propio ordenador, tu agente de código lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor.</value>
     </data>
     <data name="TourLiveText" xml:space="preserve">
-        <value>Fija un comentario en cualquier punto de una página. En tu propio equipo, tu agente de programación lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor. Pruébalo ahora: escribe tu comentario y envíalo.</value>
+        <value>Fija un comentario en cualquier punto de una página, escrito o dictado: el micrófono junto a Enviar convierte tu voz en texto. En tu propio ordenador, tu agente de código lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor. Pruébalo ahora: escribe tu comentario y envíalo.</value>
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Revisión en vivo con IA</value>
@@ -4811,5 +4814,496 @@
     </data>
     <data name="ThemeLocalizationNote" xml:space="preserve">
         <value>No todos los textos de los componentes de esta página están traducidos a todos los idiomas. No es que falte la función: todos los componentes de aquí se pueden localizar, pero traducir todos sus textos aportaba poco a lo que hace esta página. Pide a tu agente de IA que complete las traducciones cuando las necesites.</value>
+    </data>
+    <data name="Progress" xml:space="preserve">
+        <value>Progreso</value>
+    </data>
+    <data name="ProgressTitle" xml:space="preserve">
+        <value>Tus agentes trabajando</value>
+    </data>
+    <data name="ProgressLead" xml:space="preserve">
+        <value>Cada tarea larga de tus agentes de IA, una por chat: qué se ha hecho, en qué está ahora el agente, qué falta y qué necesita de ti.</value>
+    </data>
+    <data name="ProgressTasks" xml:space="preserve">
+        <value>Tareas</value>
+    </data>
+    <data name="ProgressSamplesTitle" xml:space="preserve">
+        <value>Estos son ejemplos</value>
+    </data>
+    <data name="ProgressSamplesText" xml:space="preserve">
+        <value>Las tareas de tus agentes aparecen aquí en cuanto empieza una. Mientras tanto, prueba con estas: responde una pregunta, marca un paso o escribe al agente.</value>
+    </data>
+    <data name="ProgressSamplesVisitorText" xml:space="preserve">
+        <value>Las tareas de los agentes de este banco de trabajo solo se ven en el ordenador donde se ejecuta. Estos ejemplos muestran lo que verías allí.</value>
+    </data>
+    <data name="ProgressGroupNeedsYou" xml:space="preserve">
+        <value>Te necesita</value>
+    </data>
+    <data name="ProgressGroupWorking" xml:space="preserve">
+        <value>En curso</value>
+    </data>
+    <data name="ProgressGroupFinished" xml:space="preserve">
+        <value>Terminadas</value>
+    </data>
+    <data name="ProgressAllTasks" xml:space="preserve">
+        <value>Todas las tareas</value>
+    </data>
+    <data name="ProgressNeedsYou" xml:space="preserve">
+        <value>Te necesita</value>
+    </data>
+    <data name="ProgressWorking" xml:space="preserve">
+        <value>Trabajando</value>
+    </data>
+    <data name="ProgressDone" xml:space="preserve">
+        <value>Hecho</value>
+    </data>
+    <data name="ProgressFailed" xml:space="preserve">
+        <value>Falló</value>
+    </data>
+    <data name="ProgressStopped" xml:space="preserve">
+        <value>Detenida</value>
+    </data>
+    <data name="ProgressNeedsYouCount" xml:space="preserve">
+        <value>{0} esperan por ti</value>
+    </data>
+    <data name="ProgressStepsDone" xml:space="preserve">
+        <value>{0} de {1} pasos</value>
+    </data>
+    <data name="ProgressAgentActive" xml:space="preserve">
+        <value>activo ahora</value>
+    </data>
+    <data name="ProgressAgentLastSeen" xml:space="preserve">
+        <value>última señal {0}</value>
+    </data>
+    <data name="ProgressStarted" xml:space="preserve">
+        <value>Empezó {0}</value>
+    </data>
+    <data name="ProgressUpdated" xml:space="preserve">
+        <value>Actualizada {0}</value>
+    </data>
+    <data name="ProgressSample" xml:space="preserve">
+        <value>Ejemplo</value>
+    </data>
+    <data name="ProgressYourTurn" xml:space="preserve">
+        <value>Tu turno</value>
+    </data>
+    <data name="ProgressYourTurnHint" xml:space="preserve">
+        <value>{0} sigue en cuanto respondas.</value>
+    </data>
+    <data name="ProgressOpenLink" xml:space="preserve">
+        <value>Abrir</value>
+    </data>
+    <data name="ProgressDidIt" xml:space="preserve">
+        <value>Ya está hecho</value>
+    </data>
+    <data name="ProgressNothingForYou" xml:space="preserve">
+        <value>Ahora mismo nada te necesita. {0} te avisará aquí cuando haga falta.</value>
+    </data>
+    <data name="ProgressSteps" xml:space="preserve">
+        <value>Pasos</value>
+    </data>
+    <data name="ProgressNoSteps" xml:space="preserve">
+        <value>El agente aún no ha enumerado sus pasos.</value>
+    </data>
+    <data name="ProgressYou" xml:space="preserve">
+        <value>Tú</value>
+    </data>
+    <data name="ProgressStepTodo" xml:space="preserve">
+        <value>Pendiente</value>
+    </data>
+    <data name="ProgressStepDoing" xml:space="preserve">
+        <value>En curso</value>
+    </data>
+    <data name="ProgressStepDone" xml:space="preserve">
+        <value>Hecho</value>
+    </data>
+    <data name="ProgressStepBlocked" xml:space="preserve">
+        <value>Bloqueado</value>
+    </data>
+    <data name="ProgressStepSkipped" xml:space="preserve">
+        <value>Omitido</value>
+    </data>
+    <data name="ProgressKeepInMind" xml:space="preserve">
+        <value>Ten en cuenta</value>
+    </data>
+    <data name="ProgressNoteInfo" xml:space="preserve">
+        <value>Nota</value>
+    </data>
+    <data name="ProgressNoteWarning" xml:space="preserve">
+        <value>Atención</value>
+    </data>
+    <data name="ProgressNoteDecision" xml:space="preserve">
+        <value>Decisión</value>
+    </data>
+    <data name="ProgressNoteSuccess" xml:space="preserve">
+        <value>Listo</value>
+    </data>
+    <data name="ProgressNoteError" xml:space="preserve">
+        <value>Problema</value>
+    </data>
+    <data name="ProgressLinks" xml:space="preserve">
+        <value>Enlaces</value>
+    </data>
+    <data name="ProgressActivity" xml:space="preserve">
+        <value>Actividad</value>
+    </data>
+    <data name="ProgressMessagePlaceholder" xml:space="preserve">
+        <value>Escribe a {0}</value>
+    </data>
+    <data name="ProgressDelete" xml:space="preserve">
+        <value>Eliminar esta tarea</value>
+    </data>
+    <data name="ProgressDeleteConfirm" xml:space="preserve">
+        <value>¿Eliminarla para siempre?</value>
+    </data>
+    <data name="ProgressPickTask" xml:space="preserve">
+        <value>Elige una tarea para ver cómo va.</value>
+    </data>
+    <data name="ProgressTaskGone" xml:space="preserve">
+        <value>Esta tarea ya no existe. Puede que su agente la terminara y la quitara.</value>
+    </data>
+    <data name="ProgressAddNote" xml:space="preserve">
+        <value>Añadir una nota</value>
+    </data>
+    <data name="ProgressAnswerPlaceholder" xml:space="preserve">
+        <value>Tu respuesta</value>
+    </data>
+    <data name="ProgressNotePlaceholder" xml:space="preserve">
+        <value>¿Algo que añadir? (opcional)</value>
+    </data>
+    <data name="ProgressYes" xml:space="preserve">
+        <value>Sí</value>
+    </data>
+    <data name="ProgressNo" xml:space="preserve">
+        <value>No</value>
+    </data>
+    <data name="ProgressSendAnswer" xml:space="preserve">
+        <value>Enviar respuesta</value>
+    </data>
+    <data name="ProgressAnswerFailed" xml:space="preserve">
+        <value>Esa pregunta ya se respondió o se retiró mientras tanto.</value>
+    </data>
+    <data name="ProgressSent" xml:space="preserve">
+        <value>Enviado a {0}.</value>
+    </data>
+    <data name="ProgressSampleSentTitle" xml:space="preserve">
+        <value>Esto es un ejemplo</value>
+    </data>
+    <data name="ProgressSampleSent" xml:space="preserve">
+        <value>En una tarea real, {0} lo recibe al momento y sigue.</value>
+    </data>
+    <data name="ProgressEntryStepDone" xml:space="preserve">
+        <value>Hecho: {0}</value>
+    </data>
+    <data name="ProgressAgentNeedsYou" xml:space="preserve">
+        <value>{0} te necesita</value>
+    </data>
+    <data name="ProgressAgentFinished" xml:space="preserve">
+        <value>{0} terminó una tarea</value>
+    </data>
+    <data name="ProgressAgentStopped" xml:space="preserve">
+        <value>{0} detuvo una tarea</value>
+    </data>
+    <data name="ProgressGuideListTitle" xml:space="preserve">
+        <value>Todos los chats, una lista</value>
+    </data>
+    <data name="ProgressGuideListText" xml:space="preserve">
+        <value>Cada chat de IA que lleva una tarea larga, como un primer despliegue o una función nueva, muestra aquí su progreso junto a los demás. Lo que te necesita va primero.</value>
+    </data>
+    <data name="ProgressGuideTurnTitle" xml:space="preserve">
+        <value>Tu turno</value>
+    </data>
+    <data name="ProgressGuideTurnText" xml:space="preserve">
+        <value>Responde a las preguntas del agente con un clic, unas palabras o tu voz, y dile cuando hayas hecho tu parte. Sigue en cuanto envías.</value>
+    </data>
+    <data name="ProgressGuideStepsTitle" xml:space="preserve">
+        <value>Lo hecho y lo que falta</value>
+    </data>
+    <data name="ProgressGuideStepsText" xml:space="preserve">
+        <value>Cada paso que dio el agente, el que tiene entre manos y lo que queda. Los pasos que solo puedes dar tú están marcados.</value>
+    </data>
+    <data name="ProgressGuideActivityTitle" xml:space="preserve">
+        <value>Habla con el agente</value>
+    </data>
+    <data name="ProgressGuideActivityText" xml:space="preserve">
+        <value>Escribe o di al agente lo que quieras aquí, y lee qué hizo y cuándo. Lee tu mensaje la próxima vez que se asome.</value>
+    </data>
+    <data name="ProgressGuideSoundTitle" xml:space="preserve">
+        <value>Te llama cuando te necesita</value>
+    </data>
+    <data name="ProgressGuideSoundText" xml:space="preserve">
+        <value>Suena un aviso cuando un agente te pregunta algo, salvo que el banco de trabajo esté en silencio, y el título de la pestaña cuenta lo que te espera. Activa las notificaciones en la pestaña de revisión de una página para recibirlas incluso en otra aplicación.</value>
+    </data>
+    <data name="Dictate" xml:space="preserve">
+        <value>Dictado</value>
+    </data>
+    <data name="DictateIn" xml:space="preserve">
+        <value>Habla en vez de escribir ({0})</value>
+    </data>
+    <data name="StopDictation" xml:space="preserve">
+        <value>Dejar de escuchar</value>
+    </data>
+    <data name="DictationLanguage" xml:space="preserve">
+        <value>Idioma del dictado</value>
+    </data>
+    <data name="Listening" xml:space="preserve">
+        <value>Escuchando…</value>
+    </data>
+    <data name="MicrophoneBlocked" xml:space="preserve">
+        <value>El navegador bloqueó el micrófono. Permítelo para este sitio desde la barra de direcciones y vuelve a intentarlo.</value>
+    </data>
+    <data name="DictationNeedsNetwork" xml:space="preserve">
+        <value>El dictado necesita conexión a internet en este navegador.</value>
+    </data>
+    <data name="DictationLanguageNotSupported" xml:space="preserve">
+        <value>Este navegador no admite dictado en {0}.</value>
+    </data>
+    <data name="DictationFailed" xml:space="preserve">
+        <value>El dictado no empezó. Vuelve a intentarlo o escribe.</value>
+    </data>
+    <data name="TimeJustNow" xml:space="preserve">
+        <value>ahora mismo</value>
+    </data>
+    <data name="TimeMinutesAgo" xml:space="preserve">
+        <value>hace {0} min</value>
+    </data>
+    <data name="TimeHoursAgo" xml:space="preserve">
+        <value>hace {0} h</value>
+    </data>
+    <data name="SampleDeployTitle" xml:space="preserve">
+        <value>Desplegar en Test y Producción</value>
+    </data>
+    <data name="SampleDeploySummary" xml:space="preserve">
+        <value>Preparando los entornos de Test y Producción en tu propio servidor, con la aplicación en tu dominio.</value>
+    </data>
+    <data name="SampleDeployStepServices" xml:space="preserve">
+        <value>Encontrar los servicios externos que necesita la aplicación y sus claves</value>
+    </data>
+    <data name="SampleDeployStepEnvironments" xml:space="preserve">
+        <value>Crear los entornos de Test y Producción en GitHub</value>
+    </data>
+    <data name="SampleDeployStepServer" xml:space="preserve">
+        <value>Conseguir un servidor Linux y compartir su dirección</value>
+    </data>
+    <data name="SampleDeployStepToken" xml:space="preserve">
+        <value>Crear un token de API de Cloudflare</value>
+    </data>
+    <data name="SampleDeployStepTokenDetail" xml:space="preserve">
+        <value>En el panel de Cloudflare, abre My Profile y luego API Tokens, y crea uno que pueda editar DNS y Cloudflare Tunnel. Pégalo en el archivo que abrí en tu editor, nunca en un chat.</value>
+    </data>
+    <data name="SampleDeployStepRunner" xml:space="preserve">
+        <value>Instalar Docker y el runner de GitHub Actions en el servidor</value>
+    </data>
+    <data name="SampleDeployStepTunnel" xml:space="preserve">
+        <value>Servir la aplicación en tu dominio mediante un Cloudflare Tunnel</value>
+    </data>
+    <data name="SampleDeployStepFirst" xml:space="preserve">
+        <value>Desplegar en Test y luego en Producción</value>
+    </data>
+    <data name="SampleDeployAskEmail" xml:space="preserve">
+        <value>¿Qué servicio debe enviar los correos de la aplicación?</value>
+    </data>
+    <data name="SampleDeployAskEmailDetail" xml:space="preserve">
+        <value>La aplicación envía por correo los códigos de inicio de sesión y los restablecimientos de contraseña. Puedes cambiarlo más tarde.</value>
+    </data>
+    <data name="SampleDeployAskEmailOption1" xml:space="preserve">
+        <value>Una cuenta gratuita en un servicio de correo</value>
+    </data>
+    <data name="SampleDeployAskEmailOption2" xml:space="preserve">
+        <value>El servidor de correo de nuestra empresa</value>
+    </data>
+    <data name="SampleDeployAskEmailOption3" xml:space="preserve">
+        <value>Ninguno por ahora: mostrar los correos en los registros</value>
+    </data>
+    <data name="SampleDeployAskSsh" xml:space="preserve">
+        <value>¿Cerrar el puerto SSH del servidor cuando funcione el túnel?</value>
+    </data>
+    <data name="SampleDeployAskSshDetail" xml:space="preserve">
+        <value>Seguirás llegando al servidor por el túnel y por la consola web de tu proveedor.</value>
+    </data>
+    <data name="SampleDeployNoteSecrets" xml:space="preserve">
+        <value>Las claves y contraseñas nunca van en esta página ni en un chat. Van directamente a los secretos de GitHub.</value>
+    </data>
+    <data name="SampleDeployNoteOneServer" xml:space="preserve">
+        <value>Un solo servidor para los dos entornos, para ahorrar costes.</value>
+    </data>
+    <data name="SampleDeployLinkCloudflare" xml:space="preserve">
+        <value>Panel de Cloudflare</value>
+    </data>
+    <data name="SampleDeployFeed1" xml:space="preserve">
+        <value>La aplicación usa 6 servicios externos; 3 necesitan claves de tus propias cuentas.</value>
+    </data>
+    <data name="SampleDeployFeed2" xml:space="preserve">
+        <value>El servidor está listo en 203.0.113.24.</value>
+    </data>
+    <data name="SampleDeployFeed3" xml:space="preserve">
+        <value>Entré en el servidor con la clave que añadiste y desactivé el inicio de sesión con contraseña.</value>
+    </data>
+    <data name="SampleDeployFeed4" xml:space="preserve">
+        <value>Esperando el token de Cloudflare para preparar el túnel.</value>
+    </data>
+    <data name="SampleFeatureTitle" xml:space="preserve">
+        <value>Nueva función: puntos de fidelidad</value>
+    </data>
+    <data name="SampleFeatureSummary" xml:space="preserve">
+        <value>Los clientes ganan puntos en cada pedido y los gastan al pagar. Ahora que aprobaste el diseño, toca construirlo.</value>
+    </data>
+    <data name="SampleFeatureStepRequirements" xml:space="preserve">
+        <value>Cerrar los requisitos y escribirlos en la especificación</value>
+    </data>
+    <data name="SampleFeatureStepPlan" xml:space="preserve">
+        <value>Planificar el trabajo en 6 tareas</value>
+    </data>
+    <data name="SampleFeatureStepDesign" xml:space="preserve">
+        <value>Aprobar el diseño en el banco de trabajo</value>
+    </data>
+    <data name="SampleFeatureStepLedger" xml:space="preserve">
+        <value>Construir el registro de puntos y su API</value>
+    </data>
+    <data name="SampleFeatureStepCheckout" xml:space="preserve">
+        <value>Gastar puntos al pagar</value>
+    </data>
+    <data name="SampleFeatureStepTests" xml:space="preserve">
+        <value>Pruebas en móviles y escritorio</value>
+    </data>
+    <data name="SampleStepTryOnTest" xml:space="preserve">
+        <value>Probarlo en el entorno de Test</value>
+    </data>
+    <data name="SampleFeatureAskWorth" xml:space="preserve">
+        <value>¿Cuánto vale un punto al pagar?</value>
+    </data>
+    <data name="SampleFeatureAskWorthDetail" xml:space="preserve">
+        <value>Irá a la configuración, así podrás cambiarlo más tarde.</value>
+    </data>
+    <data name="SampleFeatureAskWorthPlaceholder" xml:space="preserve">
+        <value>Por ejemplo: 100 puntos = 1 €</value>
+    </data>
+    <data name="SampleFeatureAskOrders" xml:space="preserve">
+        <value>¿Qué pedidos suman puntos?</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption1" xml:space="preserve">
+        <value>Pedidos en línea</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption2" xml:space="preserve">
+        <value>Pedidos en tienda</value>
+    </data>
+    <data name="SampleFeatureAskOrdersOption3" xml:space="preserve">
+        <value>Pedidos pagados con tarjeta regalo</value>
+    </data>
+    <data name="SampleFeatureNoteExpiry" xml:space="preserve">
+        <value>Los puntos caducan 12 meses después de ganarlos.</value>
+    </data>
+    <data name="SampleFeatureNoteSpec" xml:space="preserve">
+        <value>Todo lo decidido hasta ahora está en la especificación de la función, con las preguntas aún abiertas.</value>
+    </data>
+    <data name="SampleFeatureLinkDesign" xml:space="preserve">
+        <value>Diseño aprobado</value>
+    </data>
+    <data name="SampleFeatureFeed1" xml:space="preserve">
+        <value>Escribí los requisitos en la especificación; te quedan 3 preguntas.</value>
+    </data>
+    <data name="SampleFeatureFeed2" xml:space="preserve">
+        <value>Se ve bien. Haz la insignia de puntos un poco más pequeña.</value>
+    </data>
+    <data name="SampleFeatureFeed3" xml:space="preserve">
+        <value>Hice la insignia más pequeña y empecé a construir.</value>
+    </data>
+    <data name="SampleFeatureFeed4" xml:space="preserve">
+        <value>El registro y su migración de base de datos están listos. Ahora escribo su API.</value>
+    </data>
+    <data name="SampleFixTitle" xml:space="preserve">
+        <value>Arreglo: faltan reembolsos en el informe de ventas diario</value>
+    </data>
+    <data name="SampleFixSummary" xml:space="preserve">
+        <value>Los reembolsos hechos después de medianoche se contaban en el día equivocado. Arreglado, probado en Test y fusionado.</value>
+    </data>
+    <data name="SampleFixStepLogs" xml:space="preserve">
+        <value>Encontrar la causa en los registros de Producción</value>
+    </data>
+    <data name="SampleFixStepTest" xml:space="preserve">
+        <value>Escribir una prueba que falla sin el arreglo</value>
+    </data>
+    <data name="SampleFixStepFix" xml:space="preserve">
+        <value>Contar los reembolsos en la zona horaria de la tienda</value>
+    </data>
+    <data name="SampleFixStepMerge" xml:space="preserve">
+        <value>Fusionarlo, lo que actualiza Producción</value>
+    </data>
+    <data name="SampleFixAskMerge" xml:space="preserve">
+        <value>¿Lo fusiono en main? Eso actualiza Producción.</value>
+    </data>
+    <data name="SampleFixNoteDone" xml:space="preserve">
+        <value>Producción ya tiene el arreglo. La prueba impide que el error vuelva.</value>
+    </data>
+    <data name="SampleFixLinkPullRequest" xml:space="preserve">
+        <value>Pull request</value>
+    </data>
+    <data name="SampleFixLinkTest" xml:space="preserve">
+        <value>Entorno de Test</value>
+    </data>
+    <data name="SampleFixFeed1" xml:space="preserve">
+        <value>Encontrado: el informe usaba la zona horaria del servidor, no la de la tienda.</value>
+    </data>
+    <data name="SampleFixFeed2" xml:space="preserve">
+        <value>Ya está en Test. Prueba un reembolso después de medianoche.</value>
+    </data>
+    <data name="SampleFixFeed3" xml:space="preserve">
+        <value>Fusionado. Producción está actualizada.</value>
+    </data>
+    <data name="HomeWhyProgressTitle" xml:space="preserve">
+        <value>Sigue las tareas largas y responde con un clic</value>
+    </data>
+    <data name="HomeWhyProgressText" xml:space="preserve">
+        <value>Un despliegue o una función nueva lleva muchos pasos, y algunos solo puedes darlos tú. Cada chat con un agente muestra aquí qué hizo, qué falta y qué necesita de ti, para que nada se pierda en un chat largo.</value>
+    </data>
+    <data name="HomeWhyVoiceTitle" xml:space="preserve">
+        <value>Habla en vez de escribir</value>
+    </data>
+    <data name="HomeWhyVoiceText" xml:space="preserve">
+        <value>Pulsa el micrófono junto a un comentario, una respuesta o una contestación y dilo. El navegador convierte tu voz en texto, en el idioma que elijas.</value>
+    </data>
+    <data name="TourProgressText" xml:space="preserve">
+        <value>Un despliegue o una función nueva lleva muchos pasos, y algunos solo puedes darlos tú. Cada chat con un agente muestra aquí qué hizo, qué falta y qué necesita de ti. Responde con un clic, unas palabras o tu voz, y sigue al instante. Pruébalo con los ejemplos.</value>
+    </data>
+    <data name="HomeFactAgent" xml:space="preserve">
+        <value>El progreso y las preguntas de tus agentes en un solo lugar</value>
+    </data>
+    <data name="HomeHowStepAnswerTitle" xml:space="preserve">
+        <value>Síguelo y responde</value>
+    </data>
+    <data name="HomeHowStepAnswerText" xml:space="preserve">
+        <value>Sigue su progreso, responde lo que pregunta con un clic o tu voz y fija comentarios en la página, que responde mientras escribes.</value>
+    </data>
+    <data name="HomeProgressSubtitle" xml:space="preserve">
+        <value>Las tareas largas, como un primer despliegue o una función nueva, informan aquí sobre la marcha, una junto a otra, tengas los chats que tengas.</value>
+    </data>
+    <data name="HomeProgressPointSteps" xml:space="preserve">
+        <value>Cada paso, el actual y lo que falta</value>
+    </data>
+    <data name="HomeProgressPointAnswer" xml:space="preserve">
+        <value>Preguntas que respondes con un clic o tu voz</value>
+    </data>
+    <data name="HomeProgressPointSound" xml:space="preserve">
+        <value>Un sonido y un contador en la pestaña cuando te necesita</value>
+    </data>
+    <data name="HomeProgressOpen" xml:space="preserve">
+        <value>Abrir el progreso</value>
+    </data>
+    <data name="ProgressRunningFrom" xml:space="preserve">
+        <value>Este banco de trabajo muestra el código de {0}</value>
+    </data>
+    <data name="ProgressReport" xml:space="preserve">
+        <value>Informe</value>
+    </data>
+    <data name="SampleFixReport" xml:space="preserve">
+        <value>**Causa:** el informe agrupaba las ventas por el día del servidor, que usa UTC, así que un reembolso hecho después de medianoche en la tienda contaba en el día anterior.
+
+**Solución:** los reembolsos se cuentan en la zona horaria de la propia tienda, y una prueba nueva hace un reembolso a las 00:30 hora de la tienda y comprueba en qué día queda.
+
+| Comprobación | Resultado |
+| --- | --- |
+| Todas las pruebas | Superadas |
+| Un reembolso después de medianoche en Test | En el día correcto |
+| Production tras el merge | Actualizado |</value>
     </data>
 </root>

@@ -556,6 +556,19 @@ function loadThumbnails() {
     document.querySelectorAll<HTMLImageElement>('img[data-thumbnail]').forEach(image => observer.observe(image));
 }
 
+// How many questions and steps of the agents' tasks wait for the user, shown in front of the tab's title.
+let attention = 0;
+let titleWatcher: MutationObserver | null = null;
+
+function showAttention() {
+    const title = document.title.replace(/^\(\d+\) /, '');
+    const shown = attention > 0 ? `(${attention}) ${title}` : title;
+
+    if (document.title !== shown) {
+        document.title = shown;
+    }
+}
+
 /** The functions .NET calls through JS interop as workbench.<name>, on the shell and in previews alike. */
 host.workbench = {
     loadThumbnails,
@@ -665,6 +678,17 @@ host.workbench = {
     /** Scrolls an element of the shell into sight, for a guide that points at it along with something else. */
     scrollIntoSight(selector: string) {
         document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
+    },
+
+    /** Counts what waits for the user in front of the tab's title, and keeps it there as pages change the title. */
+    setAttention(count: number) {
+        attention = count;
+        showAttention();
+
+        if (!titleWatcher) {
+            titleWatcher = new MutationObserver(showAttention);
+            titleWatcher.observe(document.head, { childList: true, subtree: true, characterData: true });
+        }
     },
 
     /** Marks the step the tour is on, or none when it ends, for the styles that lay out the shell for it on a phone. */
