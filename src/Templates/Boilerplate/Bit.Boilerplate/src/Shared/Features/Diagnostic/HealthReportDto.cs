@@ -52,6 +52,13 @@ public class HealthReportEntryDto
 
     public string[] Tags { get; set; } = [];
 
+    /// <summary>
+    /// What kind of dependency the check watches, such as "Platform" or "Integrations": its tag that starts with
+    /// <see cref="HealthCheckCategories.TagPrefix"/>, without the prefix (the tag stays in <see cref="Tags"/> too).
+    /// Null for a check registered without one.
+    /// </summary>
+    public string? Category { get; set; }
+
     public Dictionary<string, string?> Data { get; set; } = [];
 }
 

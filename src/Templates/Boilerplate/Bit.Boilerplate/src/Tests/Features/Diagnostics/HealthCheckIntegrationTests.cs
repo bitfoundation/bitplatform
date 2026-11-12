@@ -213,6 +213,121 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
+    /// Each entry says what kind of dependency it watches, taken from the category tag it was registered with, so a
+    /// monitor and the Operations page can group a check they don't know by name, one of the app's own included. The
+    /// JSON name is what such a monitor codes against.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_SayWhatKindOfDependencyEachCheckWatches()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(configureTestApiAppServices: services => services.AddHealthChecks()
+                .AddCheck("paymentGateway", () => HealthCheckResult.Healthy(), tags: [HealthCheckCategories.Integrations])
+                .AddCheck("untagged", () => HealthCheckResult.Healthy()))
+            .Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using (var json = JsonDocument.Parse(body))
+        {
+            Assert.AreEqual("Integrations", json.RootElement.GetProperty("entries").GetProperty("paymentGateway").GetProperty("category").GetString(), body);
+        }
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        foreach (var (name, entry) in report.Entries.Where(entry => entry.Key is not "untagged"))
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(entry.Category), $"The '{name}' check has no category. Tag it with one of HealthCheckCategories.");
+        }
+
+        Assert.AreEqual("Platform", report.Entries["binStorage"].Category);
+        Assert.AreEqual("Platform", report.Entries["AppDbContext"].Category);
+        Assert.AreEqual("Messaging", report.Entries["smtp"].Category);
+        //#if (redis == true)
+        Assert.AreEqual("Platform", report.Entries["StackExchange.Redis_redis-persistent"].Category, "Aspire registers it without tags, so its category is added afterwards.");
+        Assert.AreEqual("Platform", report.Entries["StackExchange.Redis_redis-cache"].Category, "Aspire registers it without tags, so its category is added afterwards.");
+        //#endif
+
+        var paymentGateway = report.Entries["paymentGateway"];
+        Assert.AreEqual("Integrations", paymentGateway.Category);
+        Assert.Contains(HealthCheckCategories.Integrations, paymentGateway.Tags, "The category tag stays among the tags.");
+
+        Assert.IsNull(report.Entries["untagged"].Category, "A check registered without a category tag has none.");
+    }
+
+    /// <summary>
+    /// The category of every check the template registers (See HealthCheckCategories). A check that isn't listed here
+    /// fails <see cref="AssertCategory"/>, so a new one gets a category from the start.
+    /// </summary>
+    private static readonly Dictionary<string, string> expectedCategories = new()
+    {
+        ["binStorage"] = HealthCheckCategories.Platform,
+        ["AppDbContext"] = HealthCheckCategories.Platform,
+        ["hangfire"] = HealthCheckCategories.Platform,
+        ["appCertificate"] = HealthCheckCategories.Platform,
+        ["userProfileImages"] = HealthCheckCategories.Platform,
+        //#if (redis == true)
+        ["StackExchange.Redis_redis-persistent"] = HealthCheckCategories.Platform,
+        ["StackExchange.Redis_redis-cache"] = HealthCheckCategories.Platform,
+        //#endif
+        //#if (cloudflare == true)
+        ["cloudflare"] = HealthCheckCategories.Platform,
+        //#endif
+        ["smtp"] = HealthCheckCategories.Messaging,
+        ["emailDelivery"] = HealthCheckCategories.Messaging,
+        ["sms"] = HealthCheckCategories.Messaging,
+        //#if (notification == true)
+        ["firebase"] = HealthCheckCategories.Messaging,
+        ["apns"] = HealthCheckCategories.Messaging,
+        //#endif
+        //#if (signalR == true)
+        ["azureSignalR"] = HealthCheckCategories.Messaging,
+        //#endif
+        ["keycloakIdentity"] = HealthCheckCategories.Identity,
+        ["googleSignIn"] = HealthCheckCategories.Identity,
+        ["gitHubSignIn"] = HealthCheckCategories.Identity,
+        ["twitterSignIn"] = HealthCheckCategories.Identity,
+        ["facebookSignIn"] = HealthCheckCategories.Identity,
+        ["entraId"] = HealthCheckCategories.Identity,
+        ["appleSignIn"] = HealthCheckCategories.Identity,
+        //#if (captcha == "reCaptcha")
+        ["reCaptcha"] = HealthCheckCategories.Identity,
+        //#endif
+        //#if (signalR == true || database == "PostgreSQL" || database == "SqlServer")
+        ["aiChat"] = HealthCheckCategories.AI,
+        ["aiEmbedding"] = HealthCheckCategories.AI,
+        //#endif
+        //#if (signalR == true)
+        ["aiSpeechToText"] = HealthCheckCategories.AI,
+        ["aiTextToSpeech"] = HealthCheckCategories.AI,
+        ["aiRealtime"] = HealthCheckCategories.AI,
+        //#endif
+    };
+
+    private static void AssertCategory(HealthCheckRegistration registration)
+    {
+        var name = registration.Name;
+
+        Assert.IsTrue(expectedCategories.TryGetValue(name, out var expected), $"The '{name}' check has no entry in expectedCategories.");
+
+        string[] categories = [.. registration.Tags.Where(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))];
+
+        Assert.HasCount(1, categories, $"The '{name}' check must carry exactly one category tag, one of HealthCheckCategories.");
+        Assert.AreEqual(expected, categories[0], $"The '{name}' check is in the wrong category.");
+    }
+
+    /// <summary>
     /// A remote dependency must neither hang <c>/health</c> nor make it answer 503, so every check outside
     /// <c>localChecks</c> needs a timeout, reports Degraded and stays out of <c>/alive</c>. The optional ones are
     /// configured below, as development only registers them then.
@@ -300,6 +415,12 @@ public partial class HealthCheckIntegrationTests
 
         // The control: the one check that *is* meant to gate liveness still does.
         Assert.Contains("live", registrations.Single(r => r.Name == "binStorage").Tags);
+
+        // With every optional check registered, each one, local ones included, carries its category.
+        foreach (var registration in registrations)
+        {
+            AssertCategory(registration);
+        }
     }
 
     //#if (redis == true)
@@ -418,6 +539,9 @@ public partial class HealthCheckIntegrationTests
 
             Assert.AreEqual(HealthStatus.Degraded, result.Status, $"'{name}': {result.Description}");
             Assert.Contains("is not configured", result.Description!, $"'{name}' must say what is missing.");
+
+            // A stand-in is grouped where the real check would be.
+            AssertCategory(registration);
         }
     }
 

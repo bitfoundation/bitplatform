@@ -320,7 +320,7 @@ The project includes **health check endpoints** to monitor application health.
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
-   format and adds each check's failure status, timeout and full exception, plus the time of the report. It also says
+   format and adds each check's failure status, timeout, category and full exception, plus the time of the report. It also says
    which build answered and since when: `applicationVersion` (the informational version, which ends with the commit
    in a Release build), `instanceName` (the machine name) and `startedAt` (when the process started, in UTC), so a
    monitor that polls it can mark deployments and restarts, instance by instance. It needs the
@@ -363,7 +363,8 @@ caching, prerendering, forwarded headers, the telemetry exporters or a force-upd
 check already covers is deliberately absent from it, and no credential is ever in it - each one is a boolean saying
 whether it is set, which `DeploymentConfigurationTests` asserts against the deployment's own connection strings.
 Its catalog (`OperationsPage.HealthChecks.cs`) gives each registration name a title, a group and a description; add
-a new check there to give it the same treatment.
+a new check there to give it the same treatment. A check it doesn't know goes to the group its category names, or to
+**Other**.
 
 With a standalone API, the page also reads `Server.Web`'s own `/healthz`, behind the same feature, and shows its checks
 under **Web server** with a `web:` prefix (`web:binStorage`, `web:serverApi`). If that report can't be read, a
@@ -456,6 +457,11 @@ memory without it. `redis-persistent` is registered only where `Server.Api` runs
 standalone API, `Server.Web` has only `redis-cache` and also checks the API's `/alive` endpoint (`serverApi`, Degraded).
 
 Anything you add that a request path genuinely depends on should report Unhealthy; anything external should not.
+
+Every check carries one of `HealthCheckCategories` (`Platform`, `Messaging`, `Identity`, `AI`, `Integrations`) as a tag,
+which `/healthz` reports as the entry's `category`, so the Operations page and a monitor can group a check they don't know
+by name. Tag yours too, e.g. `tags: [HealthCheckCategories.Integrations]` for a payment gateway, a map or a CRM; a
+category of your own, `category:<Name>`, works as well.
 
 ---
 

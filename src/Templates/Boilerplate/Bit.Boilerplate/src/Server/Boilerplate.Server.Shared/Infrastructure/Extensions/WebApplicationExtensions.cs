@@ -307,6 +307,9 @@ public static class WebApplicationExtensions
                     // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
                     Exception = includeExceptions ? entry.Value.Exception?.ToString() : null,
                     Tags = [.. entry.Value.Tags],
+                    Category = entry.Value.Tags.FirstOrDefault(tag => tag.StartsWith(HealthCheckCategories.TagPrefix, StringComparison.Ordinal))?[HealthCheckCategories.TagPrefix.Length..] is { Length: > 0 } category
+                        ? category
+                        : null,
                     // Stringified, as a check may put anything in here.
                     Data = entry.Value.Data.ToDictionary(item => item.Key, item => item.Value switch
                     {

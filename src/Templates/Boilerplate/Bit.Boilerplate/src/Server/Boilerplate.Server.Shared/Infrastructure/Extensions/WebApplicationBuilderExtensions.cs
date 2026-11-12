@@ -17,6 +17,7 @@ using OpenTelemetry.Trace;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 using Boilerplate.Server.Shared.Infrastructure.Services;
+using Boilerplate.Shared.Features.Diagnostic;
 //#if (redis == true)
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ZiggyCreatures.Caching.Fusion.Locking.Distributed.Redis;
@@ -62,11 +63,13 @@ public static class WebApplicationBuilderExtensions
             builder.AddKeyedRedisClient("redis-cache", settings => settings.DisableTracing = true /*FusionCache is already handling cache traces*/);
 
             // Losing the cache only costs speed (FusionCache keeps serving from memory), so it degrades the instance instead of draining it.
+            // Aspire registers the check without tags, so its category is added here too (See HealthCheckCategories).
             services.PostConfigure<HealthCheckServiceOptions>(options =>
             {
                 var redisCacheCheck = options.Registrations.SingleOrDefault(r => r.Name is "StackExchange.Redis_redis-cache");
                 redisCacheCheck?.FailureStatus = HealthStatus.Degraded;
                 redisCacheCheck?.Timeout = TimeSpan.FromSeconds(5);
+                redisCacheCheck?.Tags.Add(HealthCheckCategories.Platform);
             });
             //#endif
 
@@ -303,7 +306,7 @@ public static class WebApplicationBuilderExtensions
                 build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
-                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live"]);
+                .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 2 * 1024), name: "binStorage", tags: ["live", HealthCheckCategories.Platform]);
         }
     }
 }
