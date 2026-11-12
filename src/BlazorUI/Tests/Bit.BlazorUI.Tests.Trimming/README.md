@@ -38,7 +38,8 @@ scripts whose chat is lazy-loaded the way the Trimming page's "Lazy-loading the 
 page) are `BlazorWebAssemblyLazyLoad` assemblies, and nothing of the AI packages is registered at startup. It checks the
 boot configuration lists them as lazy, that the publish still keeps the chat's stylesheets, modules, boot module,
 initializer and glyph font, and - with `RUN_BROWSER_TESTS=1` - that the app starts without downloading any of the AI
-assemblies, modules or font, and that once the chat opens they come, the chat is styled and answers, and its copy
+assemblies, its on-demand modules or its font (only the boot module and the modules it imports, `BitAiScrollStops.js`,
+load at startup), and that once the chat opens they come, the chat is styled and answers, and its copy
 button draws its glyph and reaches its script.
 
 `LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
