@@ -295,6 +295,7 @@ public partial class BitDataGridDemo
                 new() { Name = "Filters", Type = "IReadOnlyList<BitDataGridFilterDescriptor>", DefaultValue = "[]", Description = "The active filters.", LinkType = LinkType.Link, Href = "#BitDataGridFilterDescriptor" },
                 new() { Name = "Groups", Type = "IReadOnlyList<BitDataGridGroupDescriptor>", DefaultValue = "[]", Description = "The active groups, in nesting order." },
                 new() { Name = "Search", Type = "string?", DefaultValue = "null", Description = "The quick-search term to match across the searchable columns, or null." },
+                new() { Name = "Aggregates", Type = "IReadOnlyList<BitDataGridAggregateDescriptor>", DefaultValue = "[]", Description = "The aggregates the footer shows, one per aggregating column: compute them over the whole filtered data and return them in the result's Aggregates. Empty for OnLoadMore and export reads.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateDescriptor" },
                 new() { Name = "CancellationToken", Type = "CancellationToken", DefaultValue = "", Description = "Cancelled when a newer request supersedes this one." },
             ],
         },
@@ -414,6 +415,17 @@ public partial class BitDataGridDemo
             [
                 new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The grouped column's identifier." },
                 new() { Name = "Direction", Type = "BitDataGridSortDirection", DefaultValue = "BitDataGridSortDirection.Ascending", Description = "The sort direction of the group keys.", LinkType = LinkType.Link, Href = "#BitDataGridSortDirection" },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridAggregateDescriptor",
+            Title = "BitDataGridAggregateDescriptor",
+            Description = "An aggregate the footer shows (in BitDataGridReadRequest.Aggregates).",
+            Parameters =
+            [
+                new() { Name = "ColumnId", Type = "string", DefaultValue = "", Description = "The aggregating column's identifier." },
+                new() { Name = "Type", Type = "BitDataGridAggregateType", DefaultValue = "", Description = "The column's aggregate function; Custom for a column with its own AggregateBy, which the server computes its own way.", LinkType = LinkType.Link, Href = "#BitDataGridAggregateType" },
             ],
         },
         new()

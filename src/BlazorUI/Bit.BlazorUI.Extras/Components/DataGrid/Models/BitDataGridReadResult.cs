@@ -33,6 +33,7 @@ public sealed class BitDataGridReadResult<TItem>
     /// Optional aggregates computed by the data source over the <b>whole</b> filtered dataset (not just
     /// the returned page). When provided in server mode, the footer shows these instead of aggregating
     /// the current page locally - which would otherwise present per-page numbers as if they were totals.
+    /// <see cref="BitDataGridReadRequest.Aggregates"/> lists the ones the footer shows.
     /// </summary>
     public IReadOnlyList<BitDataGridAggregateResult>? Aggregates { get; init; }
 

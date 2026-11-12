@@ -524,8 +524,9 @@
             <BitText>@serverLastRequest</BitText>
             <br /><br />
             <div>
-                With <b>Virtualize</b> instead of paging, rows are fetched as they scroll into view - 100,000 here. The result's
-                <b>Aggregates</b> fill the footer with totals over the whole matching set.
+                With <b>Virtualize</b> instead of paging, rows are fetched as they scroll into view - 100,000 here. The request's
+                <b>Aggregates</b> name what the footer shows (a sum of Price and an average of Rating), and the result's
+                <b>Aggregates</b> fill it in over the whole matching set.
             </div>
             <br />
             <BitDataGrid OnRead="LoadVirtualServerData" Virtualize="true" Height="480px" RowHeight="40"
@@ -536,7 +537,7 @@
                 <BitDataGridColumn Property="p => p.Supplier" Width="180px" />
                 <BitDataGridColumn Property="p => p.Price" Width="140px" Format="C2" Align="BitTextAlign.End" Aggregate="BitDataGridAggregateType.Sum" AggregateFormat="C0" />
                 <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitTextAlign.End" />
-                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
+                <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" Aggregate="BitDataGridAggregateType.Average" />
             </BitDataGrid>
             <br /><br />
             <div>

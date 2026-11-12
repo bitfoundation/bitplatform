@@ -905,6 +905,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private readonly CancellationTokenSource _disposalCts = new();
     // Monotonic load version; bumped on every (re)load so a superseded response can detect it is stale.
     private int _loadVersion;
+    // Moved on whenever a column registers, changes or goes, which can change the aggregates the footer declares; and
+    // the version AggregatesNeedARead last looked at, so it reads again at most once for each.
+    private int _aggregateColumnsVersion;
+    private int _aggregatesCheckedFor;
 
     internal IReadOnlyList<BitDataGridColumn<TItem>> AllColumns => _columns;
     // Cached: VisibleColumns is read many times per render (per row, per cell, in layout helpers), so
@@ -984,6 +988,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _columns.Add(column);
         _columnsById[column.Id] = column;
         InvalidateVisibleColumns();
+        _aggregateColumnsVersion++;
 
         // A column registering itself must not trigger a fresh data fetch in server/infinite modes -
         // doing so once per column re-queries the backend (or resets the infinite list) repeatedly.
@@ -1015,6 +1020,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     internal void NotifyColumnChanged()
     {
+        _aggregateColumnsVersion++;
         if (IsServerMode || IsInfiniteMode)
         {
             if (!_serverAggregates)
@@ -1049,6 +1055,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _columnsById.Remove(key);
             InvalidateVisibleColumns();
+            _aggregateColumnsVersion++;
             // The filter editor's UI state is keyed by column id too; drop it with the column so a
             // later column reusing the id doesn't inherit a stale operator/raw text.
             _filterOps.Remove(key);
@@ -1117,6 +1124,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (_columnsById.TryGetValue(oldId, out var existing) && ReferenceEquals(existing, column))
             _columnsById.Remove(oldId);
         _columnsById[column.Id] = column;
+        _aggregateColumnsVersion++;
 
         // Descriptors are immutable on ColumnId, so rebuild the affected entries with the new id to
         // preserve the column's active sort/filter/group state across the rename.
@@ -1632,6 +1640,22 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // ahead to take it over from them; -1 when there is none to take over.
     private int _retryFocusVersion = -1;
 
+    // A server read asks for the aggregates the footer shows (BitDataGridReadRequest.Aggregates), but the first one goes
+    // out before the columns register, and a column can change its aggregate later. So once the columns have rendered,
+    // a data source that computes aggregates (its last result had them) and left out one the columns now declare is
+    // read again, asking for it: at most once for each change of the columns, so a source that never returns that
+    // aggregate costs one read, not one per render. A source that returns no aggregates is never read again for them:
+    // the footer aggregates its rows itself, as before.
+    private bool AggregatesNeedARead()
+    {
+        if (!IsServerMode || !_serverAggregates || _aggregatesCheckedFor == _aggregateColumnsVersion) return false;
+        if (IsReading || _readError is not null || IsDisposing) return false;
+
+        _aggregatesCheckedFor = _aggregateColumnsVersion;
+        return BitDataGridDataProcessor.AggregateDescriptors(_columns)
+            .Any(d => !_footerAggregates.Any(a => a.ColumnId == d.ColumnId && a.Type == d.Type));
+    }
+
     private BitDataGridReadRequest CreateServerWindowRequest(int skip, int take, CancellationToken cancellationToken) => new()
     {
         Skip = skip,
@@ -1640,6 +1664,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         Filters = _filters.ToList(),
         Groups = _groups.ToList(),
         Search = _search,
+        // Every window commits the result's aggregates to the footer (CommitServerWindow).
+        Aggregates = BitDataGridDataProcessor.AggregateDescriptors(_columns),
         CancellationToken = cancellationToken
     };
 
@@ -2273,6 +2299,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (OnStateChange.HasDelegate) await OnStateChange.InvokeAsync(GetState());
         }
 
+        if (AggregatesNeedARead()) await RefreshAsync(viewRowsKept: true);
+
         if (_revealPending)
         {
             _revealPending = false;
@@ -2595,6 +2623,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             Filters = _filters.ToList(),
             Groups = _groups.ToList(),
             Search = _search,
+            Aggregates = BitDataGridDataProcessor.AggregateDescriptors(_columns),
             CancellationToken = ResetLoadCancellation()
         };
         // Capture this request's version right after ResetLoadCancellation; bail out below if a newer

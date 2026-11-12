@@ -318,12 +318,22 @@ public partial class BitDataGridDemo : AppComponentBase
         var filtered = Query(serverVirtualAll, request).ToList();
         var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
 
-        // Computed over the WHOLE filtered set, so the footer shows a real grand total.
-        var priceSum = filtered.Sum(p => p.Price);
-        var aggregates = new List<BitDataGridAggregateResult>
+        // The grid names the aggregates its footer shows (a sum of Price and an average of Rating). Computed over
+        // the WHOLE filtered set, so the footer shows real totals.
+        var aggregates = new List<BitDataGridAggregateResult>();
+        foreach (var aggregate in request.Aggregates)
         {
-            new() { ColumnId = nameof(Product.Price), Type = BitDataGridAggregateType.Sum, Value = priceSum, FormattedValue = priceSum.ToString("C0") }
-        };
+            if (aggregate is { ColumnId: nameof(Product.Price), Type: BitDataGridAggregateType.Sum })
+            {
+                var sum = filtered.Sum(p => p.Price);
+                aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = sum, FormattedValue = sum.ToString("C0") });
+            }
+            else if (aggregate is { ColumnId: nameof(Product.Rating), Type: BitDataGridAggregateType.Average })
+            {
+                var average = filtered.Count == 0 ? 0 : filtered.Average(p => p.Rating);
+                aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = average, FormattedValue = average.ToString("N1") });
+            }
+        }
 
         return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
     }

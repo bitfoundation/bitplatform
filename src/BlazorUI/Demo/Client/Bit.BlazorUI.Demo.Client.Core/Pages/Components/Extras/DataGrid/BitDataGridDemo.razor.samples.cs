@@ -774,7 +774,7 @@ private List<Product> virtualProducts = SampleData.Generate(10_000);" + ProductM
     <BitDataGridColumn Property=""p => p.Supplier"" Width=""180px"" />
     <BitDataGridColumn Property=""p => p.Price"" Width=""140px"" Format=""C2"" Align=""BitTextAlign.End"" Aggregate=""BitDataGridAggregateType.Sum"" AggregateFormat=""C0"" />
     <BitDataGridColumn Property=""p => p.Stock"" Width=""120px"" Align=""BitTextAlign.End"" />
-    <BitDataGridColumn Property=""p => p.Rating"" Width=""110px"" Format=""N1"" Align=""BitTextAlign.End"" FrozenEnd=""true"" />
+    <BitDataGridColumn Property=""p => p.Rating"" Width=""110px"" Format=""N1"" Align=""BitTextAlign.End"" FrozenEnd=""true"" Aggregate=""BitDataGridAggregateType.Average"" />
 </BitDataGrid>
 
 <BitCheckbox Label=""Make the server fail"" @bind-Value=""serverFails"" />
@@ -833,12 +833,22 @@ private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitData
     var filtered = Query(serverVirtualAll, request).ToList();
     var items = filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList();
 
-    // Computed over the WHOLE filtered set, so the footer shows a real grand total.
-    var priceSum = filtered.Sum(p => p.Price);
-    var aggregates = new List<BitDataGridAggregateResult>
+    // The grid names the aggregates its footer shows (a sum of Price and an average of Rating). Computed over
+    // the WHOLE filtered set, so the footer shows real totals.
+    var aggregates = new List<BitDataGridAggregateResult>();
+    foreach (var aggregate in request.Aggregates)
     {
-        new() { ColumnId = nameof(Product.Price), Type = BitDataGridAggregateType.Sum, Value = priceSum, FormattedValue = priceSum.ToString(""C0"") }
-    };
+        if (aggregate is { ColumnId: nameof(Product.Price), Type: BitDataGridAggregateType.Sum })
+        {
+            var sum = filtered.Sum(p => p.Price);
+            aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = sum, FormattedValue = sum.ToString(""C0"") });
+        }
+        else if (aggregate is { ColumnId: nameof(Product.Rating), Type: BitDataGridAggregateType.Average })
+        {
+            var average = filtered.Count == 0 ? 0 : filtered.Average(p => p.Rating);
+            aggregates.Add(new() { ColumnId = aggregate.ColumnId, Type = aggregate.Type, Value = average, FormattedValue = average.ToString(""N1"") });
+        }
+    }
 
     return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
 }
