@@ -41,6 +41,7 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 4. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
 5. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
 6. Container image tags in the Aspire AppHost
+7. Tools the bit CLI downloads itself (`src/Toolings/Cli/Bit.Cli/Tools/`)
 
 ## The hold-back rules
 
@@ -314,6 +315,16 @@ current one; compare the registry's `last_updated` against the project's newest 
 curl -s "https://hub.docker.com/v2/repositories/<repo>/tags?page_size=3&ordering=last_updated" \
   | tr '{' '\n' | grep -oE '"name":"[^"]*"|"last_updated":"[^"]*"'
 ```
+
+### Tools the bit CLI downloads
+
+`Oasdiff.cs` pins oasdiff's version together with the SHA-256 of every archive `bit api` downloads, and the CLI
+refuses an archive whose hash differs. So a new version takes new hashes too, each from the `checksums.txt` of that
+release: a version moved without them fails `bit api` on every machine. Read its release notes for renamed or removed
+rule ids as well: `ApiCompatibility.SeverityLevels` names one, and oasdiff refuses an id it doesn't know. The CLI's
+tests run a stand-in for oasdiff, so try the real one: with the CLI built from the branch, run `bit api release` and
+then `bit api check` in a project generated from the template, which downloads the archive, checks its hash and
+compares.
 
 ## The report
 
