@@ -27,6 +27,12 @@ public class BitSnackBarService
     // notification is noise.
     private bool _missingHostLogged;
 
+    // The notifications the service hosts showed or queued, oldest first; read from any thread, written on a host's
+    // renderer, so every access holds the lock.
+    private readonly List<BitSnackBarItem> _history = [];
+    private readonly object _historyLock = new();
+    private int _historyLimit;
+
 
 
     public BitSnackBarService() : this(null)
@@ -62,6 +68,78 @@ public class BitSnackBarService
                 return _hosts.Count > 0 ? _hosts[^1] : null;
             }
         }
+    }
+
+    /// <summary>
+    /// How many of the latest notifications <see cref="History"/> keeps. 0 (the default) keeps none.
+    /// </summary>
+    /// <remarks>
+    /// History is off until this is set, because a kept item keeps everything it references alive with it - the
+    /// <c>OnClick</c> and <c>OnDismiss</c> delegates, and the components they close over, included. Lowering it drops
+    /// the oldest notifications at once; a negative value is taken as 0.
+    /// </remarks>
+    public int HistoryLimit
+    {
+        get => Volatile.Read(ref _historyLimit);
+        set
+        {
+            bool trimmed;
+            lock (_historyLock)
+            {
+                _historyLimit = Math.Max(0, value);
+                trimmed = TrimHistory();
+            }
+
+            if (trimmed) RaiseHistoryChange();
+        }
+    }
+
+    /// <summary>
+    /// The latest notifications a <see cref="BitSnackBar.ServiceHost"/> showed or queued, oldest first, up to
+    /// <see cref="HistoryLimit"/> of them - the record a notification center lists.
+    /// </summary>
+    /// <remarks>
+    /// Every item a service host takes in is recorded, whether it came through this service or through the host
+    /// itself, the loading item of <c>Track</c> and the outcome it settles into included; one it drops (under
+    /// <see cref="BitSnackBarOverflowBehavior.Skip"/>), or one shown while no host is rendered, never appeared and is
+    /// not. An item stays in the history after it leaves the screen: its <see cref="BitSnackBarItem.DismissReason"/>
+    /// says what took it away, and <see cref="BitSnackBarItem.ShownAt"/> when it last arrived. An item shown again
+    /// moves to the end. The list is a snapshot, safe to read from any thread.
+    /// </remarks>
+    public IReadOnlyList<BitSnackBarItem> History
+    {
+        get
+        {
+            lock (_historyLock)
+            {
+                return [.. _history];
+            }
+        }
+    }
+
+    /// <summary>
+    /// Raised when <see cref="History"/> changes: an item is recorded, dropped for the limit or cleared, or one in it
+    /// arrives on the screen, is updated, repeats as a duplicate or is dismissed.
+    /// </summary>
+    /// <remarks>
+    /// It is raised on the renderer of the host that made the change, or on the caller of <see cref="ClearHistory"/>
+    /// and <see cref="HistoryLimit"/>, so a component that re-renders on it does that through <c>InvokeAsync</c>.
+    /// </remarks>
+    public event Action? OnHistoryChange;
+
+    /// <summary>
+    /// Forgets every notification in <see cref="History"/>. The ones still on the screen stay there.
+    /// </summary>
+    public void ClearHistory()
+    {
+        bool cleared;
+        lock (_historyLock)
+        {
+            cleared = _history.Count > 0;
+            _history.Clear();
+        }
+
+        if (cleared) RaiseHistoryChange();
     }
 
 
@@ -253,6 +331,45 @@ public class BitSnackBarService
             _hosts.Remove(host);
         }
     }
+
+    // A service host took the item in, to show or to queue: it goes to the end of the history, where an item shown
+    // again moves to as well.
+    internal void Record(BitSnackBarItem item)
+    {
+        lock (_historyLock)
+        {
+            if (_historyLimit == 0) return;
+
+            _history.Remove(item);
+            _history.Add(item);
+            TrimHistory();
+        }
+
+        RaiseHistoryChange();
+    }
+
+    // Something about an item a service host holds changed - it arrived, was updated, repeated or left - which is news
+    // only for an item the history keeps.
+    internal void RecordChange(BitSnackBarItem item)
+    {
+        lock (_historyLock)
+        {
+            if (_history.Contains(item) is false) return;
+        }
+
+        RaiseHistoryChange();
+    }
+
+    private bool TrimHistory()
+    {
+        var excess = _history.Count - _historyLimit;
+        if (excess <= 0) return false;
+
+        _history.RemoveRange(0, excess);
+        return true;
+    }
+
+    private void RaiseHistoryChange() => OnHistoryChange?.Invoke();
 
     private BitSnackBar? FindOwner(BitSnackBarItem item)
     {
