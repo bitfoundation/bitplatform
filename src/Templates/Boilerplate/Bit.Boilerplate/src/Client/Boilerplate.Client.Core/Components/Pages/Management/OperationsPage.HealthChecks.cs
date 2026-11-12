@@ -44,6 +44,7 @@ public partial class OperationsPage
         //#endif
 
         ["smtp"] = ("Email", "Messaging", BitIconName.Mail, "Signs in to the SMTP server without sending anything."),
+        ["emailDelivery"] = ("Email sender domain", "Messaging", BitIconName.MailCheck, "The sender's domain has SPF and DMARC records, so mail can reach inboxes rather than spam."),
         ["sms"] = ("SMS", "Messaging", BitIconName.CellPhone, "The Twilio account is active."),
         ["firebase"] = ("Android push", "Messaging", BitIconName.Ringer, "Firebase Cloud Messaging accepts the credentials."),
         ["apns"] = ("Apple push", "Messaging", BitIconName.Ringer, "APNs accepts the credentials."),

@@ -224,6 +224,8 @@ public partial class HealthCheckIntegrationTests
 
         await server.Build(configureTestConfiguration: configuration =>
         {
+            // A real-looking SMTP server, as emailDelivery stays out where mail is caught (the shipped ethereal.email).
+            configuration["ConnectionStrings:smtp"] = "Endpoint=smtp://smtp.example.com:587";
             configuration["Authentication:Keycloak:KeycloakUrl"] = "http://keycloak.invalid/";
             configuration["Authentication:Keycloak:Realm"] = "dev";
             configuration["Authentication:AzureAD:ClientId"] = "not-a-real-client";
@@ -256,7 +258,7 @@ public partial class HealthCheckIntegrationTests
 
         string[] expectedExternalChecks =
         [
-            "userProfileImages", "smtp", "sms", "keycloakIdentity", "entraId", "appleSignIn",
+            "userProfileImages", "smtp", "emailDelivery", "sms", "keycloakIdentity", "entraId", "appleSignIn",
             //#if (captcha == "reCaptcha")
             "reCaptcha",
             //#endif

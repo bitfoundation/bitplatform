@@ -981,6 +981,22 @@ public static partial class Program
             // Cached, as signing in on every probe can trip the mail provider's brute force protection.
             .AddCachedCheck("smtp", _ => new SmtpHealthCheck(GetSmtpSettings(configuration)), cacheDuration: TimeSpan.FromMinutes(5), timeout: TimeSpan.FromSeconds(10));
 
+        // Whether the mail reaches inboxes: SPF and DMARC of the sender's domain, read from DNS with no setting of its own.
+        // Left out where mail is caught rather than delivered (See EmailDeliverySettings.For).
+        var smtpConnectionString = configuration.GetConnectionString("smtp");
+        var smtpHost = string.IsNullOrWhiteSpace(smtpConnectionString)
+                       || Uri.TryCreate(GetConnectionStringValue(smtpConnectionString, "Endpoint", "smtp://localhost:25"), UriKind.Absolute, out var smtpEndpoint) is false
+            ? null
+            : smtpEndpoint.Host;
+        var appleSignIn = string.IsNullOrWhiteSpace(configuration["Authentication:Apple:ClientId"]) is false;
+
+        if (EmailDeliverySettings.For(appSettings.Email?.DefaultFromEmail, smtpHost, appleSignIn, builder.Environment.IsDevelopment()) is { } emailDelivery)
+        {
+            // DNS records rarely change. A failing result is never reused, and the lookups keep each answer for its TTL.
+            healthChecksBuilder.AddCachedCheck("emailDelivery", _ => new EmailDeliveryHealthCheck(emailDelivery, EmailDeliveryHealthCheck.LookupTxtWithDnsClient),
+                cacheDuration: TimeSpan.FromMinutes(30), timeout: TimeSpan.FromSeconds(10));
+        }
+
         // Outside development, a missing configuration is most likely a deployment mistake, so it reports Degraded.
         // A project that doesn't use a dependency should remove its code.
         var reportNotConfigured = builder.Environment.IsDevelopment() is false;

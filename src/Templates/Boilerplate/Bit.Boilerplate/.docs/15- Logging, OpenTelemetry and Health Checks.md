@@ -385,6 +385,16 @@ It also adds checks for remote dependencies. Each one has a timeout and reports 
 provider outage does not take an otherwise healthy instance out of the load balancer:
 - **`userProfileImages`**: the blob storage.
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
+- **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
+  needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
+  or without a DMARC record at `_dmarc.<domain>` or at its organizational domain, Gmail, Outlook and Yahoo put the
+  app's mail, sign-in codes and magic links included, in spam or drop it, so the check reports Degraded. DKIM's selector
+  is the sending service's choice, so DKIM is only looked up at the selectors Google Workspace, Microsoft 365,
+  SendGrid, Mailjet, Mandrill and Resend use for every customer, and reported in the entry's data without changing its
+  status. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
+  (`privaterelay.appleid.com`) only arrives once the domain is registered with Apple, which no API can confirm. The
+  check is left out where mail is caught rather than delivered: the shared ethereal.email mailbox, or a loopback SMTP
+  server such as Mailpit in development.
 - **`sms`**: fetches the Twilio account and requires it to be active.
 - **`keycloakIdentity`**: reads Keycloak's discovery document.
 <!--#if (cloudflare == true)-->
@@ -430,12 +440,13 @@ Google, GitHub, Twitter and Facebook sign-in can't be verified without a user si
 development, `googleSignIn`, `gitHubSignIn`, `twitterSignIn` and `facebookSignIn` appear only when their settings are
 missing, reporting Degraded the same way.
 
-`smtp`, `firebase`, `apns`,
+`smtp`, `emailDelivery`, `firebase`, `apns`,
 <!--#if (cloudflare == true)-->
 `cloudflare`,
 <!--#endif-->
 the sign-in checks, `reCaptcha` and the AI checks are registered with
-`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`). Probes that arrive together share one run. A
+`AddCachedCheck`, which reuses a healthy result for 5 minutes (1 minute for `azureSignalR`, 30 minutes for
+`emailDelivery`, whose DNS lookups also keep each answer for its TTL). Probes that arrive together share one run. A
 failing result is never reused, so each probe checks again and a recovery shows up right away. This keeps load balancer
 probes from turning into paid calls or repeated sign-ins.
 
