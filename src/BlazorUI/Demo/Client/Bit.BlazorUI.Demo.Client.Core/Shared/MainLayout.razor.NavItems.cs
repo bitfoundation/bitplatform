@@ -181,6 +181,7 @@ public partial class MainLayout
                 new() { Text = "MarkdownViewer", Url = "/components/markdownviewer", Description = "MdViewer, MD" },
                 new() { Text = "MessageBox", Url = "/components/messagebox", Description = "Confirm, Alert, MsgBox", Data = "Confirmation dialog, Alert dialog, Yes No, Ok Cancel, Are you sure, Question" },
                 new() { Text = "NavPanel", Url = "/components/navpanel", Description = "Sidebar, NavigationDrawer, SideNav" },
+                new() { Text = "NotificationCenter", Url = "/components/notificationcenter", Description = "NotificationBell, NotificationInbox, NotificationsPanel", Data = "Notifications, Bell, Inbox, Unread count, Notification history, Activity feed" },
                 new() { Text = "PdfViewer", Url = "/components/pdfviewer", Description = "PdfReader, Pdf", Data = "PDF, Document viewer, Preview, Print, Thumbnails, Bookmarks, Find in document, Attachments, Fullscreen, Presentation", AdditionalUrls = ["/components/pdfreader"] },
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "ResourceTimeline", Url = "/components/resourcetimeline", Description = "ResourceScheduler, Gantt, ResourcePlanner", Data = "Timeline, Scheduler, Planner, Gantt chart, Roster, Allocations, Bookings, Shifts, Dispatch, Fleet, Crew, Rotations, Time zone, Zoom, Drag and drop, Canvas, SVG, HTML" },
