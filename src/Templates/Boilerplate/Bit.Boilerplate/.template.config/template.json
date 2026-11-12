@@ -815,6 +815,7 @@
                         "**/node_modules/**",
                         "**/[Tt]est[Rr]esults/**",
                         ".playwright-mcp/**",
+                        "openapi/**",
                         ".template.config/**",
                         "**/*.filelist",
                         "**/*.user",

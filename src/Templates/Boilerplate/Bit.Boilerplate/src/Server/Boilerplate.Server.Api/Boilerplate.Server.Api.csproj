@@ -7,6 +7,12 @@
         <StaticWebAssetProjectMode Condition=" '$(api)' == 'Integrated' OR '$(api)' == ''">Default</StaticWebAssetProjectMode>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <OpenApiDocumentsDirectory>$(MSBuildThisFileDirectory)../../../openapi</OpenApiDocumentsDirectory>
+        <OpenApiGenerateDocumentsOptions>--file-name current --openapi-version OpenApi3_1</OpenApiGenerateDocumentsOptions>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(Environment)' != 'Development' OR '$(DotNetWatchBuild)' == 'true'">false</OpenApiGenerateDocumentsOnBuild>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(Environment)' != 'Development' And '$(SelfContained)' == 'true'">
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <PublishReadyToRun>true</PublishReadyToRun>
@@ -90,6 +96,7 @@
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Scalar.AspNetCore" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Identity.Web" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />

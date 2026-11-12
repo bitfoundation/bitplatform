@@ -127,12 +127,14 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 ```json
 "WebAppRender": {
-    "BlazorMode": "BlazorServer",
+    "BlazorMode": "BlazorWebAssembly",
     "BlazorMode_Comment": "BlazorServer, BlazorWebAssembly and BlazorAuto.",
     "PrerenderEnabled": false,
     "PrerenderEnabled_Comment": "for apps with Prerender enabled, follow the instructions in the Client.Web/wwwroot/service-worker.published.js file"
 }
 ```
+
+`appsettings.Development.json` next to it sets `BlazorServer`, so the app runs on Blazor Server in development and on WebAssembly everywhere else.
 
 ### Available Blazor Modes
 

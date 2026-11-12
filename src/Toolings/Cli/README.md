@@ -267,6 +267,22 @@ Runs EF Core's `dotnet ef` for the project, in any folder of it, with the `dotne
 - `add` then runs `dotnet format` on the new migration's files alone, so it follows the project's code style.
 - When `dotnet ef` fails, bit shows its errors and the command to run it again. A project created with `--database Other` has no database provider until you add one, and bit says so.
 
+## bit api
+
+```bash
+bit api check
+bit api release
+```
+
+Keeps a bit Boilerplate project's api working for the app versions its users still run, since the apps in the stores don't all update the day the server does:
+
+- A Debug build of Server.Api writes its OpenAPI document to `openapi/current.json`, which git ignores. A release keeps a copy as `openapi/<version>.json`, for the `<Version>` in `src/Directory.Build.props`.
+- `check` builds Server.Api and compares `openapi/current.json` with the document of every kept version the server still supports: from the lowest minimum in `SupportedAppVersions` in Server.Api's `appsettings.json` and `appsettings.Production.json`, where a platform without one supports the server's whole major version. It exits with code 3 when a change breaks one of them, lists each change once with the endpoints it touches, and names the version `SupportedAppVersions` would have to rise to for those apps to update instead. `--no-build` compares the document the last build wrote.
+- `release` runs the same check, and changes nothing when it fails. Otherwise it keeps `openapi/<version>.json`, which it never replaces with another api, and deletes the documents of versions below the lowest supported one.
+- `release` and `check --release` fail when a `SupportedAppVersions` minimum is above `<Version>`, since the server would make the apps it ships update at once.
+- `check --release` also requires `openapi/<version>.json` to describe the api, as on a commit Production deploys. Only summaries and descriptions may differ, so a reworded comment needs no new version. bit Boilerplate's CI runs `bit api check` on every pull request, and its Production CD runs `bit api check --release`.
+- The comparison is [oasdiff](https://github.com/oasdiff/oasdiff)'s (Apache-2.0). bit downloads one pinned release to `~/.bitplatform/tools` and runs it only when the archive's SHA-256 matches the one bit records. On top of oasdiff's rules, removing a response property breaks: ASP.NET Core marks few properties as required, and an app that reads one gets a default value instead.
+
 ## bit translate
 
 Fills in the missing translations of `.resx` files with an OpenAI-compatible LLM, and keeps the existing ones:
@@ -398,6 +414,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
+- **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.
 
 ## Telemetry
@@ -438,7 +455,7 @@ When a step fails, bit says right under it what it was doing: the exact command 
 | 0 | Done |
 | 1 | A step failed |
 | 2 | Wrong usage, or a value is missing |
-| 3 | A check failed: `bit translate --check`, `bit doctor`, `bit pipeline --check` |
+| 3 | A check failed: `bit translate --check`, `bit doctor`, `bit pipeline --check`, `bit api` |
 | 130 | Canceled |
 
 ## Coming from the old tools

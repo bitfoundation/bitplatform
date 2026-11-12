@@ -155,6 +155,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="11.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="11.0.0-rc.3.26522.148" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="11.0.0" />
@@ -200,6 +201,7 @@
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.15" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+        <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.15" />
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.15" />
         <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.130" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.15" />
