@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using Bit.Bmage;
+using Bit.Bmage.Memory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
@@ -93,7 +94,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
-        services.AddBitBmageHeadlessServices();
+        services.AddBitBmageHeadlessServices(options => options.Allocator = new BudgetedPixelAllocator(1024L * 1024 * 1024));
 
         services.AddOAuth();
 

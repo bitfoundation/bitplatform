@@ -1029,6 +1029,7 @@
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
                         "src/Tests/Features/Attachments/UploadFormatAllowListTests.cs",
+                        "src/Tests/Features/Attachments/Assets/**",
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",

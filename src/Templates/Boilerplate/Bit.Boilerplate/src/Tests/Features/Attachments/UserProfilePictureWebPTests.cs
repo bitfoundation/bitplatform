@@ -1,4 +1,4 @@
-using ImageMagick;
+using Bit.Bmage;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
 
@@ -54,7 +54,7 @@ public partial class UserProfilePictureWebPTests
             var sourceImageBytes = await httpClient.GetByteArrayAsync("images/icons/bit-icon-512.png", TestContext.CancellationToken);
 
             // Sanity: the source really is NOT WebP, otherwise the assertion below would be meaningless.
-            Assert.AreNotEqual(MagickFormat.WebP, new MagickImageInfo(sourceImageBytes).Format);
+            Assert.AreNotEqual(ImageFormat.WebP, TestImageFactory.Identify(sourceImageBytes).Format);
 
             using var form = new MultipartFormDataContent();
             using var fileContent = new ByteArrayContent(sourceImageBytes);
@@ -71,12 +71,12 @@ public partial class UserProfilePictureWebPTests
                 $"api/v1/Attachment/GetAttachment/{currentUser.Id}/{AttachmentKind.UserProfileImageSmall}",
                 TestContext.CancellationToken);
 
-            var downloadedInfo = new MagickImageInfo(downloadedBytes);
+            var downloadedInfo = TestImageFactory.Identify(downloadedBytes);
 
             // The core assertion: the stored/served small profile image is genuinely WebP, regardless of the PNG we uploaded.
-            Assert.AreEqual(MagickFormat.WebP, downloadedInfo.Format);
-            Assert.AreEqual(256u, downloadedInfo.Width);
-            Assert.AreEqual(256u, downloadedInfo.Height);
+            Assert.AreEqual(ImageFormat.WebP, downloadedInfo.Format);
+            Assert.AreEqual(256, downloadedInfo.Width);
+            Assert.AreEqual(256, downloadedInfo.Height);
         }
         finally
         {

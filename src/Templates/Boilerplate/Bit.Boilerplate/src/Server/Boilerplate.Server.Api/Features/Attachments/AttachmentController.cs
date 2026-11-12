@@ -232,11 +232,7 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         if (imageProcessor.Identify(uploadedBytes) is not { } imageInfo || AllowedImageFormats.Contains(imageInfo.Format) is false)
             return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
 
-        // Every kind is decoded, including the ones that are not resized: stripping the metadata means re-encoding,
-        // so the *Original kinds keep the uploaded pixels, at full size, as a lossless WebP.
-        // Bmage's ImageLimits bound what a decode of an untrusted upload can cost, and anything it cannot decode throws here.
-        // A phone photo's pixels are stored sideways with an EXIF tag that says how to turn them, and the decode turns
-        // them upright before that tag is dropped below.
+        // The decode turns a sideways phone photo upright; Bmage's limits bound what an untrusted upload can cost.
         ImageBuffer decodedImage;
         try
         {
@@ -244,16 +240,11 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         }
         catch (ImageException)
         {
-            // An undecodable upload is bad input, not a server fault - a 400 like the endpoint's other rejections,
-            // instead of a 500 with a Critical log per attempt. Only the decode is caught: a failure in the resize
-            // or encode below would be a server problem and stays loud.
             return BadRequest(Localizer[nameof(AppStrings.UnsupportedImageFormat)].ToString());
         }
         using ImageBuffer sourceImage = decodedImage;
 
-        // Drops EXIF - GPS coordinates, capture time, camera serial - along with XMP and comments. A phone photo
-        // carries all of it. The ICC profile stays: without it a wide-gamut photo, such as an iPhone's, shows
-        // washed-out colors.
+        // Only the ICC profile is kept: EXIF carries GPS and the camera serial, and a wide-gamut photo looks washed out without the profile.
         var storedMetadata = sourceImage.Metadata is { IccProfile.IsEmpty: false } uploadedMetadata
             ? ImageMetadata.Empty.WithIccProfile(uploadedMetadata.IccProfile)
             : null;

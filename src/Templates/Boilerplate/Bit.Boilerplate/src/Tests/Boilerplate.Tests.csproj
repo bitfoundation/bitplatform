@@ -16,7 +16,6 @@
         <PackageReference Condition=" '$(advancedTests)' == 'true' OR '$(advancedTests)' == '' " Include="Otp.NET" />
         <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
         <PackageReference Include="bunit" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="MSTest" />
     </ItemGroup>
 
@@ -24,6 +23,10 @@
         <ProjectReference Include="..\Server\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
         <ProjectReference Include="..\Server\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />
         <ProjectReference Condition=" '$(aspire)' == 'true' OR '$(aspire)' == '' " Include="..\Server\Boilerplate.Server.AppHost\Boilerplate.Server.AppHost.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Features\Attachments\Assets\*" LogicalName="%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,4 @@
-using ImageMagick;
+using Bit.Bmage;
 using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Attachments;
 
@@ -40,12 +40,12 @@ public class AttachmentReplacementTests
 
         try
         {
-            await Upload(httpClient, SolidImage(MagickColors.Red));
+            await Upload(httpClient, SolidImage(TestImageFactory.Red));
 
             var first = await Download(httpClient, userId);
             Assert.AreEqual(2, await CountAttachments(server, userId), "One upload writes the small and the original kind.");
 
-            await Upload(httpClient, SolidImage(MagickColors.Blue));
+            await Upload(httpClient, SolidImage(TestImageFactory.Blue));
 
             Assert.AreEqual(2, await CountAttachments(server, userId),
                 "A re-upload must overwrite the existing rows, not add a second pair - the key is { Id, Kind } and the blob path is derived from it.");
@@ -81,13 +81,13 @@ public class AttachmentReplacementTests
 
         try
         {
-            await Upload(httpClient, SolidImage(MagickColors.Red));
+            await Upload(httpClient, SolidImage(TestImageFactory.Red));
             var before = await Download(httpClient, userId);
 
             // The app's HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
             // ImageTooSmall body is a plain localized message, which it carries as the exception's message.
             var rejected = await Assert.ThrowsExactlyAsync<BadRequestException>(
-                () => Upload(httpClient, SolidImage(MagickColors.Blue, 100)),
+                () => Upload(httpClient, SolidImage(TestImageFactory.Blue, 100)),
                 "An image below the required size must be refused.");
 
             Assert.Contains("100x100", rejected.Message, "The user must see the server's own explanation of the rejection.");
@@ -124,7 +124,7 @@ public class AttachmentReplacementTests
 
         try
         {
-            await Upload(httpClient, SolidImage(MagickColors.Red));
+            await Upload(httpClient, SolidImage(TestImageFactory.Red));
             var before = await Download(httpClient, userId);
 
             // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
@@ -159,10 +159,9 @@ public class AttachmentReplacementTests
     }
 
     /// <summary>A solid-colour PNG, so two uploads differ in content in a way the served WebP cannot hide.</summary>
-    private static byte[] SolidImage(MagickColor color, uint size = 512)
+    private static byte[] SolidImage(Rgba32 color, int size = 512)
     {
-        using var image = TestImageFactory.Solid(color, size, size);
-        return image.ToByteArray(MagickFormat.Png);
+        return TestImageFactory.Solid(color, size, size);
     }
 
     private async Task Upload(HttpClient httpClient, byte[] imageBytes)
