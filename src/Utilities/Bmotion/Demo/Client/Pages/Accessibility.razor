@@ -86,6 +86,41 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Per element: reduce, instant or in full</h3>
+    <p>
+        Whether motion is reduced is the user's and the app's decision; how an element answers it is the element's.
+        <code>ReducedMotion</code> (or a preset's <code>ReducedMotion</code>) picks one of three answers. All three
+        boxes below sit inside <code>&lt;BmotionConfig ReduceMotion="true"&gt;</code> and fade while sliding:
+        <strong>Reduce</strong> - the default - lands the slide and keeps the fade; <strong>Instant</strong> lands both
+        (decorative motion that adds nothing once calm); <strong>Full</strong> keeps the whole animation, for motion
+        that carries information - a progress bar, a counter - and is calm already. Use <em>Full</em> sparingly: never
+        for motion that travels far, zooms or spins.
+    </p>
+
+    <BmotionConfig ReduceMotion="true">
+        <div class="demo-row">
+            @foreach (var behavior in _behaviors)
+            {
+                <div class="demo-card stack">
+                    <span class="demo-label">ReducedMotion="@behavior"</span>
+                    <Bmotion Animate="@(_behaved ? Bm.To(x: 60, opacity: 0.25) : Bm.To(x: -60, opacity: 1))"
+                             Transition="Bm.Tween(0.8, BmEase.InOut)"
+                             ReducedMotion="behavior">
+                        <div class="box box-solid" />
+                    </Bmotion>
+                </div>
+            }
+        </div>
+    </BmotionConfig>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => _behaved = !_behaved)">Move all three</button>
+    </div>
+
+    <CodeSnippet Code="@BehaviorCode" />
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Slowing everything down</h3>
     <p>
         <code>TransitionSpeed</code> is a playback multiplier over a whole subtree, and it scales
@@ -223,6 +258,24 @@
 </section>
 
 @code {
+    private bool _behaved;
+    private readonly BmReducedMotionBehavior[] _behaviors =
+        [BmReducedMotionBehavior.Reduce, BmReducedMotionBehavior.Instant, BmReducedMotionBehavior.Full];
+
+    private const string BehaviorCode = """
+        @using Bit.Bmotion
+
+        @* A progress bar carries information and moves calmly: keep it when motion is reduced. *@
+        <Bmotion Animate='@Bm.To(width: $"{_progress}%")' ReducedMotion="BmReducedMotionBehavior.Full">
+            <div class="bar" role="progressbar" aria-valuenow="@_progress" />
+        </Bmotion>
+
+        @* An ambient flourish adds nothing once it is calm: drop it entirely, fade included. *@
+        <Bmotion Preset="@(BmPresets.Fade() with { ReducedMotion = BmReducedMotionBehavior.Instant })">
+            <div class="hero-glow" />
+        </Bmotion>
+        """;
+
     private bool _shifted;
     private int _runId;
     private int _taps;

@@ -98,13 +98,15 @@ public sealed class BmSequence
 
     /// <summary>
     /// Estimated visual length of a segment, used to place default-positioned successors.
-    /// Tweens are exact; springs use their visual duration (or a 0.8 s estimate);
-    /// inertia decays are approximated as three time constants.
+    /// Tweens are exact; springs use their visual duration, or for a physical spring the settling estimate the
+    /// engine schedules children with (4 / (ζ·ω₀): 0.8 s for the default spring, 0.2 s for a stiff critically damped
+    /// one; an overdamped spring's slow creep, 4 / (ω₀·(ζ - √(ζ²-1))), for one past critical damping); inertia decays
+    /// are approximated as three time constants.
     /// </summary>
     private static double EstimateDuration(BmTransition? transition) => transition switch
     {
         BmTween tween => tween.Delay + tween.Duration,
-        BmSpring spring => spring.Delay + (spring.Duration ?? 0.8),
+        BmSpring spring => spring.Delay + spring.ToConfig().EstimatedDurationSeconds(),
         BmInertia inertia => inertia.Delay + inertia.TimeConstant * 3 / 1000.0,
         _ => 0.3, // the default tween duration
     };

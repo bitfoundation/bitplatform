@@ -460,6 +460,24 @@ fix (velocity, shadows/filters, inert, bounce, focus-visible, rejected replay): 
     hold is armed, four interop methods (all with defaults that keep the old behaviour), four parameters; no dependencies.
 16. *Next highest-value item*: reverse playback, then measuring the bridge's and engine's size in a trimmed build.
 
+### Round 5 - the "world-class framework" plan: audit, diagnostics, physics vocabulary, accessibility
+
+The round started from a new, much wider plan. Its gap analysis, section by section, is
+[Bmotion-Assessment.md](Bmotion-Assessment.md); what changed and how it was validated is
+[Bmotion-Completion-Report.md](Bmotion-Completion-Report.md). In short:
+
+* **Why an animation plays where it does** is now reported at run time: `BmotionAnimationEngine.AnimationEvent`
+  (per part: `BmPlaybackStrategy`, properties, reason, outcome) and the BCL meter `Bit.Bmotion`; the inspector shows
+  both. Raised from `PlayAsync`, so every start path reports alike (AD-1). Free while nobody listens.
+* **Springs by name and by measurement**: `BmSprings` (seven) and `BmSpring.Analyze()`, which steps the engine's own
+  driver at 60 Hz - an MCP test checks it against the whole engine run off-screen.
+* **Per-element reduced motion**: `Bmotion.ReducedMotion` / `BmPreset.ReducedMotion` (`Reduce`, `Instant`, `Full`).
+* `Bm.Combine`, `BmValue.Previous`, boxing-free velocity tracking; `BmPresets.Expand`.
+* Fixed: a sequence segment after a physical spring was placed 0.8 s in whatever the spring; the MCP search ranked
+  `BmSprings` over an exact `BmSpring`.
+* Deferred with a design: reverse playback (it touches the mirror, the bridge's commit and the finish handling, and
+  needs all three browser engines to verify).
+
 ## 6. Competitive matrix
 
 Sources: motion.dev docs and source (v14.6, 2026-10-20), gsap.com docs (v3.15), MDN browser-compat-data. "Bmotion"
@@ -485,13 +503,15 @@ is the state after the latest round; **bold** marks a gap still open.
 | Drag: constraints, elastic, momentum, snap, controls, direction lock | yes | Draggable | - | yes (form fields no longer start a drag, round 3; stays under the pointer through scrolls, 100 ms release velocity, round 4) |
 | Reorder: grid axis, keyboard reorder, auto-scroll | yes (14.6 keyboard) | - | - | yes: keyboard with announcements (round 3), grids and auto-scroll (round 4) |
 | Scroll: scroll-linked (native timelines), in-view, smoothing | yes (`useSpring`) | ScrollTrigger (pin, scrub, snap) | ScrollTimeline/ViewTimeline (FF 159+) | yes, smoothing in the bridge (round 4); pinning is `position: sticky` (README recipe), **no spacer-based pin** |
-| Motion values, transform, spring, velocity, template | yes | `quickTo` | - | yes |
+| Motion values, transform, spring, velocity, template, multi-input transform, previous | yes | `quickTo` | - | yes (`Bm.Combine`, `Previous`: round 5) |
 | Sequences with `at`, labels | yes | timelines, position param | - | yes |
 | View transitions | `animateView` | Flip | `startViewTransition` | wrapper with types and the reduced-motion policy (round 3); **no `animateView`-style element API** |
-| Reduced motion | `MotionConfig reducedMotion` (default `never`) | `matchMedia` (opt-in) | media query | policy option (default `IgnoreUnlessConfigured`) |
+| Reduced motion | `MotionConfig reducedMotion` (default `never`) | `matchMedia` (opt-in) | media query | policy option (default `IgnoreUnlessConfigured`), and per element `ReducedMotion` = reduce / instant / full (round 5) |
 | Text splitting | Motion+ `splitText` | SplitText (free) | - | `BmotionSplitText` |
 | Number animation | Motion+ `AnimateNumber` | - | `@property` counters | programmatic only |
-| Presets / reusable effects | - (user land) | - | - | `BmPresets`, 23 composable presets (round 3) |
+| Presets / reusable effects | - (user land) | - | - | `BmPresets`, 24 composable presets (round 3, `Expand` round 5); `BmSprings`, 7 named springs (round 5) |
+| Spring prediction (settle time, overshoot) | - (internal `calcGeneratorDuration`) | - | - | `BmSpring.Analyze()` on the engine's own driver (round 5) |
+| Runtime playback diagnostics / metrics | - | - | DevTools Animations panel | `AnimationEvent` + `Bit.Bmotion` meter, strategy and reason per part (round 5) |
 | Blazor Server parity | n/a | n/a | n/a | everything except per-frame callbacks and `d` morphs (round 2); drag shown locally (round 4) |
 | Browsers verified by the suite | all evergreen | all evergreen | - | Chromium, Firefox, WebKit (round 4) |
 
