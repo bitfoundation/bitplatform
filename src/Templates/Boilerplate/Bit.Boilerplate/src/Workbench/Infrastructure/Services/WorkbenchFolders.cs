@@ -35,7 +35,7 @@ public static class WorkbenchFolders
     /// like a published one or a test's, keeps them next to its project, or its build output, in a folder git ignores.
     /// </summary>
     public static string Reviews => FindGit() is { } git && Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.Create) is { Length: > 0 } userData
-        ? Path.Combine(userData, "bit-workbench", ProjectKey(git.CommonDir), ReviewsName)
+        ? Path.Combine(userData, "bit-workbench", ProjectKey(git.CommonDir, Path.GetRelativePath(git.WorkingTree, Project!)), ReviewsName)
         : Path.Combine(Project ?? AppContext.BaseDirectory, "App_Data", ReviewsName);
 
     /// <summary>The secrets the user pasted for an agent's commands to read, next to the reviews, outside the repository.</summary>
@@ -94,12 +94,17 @@ public static class WorkbenchFolders
         return null;
     }
 
-    /// <summary>The name of the clone's main folder with a short hash of where it is, so two clones of one repository stay apart.</summary>
-    private static string ProjectKey(string commonDir)
+    /// <summary>
+    /// The name of the clone's main folder with a short hash of where it is and of where the Workbench sits in it, so two clones
+    /// of one repository, or two projects in one, stay apart, while every worktree of a project, which has it in the same place,
+    /// shares one. test-platform.ps1's Get-WorkbenchDataFolder names it the same way.
+    /// </summary>
+    private static string ProjectKey(string commonDir, string projectInTree)
     {
         var full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(commonDir));
         var name = Path.GetFileName(full) is ".git" ? Path.GetFileName(Path.GetDirectoryName(full)) : Path.GetFileName(full);
-        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(OperatingSystem.IsWindows() ? full.ToLowerInvariant() : full)))[..12];
+        var key = $"{full}|{projectInTree.Replace('\\', '/')}";
+        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(OperatingSystem.IsWindows() ? key.ToLowerInvariant() : key)))[..12];
         var safe = new string([.. (name ?? "project").Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' ? c : '-')]);
 
         return $"{safe}-{hash}";

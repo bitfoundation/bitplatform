@@ -82,6 +82,27 @@ public class ProgressUITests : ProgressPageTest
         await Expect(Page.Locator(".feed .from-you").First).ToContainTextAsync("Use the cheapest plan.");
     }
 
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task AMessageBeingWritten_Should_StayWithItsTask(WorkbenchSurface surface)
+    {
+        var (first, _) = await Agent.Create("Claude Code", new(null, "Deploy to Test", null, null, [new("vm", "Set up the server", null, "doing", null, null)], null, null, null, null), CancellationToken.None);
+        var (second, _) = await Agent.Create("Codex", new(null, "Loyalty points", null, null, [new("ledger", "Build the ledger", null, "doing", null, null)], null, null, null, null), CancellationToken.None);
+
+        await OpenProgress($"progress/{first}");
+
+        var box = Page.Locator(".activity").GetByRole(AriaRole.Textbox);
+
+        await box.FillAsync("Use the cheapest plan.");
+        await Press(Page.Locator($".task-card[data-task-id='{second}']"));
+
+        await Expect(Page).ToHaveURLAsync(new Regex($"/progress/{second}$"));
+        await Expect(box).ToHaveValueAsync("");
+
+        await Press(Page.Locator($".task-card[data-task-id='{first}']"));
+
+        await Expect(box).ToHaveValueAsync("Use the cheapest plan.");
+    }
+
     [TestMethod, WithAnAgent]
     public async Task ASecret_Should_BePastedHereGoWhereTheQuestionSaysAndNeverShowAgain(WorkbenchSurface surface)
     {

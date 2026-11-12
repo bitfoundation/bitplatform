@@ -26,7 +26,8 @@
             <div class="ask-options checks">
                 @foreach (var option in Ask.Options)
                 {
-                    <BitCheckbox Label="@option"
+                    <BitCheckbox @key="option"
+                                 Label="@option"
                                  Value="picked.Contains(option)"
                                  ValueChanged="(bool on) => Toggle(option, on)"
                                  Disabled="CanAnswer is false" />

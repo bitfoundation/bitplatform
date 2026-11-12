@@ -45,7 +45,18 @@ public partial class ProgressNotifier
         await Announce();
     }
 
-    private void OnSessionChanged() => InvokeAsync(Announce);
+    // Nothing awaits what a change of the document announces, so what fails there is logged here.
+    private void OnSessionChanged() => _ = InvokeAsync(async () =>
+    {
+        try
+        {
+            await Announce();
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "The progress notifier couldn't announce a change of the agents' tasks.");
+        }
+    });
 
     private async Task Announce()
     {
@@ -73,7 +84,9 @@ public partial class ProgressNotifier
             await Play((660, 120), (880, 120), (990, 200));
             await TryAsync(async () => await navigator.Vibrate([80, 60, 80, 60, 120]));
         }
-        else if (finished.Count > 0)
+
+        // Announced too when a question came with it, as the task is marked known above and won't come up again.
+        if (finished.Count > 0)
         {
             var (task, _) = finished[^1];
             var title = task.Status is WorkbenchProgressStatus.Done

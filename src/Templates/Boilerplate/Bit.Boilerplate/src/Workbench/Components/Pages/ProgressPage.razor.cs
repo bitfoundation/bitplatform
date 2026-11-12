@@ -13,10 +13,13 @@ public partial class ProgressPage
 {
     public const string GuideId = "workbench-progress-guide";
 
-    private string? message;
     private bool isOpenFailed;
-    private bool confirmingDelete;
+    private bool isSendingMessage;
+    // The task whose Delete was pressed once; the next press deletes only that one.
+    private string? confirmingDeleteId;
     private Timer? clock;
+    // What the user is writing to each task's agent, kept with its task as the page moves between them.
+    private readonly Dictionary<string, string?> drafts = [];
 
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
     [AutoInject] private WorkbenchStore store = default!;
@@ -67,7 +70,7 @@ public partial class ProgressPage
 
     protected override void OnParametersSet()
     {
-        confirmingDelete = false;
+        confirmingDeleteId = null;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -231,17 +234,38 @@ public partial class ProgressPage
         }
     }
 
+    private string? Draft(WorkbenchProgressTask task) => drafts.GetValueOrDefault(task.Id);
+
+    private void SetDraft(WorkbenchProgressTask task, string? text) => drafts[task.Id] = text;
+
+    /// <summary>
+    /// Sends the task's draft. It is read before the await, so a second press meanwhile sends nothing more, and what the user
+    /// went on typing then stays in the box.
+    /// </summary>
     private async Task SendMessage(WorkbenchProgressTask task)
     {
-        if (string.IsNullOrWhiteSpace(message))
+        if (isSendingMessage || Draft(task)?.Trim() is not { Length: > 0 } text)
             return;
 
-        await UnlockAudio();
+        isSendingMessage = true;
 
-        if (reviewSession.SendMessage(task, message.Trim(), Author))
+        try
         {
-            message = null;
-            Sent(task);
+            await UnlockAudio();
+
+            if (reviewSession.SendMessage(task, text, Author))
+            {
+                if (Draft(task)?.Trim() == text)
+                {
+                    drafts.Remove(task.Id);
+                }
+
+                Sent(task);
+            }
+        }
+        finally
+        {
+            isSendingMessage = false;
         }
     }
 
@@ -263,19 +287,21 @@ public partial class ProgressPage
         }
     }
 
-    /// <summary>Deletes the task on the second press; the first turns the button into a question.</summary>
+    /// <summary>Deletes the task on the second press for that same task; the first turns its button into a question.</summary>
     private void DeleteTask(WorkbenchProgressTask task)
     {
-        if (confirmingDelete is false)
+        if (confirmingDeleteId != task.Id)
         {
-            confirmingDelete = true;
+            confirmingDeleteId = task.Id;
             return;
         }
 
-        confirmingDelete = false;
+        confirmingDeleteId = null;
         reviewSession.DeleteTask(task);
         NavigationManager.NavigateTo(WorkbenchUrls.Progress);
     }
+
+    private void Reload() => NavigationManager.Refresh(forceReload: true);
 
     /// <summary>Unlocks audio for the sound that calls the user back, which browsers allow only after a click.</summary>
     private async Task UnlockAudio()

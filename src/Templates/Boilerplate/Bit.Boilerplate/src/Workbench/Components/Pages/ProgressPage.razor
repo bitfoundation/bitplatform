@@ -35,6 +35,14 @@
     {
         <div class="loading"><BitRingLoading /></div>
     }
+    else if (reviewSession.CanSeeTasks && reviewSession.IsOpen is false)
+    {
+        @* The real tasks couldn't be read, so no samples stand in for them. *@
+        <div class="loading open-failed" role="alert">
+            <span>@Localizer[nameof(WorkbenchStrings.LoadFailed)]</span>
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.ReloadPage)]</BitButton>
+        </div>
+    }
     else
     {
         <div class="layout">
@@ -258,7 +266,8 @@
                                     @if (canAnswer)
                                     {
                                         <div class="composer">
-                                            <BitTextField @bind-Value="message"
+                                            <BitTextField Value="@Draft(task)"
+                                                          ValueChanged="(string? text) => SetDraft(task, text)"
                                                           Immediate
                                                           Multiline
                                                           Rows="2"
@@ -267,8 +276,8 @@
                                                           AriaLabel="@Localizer[nameof(WorkbenchStrings.ProgressMessagePlaceholder), task.Agent]"
                                                           MaxLength="WorkbenchProgressDocument.MaxTextLength" />
                                             <div class="composer-actions">
-                                                <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="string.IsNullOrWhiteSpace(message)" OnClick="() => SendMessage(task)">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
-                                                <DictationButton Size="BitSize.Small" Value="@message" ValueChanged="(string? heard) => message = heard" Class="composer-dictation" />
+                                                <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="isSendingMessage || string.IsNullOrWhiteSpace(Draft(task))" OnClick="() => SendMessage(task)">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
+                                                <DictationButton Size="BitSize.Small" Value="@Draft(task)" ValueChanged="(string? heard) => SetDraft(task, heard)" Class="composer-dictation" />
                                             </div>
                                         </div>
                                     }
@@ -308,7 +317,7 @@
                                 {
                                     <div class="danger">
                                         <BitButton Variant="BitVariant.Text" Size="BitSize.Small" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="() => DeleteTask(task)">
-                                            @Localizer[confirmingDelete ? nameof(WorkbenchStrings.ProgressDeleteConfirm) : nameof(WorkbenchStrings.ProgressDelete)]
+                                            @Localizer[confirmingDeleteId == task.Id ? nameof(WorkbenchStrings.ProgressDeleteConfirm) : nameof(WorkbenchStrings.ProgressDelete)]
                                         </BitButton>
                                     </div>
                                 }

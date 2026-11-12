@@ -9,6 +9,8 @@ public partial class DictationButton
     private bool isSupported;
     private bool isListening;
     private IAsyncDisposable? session;
+    // Counts starts and stops, so a start that returns after a stop, or after the component is gone, lets its session go.
+    private int starts;
     // The field's text when dictation started, what was heard for good since, and what is still being heard.
     private string before = string.Empty;
     private string heard = string.Empty;
@@ -16,6 +18,7 @@ public partial class DictationButton
 
     [AutoInject] private SpeechRecognition speechRecognition = default!;
     [AutoInject] private WorkbenchStore store = default!;
+    [AutoInject] private ILogger<DictationButton> logger = default!;
 
     /// <summary>The field's text, which what is heard is added to.</summary>
     [Parameter] public string? Value { get; set; }
@@ -85,9 +88,20 @@ public partial class DictationButton
         hearing = string.Empty;
         isListening = true;
 
+        var start = ++starts;
+
         try
         {
-            session = await speechRecognition.Start(new() { Lang = Language.Name, Continuous = true, InterimResults = true }, OnResult, OnError, OnEnd);
+            var started = await speechRecognition.Start(new() { Lang = Language.Name, Continuous = true, InterimResults = true }, OnResult, OnError, OnEnd);
+
+            // Stopped, ended or gone while it started, so nothing else would let it go.
+            if (start != starts || CurrentCancellationToken.IsCancellationRequested)
+            {
+                await Release(started);
+                return;
+            }
+
+            session = started;
         }
         catch (JSException)
         {
@@ -96,7 +110,7 @@ public partial class DictationButton
         }
     }
 
-    private void OnResult(SpeechRecognitionResult result) => InvokeAsync(async () =>
+    private void OnResult(SpeechRecognitionResult result) => Dispatch(async () =>
     {
         if (isListening is false)
             return;
@@ -115,7 +129,7 @@ public partial class DictationButton
     });
 
     /// <summary>A refused microphone and a missing connection say so; silence and a stop just end it.</summary>
-    private void OnError(string error) => InvokeAsync(() =>
+    private void OnError(string error) => Dispatch(async () =>
     {
         var message = error switch
         {
@@ -131,47 +145,72 @@ public partial class DictationButton
             SnackBarService.Error(message);
         }
 
-        Ended();
+        await Stop();
     });
 
-    private void OnEnd() => InvokeAsync(Ended);
+    private void OnEnd() => Dispatch(Stop);
 
-    /// <summary>Stops listening; what was still being heard stays in the field as it shows.</summary>
+    /// <summary>
+    /// Stops listening and lets the recognition go, whether the user stopped it or it ended by itself, which also removes its
+    /// listener; what was still being heard stays in the field as it shows.
+    /// </summary>
     private async Task Stop()
     {
         var stopping = session;
 
-        Ended();
+        isListening = false;
+        session = null;
+        starts++;
+
+        if (CurrentCancellationToken.IsCancellationRequested is false)
+        {
+            StateHasChanged();
+        }
 
         if (stopping is not null)
         {
-            await stopping.DisposeAsync();
+            await Release(stopping);
         }
     }
 
-    private void Ended()
+    private static async Task Release(IAsyncDisposable recognition)
     {
-        isListening = false;
-        session = null;
-        StateHasChanged();
+        try
+        {
+            await recognition.DisposeAsync();
+        }
+        catch (JSException)
+        {
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
+
+    /// <summary>Runs a recognition callback on the component's dispatcher; nothing awaits it there, so what fails is logged.</summary>
+    private void Dispatch(Func<Task> callback) => _ = InvokeAsync(async () =>
+    {
+        try
+        {
+            await callback();
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "A speech recognition callback failed.");
+        }
+    });
 
     /// <summary>Joins two pieces of text with a space, leaving out an empty one.</summary>
     private static string Join(string first, string second) => first.Length == 0 ? second : second.Length == 0 ? first : $"{first} {second}";
 
     public override async ValueTask DisposeAsync()
     {
+        starts++;
+
         if (session is { } running)
         {
             session = null;
-
-            try
-            {
-                await running.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-            }
+            await Release(running);
         }
 
         await base.DisposeAsync();

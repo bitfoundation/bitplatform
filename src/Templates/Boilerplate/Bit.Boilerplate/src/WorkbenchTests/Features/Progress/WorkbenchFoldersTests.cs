@@ -78,6 +78,20 @@ public class WorkbenchFoldersTests
     }
 
     [TestMethod]
+    public void TwoProjectsInOneClone_Should_KeepTheirReviewsApart()
+    {
+        Folder("Apps", ".git");
+
+        WorkbenchFolders.Project = Folder("Apps", "Shop", "src", "Workbench");
+        var shop = WorkbenchFolders.Reviews;
+
+        WorkbenchFolders.Project = Folder("Apps", "Crm", "src", "Workbench");
+
+        Assert.AreNotEqual(shop, WorkbenchFolders.Reviews);
+        Assert.StartsWith(Path.Combine(UserData, "Apps-"), WorkbenchFolders.Reviews);
+    }
+
+    [TestMethod]
     public void AWorkbenchOnAnotherPort_Should_KeepAReviewOfItsOwn()
     {
         Folder("MyApp", ".git");

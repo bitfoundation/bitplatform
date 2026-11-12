@@ -1577,11 +1577,12 @@ function Install-AgentFixture([string] $folder, $scenario, $scenarios) {
 }
 
 # Where the Workbench of a project keeps its review and the agents' tasks: named after the clone's folder and a hash of its
-# git folder, the way WorkbenchFolders.Reviews names it.
+# git folder and of where the Workbench sits in it, the way WorkbenchFolders.Reviews names it.
 function Get-WorkbenchDataFolder([string] $project) {
     $gitFolder = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath((Join-Path $project '.git')))
-    $bytes = [Text.Encoding]::UTF8.GetBytes($IsWindows ? $gitFolder.ToLowerInvariant() : $gitFolder)
-    $hash = [Convert]::ToHexStringLower([Security.Cryptography.SHA256]::HashData($bytes)).Substring(0, 12)
+    $key = "$gitFolder|src/Workbench"
+    $bytes = [Text.Encoding]::UTF8.GetBytes($IsWindows ? $key.ToLowerInvariant() : $key)
+    $hash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant().Substring(0, 12)
 
     Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) "bit-workbench\$(Split-Path $project -Leaf)-$hash"
 }

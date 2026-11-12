@@ -182,7 +182,9 @@ public static partial class WorkbenchProgressDocument
                 return secretProblem;
         }
 
-        var steps = (existing?.Steps.Select(s => s.Id) ?? []).Union((update.Steps ?? []).Where(s => s.Remove is false).Select(s => s.Id)).Count();
+        // The steps the task holds once the update is applied: those it keeps, and those the update adds.
+        var removed = (update.Steps ?? []).Where(s => s.Remove).Select(s => s.Id.Trim()).ToHashSet();
+        var steps = (existing?.Steps.Select(s => s.Id) ?? []).Except(removed).Union((update.Steps ?? []).Where(s => s.Remove is false).Select(s => s.Id.Trim())).Count();
 
         if (steps > MaxSteps)
             return $"A task holds up to {MaxSteps} steps.";

@@ -268,7 +268,8 @@ what the user approves is how the real page will look.
   user may answer in the chat instead: take the answer from wherever it comes first, and `withdraw` the question on the
   page then, as you do with one that no longer matters.
 - Then wait for the user with `GET /api/progress/<id>/wait?cursor=<cursor>&agent=<your name>`, in the background where
-  your client can, starting from the task's `cursor` and passing the one each answer returns: it answers as soon as they
+  your client can, starting from `cursor=0` and passing the one each answer returns, so nothing the user sent before your
+  first wait is missed (a chat that finds its task again starts from 0 too and skips what it already handled): it answers as soon as they
   answer a question, finish a step of theirs or write to you, and with nothing within a minute. Act on what they sent,
   update the task, and wait again until it is over. A wait that fails while the Workbench restarts is retried a few
   seconds apart, as in section 1.

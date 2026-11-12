@@ -42,6 +42,7 @@ public partial class HomePage
     ];
 
     private bool isPromptCopied;
+    private bool isOpenFailed;
     // Hands the cards over to their reveal, which by then has played for those in sight, so they don't blink.
     private bool areRevealsLive;
 
@@ -82,6 +83,7 @@ public partial class HomePage
             }
             catch (Exception exception)
             {
+                isOpenFailed = true;
                 logger.LogError(exception, "The review document could not be opened for the home page.");
             }
 
@@ -95,6 +97,8 @@ public partial class HomePage
     }
 
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);
+
+    private void Reload() => NavigationManager.Refresh(forceReload: true);
 
     public override async ValueTask DisposeAsync()
     {

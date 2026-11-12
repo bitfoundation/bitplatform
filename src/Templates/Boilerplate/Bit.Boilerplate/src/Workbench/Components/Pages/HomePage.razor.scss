@@ -368,6 +368,15 @@
     flex-direction: column;
 }
 
+.open-failed {
+    font-size: 14px;
+    color: $bit-color-foreground-secondary;
+}
+
+.agents-tasks ::deep .open-failed-reload {
+    align-self: flex-start;
+}
+
 .samples-badge {
     gap: 0.375rem;
     display: inline-flex;

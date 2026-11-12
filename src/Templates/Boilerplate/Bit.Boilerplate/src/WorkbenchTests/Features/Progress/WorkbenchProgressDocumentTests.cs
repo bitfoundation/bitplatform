@@ -112,6 +112,15 @@ public class WorkbenchProgressDocumentTests
     }
 
     [TestMethod]
+    public void AFullTask_Should_TakeAStepInPlaceOfOneItRemoves()
+    {
+        Create(Update("Full", steps: [.. Enumerable.Range(1, WorkbenchProgressDocument.MaxSteps).Select(i => new WorkbenchProgressStepUpdate($"s{i}", $"Step {i}", null, null, null, null))]));
+
+        Assert.IsNull(WorkbenchProgressDocument.Check(Update(steps: [new("s1", null, null, null, null, null, Remove: true), new("new", "A new step", null, null, null, null)]), Task()));
+        Assert.Contains($"up to {WorkbenchProgressDocument.MaxSteps} steps", WorkbenchProgressDocument.Check(Update(steps: [new("new", "A new step", null, null, null, null)]), Task())!);
+    }
+
+    [TestMethod]
     public void AnAnswer_Should_FitItsQuestion()
     {
         Create(Update("Task", asks: [new("text", "Domain?", null, "text", null, null),

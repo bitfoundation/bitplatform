@@ -98,7 +98,12 @@
             </div>
             @* Who may see the real tasks waits for them, so the samples never flash by first. *@
             <div class="agents-tasks">
-                @if (reviewSession.IsOpen is false && reviewSession.CanSeeTasks)
+                @if (reviewSession.IsOpen is false && reviewSession.CanSeeTasks && isOpenFailed)
+                {
+                    <span class="open-failed" role="alert">@Localizer[nameof(WorkbenchStrings.LoadFailed)]</span>
+                    <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.Refresh" OnClick="Reload" Class="open-failed-reload">@Localizer[nameof(WorkbenchStrings.ReloadPage)]</BitButton>
+                }
+                else if (reviewSession.IsOpen is false && reviewSession.CanSeeTasks)
                 {
                     <BitRingLoading />
                 }

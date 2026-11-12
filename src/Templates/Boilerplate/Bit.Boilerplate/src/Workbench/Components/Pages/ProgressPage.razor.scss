@@ -80,6 +80,13 @@
     justify-content: center;
 }
 
+.open-failed {
+    gap: 0.75rem;
+    padding: 1rem;
+    flex-direction: column;
+    color: $bit-color-foreground-secondary;
+}
+
 .layout {
     min-height: 0;
     flex-grow: 1;
