@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Reflection;
+using System.Diagnostics;
 using System.Globalization;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Shared.Features.Identity.OAuth;
 using Boilerplate.Shared.Infrastructure.Dtos;
 using Boilerplate.Shared.Infrastructure.Services;
 using Boilerplate.Server.Shared.Infrastructure.Services;
@@ -261,15 +263,36 @@ public static class WebApplicationExtensions
     /// </summary>
     private static readonly HashSet<string> HstsExcludedHosts = new(["localhost", "127.0.0.1", "[::1]"], StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>The entry assembly's, which a Release build ends with its commit (See HealthReportDto.ApplicationVersion).</summary>
+    private static readonly string? ApplicationInformationalVersion = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+    private static readonly DateTimeOffset ProcessStartedAt = ReadProcessStartedAt();
+
+    private static DateTimeOffset ReadProcessStartedAt()
+    {
+        using var process = Process.GetCurrentProcess();
+
+        return process.StartTime.ToUniversalTime();
+    }
+
     private static Task WriteHealthReport(HttpContext context, HealthReport report)
     {
         var registrations = context.RequestServices.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations.ToDictionary(r => r.Name);
+
+        // An exception can carry a server name or a connection string. The app's own session (the Operations page) gets
+        // it; an OAuth token, which some other app holds, only with the scope that says so.
+        var user = context.User;
+        var includeExceptions = user.HasClaim(claim => claim.Type is AppClaimTypes.OAUTH_CLIENT_ID) is false
+            || OAuthScopes.Parse(user.FindFirst(AppClaimTypes.OAUTH_SCOPE)?.Value).Contains(OAuthScopes.HealthzErrors, StringComparer.Ordinal);
 
         HealthReportDto body = new()
         {
             Status = (HealthCheckStatus)report.Status,
             TotalDuration = report.TotalDuration,
             CheckedAt = context.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ApplicationVersion = ApplicationInformationalVersion,
+            InstanceName = System.Environment.MachineName,
+            StartedAt = ProcessStartedAt,
             Entries = report.Entries.ToDictionary(entry => entry.Key, entry =>
             {
                 var registration = registrations.GetValueOrDefault(entry.Key);
@@ -282,7 +305,7 @@ public static class WebApplicationExtensions
                     Description = entry.Value.Description,
                     Duration = entry.Value.Duration,
                     // ToString() rather than the message alone: the inner exception is usually the one naming the cause.
-                    Exception = entry.Value.Exception?.ToString(),
+                    Exception = includeExceptions ? entry.Value.Exception?.ToString() : null,
                     Tags = [.. entry.Value.Tags],
                     // Stringified, as a check may put anything in here.
                     Data = entry.Value.Data.ToDictionary(item => item.Key, item => item.Value switch

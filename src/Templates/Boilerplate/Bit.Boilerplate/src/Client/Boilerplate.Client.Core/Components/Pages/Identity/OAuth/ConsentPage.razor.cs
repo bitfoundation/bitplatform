@@ -169,6 +169,7 @@ public partial class ConsentPage
     {
         OAuthScopes.DevMcp => Localizer[nameof(AppStrings.OAuthScopeDevMcpDescription)],
         OAuthScopes.Healthz => Localizer[nameof(AppStrings.OAuthScopeHealthzDescription)],
+        OAuthScopes.HealthzErrors => Localizer[nameof(AppStrings.OAuthScopeHealthzErrorsDescription)],
         //#if (signalR == true)
         OAuthScopes.Chat => Localizer[nameof(AppStrings.OAuthScopeChatDescription)],
         //#endif

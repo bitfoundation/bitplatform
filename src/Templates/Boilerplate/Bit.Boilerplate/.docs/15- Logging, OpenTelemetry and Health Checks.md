@@ -320,7 +320,10 @@ The project includes **health check endpoints** to monitor application health.
 1. **`/health`** - readiness. Runs every registered check, and returns 503 only when one of them reports Unhealthy.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
-   format and adds each check's failure status, timeout and full exception, plus the time of the report. It needs the
+   format and adds each check's failure status, timeout and full exception, plus the time of the report. It also says
+   which build answered and since when: `applicationVersion` (the informational version, which ends with the commit
+   in a Release build), `instanceName` (the machine name) and `startedAt` (when the process started, in UTC), so a
+   monitor that polls it can mark deployments and restarts, instance by instance. It needs the
    `AppFeatures.System.Operations_View` feature, which only global admins have. Like `/health`, it answers 503 when a
    check reports Unhealthy, so a monitor can go by the status code, and the report is in the body either way.
 
@@ -329,8 +332,12 @@ The project includes **health check endpoints** to monitor application health.
 mapped everywhere too, but behind its feature and never cached. It is also an **OAuth resource** (`OAuthResources`), so
 an external monitor can read it with a token of its own instead of a user's session, minted through the same consent
 page as `/dev-mcp`. Granting one takes more than reading the page does: the feature **and** a session that signed in
-with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended, exceptions and
-connection strings and all. Adding health check endpoints to a non-development
+with two factor (`GrantPolicies` on the resource's row), because that token reads the report unattended. A token with
+the `healthz` scope gets the report without the exceptions; one that also asks for `healthz-errors` gets them too. The
+app's own session, which the Operations page uses, always does. The resource's metadata document
+(`/.well-known/oauth-protected-resource/healthz`, anonymous like every RFC 9728 document) lists both scopes and carries
+`bit_template_version`, the version `bit.json` records, so a monitor can tell a bit Boilerplate app and its version
+before it asks for a token. Adding health check endpoints to a non-development
 deployment has security implications (see <https://aka.ms/dotnet/aspire/healthchecks>): decide deliberately whether to
 expose `/health` publicly or to restrict it to your load balancer's network, because an anonymous caller can drive the
 work behind it. `/health` and `/alive` responses are output-cached for 10 seconds, but that cache does not apply to a

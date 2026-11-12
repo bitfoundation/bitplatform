@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Shared.Features.Diagnostic;
 using Boilerplate.Shared.Features.Identity.OAuth;
 using Boilerplate.Shared.Features.Identity.OAuth.Dtos;
 //#if (advancedTests == true)
@@ -321,6 +323,110 @@ public class OAuthAuthorizationServerTests
             document.RootElement.GetProperty("authorization_servers").EnumerateArray().Select(item => item.GetString()).ToArray(),
             "The resource and its authorization server are the same deployment here, and both have to be the origin " +
             "the caller reached - a client that discovers a different host cannot get a token this server accepts.");
+    }
+
+    /// <summary>
+    /// <c>/healthz</c>'s document offers <c>healthz-errors</c> next to <c>healthz</c>, while its 401 names
+    /// <c>healthz</c> alone: the error texts are for a client that asks for them. And, anonymous like the rest of the
+    /// document, the template version <c>bit.json</c> records, so a monitor can tell a bit Boilerplate app and its age
+    /// before it asks anyone for a token.
+    /// </summary>
+    [TestMethod]
+    public async Task TheHealthzProtectedResourceMetadata_Should_OfferTheErrorsScope_AndNameTheTemplateVersion()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+
+        using var httpClient = server.CreateRawHttpClient();
+        using var document = JsonDocument.Parse(
+            await httpClient.GetStringAsync(".well-known/oauth-protected-resource/healthz", TestContext.CancellationToken));
+
+        Assert.AreSequenceEqual([OAuthScopes.Healthz, OAuthScopes.HealthzErrors],
+            document.RootElement.GetProperty("scopes_supported").EnumerateArray().Select(item => item.GetString()).ToArray(),
+            SequenceOrder.InAnyOrder);
+
+        Assert.AreEqual(BitJsonVersion(), document.RootElement.GetProperty("bit_template_version").GetString(),
+            "The version the build read from bit.json, the one bit diff and the template-diff skill go by.");
+
+        using var response = await httpClient.GetAsync(new Uri(server.ApiAppAddress, "healthz"), TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        var challenge = string.Join(' ', response.Headers.WwwAuthenticate.Select(header => $"{header.Scheme} {header.Parameter}"));
+
+        Assert.Contains($"scope=\"{OAuthScopes.Healthz}\"", challenge,
+            "A client following the challenge asks for what the resource is for, not for the error texts as well.");
+    }
+
+    /// <summary>
+    /// An exception can carry a server name or a connection string, so a <c>healthz</c> token reads the report without
+    /// them and <c>healthz-errors</c> adds them. The app's own session always gets them (See
+    /// HealthCheckIntegrationTests.DetailedReport_Should_NeedTheFeature_AndDescribeEveryCheck).
+    /// </summary>
+    [TestMethod]
+    public async Task AHealthzToken_Should_ReadTheErrorTexts_OnlyWithTheHealthzErrorsScope()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(
+            configureTestApiAppServices: services => services.AddHealthChecks().AddCheck("failing", () => HealthCheckResult.Unhealthy("Down on purpose", new InvalidOperationException("The test broke it"))),
+            configureTestConfiguration: ConfigureTestClient)
+                    .Start(TestContext.CancellationToken);
+
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+
+        var withoutErrors = (await ReadHealthzWithAToken(server, client, OAuthScopes.Healthz)).Entries["failing"];
+
+        Assert.AreEqual("Down on purpose", withoutErrors.Description, "The report itself is what the healthz scope is for.");
+        Assert.IsNull(withoutErrors.Exception, "Without healthz-errors, a token must not read the failures' exceptions.");
+
+        var withErrors = (await ReadHealthzWithAToken(server, client, $"{OAuthScopes.Healthz} {OAuthScopes.HealthzErrors}")).Entries["failing"];
+
+        Assert.Contains("The test broke it", withErrors.Exception!, "With healthz-errors, the token reads the exception as the session does.");
+    }
+
+    private async Task<HealthReportDto> ReadHealthzWithAToken(AppTestServer server, AppClient client, string scope)
+    {
+        var (verifier, challenge) = GeneratePkcePair();
+
+        var approval = await client.GetController<IOAuthController>()
+                                   .Approve(BuildRequest(server, challenge, scope, resourcePath: "/healthz"), TestContext.CancellationToken);
+
+        var token = await ExchangeCode(server, QueryValueOf(approval.RedirectUrl, "code")!, verifier);
+
+        Assert.AreEqual(scope, token.GetProperty("scope").GetString(), "The consented scopes, all of them granted.");
+
+        using var httpClient = server.CreateRawHttpClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(server.ApiAppAddress, "healthz"));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.GetProperty("access_token").GetString());
+
+        using var response = await httpClient.SendAsync(request, TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode, "The failing check makes the report Unhealthy, and the token reads it.");
+
+        var report = await response.Content.ReadFromJsonAsync(
+            client.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);
+
+        Assert.IsNotNull(report);
+        return report;
+    }
+
+    /// <summary>The version in the <c>bit.json</c> above the test binaries: the template's own, or a generated project's.</summary>
+    private static string? BitJsonVersion()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null && File.Exists(Path.Combine(directory.FullName, "bit.json")) is false)
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.IsNotNull(directory, "No bit.json above the test binaries.");
+
+        using var bitJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory.FullName, "bit.json")));
+
+        return bitJson.RootElement.GetProperty("version").GetString();
     }
 
     /// <summary>

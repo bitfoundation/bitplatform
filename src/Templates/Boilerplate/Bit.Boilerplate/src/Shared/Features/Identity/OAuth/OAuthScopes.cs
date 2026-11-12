@@ -13,8 +13,14 @@ public static class OAuthScopes
     /// <summary>Read-only inspection of a running deployment through <c>/dev-mcp</c>.</summary>
     public const string DevMcp = "dev-mcp";
 
-    /// <summary>The detailed health report at <c>/healthz</c>: every check's status, and each failure's exception.</summary>
+    /// <summary>The detailed health report at <c>/healthz</c>: every check's status, but not the failures' exceptions.</summary>
     public const string Healthz = "healthz";
+
+    /// <summary>
+    /// Each failing check's exception in that report too. An exception can carry a server name or a connection string,
+    /// so a token gets it only by asking for it; the app's own session always does.
+    /// </summary>
+    public const string HealthzErrors = "healthz-errors";
 
     //#if (signalR == true)
     /// <summary>
@@ -32,7 +38,8 @@ public static class OAuthScopes
         [Chat] = [],
         //#endif
         [DevMcp] = [AppFeatures.System.DevMcp],
-        [Healthz] = [AppFeatures.System.Operations_View]
+        [Healthz] = [AppFeatures.System.Operations_View],
+        [HealthzErrors] = [AppFeatures.System.Operations_View]
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>Published as <c>scopes_supported</c> in the authorization server metadata.</summary>

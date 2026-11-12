@@ -1928,10 +1928,16 @@
     <value>读取此部署的诊断信息。</value>
   </data>
     <data name="OAuthScopeHealthzDescription" xml:space="preserve">
-    <value>读取此部署的详细健康报告，包括所有故障项的错误详情。</value>
+    <value>读取此部署的详细健康报告，不含故障项的错误详情。</value>
   </data>
     <data name="OAuthScopeHealthzShortDescription" xml:space="preserve">
     <value>读取健康报告。</value>
+  </data>
+    <data name="OAuthScopeHealthzErrorsDescription" xml:space="preserve">
+    <value>读取健康报告中所有故障项的错误详情，其中可能包含服务器名称和连接信息。</value>
+  </data>
+    <data name="OAuthScopeHealthzErrorsShortDescription" xml:space="preserve">
+    <value>读取健康报告中的错误详情。</value>
   </data>
     <data name="OAuthSessionAuthorizedApplication" xml:space="preserve">
     <value>已授权的应用</value>

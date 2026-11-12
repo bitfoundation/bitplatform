@@ -1,4 +1,6 @@
 //+:cnd:noEmit
+using System.Reflection;
+using System.Diagnostics;
 using Boilerplate.Server.Api;
 using Boilerplate.Server.Api.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Builder;
@@ -160,6 +162,54 @@ public partial class HealthCheckIntegrationTests
 
         Assert.IsNotNull(report);
         Assert.Contains("live", report.Entries["binStorage"].Tags);
+    }
+
+    /// <summary>
+    /// The report says which build answered, on which instance, since when: a monitor polling it marks a deployment
+    /// where <c>applicationVersion</c> (which ends with the commit in a Release build) changes, and a restart where it
+    /// stays and <c>startedAt</c> moves. The JSON names are what such a monitor codes against.
+    /// </summary>
+    [TestMethod]
+    public async Task DetailedReport_Should_SayWhichBuildAnswered_AndSinceWhen()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build().Start(TestContext.CancellationToken);
+
+        await using var adminClient = server.CreateAppClient();
+        await adminClient.AuthManager.SignIn(new()
+        {
+            Email = TestData.DefaultTestEmail,
+            Password = TestData.DefaultTestPassword
+        }, TestContext.CancellationToken);
+
+        using var response = await GetReport(adminClient.HttpClient, new Uri(server.ApiAppAddress, "healthz"));
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        // The test host is the entry assembly here, as the app's own host is in a deployment.
+        var entryAssembly = Assembly.GetEntryAssembly();
+        Assert.IsNotNull(entryAssembly);
+        var informationalVersion = entryAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        Assert.IsNotNull(informationalVersion);
+
+        Assert.AreEqual(informationalVersion.InformationalVersion, root.GetProperty("applicationVersion").GetString());
+        Assert.AreEqual(Environment.MachineName, root.GetProperty("instanceName").GetString());
+        Assert.IsTrue(root.TryGetProperty("startedAt", out _), $"No startedAt in {body}");
+
+        var report = JsonSerializer.Deserialize(body, adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>());
+        Assert.IsNotNull(report);
+
+        using var process = Process.GetCurrentProcess();
+        var processStartedAt = new DateTimeOffset(process.StartTime.ToUniversalTime());
+
+        Assert.AreEqual(TimeSpan.Zero, report.StartedAt.Offset, "In UTC, so instances in different zones compare.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(1), (report.StartedAt - processStartedAt).Duration(),
+            $"startedAt is when the answering process started ({processStartedAt:O}), not when the report was made: {report.StartedAt:O}.");
+        Assert.IsLessThanOrEqualTo(report.CheckedAt, report.StartedAt);
     }
 
     /// <summary>

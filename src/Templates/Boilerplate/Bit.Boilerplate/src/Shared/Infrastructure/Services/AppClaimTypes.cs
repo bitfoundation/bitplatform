@@ -51,6 +51,12 @@ public class AppClaimTypes
     public const string OAUTH_CLIENT_ID = "client_id";
 
     /// <summary>
+    /// The scopes an OAuth token was granted, space delimited (RFC 9068). Only the tokens that carry
+    /// <see cref="OAUTH_CLIENT_ID"/> have it.
+    /// </summary>
+    public const string OAUTH_SCOPE = "scope";
+
+    /// <summary>
     /// The method used for user authentication.
     /// External (Social), Sms (Web-OTP), Email (Magic Link or 6 digit code), Push notification (6 digit code), WebAuthn (Face-Id, Fingerprint etc), Password.
     /// </summary>

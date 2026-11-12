@@ -54,6 +54,7 @@ public static class UserSessionDtoExtensions
             {
                 OAuthScopes.DevMcp => localizer[nameof(AppStrings.OAuthScopeDevMcpShortDescription)].ToString(),
                 OAuthScopes.Healthz => localizer[nameof(AppStrings.OAuthScopeHealthzShortDescription)].ToString(),
+                OAuthScopes.HealthzErrors => localizer[nameof(AppStrings.OAuthScopeHealthzErrorsShortDescription)].ToString(),
                 //#if (signalR == true)
                 OAuthScopes.Chat => localizer[nameof(AppStrings.OAuthScopeChatShortDescription)].ToString(),
                 //#endif
