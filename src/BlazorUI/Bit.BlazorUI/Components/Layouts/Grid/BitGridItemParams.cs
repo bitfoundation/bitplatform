@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitGridItem"/> component.
 /// </summary>
-public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitGridItem"/> cascading parameters within <see cref="BitParams"/>.

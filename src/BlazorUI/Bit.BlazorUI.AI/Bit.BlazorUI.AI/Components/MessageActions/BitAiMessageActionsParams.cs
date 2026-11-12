@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// offer feedback, and their classes and styles. The message, the session, whether it can be regenerated, the extra
 /// actions and the callback are left out on purpose: they are what makes one row the one it is.
 /// </remarks>
-public class BitAiMessageActionsParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiMessageActionsParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiMessageActions"/> cascading parameters within <see cref="BitParams"/>.

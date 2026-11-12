@@ -13,7 +13,7 @@ namespace Bit.BlazorUI;
 /// None of the parameters here depends on the type of the items, so the class is not generic: one instance
 /// reaches every list under the <see cref="BitParams"/> it is given to, whichever of its three item APIs it uses.
 /// </remarks>
-public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAccordionListParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAccordionList{TItem}"/> cascading parameters within <see cref="BitParams"/>.

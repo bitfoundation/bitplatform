@@ -54,6 +54,14 @@
         // caught by the theme observer, whose refresh runs once the cache has been emptied.
         private static _tokenReads: Map<Element, Partial<Record<BreakpointKey, string>>> | null = null;
 
+        // The tokens of the document itself (the body), which every media query without an element of its own is built
+        // from - most of them, NoWrapper and content-less ones alike, and they set up again on every render. Read once
+        // and shared by all of them for as long as the theme observer is watching, which is what tells a theme re-valuing
+        // them: a read in every task would force the style of a page still being built to be recalculated once per
+        // instance and render. With no observer alive (no screen query listening) nothing would tell, so they are kept
+        // for the task alone, like an element's.
+        private static _documentTokens: Partial<Record<BreakpointKey, string>> | null = null;
+
         /**
          * Whether a query matches right now, answered synchronously - for a component that has to decide what to
          * render before it has rendered anything, ahead of the first report of setup. Built exactly the way setup
@@ -216,6 +224,8 @@
             } else if (!needed && MediaQuery._themeObserver) {
                 MediaQuery._themeObserver.disconnect();
                 MediaQuery._themeObserver = null;
+                // Nothing watches the theme any more, so nothing would tell the shared tokens are out of date.
+                MediaQuery._documentTokens = null;
                 document.removeEventListener('bit-theme-change', MediaQuery.scheduleThemeRefresh);
             }
         }
@@ -224,6 +234,7 @@
         // pass, taken once the style has settled.
         private static scheduleThemeRefresh() {
             MediaQuery._tokenReads = null;
+            MediaQuery._documentTokens = null;
 
             if (MediaQuery._themeFrame) return;
 
@@ -389,7 +400,8 @@
         // OnChange-only usage with no content) - rather than the root: it inherits everything the
         // root declares, and it is where BitThemeManager applies a theme unless told otherwise.
         // Each breakpoint is resolved as the query asks for it, so the computed style is only read for a token the
-        // given breakpoints leave out - and only once per task for every query built off the same element.
+        // given breakpoints leave out - and only once per task for every query built off the same element, or once
+        // until the theme changes for every query built off the document.
         private static resolveBreakpoints(elementId: string | null, breakpoints: { [key: string]: string } | null): Record<BreakpointKey, string> {
             const element = (elementId ? document.getElementById(elementId) : null) ?? document.body ?? document.documentElement;
 
@@ -408,20 +420,33 @@
             return resolved;
         }
 
-        // The --bit-bp-* token an element resolves, or an empty string when it is set nowhere (see _tokenReads).
+        // The --bit-bp-* token an element resolves, or an empty string when it is set nowhere (see _tokenReads and
+        // _documentTokens).
         private static readToken(element: Element, key: BreakpointKey): string {
             if (!MediaQuery._tokenReads) {
                 const reads = new Map<Element, Partial<Record<BreakpointKey, string>>>();
                 MediaQuery._tokenReads = reads;
                 queueMicrotask(() => {
                     if (MediaQuery._tokenReads === reads) MediaQuery._tokenReads = null;
+                    if (!MediaQuery._themeObserver) MediaQuery._documentTokens = null;
                 });
             }
 
-            let tokens = MediaQuery._tokenReads.get(element);
-            if (!tokens) {
-                tokens = {};
-                MediaQuery._tokenReads.set(element, tokens);
+            let tokens: Partial<Record<BreakpointKey, string>> | undefined;
+            if (element === document.body || element === document.documentElement) {
+                // A mutation the observer has not been called back for yet (a theme applied earlier in this task) is
+                // taken here, ahead of its callback, so the tokens it re-valued are not answered from before it.
+                if (MediaQuery._themeObserver && MediaQuery._themeObserver.takeRecords().length > 0) {
+                    MediaQuery.scheduleThemeRefresh();
+                }
+
+                tokens = MediaQuery._documentTokens ??= {};
+            } else {
+                tokens = MediaQuery._tokenReads.get(element);
+                if (!tokens) {
+                    tokens = {};
+                    MediaQuery._tokenReads.set(element, tokens);
+                }
             }
 
             let value = tokens[key];

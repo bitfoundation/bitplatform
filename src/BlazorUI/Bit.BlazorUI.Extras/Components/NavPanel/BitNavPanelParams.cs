@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// reaches every panel under the <see cref="BitParams"/> it is given to, whatever its item type is - which is
 /// what makes it the one place a localized app names the panel's controls and announcements.
 /// </remarks>
-public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitNavPanel{TItem}"/> cascading parameters within <see cref="BitParams"/>.

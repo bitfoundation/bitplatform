@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// state and the composer, whether the system messages are shown, and their classes and styles. The session, the
 /// conversation, the templates, the callbacks and the speech delegates are left out on purpose: they are what makes one chat the one it is.
 /// </remarks>
-public class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiChatParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiChat"/> cascading parameters within <see cref="BitParams"/>.

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// (<c>ScrollContainerId</c>) are deliberately left out: each of them belongs to one drop menu, and a value
 /// cascaded to every drop menu underneath a <see cref="BitParams"/> would open, fill or wire them all at once.
 /// </remarks>
-public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDropMenu"/> cascading parameters within <see cref="BitParams"/>.

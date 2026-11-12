@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// The data, the windowed provider, the templates of one timeline's rows, tooltips and corner, and the events and
 /// callbacks are left out on purpose: they are what makes one timeline the one it is.
 /// </remarks>
-public class BitResourceTimelineParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitResourceTimelineParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitResourceTimeline"/> cascading parameters within <see cref="BitParams"/>.

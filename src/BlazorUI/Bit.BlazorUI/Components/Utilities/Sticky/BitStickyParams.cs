@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// are deliberately not here: they are what makes one sticky the one it is, and cascading them would
 /// give every sticky on the page the same content and the same observer.
 /// </remarks>
-public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitSticky"/> cascading parameters within <see cref="BitParams"/>.

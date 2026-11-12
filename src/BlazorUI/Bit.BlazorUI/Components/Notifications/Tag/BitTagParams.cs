@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitTag"/> component.
 /// </summary>
-public class BitTagParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitTagParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitTag"/> cascading parameters within <see cref="BitParams"/>.

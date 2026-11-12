@@ -15,533 +15,608 @@
 /// than as an exact key: the alternative names and the abbreviations a country is as widely known by
 /// are answered too ("Czechia", "Türkiye", "Holland", "UK", "USA"), and so are the accents, the
 /// punctuation and the spacing a second source spells it with ("Curaçao", "Guinea-Bissau").
+/// <br />
+/// Nothing is built before it is used: the countries are created the first time any of them is read, in one pass
+/// over the table, and the lookups of the Find methods the first time one of them is called.
 /// </remarks>
 public class BitCountries
 {
-    public static readonly BitCountry Afghanistan = new("Afghanistan", "93", "AF", "AFG");
-    public static readonly BitCountry AlandIslands = new("Åland Islands", "358-18", "AX", "ALA");
-    public static readonly BitCountry Albania = new("Albania", "355", "AL", "ALB");
-    public static readonly BitCountry Algeria = new("Algeria", "213", "DZ", "DZA");
-    public static readonly BitCountry AmericanSamoa = new("American Samoa", "1-684", "AS", "ASM");
-    public static readonly BitCountry Andorra = new("Andorra", "376", "AD", "AND");
-    public static readonly BitCountry Angola = new("Angola", "244", "AO", "AGO");
-    public static readonly BitCountry Anguilla = new("Anguilla", "1-264", "AI", "AIA");
-    public static readonly BitCountry Antarctica = new("Antarctica", "672", "AQ", "ATA");
-    public static readonly BitCountry AntiguaAndBarbuda = new("Antigua and Barbuda", "1-268", "AG", "ATG");
-    public static readonly BitCountry Argentina = new("Argentina", "54", "AR", "ARG");
-    public static readonly BitCountry Armenia = new("Armenia", "374", "AM", "ARM");
-    public static readonly BitCountry Aruba = new("Aruba", "297", "AW", "ABW");
-    public static readonly BitCountry Australia = new("Australia", "61", "AU", "AUS");
-    public static readonly BitCountry Austria = new("Austria", "43", "AT", "AUT");
-    public static readonly BitCountry Azerbaijan = new("Azerbaijan", "994", "AZ", "AZE");
-    public static readonly BitCountry Bahamas = new("Bahamas", "1-242", "BS", "BHS");
-    public static readonly BitCountry Bahrain = new("Bahrain", "973", "BH", "BHR");
-    public static readonly BitCountry Bangladesh = new("Bangladesh", "880", "BD", "BGD");
-    public static readonly BitCountry Barbados = new("Barbados", "1-246", "BB", "BRB");
-    public static readonly BitCountry Belarus = new("Belarus", "375", "BY", "BLR");
-    public static readonly BitCountry Belgium = new("Belgium", "32", "BE", "BEL");
-    public static readonly BitCountry Belize = new("Belize", "501", "BZ", "BLZ");
-    public static readonly BitCountry Benin = new("Benin", "229", "BJ", "BEN");
-    public static readonly BitCountry Bermuda = new("Bermuda", "1-441", "BM", "BMU");
-    public static readonly BitCountry Bhutan = new("Bhutan", "975", "BT", "BTN");
-    public static readonly BitCountry Bolivia = new("Bolivia", "591", "BO", "BOL");
-    public static readonly BitCountry BosniaAndHerzegovina = new("Bosnia and Herzegovina", "387", "BA", "BIH");
-    public static readonly BitCountry Botswana = new("Botswana", "267", "BW", "BWA");
-    public static readonly BitCountry Brazil = new("Brazil", "55", "BR", "BRA");
-    //public static readonly BitCountry BritishIndianOceanTerritory = new("British Indian Ocean Territory", "246", "IO", "IOT");
-    public static readonly BitCountry BritishVirginIslands = new("British Virgin Islands", "1-284", "VG", "VGB");
-    public static readonly BitCountry Brunei = new("Brunei", "673", "BN", "BRN");
-    public static readonly BitCountry Bulgaria = new("Bulgaria", "359", "BG", "BGR");
-    public static readonly BitCountry BurkinaFaso = new("Burkina Faso", "226", "BF", "BFA");
-    public static readonly BitCountry Burundi = new("Burundi", "257", "BI", "BDI");
-    public static readonly BitCountry Cambodia = new("Cambodia", "855", "KH", "KHM");
-    public static readonly BitCountry Cameroon = new("Cameroon", "237", "CM", "CMR");
-    public static readonly BitCountry Canada = new("Canada", "1", "CA", "CAN");
-    public static readonly BitCountry CapeVerde = new("Cape Verde", "238", "CV", "CPV");
-    public static readonly BitCountry CaymanIslands = new("Cayman Islands", "1-345", "KY", "CYM");
-    public static readonly BitCountry CentralAfricanRepublic = new("Central African Republic", "236", "CF", "CAF");
-    public static readonly BitCountry Chad = new("Chad", "235", "TD", "TCD");
-    public static readonly BitCountry Chile = new("Chile", "56", "CL", "CHL");
-    public static readonly BitCountry China = new("China", "86", "CN", "CHN");
-    public static readonly BitCountry ChristmasIsland = new("Christmas Island", "61", "CX", "CXR");
-    public static readonly BitCountry CocosIslands = new("Cocos Islands", "61", "CC", "CCK");
-    public static readonly BitCountry Colombia = new("Colombia", "57", "CO", "COL");
-    public static readonly BitCountry Comoros = new("Comoros", "269", "KM", "COM");
-    public static readonly BitCountry CookIslands = new("Cook Islands", "682", "CK", "COK");
-    public static readonly BitCountry CostaRica = new("Costa Rica", "506", "CR", "CRI");
-    public static readonly BitCountry Croatia = new("Croatia", "385", "HR", "HRV");
-    public static readonly BitCountry Cuba = new("Cuba", "53", "CU", "CUB");
-    public static readonly BitCountry Curacao = new("Curacao", "599", "CW", "CUW");
-    public static readonly BitCountry Cyprus = new("Cyprus", "357", "CY", "CYP");
-    public static readonly BitCountry CzechRepublic = new("Czech Republic", "420", "CZ", "CZE");
-    public static readonly BitCountry DemocraticRepublicOfTheCongo = new("Democratic Republic of the Congo", "243", "CD", "COD");
-    public static readonly BitCountry Denmark = new("Denmark", "45", "DK", "DNK");
-    public static readonly BitCountry Djibouti = new("Djibouti", "253", "DJ", "DJI");
-    public static readonly BitCountry Dominica = new("Dominica", "1-767", "DM", "DMA");
-    public static readonly BitCountry DominicanRepublic = new("Dominican Republic", "1-809", "DO", "DOM", extraCodes: ["1-829", "1-849"]);
-    public static readonly BitCountry EastTimor = new("East Timor", "670", "TL", "TLS");
-    public static readonly BitCountry Ecuador = new("Ecuador", "593", "EC", "ECU");
-    public static readonly BitCountry Egypt = new("Egypt", "20", "EG", "EGY");
-    public static readonly BitCountry ElSalvador = new("El Salvador", "503", "SV", "SLV");
-    public static readonly BitCountry EquatorialGuinea = new("Equatorial Guinea", "240", "GQ", "GNQ");
-    public static readonly BitCountry Eritrea = new("Eritrea", "291", "ER", "ERI");
-    public static readonly BitCountry Estonia = new("Estonia", "372", "EE", "EST");
-    public static readonly BitCountry Ethiopia = new("Ethiopia", "251", "ET", "ETH");
-    public static readonly BitCountry FalklandIslands = new("Falkland Islands", "500", "FK", "FLK");
-    public static readonly BitCountry FaroeIslands = new("Faroe Islands", "298", "FO", "FRO");
-    public static readonly BitCountry Fiji = new("Fiji", "679", "FJ", "FJI");
-    public static readonly BitCountry Finland = new("Finland", "358", "FI", "FIN");
-    public static readonly BitCountry France = new("France", "33", "FR", "FRA");
-    public static readonly BitCountry FrenchPolynesia = new("French Polynesia", "689", "PF", "PYF");
-    public static readonly BitCountry FrenchSouthernTerritories = new("French Southern Territories", "262", "TF", "ATF");
-    public static readonly BitCountry Gabon = new("Gabon", "241", "GA", "GAB");
-    public static readonly BitCountry Gambia = new("Gambia", "220", "GM", "GMB");
-    public static readonly BitCountry Georgia = new("Georgia", "995", "GE", "GEO");
-    public static readonly BitCountry Germany = new("Germany", "49", "DE", "DEU");
-    public static readonly BitCountry Ghana = new("Ghana", "233", "GH", "GHA");
-    public static readonly BitCountry Gibraltar = new("Gibraltar", "350", "GI", "GIB");
-    public static readonly BitCountry Greece = new("Greece", "30", "GR", "GRC");
-    public static readonly BitCountry Greenland = new("Greenland", "299", "GL", "GRL");
-    public static readonly BitCountry Grenada = new("Grenada", "1-473", "GD", "GRD");
-    public static readonly BitCountry Guam = new("Guam", "1-671", "GU", "GUM");
-    public static readonly BitCountry Guatemala = new("Guatemala", "502", "GT", "GTM");
-    public static readonly BitCountry Guernsey = new("Guernsey", "44-1481", "GG", "GGY");
-    public static readonly BitCountry Guinea = new("Guinea", "224", "GN", "GIN");
-    public static readonly BitCountry GuineaBissau = new("Guinea Bissau", "245", "GW", "GNB");
-    public static readonly BitCountry Guyana = new("Guyana", "592", "GY", "GUY");
-    public static readonly BitCountry Haiti = new("Haiti", "509", "HT", "HTI");
-    public static readonly BitCountry Honduras = new("Honduras", "504", "HN", "HND");
-    public static readonly BitCountry HongKong = new("Hong Kong", "852", "HK", "HKG");
-    public static readonly BitCountry Hungary = new("Hungary", "36", "HU", "HUN");
-    public static readonly BitCountry Iceland = new("Iceland", "354", "IS", "ISL");
-    public static readonly BitCountry India = new("India", "91", "IN", "IND");
-    public static readonly BitCountry Indonesia = new("Indonesia", "62", "ID", "IDN");
-    public static readonly BitCountry Iran = new("Iran", "98", "IR", "IRN");
-    public static readonly BitCountry Iraq = new("Iraq", "964", "IQ", "IRQ");
-    public static readonly BitCountry Ireland = new("Ireland", "353", "IE", "IRL");
-    public static readonly BitCountry IsleOfMan = new("Isle of Man", "44-1624", "IM", "IMN");
-    public static readonly BitCountry Israel = new("Israel", "972", "IL", "ISR");
-    public static readonly BitCountry Italy = new("Italy", "39", "IT", "ITA");
-    public static readonly BitCountry IvoryCoast = new("Ivory Coast", "225", "CI", "CIV");
-    public static readonly BitCountry Jamaica = new("Jamaica", "1-876", "JM", "JAM");
-    public static readonly BitCountry Japan = new("Japan", "81", "JP", "JPN");
-    public static readonly BitCountry Jersey = new("Jersey", "44-1534", "JE", "JEY");
-    public static readonly BitCountry Jordan = new("Jordan", "962", "JO", "JOR");
-    public static readonly BitCountry Kazakhstan = new("Kazakhstan", "7", "KZ", "KAZ");
-    public static readonly BitCountry Kenya = new("Kenya", "254", "KE", "KEN");
-    public static readonly BitCountry Kiribati = new("Kiribati", "686", "KI", "KIR");
-    //public static readonly BitCountry Kosovo = new("Kosovo", "383", "XK", "XKX");
-    public static readonly BitCountry Kuwait = new("Kuwait", "965", "KW", "KWT");
-    public static readonly BitCountry Kyrgyzstan = new("Kyrgyzstan", "996", "KG", "KGZ");
-    public static readonly BitCountry Laos = new("Laos", "856", "LA", "LAO");
-    public static readonly BitCountry Latvia = new("Latvia", "371", "LV", "LVA");
-    public static readonly BitCountry Lebanon = new("Lebanon", "961", "LB", "LBN");
-    public static readonly BitCountry Lesotho = new("Lesotho", "266", "LS", "LSO");
-    public static readonly BitCountry Liberia = new("Liberia", "231", "LR", "LBR");
-    public static readonly BitCountry Libya = new("Libya", "218", "LY", "LBY");
-    public static readonly BitCountry Liechtenstein = new("Liechtenstein", "423", "LI", "LIE");
-    public static readonly BitCountry Lithuania = new("Lithuania", "370", "LT", "LTU");
-    public static readonly BitCountry Luxembourg = new("Luxembourg", "352", "LU", "LUX");
-    public static readonly BitCountry Macau = new("Macau", "853", "MO", "MAC");
-    public static readonly BitCountry Macedonia = new("Macedonia", "389", "MK", "MKD");
-    public static readonly BitCountry Madagascar = new("Madagascar", "261", "MG", "MDG");
-    public static readonly BitCountry Malawi = new("Malawi", "265", "MW", "MWI");
-    public static readonly BitCountry Malaysia = new("Malaysia", "60", "MY", "MYS");
-    public static readonly BitCountry Maldives = new("Maldives", "960", "MV", "MDV");
-    public static readonly BitCountry Mali = new("Mali", "223", "ML", "MLI");
-    public static readonly BitCountry Malta = new("Malta", "356", "MT", "MLT");
-    public static readonly BitCountry MarshallIslands = new("Marshall Islands", "692", "MH", "MHL");
-    public static readonly BitCountry Martinique = new("Martinique", "596", "MQ", "MTQ");
-    public static readonly BitCountry Mauritania = new("Mauritania", "222", "MR", "MRT");
-    public static readonly BitCountry Mauritius = new("Mauritius", "230", "MU", "MUS");
-    public static readonly BitCountry Mayotte = new("Mayotte", "262", "YT", "MYT");
-    public static readonly BitCountry Mexico = new("Mexico", "52", "MX", "MEX");
-    public static readonly BitCountry Micronesia = new("Micronesia", "691", "FM", "FSM");
-    public static readonly BitCountry Moldova = new("Moldova", "373", "MD", "MDA");
-    public static readonly BitCountry Monaco = new("Monaco", "377", "MC", "MCO");
-    public static readonly BitCountry Mongolia = new("Mongolia", "976", "MN", "MNG");
-    public static readonly BitCountry Montenegro = new("Montenegro", "382", "ME", "MNE");
-    public static readonly BitCountry Montserrat = new("Montserrat", "1-664", "MS", "MSR");
-    public static readonly BitCountry Morocco = new("Morocco", "212", "MA", "MAR");
-    public static readonly BitCountry Mozambique = new("Mozambique", "258", "MZ", "MOZ");
-    public static readonly BitCountry Myanmar = new("Myanmar", "95", "MM", "MMR");
-    public static readonly BitCountry Namibia = new("Namibia", "264", "NA", "NAM");
-    public static readonly BitCountry Nauru = new("Nauru", "674", "NR", "NRU");
-    public static readonly BitCountry Nepal = new("Nepal", "977", "NP", "NPL");
-    public static readonly BitCountry Netherlands = new("Netherlands", "31", "NL", "NLD");
-    public static readonly BitCountry NetherlandsAntilles = new("Netherlands Antilles", "599", "AN", "ANT");
-    public static readonly BitCountry NewCaledonia = new("New Caledonia", "687", "NC", "NCL");
-    public static readonly BitCountry NewZealand = new("New Zealand", "64", "NZ", "NZL");
-    public static readonly BitCountry Nicaragua = new("Nicaragua", "505", "NI", "NIC");
-    public static readonly BitCountry Niger = new("Niger", "227", "NE", "NER");
-    public static readonly BitCountry Nigeria = new("Nigeria", "234", "NG", "NGA");
-    public static readonly BitCountry Niue = new("Niue", "683", "NU", "NIU");
-    public static readonly BitCountry NorfolkIsland = new("Norfolk Island", "672", "NF", "NFK", 1);
-    public static readonly BitCountry NorthKorea = new("North Korea", "850", "KP", "PRK");
-    public static readonly BitCountry NorthernMarianaIslands = new("Northern Mariana Islands", "1-670", "MP", "MNP");
-    public static readonly BitCountry Norway = new("Norway", "47", "NO", "NOR");
-    public static readonly BitCountry Oman = new("Oman", "968", "OM", "OMN");
-    public static readonly BitCountry Pakistan = new("Pakistan", "92", "PK", "PAK");
-    public static readonly BitCountry Palau = new("Palau", "680", "PW", "PLW");
-    public static readonly BitCountry Palestine = new("Palestine", "970", "PS", "PSE");
-    public static readonly BitCountry Panama = new("Panama", "507", "PA", "PAN");
-    public static readonly BitCountry PapuaNewGuinea = new("Papua New Guinea", "675", "PG", "PNG");
-    public static readonly BitCountry Paraguay = new("Paraguay", "595", "PY", "PRY");
-    public static readonly BitCountry Peru = new("Peru", "51", "PE", "PER");
-    public static readonly BitCountry Philippines = new("Philippines", "63", "PH", "PHL");
-    public static readonly BitCountry Pitcairn = new("Pitcairn", "64", "PN", "PCN");
-    public static readonly BitCountry Poland = new("Poland", "48", "PL", "POL");
-    public static readonly BitCountry Portugal = new("Portugal", "351", "PT", "PRT");
-    public static readonly BitCountry PuertoRico = new("Puerto Rico", "1-787", "PR", "PRI", extraCodes: ["1-939"]);
-    public static readonly BitCountry Qatar = new("Qatar", "974", "QA", "QAT");
-    public static readonly BitCountry RepublicOfTheCongo = new("Republic of the Congo", "242", "CG", "COG");
-    public static readonly BitCountry Reunion = new("Reunion", "262", "RE", "REU", 1);
-    public static readonly BitCountry Romania = new("Romania", "40", "RO", "ROU");
-    public static readonly BitCountry Russia = new("Russia", "7", "RU", "RUS", 1);
-    public static readonly BitCountry Rwanda = new("Rwanda", "250", "RW", "RWA");
-    //public static readonly BitCountry SaintBarthelemy = new("Saint Barthelemy", "590", "BL", "BLM");
-    public static readonly BitCountry SaintHelena = new("Saint Helena", "290", "SH", "SHN");
-    public static readonly BitCountry SaintKittsAndNevis = new("Saint Kitts and Nevis", "1-869", "KN", "KNA");
-    public static readonly BitCountry SaintLucia = new("Saint Lucia", "1-758", "LC", "LCA");
-    public static readonly BitCountry SaintMartin = new("Saint Martin", "590", "MF", "MAF");
-    //public static readonly BitCountry SaintPierreAndMiquelon = new("Saint Pierre and Miquelon", "508", "PM", "SPM");
-    public static readonly BitCountry SaintVincentAndTheGrenadines = new("Saint Vincent and the Grenadines", "1-784", "VC", "VCT");
-    public static readonly BitCountry Samoa = new("Samoa", "685", "WS", "WSM");
-    public static readonly BitCountry SanMarino = new("San Marino", "378", "SM", "SMR");
-    public static readonly BitCountry SaoTomeAndPrincipe = new("Sao Tome and Principe", "239", "ST", "STP");
-    public static readonly BitCountry SaudiArabia = new("Saudi Arabia", "966", "SA", "SAU");
-    public static readonly BitCountry Senegal = new("Senegal", "221", "SN", "SEN");
-    public static readonly BitCountry Serbia = new("Serbia", "381", "RS", "SRB");
-    public static readonly BitCountry Seychelles = new("Seychelles", "248", "SC", "SYC");
-    public static readonly BitCountry SierraLeone = new("Sierra Leone", "232", "SL", "SLE");
-    public static readonly BitCountry Singapore = new("Singapore", "65", "SG", "SGP");
-    //public static readonly BitCountry Sint = new("Sint Maarten", "1-721", "SX", "SXM");
-    public static readonly BitCountry Slovakia = new("Slovakia", "421", "SK", "SVK");
-    public static readonly BitCountry Slovenia = new("Slovenia", "386", "SI", "SVN");
-    public static readonly BitCountry SolomonIslands = new("Solomon Islands", "677", "SB", "SLB");
-    public static readonly BitCountry Somalia = new("Somalia", "252", "SO", "SOM");
-    public static readonly BitCountry SouthAfrica = new("South Africa", "27", "ZA", "ZAF");
-    public static readonly BitCountry SouthGeorgiaAndTheSouthSandwichIslands = new("South Georgia and the South Sandwich Islands", "500", "GS", "SGS");
-    public static readonly BitCountry SouthKorea = new("South Korea", "82", "KR", "KOR");
-    public static readonly BitCountry SouthSudan = new("South Sudan", "211", "SS", "SSD");
-    public static readonly BitCountry Spain = new("Spain", "34", "ES", "ESP");
-    public static readonly BitCountry SriLanka = new("Sri Lanka", "94", "LK", "LKA");
-    public static readonly BitCountry Sudan = new("Sudan", "249", "SD", "SDN");
-    public static readonly BitCountry Suriname = new("Suriname", "597", "SR", "SUR");
-    //public static readonly BitCountry SvalbardAndJanMayen = new("Svalbard and Jan Mayen", "47", "SJ", "SJM");
-    public static readonly BitCountry Swaziland = new("Swaziland", "268", "SZ", "SWZ");
-    public static readonly BitCountry Sweden = new("Sweden", "46", "SE", "SWE");
-    public static readonly BitCountry Switzerland = new("Switzerland", "41", "CH", "CHE");
-    public static readonly BitCountry Syria = new("Syria", "963", "SY", "SYR");
-    public static readonly BitCountry Taiwan = new("Taiwan", "886", "TW", "TWN");
-    public static readonly BitCountry Tajikistan = new("Tajikistan", "992", "TJ", "TJK");
-    public static readonly BitCountry Tanzania = new("Tanzania", "255", "TZ", "TZA");
-    public static readonly BitCountry Thailand = new("Thailand", "66", "TH", "THA");
-    public static readonly BitCountry Togo = new("Togo", "228", "TG", "TGO");
-    public static readonly BitCountry Tokelau = new("Tokelau", "690", "TK", "TKL");
-    public static readonly BitCountry Tonga = new("Tonga", "676", "TO", "TON");
-    public static readonly BitCountry TrinidadAndTobago = new("Trinidad and Tobago", "1-868", "TT", "TTO");
-    public static readonly BitCountry Tunisia = new("Tunisia", "216", "TN", "TUN");
-    public static readonly BitCountry Turkey = new("Turkey", "90", "TR", "TUR");
-    public static readonly BitCountry Turkmenistan = new("Turkmenistan", "993", "TM", "TKM");
-    public static readonly BitCountry TurksAndCaicosIslands = new("Turks and Caicos Islands", "1-649", "TC", "TCA");
-    public static readonly BitCountry Tuvalu = new("Tuvalu", "688", "TV", "TUV");
-    public static readonly BitCountry USVirginIslands = new("U.S. Virgin Islands", "1-340", "VI", "VIR");
-    public static readonly BitCountry Uganda = new("Uganda", "256", "UG", "UGA");
-    public static readonly BitCountry Ukraine = new("Ukraine", "380", "UA", "UKR");
-    public static readonly BitCountry UnitedArabEmirates = new("United Arab Emirates", "971", "AE", "ARE");
-    public static readonly BitCountry UnitedKingdom = new("United Kingdom", "44", "GB", "GBR");
-    public static readonly BitCountry UnitedStates = new("United States", "1", "US", "USA", 1);
-    public static readonly BitCountry Uruguay = new("Uruguay", "598", "UY", "URY");
-    public static readonly BitCountry Uzbekistan = new("Uzbekistan", "998", "UZ", "UZB");
-    public static readonly BitCountry Vanuatu = new("Vanuatu", "678", "VU", "VUT");
-    public static readonly BitCountry Vatican = new("Vatican", "379", "VA", "VAT");
-    public static readonly BitCountry Venezuela = new("Venezuela", "58", "VE", "VEN");
-    public static readonly BitCountry Vietnam = new("Vietnam", "84", "VN", "VNM");
-    public static readonly BitCountry WallisAndFutuna = new("Wallis and Futuna", "681", "WF", "WLF");
-    public static readonly BitCountry WesternSahara = new("Western Sahara", "212", "EH", "ESH");
-    public static readonly BitCountry Yemen = new("Yemen", "967", "YE", "YEM");
-    public static readonly BitCountry Zambia = new("Zambia", "260", "ZM", "ZMB");
-    public static readonly BitCountry Zimbabwe = new("Zimbabwe", "263", "ZW", "ZWE");
+    public static BitCountry Afghanistan => Of("AF");
+    public static BitCountry AlandIslands => Of("AX");
+    public static BitCountry Albania => Of("AL");
+    public static BitCountry Algeria => Of("DZ");
+    public static BitCountry AmericanSamoa => Of("AS");
+    public static BitCountry Andorra => Of("AD");
+    public static BitCountry Angola => Of("AO");
+    public static BitCountry Anguilla => Of("AI");
+    public static BitCountry Antarctica => Of("AQ");
+    public static BitCountry AntiguaAndBarbuda => Of("AG");
+    public static BitCountry Argentina => Of("AR");
+    public static BitCountry Armenia => Of("AM");
+    public static BitCountry Aruba => Of("AW");
+    public static BitCountry Australia => Of("AU");
+    public static BitCountry Austria => Of("AT");
+    public static BitCountry Azerbaijan => Of("AZ");
+    public static BitCountry Bahamas => Of("BS");
+    public static BitCountry Bahrain => Of("BH");
+    public static BitCountry Bangladesh => Of("BD");
+    public static BitCountry Barbados => Of("BB");
+    public static BitCountry Belarus => Of("BY");
+    public static BitCountry Belgium => Of("BE");
+    public static BitCountry Belize => Of("BZ");
+    public static BitCountry Benin => Of("BJ");
+    public static BitCountry Bermuda => Of("BM");
+    public static BitCountry Bhutan => Of("BT");
+    public static BitCountry Bolivia => Of("BO");
+    public static BitCountry BosniaAndHerzegovina => Of("BA");
+    public static BitCountry Botswana => Of("BW");
+    public static BitCountry Brazil => Of("BR");
+    //public static BitCountry BritishIndianOceanTerritory => Of("IO");
+    public static BitCountry BritishVirginIslands => Of("VG");
+    public static BitCountry Brunei => Of("BN");
+    public static BitCountry Bulgaria => Of("BG");
+    public static BitCountry BurkinaFaso => Of("BF");
+    public static BitCountry Burundi => Of("BI");
+    public static BitCountry Cambodia => Of("KH");
+    public static BitCountry Cameroon => Of("CM");
+    public static BitCountry Canada => Of("CA");
+    public static BitCountry CapeVerde => Of("CV");
+    public static BitCountry CaymanIslands => Of("KY");
+    public static BitCountry CentralAfricanRepublic => Of("CF");
+    public static BitCountry Chad => Of("TD");
+    public static BitCountry Chile => Of("CL");
+    public static BitCountry China => Of("CN");
+    public static BitCountry ChristmasIsland => Of("CX");
+    public static BitCountry CocosIslands => Of("CC");
+    public static BitCountry Colombia => Of("CO");
+    public static BitCountry Comoros => Of("KM");
+    public static BitCountry CookIslands => Of("CK");
+    public static BitCountry CostaRica => Of("CR");
+    public static BitCountry Croatia => Of("HR");
+    public static BitCountry Cuba => Of("CU");
+    public static BitCountry Curacao => Of("CW");
+    public static BitCountry Cyprus => Of("CY");
+    public static BitCountry CzechRepublic => Of("CZ");
+    public static BitCountry DemocraticRepublicOfTheCongo => Of("CD");
+    public static BitCountry Denmark => Of("DK");
+    public static BitCountry Djibouti => Of("DJ");
+    public static BitCountry Dominica => Of("DM");
+    public static BitCountry DominicanRepublic => Of("DO");
+    public static BitCountry EastTimor => Of("TL");
+    public static BitCountry Ecuador => Of("EC");
+    public static BitCountry Egypt => Of("EG");
+    public static BitCountry ElSalvador => Of("SV");
+    public static BitCountry EquatorialGuinea => Of("GQ");
+    public static BitCountry Eritrea => Of("ER");
+    public static BitCountry Estonia => Of("EE");
+    public static BitCountry Ethiopia => Of("ET");
+    public static BitCountry FalklandIslands => Of("FK");
+    public static BitCountry FaroeIslands => Of("FO");
+    public static BitCountry Fiji => Of("FJ");
+    public static BitCountry Finland => Of("FI");
+    public static BitCountry France => Of("FR");
+    public static BitCountry FrenchPolynesia => Of("PF");
+    public static BitCountry FrenchSouthernTerritories => Of("TF");
+    public static BitCountry Gabon => Of("GA");
+    public static BitCountry Gambia => Of("GM");
+    public static BitCountry Georgia => Of("GE");
+    public static BitCountry Germany => Of("DE");
+    public static BitCountry Ghana => Of("GH");
+    public static BitCountry Gibraltar => Of("GI");
+    public static BitCountry Greece => Of("GR");
+    public static BitCountry Greenland => Of("GL");
+    public static BitCountry Grenada => Of("GD");
+    public static BitCountry Guam => Of("GU");
+    public static BitCountry Guatemala => Of("GT");
+    public static BitCountry Guernsey => Of("GG");
+    public static BitCountry Guinea => Of("GN");
+    public static BitCountry GuineaBissau => Of("GW");
+    public static BitCountry Guyana => Of("GY");
+    public static BitCountry Haiti => Of("HT");
+    public static BitCountry Honduras => Of("HN");
+    public static BitCountry HongKong => Of("HK");
+    public static BitCountry Hungary => Of("HU");
+    public static BitCountry Iceland => Of("IS");
+    public static BitCountry India => Of("IN");
+    public static BitCountry Indonesia => Of("ID");
+    public static BitCountry Iran => Of("IR");
+    public static BitCountry Iraq => Of("IQ");
+    public static BitCountry Ireland => Of("IE");
+    public static BitCountry IsleOfMan => Of("IM");
+    public static BitCountry Israel => Of("IL");
+    public static BitCountry Italy => Of("IT");
+    public static BitCountry IvoryCoast => Of("CI");
+    public static BitCountry Jamaica => Of("JM");
+    public static BitCountry Japan => Of("JP");
+    public static BitCountry Jersey => Of("JE");
+    public static BitCountry Jordan => Of("JO");
+    public static BitCountry Kazakhstan => Of("KZ");
+    public static BitCountry Kenya => Of("KE");
+    public static BitCountry Kiribati => Of("KI");
+    //public static BitCountry Kosovo => Of("XK");
+    public static BitCountry Kuwait => Of("KW");
+    public static BitCountry Kyrgyzstan => Of("KG");
+    public static BitCountry Laos => Of("LA");
+    public static BitCountry Latvia => Of("LV");
+    public static BitCountry Lebanon => Of("LB");
+    public static BitCountry Lesotho => Of("LS");
+    public static BitCountry Liberia => Of("LR");
+    public static BitCountry Libya => Of("LY");
+    public static BitCountry Liechtenstein => Of("LI");
+    public static BitCountry Lithuania => Of("LT");
+    public static BitCountry Luxembourg => Of("LU");
+    public static BitCountry Macau => Of("MO");
+    public static BitCountry Macedonia => Of("MK");
+    public static BitCountry Madagascar => Of("MG");
+    public static BitCountry Malawi => Of("MW");
+    public static BitCountry Malaysia => Of("MY");
+    public static BitCountry Maldives => Of("MV");
+    public static BitCountry Mali => Of("ML");
+    public static BitCountry Malta => Of("MT");
+    public static BitCountry MarshallIslands => Of("MH");
+    public static BitCountry Martinique => Of("MQ");
+    public static BitCountry Mauritania => Of("MR");
+    public static BitCountry Mauritius => Of("MU");
+    public static BitCountry Mayotte => Of("YT");
+    public static BitCountry Mexico => Of("MX");
+    public static BitCountry Micronesia => Of("FM");
+    public static BitCountry Moldova => Of("MD");
+    public static BitCountry Monaco => Of("MC");
+    public static BitCountry Mongolia => Of("MN");
+    public static BitCountry Montenegro => Of("ME");
+    public static BitCountry Montserrat => Of("MS");
+    public static BitCountry Morocco => Of("MA");
+    public static BitCountry Mozambique => Of("MZ");
+    public static BitCountry Myanmar => Of("MM");
+    public static BitCountry Namibia => Of("NA");
+    public static BitCountry Nauru => Of("NR");
+    public static BitCountry Nepal => Of("NP");
+    public static BitCountry Netherlands => Of("NL");
+    public static BitCountry NetherlandsAntilles => Of("AN");
+    public static BitCountry NewCaledonia => Of("NC");
+    public static BitCountry NewZealand => Of("NZ");
+    public static BitCountry Nicaragua => Of("NI");
+    public static BitCountry Niger => Of("NE");
+    public static BitCountry Nigeria => Of("NG");
+    public static BitCountry Niue => Of("NU");
+    public static BitCountry NorfolkIsland => Of("NF");
+    public static BitCountry NorthKorea => Of("KP");
+    public static BitCountry NorthernMarianaIslands => Of("MP");
+    public static BitCountry Norway => Of("NO");
+    public static BitCountry Oman => Of("OM");
+    public static BitCountry Pakistan => Of("PK");
+    public static BitCountry Palau => Of("PW");
+    public static BitCountry Palestine => Of("PS");
+    public static BitCountry Panama => Of("PA");
+    public static BitCountry PapuaNewGuinea => Of("PG");
+    public static BitCountry Paraguay => Of("PY");
+    public static BitCountry Peru => Of("PE");
+    public static BitCountry Philippines => Of("PH");
+    public static BitCountry Pitcairn => Of("PN");
+    public static BitCountry Poland => Of("PL");
+    public static BitCountry Portugal => Of("PT");
+    public static BitCountry PuertoRico => Of("PR");
+    public static BitCountry Qatar => Of("QA");
+    public static BitCountry RepublicOfTheCongo => Of("CG");
+    public static BitCountry Reunion => Of("RE");
+    public static BitCountry Romania => Of("RO");
+    public static BitCountry Russia => Of("RU");
+    public static BitCountry Rwanda => Of("RW");
+    //public static BitCountry SaintBarthelemy => Of("BL");
+    public static BitCountry SaintHelena => Of("SH");
+    public static BitCountry SaintKittsAndNevis => Of("KN");
+    public static BitCountry SaintLucia => Of("LC");
+    public static BitCountry SaintMartin => Of("MF");
+    //public static BitCountry SaintPierreAndMiquelon => Of("PM");
+    public static BitCountry SaintVincentAndTheGrenadines => Of("VC");
+    public static BitCountry Samoa => Of("WS");
+    public static BitCountry SanMarino => Of("SM");
+    public static BitCountry SaoTomeAndPrincipe => Of("ST");
+    public static BitCountry SaudiArabia => Of("SA");
+    public static BitCountry Senegal => Of("SN");
+    public static BitCountry Serbia => Of("RS");
+    public static BitCountry Seychelles => Of("SC");
+    public static BitCountry SierraLeone => Of("SL");
+    public static BitCountry Singapore => Of("SG");
+    //public static BitCountry Sint => Of("SX");
+    public static BitCountry Slovakia => Of("SK");
+    public static BitCountry Slovenia => Of("SI");
+    public static BitCountry SolomonIslands => Of("SB");
+    public static BitCountry Somalia => Of("SO");
+    public static BitCountry SouthAfrica => Of("ZA");
+    public static BitCountry SouthGeorgiaAndTheSouthSandwichIslands => Of("GS");
+    public static BitCountry SouthKorea => Of("KR");
+    public static BitCountry SouthSudan => Of("SS");
+    public static BitCountry Spain => Of("ES");
+    public static BitCountry SriLanka => Of("LK");
+    public static BitCountry Sudan => Of("SD");
+    public static BitCountry Suriname => Of("SR");
+    //public static BitCountry SvalbardAndJanMayen => Of("SJ");
+    public static BitCountry Swaziland => Of("SZ");
+    public static BitCountry Sweden => Of("SE");
+    public static BitCountry Switzerland => Of("CH");
+    public static BitCountry Syria => Of("SY");
+    public static BitCountry Taiwan => Of("TW");
+    public static BitCountry Tajikistan => Of("TJ");
+    public static BitCountry Tanzania => Of("TZ");
+    public static BitCountry Thailand => Of("TH");
+    public static BitCountry Togo => Of("TG");
+    public static BitCountry Tokelau => Of("TK");
+    public static BitCountry Tonga => Of("TO");
+    public static BitCountry TrinidadAndTobago => Of("TT");
+    public static BitCountry Tunisia => Of("TN");
+    public static BitCountry Turkey => Of("TR");
+    public static BitCountry Turkmenistan => Of("TM");
+    public static BitCountry TurksAndCaicosIslands => Of("TC");
+    public static BitCountry Tuvalu => Of("TV");
+    public static BitCountry USVirginIslands => Of("VI");
+    public static BitCountry Uganda => Of("UG");
+    public static BitCountry Ukraine => Of("UA");
+    public static BitCountry UnitedArabEmirates => Of("AE");
+    public static BitCountry UnitedKingdom => Of("GB");
+    public static BitCountry UnitedStates => Of("US");
+    public static BitCountry Uruguay => Of("UY");
+    public static BitCountry Uzbekistan => Of("UZ");
+    public static BitCountry Vanuatu => Of("VU");
+    public static BitCountry Vatican => Of("VA");
+    public static BitCountry Venezuela => Of("VE");
+    public static BitCountry Vietnam => Of("VN");
+    public static BitCountry WallisAndFutuna => Of("WF");
+    public static BitCountry WesternSahara => Of("EH");
+    public static BitCountry Yemen => Of("YE");
+    public static BitCountry Zambia => Of("ZM");
+    public static BitCountry Zimbabwe => Of("ZW");
 
-    public static readonly BitCountry[] All =
-    [
-        Afghanistan,
-        AlandIslands,
-        Albania,
-        Algeria,
-        AmericanSamoa,
-        Andorra,
-        Angola,
-        Anguilla,
-        Antarctica,
-        AntiguaAndBarbuda,
-        Argentina,
-        Armenia,
-        Aruba,
-        Australia,
-        Austria,
-        Azerbaijan,
-        Bahamas,
-        Bahrain,
-        Bangladesh,
-        Barbados,
-        Belarus,
-        Belgium,
-        Belize,
-        Benin,
-        Bermuda,
-        Bhutan,
-        Bolivia,
-        BosniaAndHerzegovina,
-        Botswana,
-        Brazil,
-        //BritishIndianOceanTerritory,
-        BritishVirginIslands,
-        Brunei,
-        Bulgaria,
-        BurkinaFaso,
-        Burundi,
-        Cambodia,
-        Cameroon,
-        Canada,
-        CapeVerde,
-        CaymanIslands,
-        CentralAfricanRepublic,
-        Chad,
-        Chile,
-        China,
-        ChristmasIsland,
-        CocosIslands,
-        Colombia,
-        Comoros,
-        CookIslands,
-        CostaRica,
-        Croatia,
-        Cuba,
-        Curacao,
-        Cyprus,
-        CzechRepublic,
-        DemocraticRepublicOfTheCongo,
-        Denmark,
-        Djibouti,
-        Dominica,
-        DominicanRepublic,
-        EastTimor,
-        Ecuador,
-        Egypt,
-        ElSalvador,
-        EquatorialGuinea,
-        Eritrea,
-        Estonia,
-        Ethiopia,
-        FalklandIslands,
-        FaroeIslands,
-        Fiji,
-        Finland,
-        France,
-        FrenchPolynesia,
-        FrenchSouthernTerritories,
-        Gabon,
-        Gambia,
-        Georgia,
-        Germany,
-        Ghana,
-        Gibraltar,
-        Greece,
-        Greenland,
-        Grenada,
-        Guam,
-        Guatemala,
-        Guernsey,
-        Guinea,
-        GuineaBissau,
-        Guyana,
-        Haiti,
-        Honduras,
-        HongKong,
-        Hungary,
-        Iceland,
-        India,
-        Indonesia,
-        Iran,
-        Iraq,
-        Ireland,
-        IsleOfMan,
-        Israel,
-        Italy,
-        IvoryCoast,
-        Jamaica,
-        Japan,
-        Jersey,
-        Jordan,
-        Kazakhstan,
-        Kenya,
-        Kiribati,
-        //Kosovo,
-        Kuwait,
-        Kyrgyzstan,
-        Laos,
-        Latvia,
-        Lebanon,
-        Lesotho,
-        Liberia,
-        Libya,
-        Liechtenstein,
-        Lithuania,
-        Luxembourg,
-        Macau,
-        Macedonia,
-        Madagascar,
-        Malawi,
-        Malaysia,
-        Maldives,
-        Mali,
-        Malta,
-        MarshallIslands,
-        Martinique,
-        Mauritania,
-        Mauritius,
-        Mayotte,
-        Mexico,
-        Micronesia,
-        Moldova,
-        Monaco,
-        Mongolia,
-        Montenegro,
-        Montserrat,
-        Morocco,
-        Mozambique,
-        Myanmar,
-        Namibia,
-        Nauru,
-        Nepal,
-        Netherlands,
-        NetherlandsAntilles,
-        NewCaledonia,
-        NewZealand,
-        Nicaragua,
-        Niger,
-        Nigeria,
-        Niue,
-        NorfolkIsland,
-        NorthKorea,
-        NorthernMarianaIslands,
-        Norway,
-        Oman,
-        Pakistan,
-        Palau,
-        Palestine,
-        Panama,
-        PapuaNewGuinea,
-        Paraguay,
-        Peru,
-        Philippines,
-        Pitcairn,
-        Poland,
-        Portugal,
-        PuertoRico,
-        Qatar,
-        RepublicOfTheCongo,
-        Reunion,
-        Romania,
-        Russia,
-        Rwanda,
-        //SaintBarthelemy,
-        SaintHelena,
-        SaintKittsAndNevis,
-        SaintLucia,
-        SaintMartin,
-        //SaintPierreAndMiquelon,
-        SaintVincentAndTheGrenadines,
-        Samoa,
-        SanMarino,
-        SaoTomeAndPrincipe,
-        SaudiArabia,
-        Senegal,
-        Serbia,
-        Seychelles,
-        SierraLeone,
-        Singapore,
-        //Sint,
-        Slovakia,
-        Slovenia,
-        SolomonIslands,
-        Somalia,
-        SouthAfrica,
-        SouthGeorgiaAndTheSouthSandwichIslands,
-        SouthKorea,
-        SouthSudan,
-        Spain,
-        SriLanka,
-        Sudan,
-        Suriname,
-        //SvalbardAndJanMayen,
-        Swaziland,
-        Sweden,
-        Switzerland,
-        Syria,
-        Taiwan,
-        Tajikistan,
-        Tanzania,
-        Thailand,
-        Togo,
-        Tokelau,
-        Tonga,
-        TrinidadAndTobago,
-        Tunisia,
-        Turkey,
-        Turkmenistan,
-        TurksAndCaicosIslands,
-        Tuvalu,
-        USVirginIslands,
-        Uganda,
-        Ukraine,
-        UnitedArabEmirates,
-        UnitedKingdom,
-        UnitedStates,
-        Uruguay,
-        Uzbekistan,
-        Vanuatu,
-        Vatican,
-        Venezuela,
-        Vietnam,
-        WallisAndFutuna,
-        WesternSahara,
-        Yemen,
-        Zambia,
-        Zimbabwe
-    ];
+    /// <summary>
+    /// Every country of the table, in alphabetical order.
+    /// </summary>
+    public static BitCountry[] All => Table.All;
 
-    // Every lookup below is a dictionary rather than a scan of All: a flag resolves its country on
-    // every render, and a page that renders a list of them would otherwise walk the whole table once
-    // per row. The keys are compared with the ordinal case-insensitive comparer - an ISO code and a
-    // dialing code are ASCII, and a culture-aware comparison over them is both slower and, in the
-    // Turkish locale, wrong about the letter I.
-    private static readonly Dictionary<string, BitCountry> _iso2Map = CreateMap(static c => c.Iso2);
-    private static readonly Dictionary<string, BitCountry> _iso3Map = CreateMap(static c => c.Iso3);
-    private static readonly Dictionary<string, BitCountry> _nameMap = CreateMap(static c => c.Name);
-    // The dialing codes are keyed the way a lookup normalizes one rather than the way the table writes
-    // it, so the hyphen of a North American code is off both sides of the comparison: "1-242",
-    // "+1 (242)" and "1242" are the same code written three ways, and all three reach the Bahamas.
+    // The table every country is read from, one per line: the name, the dialing code, the alpha-2 and alpha-3 codes,
+    // and - where it has them - the priority among the countries sharing its dialing code and the other dialing codes
+    // it answers to. A line starting with // is a country no flag image ships for.
     //
-    // A code several countries share is the one country's that owns it in practice - the one carrying the higher
-    // Priority - so "+1" is the United States and "+7" Russia, which is how BitPhoneInput reads the same code.
-    private static readonly Dictionary<string, BitCountry> _codeMap = CreateMap(static c => NormalizeCode(c.Code), preferPriority: true);
+    // It is one string rather than a field per country, so a page that names a single country - the DefaultCountry
+    // of a BitPhoneInputParams set up as the app starts - does not run a static constructor creating every one of them:
+    // a WebAssembly app's interpreter transforms such a constructor as one very large method before it runs it, which
+    // costs far more of the start than the countries themselves. The string is read in one loop the first time any
+    // country is asked for.
+    private const string Rows = """
+           Afghanistan                                  | 93      | AF | AFG
+           Åland Islands                                | 358-18  | AX | ALA
+           Albania                                      | 355     | AL | ALB
+           Algeria                                      | 213     | DZ | DZA
+           American Samoa                               | 1-684   | AS | ASM
+           Andorra                                      | 376     | AD | AND
+           Angola                                       | 244     | AO | AGO
+           Anguilla                                     | 1-264   | AI | AIA
+           Antarctica                                   | 672     | AQ | ATA
+           Antigua and Barbuda                          | 1-268   | AG | ATG
+           Argentina                                    | 54      | AR | ARG
+           Armenia                                      | 374     | AM | ARM
+           Aruba                                        | 297     | AW | ABW
+           Australia                                    | 61      | AU | AUS
+           Austria                                      | 43      | AT | AUT
+           Azerbaijan                                   | 994     | AZ | AZE
+           Bahamas                                      | 1-242   | BS | BHS
+           Bahrain                                      | 973     | BH | BHR
+           Bangladesh                                   | 880     | BD | BGD
+           Barbados                                     | 1-246   | BB | BRB
+           Belarus                                      | 375     | BY | BLR
+           Belgium                                      | 32      | BE | BEL
+           Belize                                       | 501     | BZ | BLZ
+           Benin                                        | 229     | BJ | BEN
+           Bermuda                                      | 1-441   | BM | BMU
+           Bhutan                                       | 975     | BT | BTN
+           Bolivia                                      | 591     | BO | BOL
+           Bosnia and Herzegovina                       | 387     | BA | BIH
+           Botswana                                     | 267     | BW | BWA
+           Brazil                                       | 55      | BR | BRA
+        // British Indian Ocean Territory               | 246     | IO | IOT
+           British Virgin Islands                       | 1-284   | VG | VGB
+           Brunei                                       | 673     | BN | BRN
+           Bulgaria                                     | 359     | BG | BGR
+           Burkina Faso                                 | 226     | BF | BFA
+           Burundi                                      | 257     | BI | BDI
+           Cambodia                                     | 855     | KH | KHM
+           Cameroon                                     | 237     | CM | CMR
+           Canada                                       | 1       | CA | CAN
+           Cape Verde                                   | 238     | CV | CPV
+           Cayman Islands                               | 1-345   | KY | CYM
+           Central African Republic                     | 236     | CF | CAF
+           Chad                                         | 235     | TD | TCD
+           Chile                                        | 56      | CL | CHL
+           China                                        | 86      | CN | CHN
+           Christmas Island                             | 61      | CX | CXR
+           Cocos Islands                                | 61      | CC | CCK
+           Colombia                                     | 57      | CO | COL
+           Comoros                                      | 269     | KM | COM
+           Cook Islands                                 | 682     | CK | COK
+           Costa Rica                                   | 506     | CR | CRI
+           Croatia                                      | 385     | HR | HRV
+           Cuba                                         | 53      | CU | CUB
+           Curacao                                      | 599     | CW | CUW
+           Cyprus                                       | 357     | CY | CYP
+           Czech Republic                               | 420     | CZ | CZE
+           Democratic Republic of the Congo             | 243     | CD | COD
+           Denmark                                      | 45      | DK | DNK
+           Djibouti                                     | 253     | DJ | DJI
+           Dominica                                     | 1-767   | DM | DMA
+           Dominican Republic                           | 1-809   | DO | DOM |   | 1-829,1-849
+           East Timor                                   | 670     | TL | TLS
+           Ecuador                                      | 593     | EC | ECU
+           Egypt                                        | 20      | EG | EGY
+           El Salvador                                  | 503     | SV | SLV
+           Equatorial Guinea                            | 240     | GQ | GNQ
+           Eritrea                                      | 291     | ER | ERI
+           Estonia                                      | 372     | EE | EST
+           Ethiopia                                     | 251     | ET | ETH
+           Falkland Islands                             | 500     | FK | FLK
+           Faroe Islands                                | 298     | FO | FRO
+           Fiji                                         | 679     | FJ | FJI
+           Finland                                      | 358     | FI | FIN
+           France                                       | 33      | FR | FRA
+           French Polynesia                             | 689     | PF | PYF
+           French Southern Territories                  | 262     | TF | ATF
+           Gabon                                        | 241     | GA | GAB
+           Gambia                                       | 220     | GM | GMB
+           Georgia                                      | 995     | GE | GEO
+           Germany                                      | 49      | DE | DEU
+           Ghana                                        | 233     | GH | GHA
+           Gibraltar                                    | 350     | GI | GIB
+           Greece                                       | 30      | GR | GRC
+           Greenland                                    | 299     | GL | GRL
+           Grenada                                      | 1-473   | GD | GRD
+           Guam                                         | 1-671   | GU | GUM
+           Guatemala                                    | 502     | GT | GTM
+           Guernsey                                     | 44-1481 | GG | GGY
+           Guinea                                       | 224     | GN | GIN
+           Guinea Bissau                                | 245     | GW | GNB
+           Guyana                                       | 592     | GY | GUY
+           Haiti                                        | 509     | HT | HTI
+           Honduras                                     | 504     | HN | HND
+           Hong Kong                                    | 852     | HK | HKG
+           Hungary                                      | 36      | HU | HUN
+           Iceland                                      | 354     | IS | ISL
+           India                                        | 91      | IN | IND
+           Indonesia                                    | 62      | ID | IDN
+           Iran                                         | 98      | IR | IRN
+           Iraq                                         | 964     | IQ | IRQ
+           Ireland                                      | 353     | IE | IRL
+           Isle of Man                                  | 44-1624 | IM | IMN
+           Israel                                       | 972     | IL | ISR
+           Italy                                        | 39      | IT | ITA
+           Ivory Coast                                  | 225     | CI | CIV
+           Jamaica                                      | 1-876   | JM | JAM
+           Japan                                        | 81      | JP | JPN
+           Jersey                                       | 44-1534 | JE | JEY
+           Jordan                                       | 962     | JO | JOR
+           Kazakhstan                                   | 7       | KZ | KAZ
+           Kenya                                        | 254     | KE | KEN
+           Kiribati                                     | 686     | KI | KIR
+        // Kosovo                                       | 383     | XK | XKX
+           Kuwait                                       | 965     | KW | KWT
+           Kyrgyzstan                                   | 996     | KG | KGZ
+           Laos                                         | 856     | LA | LAO
+           Latvia                                       | 371     | LV | LVA
+           Lebanon                                      | 961     | LB | LBN
+           Lesotho                                      | 266     | LS | LSO
+           Liberia                                      | 231     | LR | LBR
+           Libya                                        | 218     | LY | LBY
+           Liechtenstein                                | 423     | LI | LIE
+           Lithuania                                    | 370     | LT | LTU
+           Luxembourg                                   | 352     | LU | LUX
+           Macau                                        | 853     | MO | MAC
+           Macedonia                                    | 389     | MK | MKD
+           Madagascar                                   | 261     | MG | MDG
+           Malawi                                       | 265     | MW | MWI
+           Malaysia                                     | 60      | MY | MYS
+           Maldives                                     | 960     | MV | MDV
+           Mali                                         | 223     | ML | MLI
+           Malta                                        | 356     | MT | MLT
+           Marshall Islands                             | 692     | MH | MHL
+           Martinique                                   | 596     | MQ | MTQ
+           Mauritania                                   | 222     | MR | MRT
+           Mauritius                                    | 230     | MU | MUS
+           Mayotte                                      | 262     | YT | MYT
+           Mexico                                       | 52      | MX | MEX
+           Micronesia                                   | 691     | FM | FSM
+           Moldova                                      | 373     | MD | MDA
+           Monaco                                       | 377     | MC | MCO
+           Mongolia                                     | 976     | MN | MNG
+           Montenegro                                   | 382     | ME | MNE
+           Montserrat                                   | 1-664   | MS | MSR
+           Morocco                                      | 212     | MA | MAR
+           Mozambique                                   | 258     | MZ | MOZ
+           Myanmar                                      | 95      | MM | MMR
+           Namibia                                      | 264     | NA | NAM
+           Nauru                                        | 674     | NR | NRU
+           Nepal                                        | 977     | NP | NPL
+           Netherlands                                  | 31      | NL | NLD
+           Netherlands Antilles                         | 599     | AN | ANT
+           New Caledonia                                | 687     | NC | NCL
+           New Zealand                                  | 64      | NZ | NZL
+           Nicaragua                                    | 505     | NI | NIC
+           Niger                                        | 227     | NE | NER
+           Nigeria                                      | 234     | NG | NGA
+           Niue                                         | 683     | NU | NIU
+           Norfolk Island                               | 672     | NF | NFK | 1
+           North Korea                                  | 850     | KP | PRK
+           Northern Mariana Islands                     | 1-670   | MP | MNP
+           Norway                                       | 47      | NO | NOR
+           Oman                                         | 968     | OM | OMN
+           Pakistan                                     | 92      | PK | PAK
+           Palau                                        | 680     | PW | PLW
+           Palestine                                    | 970     | PS | PSE
+           Panama                                       | 507     | PA | PAN
+           Papua New Guinea                             | 675     | PG | PNG
+           Paraguay                                     | 595     | PY | PRY
+           Peru                                         | 51      | PE | PER
+           Philippines                                  | 63      | PH | PHL
+           Pitcairn                                     | 64      | PN | PCN
+           Poland                                       | 48      | PL | POL
+           Portugal                                     | 351     | PT | PRT
+           Puerto Rico                                  | 1-787   | PR | PRI |   | 1-939
+           Qatar                                        | 974     | QA | QAT
+           Republic of the Congo                        | 242     | CG | COG
+           Reunion                                      | 262     | RE | REU | 1
+           Romania                                      | 40      | RO | ROU
+           Russia                                       | 7       | RU | RUS | 1
+           Rwanda                                       | 250     | RW | RWA
+        // Saint Barthelemy                             | 590     | BL | BLM
+           Saint Helena                                 | 290     | SH | SHN
+           Saint Kitts and Nevis                        | 1-869   | KN | KNA
+           Saint Lucia                                  | 1-758   | LC | LCA
+           Saint Martin                                 | 590     | MF | MAF
+        // Saint Pierre and Miquelon                    | 508     | PM | SPM
+           Saint Vincent and the Grenadines             | 1-784   | VC | VCT
+           Samoa                                        | 685     | WS | WSM
+           San Marino                                   | 378     | SM | SMR
+           Sao Tome and Principe                        | 239     | ST | STP
+           Saudi Arabia                                 | 966     | SA | SAU
+           Senegal                                      | 221     | SN | SEN
+           Serbia                                       | 381     | RS | SRB
+           Seychelles                                   | 248     | SC | SYC
+           Sierra Leone                                 | 232     | SL | SLE
+           Singapore                                    | 65      | SG | SGP
+        // Sint Maarten                                 | 1-721   | SX | SXM
+           Slovakia                                     | 421     | SK | SVK
+           Slovenia                                     | 386     | SI | SVN
+           Solomon Islands                              | 677     | SB | SLB
+           Somalia                                      | 252     | SO | SOM
+           South Africa                                 | 27      | ZA | ZAF
+           South Georgia and the South Sandwich Islands | 500     | GS | SGS
+           South Korea                                  | 82      | KR | KOR
+           South Sudan                                  | 211     | SS | SSD
+           Spain                                        | 34      | ES | ESP
+           Sri Lanka                                    | 94      | LK | LKA
+           Sudan                                        | 249     | SD | SDN
+           Suriname                                     | 597     | SR | SUR
+        // Svalbard and Jan Mayen                       | 47      | SJ | SJM
+           Swaziland                                    | 268     | SZ | SWZ
+           Sweden                                       | 46      | SE | SWE
+           Switzerland                                  | 41      | CH | CHE
+           Syria                                        | 963     | SY | SYR
+           Taiwan                                       | 886     | TW | TWN
+           Tajikistan                                   | 992     | TJ | TJK
+           Tanzania                                     | 255     | TZ | TZA
+           Thailand                                     | 66      | TH | THA
+           Togo                                         | 228     | TG | TGO
+           Tokelau                                      | 690     | TK | TKL
+           Tonga                                        | 676     | TO | TON
+           Trinidad and Tobago                          | 1-868   | TT | TTO
+           Tunisia                                      | 216     | TN | TUN
+           Turkey                                       | 90      | TR | TUR
+           Turkmenistan                                 | 993     | TM | TKM
+           Turks and Caicos Islands                     | 1-649   | TC | TCA
+           Tuvalu                                       | 688     | TV | TUV
+           U.S. Virgin Islands                          | 1-340   | VI | VIR
+           Uganda                                       | 256     | UG | UGA
+           Ukraine                                      | 380     | UA | UKR
+           United Arab Emirates                         | 971     | AE | ARE
+           United Kingdom                               | 44      | GB | GBR
+           United States                                | 1       | US | USA | 1
+           Uruguay                                      | 598     | UY | URY
+           Uzbekistan                                   | 998     | UZ | UZB
+           Vanuatu                                      | 678     | VU | VUT
+           Vatican                                      | 379     | VA | VAT
+           Venezuela                                    | 58      | VE | VEN
+           Vietnam                                      | 84      | VN | VNM
+           Wallis and Futuna                            | 681     | WF | WLF
+           Western Sahara                               | 212     | EH | ESH
+           Yemen                                        | 967     | YE | YEM
+           Zambia                                       | 260     | ZM | ZMB
+           Zimbabwe                                     | 263     | ZW | ZWE
+        """;
 
-    // The names a country is also written down by, which is not the same table a second time: the ISO
-    // name where this one carries the everyday name ("Czechia" for the Czech Republic), the everyday
-    // name where it carries the ISO one, and the abbreviations a page is as likely to be handed as a
-    // code ("UK", "USA", "UAE"). Nothing here can take a value away from the country that actually
-    // carries it: the aliases are asked only once every exact lookup has missed.
-    private static readonly Dictionary<string, BitCountry> _aliasMap = CreateAliasMap();
+    /// <summary>
+    /// The table, read the first time anything of it is asked for: a nested class is initialized on its own, so
+    /// nothing of BitCountries but what is used is built.
+    /// </summary>
+    private static class Table
+    {
+        public static readonly BitCountry[] All = Read();
 
-    // Every name and every alias with its accents, spaces and punctuation taken off, so "Aland
-    // Islands", "Curaçao", "Guinea-Bissau" and "US Virgin Islands" reach the same countries "Åland
-    // Islands", "Curacao", "Guinea Bissau" and "U.S. Virgin Islands" do. A page is handed a country
-    // name in whichever spelling its own data uses, and none of those differences is a different
-    // country.
-    private static readonly Dictionary<string, BitCountry> _foldedMap = CreateFoldedMap();
+        // The lookup every country of BitCountries is answered from, which is also FindByIso2's.
+        public static readonly Dictionary<string, BitCountry> ByIso2 = CreateMap(static c => c.Iso2);
+
+        private static BitCountry[] Read()
+        {
+            var countries = new List<BitCountry>(256);
+
+            foreach (var line in Rows.AsSpan().EnumerateLines())
+            {
+                var rest = line.Trim();
+
+                if (rest.IsEmpty || rest.StartsWith("//", StringComparison.Ordinal)) continue;
+
+                var name = Next(ref rest);
+                var code = Next(ref rest);
+                var iso2 = Next(ref rest);
+                var iso3 = Next(ref rest);
+                var priority = Next(ref rest);
+                var extraCodes = Next(ref rest);
+
+                countries.Add(new(name,
+                                  code,
+                                  iso2,
+                                  iso3,
+                                  priority.Length == 0 ? 0 : int.Parse(priority, System.Globalization.CultureInfo.InvariantCulture),
+                                  extraCodes.Length == 0 ? null : extraCodes.Split(',')));
+            }
+
+            return [.. countries];
+        }
+
+        // The next column of a line, trimmed, and the line past it.
+        private static string Next(ref ReadOnlySpan<char> rest)
+        {
+            var separator = rest.IndexOf('|');
+            var column = separator < 0 ? rest : rest[..separator];
+
+            rest = separator < 0 ? [] : rest[(separator + 1)..];
+
+            return column.Trim().ToString();
+        }
+    }
+
+    /// <summary>
+    /// The lookups of the Find methods, built the first time one of them is called.
+    /// </summary>
+    private static class Lookup
+    {
+        // Every lookup below is a dictionary rather than a scan of All: a flag resolves its country on
+        // every render, and a page that renders a list of them would otherwise walk the whole table once
+        // per row. The keys are compared with the ordinal case-insensitive comparer - an ISO code and a
+        // dialing code are ASCII, and a culture-aware comparison over them is both slower and, in the
+        // Turkish locale, wrong about the letter I.
+        public static readonly Dictionary<string, BitCountry> Iso3 = CreateMap(static c => c.Iso3);
+        public static readonly Dictionary<string, BitCountry> Name = CreateMap(static c => c.Name);
+
+        // The dialing codes are keyed the way a lookup normalizes one rather than the way the table writes
+        // it, so the hyphen of a North American code is off both sides of the comparison: "1-242",
+        // "+1 (242)" and "1242" are the same code written three ways, and all three reach the Bahamas.
+        //
+        // A code several countries share is the one country's that owns it in practice - the one carrying the higher
+        // Priority - so "+1" is the United States and "+7" Russia, which is how BitPhoneInput reads the same code.
+        public static readonly Dictionary<string, BitCountry> Code = CreateMap(static c => NormalizeCode(c.Code), preferPriority: true);
+
+        // The names a country is also written down by, which is not the same table a second time: the ISO
+        // name where this one carries the everyday name ("Czechia" for the Czech Republic), the everyday
+        // name where it carries the ISO one, and the abbreviations a page is as likely to be handed as a
+        // code ("UK", "USA", "UAE"). Nothing here can take a value away from the country that actually
+        // carries it: the aliases are asked only once every exact lookup has missed.
+        public static readonly Dictionary<string, BitCountry> Alias = CreateAliasMap();
+
+        // Every name and every alias with its accents, spaces and punctuation taken off, so "Aland
+        // Islands", "Curaçao", "Guinea-Bissau" and "US Virgin Islands" reach the same countries "Åland
+        // Islands", "Curacao", "Guinea Bissau" and "U.S. Virgin Islands" do. A page is handed a country
+        // name in whichever spelling its own data uses, and none of those differences is a different
+        // country.
+        public static readonly Dictionary<string, BitCountry> Folded = CreateFoldedMap();
+    }
+
+    private static BitCountry Of(string iso2) => Table.ByIso2[iso2];
 
     // The first regional indicator symbol, U+1F1E6 REGIONAL INDICATOR SYMBOL LETTER A. The pair a
     // country's alpha-2 code maps to is the emoji flag of that country.
@@ -549,22 +624,21 @@ public class BitCountries
 
     // A subdivision flag is written as a tag sequence instead: U+1F3F4 WAVING BLACK FLAG, the letters
     // of the subdivision code as tag characters, and U+E007F CANCEL TAG to close it. Only the three
-    // below are recommended for interchange by Unicode - every other sequence draws a plain black flag
-    // rather than the flag it names - so only the three are built.
+    // recommended for interchange by Unicode (GetSubdivisionEmoji) are built - every other sequence draws a
+    // plain black flag rather than the flag it names.
     private const int BlackFlag = 0x1F3F4;
     private const int TagBase = 0xE0000;
     private const int CancelTag = 0xE007F;
-    private static readonly string[] _subdivisionFlags = ["GBENG", "GBSCT", "GBWLS"];
 
     private static Dictionary<string, BitCountry> CreateMap(Func<BitCountry, string> keySelector, bool preferPriority = false)
     {
-        var map = new Dictionary<string, BitCountry>(All.Length, StringComparer.OrdinalIgnoreCase);
+        var map = new Dictionary<string, BitCountry>(Table.All.Length, StringComparer.OrdinalIgnoreCase);
 
         // Dialing codes are not unique - Canada and the United States both carry "1" - so the first
         // country of the table that carries a key keeps it, which is the country the scan this
         // replaced would have stopped at - unless a later one carries a higher priority, where that is
         // what is asked for.
-        foreach (var country in All)
+        foreach (var country in Table.All)
         {
             var key = keySelector(country);
 
@@ -637,16 +711,16 @@ public class BitCountries
 
     private static Dictionary<string, BitCountry> CreateFoldedMap()
     {
-        var map = new Dictionary<string, BitCountry>(All.Length + _aliasMap.Count, StringComparer.Ordinal);
+        var map = new Dictionary<string, BitCountry>(Table.All.Length + Lookup.Alias.Count, StringComparer.Ordinal);
 
         // The names go in before the aliases, so a folded alias can never take a folded name away from
         // the country carrying it.
-        foreach (var country in All)
+        foreach (var country in Table.All)
         {
             map.TryAdd(Fold(country.Name), country);
         }
 
-        foreach (var alias in _aliasMap)
+        foreach (var alias in Lookup.Alias)
         {
             map.TryAdd(Fold(alias.Key), alias.Value);
         }
@@ -695,10 +769,10 @@ public class BitCountries
 
         var trimmed = iso2!.Trim();
 
-        return _iso2Map.GetValueOrDefault(trimmed)
+        return Table.ByIso2.GetValueOrDefault(trimmed)
             // Only a two letter value is read as a code here, so the alias table's longer entries -
             // "USA", "UAE" - stay out of a lookup that promises an alpha-2 code.
-            ?? (trimmed.Length == 2 ? _aliasMap.GetValueOrDefault(trimmed) : null);
+            ?? (trimmed.Length == 2 ? Lookup.Alias.GetValueOrDefault(trimmed) : null);
     }
 
     /// <summary>
@@ -714,7 +788,7 @@ public class BitCountries
     {
         if (string.IsNullOrWhiteSpace(iso3)) return null;
 
-        return _iso3Map.GetValueOrDefault(iso3!.Trim());
+        return Lookup.Iso3.GetValueOrDefault(iso3!.Trim());
     }
 
     /// <summary>
@@ -746,9 +820,9 @@ public class BitCountries
 
         var trimmed = name!.Trim();
 
-        return _nameMap.GetValueOrDefault(trimmed)
-            ?? _aliasMap.GetValueOrDefault(trimmed)
-            ?? _foldedMap.GetValueOrDefault(Fold(trimmed));
+        return Lookup.Name.GetValueOrDefault(trimmed)
+            ?? Lookup.Alias.GetValueOrDefault(trimmed)
+            ?? Lookup.Folded.GetValueOrDefault(Fold(trimmed));
     }
 
     /// <summary>
@@ -779,7 +853,7 @@ public class BitCountries
 
         var normalized = NormalizeCode(code!);
 
-        return normalized.Length == 0 ? null : _codeMap.GetValueOrDefault(normalized);
+        return normalized.Length == 0 ? null : Lookup.Code.GetValueOrDefault(normalized);
     }
 
     /// <summary>
@@ -882,7 +956,7 @@ public class BitCountries
     {
         var folded = Fold(code);
 
-        if (Array.IndexOf(_subdivisionFlags, folded) < 0) return null;
+        if (folded is not ("GBENG" or "GBSCT" or "GBWLS")) return null;
 
         var builder = new System.Text.StringBuilder(2 + (folded.Length * 2) + 2);
 

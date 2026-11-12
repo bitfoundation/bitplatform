@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// parts. The text, whether it is still streaming and its citations are left out on purpose: they are what makes one
 /// instance the one it is.
 /// </remarks>
-public class BitAiStreamingMarkdownParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiStreamingMarkdownParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiStreamingMarkdown"/> cascading parameters within <see cref="BitParams"/>.

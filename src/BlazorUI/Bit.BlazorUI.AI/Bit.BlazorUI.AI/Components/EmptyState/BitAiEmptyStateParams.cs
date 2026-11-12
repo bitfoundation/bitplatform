@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// with, and their classes and styles. The suggestions, the templates and the callback are left out on purpose: they
 /// are what makes one empty state the one it is.
 /// </remarks>
-public class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiEmptyStateParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiEmptyState"/> cascading parameters within <see cref="BitParams"/>.

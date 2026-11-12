@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// What belongs here is what the scroll buttons of an application agree on: their text and their classes and styles.
 /// Whether one is shown and what pressing it does are left out on purpose: they are what makes one button the one it is.
 /// </remarks>
-public class BitAiScrollToLatestParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiScrollToLatestParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiScrollToLatest"/> cascading parameters within <see cref="BitParams"/>.

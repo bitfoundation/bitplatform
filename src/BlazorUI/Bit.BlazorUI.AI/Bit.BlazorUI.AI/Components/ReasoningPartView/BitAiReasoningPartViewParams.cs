@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// The part is left out on purpose: it is what makes one panel the one it is. Whether a finished panel collapses is
 /// <see cref="BitAiUiOptions.CollapseReasoning"/>.
 /// </remarks>
-public class BitAiReasoningPartViewParams : BitComponentBaseParams, IBitComponentParams
+public partial class BitAiReasoningPartViewParams : BitComponentBaseParams, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitAiReasoningPartView"/> cascading parameters within <see cref="BitParams"/>.

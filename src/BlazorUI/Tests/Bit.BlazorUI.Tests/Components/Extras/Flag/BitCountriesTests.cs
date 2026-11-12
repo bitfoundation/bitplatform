@@ -13,12 +13,47 @@ public class BitCountriesTests
     {
         Assert.IsTrue(BitCountries.All.Length > 200);
 
-        var fields = typeof(BitCountries).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                                         .Where(f => f.FieldType == typeof(BitCountry))
-                                         .Select(f => (BitCountry)f.GetValue(null)!)
+        var countries = typeof(BitCountries).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                                            .Where(p => p.PropertyType == typeof(BitCountry))
+                                            .Select(p => (BitCountry)p.GetValue(null)!)
+                                            .ToArray();
+
+        CollectionAssert.AreEquivalent(countries, BitCountries.All);
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldHandOutTheSameInstanceEveryTime()
+    {
+        Assert.AreSame(BitCountries.UnitedStates, BitCountries.UnitedStates);
+        Assert.AreSame(BitCountries.All, BitCountries.All);
+        Assert.AreSame(BitCountries.UnitedStates, BitCountries.All.Single(c => c.Iso2 == "US"));
+        Assert.AreSame(BitCountries.UnitedStates, BitCountries.FindByIso2("US"));
+    }
+
+    [TestMethod]
+    public void BitCountriesShouldReadThePriorityAndTheExtraCodesOfTheTable()
+    {
+        Assert.AreEqual(1, BitCountries.UnitedStates.Priority);
+        Assert.AreEqual(1, BitCountries.Russia.Priority);
+        Assert.AreEqual(0, BitCountries.Canada.Priority);
+        CollectionAssert.AreEqual(new[] { "1-829", "1-849" }, BitCountries.DominicanRepublic.ExtraCodes);
+        Assert.AreEqual("Åland Islands", BitCountries.AlandIslands.Name);
+        Assert.AreEqual("358-18", BitCountries.AlandIslands.Code);
+        Assert.AreEqual("ALA", BitCountries.AlandIslands.Iso3);
+    }
+
+    // Naming one country - a DefaultCountry set up as a WebAssembly app starts - must not run a static constructor
+    // creating every one of them in one very large method, which the interpreter has to transform before it can run it.
+    [TestMethod]
+    public void BitCountriesShouldDeclareNoStaticFieldOfItsOwn()
+    {
+        var fields = typeof(BitCountries).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                                         .Where(f => f.IsLiteral is false)
+                                         .Select(f => f.Name)
                                          .ToArray();
 
-        CollectionAssert.AreEquivalent(fields, BitCountries.All);
+        Assert.AreEqual(0, fields.Length, string.Join(", ", fields));
+        Assert.IsNull(typeof(BitCountries).TypeInitializer);
     }
 
     [TestMethod]

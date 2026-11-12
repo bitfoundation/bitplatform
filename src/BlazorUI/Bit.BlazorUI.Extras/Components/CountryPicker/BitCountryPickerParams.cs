@@ -18,7 +18,7 @@ namespace Bit.BlazorUI;
 /// <see cref="BitInputBaseParams{TValue}"/> gives: the first is a dictionary the field writes into, and the second
 /// is read while the parameters are still being set, before any cascade has been applied.
 /// </remarks>
-public class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitComponentParams
+public partial class BitCountryPickerParams : BitInputBaseParams<BitCountry?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCountryPicker"/> cascading parameters within <see cref="BitParams"/>.

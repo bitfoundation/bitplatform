@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitCircularTimePicker"/> component.
 /// </summary>
-public class BitCircularTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
+public partial class BitCircularTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCircularTimePicker"/> cascading parameters within <see cref="BitParams"/>.
