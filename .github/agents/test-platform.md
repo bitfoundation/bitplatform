@@ -318,9 +318,10 @@ system app updates fill it up over time. The helper does both on its own.
 button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. The helper starts
 every app with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` (the apps open no debugging port
 otherwise), so it first closes any that is running, and taps only once the
-WebView on that port is the app's own: an app that just updated restarts on its own and may hold the port. An app a
-release behind also updates itself when it starts, before it shows a page, which takes a few minutes; either way
-counts once its executable is at `APP_VERSION`.
+WebView on that port is the app's own. An app that just updated restarts on its own, sometimes only once the next app
+has opened, and then holds the port: the helper closes it and opens the next app again. An app a release behind also
+downloads the release when it starts, and switches to it on its next start; either way counts once its executable is
+at `APP_VERSION`.
 
 Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.

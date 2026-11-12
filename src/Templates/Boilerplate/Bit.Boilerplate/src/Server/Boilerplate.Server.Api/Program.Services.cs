@@ -509,6 +509,16 @@ public static partial class Program
                         {
                             content.Remove(mediaType);
                         }
+
+                        if (content["application/json"] is OpenApiMediaType { Schema: OpenApiSchema { AnyOf.Count: > 1 } union } json)
+                        {
+                            var variants = await Task.WhenAll(union.AnyOf.Select(schema => schema.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_1, cancellationToken)));
+
+                            if (variants.Distinct().Count() is 1)
+                            {
+                                json.Schema = union.AnyOf[0];
+                            }
+                        }
                     }
                 }
             });

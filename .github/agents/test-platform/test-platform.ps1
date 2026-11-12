@@ -636,7 +636,14 @@ function Update-WindowsApps {
         $tapped = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
-            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+            $owner = Get-CdpOwner 9222
+
+            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+                Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+            }
+            elseif (-not $tapped -and $owner -eq $name) {
                 try {
                     $page = Get-CdpPage 9222 5
                     $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
