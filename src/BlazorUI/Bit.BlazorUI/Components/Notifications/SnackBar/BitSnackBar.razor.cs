@@ -1465,10 +1465,15 @@ public partial class BitSnackBar : BitComponentBase
 
     private BitIconInfo? GetIcon(BitSnackBarItem item)
     {
-        var iconName = _IconMap.TryGetValue(item.Color ?? BitColor.Info, out var mapped) ? mapped : _IconMap[BitColor.Info];
-
-        return BitIconInfo.From(item.Icon ?? Icon, item.IconName ?? IconName ?? iconName);
+        return BitIconInfo.From(item.Icon ?? Icon, item.IconName ?? IconName ?? GetColorIconName(item.Color));
     }
+
+    /// <summary>
+    /// The glyph an item of a color carries when it names no icon of its own, so whatever else lists the items - the
+    /// notification center of Extras - draws them with the icons they had on the screen.
+    /// </summary>
+    internal static string GetColorIconName(BitColor? color)
+        => _IconMap.TryGetValue(color ?? BitColor.Info, out var mapped) ? mapped : _IconMap[BitColor.Info];
 
     private bool IsClickable(BitSnackBarItem item)
     {
