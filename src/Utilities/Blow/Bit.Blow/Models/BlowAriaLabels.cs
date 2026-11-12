@@ -70,6 +70,8 @@ public sealed class BlowAriaLabels
             BlowRunStatus.Succeeded => "Succeeded",
             BlowRunStatus.Failed => "Failed",
             BlowRunStatus.Skipped => "Skipped",
+            BlowRunStatus.Waiting => "Waiting",
+            BlowRunStatus.Cancelled => "Cancelled",
             _ => null,
         };
         if (status is null) return null;
