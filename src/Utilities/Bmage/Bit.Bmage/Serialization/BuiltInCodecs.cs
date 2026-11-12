@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Buffers.Binary;
+using System.Drawing;
 using System.Numerics;
 using Bit.Bmage.Analysis;
 using Bit.Bmage.Annotations;
@@ -132,6 +133,12 @@ internal static class BuiltInCodecs
                 r.GetSingle("outputBlack", 0), r.GetSingle("outputWhite", 1), r.GetEnum("channels", ColorChannels.Rgb))),
         Op<PosterizeFilter>("posterize", (w, o) => w.Write("levels", o.Levels), r => new PosterizeFilter(r.GetInt32("levels"))),
         Op<ThresholdFilter>("threshold", (w, o) => w.Write("level", o.Level), r => new ThresholdFilter(r.GetSingle("level", 0.5f))),
+        Op<AdaptiveThresholdFilter>("adaptiveThreshold",
+            (w, o) => w.Write("radius", o.Radius).Write("bias", o.Bias).WriteEnum("method", o.Method).Write("region", o.Region),
+            r => new AdaptiveThresholdFilter(r.GetSingle("radius", 16), r.GetSingle("bias", 0.2f), r.GetEnum("method", AdaptiveThresholdMethod.Sauvola), r.GetNullableRectangle("region"))),
+        Op<ColorLutAdjustment>("colorLut",
+            (w, o) => w.Write("size", o.Table.Size).Write("title", o.Table.Title).Write("values", EncodeLut(o.Table)).Write("strength", o.Strength),
+            r => new ColorLutAdjustment(DecodeLut(r), r.GetSingle("strength", 1))),
         Op<ShadowsHighlightsAdjustment>("shadowsHighlights",
             (w, o) => w.Write("shadows", o.Shadows).Write("highlights", o.Highlights),
             r => new ShadowsHighlightsAdjustment(r.GetSingle("shadows", 0), r.GetSingle("highlights", 0))),
@@ -184,6 +191,9 @@ internal static class BuiltInCodecs
         Op<MotionBlurFilter>("motionBlur",
             (w, o) => w.Write("distance", o.Distance).Write("angle", o.Angle).Write("region", o.Region),
             r => new MotionBlurFilter(r.GetSingle("distance"), r.GetSingle("angle", 0), r.GetNullableRectangle("region"))),
+        Op<RadialBlurFilter>("radialBlur",
+            (w, o) => w.Write("amount", o.Amount).WriteEnum("mode", o.Mode).Write("center", o.Center).Write("region", o.Region),
+            r => new RadialBlurFilter(r.GetSingle("amount"), r.GetEnum("mode", RadialBlurMode.Zoom), r.Has("center") ? r.GetPointF("center") : null, r.GetNullableRectangle("region"))),
         Op<HighPassFilter>("highPass", (w, o) => w.Write("radius", o.Radius).Write("region", o.Region), r => new HighPassFilter(r.GetSingle("radius", 3), r.GetNullableRectangle("region"))),
         Op<MedianFilter>("median", (w, o) => w.Write("radius", o.Radius).Write("region", o.Region), r => new MedianFilter(r.GetInt32("radius", 1), r.GetNullableRectangle("region"))),
         Op<ConvolutionFilter>("convolution",
@@ -224,6 +234,33 @@ internal static class BuiltInCodecs
     private static ResizeOperation ReadResize(BmageJsonReader r)
         => new(r.GetNullableInt32("width"), r.GetNullableInt32("height"), r.GetEnum("mode", ResizeMode.Fit), r.GetEnum("filter", ResamplingFilter.Auto),
             r.GetEnum("anchor", Anchor.Center), r.GetColor("background", default));
+
+    /// <summary>A table's values as base64 of little-endian 32-bit floats: exact, and a third of the size of a number array.</summary>
+    private static string EncodeLut(ColorLookupTable table)
+    {
+        var bytes = new byte[table.Values.Length * 4];
+        for (var i = 0; i < table.Values.Length; i++) BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(i * 4), table.Values[i]);
+        return Convert.ToBase64String(bytes);
+    }
+
+    private static ColorLookupTable DecodeLut(BmageJsonReader r)
+    {
+        var size = r.GetInt32("size");
+        if (size is < ColorLookupTable.MinSize or > ColorLookupTable.MaxSize)
+            throw new ImageDocumentFormatException($"{r.Path}.size must be between {ColorLookupTable.MinSize} and {ColorLookupTable.MaxSize}.");
+        var text = r.GetString("values");
+        var expected = size * size * size * 3;
+        // Checked before decoding: the text's length bounds the bytes, so a wrong one is refused without allocating them.
+        if (text.Length != (expected * 4 + 2) / 3 * 4) throw new ImageDocumentFormatException($"{r.Path}.values does not hold {expected} values.");
+        byte[] bytes;
+        try { bytes = Convert.FromBase64String(text); }
+        catch (FormatException) { throw new ImageDocumentFormatException($"{r.Path}.values is not base64."); }
+        if (bytes.Length != expected * 4) throw new ImageDocumentFormatException($"{r.Path}.values does not hold {expected} values.");
+        var values = new float[expected];
+        for (var i = 0; i < expected; i++) values[i] = BinaryPrimitives.ReadSingleLittleEndian(bytes.AsSpan(i * 4));
+        try { return ColorLookupTable.FromValues(size, values, r.GetString("title", null)); }
+        catch (ArgumentException ex) { throw new ImageDocumentFormatException($"{r.Path}.values: {ex.Message}"); }
+    }
 
     private static void WriteRatio(BmageJsonWriter w, AspectRatio ratio)
     {

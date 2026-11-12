@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+        <RootNamespace>Bit.Bmage.Bink</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>Connects Bit.Bmage images and Bit.Bink drawings: open a photo, screenshot or scan as the locked bottom layer of a Bink document to sign, mark up or annotate it, then render the drawing back into a Bmage image, flatten it onto the original, or keep it as a separate Bmage layer that stays editable. Everything runs in managed code, on the device or on a server.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);Bmage;Bink;image;annotation;signature;markup;drawing</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bmage\Bit.Bmage.csproj" />
+        <ProjectReference Include="..\..\Bink\Bit.Bink\Bit.Bink.csproj" />
+    </ItemGroup>
+
+</Project>

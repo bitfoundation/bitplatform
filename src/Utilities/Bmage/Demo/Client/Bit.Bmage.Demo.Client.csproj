@@ -37,6 +37,7 @@
   <ItemGroup>
     <!-- The browser integration and the editor component; it brings the Bit.Bmage engine along. -->
     <ProjectReference Include="..\..\Bit.Bmage.Blazor\Bit.Bmage.Blazor.csproj" />
+    <ProjectReference Include="..\..\Bit.Bmage.BbScanner\Bit.Bmage.BbScanner.csproj" />
   </ItemGroup>
 
 </Project>
