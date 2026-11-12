@@ -537,6 +537,23 @@
                 <BitDataGridColumn Property="p => p.Stock" Width="120px" Align="BitTextAlign.End" />
                 <BitDataGridColumn Property="p => p.Rating" Width="110px" Format="N1" Align="BitTextAlign.End" FrozenEnd="true" />
             </BitDataGrid>
+            <br /><br />
+            <div>
+                With <b>OnReadError</b> set, a read that throws stays inside the grid: an error row with a <b>Retry</b> button takes the
+                place of the rows, and you get the exception to log or report. Check the box, then page or sort - and uncheck it to
+                retry with success. Without <b>OnReadError</b> the exception propagates, as it always has.
+            </div>
+            <br />
+            <BitCheckbox Label="Make the server fail" @bind-Value="serverFails" />
+            <br />
+            <BitDataGrid OnRead="LoadFlakyServerData" OnReadError="HandleReadError" Height="300px" Pageable="true" PageSize="5">
+                <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+                <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+            </BitDataGrid>
+            <br />
+            <BitText>@serverLastError</BitText>
         </DemoExample>
 
         <DemoExample Title="Infinite scrolling" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">

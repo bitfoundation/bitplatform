@@ -80,6 +80,7 @@ public class BitDataGridParamsTests : BunitTestContext
         nameof(BitDataGrid<Row>.OnLoadMore),
         nameof(BitDataGrid<Row>.OnPageChange),
         nameof(BitDataGrid<Row>.OnRead),
+        nameof(BitDataGrid<Row>.OnReadError),
         nameof(BitDataGrid<Row>.OnRowCancel),
         nameof(BitDataGrid<Row>.OnRowClick),
         nameof(BitDataGrid<Row>.OnRowCreate),

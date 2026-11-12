@@ -327,6 +327,22 @@ public partial class BitDataGridDemo : AppComponentBase
         return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
     }
 
+    private bool serverFails;
+    private string serverLastError = "";
+
+    private async Task<BitDataGridReadResult<Product>> LoadFlakyServerData(BitDataGridReadRequest request)
+    {
+        await Task.Delay(400, request.CancellationToken);
+
+        if (serverFails) throw new InvalidOperationException("The server did not answer.");
+
+        var filtered = Query(serverAll, request).ToList();
+        return new BitDataGridReadResult<Product>(filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList(), filtered.Count);
+    }
+
+    // The grid shows its error row and Retry button; this is the place to log the failure or tell the user more.
+    private void HandleReadError(Exception exception) => serverLastError = $"OnReadError: {exception.Message}";
+
     // Applies the request's filters and sorts the way a backend would.
     private static IEnumerable<Product> Query(IEnumerable<Product> source, BitDataGridReadRequest request)
     {
