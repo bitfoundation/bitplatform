@@ -74,12 +74,12 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
             {
                 using var document = JsonDocument.Parse(File.ReadAllText(file), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
 
-                if (document.RootElement.ValueKind is not JsonValueKind.Object || document.RootElement.TryGetProperty("SupportedAppVersions", out var section) is false || section.ValueKind is not JsonValueKind.Object)
+                if (Property(document.RootElement, "SupportedAppVersions") is not { ValueKind: JsonValueKind.Object } section)
                     continue;
 
                 foreach (var (key, _) in Platforms)
                 {
-                    if (section.TryGetProperty($"MinimumSupported{key}AppVersion", out var value))
+                    if (Property(section, $"MinimumSupported{key}AppVersion") is { } value)
                     {
                         minimums[key] = value.ValueKind is JsonValueKind.String ? value.GetString() : null;
                     }
@@ -111,6 +111,10 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
 
         return (new SupportedAppVersions(platforms.Min(p => p.Item2)!, platforms), null);
     }
+
+    private static JsonElement? Property(JsonElement element, string name) => element.ValueKind is JsonValueKind.Object
+        ? element.EnumerateObject().Where(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)).Select(p => (JsonElement?)p.Value).LastOrDefault()
+        : null;
 
     public IReadOnlyList<Version> ReleasedVersions()
     {

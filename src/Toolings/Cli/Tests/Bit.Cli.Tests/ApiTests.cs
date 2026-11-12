@@ -62,7 +62,7 @@ public class ApiTests
     {
         using var host = new TestHost();
         var project = CreateProject(host, version: "2.4.0", minimums: new() { ["Android"] = "2.3.0", ["Ios"] = "2.3.0", ["MacOS"] = "2.3.0", ["Windows"] = "2.3.0" });
-        File.WriteAllText(Path.Combine(ServerApi(project), "appsettings.Production.json"), """{ "SupportedAppVersions": { "MinimumSupportedWebAppVersion": "2.3.0", "MinimumSupportedIosAppVersion": null } }""");
+        File.WriteAllText(Path.Combine(ServerApi(project), "appsettings.Production.json"), """{ "supportedAppVersions": { "minimumSupportedWebAppVersion": "2.3.0", "MINIMUMSUPPORTEDIOSAPPVERSION": null } }""");
         Release(project, "1.9.0", "2.0.0", "2.3.0");
         host.Runner.On("oasdiff", "breaking", 0, "[]");
 
@@ -127,6 +127,26 @@ public class ApiTests
         Assert.IsFalse(File.Exists(Path.Combine(project, "openapi", "1.2.0.json")));
         Assert.IsTrue(File.Exists(Path.Combine(project, "openapi", "1.0.0.json")));
         StringAssert.Contains(host.FlatOutput, "Or raise SupportedAppVersions to 1.2.0 in src/Server/Contoso.Server.Api/appsettings.json, so those apps have to update before they call the server again, then run this again.");
+    }
+
+    [TestMethod]
+    public async Task Release_Should_RefuseAVersionTheServerWouldForceToUpdate()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host, version: "1.2.0", minimums: new() { ["Android"] = "1.3.0", ["Ios"] = "1.3.0", ["MacOS"] = "1.3.0", ["Windows"] = "1.3.0", ["Web"] = "1.3.0" });
+        Release(project, "1.1.0", "1.2.0");
+        host.Runner.On("oasdiff", "breaking", 0, "[]");
+
+        Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "release"), host.Output);
+
+        Assert.IsTrue(File.Exists(Path.Combine(project, "openapi", "1.1.0.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(project, "openapi", "1.2.0.json")));
+        StringAssert.Contains(host.FlatOutput, "The server would refuse the apps 1.2.0 ships");
+        StringAssert.Contains(host.FlatOutput, "Android needs 1.3.0");
+        StringAssert.Contains(host.FlatOutput, "Raise the version in src/Directory.Build.props to 1.3.0 or above");
+
+        Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "check", "--release", "--no-build"), host.Output);
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "api", "check", "--no-build"), host.Output);
     }
 
     [TestMethod]

@@ -152,6 +152,14 @@ public static class ApiCommand
 
         var broken = comparisons.Where(c => c.Errors.Count > 0).Select(c => c.Version).ToList();
         var recordedFile = api.Relative(api.DocumentOf(version));
+        var refused = supported.Platforms.Where(p => p.Minimum > version).ToList();
+
+        if ((requireRecorded || record) && refused.Count > 0)
+        {
+            steps.Add("api-minimum", StepResult.Failed($"The server would refuse the apps {version} ships",
+                string.Join(", ", refused.Select(p => $"{p.Platform} needs {p.Minimum}")),
+                $"Raise the version in {api.Relative(api.VersionFile)} to {refused.Max(p => p.Minimum)} or above, or lower SupportedAppVersions in {api.Relative(api.SettingsFile)}, then run this again."));
+        }
 
         if (requireRecorded)
         {
@@ -162,7 +170,7 @@ public static class ApiCommand
                     $"Raise the version in {api.Relative(api.VersionFile)} and run bit api release before the change reaches the branch Production deploys from."));
         }
 
-        if (record && broken.Count == 0 && toolFailed is false)
+        if (record && broken.Count == 0 && refused.Count == 0 && toolFailed is false)
         {
             var recorded = Record(api, version, recordedFile);
             steps.Add("api-record", recorded);
