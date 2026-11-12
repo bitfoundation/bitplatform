@@ -149,6 +149,7 @@ public partial class HealthCheckRulesTests
     [DataRow(null, Dmarc, HealthStatus.Degraded, DisplayName = "No SPF")]
     [DataRow("v=spf1 +all", Dmarc, HealthStatus.Degraded, DisplayName = "An SPF that lets every server send")]
     [DataRow("v=spf1 a mx all", Dmarc, HealthStatus.Degraded, DisplayName = "A bare all, which is +all")]
+    [DataRow("v=spf1; -all", Dmarc, HealthStatus.Degraded, DisplayName = "No SPF: a semicolon doesn't end its version (RFC 7208 §4.5)")]
     [DataRow(Spf, null, HealthStatus.Degraded, DisplayName = "No DMARC")]
     [DataRow(null, null, HealthStatus.Degraded, DisplayName = "Neither")]
     public async Task EmailDeliveryHealthCheck_Should_NeedSpfAndDmarc(string? spf, string? dmarc, HealthStatus expectedStatus)
@@ -182,6 +183,36 @@ public partial class HealthCheckRulesTests
 
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
         Assert.Contains("2 SPF records", result.Description!);
+    }
+
+    /// <summary>
+    /// Two DMARC records at a name, or one without a valid policy, and receivers apply no DMARC at all (RFC 7489 §6.6.3),
+    /// without falling back to the organizational domain. A record without <c>p</c> but with a reporting address counts
+    /// as <c>p=none</c>.
+    /// </summary>
+    [TestMethod]
+    [DataRow(new[] { "v=DMARC1; p=reject" }, HealthStatus.Healthy, null, DisplayName = "One record with a policy")]
+    [DataRow(new[] { "v=DMARC1;p=none" }, HealthStatus.Healthy, null, DisplayName = "No space after the version")]
+    [DataRow(new[] { "v=DMARC1; rua=mailto:dmarc@example.com" }, HealthStatus.Healthy, null, DisplayName = "No policy, but a reporting address: p=none")]
+    [DataRow(new[] { "v=DMARC1; p=quarantine", "v=DMARC1; p=reject" }, HealthStatus.Degraded, "2 DMARC records", DisplayName = "Two records")]
+    [DataRow(new[] { "v=DMARC1" }, HealthStatus.Degraded, "no valid policy", DisplayName = "No policy")]
+    [DataRow(new[] { "v=DMARC1; p=strict" }, HealthStatus.Degraded, "no valid policy", DisplayName = "A policy that isn't one")]
+    public async Task EmailDeliveryHealthCheck_Should_NeedOneDmarcRecord_WithAPolicy(string[] dmarc, HealthStatus expectedStatus, string? expectedProblem)
+    {
+        var result = await CheckEmailDelivery(new("mail.example.com", "smtp.example.net", AppleSignIn: false), new()
+        {
+            ["mail.example.com"] = [Spf],
+            ["_dmarc.mail.example.com"] = dmarc,
+            // Not reached: a receiver stops at the records it found.
+            ["_dmarc.example.com"] = [Dmarc]
+        });
+
+        Assert.AreEqual(expectedStatus, result.Status, result.Description);
+        Assert.Contains("_dmarc.mail.example.com", (string)result.Data["Dmarc"]);
+        if (expectedProblem is not null)
+        {
+            Assert.Contains(expectedProblem, result.Description!);
+        }
     }
 
     /// <summary>A receiver falls back to the organizational domain's DMARC record (RFC 7489 §6.6.3), and so does the check.</summary>
@@ -223,6 +254,27 @@ public partial class HealthCheckRulesTests
 
         Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
         Assert.Contains($"{(signed ? "found" : "none")} at {selector}._domainkey.example.com", (string)result.Data["Dkim"]);
+    }
+
+    /// <summary>
+    /// A DKIM name usually points at the sending service's own DNS, so its lookup can fail while SPF and DMARC answer. It
+    /// is reported, and the status stays what SPF and DMARC make it.
+    /// </summary>
+    [TestMethod]
+    public async Task EmailDeliveryHealthCheck_Should_KeepTheStatus_WhenADkimLookupFails()
+    {
+        var result = await Check(new EmailDeliveryHealthCheck(new("example.com", "smtp.office365.com", AppleSignIn: false), (name, _) => name switch
+        {
+            "example.com" => Task.FromResult<string[]>([Spf]),
+            "_dmarc.example.com" => Task.FromResult<string[]>([Dmarc]),
+            "selector1._domainkey.example.com" => Task.FromException<string[]>(new InvalidOperationException("SERVFAIL")),
+            _ => Task.FromResult<string[]>([])
+        }));
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Description);
+        Assert.IsNull(result.Exception);
+        Assert.Contains("couldn't be read at selector1._domainkey.example.com", (string)result.Data["Dkim"]);
+        Assert.Contains("none at selector2._domainkey.example.com", (string)result.Data["Dkim"]);
     }
 
     [TestMethod]

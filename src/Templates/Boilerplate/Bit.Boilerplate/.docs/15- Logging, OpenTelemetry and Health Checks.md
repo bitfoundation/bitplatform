@@ -387,11 +387,11 @@ provider outage does not take an otherwise healthy instance out of the load bala
 - **`smtp`**: connects, runs STARTTLS when `EnableSsl` is on, signs in when credentials are set, then quits without sending.
 - **`emailDelivery`**: reads the DNS of the domain of `Email:DefaultFromEmail`, the address every mail is sent from, so it
   needs no setting of its own. Without an SPF record, with one that ends in `+all` (any server may send as the domain),
-  or without a DMARC record at `_dmarc.<domain>` or at its organizational domain, Gmail, Outlook and Yahoo put the
-  app's mail, sign-in codes and magic links included, in spam or drop it, so the check reports Degraded. DKIM's selector
-  is the sending service's choice, so DKIM is only looked up at the selectors Google Workspace, Microsoft 365,
-  SendGrid, Mailjet, Mandrill and Resend use for every customer, and reported in the entry's data without changing its
-  status. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
+  or without one DMARC record with a policy at `_dmarc.<domain>` or at its organizational domain (two of them, or one
+  without `p`, and receivers apply none), Gmail, Outlook and Yahoo put the app's mail, sign-in codes and magic links
+  included, in spam or drop it, so the check reports Degraded. DKIM's selector is the sending service's choice, so DKIM
+  is only looked up at the selectors Google Workspace, Microsoft 365, SendGrid, Mailjet, Mandrill and Resend use for
+  every customer, and reported in the entry's data without changing its status, even when the lookup fails. With Sign in with Apple configured, the data also notes that mail to Apple's private relay
   (`privaterelay.appleid.com`) only arrives once the domain is registered with Apple, which no API can confirm. The
   check is left out where mail is caught rather than delivered: the shared ethereal.email mailbox, or a loopback SMTP
   server such as Mailpit in development.

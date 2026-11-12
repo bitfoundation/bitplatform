@@ -66,9 +66,9 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
             // Side by side: each is a round trip to the DNS server.
             var spfTask = lookupTxt(domain, cancellationToken);
             var dmarcTask = FindDmarc(domain, cancellationToken);
-            var dkimTask = Task.WhenAll(selectors.Select(async selector => (Selector: selector, Records: await lookupTxt($"{selector}._domainkey.{domain}", cancellationToken))));
+            var dkimTask = Task.WhenAll(selectors.Select(selector => DescribeDkim($"{selector}._domainkey.{domain}", cancellationToken)));
 
-            var spf = (await spfTask).Where(record => IsVersion(record, "v=spf1")).ToArray();
+            var spf = (await spfTask).Where(IsSpf).ToArray();
             var (dmarcName, dmarc) = await dmarcTask;
             var dkim = await dkimTask;
 
@@ -76,12 +76,10 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
             {
                 ["Domain"] = domain,
                 ["Spf"] = spf.Length is 0 ? "None" : string.Join(" | ", spf),
-                ["Dmarc"] = dmarc is null ? "None" : $"{dmarc} (at {dmarcName})",
+                ["Dmarc"] = dmarc.Length is 0 ? "None" : $"{string.Join(" | ", dmarc)} (at {dmarcName})",
                 ["Dkim"] = dkim.Length is 0
                     ? $"Not looked up: the selector is the choice of the service behind {settings.SmtpHost}, which the app can't know."
-                    : string.Join(", ", dkim.Select(key => key.Records.Any(record => record.Contains("p=", StringComparison.OrdinalIgnoreCase))
-                        ? $"found at {key.Selector}._domainkey.{domain}"
-                        : $"none at {key.Selector}._domainkey.{domain}"))
+                    : string.Join(", ", dkim)
             };
 
             if (settings.AppleSignIn)
@@ -105,9 +103,18 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
                 problems.Add($"{domain}'s SPF record ends with +all, which lets any server send as {domain}");
             }
 
-            if (dmarc is null)
+            // RFC 7489 §6.6.3: with more than one record, or one without a valid policy, receivers apply no DMARC at all.
+            if (dmarc.Length is 0)
             {
                 problems.Add($"{domain} has no DMARC record at _dmarc.{domain}, which Gmail and Yahoo require of bulk senders");
+            }
+            else if (dmarc.Length > 1)
+            {
+                problems.Add($"{dmarcName} has {dmarc.Length} DMARC records, which receivers treat as none");
+            }
+            else if (HasPolicy(dmarc[0]) is false)
+            {
+                problems.Add($"The DMARC record at {dmarcName} has no valid policy (p=none, quarantine or reject), so receivers apply none");
             }
 
             return problems.Count is 0
@@ -124,18 +131,37 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
     /// A receiver that finds no DMARC record at the sender's own domain falls back to its organizational domain
     /// (RFC 7489 §6.6.3), so mail.example.com is covered by _dmarc.example.com.
     /// </summary>
-    private async Task<(string? Name, string? Record)> FindDmarc(string domain, CancellationToken cancellationToken)
+    private async Task<(string? Name, string[] Records)> FindDmarc(string domain, CancellationToken cancellationToken)
     {
         for (var candidate = domain; candidate.Count(c => c is '.') >= 1; candidate = candidate[(candidate.IndexOf('.') + 1)..])
         {
             var name = $"_dmarc.{candidate}";
-            var record = (await lookupTxt(name, cancellationToken)).FirstOrDefault(record => IsVersion(record, "v=DMARC1"));
+            var records = (await lookupTxt(name, cancellationToken)).Where(IsDmarc).ToArray();
 
-            if (record is not null)
-                return (name, record);
+            // Every record found here, not the first: two are as good as none, and the organizational domain isn't asked then.
+            if (records.Length > 0)
+                return (name, records);
         }
 
-        return (null, null);
+        return (null, []);
+    }
+
+    /// <summary>
+    /// Reported, never a finding: DKIM doesn't change the status, so a lookup that fails doesn't either. The DNS error
+    /// itself stays out of the entry's data, which an OAuth token reads too.
+    /// </summary>
+    private async Task<string> DescribeDkim(string name, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var records = await lookupTxt(name, cancellationToken);
+
+            return records.Any(record => record.Contains("p=", StringComparison.OrdinalIgnoreCase)) ? $"found at {name}" : $"none at {name}";
+        }
+        catch (Exception exp) when (exp is not OperationCanceledException)
+        {
+            return $"couldn't be read at {name}";
+        }
     }
 
     /// <summary><c>all</c> with no qualifier is <c>+all</c> too (RFC 7208 §4.6.2).</summary>
@@ -144,10 +170,35 @@ public class EmailDeliveryHealthCheck(EmailDeliverySettings settings, EmailDeliv
         return spf.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(term => term.Equals("+all", StringComparison.OrdinalIgnoreCase) || term.Equals("all", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool IsVersion(string record, string version)
+    /// <summary>The version section ends with a space or the end of the record, never a semicolon (RFC 7208 §4.5).</summary>
+    private static bool IsSpf(string record)
     {
-        return record.StartsWith(version, StringComparison.OrdinalIgnoreCase)
-               && (record.Length == version.Length || record[version.Length] is ' ' or ';');
+        return record.StartsWith("v=spf1", StringComparison.OrdinalIgnoreCase)
+               && (record.Length == "v=spf1".Length || record["v=spf1".Length] is ' ');
+    }
+
+    /// <summary>Tags are separated by semicolons, with optional white space around them (RFC 7489 §6.4).</summary>
+    private static bool IsDmarc(string record)
+    {
+        return record.StartsWith("v=DMARC1", StringComparison.OrdinalIgnoreCase)
+               && (record.Length == "v=DMARC1".Length || record["v=DMARC1".Length] is ' ' or '\t' or ';');
+    }
+
+    /// <summary>
+    /// A valid <c>p</c> tag, or else a reporting address in <c>rua</c>, with which receivers act as if it said
+    /// <c>p=none</c> (RFC 7489 §6.6.3).
+    /// </summary>
+    private static bool HasPolicy(string dmarc)
+    {
+        var tags = dmarc.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(tag => tag.Split('=', 2, StringSplitOptions.TrimEntries))
+                        .Where(pair => pair.Length is 2)
+                        .ToLookup(pair => pair[0], pair => pair[1], StringComparer.OrdinalIgnoreCase);
+
+        return tags["p"].Any(policy => policy.Equals("none", StringComparison.OrdinalIgnoreCase)
+                                       || policy.Equals("quarantine", StringComparison.OrdinalIgnoreCase)
+                                       || policy.Equals("reject", StringComparison.OrdinalIgnoreCase))
+               || tags["rua"].Any(uris => uris.Contains("mailto:", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsHostOf(string host, string suffix)
