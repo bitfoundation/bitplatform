@@ -184,6 +184,15 @@ public partial class _BitMenuButtonItemDemo
     private static List<BitMenuButtonItem> dropDirectionItems =
         Enumerable.Range(1, 8).Select(i => new BitMenuButtonItem { Text = $"Item {i}", Key = i.ToString() }).ToList();
 
+    private static List<BitMenuButtonItem> responsiveItems =
+    [
+        new() { Text = "Copy link", Key = "copy", IconName = BitIconName.Link },
+        new() { Text = "Email", Key = "email", IconName = BitIconName.Mail },
+        new() { Text = "Download", Key = "download", IconName = BitIconName.Download },
+        new() { IsSeparator = true },
+        new() { Text = "Report", Key = "report", IconName = BitIconName.Flag }
+    ];
+
     private static List<BitMenuButtonItem> rtlItemsIcon =
     [
         new() { Text = "گزینه الف", Key = "A", IconName = BitIconName.Emoji },

@@ -217,6 +217,15 @@ public partial class _BitMenuButtonCustomDemo
     private static List<Operation> dropDirectionCustoms =
         Enumerable.Range(1, 8).Select(i => new Operation { Name = $"Custom {i}", Id = i.ToString() }).ToList();
 
+    private static List<Operation> responsiveCustoms =
+    [
+        new() { Name = "Copy link", Id = "copy", Image = BitIconName.Link },
+        new() { Name = "Email", Id = "email", Image = BitIconName.Mail },
+        new() { Name = "Download", Id = "download", Image = BitIconName.Download },
+        new() { IsDivider = true },
+        new() { Name = "Report", Id = "report", Image = BitIconName.Flag }
+    ];
+
     private static List<Operation> rtlCustoms =
     [
         new() { Name = "گزینه الف", Id = "A", Image = BitIconName.Emoji },

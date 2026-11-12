@@ -347,6 +347,13 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "Responsive",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the menu as a sheet that slides up from the bottom edge of the screen on screens narrower than 600px (an action sheet), instead of the callout under the button. The sheet runs the full width of the screen, grows with its items up to the height of the screen, where the items that do not fit scroll (MaxHeight does not cap it), and closes the ways the callout does. A submenu still opens beside its item.",
+        },
+        new()
+        {
             Name = "SelectedItem",
             Type = "TItem?",
             DefaultValue = "null",

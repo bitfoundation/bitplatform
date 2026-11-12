@@ -1,0 +1,52 @@
+﻿@page "/e2e/menu-button/responsive"
+
+<PageTitle>BitMenuButton Responsive E2E</PageTitle>
+
+@* Responsive menu buttons: a sheet from the bottom edge on a phone (BitMenuButtonMobileE2ETests), the callout they
+   always are on a wider screen (BitMenuButtonE2ETests). A page of their own with nothing on it wider than a phone, since
+   a page wider than the screen stretches the layout viewport the sheet is fixed to past the edges of the screen. *@
+<h1>BitMenuButton (Responsive)</h1>
+
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px;">
+    <BitMenuButton Id="mnb-responsive" Text="Responsive" Items="_basic" Responsive
+                   @bind-IsOpen="_open" OnClick="(BitMenuButtonItem? i) => Clicked(i)" />
+    <span id="responsive-open">@_open</span>
+    <span id="responsive-clicked">@_clicked</span>
+
+    <BitMenuButton Id="mnb-responsive-split" Split Text="Responsive split" Items="_split" Responsive />
+
+    @* Taller than a phone's screen. *@
+    <BitMenuButton Id="mnb-responsive-long" Text="Responsive long" Items="_long" Responsive />
+
+    <BitMenuButton Id="mnb-responsive-submenu" Text="Responsive submenu" Items="_submenu" Responsive
+                   OnClick="(BitMenuButtonItem? i) => SubmenuClicked(i)" />
+    <span id="submenu-clicked">@_submenuClicked</span>
+</div>
+
+<E2EStatus />
+
+@code {
+    private bool _open;
+    private string _clicked = "none";
+    private string _submenuClicked = "none";
+
+    private readonly List<BitMenuButtonItem> _basic = Basic();
+    private readonly List<BitMenuButtonItem> _split = Basic();
+    private readonly List<BitMenuButtonItem> _long = Enumerable.Range(1, 30).Select(i => new BitMenuButtonItem { Key = $"l{i}", Text = $"Item {i}" }).ToList();
+    private readonly List<BitMenuButtonItem> _submenu =
+    [
+        new() { Key = "text", Text = "Text box" },
+        new() { Key = "share", Text = "Share", ChildItems = [new() { Key = "email", Text = "Email" }, new() { Key = "link", Text = "Link" }] }
+    ];
+
+    private void Clicked(BitMenuButtonItem? item) => _clicked = item?.Key ?? "header";
+
+    private void SubmenuClicked(BitMenuButtonItem? item) => _submenuClicked = item?.Key ?? "header";
+
+    private static List<BitMenuButtonItem> Basic() =>
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+}
