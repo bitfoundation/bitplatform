@@ -84,4 +84,9 @@ public class BitDataGridClassStyles
     /// Custom class or style applied to the cell that shows the loading indicator.
     /// </summary>
     public string? Loading { get; set; }
+
+    /// <summary>
+    /// Custom class or style applied to the cell that shows a failed read and its Retry button (see <c>OnReadError</c>).
+    /// </summary>
+    public string? ReadError { get; set; }
 }

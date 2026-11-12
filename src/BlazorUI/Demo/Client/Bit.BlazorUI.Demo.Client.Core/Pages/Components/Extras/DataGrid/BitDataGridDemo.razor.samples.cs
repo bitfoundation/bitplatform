@@ -773,7 +773,18 @@ private List<Product> virtualProducts = SampleData.Generate(10_000);" + ProductM
     <BitDataGridColumn Property=""p => p.Price"" Width=""140px"" Format=""C2"" Align=""BitTextAlign.End"" Aggregate=""BitDataGridAggregateType.Sum"" AggregateFormat=""C0"" />
     <BitDataGridColumn Property=""p => p.Stock"" Width=""120px"" Align=""BitTextAlign.End"" />
     <BitDataGridColumn Property=""p => p.Rating"" Width=""110px"" Format=""N1"" Align=""BitTextAlign.End"" FrozenEnd=""true"" />
-</BitDataGrid>";
+</BitDataGrid>
+
+<BitCheckbox Label=""Make the server fail"" @bind-Value=""serverFails"" />
+
+<BitDataGrid OnRead=""LoadFlakyServerData"" OnReadError=""HandleReadError"" Height=""300px"" Pageable=""true"" PageSize=""5"">
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+    <BitDataGridColumn Property=""p => p.Category"" />
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
+</BitDataGrid>
+
+<BitText>@serverLastError</BitText>";
     private readonly string example18CsharpCode = @"
 private readonly List<Product> serverAll = SampleData.Generate(523);
 private bool serverLoading;
@@ -829,6 +840,22 @@ private async Task<BitDataGridReadResult<Product>> LoadVirtualServerData(BitData
 
     return new BitDataGridReadResult<Product>(items, filtered.Count) { Aggregates = aggregates };
 }
+
+private bool serverFails;
+private string serverLastError = """";
+
+private async Task<BitDataGridReadResult<Product>> LoadFlakyServerData(BitDataGridReadRequest request)
+{
+    await Task.Delay(400, request.CancellationToken);
+
+    if (serverFails) throw new InvalidOperationException(""The server did not answer."");
+
+    var filtered = Query(serverAll, request).ToList();
+    return new BitDataGridReadResult<Product>(filtered.Skip(request.Skip).Take(request.Take ?? filtered.Count).ToList(), filtered.Count);
+}
+
+// The grid shows its error row and Retry button; this is the place to log the failure or tell the user more.
+private void HandleReadError(Exception exception) => serverLastError = $""OnReadError: {exception.Message}"";
 
 // Applies the request's filters, search and sorts the way a backend would.
 private static IEnumerable<Product> Query(IEnumerable<Product> source, BitDataGridReadRequest request)

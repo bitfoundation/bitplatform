@@ -28,6 +28,18 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TItem>>>? OnRead { get; set; }
 
     /// <summary>
+    /// Raised with the exception <see cref="OnRead"/> threw while the grid was reading the rows it shows - a page, or a
+    /// window of a virtualized grid. Setting it is what makes the grid handle the failure itself: it shows an error row
+    /// in place of the rows, with a Retry button that reads them again, and tells screen readers the rows could not be
+    /// loaded. A read the grid cancelled because a newer one replaced it is not a failure and never raises it.
+    /// </summary>
+    /// <remarks>
+    /// Without this callback the exception propagates, as it always has. Exports read through <see cref="OnRead"/>
+    /// too, but a failed export throws to whatever started it and never raises this callback.
+    /// </remarks>
+    [Parameter] public EventCallback<Exception> OnReadError { get; set; }
+
+    /// <summary>
     /// Infinite-scrolling data callback. When set, the grid loads rows in batches and appends the
     /// next batch automatically as the user scrolls to the end of the viewport - with no paging UI
     /// and no knowledge of the total row count. Each call receives a <see cref="BitDataGridReadRequest"/>
@@ -83,6 +95,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Replaces the grid body with a loading row (<see cref="LoadingTemplate"/>, or a spinner and the
     /// localized loading text) while data is being fetched, and marks the grid <c>aria-busy</c>. The
     /// rows are hidden for as long as it is set rather than dimmed behind an overlay.
+    /// <para>A server grid (<see cref="OnRead"/>) needs it for none of that: it marks itself <c>aria-busy</c> while it
+    /// reads, and shows the loading row while it has no rows yet. Rows already on screen stay up while it reads the
+    /// next ones, unless this is set.</para>
     /// </summary>
     [Parameter] public bool Loading { get; set; }
 
@@ -489,7 +504,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
     /// <summary>Custom content rendered in place of the built-in spinner while <see cref="Loading"/>
-    /// is true.</summary>
+    /// is true, and while a server grid (<see cref="OnRead"/>) with no rows yet reads its first ones.</summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>Custom content at the start of the toolbar, before the built-in controls.</summary>
@@ -766,6 +781,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private BitDataGridReadResult<TItem>? _serverHead;
     private bool _serverHeadLoading;
     private Task? _serverHeadLoad;
+
+    // The load version of the page read of a server grid (LoadServerDataAsync) in flight. It reads only while that is
+    // still the current version: whatever replaced it - a newer read, another data mode - owns the busy state from then.
+    private int _pageReadVersion = -1;
+    // What OnRead threw on the last read, when OnReadError handles it: the error row stands in for the rows until a
+    // read succeeds.
+    private Exception? _readError;
 
     // True while the footer shows aggregates provided by the OnRead result (computed server-side over
     // the whole dataset); local per-page recomputation must not overwrite them.
@@ -1384,6 +1406,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             }
         }
 
+        // A failure the grid handles itself takes this Virtualize out of the page (see FailReadAsync), so a request it
+        // made before that - one waiting on the window read ahead of it, say - is not read: Retry reads afresh.
+        if (_readError is not null) return new ItemsProviderResult<TItem>(Array.Empty<TItem>(), _totalCount);
+
         BitDataGridReadResult<TItem>? result;
         if (head is null)
         {
@@ -1429,6 +1455,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _serverHead = null;
             _serverHeadLoading = false;
+            if (_retryFocusVersion == _focusVersion) _focusPending = true;
+            _retryFocusVersion = -1;
         }
         if (empty != _serverVirtualizeEmpty || footerChanged || standInsDropped)
         {
@@ -1477,6 +1505,14 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // once it has measured, reads the window again; a failure there is the grid's own and is reported.
             return;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // A read a newer one replaced failing late is no news: the newer one tells how it went.
+            if (version != _loadVersion) return;
+            _serverHeadLoading = false;
+            await FailReadAsync(exception);
+            return;
+        }
         catch
         {
             if (version == _loadVersion) _serverHeadLoading = false;
@@ -1485,12 +1521,14 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (version != _loadVersion) return;
 
         _serverHeadLoading = false;
+        _readError = null;
         _serverHead = result;
         _serverVirtualizeEmpty = result.TotalCount == 0;
         CommitServerWindow(result, 0);
     }
 
-    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it.
+    // Reads a window of a server-virtualized grid for Virtualize; null when a newer window superseded it, or when the
+    // read failed and the grid handles that itself.
     private async Task<BitDataGridReadResult<TItem>?> ReadServerWindowAsync(int skip, int take, CancellationToken cancellationToken)
     {
         try
@@ -1503,7 +1541,76 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // irrelevant - the caller just keeps the last known total.
             return null;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // Virtualize can have several windows out at once; the first to fail reports it, and takes Virtualize out
+            // of the page with the others still waiting on theirs.
+            if (_readError is null && cancellationToken.IsCancellationRequested is false)
+            {
+                await FailReadAsync(exception);
+                StateHasChanged();
+            }
+            return null;
+        }
     }
+
+    // What a failed read the grid handles itself leaves: no rows, the error row in their place (with a Retry that reads
+    // them again), the failure told to screen readers, and to the app through OnReadError. The total read before stays,
+    // so the pager still pages. A server-virtualized grid takes its Virtualize out of the page: the error row stands in
+    // for it, and Retry reads the first window ahead of a new one, the way the grid's first render does. A read that
+    // fails once the grid is going away has no rows left to stand in for, and no one to tell.
+    private async Task FailReadAsync(Exception exception)
+    {
+        if (IsDisposing) return;
+
+        _readError = exception;
+        _pageItems = [];
+        _view = [];
+        RebuildRowIndexMap(_pageItems, 0);
+        ReconcileEditState();
+        if (UseServerVirtualization)
+        {
+            _serverVirtualize = null;
+            _serverHead = null;
+            _serverHeadLoad = null;
+            _serverHeadLoading = false;
+        }
+        Announce(Strings.ReadErrorText);
+        await OnReadError.InvokeAsync(exception);
+    }
+
+    /// <summary>Whether the error row stands in for the rows: the last read failed, and the app handles that.</summary>
+    internal bool ReadErrorShown => _readError is not null && IsServerMode;
+
+    /// <summary>Whether the grid is reading the rows it shows through <see cref="OnRead"/>: a page, or the first window of
+    /// a virtualized grid - which Virtualize's own placeholders stand in for while it reads the later ones.</summary>
+    internal bool IsReading => _pageReadVersion == _loadVersion || _serverHeadLoading;
+
+    // Reads the rows again after a failure. A read already on its way is waited out instead (the button is marked
+    // disabled meanwhile, not made so, so it keeps the focus it holds, and keeps it when this read fails too). When the
+    // rows come back the button goes with the error row, so the focus moves to their first cell, where a cell can take
+    // it, rather than falling to the page.
+    private async Task RetryReadAsync()
+    {
+        if (Disabled || IsReading) return;
+
+        await RefreshAsync();
+
+        if (_readError is null && CellNavigationActive && NavigableRows is { Count: > 0 } rows && VisibleColumns.Count > 0)
+        {
+            _focusedRow = rows[0];
+            _focusedCol = 0;
+            _focusVersion++;
+            _focusPending = true;
+            // A virtualized grid shows the rows read ahead until Virtualize has rows of its own, and those replace the
+            // cell the focus goes to: it goes to theirs then, unless it has moved on to another cell since.
+            if (UseServerVirtualization) _retryFocusVersion = _focusVersion;
+        }
+    }
+
+    // The focus version RetryReadAsync left the focus at, for the rows Virtualize renders in place of the ones read
+    // ahead to take it over from them; -1 when there is none to take over.
+    private int _retryFocusVersion = -1;
 
     private BitDataGridReadRequest CreateServerWindowRequest(int skip, int take, CancellationToken cancellationToken) => new()
     {
@@ -2462,6 +2569,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // Capture this request's version right after ResetLoadCancellation; bail out below if a newer
         // request has since superseded it so a stale response can't overwrite fresher state.
         var version = _loadVersion;
+        _pageReadVersion = version;
         BitDataGridReadResult<TItem> result;
         try
         {
@@ -2471,10 +2579,26 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             // Superseded by a newer request whose cancellation token fired; cancellation from our own
             // token is expected, so keep the existing state and let the newer load complete. Any other
-            // cancellation (e.g. a provider-side timeout) is a real error and propagates.
+            // cancellation (e.g. a provider-side timeout) is a real error and propagates - or, when the
+            // app handles read errors, is reported like any other.
             return;
         }
+        catch (Exception exception) when (OnReadError.HasDelegate)
+        {
+            // A read a newer one replaced failing late is no news: the newer one tells how it went.
+            if (version != _loadVersion) return;
+            _pageReadVersion = -1;
+            await FailReadAsync(exception);
+            return;
+        }
+        catch
+        {
+            if (version == _loadVersion) _pageReadVersion = -1;
+            throw;
+        }
         if (version != _loadVersion) return;
+        _pageReadVersion = -1;
+        _readError = null;
 
         // Enforce the OnRead (server-mode) contract here, where the data mode is unambiguous, rather
         // than in the shared BitDataGridReadResult constructor: a single page can never legitimately
@@ -5304,9 +5428,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (IsInfiniteMode) return _ariaRowCount = -1;
 
         var body = CurrentGroupedLayout()?.BodyRowCount ?? TotalCount;
-        // A body with no data row still renders a row: the loading message, or the empty one unless a new row is being
-        // added. Loading over rows that exist keeps their count, since they come back once it is done.
-        if (body == 0 && (Loading || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
+        // A body with no data row still renders a row: the loading message, the error one, or the empty one unless a new
+        // row is being added. Loading over rows that exist keeps their count, since they come back once it is done, and
+        // so does a failed read of them.
+        if (body == 0 && (Loading || ReadErrorShown || (_pendingNew is null && (UseServerVirtualization is false || _serverVirtualizeEmpty)))) body = 1;
         return _ariaRowCount = HeaderRowCount + PendingRowCount + body + (HasFooterRow ? 1 : 0);
     }
 

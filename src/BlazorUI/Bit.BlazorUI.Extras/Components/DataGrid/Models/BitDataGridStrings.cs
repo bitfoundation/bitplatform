@@ -21,8 +21,16 @@ public class BitDataGridStrings
     /// <summary>Shown instead of <see cref="EmptyText"/> when there are rows, but the filters or the search exclude them all.</summary>
     public string NoMatchesText { get; set; } = "No records match the current filters.";
 
-    /// <summary>Shown while <c>Loading</c> is true.</summary>
+    /// <summary>Shown while <c>Loading</c> is true, and while a server grid (<c>OnRead</c>) with no rows yet reads its
+    /// first ones or reads them again after a failure.</summary>
     public string LoadingText { get; set; } = "Loading…";
+
+    /// <summary>Shown in place of the rows when a read through <c>OnRead</c> failed and the app handles that
+    /// (<c>OnReadError</c>), and told to screen readers then.</summary>
+    public string ReadErrorText { get; set; } = "The records could not be loaded.";
+
+    /// <summary>The button beside <see cref="ReadErrorText"/> that reads the rows again.</summary>
+    public string RetryText { get; set; } = "Retry";
 
     /// <summary>Header of the command (Edit/Delete) column.</summary>
     public string ActionsText { get; set; } = "Actions";
