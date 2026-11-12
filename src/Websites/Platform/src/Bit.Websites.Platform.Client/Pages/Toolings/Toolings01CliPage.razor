@@ -82,6 +82,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
                 <li><code>bit clean</code> deletes the build outputs and downloaded packages, stopping on Windows whatever still holds their files.</li>
                 <li><code>bit rename</code> renames the project everywhere its name appears: files, folders, namespaces, database names and the app id.</li>
                 <li><code>bit remove</code> deletes a project folder for good, even while the app or a build process still holds its files.</li>
+                <li><code>bit api check</code> fails when a change to the api breaks the app versions your users still run, and <code>bit api release</code> keeps the api each release ships to compare with.</li>
                 <li><code>bit translate</code> fills in the missing translations of <code>.resx</code> files with any OpenAI-compatible LLM, and keeps the existing ones.</li>
                 <li><code>bit decode</code> reads a stack trace of an app shrunk by <a href="@Urls.Minifier">bit Minifier</a> back into the names its source has.</li>
                 <li><code>bit aot-profile</code> records which code a Blazor WebAssembly app really runs, so ahead-of-time compilation makes that code fast and leaves the download small.</li>

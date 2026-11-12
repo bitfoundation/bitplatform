@@ -51,6 +51,9 @@ jobs:
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true
 
+    - name: Check that the api still works for the app versions it supports
+      run: bit api check
+
     - name: Test
       id: test
       run: cd src/Tests && dotnet test

@@ -14,7 +14,7 @@ public static class CliApp
     public const int ExitUsage = 2;
     public const int ExitCheckFailed = 3;
 
-    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline"];
+    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -30,6 +30,7 @@ public static class CliApp
             RenameCommand.Create(services),
             RemoveCommand.Create(services),
             MigrationCommand.Create(services),
+            ApiCommand.Create(services),
             TranslateCommand.Create(services),
             DecodeCommand.Create(services),
             KeysCommand.Create(services),

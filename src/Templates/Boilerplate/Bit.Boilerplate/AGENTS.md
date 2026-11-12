@@ -133,7 +133,7 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#endif-->
 -   **Format before committing**: Run `dotnet format whitespace --folder .` in the project's root folder. CI fails a pull request on anything this would change.
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
--   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations and `bit run` starts the native apps; `bit --help` lists them all.
+-   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations, `bit api check` tells whether a change to the api breaks an app version users still run and `bit run` starts the native apps; `bit --help` lists them all.
 
 ## 5. Coding Conventions & Best Practices
 

@@ -46,6 +46,10 @@ jobs:
         with:
           arguments: --no-build
 
+      - name: Check the api against the released versions
+        if: inputs.ENV_NAME == 'Production'
+        run: bit api check --release
+
       - name: Translate .resx files
         env:
           OpenAI__ApiKey: ${{ secrets.OPENAI_APIKEY }}
@@ -79,11 +83,10 @@ jobs:
       - name: Build and push the images
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
-          APP_VERSION: ${{ vars.APP_VERSION }}
         run: |
           # Every dotnet build and publish from here on reads Directory.Build.rsp - the ones Aspire runs to build the images
-          # included - which gives the images the version and the environment the other jobs pass with -p.
-          { if [ -n "$APP_VERSION" ]; then echo "-p:Version=$APP_VERSION"; fi; echo "-p:Environment=$ENV_NAME"; } > Directory.Build.rsp
+          # included - which gives the images the environment the other jobs pass with -p.
+          echo "-p:Environment=$ENV_NAME" > Directory.Build.rsp
           export REGISTRY_ENDPOINT=ghcr.io REGISTRY_REPOSITORY="${GITHUB_REPOSITORY,,}" IMAGE_TAG="${ENV_NAME,,}-$GITHUB_SHA"
           # shellcheck disable=SC1010 # `do` is the aspire subcommand here, not the shell keyword.
           aspire do push --apphost src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj --environment "$ENV_NAME" --non-interactive
@@ -679,8 +682,9 @@ jobs:
           APP_TITLE: ${{ vars.APP_TITLE }}
         run: |
           cd src\Client\Boilerplate.Client.Windows\
-          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 -p:Version="${{ vars.APP_VERSION }}" --self-contained -p:Environment=${{ inputs.ENV_NAME }}
-          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v "${{ vars.APP_VERSION }}" -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle $env:APP_TITLE
+          dotnet publish Boilerplate.Client.Windows.csproj -c Release -o .\publish-result -r win-x86 --self-contained -p:Environment=${{ inputs.ENV_NAME }}
+          $version = dotnet msbuild Boilerplate.Client.Windows.csproj -getProperty:Version
+          dnx vpk@1.3.39-g8d2844f -- pack -u ${{ vars.APP_ID }} -v $version -p .\publish-result -e Boilerplate.Client.Windows.exe -r win-x86 --framework webview2 --icon .\wwwroot\favicon.ico --packTitle $env:APP_TITLE
 
       - name: Upload artifact
         id: artifact
@@ -752,7 +756,7 @@ jobs:
           # Read from the environment, so no character of the title is read as part of the script, and passed to MSBuild in
           # quotes of its own, so a comma in it doesn't end the property.
           APP_TITLE: ${{ vars.APP_TITLE }}
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
 
       - name: Upload artifact
         id: artifact
@@ -835,7 +839,7 @@ jobs:
         env:
           # As for Android.
           APP_TITLE: ${{ vars.APP_TITLE }}
-        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
+        run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -p:ApplicationId=${{ vars.APP_ID }} "-p:ApplicationTitle=\"$APP_TITLE\"" -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="${{ vars.IOS_CODE_SIGN_PROVISION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-ios
 
       - name: Upload artifact
         id: artifact
