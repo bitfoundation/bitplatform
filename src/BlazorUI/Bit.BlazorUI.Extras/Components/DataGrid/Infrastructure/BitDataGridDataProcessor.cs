@@ -231,13 +231,9 @@ public static class BitDataGridDataProcessor
         var results = new List<BitDataGridAggregateResult>();
         foreach (var column in columns)
         {
-            // A custom AggregateBy participates regardless of the declarative Aggregate type (and needs
-            // no field accessor); built-in aggregations require both a type and a bound field.
-            if (column.AggregateBy is null && (column.Aggregate == BitDataGridAggregateType.None || column.Accessor is null)) continue;
+            if (HasAggregate(column) is false) continue;
             var value = column.AggregateBy is not null ? column.AggregateBy(source) : ComputeAggregate(source, column);
-            // An AggregateBy value isn't the product of the declarative Aggregate function (which
-            // may even be None), so report it as Custom instead of echoing a type it didn't run.
-            var type = column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate;
+            var type = AggregateType(column);
             results.Add(new BitDataGridAggregateResult
             {
                 ColumnId = column.Id,
@@ -249,6 +245,24 @@ public static class BitDataGridDataProcessor
         }
         return results;
     }
+
+    /// <summary>The aggregates <see cref="Aggregate"/> computes for these columns, described for a data source that
+    /// computes them in its place.</summary>
+    internal static List<BitDataGridAggregateDescriptor> AggregateDescriptors<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
+        IEnumerable<BitDataGridColumn<TItem>> columns)
+        => columns.Where(c => HasAggregate(c))
+                  .Select(c => new BitDataGridAggregateDescriptor { ColumnId = c.Id, Type = AggregateType(c) })
+                  .ToList();
+
+    // A custom AggregateBy participates regardless of the declarative Aggregate type (and needs
+    // no field accessor); built-in aggregations require both a type and a bound field.
+    private static bool HasAggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitDataGridColumn<TItem> column)
+        => column.AggregateBy is not null || (column.Aggregate != BitDataGridAggregateType.None && column.Accessor is not null);
+
+    // An AggregateBy value isn't the product of the declarative Aggregate function (which
+    // may even be None), so it is reported as Custom instead of echoing a type it didn't run.
+    private static BitDataGridAggregateType AggregateType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitDataGridColumn<TItem> column)
+        => column.AggregateBy is not null ? BitDataGridAggregateType.Custom : column.Aggregate;
 
     private static object? ComputeAggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(IReadOnlyList<TItem> source, BitDataGridColumn<TItem> column)
     {
