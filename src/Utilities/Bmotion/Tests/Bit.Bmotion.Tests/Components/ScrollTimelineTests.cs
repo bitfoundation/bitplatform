@@ -279,6 +279,61 @@ public class ScrollTimelineTests
         Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiAnimation"));
     }
 
+    // ── Reduced motion ────────────────────────────────────────────────────────
+
+    private static IRenderedComponent<Bmotion> RenderReduced(
+        BmotionTestContext ctx, BmReducedMotionMode mode, BmReducedMotionBehavior behavior)
+    {
+        ctx.Options.ReducedMotion = mode;
+        return ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "bar")
+            .Add(p => p.Timeline, BmScrollTimeline.Page())
+            .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }, opacity: new double[] { 0, 1 }))
+            .Add(p => p.ReducedMotion, behavior)
+            .Add(p => p.ChildContent, Div()));
+    }
+
+    [TestMethod]
+    public void UnderReducedMotion_AnInstantElement_GivesUpItsScrollAnimation()
+    {
+        using var ctx = new BmotionTestContext();
+        RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Instant);
+
+        Assert.AreEqual(0, ctx.Interop.CountOf("playScrollTimelineAnimation"), "neither the transform nor the fade follows the scroll");
+        Assert.AreEqual(0, ctx.Interop.CountOf("playWaapiAnimation"), "the target lands at once");
+    }
+
+    [TestMethod]
+    public void UnderReducedMotion_AFullElement_KeepsItsScrollAnimation()
+    {
+        using var ctx = new BmotionTestContext();
+        RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Full);
+
+        Assert.AreEqual(1, ctx.Interop.CountOf("playScrollTimelineAnimation"));
+    }
+
+    [TestMethod]
+    public void WithoutReducedMotion_AnInstantElement_KeepsItsScrollAnimation()
+    {
+        using var ctx = new BmotionTestContext();
+        RenderReduced(ctx, BmReducedMotionMode.Never, BmReducedMotionBehavior.Instant);
+
+        Assert.AreEqual(1, ctx.Interop.CountOf("playScrollTimelineAnimation"));
+    }
+
+    [TestMethod]
+    public void ChangingReducedMotion_DetachesAndReattachesTheScrollAnimation()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = RenderReduced(ctx, BmReducedMotionMode.Always, BmReducedMotionBehavior.Full);
+
+        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmReducedMotionBehavior.Instant));
+        Assert.AreEqual(1, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
+
+        cut.Render(ps => ps.Add(p => p.ReducedMotion, BmReducedMotionBehavior.Full));
+        Assert.AreEqual(2, ctx.Interop.CountOf("playScrollTimelineAnimation"));
+    }
+
     [TestMethod]
     public void Disposing_ReleasesTheTimeline()
     {

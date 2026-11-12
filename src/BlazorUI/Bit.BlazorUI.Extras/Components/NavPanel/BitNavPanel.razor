@@ -41,6 +41,9 @@
     // reports itself as a modal one, though: a drawer the keyboard can walk out of is not a surface the rest
     // of the page is inert behind, whatever the overlay in front of it looks like.
     var isModal = _IsModalDrawer;
+    // A drawer that has never been opened renders its root alone (see _RendersContent); once rendered, the content stays.
+    var rendersContent = _RendersContent;
+    _contentRendered |= rendersContent;
 
     RenderFragment content =
         @<div style="@Styles?.Container" class="bit-npn-cnt @Classes?.Container">
@@ -278,8 +281,13 @@
      class="@((ClassBuilder.Value + $"{(isToggled ? $" bit-npn-tgl {Classes?.Toggled}" : "")}").Trim())"
      dir="@Dir?.ToString().ToLower()">
     @* A panel whose swipe gesture is turned off gets a plain wrapper instead: the trap of a gesture nothing
-       listens for is a set of pointer listeners installed on every panel of every page for nothing. *@
-    @if (NoSwipe)
+       listens for is a set of pointer listeners installed on every panel of every page for nothing. So does a
+       drawer whose content is not rendered yet: only an open drawer answers a swipe, and it has its content. *@
+    @if (rendersContent is false)
+    {
+        <div class="bit-npn-swp"></div>
+    }
+    else if (NoSwipe)
     {
         <div class="bit-npn-swp">@content</div>
     }

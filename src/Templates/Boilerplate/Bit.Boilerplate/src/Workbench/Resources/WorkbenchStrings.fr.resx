@@ -1939,10 +1939,49 @@
         <value>Contrôler cette vue</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>S’exécutent sur la vue sélectionnée, avec son appareil, son thème, sa langue et ses données : un contrôle d’accessibilité (axe-core) et une recherche des couleurs qui ne viennent pas du thème.</value>
+        <value>S’exécutent sur la vue sélectionnée, avec son appareil, son thème, sa langue et ses données, puis sur chacun de ses onglets, panneaux et menus à tour de rôle : un contrôle d’accessibilité (axe-core) et une recherche des couleurs qui ne viennent pas du thème.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Lancer les contrôles</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Tout exporter</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Copie une seule invite pour un agent d’IA avec tous les constats : ce qui ne va pas et où.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Copié</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Demandé</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Arrêté après {0} contrôles, donc certaines parties de la page n’ont pas été ouvertes.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Contrôles de la page {0}</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Le Workbench a contrôlé la page {0} dans la vue {1}, qui fixe son appareil, son thème, sa langue et ses données. Il a ouvert un à un les onglets, panneaux et menus de la page, et un constat trouvé dans l’un d’eux indique lequel.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Corrigez ce que cause le balisage de la page elle-même, puis relancez {0}. Signalez un constat qui vient de l’intérieur d’un composant bit BlazorUI ou du cadre de l’application au lieu de le contourner dans la page. Une couleur qui représente des données, comme celle d’une catégorie, va dans une propriété personnalisée --data-color.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Où : {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Règle : {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>Par exemple {0} : {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>L’onglet Contrôles a trouvé ici ce problème d’accessibilité. Corrigez-le si le balisage de la page elle-même le cause ; s’il vient de l’intérieur d’un composant bit BlazorUI ou du cadre de l’application, dites-le-moi plutôt.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>L’onglet Contrôles a trouvé ici cette couleur, qui ne correspond à aucune couleur du thème. Utilisez plutôt une couleur du thème ; si elle représente des données, comme celle d’une catégorie, mettez-la dans une propriété personnalisée --data-color.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>Les contrôles n’ont pas pu s’exécuter sur cette vue. Attendez qu’elle soit chargée, puis réessayez.</value>
@@ -3798,6 +3837,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Chargement d’autres commandes...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Chargement du planning...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>Voilà toutes les commandes du jour.</value>
     </data>
@@ -4119,6 +4161,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Souligné</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Cochez cette case pour continuer.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Joignez un PDF de 5 Mo maximum.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Choisissez au moins une étoile.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Saisissez au moins trois lettres.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Restez à 80 ou moins.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Activez les notifications pour suivre vos commandes.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>Avec texte allumé et éteint</value>
     </data>
@@ -4400,6 +4460,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Intégré</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Trop clair pour être lisible sur du blanc.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Restez au moins deux nuits.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Ouvre à</value>

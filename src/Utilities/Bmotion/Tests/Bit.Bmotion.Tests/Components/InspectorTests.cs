@@ -84,4 +84,29 @@ public class InspectorTests
         Assert.AreEqual(1, cut.FindAll(".bm-insp-body").Count);
         Assert.IsTrue(cut.Find(".bm-inspector").ClassList.Contains("open"));
     }
+
+    [TestMethod]
+    public async Task ShowsHowTheLatestAnimationPlays_AndFlagsWhatLandedWithoutAFrameLoop()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Interop.IsInProcess = false; // Blazor Server: no frame loop
+        var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.RefreshMs, 50));
+        ctx.Engine.RegisterElement("box");
+        var withCallback = Bm.Tween(0.3);
+        withCallback.OnUpdate = _ => { };
+
+        await cut.InvokeAsync(async () =>
+        {
+            await ctx.Engine.AnimateToAsync("box", new Dictionary<string, object?> { ["opacity"] = 0.5 }, Bm.Tween(0.3).ToConfig());
+            await ctx.Engine.AnimateToAsync("box", new Dictionary<string, object?> { ["x"] = 100.0 }, withCallback.ToConfig());
+        });
+
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll(".bm-insp-how").Count), Refresh);
+        var lines = cut.FindAll(".bm-insp-how").Select(e => e.TextContent.Trim()).ToArray();
+        Assert.IsTrue(lines.Any(l => l.StartsWith("browser: opacity")), string.Join(" | ", lines));
+        var warn = cut.Find(".bm-insp-how.warn").TextContent;
+        StringAssert.Contains(warn, "landed (no frame loop): x");
+        StringAssert.Contains(warn, "OnUpdate");
+        StringAssert.Contains(cut.Find(".bm-insp-count").TextContent, "1 landed without a frame loop");
+    }
 }

@@ -46,7 +46,8 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
 - **Review**: the comments of every view as a list with a status for the page (draft, in review, approved, built). Your
   agent answers on each comment, shows its plan as a checklist and ticks it as it goes.
 - **Checks**: an accessibility check of the selected view (axe-core) and a search for colors that don't come from the
-  theme.
+  theme, on the page and on each tab, panel and menu it opens. Send a finding to your agent as a comment pinned on its
+  element, or all of them as one prompt with **Export all**.
 - **Flows**: the screens of a task side by side on a board at `/flows`, each a page in the state that matters, like a
   list and the dialog its button opens, with arrows for how you get from one to the next. Present one screen by screen
   in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab. Two read-only samples

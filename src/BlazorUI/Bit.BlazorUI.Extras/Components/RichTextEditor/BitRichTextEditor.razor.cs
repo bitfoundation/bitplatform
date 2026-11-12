@@ -96,8 +96,9 @@ public partial class BitRichTextEditor : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two fields). An
-    /// editor inside an <c>EditForm</c> already gets its messages from the cascading EditContext through the
-    /// <c>ValidationMessage</c> component.
+    /// editor inside an <c>EditForm</c> already gets its messages from the cascading EditContext, which
+    /// <see cref="ShowValidationMessage"/> shows in this same place - giving way to this message while it is set - or
+    /// the <c>ValidationMessage</c> component shows wherever the page puts it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public string? ErrorMessage { get; set; }
@@ -385,7 +386,7 @@ public partial class BitRichTextEditor : BitComponentBase
     {
         get
         {
-            var ids = (ErrorMessage.HasValue() ? $"{ErrorMessageId} " : "")
+            var ids = (HasErrorLine ? $"{ErrorMessageId} " : "")
                     + (Description.HasValue() ? $"{DescriptionId} " : "")
                     + (ShowCount ? $"{UniqueId}-count " : "")
                     + (_inlineError is null ? "" : $"{UniqueId}-error");

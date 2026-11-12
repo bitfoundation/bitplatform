@@ -109,7 +109,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
   The page then shows the store badges, the QR code and the smart download link instead of the waitlist. Send the
   launch announcement (`WaitlistService.SendLaunchAnnouncementAsync`) to the confirmed entries from wherever the list
   is kept, once.
-- Emails go through the `smtp` connection string, the same format as the app's server.
+- Emails go through the `smtp` connection string, the same format as the app's server, and a deployment gives it the
+  app's own, `SMTP_CONNECTION_STRING`.
 
 ## 6. Settings and services
 
@@ -121,8 +122,11 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - Analytics and monitoring go through bit Belemetry to Azure Monitor, with the connection string in the client's
   `appsettings.json`, and only after the visitor agrees in the consent banner. Errors are the exception: they are sent
   from the first moment, whatever the visitor chooses, and the privacy page says so.
-- The deployment reads these as `LANDINGPAGE_SETTINGS` lines; the **deploy** skill (`.github/agents/deploy.agent.md`)
-  covers its domain and its secrets.
+- The deployment reads each of the server's settings from a secret of its own, such as
+  `LANDINGPAGE__AI__OPENAI__CHATAPIKEY`, or a variable for what isn't secret; the **deploy** skill
+  (`.github/agents/deploy.agent.md`) covers its domain and its secrets. It can't reach the browser: the client's
+  `appsettings.json` is built into its assembly, so the Azure Monitor connection string the browser sends with goes
+  there.
 
 ## Done means
 

@@ -526,13 +526,13 @@ public class ScopedStoreTests
     {
         var manager = new BlexManager();
         var storage = new GatedStorage();
-        storage.Data["blex:settings:1"] = """{"Theme":"another session's"}""";
+        storage.Data["blex:settings:#1"] = """{"Theme":"another session's"}""";
         var persistor = new BlexStatePersistor(manager, storage);
         await persistor.StartAsync();
 
         using var scope = manager.CreateScope(new SettingsStore());
         await persistor.FlushAsync();
-        Assert.AreEqual("settings:1", scope.Store.Name);
+        Assert.AreEqual("settings:#1", scope.Store.Name);
         Assert.AreEqual("light", scope.Store.Theme);
         Assert.AreEqual(0, storage.ReadsStarted);
 

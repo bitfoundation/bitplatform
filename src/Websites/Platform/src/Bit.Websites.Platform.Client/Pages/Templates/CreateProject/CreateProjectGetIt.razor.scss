@@ -1,0 +1,184 @@
+﻿@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.cp-getit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: rem2(22px);
+    min-width: 0;
+    scroll-margin-top: rem2(24px);
+    line-height: 1.5;
+}
+
+.cp-getit-head {
+    display: grid;
+    gap: rem2(6px);
+}
+
+.cp-getit-title {
+    margin: 0;
+    font-size: rem2(22px);
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    color: $bit-color-foreground-primary;
+
+    @include lt-md {
+        font-size: rem2(19px);
+    }
+}
+
+.cp-getit-lead {
+    margin: 0;
+    font-size: rem2(14px);
+    color: $bit-color-foreground-secondary;
+}
+
+.cp-phone-note {
+    display: none;
+    gap: rem2(12px);
+    padding: rem2(14px) rem2(16px);
+    border-radius: rem2(10px);
+    background: $bit-color-background-secondary;
+
+    @include lt-sm {
+        display: grid;
+    }
+}
+
+.cp-phone-note-text {
+    display: grid;
+    gap: rem2(6px);
+    font-size: rem2(14px);
+
+    span {
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.cp-phone-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem2(8px);
+    margin-top: rem2(4px);
+}
+
+.cp-howto {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: rem2(20px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    > li {
+        display: grid;
+        grid-template-columns: rem2(28px) minmax(0, 1fr);
+        gap: rem2(14px);
+        align-items: start;
+    }
+}
+
+.cp-howto-number {
+    display: grid;
+    place-items: center;
+    width: rem2(28px);
+    height: rem2(28px);
+    border-radius: 50%;
+    background: $bit-color-primary;
+    color: $bit-color-primary-text;
+    font-size: rem2(12px);
+    font-weight: 700;
+}
+
+.cp-howto-text {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: rem2(8px);
+    min-width: 0;
+    padding-top: rem2(3px);
+    font-size: rem2(14px);
+
+    > span {
+        color: $bit-color-foreground-secondary;
+    }
+
+    a {
+        color: $bit-color-primary;
+    }
+}
+
+.cp-line-box {
+    min-width: 0;
+
+    ::deep .code-box-content {
+        margin-bottom: 0;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+    }
+
+    ::deep .cp-word {
+        font-family: inherit;
+        white-space: nowrap;
+    }
+}
+
+.cp-line-safety {
+    display: inline-flex;
+    align-items: center;
+    gap: rem2(6px);
+    font-size: rem2(12px);
+    color: $bit-color-foreground-secondary;
+}
+
+::deep .cp-explain {
+    margin-inline-start: rem2(-8px);
+    font-weight: 600;
+
+    &.is-open .bit-btn-icn {
+        transform: scaleY(-1);
+    }
+}
+
+.cp-plan {
+    display: grid;
+    gap: rem2(8px);
+    margin: 0;
+    padding-inline-start: rem2(20px);
+    color: $bit-color-foreground-secondary;
+
+    li::marker {
+        color: $bit-color-foreground-tertiary;
+    }
+}
+
+.cp-plan-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem2(4px) rem2(18px);
+}
+
+.cp-needs-title {
+    margin: 0;
+    font-size: rem2(17px);
+    font-weight: 600;
+    color: $bit-color-foreground-primary;
+}
+
+.cp-needs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: rem2(10px);
+    padding: rem2(16px) rem2(18px);
+    border: $bit-shape-border-width solid $bit-color-border-secondary;
+    border-radius: rem2(10px);
+
+    ul {
+        display: grid;
+        gap: rem2(6px);
+        margin: 0;
+        padding-inline-start: rem2(18px);
+        font-size: rem2(14px);
+    }
+}

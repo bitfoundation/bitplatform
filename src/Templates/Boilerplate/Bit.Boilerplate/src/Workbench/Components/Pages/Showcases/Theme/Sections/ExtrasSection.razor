@@ -87,7 +87,7 @@
                               RecoverText="@AppLocalizer[nameof(AppStrings.TryAgain)]">
                 <div class="sales-card">
                     <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@ReportTitle</BitText>
-                    <BitText Typography="BitTypography.H5">@ExtrasSamples.Money(1284.50m)</BitText>
+                    <BitText Typography="BitTypography.H5" Element="p">@ExtrasSamples.Money(1284.50m)</BitText>
                     <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosOrdersCount), 96]</BitText>
                 </div>
             </BitErrorBoundary>
@@ -99,7 +99,7 @@
                               RecoverText="@AppLocalizer[nameof(AppStrings.TryAgain)]">
                 <div class="sales-card">
                     <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@ReportTitle</BitText>
-                    <BitText Typography="BitTypography.H5">@ExtrasSamples.Money(1284.50m)</BitText>
+                    <BitText Typography="BitTypography.H5" Element="p">@ExtrasSamples.Money(1284.50m)</BitText>
                     <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosOrdersCount), 96]</BitText>
                 </div>
             </BitErrorBoundary>
@@ -300,6 +300,25 @@
         </StateSample>
         <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
             <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" Disabled />
+        </StateSample>
+    </ComponentStates>
+
+    @* Each timeline gets a schedule of its own, as it keeps the groups' open state on the resources. *@
+    <ComponentStates Name="BitResourceTimeline" Full>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+            <div class="timeline-box">
+                <BitResourceTimeline Config="schedules[0]" Options="timelineOptions" Texts="timelineTexts" AriaLabel="@ScheduleLabel" />
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+            <div class="timeline-box">
+                <BitResourceTimeline Config="schedules[1]" Options="timelineOptions" Texts="timelineTexts" AriaLabel="@ScheduleLabel" LoadAllocationsAsync="LoadShiftsForever" />
+            </div>
+        </StateSample>
+        <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+            <div class="timeline-box">
+                <BitResourceTimeline Config="schedules[2]" Options="timelineOptions" Texts="timelineTexts" AriaLabel="@ScheduleLabel" Disabled />
+            </div>
         </StateSample>
     </ComponentStates>
 

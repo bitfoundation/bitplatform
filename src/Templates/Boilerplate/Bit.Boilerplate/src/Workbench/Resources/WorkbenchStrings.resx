@@ -2158,10 +2158,49 @@
         <value>Check this view</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>Runs on the selected view, with its device, theme, language and data: an accessibility check (axe-core) and a search for colors that don't come from the theme.</value>
+        <value>Runs on the selected view, with its device, theme, language and data, and on each of its tabs, panels and menus in turn: an accessibility check (axe-core) and a search for colors that don't come from the theme.</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>Run checks</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>Export all</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>Copies one prompt for an AI agent with every finding: what is wrong and where.</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>Copied</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>Asked</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>Stopped after {0} checks, so some parts of the page weren't opened.</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>Checks of the {0} page</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>The Workbench checked the {0} page in the view {1}, which sets its device, theme, language and data. It opened the page's tabs, panels and menus one by one, and a finding found in one of them says which.</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>Fix what the page's own markup causes, then run {0} to check again. Report a finding that comes from inside a bit BlazorUI component or the app chrome instead of working around it in the page. A color that stands for data, like a category's, goes in a --data-color custom property.</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>Where: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>Rule: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>For example {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>The Checks tab found this accessibility problem here. Fix it if the page's own markup causes it; if it comes from inside a bit BlazorUI component or the app chrome, tell me instead.</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>The Checks tab found this color here, which matches none of the theme's. Use a theme color instead; if it stands for data, like a category's, put it in a --data-color custom property.</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>The checks could not run on this view. Wait until it has loaded and try again.</value>
@@ -3798,6 +3837,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>Loading more orders...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>Loading the schedule...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>That's every order of today.</value>
     </data>
@@ -4119,6 +4161,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>Underlined</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>Check this to continue.</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>Attach a PDF of up to 5 MB.</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>Pick at least one star.</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>Type at least three letters.</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>Keep it at 80 or below.</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>Turn notifications on to get order updates.</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>With on and off text</value>
     </data>
@@ -4400,6 +4460,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>Inline</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>Too light to read on white.</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>Stay at least two nights.</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>Opens at</value>

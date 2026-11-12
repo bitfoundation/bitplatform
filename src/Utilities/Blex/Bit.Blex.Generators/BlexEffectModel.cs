@@ -10,6 +10,7 @@
 /// <param name="RetryCount">How many times a failed run is retried; 0 runs the body once.</param>
 /// <param name="RetryDelayMilliseconds">The wait before the first retry; doubles before each further one, up to 30 s.</param>
 /// <param name="TimeoutMilliseconds">How long one attempt may take before its token is cancelled; 0 sets no limit.</param>
+/// <param name="ThrottleMilliseconds">Window after a run starts during which further invocations are dropped; 0 disables throttling.</param>
 /// <param name="Parameters">The impl method's parameters, minus a trailing CancellationToken.</param>
 internal sealed record BlexEffectModel(
     string ImplName,
@@ -22,4 +23,5 @@ internal sealed record BlexEffectModel(
     int RetryCount,
     int RetryDelayMilliseconds,
     int TimeoutMilliseconds,
+    int ThrottleMilliseconds,
     BlexEquatableArray<BlexParamModel> Parameters) : System.IEquatable<BlexEffectModel>;

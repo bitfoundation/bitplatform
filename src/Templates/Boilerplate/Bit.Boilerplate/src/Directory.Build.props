@@ -36,6 +36,12 @@
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
         <CompressionEnabled Condition="'$(Environment)' == 'Development'">false</CompressionEnabled>
 
+        <!-- Together, these two publish a Brotli (br) copy of each static file and no gzip one. -->
+        <EnableDefaultCompressionFormats>false</EnableDefaultCompressionFormats>
+        <PublishCompressionFormats>brotli</PublishCompressionFormats>
+
+        <BlazorWebAssemblyOmitDebugProxyOutput Condition="'$(Environment)' != 'Development'">true</BlazorWebAssemblyOmitDebugProxyOutput>
+
         <IncludeSourceRevisionInInformationalVersion Condition="$(Configuration.Contains('Debug'))">false</IncludeSourceRevisionInInformationalVersion>
         <EnableSourceLink Condition="$(Configuration.Contains('Debug'))">false</EnableSourceLink>
 

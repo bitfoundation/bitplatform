@@ -234,6 +234,12 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoFocusTrap { get; set; }
 
     /// <summary>
+    /// Renders the content of the drawer of a small screen while it is still closed, rather than the first time
+    /// it opens.
+    /// </summary>
+    public bool? NoLazyDrawer { get; set; }
+
+    /// <summary>
     /// Removes the overlay that is rendered behind the open nav panel in small screens.
     /// </summary>
     public bool? NoOverlay { get; set; }
@@ -590,6 +596,11 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
         if (NoFocusTrap.HasValue)
         {
             bitNavPanel.TakeFromCascade(nameof(NoFocusTrap), NoFocusTrap.Value, static n => n.NoFocusTrap, static (n, v) => n.NoFocusTrap = v);
+        }
+
+        if (NoLazyDrawer.HasValue)
+        {
+            bitNavPanel.TakeFromCascade(nameof(NoLazyDrawer), NoLazyDrawer.Value, static n => n.NoLazyDrawer, static (n, v) => n.NoLazyDrawer = v);
         }
 
         if (NoOverlay.HasValue)

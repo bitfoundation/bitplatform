@@ -14,6 +14,15 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
     private readonly double _k;        // stiffness
     private readonly double _d;        // damping
     private readonly double _m;        // mass
+
+    /// <summary>The stiffness the driver runs with (derived from bounce/duration when those are set).</summary>
+    internal double Stiffness => _k;
+
+    /// <summary>The damping the driver runs with (derived like <see cref="Stiffness"/>).</summary>
+    internal double Damping => _d;
+
+    /// <summary>The mass the driver runs with (a mass &lt;= 0 falls back to 1).</summary>
+    internal double Mass => _m;
     private readonly double _initialVel;
     private readonly double _baseRestSpeed;
     private readonly double _baseRestDelta;
@@ -71,19 +80,20 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
 
         // Resolve stiffness/damping: if Bounce+VisualDuration (or Bounce+Duration) are set,
         // derive them from those intuitive parameters (Framer Motion-compatible).
+        // Mass divides the acceleration each sub-step; a value <= 0 would yield NaN/Infinity and
+        // trap the spring (the rest test would never pass). Fall back to the default mass of 1 - before
+        // deriving stiffness/damping from it, so the derived spring is the one that actually runs.
+        _m = config.Mass > 0 ? config.Mass : 1.0;
         double k = config.Stiffness;
         double d = config.Damping;
         if (config.Bounce.HasValue)
         {
             double vd = config.VisualDuration ?? config.Duration;
-            (k, d) = BmotionTransitionConfig.SpringFromBounce(vd, config.Bounce.Value, config.Mass);
+            (k, d) = BmotionTransitionConfig.SpringFromBounce(vd, config.Bounce.Value, _m);
         }
 
         _k = k;
         _d = d;
-        // Mass divides the acceleration each sub-step; a value <= 0 would yield NaN/Infinity and
-        // trap the spring (the rest test would never pass). Fall back to the default mass of 1.
-        _m = config.Mass > 0 ? config.Mass : 1.0;
         _vel = _initialVel = config.Velocity;
         _baseRestSpeed = config.RestSpeed;
         _baseRestDelta = config.RestDelta;

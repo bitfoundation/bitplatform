@@ -1939,10 +1939,49 @@
         <value>इस व्यू की जाँच करें</value>
     </data>
     <data name="ChecksHint" xml:space="preserve">
-        <value>चुने गए व्यू पर, उसके डिवाइस, थीम, भाषा और डेटा के साथ चलती है: एक एक्सेसिबिलिटी जाँच (axe-core) और उन रंगों की खोज जो थीम से नहीं आते।</value>
+        <value>चुने गए व्यू पर, उसके डिवाइस, थीम, भाषा और डेटा के साथ, और बारी-बारी से उसके हर टैब, पैनल और मेन्यू पर चलती है: एक एक्सेसिबिलिटी जाँच (axe-core) और उन रंगों की खोज जो थीम से नहीं आते।</value>
     </data>
     <data name="RunChecks" xml:space="preserve">
         <value>जाँच चलाएँ</value>
+    </data>
+    <data name="ChecksExportAll" xml:space="preserve">
+        <value>सब निर्यात करें</value>
+    </data>
+    <data name="ChecksExportHint" xml:space="preserve">
+        <value>एक AI एजेंट के लिए एक प्रॉम्प्ट कॉपी करता है जिसमें हर नतीजा है: क्या गलत है और कहाँ।</value>
+    </data>
+    <data name="ChecksExported" xml:space="preserve">
+        <value>कॉपी हो गया</value>
+    </data>
+    <data name="ChecksAsked" xml:space="preserve">
+        <value>कह दिया</value>
+    </data>
+    <data name="ChecksStopped" xml:space="preserve">
+        <value>{0} जाँचों के बाद रुक गई, इसलिए पेज के कुछ हिस्से नहीं खोले गए।</value>
+    </data>
+    <data name="ChecksPromptTitle" xml:space="preserve">
+        <value>{0} पेज की जाँच</value>
+    </data>
+    <data name="ChecksPromptIntro" xml:space="preserve">
+        <value>Workbench ने {0} पेज को व्यू {1} में जाँचा, जो उसका डिवाइस, थीम, भाषा और डेटा तय करता है। उसने पेज के टैब, पैनल और मेन्यू एक-एक करके खोले, और जो नतीजा इनमें से किसी में मिला, वह बताता है कि किसमें।</value>
+    </data>
+    <data name="ChecksPromptAsk" xml:space="preserve">
+        <value>पेज के अपने मार्कअप से जो होता है उसे ठीक करें, फिर दोबारा जाँचने के लिए {0} चलाएँ। जो नतीजा किसी bit BlazorUI कॉम्पोनेंट या ऐप फ़्रेम के अंदर से आता है, उसे पेज में घुमाकर ठीक करने के बजाय रिपोर्ट करें। जो रंग डेटा दर्शाता है, जैसे किसी श्रेणी का, वह --data-color कस्टम प्रॉपर्टी में जाता है।</value>
+    </data>
+    <data name="ChecksPromptWhere" xml:space="preserve">
+        <value>कहाँ: {0}</value>
+    </data>
+    <data name="ChecksPromptRule" xml:space="preserve">
+        <value>नियम: {0}</value>
+    </data>
+    <data name="ChecksPromptExample" xml:space="preserve">
+        <value>उदाहरण के लिए {0}: {1}</value>
+    </data>
+    <data name="ChecksAskAccessibility" xml:space="preserve">
+        <value>जाँच टैब को यहाँ यह एक्सेसिबिलिटी समस्या मिली। अगर पेज का अपना मार्कअप इसकी वजह है तो इसे ठीक करें; अगर यह किसी bit BlazorUI कॉम्पोनेंट या ऐप फ़्रेम के अंदर से आती है, तो इसके बजाय मुझे बताएँ।</value>
+    </data>
+    <data name="ChecksAskTheme" xml:space="preserve">
+        <value>जाँच टैब को यहाँ यह रंग मिला, जो थीम के किसी रंग से मेल नहीं खाता। इसकी जगह थीम का कोई रंग इस्तेमाल करें; अगर यह डेटा दर्शाता है, जैसे किसी श्रेणी का रंग, तो इसे --data-color कस्टम प्रॉपर्टी में रखें।</value>
     </data>
     <data name="ChecksFailed" xml:space="preserve">
         <value>इस व्यू पर जाँच नहीं चल सकी। इसके लोड होने तक रुकें और फिर से कोशिश करें।</value>
@@ -3798,6 +3837,9 @@
     <data name="ThemeExtrasLoadingMoreOrders" xml:space="preserve">
         <value>और ऑर्डर लोड हो रहे हैं...</value>
     </data>
+    <data name="ThemeExtrasLoadingTheSchedule" xml:space="preserve">
+        <value>शेड्यूल लोड हो रहा है...</value>
+    </data>
     <data name="ThemeExtrasThatSEveryOrderOf" xml:space="preserve">
         <value>आज के सारे ऑर्डर बस इतने ही हैं।</value>
     </data>
@@ -4119,6 +4161,24 @@
     <data name="ThemeInputsUnderlined" xml:space="preserve">
         <value>अंडरलाइन वाला</value>
     </data>
+    <data name="ThemeInputsCheckThisToContinue" xml:space="preserve">
+        <value>आगे बढ़ने के लिए इसे चुनें।</value>
+    </data>
+    <data name="ThemeInputsAttachAPdfOfUpTo5Mb" xml:space="preserve">
+        <value>5 MB तक की एक PDF फ़ाइल संलग्न करें।</value>
+    </data>
+    <data name="ThemeInputsPickAtLeastOneStar" xml:space="preserve">
+        <value>कम से कम एक सितारा चुनें।</value>
+    </data>
+    <data name="ThemeInputsTypeAtLeastThreeLetters" xml:space="preserve">
+        <value>कम से कम तीन अक्षर लिखें।</value>
+    </data>
+    <data name="ThemeInputsKeepItAt80OrBelow" xml:space="preserve">
+        <value>इसे 80 या उससे कम रखें।</value>
+    </data>
+    <data name="ThemeInputsTurnNotificationsOnToGet" xml:space="preserve">
+        <value>ऑर्डर की जानकारी पाने के लिए सूचनाएँ चालू करें।</value>
+    </data>
     <data name="ThemeInputsWithOnAndOffText" xml:space="preserve">
         <value>चालू और बंद टेक्स्ट के साथ</value>
     </data>
@@ -4400,6 +4460,12 @@
     </data>
     <data name="ThemePickersInline" xml:space="preserve">
         <value>इनलाइन</value>
+    </data>
+    <data name="ThemePickersTooLightToReadOnWhite" xml:space="preserve">
+        <value>सफ़ेद पर पढ़ने के लिए बहुत हल्का है।</value>
+    </data>
+    <data name="ThemePickersStayAtLeastTwoNights" xml:space="preserve">
+        <value>कम से कम दो रातें रुकें।</value>
     </data>
     <data name="ThemePickersOpensAt" xml:space="preserve">
         <value>खुलने का समय</value>

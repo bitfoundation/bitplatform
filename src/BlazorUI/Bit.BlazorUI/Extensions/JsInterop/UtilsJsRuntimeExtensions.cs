@@ -64,6 +64,12 @@ internal static class UtilsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector, fallback);
     }
 
+    // Focuses the first field of the form around the marker that reports itself invalid; see Utils.focusFirstInvalid.
+    internal static ValueTask BitUtilsFocusFirstInvalid(this IJSRuntime jsRuntime, ElementReference marker)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstInvalid", marker);
+    }
+
     // Focuses the trigger inside the given container unless the focus is already in it; see Utils.focusClickedTrigger.
     internal static ValueTask BitUtilsFocusClickedTrigger(this IJSRuntime jsRuntime, string containerId)
     {

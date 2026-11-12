@@ -16,8 +16,9 @@ public partial class WorkbenchViewPage
     private const string TourComponentsPage = "shifts";
     private const string TourLandingPage = "landing-minimal";
 
-    // A comment written on the tour's live review step without pressing a spot first is about the page as a whole.
-    private static readonly WorkbenchReviewAnchor TourCommentAnchor = new("body", null, null, 0.5, 0.5);
+    // A comment about the page as a whole: one written on the tour's live review step without pressing a spot first, or a
+    // finding of the Checks tab whose element is gone.
+    private static readonly WorkbenchReviewAnchor PageAnchor = new("body", null, null, 0.5, 0.5);
 
     private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
 

@@ -549,6 +549,22 @@ function anchorOf(target: Element, x: number, y: number) {
     };
 }
 
+/** Where a comment on an element of a view is pinned, its middle, in the inner screen when the view has one; null when it isn't there. */
+export function anchorInView(frame: HTMLIFrameElement, selector: string) {
+    let element: Element | null = null;
+
+    try {
+        element = (screenOf(frame) ?? frame).contentDocument?.querySelector(selector) ?? null;
+    } catch {
+    }
+
+    if (!element) return null;
+
+    const rect = element.getBoundingClientRect();
+
+    return anchorOf(element, rect.left + rect.width / 2, rect.top + rect.height / 2);
+}
+
 /** A path of nth-of-type steps from body to the element. */
 function selectorOf(element: Element) {
     const parts: string[] = [];

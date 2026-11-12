@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Bit.Bink.Tests;
 
@@ -19,6 +19,103 @@ public sealed class CalligraphyBrushTests
 
         Assert.AreEqual(20f, across.Height, 0.5f, "Moving across an upright nib draws its full width.");
         Assert.AreEqual(2f, along.Width, 0.5f, "Moving along it draws only its thickness.");
+    }
+
+    /// <summary>A horizontal line whose points carry tilt and twist, one pair per point from the callbacks.</summary>
+    private static BinkStrokePoints Pen(Func<int, (float TiltX, float TiltY)> tilt, Func<int, float>? twist = null, int count = 20)
+    {
+        var buffer = new BinkStrokePointBuffer(count);
+        for (int i = 0; i < count; i++)
+        {
+            (float tx, float ty) = tilt(i);
+            buffer.Add(new BinkPoint(i * 5f, 50f, 1f, i * 8f) { TiltX = tx, TiltY = ty, Twist = twist?.Invoke(i) ?? 0f });
+        }
+        return buffer.ToStrokePoints();
+    }
+
+    [TestMethod]
+    public void A_nib_that_follows_the_pen_turns_with_its_barrel()
+    {
+        // A nib held along the line draws a hairline; turning the barrel a quarter turn draws its full width.
+        var brush = new BinkCalligraphyBrush { Width = 20f, NibAngle = 0f, NibThickness = 0.1f, FollowPen = true };
+        BinkStrokePoints turned = Pen(_ => (20f, 0f), i => 90f);
+
+        Assert.AreEqual(20f, new BinkStroke(turned, brush).Geometry.Path.Bounds.Height, 0.5f);
+        Assert.AreEqual(2f, new BinkStroke(turned, brush with { FollowPen = false }).Geometry.Path.Bounds.Height, 0.5f, "Off, the nib keeps its angle.");
+    }
+
+    [TestMethod]
+    public void A_nib_that_follows_the_pen_turns_as_far_as_its_lean_is_from_the_hands_usual_lean()
+    {
+        // Leaning straight down the page is this hand's usual lean, where the nib is at its own angle.
+        var brush = new BinkCalligraphyBrush { Width = 20f, NibAngle = 0f, NibThickness = 0.1f, FollowPen = true, PenLean = 90f };
+
+        Assert.AreEqual(2f, new BinkStroke(Pen(_ => (0f, 40f)), brush).Geometry.Path.Bounds.Height, 0.5f);
+
+        // The lean turns a quarter turn halfway: so does the nib.
+        Assert.AreEqual(20f, new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (40f, 0f)), brush).Geometry.Path.Bounds.Height, 0.5f);
+
+        // Nearly upright the lean counts for less, and the nib turns only part of the way; straight up, not at all.
+        float nearlyUpright = new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (4f, 0f)), brush).Geometry.Path.Bounds.Height;
+        Assert.IsGreaterThan(4f, nearlyUpright);
+        Assert.IsLessThan(18f, nearlyUpright);
+        Assert.AreEqual(2f, new BinkStroke(Pen(i => i < 10 ? (0f, 40f) : (0f, 0f)), brush).Geometry.Path.Bounds.Height, 0.5f);
+    }
+
+    [TestMethod]
+    public void A_stroke_cut_where_the_pen_was_upright_keeps_its_ink_in_both_parts()
+    {
+        // Upright points took the angle of the last leaning one, so the part an eraser left, starting upright, turned
+        // its nib back to the brush's angle while the same points in the whole stroke kept the turned one.
+        var brush = new BinkCalligraphyBrush { Width = 20f, NibAngle = 0f, NibThickness = 0.1f, FollowPen = true, PenLean = 90f };
+        BinkStrokePoints whole = Pen(i => i < 10 ? (40f, 0f) : (0f, 0f));
+
+        BinkRect all = new BinkStroke(whole, brush).Geometry.Path.Bounds;
+        BinkRect tail = new BinkStroke(whole.Slice(12, 8), brush).Geometry.Path.Bounds;
+
+        Assert.AreEqual(tail.Right, all.Right, 0.5f, "The last nib is the same in the whole stroke and in its tail.");
+        Assert.AreEqual(105f, all.Right, 0.5f, "Upright, the nib is at the brush's own angle, along the line.");
+    }
+
+    [TestMethod]
+    public void A_stroke_cut_in_two_keeps_its_ink_in_both_parts()
+    {
+        // The nib's angle at a point depends on that point alone. It used to be measured from the stroke's first
+        // point, so the part an eraser left after a cut turned its nib back to where that part began.
+        var brush = new BinkCalligraphyBrush { Width = 20f, NibAngle = 0f, NibThickness = 0.1f, FollowPen = true, PenLean = 90f };
+        BinkStrokePoints whole = Pen(i => i < 10 ? (0f, 40f) : (40f, 0f));
+
+        BinkStrokePoints tail = whole.Slice(12, 8);
+
+        Assert.AreEqual(20f, new BinkStroke(tail, brush).Geometry.Path.Bounds.Height, 0.5f);
+    }
+
+    [TestMethod]
+    public void Following_the_pen_is_saved_with_the_stroke_on_or_off()
+    {
+        var brush = new BinkCalligraphyBrush { FollowPen = true, PenLean = 135f };
+        var read = (BinkCalligraphyBrush)new BinkCalligraphyBrush().WithParameters(brush.GetParameters());
+        Assert.IsTrue(read.FollowPen);
+        Assert.AreEqual(135f, read.PenLean);
+        // Off is written too, so a reader whose own default is on still reads off.
+        Assert.IsFalse(((BinkCalligraphyBrush)(new BinkCalligraphyBrush() with { FollowPen = true }).WithParameters(new BinkCalligraphyBrush().GetParameters())).FollowPen);
+
+        var document = new BinkDocument();
+        document.AddElement(new BinkStroke(Pen(_ => (30f, 10f)), brush));
+        var loaded = (BinkStroke)BinkSerializer.Deserialize(BinkSerializer.Serialize(document)).AllElements.Single();
+        Assert.IsTrue(((BinkCalligraphyBrush)loaded.Brush).FollowPen);
+        Assert.AreEqual(135f, ((BinkCalligraphyBrush)loaded.Brush).PenLean);
+    }
+
+    [TestMethod]
+    public void A_view_with_only_one_tilt_has_none()
+    {
+        // A view whose tilt along y was missing kept the tilt along x, and a brush reading both threw.
+        float[] xs = [0, 10, 20], ys = [0, 0, 0], p = [1, 1, 1], t = [0, 8, 16], tilt = [30, 30, 30];
+        var view = new BinkStrokePointsView(xs, ys, p, t, tilt, default, default, new BinkRect(0, 0, 20, 0));
+
+        Assert.IsTrue(view.TiltX.IsEmpty && view.TiltY.IsEmpty);
+        Assert.IsFalse(new BinkCalligraphyBrush { FollowPen = true }.BuildGeometry(view).Path.IsEmpty);
     }
 
     [TestMethod]

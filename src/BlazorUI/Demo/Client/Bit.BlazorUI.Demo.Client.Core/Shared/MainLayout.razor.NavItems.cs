@@ -33,6 +33,8 @@ public partial class MainLayout
             Text = "Inputs",
             ChildItems =
             [
+                // The forms guide heads the inputs it ties together, the way the theming guide heads its group.
+                new() { Text = "Forms", Url = "/forms", Description = "EditForm, Validation, DataAnnotations" },
                 new() { Text = "Calendar", Url = "/components/calendar" },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
@@ -145,6 +147,7 @@ public partial class MainLayout
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
+                new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
                 new() { Text = "Icon", Url = "/components/icon", Description = "Glyph, Symbol" },
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
                 new() { Text = "Label",  Url = "/components/label" },
