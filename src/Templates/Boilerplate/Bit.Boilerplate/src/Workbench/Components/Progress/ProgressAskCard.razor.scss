@@ -67,3 +67,21 @@
 .ask-actions ::deep .ask-dictation {
     margin-inline-start: auto;
 }
+
+.ask-where {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: $bit-color-foreground-secondary;
+}
+
+.ask-secret {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    ::deep .ask-secret-field {
+        flex: 1 1 14rem;
+    }
+}

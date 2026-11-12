@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>En una tarea real, {0} lo recibe al momento y sigue.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>En una tarea real, va adonde dice la pregunta y {0} sigue sin verlo.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Va directamente a GitHub como {0}, un secreto del entorno {1}. {2} nunca lo ve.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Va directamente a GitHub como {0}, un secreto del repositorio. {1} nunca lo ve.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Va a un archivo fuera del proyecto, que {0} usa en sus comandos sin verlo nunca.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Pégalo aquí</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Guardar</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Guardado. {0} sigue sin verlo nunca.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>No se pudo guardar: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Solo el equipo donde se ejecuta este banco de trabajo puede recibir un secreto.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Guardado, nunca se muestra</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Hecho: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Crear un token de API de Cloudflare</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>En el panel de Cloudflare, abre My Profile y luego API Tokens, y crea uno que pueda editar DNS y Cloudflare Tunnel. Pégalo en el archivo que abrí en tu editor, nunca en un chat.</value>
+        <value>En el panel de Cloudflare, abre My Profile y luego API Tokens, y crea uno que pueda editar DNS y Cloudflare Tunnel. Luego pégalo abajo.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Instalar Docker y el runner de GitHub Actions en el servidor</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>Seguirás llegando al servidor por el túnel y por la consola web de tu proveedor.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Pega el token de Cloudflare</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Las claves y contraseñas nunca van en esta página ni en un chat. Van directamente a los secretos de GitHub.</value>
+        <value>Las claves y contraseñas nunca van en un chat. Las pegas aquí y cada una va directamente a su sitio sin que yo la vea.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>Un solo servidor para los dos entornos, para ahorrar costes.</value>
@@ -5254,7 +5287,7 @@
         <value>Sigue las tareas largas y responde con un clic</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>Un despliegue o una función nueva lleva muchos pasos, y algunos solo puedes darlos tú. Cada chat con un agente muestra aquí qué hizo, qué falta y qué necesita de ti, para que nada se pierda en un chat largo.</value>
+        <value>Un despliegue o una función nueva lleva muchos pasos, y algunos solo puedes darlos tú. Cada chat con un agente muestra aquí qué hizo, qué falta y qué necesita de ti, para que nada se pierda en un chat largo. Las claves y contraseñas que pegas ahí van directamente a su sitio, nunca por el chat.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Habla en vez de escribir</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>Un sonido y un contador en la pestaña cuando te necesita</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Las claves y contraseñas van a su sitio, nunca por el chat</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Abrir el progreso</value>

@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>Bij een echte taak krijgt {0} dit meteen en gaat verder.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>Bij een echte taak gaat het naar waar de vraag zegt, en {0} gaat verder zonder het te zien.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Het gaat rechtstreeks naar GitHub als {0}, een secret van de omgeving {1}. {2} ziet het nooit.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Het gaat rechtstreeks naar GitHub als {0}, een secret van de repository. {1} ziet het nooit.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Het komt in een bestand buiten het project, dat {0} in zijn opdrachten gebruikt zonder het ooit te zien.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Plak het hier</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Opgeslagen. {0} gaat verder zonder het ooit te zien.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Het kon niet worden opgeslagen: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Alleen de computer waarop deze werkbank draait kan een geheim aannemen.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Opgeslagen, nooit getoond</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Gedaan: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Een Cloudflare-API-token maken</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>Open in het Cloudflare-dashboard My Profile en dan API Tokens, en maak er een die DNS en Cloudflare Tunnel mag bewerken. Plak hem in het bestand dat ik in je editor heb geopend, nooit in een chat.</value>
+        <value>Open in het Cloudflare-dashboard My Profile en dan API Tokens, en maak er een die DNS en Cloudflare Tunnel mag bewerken. Plak hem daarna hieronder.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Docker en de GitHub Actions-runner op de server installeren</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>Je bereikt de server nog steeds via de tunnel en via de webconsole van je provider.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Plak het Cloudflare-token</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Sleutels en wachtwoorden komen nooit op deze pagina of in een chat. Ze gaan rechtstreeks naar de secrets van GitHub.</value>
+        <value>Sleutels en wachtwoorden komen nooit in een chat. Je plakt ze hier, en elk gaat rechtstreeks naar zijn plek zonder dat ik het zie.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>Eén server voor beide omgevingen, om de kosten laag te houden.</value>
@@ -5254,7 +5287,7 @@
         <value>Volg lange taken, antwoord met één klik</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>Een deployment of een nieuwe functie kost veel stappen, en sommige kun alleen jij zetten. Elke chat met een agent laat hier zien wat er gedaan is, wat er nog komt en wat hij van je nodig heeft, zodat niets verloren gaat in een lange chat.</value>
+        <value>Een deployment of een nieuwe functie kost veel stappen, en sommige kun alleen jij zetten. Elke chat met een agent laat hier zien wat er gedaan is, wat er nog komt en wat hij van je nodig heeft, zodat niets verloren gaat in een lange chat. Sleutels en wachtwoorden die je daar plakt, gaan rechtstreeks naar hun plek, nooit via de chat.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Spreek in plaats van typen</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>Een geluid en een teller op het tabblad als hij je nodig heeft</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Sleutels en wachtwoorden gaan naar hun plek, nooit via de chat</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Voortgang openen</value>

@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>در یک کار واقعی، {0} همین لحظه این را می‌گیرد و ادامه می‌دهد.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>در یک کار واقعی، همان‌جایی می‌رود که سؤال گفته و {0} بی‌آنکه آن را ببیند ادامه می‌دهد.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>مستقیم با نام {0} به GitHub می‌رود، به‌عنوان Secret محیط {1}. {2} هیچ‌وقت آن را نمی‌بیند.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>مستقیم با نام {0} به GitHub می‌رود، به‌عنوان Secret مخزن. {1} هیچ‌وقت آن را نمی‌بیند.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>در فایلی بیرون از پروژه ذخیره می‌شود که {0} در دستورهایش از آن استفاده می‌کند، بی‌آنکه هیچ‌وقت آن را ببیند.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>اینجا بچسبانید</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>ذخیره</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>ذخیره شد. {0} بی‌آنکه آن را ببیند ادامه می‌دهد.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>ذخیره نشد: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>فقط رایانه‌ای که این میز کار روی آن اجرا می‌شود می‌تواند کلید و رمز بگیرد.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>ذخیره شد، هیچ‌وقت نشان داده نمی‌شود</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>انجام شد: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>ساختن یک توکن API در Cloudflare</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>در داشبورد Cloudflare به My Profile و بعد API Tokens بروید و توکنی بسازید که بتواند DNS و Cloudflare Tunnel را ویرایش کند. آن را در فایلی بچسبانید که در ویرایشگرتان باز کردم، نه در گفتگو.</value>
+        <value>در داشبورد Cloudflare به My Profile و بعد API Tokens بروید و توکنی بسازید که بتواند DNS و Cloudflare Tunnel را ویرایش کند. بعد آن را پایین‌تر بچسبانید.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>نصب Docker و GitHub Actions runner روی سرور</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>همچنان از طریق تونل و کنسول وب ارائه‌دهنده‌تان به سرور دسترسی دارید.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>توکن Cloudflare را بچسبانید</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>کلیدها و رمزها هیچ‌وقت در این صفحه یا در گفتگو نمی‌آیند. مستقیم به Secretهای GitHub می‌روند.</value>
+        <value>کلیدها و رمزها هیچ‌وقت در گفتگو نمی‌آیند. اینجا می‌چسبانیدشان و هر کدام مستقیم سر جایش می‌رود، بی‌آنکه من ببینمش.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>یک سرور برای هر دو محیط، تا هزینه پایین بماند.</value>
@@ -5254,7 +5287,7 @@
         <value>کارهای طولانی را دنبال کنید، با یک کلیک جواب بدهید</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>یک استقرار یا قابلیت جدید مرحله‌های زیادی دارد و بعضی‌هایش فقط از دست شما برمی‌آید. هر گفتگو با عامل اینجا نشان می‌دهد چه کرده، چه مانده و چه چیزی از شما لازم دارد، تا چیزی وسط یک گفتگوی طولانی گم نشود.</value>
+        <value>یک استقرار یا قابلیت جدید مرحله‌های زیادی دارد و بعضی‌هایش فقط از دست شما برمی‌آید. هر گفتگو با عامل اینجا نشان می‌دهد چه کرده، چه مانده و چه چیزی از شما لازم دارد، تا چیزی وسط یک گفتگوی طولانی گم نشود. کلیدها و رمزهایی که آنجا می‌چسبانید مستقیم سر جایشان می‌روند و هیچ‌وقت از گفتگو نمی‌گذرند.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>به‌جای تایپ، حرف بزنید</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>یک صدا و یک شمارنده روی زبانه وقتی به شما نیاز دارد</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>کلیدها و رمزها مستقیم سر جایشان می‌روند، نه از راه گفتگو</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>باز کردن پیشرفت کارها</value>

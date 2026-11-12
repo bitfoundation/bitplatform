@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>Bei einer echten Aufgabe bekommt {0} das sofort und macht weiter.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>Bei einer echten Aufgabe geht es dorthin, wo die Frage sagt, und {0} macht weiter, ohne es zu sehen.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Es geht direkt als {0} zu GitHub, als Secret der Umgebung {1}. {2} sieht es nie.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Es geht direkt als {0} zu GitHub, als Secret des Repositorys. {1} sieht es nie.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Es kommt in eine Datei außerhalb des Projekts, die {0} in seinen Befehlen nutzt, ohne es je zu sehen.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Hier einfügen</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Speichern</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Gespeichert. {0} macht weiter, ohne es je zu sehen.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Es konnte nicht gespeichert werden: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Ein Secret nimmt nur der Computer an, auf dem diese Werkbank läuft.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Gespeichert, nie angezeigt</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Erledigt: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Ein Cloudflare-API-Token erstellen</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>Öffnen Sie im Cloudflare-Dashboard My Profile und dann API Tokens, und erstellen Sie eines, das DNS und Cloudflare Tunnel bearbeiten darf. Fügen Sie es in die Datei ein, die ich in Ihrem Editor geöffnet habe, nie in einen Chat.</value>
+        <value>Öffnen Sie im Cloudflare-Dashboard My Profile und dann API Tokens, und erstellen Sie eines, das DNS und Cloudflare Tunnel bearbeiten darf. Fügen Sie es dann unten ein.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Docker und den GitHub-Actions-Runner auf dem Server installieren</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>Sie erreichen den Server weiterhin über den Tunnel und über die Webkonsole Ihres Anbieters.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Fügen Sie das Cloudflare-Token ein</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Schlüssel und Passwörter kommen nie auf diese Seite oder in einen Chat. Sie gehen direkt in die Secrets von GitHub.</value>
+        <value>Schlüssel und Passwörter kommen nie in einen Chat. Sie fügen sie hier ein, und jedes geht direkt dorthin, wo es hingehört, ohne dass ich es sehe.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>Ein Server für beide Umgebungen, damit die Kosten niedrig bleiben.</value>
@@ -5254,7 +5287,7 @@
         <value>Lange Aufgaben verfolgen, mit einem Klick antworten</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>Eine Bereitstellung oder eine neue Funktion braucht viele Schritte, und manche kann nur Sie tun. Jeder Agenten-Chat zeigt hier, was erledigt ist, was fehlt und was er von Ihnen braucht, damit nichts in einem langen Chat untergeht.</value>
+        <value>Eine Bereitstellung oder eine neue Funktion braucht viele Schritte, und manche kann nur Sie tun. Jeder Agenten-Chat zeigt hier, was erledigt ist, was fehlt und was er von Ihnen braucht, damit nichts in einem langen Chat untergeht. Schlüssel und Passwörter, die Sie dort einfügen, gehen direkt dorthin, wo sie hingehören, nie durch den Chat.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Sprechen statt tippen</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>Ein Ton und eine Zahl im Tab, wenn er Sie braucht</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Schlüssel und Passwörter landen, wo sie hingehören, nie im Chat</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Fortschritt öffnen</value>

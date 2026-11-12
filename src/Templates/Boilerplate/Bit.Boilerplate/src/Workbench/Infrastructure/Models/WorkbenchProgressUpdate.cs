@@ -27,4 +27,7 @@ public sealed record WorkbenchProgressNoteUpdate(string? Id, string? Kind, strin
 public sealed record WorkbenchProgressLinkUpdate(string Label, string? Url, bool Remove = false);
 
 /// <summary>A question to ask or change while it is unanswered; <c>withdraw</c> takes back one that no longer matters.</summary>
-public sealed record WorkbenchProgressAskUpdate(string Id, string? Question, string? Detail, string? Kind, string[]? Options, string? Placeholder, bool Withdraw = false);
+public sealed record WorkbenchProgressAskUpdate(string Id, string? Question, string? Detail, string? Kind, string[]? Options, string? Placeholder, bool Withdraw = false, WorkbenchProgressSecretUpdate? Secret = null);
+
+/// <summary>Where a secret question's answer goes: <c>to</c> is <c>github</c>, with the secret's <c>name</c> and its <c>environment</c> unless it is the repository's, or <c>file</c>.</summary>
+public sealed record WorkbenchProgressSecretUpdate(string? To, string? Name, string? Environment);

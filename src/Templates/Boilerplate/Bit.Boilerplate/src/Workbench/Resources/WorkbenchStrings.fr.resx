@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>Sur une vraie tâche, {0} le reçoit aussitôt et continue.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>Sur une vraie tâche, il va là où le dit la question, et {0} continue sans le voir.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Il va directement dans GitHub sous le nom {0}, un secret de l’environnement {1}. {2} ne le voit jamais.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Il va directement dans GitHub sous le nom {0}, un secret du dépôt. {1} ne le voit jamais.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Il va dans un fichier hors du projet, que {0} utilise dans ses commandes sans jamais le voir.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Collez-le ici</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Enregistrer</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Enregistré. {0} continue sans jamais le voir.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Impossible de l’enregistrer : {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Seul l’ordinateur sur lequel tourne cet établi peut recevoir un secret.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Enregistré, jamais affiché</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Fait : {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Créer un jeton d’API Cloudflare</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>Dans le tableau de bord Cloudflare, ouvrez My Profile puis API Tokens, et créez-en un qui peut modifier le DNS et Cloudflare Tunnel. Collez-le dans le fichier que j’ai ouvert dans votre éditeur, jamais dans une conversation.</value>
+        <value>Dans le tableau de bord Cloudflare, ouvrez My Profile puis API Tokens, et créez-en un qui peut modifier le DNS et Cloudflare Tunnel. Collez-le ensuite ci-dessous.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Installer Docker et le runner GitHub Actions sur le serveur</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>Vous accéderez toujours au serveur par le tunnel et par la console web de votre hébergeur.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Collez le jeton Cloudflare</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Les clés et mots de passe ne vont jamais sur cette page ni dans une conversation. Ils vont directement dans les secrets de GitHub.</value>
+        <value>Les clés et mots de passe ne vont jamais dans une conversation. Vous les collez ici, et chacun va directement là où il doit, sans que je le voie.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>Un seul serveur pour les deux environnements, pour limiter le coût.</value>
@@ -5254,7 +5287,7 @@
         <value>Suivez les longues tâches, répondez d’un clic</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>Un déploiement ou une nouvelle fonctionnalité demande beaucoup d’étapes, dont certaines que vous seul pouvez faire. Chaque conversation avec un agent montre ici ce qui est fait, ce qui reste et ce dont il a besoin de vous, pour que rien ne se perde dans une longue conversation.</value>
+        <value>Un déploiement ou une nouvelle fonctionnalité demande beaucoup d’étapes, dont certaines que vous seul pouvez faire. Chaque conversation avec un agent montre ici ce qui est fait, ce qui reste et ce dont il a besoin de vous, pour que rien ne se perde dans une longue conversation. Les clés et mots de passe que vous y collez vont directement là où ils doivent, jamais par la conversation.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Parlez au lieu de taper</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>Un son et un compteur sur l’onglet quand il a besoin de vous</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Les clés et mots de passe vont là où ils doivent, jamais par la conversation</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Ouvrir l’avancement</value>

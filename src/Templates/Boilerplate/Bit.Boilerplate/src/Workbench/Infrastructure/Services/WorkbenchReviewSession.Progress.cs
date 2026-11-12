@@ -9,6 +9,8 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 /// </summary>
 public sealed partial class WorkbenchReviewSession
 {
+    [AutoInject] private WorkbenchSecrets secrets = default!;
+
     private BcrdtDocument? samples;
     private IReadOnlyList<WorkbenchProgressTask>? sampleTasks;
 
@@ -69,11 +71,42 @@ public sealed partial class WorkbenchReviewSession
         return EditProgress(task, progress => WorkbenchProgressDocument.AddMessage(progress, task.Id, text, by));
     }
 
+    /// <summary>
+    /// Whether this circuit may put a secret where a question says: in dev mode on this machine only, as gh runs in the user's
+    /// name there, so never an invited reviewer elsewhere. A sample takes one anywhere and keeps nothing of it.
+    /// </summary>
+    public bool CanStoreSecrets(WorkbenchProgressTask task) => task.IsSample || CanWrite;
+
+    /// <summary>
+    /// Puts what the user pasted into a secret question where the question says, then marks it answered; the secret itself
+    /// never enters the document. A sample's is only marked. Returns what went wrong, or null once it is stored.
+    /// </summary>
+    public async Task<string?> StoreSecret(WorkbenchProgressTask task, WorkbenchProgressAsk ask, string secret, string by, CancellationToken cancellationToken)
+    {
+        var failed = localizer[nameof(WorkbenchStrings.ProgressAnswerFailed)].Value;
+
+        if (CanAnswer(task) is false || CanStoreSecrets(task) is false || ask.Kind is not WorkbenchProgressAskKind.Secret || string.IsNullOrWhiteSpace(secret))
+            return failed;
+
+        if (task.IsSample is false)
+        {
+            // Read again, so a question taken back or answered meanwhile stores nothing.
+            if (Tasks.FirstOrDefault(t => t.Id == task.Id)?.Asks.FirstOrDefault(a => a.Id == ask.Id) is not { IsOpen: true } current)
+                return failed;
+
+            if (await secrets.Store(task.Id, current, secret.Trim(), cancellationToken) is { } problem)
+                return localizer[nameof(WorkbenchStrings.ProgressSecretStoreFailed), problem].Value;
+        }
+
+        return EditProgress(task, progress => WorkbenchProgressDocument.MarkStored(progress, task.Id, ask.Id, by)) ? null : failed;
+    }
+
     public void DeleteTask(WorkbenchProgressTask task)
     {
         if (CanDelete(task))
         {
             document?.Transact(_ => document.GetMap(WorkbenchProgressDocument.MapName).Delete(task.Id), null);
+            WorkbenchSecrets.DeleteFiles(task.Id);
         }
     }
 

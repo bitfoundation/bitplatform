@@ -79,10 +79,11 @@ domain and the services of section 5. Then go through the steps with them.
 - Explain every step before you take it, in the person's terms, and do it yourself wherever you have the access: the
   repository, `gh`, the VM. Where only the user can act, give them the exact clicks and wait.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
-  passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
-  accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
-  too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
-  log.
+  passwords - and stores them straight into the environment's secrets (section 6). Ask the user only for what nobody
+  else can give, each with a secret question on the task's Progress page (`workbench` skill, section 9): a key from
+  their accounts goes straight into the environment's secrets, and what only your commands use, like the root password
+  or a setup token, into a file you never read. Never ask for one in the chat or in a file in the repository. No secret
+  goes into a commit or a log.
 <!--#if (cloudflare == true)-->
 - **No inbound port, and no locked door.** SSH is open only while you set the VM up: key only, with password and root
   sign-in off. Once the tunnel runs, give SSH a route through it too, behind Cloudflare Access: a hostname for the
@@ -328,22 +329,21 @@ there, and the setting or secret that carries it. Every environment gets its own
   the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
   certificate, the VAPID keys, the database and Redis passwords and the Android signing key. It lets `Production`
   deploy only from `main`, and turns on Dependabot alerts. `bit pipeline --check` lists what is still missing.
-- Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
-  --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
+- Set the variables with `gh variable set --env <name>`, and ask for each secret only the user's accounts can give with a
+  secret question that stores it in the environment (section 2). The names are in the table
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word.
 <!--#if (api == "Standalone")-->
 - Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERAPI__`,
   `SERVERWEB__` or `LANDINGPAGE__`, then the key with `__` between its parts, such as
   `SERVERAPI__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for the api's `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per
-  setting, so changing one never means rewriting the others. A key is a secret, from the git-ignored file like the
-  rest. A model name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so
+  setting, so changing one never means rewriting the others. A key is a secret, asked for like the rest. A model name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so
   a secret holding `true` hides every "true" there.
 <!--#else-->
 - Every other setting is a secret or a variable of its own, named after the app and the setting's key: `SERVERWEB__`
   (the api runs inside the web app) or `LANDINGPAGE__`, then the key with `__` between its parts, such as
   `SERVERWEB__SMS__PROVIDERS__TWILIO__AUTHTOKEN` for `Sms:Providers:Twilio:AuthToken` (`.docs/16`). One per setting, so
-  changing one never means rewriting the others. A key is a secret, from the git-ignored file like the rest. A model
+  changing one never means rewriting the others. A key is a secret, asked for like the rest. A model
   name, a voice, an endpoint or a flag is a variable: GitHub blanks a secret's value out of every log, so a secret
   holding `true` hides every "true" there.
 <!--#endif-->
@@ -420,14 +420,15 @@ have taken requests, so a failure from then on leaves the database ahead and und
 - **One setup token, asked for once.** With Cloudflare, have the user create a custom API token, expiring within days,
   with, on the account, Cloudflare Tunnel, Access: Apps and Policies, Access: Organizations, Identity Providers, and
   Groups, Workers R2 Storage and Account API Tokens, each with Edit, and on all zones of the account, DNS, Cache
-  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet. With it, do
+  Rules and Zone Settings with Edit and Cache Purge with Purge, plus Zone with Edit if the domain isn't on the account yet,
+  and take it with a secret question that puts it in a file (section 2). With it, do
   everything below yourself through Cloudflare's API, for each environment, and mint every token that runs with it.
   Tell the user Account API Tokens lets it mint any token on the account, so it is as strong as the account until they
   delete it. Before anything else, try one read with it for each permission (tunnels, Access applications, R2 buckets,
   DNS records, zone settings, rulesets and the token list), so a missing one shows now and not halfway through.
 - The setup token never goes into a GitHub secret, a file the VM reads, a commit or a log, and no token that runs is
-  the setup token. Once the environments are up, or if the setup stops before that, the user deletes it in the
-  dashboard, since a token can't delete itself. More environments later get a new one.
+  the setup token. Once the environments are up, or if the setup stops before that, delete its file, and the user
+  deletes the token in the dashboard, since a token can't delete itself. More environments later get a new one.
 <!--#endif-->
 <!--#if (cloudflare == true)-->
 - Add the domain to the account on the free plan if it isn't there, and give the user the nameservers to set. If the

@@ -203,6 +203,24 @@ public partial class ProgressPage
         return true;
     }
 
+    private async Task StoreSecret(WorkbenchProgressTask task, WorkbenchProgressAsk ask, string secret)
+    {
+        await UnlockAudio();
+
+        if (await reviewSession.StoreSecret(task, ask, secret, Author, CurrentCancellationToken) is { } problem)
+        {
+            SnackBarService.Error(problem);
+        }
+        else if (task.IsSample)
+        {
+            SnackBarService.Show(Localizer[nameof(WorkbenchStrings.ProgressSampleSentTitle)], Localizer[nameof(WorkbenchStrings.ProgressSampleSecret), task.Agent]);
+        }
+        else
+        {
+            SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ProgressSecretStored), task.Agent]);
+        }
+    }
+
     private async Task CompleteStep(WorkbenchProgressTask task, WorkbenchProgressStep step)
     {
         await UnlockAudio();
@@ -284,6 +302,9 @@ public partial class ProgressPage
     {
         if (entry.Kind is not WorkbenchProgressEntryKind.Answer || task.Asks.FirstOrDefault(a => a.Id == entry.RefId) is not { Answer: { } answer } ask)
             return null;
+
+        if (ask.Kind is WorkbenchProgressAskKind.Secret)
+            return (ask.Question, Localizer[nameof(WorkbenchStrings.ProgressSecretAnswered)]);
 
         var picked = ask.Kind is WorkbenchProgressAskKind.Confirm
             ? answer.Choices.Select(choice => Localizer[choice == WorkbenchProgressDocument.Yes ? nameof(WorkbenchStrings.ProgressYes) : nameof(WorkbenchStrings.ProgressNo)].Value)

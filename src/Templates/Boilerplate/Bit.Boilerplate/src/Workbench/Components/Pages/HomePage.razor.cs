@@ -16,19 +16,20 @@ public partial class HomePage
         (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeChipLive))
     ];
 
+    // Designing and reviewing pages first, as the agents' long tasks have the section above these cards to themselves.
     private static readonly (string IconName, string TitleKey, string TextKey)[] reasons =
     [
-        (BitIconName.Robot, nameof(WorkbenchStrings.HomeWhyAgentsTitle), nameof(WorkbenchStrings.HomeWhyAgentsText)),
-        (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeWhyLiveTitle), nameof(WorkbenchStrings.HomeWhyLiveText)),
-        (BitIconName.TaskList, nameof(WorkbenchStrings.HomeWhyProgressTitle), nameof(WorkbenchStrings.HomeWhyProgressText)),
-        (BitIconName.Microphone, nameof(WorkbenchStrings.HomeWhyVoiceTitle), nameof(WorkbenchStrings.HomeWhyVoiceText)),
         (BitIconName.Code, nameof(WorkbenchStrings.HomeWhyRealTitle), nameof(WorkbenchStrings.HomeWhyRealText)),
         (BitIconName.Split, nameof(WorkbenchStrings.HomeWhyStatesTitle), nameof(WorkbenchStrings.HomeWhyStatesText)),
         (BitIconName.Devices2, nameof(WorkbenchStrings.HomeWhyDevicesTitle), nameof(WorkbenchStrings.HomeWhyDevicesText)),
+        (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeWhyLiveTitle), nameof(WorkbenchStrings.HomeWhyLiveText)),
         (BitIconName.Camera, nameof(WorkbenchStrings.HomeWhyStoresTitle), nameof(WorkbenchStrings.HomeWhyStoresText)),
         (BitIconName.Lightbulb, nameof(WorkbenchStrings.HomeWhyHeadStartTitle), nameof(WorkbenchStrings.HomeWhyHeadStartText)),
         (BitIconName.Tiles, nameof(WorkbenchStrings.HomeWhyManyAppsTitle), nameof(WorkbenchStrings.HomeWhyManyAppsText)),
         (BitIconName.Lock, nameof(WorkbenchStrings.HomeWhySafeTitle), nameof(WorkbenchStrings.HomeWhySafeText)),
+        (BitIconName.Robot, nameof(WorkbenchStrings.HomeWhyAgentsTitle), nameof(WorkbenchStrings.HomeWhyAgentsText)),
+        (BitIconName.Microphone, nameof(WorkbenchStrings.HomeWhyVoiceTitle), nameof(WorkbenchStrings.HomeWhyVoiceText)),
+        (BitIconName.TaskList, nameof(WorkbenchStrings.HomeWhyProgressTitle), nameof(WorkbenchStrings.HomeWhyProgressText)),
         (BitIconName.Repair, nameof(WorkbenchStrings.HomeWhyCustomizeTitle), nameof(WorkbenchStrings.HomeWhyCustomizeText))
     ];
 

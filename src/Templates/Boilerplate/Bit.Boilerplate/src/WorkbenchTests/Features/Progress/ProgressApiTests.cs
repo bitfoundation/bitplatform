@@ -143,6 +143,34 @@ public class ProgressApiTests
     }
 
     [TestMethod]
+    public async Task ASecret_Should_GoWhereTheQuestionSaysAndOnlyItsPlaceReachTheAgent()
+    {
+        const string secret = "cf_setup_token_4f9a";
+
+        var id = await Start(new { agent = "Claude Code", title = "Deploy", asks = new object[] { new { id = "token", question = "Your Cloudflare token", secret = new { to = "file" } } } });
+        var task = await Seen(id);
+        var file = WorkbenchSecrets.FilePath(id, "token");
+
+        Assert.AreEqual(("secret", file), ((string?)(await Read(id))["asks"]![0]!["kind"], (string?)(await Read(id))["asks"]![0]!["secret"]!["file"]));
+        Assert.IsTrue(user.Session.CanStoreSecrets(task));
+
+        var wait = client.GetStringAsync($"api/progress/{id}/wait?cursor={(long)(await Read(id))["cursor"]!}&agent=Claude%20Code", TestContext.CancellationToken);
+
+        Assert.IsNull(await user.Change(session => session.StoreSecret(task, task.Asks.Single(), $"  {secret} ", "Sarah", TestContext.CancellationToken)));
+
+        var stored = JsonNode.Parse(await wait.WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken))!["events"]!.AsArray().Single()!;
+
+        Assert.AreEqual(("answer", "token", null, file), ((string?)stored["kind"], (string?)stored["ask"], (string?)stored["text"], (string?)stored["secret"]!["file"]));
+        Assert.AreEqual(secret, await File.ReadAllTextAsync(file, TestContext.CancellationToken), "Stored without the spaces a paste brings along.");
+        Assert.DoesNotContain(secret, (await Read(id)).ToJsonString(), "The agent reads where it went, never what it is.");
+        Assert.DoesNotContain(secret, (await Seen(id)).Feed.Last().Text);
+
+        await client.PatchAsJsonAsync($"api/progress/{id}", new { status = "done" }, TestContext.CancellationToken);
+
+        Assert.IsFalse(File.Exists(file), "Its file goes once the task is over.");
+    }
+
+    [TestMethod]
     public async Task Wait_Should_BringTheUsersStepsAndMessagesButNotTheAgentsOwnChanges()
     {
         var id = await Start(new { agent = "Claude Code", title = "Steps", steps = new object[] { new { id = "token", text = "Create a token", owner = "you", status = "doing" } } });

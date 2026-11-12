@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Bit.Bcrdt;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
@@ -8,7 +9,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 /// changes a task over HTTP; the user answers its questions, finishes their own steps and writes to it from the page.
 /// Texts and lists are cut at fixed sizes, so a chatty agent can't make the document grow without bound.
 /// </summary>
-public static class WorkbenchProgressDocument
+public static partial class WorkbenchProgressDocument
 {
     public const string MapName = "progress";
 
@@ -86,7 +87,12 @@ public static class WorkbenchProgressDocument
                    ReadString(ask, "placeholder"),
                    ReadTime(ask, "at") ?? DateTimeOffset.MinValue,
                    answer,
-                   ReadBool(ask, "withdrawn"));
+                   ReadBool(ask, "withdrawn"))
+        {
+            Secret = ReadString(ask, "secretTo") is { } to && TryParse<WorkbenchProgressSecretTo>(to, out var target)
+                ? new(target, ReadString(ask, "secretName"), ReadString(ask, "secretEnvironment"))
+                : null
+        };
     }
 
     /// <summary>What is wrong with an agent's update, or null when it can be applied; <paramref name="existing"/> is null for a new task.</summary>
@@ -163,14 +169,17 @@ public static class WorkbenchProgressDocument
             var kind = WorkbenchProgressAskKind.Text;
 
             if (ask.Kind is { } kindName && TryParse(kindName, out kind) is false)
-                return $"The kind of the question \"{ask.Id}\" is none of text, choice, choices or confirm.";
+                return $"The kind of the question \"{ask.Id}\" is none of text, choice, choices, confirm or secret.";
 
-            kind = ask.Kind is null ? asked?.Kind ?? WorkbenchProgressAskKind.Text : kind;
+            kind = ask.Kind is null ? ask.Secret is null ? asked?.Kind ?? WorkbenchProgressAskKind.Text : WorkbenchProgressAskKind.Secret : kind;
 
             var options = Options(ask.Options) ?? asked?.Options ?? [];
 
             if (kind is WorkbenchProgressAskKind.Choice or WorkbenchProgressAskKind.Choices && options.Length is < 2 or > MaxOptions)
                 return $"The question \"{ask.Id}\" needs 2 to {MaxOptions} options.";
+
+            if (kind is WorkbenchProgressAskKind.Secret && CheckSecret(ask, asked) is { } secretProblem)
+                return secretProblem;
         }
 
         var steps = (existing?.Steps.Select(s => s.Id) ?? []).Union((update.Steps ?? []).Where(s => s.Remove is false).Select(s => s.Id)).Count();
@@ -180,6 +189,28 @@ public static class WorkbenchProgressDocument
 
         if ((existing?.Asks.Length ?? 0) + (update.Asks ?? []).Count(a => existing?.Asks.Any(x => x.Id == a.Id) is not true) > MaxAsks)
             return $"A task holds up to {MaxAsks} questions.";
+
+        return null;
+    }
+
+    /// <summary>What is wrong with where a secret question's answer goes, or null when it can go there.</summary>
+    private static string? CheckSecret(WorkbenchProgressAskUpdate ask, WorkbenchProgressAsk? asked)
+    {
+        if (SecretAskId().IsMatch(ask.Id.Trim()) is false)
+            return $"The secret question \"{ask.Id}\" needs an id of letters, digits, - and _.";
+
+        if (ask.Secret is null)
+            return asked?.Secret is null ? $"The secret question \"{ask.Id}\" needs a secret saying where it goes: to github, with its name, or to file." : null;
+
+        if (ask.Secret.To is not { } to || TryParse<WorkbenchProgressSecretTo>(to, out var target) is false)
+            return $"The secret of the question \"{ask.Id}\" goes to neither github nor file.";
+
+        if (target is WorkbenchProgressSecretTo.GitHub
+            && (ask.Secret.Name is not { } name || GitHubSecretName().IsMatch(name) is false || name.StartsWith("GITHUB_", StringComparison.OrdinalIgnoreCase)))
+            return $"The secret of the question \"{ask.Id}\" needs a GitHub secret's name: letters, digits and _, starting with neither a digit nor GITHUB_.";
+
+        if (target is WorkbenchProgressSecretTo.GitHub && ask.Secret.Environment is { } environment && GitHubEnvironment().IsMatch(environment) is false)
+            return $"The environment \"{environment}\" of the question \"{ask.Id}\" isn't a GitHub environment's name.";
 
         return null;
     }
@@ -277,21 +308,20 @@ public static class WorkbenchProgressDocument
     /// </summary>
     public static bool Answer(BcrdtMap progress, string taskId, string askId, IReadOnlyList<string> choices, string? text, string by)
     {
-        if (progress.GetMap(taskId) is not { } task || ReadString(task, "status") is not nameof(WorkbenchProgressStatus.Working))
-            return false;
-
-        if (FindItem(task.GetArray("asks"), askId) is not { } ask || ReadTime(ask, "answeredAt") is not null || ReadBool(ask, "withdrawn"))
+        if (FindOpenAsk(progress, taskId, askId) is not var (task, ask))
             return false;
 
         var kind = Parse(ReadString(ask, "kind"), WorkbenchProgressAskKind.Text);
         var options = ReadStrings(ask.GetArray("options")).ToArray();
         var picked = choices.Distinct(StringComparer.Ordinal).ToArray();
 
+        // A secret is answered only by storing it, which MarkStored records.
         var fits = kind switch
         {
             WorkbenchProgressAskKind.Text => picked.Length == 0 && string.IsNullOrWhiteSpace(text) is false,
             WorkbenchProgressAskKind.Choice => picked.Length == 1 && options.Contains(picked[0]),
             WorkbenchProgressAskKind.Choices => picked.Length > 0 && picked.All(options.Contains),
+            WorkbenchProgressAskKind.Secret => false,
             _ => picked is [Yes] or [No]
         };
 
@@ -310,6 +340,38 @@ public static class WorkbenchProgressDocument
         task.Set("updatedAt", Now());
 
         return true;
+    }
+
+    /// <summary>
+    /// Records that the Workbench stored the secret a question asked for. The secret itself never enters the document, so
+    /// the agent learns only that it is where the question said. Returns false when the question is gone, answered or not a
+    /// secret's.
+    /// </summary>
+    public static bool MarkStored(BcrdtMap progress, string taskId, string askId, string by)
+    {
+        if (FindOpenAsk(progress, taskId, askId) is not var (task, ask) || ReadString(ask, "kind") is not nameof(WorkbenchProgressAskKind.Secret))
+            return false;
+
+        ask.Set("choices", new BcrdtArray());
+        ask.Set("answeredBy", Trim(by, WorkbenchReviewDocument.MaxNameLength));
+        ask.Set("answeredAt", Now());
+
+        AddEntry(task, WorkbenchProgressEntryKind.Answer, by, string.Empty, WorkbenchReviewDocument.NextSequence(), askId);
+        task.Set("updatedAt", Now());
+
+        return true;
+    }
+
+    /// <summary>A question of a running task that still waits for its answer, with that task.</summary>
+    private static (BcrdtMap Task, BcrdtMap Ask)? FindOpenAsk(BcrdtMap progress, string taskId, string askId)
+    {
+        if (progress.GetMap(taskId) is not { } task || ReadString(task, "status") is not nameof(WorkbenchProgressStatus.Working))
+            return null;
+
+        if (FindItem(task.GetArray("asks"), askId) is not { } ask || ReadTime(ask, "answeredAt") is not null || ReadBool(ask, "withdrawn"))
+            return null;
+
+        return (task, ask);
     }
 
     /// <summary>Marks a step of the user's done, for the agent to go on; returns false when it isn't theirs or is done already.</summary>
@@ -386,7 +448,8 @@ public static class WorkbenchProgressDocument
 
         foreach (var ask in task.Asks)
         {
-            var item = NewMap(("id", ask.Id), ("question", ask.Question), ("detail", ask.Detail), ("kind", ask.Kind.ToString()), ("placeholder", ask.Placeholder), ("at", Format(ask.At)), ("withdrawn", ask.IsWithdrawn));
+            var item = NewMap(("id", ask.Id), ("question", ask.Question), ("detail", ask.Detail), ("kind", ask.Kind.ToString()), ("placeholder", ask.Placeholder), ("at", Format(ask.At)), ("withdrawn", ask.IsWithdrawn),
+                              ("secretTo", ask.Secret?.To.ToString()), ("secretName", ask.Secret?.Name), ("secretEnvironment", ask.Secret?.Environment));
             var options = new BcrdtArray();
 
             asks.Push(item);
@@ -518,6 +581,18 @@ public static class WorkbenchProgressDocument
         if (update.Detail is not null) ask.Set("detail", Blank(Trim(update.Detail, MaxTextLength)));
         if (update.Placeholder is not null) ask.Set("placeholder", Blank(Trim(update.Placeholder, MaxTitleLength)));
         if (update.Kind is { } kind && TryParse<WorkbenchProgressAskKind>(kind, out var parsedKind)) ask.Set("kind", parsedKind.ToString());
+
+        if (update.Secret is { To: { } to } secret && TryParse<WorkbenchProgressSecretTo>(to, out var target))
+        {
+            ask.Set("secretTo", target.ToString());
+            ask.Set("secretName", target is WorkbenchProgressSecretTo.GitHub ? secret.Name : null);
+            ask.Set("secretEnvironment", target is WorkbenchProgressSecretTo.GitHub ? Blank(secret.Environment) : null);
+
+            if (update.Kind is null)
+            {
+                ask.Set("kind", nameof(WorkbenchProgressAskKind.Secret));
+            }
+        }
 
         if (Options(update.Options) is { } options)
         {
@@ -665,4 +740,15 @@ public static class WorkbenchProgressDocument
     private static long ReadLong(BcrdtMap map, string key) => map.Get(key) is { } value ? Convert.ToInt64(value, CultureInfo.InvariantCulture) : 0;
 
     private static DateTimeOffset? ReadTime(BcrdtMap map, string key) => DateTimeOffset.TryParse(ReadString(map, key), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var time) ? time : null;
+
+    // A secret question's id names the file its secret may go into.
+    [GeneratedRegex("^[A-Za-z0-9_-]+$")]
+    private static partial Regex SecretAskId();
+
+    [GeneratedRegex("^[A-Za-z_][A-Za-z0-9_]{0,99}$")]
+    private static partial Regex GitHubSecretName();
+
+    // Never starting with a dash, which gh would read as an option.
+    [GeneratedRegex("^[A-Za-z0-9_][A-Za-z0-9_. /-]{0,99}$")]
+    private static partial Regex GitHubEnvironment();
 }

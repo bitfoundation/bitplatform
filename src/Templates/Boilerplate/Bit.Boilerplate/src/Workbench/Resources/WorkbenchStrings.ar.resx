@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>في مهمة حقيقية، يتلقى {0} هذا فورًا ويتابع.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>في مهمة حقيقية، يذهب إلى حيث يقول السؤال، ويتابع {0} دون أن يراه.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>يذهب مباشرة إلى GitHub باسم {0}، سرًّا لبيئة {1}. لا يراه {2} أبدًا.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>يذهب مباشرة إلى GitHub باسم {0}، سرًّا للمستودع. لا يراه {1} أبدًا.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>يُحفظ في ملف خارج المشروع، يستخدمه {0} في أوامره دون أن يراه أبدًا.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>الصقه هنا</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>احفظ</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>حُفظ. يتابع {0} دون أن يراه أبدًا.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>تعذّر حفظه: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>لا يقبل الأسرار إلا الحاسوب الذي تعمل عليه منضدة العمل هذه.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>حُفظ ولن يُعرض</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>تم: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>إنشاء رمز API في Cloudflare</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>في لوحة Cloudflare افتح My Profile ثم API Tokens، وأنشئ رمزًا يمكنه تعديل DNS وCloudflare Tunnel. الصقه في الملف الذي فتحته في محررك، لا في أي محادثة.</value>
+        <value>في لوحة Cloudflare افتح My Profile ثم API Tokens، وأنشئ رمزًا يمكنه تعديل DNS وCloudflare Tunnel. ثم الصقه في الأسفل.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>تثبيت Docker ومشغّل GitHub Actions على الخادم</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>ستظل تصل إلى الخادم عبر النفق وعبر لوحة الويب لدى مزوّدك.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>الصق رمز Cloudflare</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>لا توضع المفاتيح وكلمات المرور في هذه الصفحة ولا في أي محادثة. تذهب مباشرة إلى أسرار GitHub.</value>
+        <value>لا توضع المفاتيح وكلمات المرور في أي محادثة. تلصقها هنا، فيذهب كلٌّ منها مباشرة إلى مكانه دون أن أراه.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>خادم واحد للبيئتين، لتقليل التكلفة.</value>
@@ -5254,7 +5287,7 @@
         <value>تابع المهام الطويلة وأجب بنقرة</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>يحتاج النشر أو ميزة جديدة إلى خطوات كثيرة، وبعضها لا يقوم به إلا أنت. تعرض هنا كل محادثة مع وكيل ما أنجزته وما تبقى وما تحتاجه منك، فلا يضيع شيء في محادثة طويلة.</value>
+        <value>يحتاج النشر أو ميزة جديدة إلى خطوات كثيرة، وبعضها لا يقوم به إلا أنت. تعرض هنا كل محادثة مع وكيل ما أنجزته وما تبقى وما تحتاجه منك، فلا يضيع شيء في محادثة طويلة. والمفاتيح وكلمات المرور التي تلصقها هناك تذهب مباشرة إلى مكانها، لا عبر المحادثة أبدًا.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>تحدّث بدل الكتابة</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>صوت ورقم على التبويب عندما يحتاجك</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>المفاتيح وكلمات المرور تذهب إلى مكانها، لا عبر المحادثة أبدًا</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>فتح التقدّم</value>

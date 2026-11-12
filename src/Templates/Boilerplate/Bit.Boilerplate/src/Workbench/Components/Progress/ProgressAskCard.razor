@@ -35,7 +35,31 @@
             break;
     }
 
-    @if (CanAnswer)
+    @if (Ask.Kind is WorkbenchProgressAskKind.Secret)
+    {
+        <p class="ask-where">@Where</p>
+
+        @if (CanAnswer && CanStoreSecret)
+        {
+            <div class="ask-secret">
+                <BitTextField @bind-Value="secret"
+                              Immediate
+                              Type="BitInputType.Password"
+                              CanRevealPassword
+                              AutoComplete="off"
+                              OnEnter="Store"
+                              Placeholder="@Localizer[nameof(WorkbenchStrings.ProgressSecretPlaceholder)]"
+                              AriaLabel="@Ask.Question"
+                              Class="ask-secret-field" />
+                <BitButton IconName="@BitIconName.Lock" Disabled="CanStore is false" OnClick="Store">@Localizer[nameof(WorkbenchStrings.ProgressSecretStore)]</BitButton>
+            </div>
+        }
+        else if (CanAnswer)
+        {
+            <p class="ask-where">@Localizer[nameof(WorkbenchStrings.ProgressSecretOnlyHere)]</p>
+        }
+    }
+    else if (CanAnswer)
     {
         <div class="ask-text">
             <BitTextField @bind-Value="text"

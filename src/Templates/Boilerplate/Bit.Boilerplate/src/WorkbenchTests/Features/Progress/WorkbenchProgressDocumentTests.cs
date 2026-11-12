@@ -88,6 +88,12 @@ public class WorkbenchProgressDocumentTests
     [DataRow("{\"links\":[{\"label\":\"Bad\",\"url\":\"file:///c:/secrets.txt\"}]}", "http(s)")]
     [DataRow("{\"asks\":[{\"id\":\"q\",\"question\":\"Pick\",\"kind\":\"choice\",\"options\":[\"only one\"]}]}", "2 to 8 options")]
     [DataRow("{\"asks\":[{\"id\":\"q\",\"kind\":\"text\"}]}", "needs a text")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"kind\":\"secret\"}]}", "saying where it goes")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"dropbox\"}}]}", "neither github nor file")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\"}}]}", "GitHub secret's name")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"GITHUB_TOKEN\"}}]}", "GitHub secret's name")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"KEY\",\"environment\":\"--repo=someone/else\"}}]}", "isn't a GitHub environment's name")]
+    [DataRow("{\"asks\":[{\"id\":\"../k\",\"question\":\"Key?\",\"secret\":{\"to\":\"file\"}}]}", "letters, digits, - and _")]
     [DataRow("{\"status\":\"finished\"}", "none of working")]
     [DataRow("{\"log\":\"CI is red\",\"logKind\":\"panic\"}", "none of info")]
     public void AnUpdateThatDoesNotFit_Should_BeRefusedWithAReason(string json, string reason)
@@ -132,6 +138,31 @@ public class WorkbenchProgressDocumentTests
         Assert.AreSequenceEqual(new[] { "Online", "Gift card" }, task.Asks[2].Answer!.Choices);
         Assert.AreEqual(4, task.Feed.Count(e => e.Kind is WorkbenchProgressEntryKind.Answer));
         Assert.IsGreaterThan(0L, task.Cursor);
+    }
+
+    [TestMethod]
+    public void ASecretQuestion_Should_SayWhereItGoesAndBeAnsweredOnlyByStoringIt()
+    {
+        Create(Update("Deploy", asks: [new("smtp", "SMTP connection string?", null, null, null, null, Secret: new("github", "SMTP_CONNECTION_STRING", "Test")),
+                                       new("token", "Cloudflare token?", null, "secret", null, null, Secret: new("file", "IGNORED", "Test")),
+                                       new("domain", "Domain?", null, "text", null, null)]));
+
+        var task = Task();
+
+        Assert.AreEqual((WorkbenchProgressAskKind.Secret, new WorkbenchProgressSecret(WorkbenchProgressSecretTo.GitHub, "SMTP_CONNECTION_STRING", "Test")), (task.Asks[0].Kind, task.Asks[0].Secret));
+        Assert.AreEqual(new WorkbenchProgressSecret(WorkbenchProgressSecretTo.File, null, null), task.Asks[1].Secret);
+        Assert.IsNull(task.Asks[2].Secret);
+
+        Assert.IsFalse(Edit(() => WorkbenchProgressDocument.Answer(Progress, "t", "smtp", [], "Server=smtp.example.com;Password=hunter2", "Sarah")), "Typed in like a text answer, the secret would land in the document.");
+        Assert.IsFalse(Edit(() => WorkbenchProgressDocument.MarkStored(Progress, "t", "domain", "Sarah")), "Only a secret question is answered by storing.");
+        Assert.IsTrue(Edit(() => WorkbenchProgressDocument.MarkStored(Progress, "t", "smtp", "Sarah")));
+        Assert.IsFalse(Edit(() => WorkbenchProgressDocument.MarkStored(Progress, "t", "smtp", "Sarah")), "It is stored once.");
+
+        task = Task();
+
+        Assert.AreEqual((null, "Sarah"), (task.Asks[0].Answer!.Text, task.Asks[0].Answer!.By));
+        Assert.AreEqual((WorkbenchProgressEntryKind.Answer, "smtp", ""), (task.Feed.Last().Kind, task.Feed.Last().RefId, task.Feed.Last().Text));
+        Assert.AreEqual(2, task.NeedsYouCount);
     }
 
     [TestMethod]
@@ -234,6 +265,7 @@ public class WorkbenchProgressDocumentTests
 
         Assert.IsGreaterThan(0, deploy.NeedsYouCount);
         Assert.Contains(s => s.Owner is WorkbenchProgressOwner.You && s.Status is WorkbenchProgressStepStatus.Doing, deploy.Steps);
+        Assert.Contains(a => a.IsOpen && a.Secret is { To: WorkbenchProgressSecretTo.File }, deploy.Asks);
         Assert.Contains(s => s.Owner is WorkbenchProgressOwner.Agent && s.Status is WorkbenchProgressStepStatus.Doing, feature.Steps);
         Assert.AreEqual((WorkbenchProgressStatus.Done, 100d), (fix.Status, fix.Percent));
         Assert.IsFalse(string.IsNullOrWhiteSpace(fix.Report), "The finished one shows the report an agent ends with.");

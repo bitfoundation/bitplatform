@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>असली काम में {0} को यह तुरंत मिलता है और वह आगे बढ़ता है।</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>असली काम में यह वहीं जाता है जहाँ सवाल कहता है, और {0} इसे देखे बिना आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>यह सीधे GitHub में {0} नाम से, {1} एनवायरनमेंट के secret के रूप में जाता है। {2} इसे कभी नहीं देखता।</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>यह सीधे GitHub में {0} नाम से, रिपॉज़िटरी के secret के रूप में जाता है। {1} इसे कभी नहीं देखता।</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>यह प्रोजेक्ट के बाहर एक फ़ाइल में जाता है, जिसे {0} अपने कमांड में इस्तेमाल करता है, बिना इसे कभी देखे।</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>यहाँ चिपकाएँ</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>सहेजें</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>सहेज लिया गया। {0} इसे कभी देखे बिना आगे बढ़ता है।</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>इसे सहेजा नहीं जा सका: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>सीक्रेट सिर्फ़ वही कंप्यूटर ले सकता है जिस पर यह वर्कबेंच चल रहा है।</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>सहेजा गया, कभी दिखाया नहीं जाता</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>पूरा: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Cloudflare API टोकन बनाना</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>Cloudflare डैशबोर्ड में My Profile, फिर API Tokens खोलें और ऐसा टोकन बनाएँ जो DNS और Cloudflare Tunnel बदल सके। उसे उस फ़ाइल में चिपकाएँ जो मैंने आपके एडिटर में खोली है, कभी चैट में नहीं।</value>
+        <value>Cloudflare डैशबोर्ड में My Profile, फिर API Tokens खोलें और ऐसा टोकन बनाएँ जो DNS और Cloudflare Tunnel बदल सके। फिर उसे नीचे चिपकाएँ।</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>सर्वर पर Docker और GitHub Actions रनर इंस्टॉल करना</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>आप तब भी टनल से और अपने प्रोवाइडर के वेब कंसोल से सर्वर तक पहुँच पाएँगे।</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Cloudflare टोकन चिपकाएँ</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>कुंजियाँ और पासवर्ड न इस पेज पर आते हैं न किसी चैट में। वे सीधे GitHub के secrets में जाते हैं।</value>
+        <value>कुंजियाँ और पासवर्ड कभी किसी चैट में नहीं आते। आप उन्हें यहाँ चिपकाते हैं, और हर एक सीधे अपनी जगह जाता है, बिना मेरे देखे।</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>लागत कम रखने के लिए दोनों एनवायरनमेंट के लिए एक ही सर्वर।</value>
@@ -5254,7 +5287,7 @@
         <value>लंबे काम देखें, एक क्लिक में जवाब दें</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>डिप्लॉयमेंट या नए फ़ीचर में कई कदम होते हैं, और कुछ सिर्फ़ आप उठा सकते हैं। हर एजेंट चैट यहाँ दिखाती है कि क्या हुआ, क्या बाकी है और उसे आपसे क्या चाहिए, ताकि लंबी चैट में कुछ खो न जाए।</value>
+        <value>डिप्लॉयमेंट या नए फ़ीचर में कई कदम होते हैं, और कुछ सिर्फ़ आप उठा सकते हैं। हर एजेंट चैट यहाँ दिखाती है कि क्या हुआ, क्या बाकी है और उसे आपसे क्या चाहिए, ताकि लंबी चैट में कुछ खो न जाए। वहाँ चिपकाई गई कुंजियाँ और पासवर्ड सीधे अपनी जगह जाते हैं, कभी चैट से होकर नहीं।</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>टाइप करने की जगह बोलें</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>ज़रूरत पड़ने पर एक आवाज़ और टैब पर गिनती</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>कुंजियाँ और पासवर्ड सीधे अपनी जगह जाते हैं, कभी चैट से होकर नहीं</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>प्रगति खोलें</value>

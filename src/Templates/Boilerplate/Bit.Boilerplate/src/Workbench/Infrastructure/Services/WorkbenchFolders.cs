@@ -38,6 +38,9 @@ public static class WorkbenchFolders
         ? Path.Combine(userData, "bit-workbench", ProjectKey(git.CommonDir), ReviewsName)
         : Path.Combine(Project ?? AppContext.BaseDirectory, "App_Data", ReviewsName);
 
+    /// <summary>The secrets the user pasted for an agent's commands to read, next to the reviews, outside the repository.</summary>
+    public static string Secrets => Path.Combine(Path.GetDirectoryName(Reviews)!, "Secrets");
+
     /// <summary>The port of the first address in an ASP.NET Core urls setting, like http://localhost:6031.</summary>
     public static int? PortOf(string? urls)
     {

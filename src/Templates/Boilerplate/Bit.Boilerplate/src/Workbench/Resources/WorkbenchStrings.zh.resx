@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>在真实任务中，{0} 会立即收到并继续。</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>在真实任务中，它会存到问题指定的位置，{0} 会继续，且看不到它。</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>它会直接存入 GitHub，作为 {1} 环境的 secret {0}。{2} 永远看不到它。</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>它会直接存入 GitHub，作为仓库的 secret {0}。{1} 永远看不到它。</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>它会存入项目之外的一个文件，{0} 在命令中使用它，却始终看不到它。</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>粘贴到这里</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>已保存。{0} 会继续，且始终看不到它。</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>无法保存：{0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>只有运行此工作台的电脑才能接收密钥。</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>已保存，从不显示</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>已完成：{0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>创建 Cloudflare API 令牌</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>在 Cloudflare 控制台中打开 My Profile，再打开 API Tokens，创建一个可以编辑 DNS 和 Cloudflare Tunnel 的令牌。把它粘贴到我在您编辑器中打开的文件里，切勿粘贴到聊天中。</value>
+        <value>在 Cloudflare 控制台中打开 My Profile，再打开 API Tokens，创建一个可以编辑 DNS 和 Cloudflare Tunnel 的令牌。然后把它粘贴到下方。</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>在服务器上安装 Docker 和 GitHub Actions 运行器</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>您仍然可以通过隧道和服务商的网页控制台访问服务器。</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>粘贴 Cloudflare 令牌</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>密钥和密码绝不会出现在此页面或聊天中，而是直接存入 GitHub 的 secrets。</value>
+        <value>密钥和密码绝不会出现在聊天中。您把它们粘贴到这里，每一个都会直接存到该去的地方，我看不到。</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>两个环境共用一台服务器，以降低成本。</value>
@@ -5254,7 +5287,7 @@
         <value>跟进长任务，一键作答</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>一次部署或一个新功能需要很多步骤，其中有些只有您能完成。每个智能体对话都会在这里显示完成了什么、还剩什么以及需要您做什么，长对话里不再遗漏任何事。</value>
+        <value>一次部署或一个新功能需要很多步骤，其中有些只有您能完成。每个智能体对话都会在这里显示完成了什么、还剩什么以及需要您做什么，长对话里不再遗漏任何事。您在那里粘贴的密钥和密码会直接存到该去的地方，从不经过聊天。</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>用说话代替打字</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>需要您时会响铃，标签页上也会显示数量</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>密钥和密码直接存到该去的地方，从不经过聊天</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>打开进度</value>

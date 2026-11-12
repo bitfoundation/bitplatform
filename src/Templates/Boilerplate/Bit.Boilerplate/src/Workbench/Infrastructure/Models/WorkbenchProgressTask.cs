@@ -55,7 +55,7 @@ public sealed record WorkbenchProgressNote(string Id, WorkbenchProgressNoteKind 
 
 public sealed record WorkbenchProgressLink(string Label, string Url);
 
-/// <summary>A question the agent asks the user, answered on the page with text, a choice or a yes or no.</summary>
+/// <summary>A question the agent asks the user, answered on the page with text, a choice, a yes or no, or a secret.</summary>
 public sealed record WorkbenchProgressAsk(string Id,
                                           string Question,
                                           string? Detail,
@@ -67,7 +67,16 @@ public sealed record WorkbenchProgressAsk(string Id,
                                           bool IsWithdrawn)
 {
     public bool IsOpen => Answer is null && IsWithdrawn is false;
+
+    /// <summary>Where a secret question's answer goes; the answer itself never comes back.</summary>
+    public WorkbenchProgressSecret? Secret { get; init; }
 }
+
+/// <summary>
+/// Where the Workbench puts a secret the user pastes: a GitHub secret, of an environment or of the repository, or a file
+/// outside the repository that the agent's commands read.
+/// </summary>
+public sealed record WorkbenchProgressSecret(WorkbenchProgressSecretTo To, string? Name, string? Environment);
 
 /// <summary>The user's answer: the options picked, yes or no for a confirmation, and what they wrote.</summary>
 public sealed record WorkbenchProgressAnswer(string[] Choices, string? Text, string By, DateTimeOffset At);
@@ -118,7 +127,14 @@ public enum WorkbenchProgressAskKind
     Text,
     Choice,
     Choices,
-    Confirm
+    Confirm,
+    Secret
+}
+
+public enum WorkbenchProgressSecretTo
+{
+    GitHub,
+    File
 }
 
 public enum WorkbenchProgressEntryKind

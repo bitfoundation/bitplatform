@@ -85,4 +85,31 @@ public class ProgressAccessTests
 
         await WorkbenchTestReviewer.WaitFor(() => agent.GetTask(id!, TestContext.CancellationToken), t => t!.Asks.Single().Answer is not null);
     }
+
+    [TestMethod]
+    public async Task ASecret_Should_BeTakenOnlyOnThisMachineAndASamplesNowhere()
+    {
+        var server = await WorkbenchTestsInitializer.SharedServer;
+        var agent = server.Services.GetRequiredService<WorkbenchProgressAgent>();
+        var (id, _) = await agent.Create("Claude Code", new(null, "Deploy", null, null, null, null, null, [new("token", "Your Cloudflare token", null, "secret", null, null, Secret: new("file", null, null))], null), TestContext.CancellationToken);
+
+        await using var invited = await WorkbenchTestReviewer.Open(server, isLocal: false, name: "Sarah on her phone", isInvited: true);
+
+        var task = await WorkbenchTestReviewer.WaitFor(() => Task.FromResult(invited.Session.Tasks.FirstOrDefault(t => t.Id == id)), t => t is not null);
+
+        Assert.IsTrue(invited.Session.CanAnswer(task!), "The reviewer sees the question.");
+        Assert.IsFalse(invited.Session.CanStoreSecrets(task!), "Only the computer gh runs on in the user's name takes the secret.");
+        Assert.IsNotNull(await invited.Change(session => session.StoreSecret(task!, task!.Asks.Single(), "from afar", "Sarah", TestContext.CancellationToken)));
+        Assert.IsFalse(File.Exists(WorkbenchSecrets.FilePath(id!, "token")));
+        Assert.IsTrue((await agent.GetTask(id!, TestContext.CancellationToken))!.Asks.Single().IsOpen);
+
+        await using var visitor = await WorkbenchTestReviewer.Open(server, isLocal: false, name: "Visitor");
+
+        var sample = visitor.Session.ShownTasks.Single(t => t.Id == WorkbenchSampleTasks.DeployId);
+        var sampleSecret = sample.OpenAsks.Single(a => a.Kind is WorkbenchProgressAskKind.Secret);
+
+        Assert.IsNull(await visitor.Change(session => session.StoreSecret(sample, sampleSecret, "a real key by mistake", "Visitor", TestContext.CancellationToken)));
+        Assert.IsFalse(visitor.Session.ShownTasks.Single(t => t.Id == sample.Id).Asks.Single(a => a.Id == sampleSecret.Id).IsOpen, "A sample takes it, and keeps nothing of it.");
+        Assert.IsFalse(File.Exists(WorkbenchSecrets.FilePath(sample.Id, sampleSecret.Id)));
+    }
 }

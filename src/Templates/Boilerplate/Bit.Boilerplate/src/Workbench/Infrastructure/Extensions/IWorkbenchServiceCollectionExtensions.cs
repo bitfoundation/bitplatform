@@ -76,6 +76,7 @@ public static class IWorkbenchServiceCollectionExtensions
             // The review: a Bcrdt document kept in WorkbenchFolders.Reviews, synced to every circuit through the relay and served to the agent over HTTP.
             services.AddSingleton<WorkbenchReviewAgent>();
             services.AddSingleton<WorkbenchProgressAgent>();
+            services.AddSingleton<WorkbenchSecrets>();
             services.AddSingleton<WorkbenchReviewAttachments>();
             services.AddSingleton<WorkbenchReviewRelay>();
             services.AddScoped<WorkbenchReviewSession>();

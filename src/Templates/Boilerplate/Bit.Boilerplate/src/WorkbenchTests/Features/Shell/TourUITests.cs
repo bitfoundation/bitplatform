@@ -120,6 +120,22 @@ public class TourUITests : WorkbenchPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task TheTour_Should_EndOnTheViewTabWhicheverTabItStartedFrom(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("shifts");
+
+        await Press(Page.Locator("#wb-tab-checks"));
+        await Expect(Page.Locator("#wb-tab-checks")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+        await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#wb-tab-view")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [TestMethod, OnDesktops]
     public async Task LeavingTheTourOnTheShiftPlanner_Should_GoBackToThePageItStartedFrom(WorkbenchSurface surface)
     {
         await OpenWorkbench("pos-dashboard", "?device=desktop-1536");

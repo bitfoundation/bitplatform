@@ -55,6 +55,12 @@ public sealed partial class WorkbenchProgressAgent
 
         await Host.EditAsync(WorkbenchReviewDocument.Id, document => WorkbenchProgressDocument.Apply(document.GetMap(WorkbenchProgressDocument.MapName), id, agentName, update), cancellationToken);
 
+        // A task that ends needs none of the secrets its questions put into files any more.
+        if (Enum.TryParse<WorkbenchProgressStatus>(update.Status, ignoreCase: true, out var status) && status is not WorkbenchProgressStatus.Working)
+        {
+            WorkbenchSecrets.DeleteFiles(id);
+        }
+
         return (true, null);
     }
 
@@ -69,6 +75,11 @@ public sealed partial class WorkbenchProgressAgent
             found = progress.ContainsKey(id);
             progress.Delete(id);
         }, cancellationToken);
+
+        if (found)
+        {
+            WorkbenchSecrets.DeleteFiles(id);
+        }
 
         return found;
     }

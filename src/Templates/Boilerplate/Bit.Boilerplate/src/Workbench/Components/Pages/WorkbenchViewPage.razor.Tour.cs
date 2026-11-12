@@ -4,7 +4,7 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// The tour of what the home page promises. Each step shows its feature for real in the views, undoes it when it is left, and
-/// the end of the tour brings back the views, mode and tab it started from. Its texts are the home page's own. A phone gets the
+/// the end of the tour brings back the views and mode it started from, on the View tab. Its texts are the home page's own. A phone gets the
 /// same steps in the wider screens' shell, which workbench.scss stacks in one column for the step shown.
 /// </summary>
 public partial class WorkbenchViewPage
@@ -39,7 +39,6 @@ public partial class WorkbenchViewPage
     {
         WorkbenchScenario[] viewsBefore = [.. store.Panes.Select(pane => pane.Scenario)];
         var modeBefore = store.Mode;
-        var columnBefore = store.Column;
         var phone = new WorkbenchScenario();
         // The building sample shows what a flow is; without its page, the list of flows does.
         var hasBuildingsSample = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId);
@@ -100,7 +99,8 @@ public partial class WorkbenchViewPage
             OnEnded = async _ =>
             {
                 SetMode(isSmallScreen && IsDesktopOnly(modeBefore) ? WorkbenchModes.Browse : modeBefore);
-                store.ShowColumn(columnBefore);
+                // The tab the user looks at first, whichever one the tour started from.
+                store.ShowColumn(WorkbenchModes.ViewColumn);
                 store.ShowViews(viewsBefore);
 
                 var address = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);

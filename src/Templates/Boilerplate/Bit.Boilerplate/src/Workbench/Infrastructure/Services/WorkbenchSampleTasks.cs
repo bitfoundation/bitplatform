@@ -48,6 +48,10 @@ public static class WorkbenchSampleTasks
             ],
             [new(Text(nameof(WorkbenchStrings.SampleDeployLinkCloudflare)), "https://dash.cloudflare.com")],
             [
+                new("token", Text(nameof(WorkbenchStrings.SampleDeployAskToken)), null, WorkbenchProgressAskKind.Secret, [], null, now - TimeSpan.FromMinutes(4), null, false)
+                {
+                    Secret = new(WorkbenchProgressSecretTo.File, null, null)
+                },
                 new("email", Text(nameof(WorkbenchStrings.SampleDeployAskEmail)), Text(nameof(WorkbenchStrings.SampleDeployAskEmailDetail)), WorkbenchProgressAskKind.Choice, emailOptions, null, now - TimeSpan.FromMinutes(3), null, false),
                 new("ssh", Text(nameof(WorkbenchStrings.SampleDeployAskSsh)), Text(nameof(WorkbenchStrings.SampleDeployAskSshDetail)), WorkbenchProgressAskKind.Confirm, [], null, now - TimeSpan.FromMinutes(2), null, false)
             ],

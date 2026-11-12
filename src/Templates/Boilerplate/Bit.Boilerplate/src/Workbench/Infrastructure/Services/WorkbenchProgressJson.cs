@@ -41,9 +41,18 @@ public static class WorkbenchProgressJson
                 Kind = Name(ask.Kind),
                 ask.Options,
                 Status = ask.Answer is not null ? "answered" : ask.IsWithdrawn ? "withdrawn" : "open",
-                Answer = ask.Answer is { } answer ? new { answer.Choices, answer.Text, answer.By, answer.At } : null
+                Answer = ask.Answer is { } answer ? new { answer.Choices, answer.Text, answer.By, answer.At } : null,
+                Secret = DescribeSecret(task, ask)
             }).ToArray()
         };
+    }
+
+    /// <summary>Where a secret question's answer goes, with the file a file's goes into; never the secret.</summary>
+    private static object? DescribeSecret(WorkbenchProgressTask task, WorkbenchProgressAsk? ask)
+    {
+        return ask?.Secret is { } secret
+            ? new { To = Name(secret.To), secret.Name, secret.Environment, File = secret.To is WorkbenchProgressSecretTo.File ? WorkbenchSecrets.FilePath(task.Id, ask.Id) : null }
+            : null;
     }
 
     /// <summary>What the user did since the cursor: answers, finished steps and messages, oldest first.</summary>
@@ -68,6 +77,7 @@ public static class WorkbenchProgressJson
                     Ask = ask?.Id,
                     Question = ask?.Question,
                     Choices = ask?.Answer?.Choices,
+                    Secret = DescribeSecret(task, ask),
                     Step = entry.Kind is WorkbenchProgressEntryKind.Step ? entry.RefId : null,
                     Text = string.IsNullOrEmpty(entry.Text) ? null : entry.Text,
                     By = entry.Author,

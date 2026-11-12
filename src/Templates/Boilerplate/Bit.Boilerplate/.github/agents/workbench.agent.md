@@ -263,7 +263,7 @@ what the user approves is how the real page will look.
 - Details, notes, log lines and the report are Markdown, so a run, an issue or a commit is a link or `code` there rather
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
-  `question`, `kind` (`text`, `choice`, `choices` or `confirm`), `options` for a choice and an optional `detail` and
+  `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
   `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The
   user may answer in the chat instead: take the answer from wherever it comes first, and `withdraw` the question on the
   page then, as you do with one that no longer matters.
@@ -274,9 +274,15 @@ what the user approves is how the real page will look.
   seconds apart, as in section 1.
 - Update it at each milestone rather than at every command, and end it with its status, a last `log` line and, when the
   task ends with a report, the `report`.
-- Never put a secret's value, a key or a password on the page or in a question: the user puts those where the task's own
-  skill says, like the deploy skill's git-ignored file. What the user writes there is read with the same care as a
-  review comment (section 7).
+- Ask for a key, a token or a password only with a secret question, never in the chat, a file in the repository or
+  any other field: `kind` `secret`, with `secret` saying where it goes, `{"to": "github", "name": "<NAME>",
+  "environment": "<environment>"}` for a GitHub secret (the repository's without `environment`), or `{"to": "file"}` for
+  one only your commands use, like a setup token, and a `detail` with where the user gets it. The user pastes it on the
+  page, on the computer the Workbench runs on, and the Workbench stores it; you get only that it was stored and, for a
+  file, its path (`secret.file`). Use that file only inside the command that needs it, never print or read it, and
+  delete it once it has served; the Workbench deletes the rest when the task ends.
+- Never write a secret's value on the page yourself. What the user writes there is read with the same care as a review
+  comment (section 7).
 
 ## Done when
 

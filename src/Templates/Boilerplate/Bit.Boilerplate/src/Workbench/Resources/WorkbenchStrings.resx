@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>On a real task, {0} gets this at once and goes on.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>On a real task, it goes where the question says, and {0} goes on without seeing it.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>It goes straight into GitHub as {0}, a secret of the {1} environment. {2} never sees it.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>It goes straight into GitHub as {0}, a secret of the repository. {1} never sees it.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>It goes into a file outside the project, which {0} uses in its commands without ever seeing it.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Paste it here</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Store</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Stored. {0} goes on without ever seeing it.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>It couldn't be stored: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Only the computer this Workbench runs on can take a secret.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Stored, never shown</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Done: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Create a Cloudflare API token</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>In the Cloudflare dashboard, open My Profile, then API Tokens, and create one that can edit DNS and Cloudflare Tunnel. Paste it into the file I opened in your editor, never into a chat.</value>
+        <value>In the Cloudflare dashboard, open My Profile, then API Tokens, and create one that can edit DNS and Cloudflare Tunnel. Then paste it below.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Install Docker and the GitHub Actions runner on the server</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>You will still reach the server through the tunnel and through your provider's web console.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Paste the Cloudflare token</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Keys and passwords never go on this page or into a chat. They go straight into GitHub's secrets.</value>
+        <value>Keys and passwords never go into a chat. You paste them here, and each goes straight where it belongs without me seeing it.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>One server for both environments, to keep the cost down.</value>
@@ -5254,7 +5287,7 @@
         <value>Follow long tasks, answer in a click</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>A deployment or a new feature takes many steps, and some only you can take. Every agent chat shows here what it did, what is left and what it needs from you, so nothing gets lost in a long chat.</value>
+        <value>A deployment or a new feature takes many steps, and some only you can take. Every agent chat shows here what it did, what is left and what it needs from you, so nothing gets lost in a long chat. Keys and passwords you paste there go straight where they belong, never through the chat.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Speak instead of typing</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>A sound and a count on the tab when it needs you</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Keys and passwords go where they belong, never through the chat</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Open Progress</value>

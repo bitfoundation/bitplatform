@@ -83,6 +83,44 @@ public class ProgressUITests : ProgressPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task ASecret_Should_BePastedHereGoWhereTheQuestionSaysAndNeverShowAgain(WorkbenchSurface surface)
+    {
+        const string secret = "cf_ui_secret_93d1";
+
+        // A step of the user's and the question that takes its result often share an id; both wait side by side.
+        var (id, _) = await Agent.Create("Claude Code", new(null, "Deploy to Test", null, null,
+            [new("token", "Create a Cloudflare API token", "you", "doing", null, "https://dash.cloudflare.com/profile/api-tokens")],
+            null, null,
+            [new("token", "Your Cloudflare token", "Create it under [API Tokens](https://dash.cloudflare.com/profile/api-tokens).", null, null, null, Secret: new("file", null, null))],
+            null), CancellationToken.None);
+
+        var cursor = (await Agent.GetTask(id!, CancellationToken.None))!.Cursor;
+
+        await OpenProgress($"progress/{id}");
+
+        var token = Ask("token");
+        var field = token.GetByPlaceholder(WorkbenchStrings.ProgressSecretPlaceholder);
+        var store = token.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressSecretStore });
+
+        await Expect(token).ToContainTextAsync(string.Format(WorkbenchStrings.ProgressSecretToFile, "Claude Code"));
+        await Expect(field).ToHaveAttributeAsync("type", "password");
+        await Expect(store).ToBeDisabledAsync();
+        await Expect(token.Locator(".dictation")).ToHaveCountAsync(0);
+
+        await field.FillAsync(secret);
+        await Press(store);
+
+        await Expect(token).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".feed .from-you").First).ToContainTextAsync(WorkbenchStrings.ProgressSecretAnswered);
+
+        var stored = await Agent.Wait("Claude Code", id!, cursor, TimeSpan.FromSeconds(10), CancellationToken.None);
+
+        Assert.AreEqual((WorkbenchProgressEntryKind.Answer, "token", ""), (stored!.Value.Events[0].Kind, stored.Value.Events[0].RefId, stored.Value.Events[0].Text));
+        Assert.AreEqual(secret, await File.ReadAllTextAsync(WorkbenchSecrets.FilePath(id!, "token")));
+        Assert.DoesNotContain(secret, await Page.ContentAsync());
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task ANewQuestion_Should_ShowWhileThePageIsOpen(WorkbenchSurface surface)
     {
         var (id, _) = await Agent.Create("Codex", new(null, "Loyalty points", null, null, [new("ledger", "Build the ledger", null, "doing", null, null)], null, null, null, null), CancellationToken.None);
@@ -177,6 +215,15 @@ public class ProgressSamplesUITests : ProgressPageTest
         await Expect(Page.GetByText(WorkbenchStrings.ProgressSampleSentTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(email).ToHaveCountAsync(0);
         await Expect(Page.Locator(".feed .from-you").First).ToContainTextAsync(WorkbenchStrings.SampleDeployAskEmailOption3);
+
+        var token = Ask("token");
+
+        await token.GetByPlaceholder(WorkbenchStrings.ProgressSecretPlaceholder).FillAsync("not a real token");
+        await Press(token.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressSecretStore }));
+
+        await Expect(Page.GetByText(string.Format(WorkbenchStrings.ProgressSampleSecret, "Claude Code"), new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(token).ToHaveCountAsync(0);
+        Assert.IsFalse(File.Exists(WorkbenchSecrets.FilePath(WorkbenchSampleTasks.DeployId, "token")), "A sample's secret goes nowhere.");
 
         Assert.IsTrue((await Server.Services.GetRequiredService<WorkbenchProgressAgent>().GetTasks(CancellationToken.None)).All(t => t.Id.StartsWith("sample-", StringComparison.Ordinal) is false), "A sample never reaches the review.");
     }

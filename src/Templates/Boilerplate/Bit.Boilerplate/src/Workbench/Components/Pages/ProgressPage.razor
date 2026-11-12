@@ -132,7 +132,8 @@
 
                                         @foreach (var step in task.StepsForYou)
                                         {
-                                            <div class="todo" @key="step.Id" data-step-id="@step.Id">
+                                            @* Steps and questions sit side by side here and may share an id, so their keys say which is which. *@
+                                            <div class="todo" @key="@($"step:{step.Id}")" data-step-id="@step.Id">
                                                 <div class="todo-head">
                                                     <span class="todo-icon" aria-hidden="true"><BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" /></span>
                                                     <strong class="todo-text" dir="@(textDir ?? "auto")">@step.Text</strong>
@@ -153,7 +154,8 @@
 
                                         @foreach (var ask in task.OpenAsks)
                                         {
-                                            <ProgressAskCard @key="ask.Id" Ask="ask" CanAnswer="canAnswer" OnAnswer="(a, choices, text) => Answer(task, a, choices, text)" />
+                                            <ProgressAskCard @key="@($"ask:{ask.Id}")" Ask="ask" Agent="@task.Agent" CanAnswer="canAnswer" CanStoreSecret="reviewSession.CanStoreSecrets(task)"
+                                                             OnAnswer="(a, choices, text) => Answer(task, a, choices, text)" OnSecret="(a, secret) => StoreSecret(task, a, secret)" />
                                         }
                                     </section>
                                 }

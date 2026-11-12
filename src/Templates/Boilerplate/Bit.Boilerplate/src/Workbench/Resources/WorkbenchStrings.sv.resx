@@ -4992,6 +4992,36 @@
     <data name="ProgressSampleSent" xml:space="preserve">
         <value>I en riktig uppgift får {0} det här direkt och fortsätter.</value>
     </data>
+    <data name="ProgressSampleSecret" xml:space="preserve">
+        <value>I en riktig uppgift går den dit frågan säger, och {0} fortsätter utan att se den.</value>
+    </data>
+    <data name="ProgressSecretToGitHubEnvironment" xml:space="preserve">
+        <value>Den går direkt till GitHub som {0}, en secret i miljön {1}. {2} ser den aldrig.</value>
+    </data>
+    <data name="ProgressSecretToGitHub" xml:space="preserve">
+        <value>Den går direkt till GitHub som {0}, en secret i repositoryt. {1} ser den aldrig.</value>
+    </data>
+    <data name="ProgressSecretToFile" xml:space="preserve">
+        <value>Den hamnar i en fil utanför projektet, som {0} använder i sina kommandon utan att någonsin se den.</value>
+    </data>
+    <data name="ProgressSecretPlaceholder" xml:space="preserve">
+        <value>Klistra in den här</value>
+    </data>
+    <data name="ProgressSecretStore" xml:space="preserve">
+        <value>Spara</value>
+    </data>
+    <data name="ProgressSecretStored" xml:space="preserve">
+        <value>Sparad. {0} fortsätter utan att någonsin se den.</value>
+    </data>
+    <data name="ProgressSecretStoreFailed" xml:space="preserve">
+        <value>Den kunde inte sparas: {0}</value>
+    </data>
+    <data name="ProgressSecretOnlyHere" xml:space="preserve">
+        <value>Bara datorn som den här arbetsbänken körs på kan ta emot en hemlighet.</value>
+    </data>
+    <data name="ProgressSecretAnswered" xml:space="preserve">
+        <value>Sparad, visas aldrig</value>
+    </data>
     <data name="ProgressEntryStepDone" xml:space="preserve">
         <value>Klart: {0}</value>
     </data>
@@ -5089,7 +5119,7 @@
         <value>Skapa en API-token i Cloudflare</value>
     </data>
     <data name="SampleDeployStepTokenDetail" xml:space="preserve">
-        <value>Öppna My Profile och sedan API Tokens i Cloudflares instrumentpanel och skapa en som kan ändra DNS och Cloudflare Tunnel. Klistra in den i filen jag öppnade i din editor, aldrig i en chatt.</value>
+        <value>Öppna My Profile och sedan API Tokens i Cloudflares instrumentpanel och skapa en som kan ändra DNS och Cloudflare Tunnel. Klistra sedan in den nedan.</value>
     </data>
     <data name="SampleDeployStepRunner" xml:space="preserve">
         <value>Installera Docker och GitHub Actions-runnern på servern</value>
@@ -5121,8 +5151,11 @@
     <data name="SampleDeployAskSshDetail" xml:space="preserve">
         <value>Du når fortfarande servern via tunneln och via leverantörens webbkonsol.</value>
     </data>
+    <data name="SampleDeployAskToken" xml:space="preserve">
+        <value>Klistra in Cloudflare-token</value>
+    </data>
     <data name="SampleDeployNoteSecrets" xml:space="preserve">
-        <value>Nycklar och lösenord hamnar aldrig på den här sidan eller i en chatt. De går direkt in i GitHubs secrets.</value>
+        <value>Nycklar och lösenord hamnar aldrig i en chatt. Du klistrar in dem här, och var och en går direkt dit den ska utan att jag ser den.</value>
     </data>
     <data name="SampleDeployNoteOneServer" xml:space="preserve">
         <value>En server för båda miljöerna, för att hålla nere kostnaden.</value>
@@ -5254,7 +5287,7 @@
         <value>Följ långa uppgifter, svara med ett klick</value>
     </data>
     <data name="HomeWhyProgressText" xml:space="preserve">
-        <value>En driftsättning eller en ny funktion kräver många steg, och vissa kan bara du ta. Varje agentchatt visar här vad som är gjort, vad som återstår och vad den behöver från dig, så att inget försvinner i en lång chatt.</value>
+        <value>En driftsättning eller en ny funktion kräver många steg, och vissa kan bara du ta. Varje agentchatt visar här vad som är gjort, vad som återstår och vad den behöver från dig, så att inget försvinner i en lång chatt. Nycklar och lösenord som du klistrar in där går direkt dit de ska, aldrig via chatten.</value>
     </data>
     <data name="HomeWhyVoiceTitle" xml:space="preserve">
         <value>Tala i stället för att skriva</value>
@@ -5285,6 +5318,9 @@
     </data>
     <data name="HomeProgressPointSound" xml:space="preserve">
         <value>Ett ljud och en räknare på fliken när den behöver dig</value>
+    </data>
+    <data name="HomeProgressPointSecrets" xml:space="preserve">
+        <value>Nycklar och lösenord hamnar där de ska, aldrig via chatten</value>
     </data>
     <data name="HomeProgressOpen" xml:space="preserve">
         <value>Öppna förloppet</value>
