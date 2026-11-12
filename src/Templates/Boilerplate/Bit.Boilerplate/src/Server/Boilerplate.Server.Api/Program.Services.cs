@@ -1,8 +1,8 @@
 //+:cnd:noEmit
 using System.Net;
 using System.Net.Mail;
-using ImageMagick;
-using ImageMagick.Configuration;
+using Bit.Bmage;
+using Bit.Bmage.Memory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Boilerplate.Server.Api.Features.Identity;
 using Boilerplate.Server.Api.Features.Identity.OAuth;
@@ -94,8 +94,7 @@ public static partial class Program
         ServerApiSettings appSettings = new();
         configuration.Bind(appSettings);
 
-        ConfigureImageMagickSecurityPolicy();
-        ConfigureImageMagickResourceLimits();
+        services.AddBitBmageHeadlessServices(options => options.Allocator = new BudgetedPixelAllocator(1024L * 1024 * 1024));
 
         services.AddOAuth();
 
@@ -1056,44 +1055,5 @@ public static partial class Program
         //#endif
 
         return builder;
-    }
-
-    /// <summary>
-    /// Configures global ImageMagick resource limits to prevent denial-of-service (DoS) attacks from untrusted image uploads.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// ImageMagick defaults to machine-derived resource caps (e.g., using physical RAM, 2x memory map, 4x memory area, and unlimited disk space).
-    /// Malicious or unusually large uploads (e.g., a small 6MB PNG declaring 30,000x30,000 pixel dimensions) can force Magick.NET to 
-    /// allocate gigabytes of pixel data in memory or exhaust temporary disk space.
-    /// </para>
-    /// <para>
-    /// Because Magick.NET-Q16 allocates 2 bytes per channel, explicit bounds are applied to width, height, area, memory, and disk usage.
-    /// </para>
-    /// </remarks>
-    private static void ConfigureImageMagickResourceLimits()
-    {
-        ResourceLimits.Memory = 256 * 1024 * 1024;    // 256 MB pixel cache before spilling
-        ResourceLimits.Disk = 1024 * 1024 * 1024;     // 1 GB, instead of MagickResourceInfinity
-        ResourceLimits.Width = 16384;
-        ResourceLimits.Height = 16384;
-        ResourceLimits.Area = 16384 * 16384;
-    }
-
-    private static void ConfigureImageMagickSecurityPolicy()
-    {
-        var allowedCoders = string.Join(',', AttachmentController.AllowedImageFormats.Select(format => format.ToString().ToUpperInvariant()));
-
-        var configurationFiles = ConfigurationFiles.Default;
-
-        configurationFiles.Policy.Data = $$"""
-            <policymap>
-              <policy domain="delegate" rights="none" pattern="*" />
-              <policy domain="coder" rights="none" pattern="*" />
-              <policy domain="coder" rights="read | write" pattern="{{{allowedCoders}}}" />
-            </policymap>
-            """;
-
-        MagickNET.Initialize(configurationFiles);
     }
 }

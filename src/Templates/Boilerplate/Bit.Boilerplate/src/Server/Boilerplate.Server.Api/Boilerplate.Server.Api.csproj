@@ -63,7 +63,7 @@
         <PackageReference Include="Humanizer" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="QRCoder" />
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
+        <PackageReference Include="Bit.Bmage" />
         <PackageReference Include="FluentEmail.Smtp" />
         <PackageReference Include="FluentStorage" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="AWSSDK.Core" />
