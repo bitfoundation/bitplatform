@@ -500,6 +500,7 @@ public static partial class Program
                     ]);
                 }
 
+                // OData lists about 40 JSON variants per body, which made the document 1 MB; application/json alone describes them.
                 foreach (var content in (operation.Responses?.Values.Select(response => response.Content) ?? []).Append(operation.RequestBody?.Content))
                 {
                     if (content?.ContainsKey("application/json") is true)
