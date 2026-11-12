@@ -499,6 +499,17 @@ public static partial class Program
                         new OpenApiParameter() { In = ParameterLocation.Query, Name = "$orderby", Description = "Orders the results of a query by one or more properties. (ex. Name desc)" }
                     ]);
                 }
+
+                foreach (var content in (operation.Responses?.Values.Select(response => response.Content) ?? []).Append(operation.RequestBody?.Content))
+                {
+                    if (content?.ContainsKey("application/json") is true)
+                    {
+                        foreach (var mediaType in content.Keys.Where(key => key is not "application/json").ToList())
+                        {
+                            content.Remove(mediaType);
+                        }
+                    }
+                }
             });
         });
 

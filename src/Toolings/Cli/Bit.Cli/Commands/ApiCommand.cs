@@ -22,7 +22,7 @@ public static class ApiCommand
     private static Command Check(Func<CliServices> services)
     {
         var noBuildOption = NoBuildOption();
-        var releaseOption = new Option<bool>("--release") { Description = "Also require openapi/<version>.json, for the version in src/Directory.Build.props, to describe this api exactly, as it must on a commit Production deploys." };
+        var releaseOption = new Option<bool>("--release") { Description = "Also require openapi/<version>.json, for the version in src/Directory.Build.props, to describe this api, as it must on a commit Production deploys. Only its summaries and descriptions may differ." };
 
         var command = new Command("check", "Build Server.Api, which writes openapi/current.json, and fail if it breaks the apps of a released version the server still supports: one at or above the lowest SupportedAppVersions minimum in Server.Api's appsettings.json, or the start of the server's major version where none is set.")
         {
@@ -102,9 +102,10 @@ public static class ApiCommand
         }
         else
         {
+            var groups = api.GroupBySameApi(compared);
             var oasdiff = Oasdiff.ExecutablePath(cli.Environment);
 
-            if (File.Exists(oasdiff) is false)
+            if (groups.Any(g => g.IsCurrent is false) && File.Exists(oasdiff) is false)
             {
                 var got = await steps.RunAsync("api-oasdiff", $"Downloading oasdiff {Oasdiff.Version}", async (_, token) =>
                 {
@@ -117,31 +118,40 @@ public static class ApiCommand
                     return Finish(cli, steps, [], CliApp.ExitFailed);
             }
 
-            foreach (var releasedVersion in compared)
+            foreach (var (versions, isCurrent) in groups)
             {
+                var shown = Join(versions);
+
+                if (isCurrent)
+                {
+                    steps.Add("api-compare", StepResult.Succeeded($"Works with the apps at {shown}", "they shipped this api"));
+                    comparisons.AddRange(versions.Select(v => new ApiComparison(v, [], [], null)));
+                    continue;
+                }
+
                 ApiComparison? comparison = null;
 
-                await steps.RunAsync("api-compare", $"Comparing the api with {releasedVersion}'s", async (_, token) =>
+                await steps.RunAsync("api-compare", $"Comparing the api with {shown}'s", async (_, token) =>
                 {
-                    comparison = await api.CompareAsync(oasdiff, releasedVersion, token);
+                    comparison = await api.CompareAsync(oasdiff, versions[^1], token);
 
                     return comparison switch
                     {
-                        { Errors.Count: > 0 } => StepResult.Failed($"Breaks the apps at {releasedVersion}", Count(comparison.Errors.Count, "breaking change")) with { Attempt = comparison.Attempt },
-                        { Warnings.Count: > 0 } => StepResult.Warning($"Works with the apps at {releasedVersion}", Count(comparison.Warnings.Count, "warning")) with { Attempt = comparison.Attempt },
-                        _ => StepResult.Succeeded($"Works with the apps at {releasedVersion}")
+                        { Errors.Count: > 0 } => StepResult.Failed($"Breaks the apps at {shown}", Count(comparison.Errors.Count, "breaking change")) with { Attempt = comparison.Attempt },
+                        { Warnings.Count: > 0 } => StepResult.Warning($"Works with the apps at {shown}", Count(comparison.Warnings.Count, "warning")) with { Attempt = comparison.Attempt },
+                        _ => StepResult.Succeeded($"Works with the apps at {shown}")
                     };
                 }, cancellationToken);
 
-                if (comparison is null)
+                if (comparison is not { } result)
                 {
                     toolFailed = true;
                     continue;
                 }
 
-                comparisons.Add(comparison);
-                WriteFindings(cli, comparison.Errors, cli.Console.FailSymbol, "red");
-                WriteFindings(cli, comparison.Warnings, cli.Console.WarnSymbol, "yellow");
+                comparisons.AddRange(versions.Select(v => result with { Version = v }));
+                WriteFindings(cli, result.Errors, cli.Console.FailSymbol, "red");
+                WriteFindings(cli, result.Warnings, cli.Console.WarnSymbol, "yellow");
             }
         }
 
@@ -257,4 +267,6 @@ public static class ApiCommand
     }
 
     private static string Count(int count, string what) => count == 1 ? $"1 {what}" : $"{count} {what}s";
+
+    private static string Join(IReadOnlyList<Version> versions) => versions.Count <= 3 ? string.Join(", ", versions) : $"{versions[0]}, {versions[1]} and {versions.Count - 2} more";
 }

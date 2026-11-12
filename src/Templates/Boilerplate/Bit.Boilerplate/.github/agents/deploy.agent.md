@@ -366,7 +366,7 @@ there, and the setting or secret that carries it. Every environment gets its own
   included, stops without that file. A deployment to Test never raises the version: the CD gives Test's Android, iOS and
   Windows apps the run's number as their build number, so each one installs as an update of the last. Never set the
   version or a `SupportedAppVersions` minimum through a GitHub variable or secret: the check reads both from the
-  repository, and the deployment stops on such a minimum.
+  repository, and the deployment stops on such a minimum or an `APP_VERSION` variable.
 - When `bit api release` reports a breaking change, the user decides, never you: keep the old shape working next to the
   new one, or raise `SupportedAppVersions` in Server.Api's `appsettings.json` to the version it names, so the older apps
   have to update before they call the server again. A new major does the same for every platform without a minimum.

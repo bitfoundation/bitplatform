@@ -316,6 +316,10 @@ jobs:
             exit 1
           fi
           while IFS=$'\t' read -r kind name value; do
+            if [[ "${name^^}" == *__SUPPORTEDAPPVERSIONS__* || "${name^^}" == APP_VERSION ]]; then
+              echo "::error::Delete the $kind $name: the version stays in src/Directory.Build.props and SupportedAppVersions in Server.Api's appsettings files, where bit api check reads them."
+              exit 1
+            fi
             prefix="${name%%__*}"
             file=""
             if [[ -n "$prefix" && -n "${name#*__}" ]]; then
@@ -325,14 +329,10 @@ jobs:
               echo "::error::The $kind $name isn't <SERVICE>__<Section>__<Key> with a SERVICE of this deployment: ${!settings_file[*]}."
               exit 1
             fi
-            if [[ "${name^^}" == *__SUPPORTEDAPPVERSIONS__* ]]; then
-              echo "::error::Delete the $kind $name: SupportedAppVersions stays in Server.Api's appsettings.json, where bit api check reads it."
-              exit 1
-            fi
             setting "$file" "${name#*__}" "$(printf '%s' "$value" | base64 -d)" "the $kind $name"
           done < <(
-            jq -r 'to_entries[] | select(.key | contains("__")) | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
-            jq -r 'to_entries[] | select(.key | contains("__")) | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
+            jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "variable\t\(.key)\t\(.value | @base64)"' <<< "$VARIABLES"
+            jq -r 'to_entries[] | select(.key | contains("__") or . == "APP_VERSION") | "secret\t\(.key)\t\(.value | @base64)"' <<< "$SECRETS"
           )
           #if (cloudflare != true)
 

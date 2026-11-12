@@ -208,8 +208,43 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
     {
         var file = DocumentOf(version);
 
-        return File.Exists(file) && JsonNode.DeepEquals(JsonNode.Parse(File.ReadAllText(file)), JsonNode.Parse(File.ReadAllText(CurrentDocument)));
+        return File.Exists(file) && JsonNode.DeepEquals(ApiOf(file), ApiOf(CurrentDocument));
     }
+
+    public IReadOnlyList<(Version[] Versions, bool IsCurrent)> GroupBySameApi(IEnumerable<Version> versions)
+    {
+        var current = ApiOf(CurrentDocument);
+        var groups = new List<(JsonNode? Api, List<Version> Versions)>();
+
+        foreach (var version in versions)
+        {
+            var api = ApiOf(DocumentOf(version));
+            var index = groups.FindIndex(g => JsonNode.DeepEquals(g.Api, api));
+
+            if (index < 0)
+            {
+                groups.Add((api, [version]));
+            }
+            else
+            {
+                groups[index].Versions.Add(version);
+            }
+        }
+
+        return [.. groups.Select(g => (g.Versions.ToArray(), JsonNode.DeepEquals(g.Api, current)))];
+    }
+
+    private static JsonNode? ApiOf(string file) => WithoutProse(JsonNode.Parse(File.ReadAllText(file)));
+
+    private static JsonNode? WithoutProse(JsonNode? node) => node switch
+    {
+        JsonObject properties => new JsonObject(properties
+            .Where(p => p.Key is not ("summary" or "description") || p.Value?.GetValueKind() is not JsonValueKind.String)
+            .Select(p => KeyValuePair.Create(p.Key, WithoutProse(p.Value)))),
+        JsonArray items => new JsonArray([.. items.Select(WithoutProse)]),
+        JsonValue value when value.GetValueKind() is JsonValueKind.String => JsonValue.Create(value.GetValue<string>().ReplaceLineEndings("\n")),
+        _ => node?.DeepClone()
+    };
 
     [GeneratedRegex(@" \(media type: [^)]*\)")]
     private static partial Regex MediaTypeRegex();

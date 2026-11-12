@@ -97,6 +97,43 @@ public class ApiTests
     }
 
     [TestMethod]
+    public async Task CheckRelease_Should_IgnoreTheProseAndTheLineEndingsOfTheOsThatBuilt()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host, version: "1.2.0");
+        const string linux = """{"openapi":"3.1.2","paths":{"/api/v1/Todo/Get":{"get":{"summary":"Gets\nthe todos","parameters":[{"name":"search","in":"query","example":"a\nb"}]}}},"components":{"schemas":{"TodoDto":{"properties":{"description":{"type":"string","description":"What\nto do"}}}}}}""";
+        File.WriteAllText(Path.Combine(project, "openapi", "current.json"), linux);
+        File.WriteAllText(Path.Combine(project, "openapi", "1.2.0.json"), linux.Replace(@"\n", @"\r\n").Replace("the todos", "the todos, newest first"));
+        host.Runner.On("oasdiff", "breaking", 0, "[]");
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "api", "check", "--release", "--no-build"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "openapi/1.2.0.json describes this api");
+        Assert.IsEmpty(host.Runner.Calls);
+
+        File.WriteAllText(Path.Combine(project, "openapi", "1.2.0.json"), linux.Replace("\"type\":\"string\"", "\"type\":\"integer\""));
+
+        Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "check", "--release", "--no-build"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "openapi/1.2.0.json describes another api");
+    }
+
+    [TestMethod]
+    public async Task Check_Should_CompareTheReleasesThatShareAnApiOnce()
+    {
+        using var host = new TestHost();
+        var project = CreateProject(host, version: "0.0.5");
+        Release(project, "0.0.1", "0.0.2");
+        File.Copy(Path.Combine(project, "openapi", "0.0.2.json"), Path.Combine(project, "openapi", "0.0.3.json"));
+        File.WriteAllText(Path.Combine(project, "openapi", "0.0.4.json"), Current);
+        host.Runner.On("oasdiff", "breaking", 0, "[]");
+
+        Assert.AreEqual(CliApp.ExitOk, await RunInAsync(host, project, "api", "check", "--no-build"), host.Output);
+
+        CollectionAssert.AreEqual(new[] { "openapi/0.0.1.json", "openapi/0.0.3.json" }, host.Runner.Calls.Select(c => c.Arguments[1]).ToArray());
+        StringAssert.Contains(host.FlatOutput, "Works with the apps at 0.0.2, 0.0.3");
+        StringAssert.Contains(host.FlatOutput, "Works with the apps at 0.0.4 they shipped this api");
+    }
+
+    [TestMethod]
     public async Task Release_Should_RecordTheApiAndDeleteTheDocumentsOfUnsupportedVersions()
     {
         using var host = new TestHost();
@@ -136,7 +173,8 @@ public class ApiTests
     {
         using var host = new TestHost();
         var project = CreateProject(host, version: "1.2.0", minimums: new() { ["Android"] = "1.3.0", ["Ios"] = "1.3.0", ["MacOS"] = "1.3.0", ["Windows"] = "1.3.0", ["Web"] = "1.3.0" });
-        Release(project, "1.1.0", "1.2.0");
+        Release(project, "1.1.0");
+        File.WriteAllText(Path.Combine(project, "openapi", "1.2.0.json"), Current);
         host.Runner.On("oasdiff", "breaking", 0, "[]");
 
         Assert.AreEqual(CliApp.ExitCheckFailed, await RunInAsync(host, project, "api", "release"), host.Output);
@@ -257,7 +295,7 @@ public class ApiTests
     {
         foreach (var version in versions)
         {
-            File.WriteAllText(Path.Combine(project, "openapi", $"{version}.json"), Current);
+            File.WriteAllText(Path.Combine(project, "openapi", $"{version}.json"), Current.Replace("Todo/Get", $"Todo/Since{version}"));
         }
     }
 
